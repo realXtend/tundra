@@ -227,7 +227,7 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
     if (!server)
     {
         LogError("Failed to start server on port " + ToString((int)port));
-        return false;
+        throw Exception(("Failed to start server on port " + ToString((int)port) + ". Please make sure that the port is free and not used by another application. The program will now abort.").c_str());
     }
     
     LogInfo("Started server on port " + ToString((int)port));

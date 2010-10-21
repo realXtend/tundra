@@ -52,7 +52,7 @@ public:
         \param localassets Whether to put file:// prefix into all asset references
         \return Entity pointer if successful (null if failed)
      */
-    Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
+    Scene::EntityPtr ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
         const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets);
     
     //! Import a dotscene
@@ -71,20 +71,26 @@ public:
     QList<Scene::Entity *> Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, const Transform &worldtransform,
         AttributeChange::Type change, bool clearscene = false, bool localassets = true, bool replace = true);
     
+    //! Parse a mesh for materials & skeleton ref
+    /*! \param meshname Full path & filename of mesh
+        \param material_names Return vector for material names
+        \param skeleton_name Return value for skeleton ref
+     */
+    bool ParseMeshForMaterialsAndSkeleton(const std::string& meshname, std::vector<std::string>& material_names, std::string& skeleton_name);
+
 private:
     //! Process the asset references of a node, and its child nodes
     /*! \param node_elem Node element
      */
-    void ProcessNodeForAssets(QDomElement node_elem);
+    void ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir);
     
     //! Process assets
-    /*! Note: for materials, if scene is called scene.scene, then material file is assumed to be scene.material in the same dir
-    /*! \param filename Scene filename
+    /*! \param matfilename Material file name
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param localassets Whether to put file:// prefix into all asset references
      */
-    void ProcessAssets(const std::string& filename, const std::string& in_asset_dir, const std::string& out_asset_dir, bool localassets);
+    void ProcessAssets(const std::string& matfilename, const std::string& in_asset_dir, const std::string& out_asset_dir, bool localassets);
     
     //! Process node and its child nodes for creation of entities & components. Done after asset pass
     /*! \param [out] entities List of created entities
@@ -124,6 +130,9 @@ private:
         \return true if successful
      */
     bool CopyAsset(const std::string& name, const std::string& in_asset_dir, const std::string& out_asset_dir);
+    
+    //! Materials read from meshes, in case of no subentity elements
+    std::map<std::string, std::vector<std::string> > mesh_default_materials_;
     
     //! Materials encountered in scene
     std::set<std::string> material_names_;

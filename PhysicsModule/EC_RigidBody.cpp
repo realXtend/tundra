@@ -5,6 +5,7 @@
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"
+#include "ConvexHull.h"
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
@@ -57,6 +58,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
         metadata.enums[Shape_Capsule] = "Capsule";
         metadata.enums[Shape_TriMesh] = "TriMesh";
         metadata.enums[Shape_HeightField] = "HeightField";
+        metadata.enums[Shape_ConvexHull] = "ConvexHull";
         metadataInitialized = true;
     }
     shapeType.SetMetadata(&metadata);
@@ -241,6 +243,9 @@ void EC_RigidBody::CreateCollisionShape()
     case Shape_HeightField:
         CreateHeightFieldFromTerrain();
         break;
+    case Shape_ConvexHull:
+        CreateConvexHullSetShape();
+        break;
     }
     
     UpdateScale();
@@ -399,119 +404,67 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
     if (disconnected_)
         return;
     
-    bool requestMesh = false;
+    // Create body now if does not exist yet
+    if (!body_)
+        CreateBody();
+    // If body was not created (we do not actually have a physics world), exit
+    if (!body_)
+        return;
     
     if (attribute == &mass)
-    {
-        if (!body_)
-            CreateBody();
-        else
-            // Readd body to the world in case static/dynamic classification changed
-            ReaddBody();
-    }
+        // Readd body to the world in case static/dynamic classification changed
+        ReaddBody();
     
     if (attribute == &friction)
-    {
-        if (!body_)
-            CreateBody();
-        if (body_)
-            body_->setFriction(friction.Get());
-    }
+        body_->setFriction(friction.Get());
     
     if (attribute == &restitution)
-    {
-        if (!body_)
-            CreateBody();
-        if (body_)
-            body_->setRestitution(friction.Get());
-    }
+        body_->setRestitution(friction.Get());
     
     if ((attribute == &linearDamping) || (attribute == &angularDamping))
-    {
-        if (!body_)
-            CreateBody();
-        if (body_)
-            body_->setDamping(linearDamping.Get(), angularDamping.Get());
-    }
+         body_->setDamping(linearDamping.Get(), angularDamping.Get());
     
     if (attribute == &linearFactor)
-    {
-        if (!body_)
-            CreateBody();
-        if (body_)
-            body_->setLinearFactor(ToBtVector3(linearFactor.Get()));
-    }
+        body_->setLinearFactor(ToBtVector3(linearFactor.Get()));
     
     if (attribute == &angularFactor)
-    {
-        if (!body_)
-            CreateBody();
-        if (body_)
-            body_->setAngularFactor(ToBtVector3(angularFactor.Get()));
-    }
+        body_->setAngularFactor(ToBtVector3(angularFactor.Get()));
     
     if ((attribute == &shapeType) || (attribute == &size))
     {
         if ((shapeType.Get() != cachedShapeType_) || (size.Get() != cachedSize_))
         {
-            if (shapeType.Get() != Shape_TriMesh)
+            // If shape does not involve mesh, can create it directly. Otherwise request the mesh
+            if ((shapeType.Get() != Shape_TriMesh) && (shapeType.Get() != Shape_ConvexHull))
             {
                 CreateCollisionShape();
                 cachedShapeType_ = shapeType.Get();
                 cachedSize_ = size.Get();
             }
             else
-                requestMesh = true;
+                RequestMesh();
         }
-        if (!body_)
-            CreateBody();
     }
     
-    if ((attribute == &collisionMeshId) && (shapeType.Get() == Shape_TriMesh))
-        requestMesh = true;
+    // Request mesh if its id changes
+    if ((attribute == &collisionMeshId) && ((shapeType.Get() == Shape_TriMesh) || (shapeType.Get() == Shape_ConvexHull)))
+        RequestMesh();
     
     if (attribute == &phantom)
-    {
-        if (!body_)
-            CreateBody();
-        else
-            // Readd body to the world in case phantom classification changed
-            ReaddBody();
-    }
+        // Readd body to the world in case phantom classification changed
+        ReaddBody();
     
     if (attribute == &linearVelocity)
     {
-        if (!body_)
-            CreateBody();
-        if (body_)
-        {
-            body_->setLinearVelocity(ToBtVector3(linearVelocity.Get()));
-            body_->activate();
-        }
+        body_->setLinearVelocity(ToBtVector3(linearVelocity.Get()));
+        body_->activate();
     }
     
     if (attribute == &angularVelocity)
     {
-        if (!body_)
-            CreateBody();
-        if (body_)
-        {
-            const Vector3df& angular = angularVelocity.Get();
-            body_->setAngularVelocity(btVector3(angular.x * DEGTORAD, angular.y * DEGTORAD, angular.z * DEGTORAD));
-            body_->activate();
-        }
-    }
-    
-    if (requestMesh)
-    {
-        std::string id = collisionMeshId.Get().toStdString();
-        if (!id.empty())
-        {
-            // Do not create shape right now, but request the mesh resource
-            boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-            if (renderer)
-                collision_mesh_tag_ = renderer->RequestResource(id, OgreRenderer::OgreMeshResource::GetTypeStatic());
-        }
+        const Vector3df& angular = angularVelocity.Get();
+        body_->setAngularVelocity(btVector3(angular.x * DEGTORAD, angular.y * DEGTORAD, angular.z * DEGTORAD));
+        body_->activate();
     }
 }
 
@@ -554,6 +507,18 @@ void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
         CreateCollisionShape();
 }
 
+void EC_RigidBody::RequestMesh()
+{
+    std::string id = collisionMeshId.Get().toStdString();
+    if (!id.empty())
+    {
+        // Do not create shape right now, but request the mesh resource
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (renderer)
+            collision_mesh_tag_ = renderer->RequestResource(id, OgreRenderer::OgreMeshResource::GetTypeStatic());
+    }
+}
+
 bool EC_RigidBody::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if(category_id == resource_event_category_)
@@ -569,8 +534,16 @@ bool EC_RigidBody::HandleEvent(event_category_id_t category_id, event_id_t event
                     Ogre::Mesh* mesh = res->GetMesh().getPointer();
                     if (mesh)
                     {
-                        triangleMesh_ = owner_->GetTriangleMeshFromOgreMesh(mesh);
-                        CreateCollisionShape();
+                        if (shapeType.Get() == Shape_TriMesh)
+                        {
+                            triangleMesh_ = owner_->GetTriangleMeshFromOgreMesh(mesh);
+                            CreateCollisionShape();
+                        }
+                        if (shapeType.Get() == Shape_ConvexHull)
+                        {
+                            convexHullSet_ = owner_->GetConvexHullSetFromOgreMesh(mesh);
+                            CreateCollisionShape();
+                        }
                         cachedShapeType_ = shapeType.Get();
                         cachedSize_ = size.Get();
                     }
@@ -662,5 +635,15 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
     btCompoundShape* compound = new btCompoundShape();
     shape_ = compound;
     compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(positionAdjust)), heightField_);
+}
+
+void EC_RigidBody::CreateConvexHullSetShape()
+{
+    if (!convexHullSet_)
+        return;
+    btCompoundShape* compound = new btCompoundShape();
+    shape_ = compound;
+    for (uint i = 0; i < convexHullSet_->hulls_.size(); ++i)
+        compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(convexHullSet_->hulls_[i].position_)), convexHullSet_->hulls_[i].hull_.get());
 }
 

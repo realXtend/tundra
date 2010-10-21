@@ -97,70 +97,16 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     std::string meshleafname = path.leaf();
     
     std::vector<std::string> material_names;
-    std::set<std::string> material_names_set;
     std::string skeleton_name;
-    
-    QFile mesh_in((meshname).c_str());
-    if (!mesh_in.open(QFile::ReadOnly))
-    {
-        TundraLogicModule::LogError("Could not open input mesh file " + meshname);
+    if (!ParseMeshForMaterialsAndSkeleton(meshname, material_names, skeleton_name))
         return Scene::EntityPtr();
-    }
-    else
-    {
-        QByteArray mesh_bytes = mesh_in.readAll();
-        mesh_in.close();
-        // Need to actually parse the mesh to get skeleton link and materials used
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (!renderer)
-        {
-            TundraLogicModule::LogError("Renderer does not exist");
-            return Scene::EntityPtr();
-        }
-        
-        std::string uniquename = renderer->GetUniqueObjectName();
-        try
-        {
-            Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-            if (tempmesh.isNull())
-            {
-                TundraLogicModule::LogError("Failed to create temp mesh");
-                return Scene::EntityPtr();
-            }
-            
-            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)mesh_bytes.data(), mesh_bytes.size(), false));
-            Ogre::MeshSerializer serializer;
-            serializer.importMesh(stream, tempmesh.getPointer());
-            
-            for (uint i = 0; i < tempmesh->getNumSubMeshes(); ++i)
-            {
-                Ogre::SubMesh* submesh = tempmesh->getSubMesh(i);
-                if (submesh)
-                {
-                    // Replace / with _ from material name
-                    std::string submeshmat = submesh->getMaterialName();
-                    ReplaceSubstringInplace(submeshmat, "/", "_");
-                    
-                    material_names.push_back(submeshmat);
-                    material_names_set.insert(submeshmat);
-                }
-            }
-            skeleton_name = tempmesh->getSkeletonName();
-            
-            // Now delete the mesh as we're done with inspecting it
-            tempmesh.setNull();
-            Ogre::MeshManager::getSingleton().remove(uniquename);
-        }
-        catch (...)
-        {
-            TundraLogicModule::LogError("Exception while inspecting the mesh " + meshname);
-            return Scene::EntityPtr();
-        }
-    }
     
+    std::set<std::string> material_names_set;
     for (uint i = 0; i < material_names.size(); ++i)
+    {
         TundraLogicModule::LogDebug("Material ref: " + material_names[i]);
+        material_names_set.insert(material_names[i]);
+    }
     TundraLogicModule::LogDebug("Skeleton ref: " + skeleton_name);
     
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
@@ -341,11 +287,32 @@ QList<Scene::Entity *> SceneImporter::Import(Scene::ScenePtr scene, const std::s
         
         // First pass: get used assets
         TundraLogicModule::LogInfo("Processing scene for assets");
-        ProcessNodeForAssets(node_elem);
+        ProcessNodeForAssets(node_elem, in_asset_dir);
         
         // Write out the needed assets
         TundraLogicModule::LogInfo("Saving needed assets");
-        ProcessAssets(filename, in_asset_dir, out_asset_dir, localassets);
+        // By default, assume the material file is scenename.material if scene is scenename.scene. However, if an external reference exists, use that.
+        std::string matfilename = ReplaceSubstring(filename, ".scene", ".material");
+        QDomElement externals_elem = scene_elem.firstChildElement("externals");
+        if (!externals_elem.isNull())
+        {
+            QDomElement item_elem = externals_elem.firstChildElement("item");
+            while (!item_elem.isNull())
+            {
+                if (item_elem.attribute("type") == "material")
+                {
+                    QDomElement file_elem = item_elem.firstChildElement("file");
+                    if (!file_elem.isNull())
+                    {
+                        matfilename = in_asset_dir + file_elem.attribute("name").toStdString();
+                        break;
+                    }
+                }
+                item_elem = item_elem.nextSiblingElement();
+            }
+        }
+        
+        ProcessAssets(matfilename, in_asset_dir, out_asset_dir, localassets);
         
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
         TundraLogicModule::LogInfo("Creating entities");
@@ -365,7 +332,7 @@ QList<Scene::Entity *> SceneImporter::Import(Scene::ScenePtr scene, const std::s
     return ret;
 }
 
-void SceneImporter::ProcessNodeForAssets(QDomElement node_elem)
+void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir)
 {
     while (!node_elem.isNull())
     {
@@ -387,22 +354,30 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem)
                     subentity_elem = subentity_elem.nextSiblingElement("subentity");
                 }
             }
+            else
+            {
+                // If no subentity element, have to interrogate the mesh.
+                std::vector<std::string> material_names;
+                std::string skeleton_name;
+                ParseMeshForMaterialsAndSkeleton(in_asset_dir + mesh_name, material_names, skeleton_name);
+                for (uint i = 0; i < material_names.size(); ++i)
+                    material_names_.insert(material_names[i]);
+                mesh_default_materials_[mesh_name] = material_names;
+            }
         }
         
         // Process child nodes
         QDomElement childnode_elem = node_elem.firstChildElement("node");
         if (!childnode_elem.isNull())
-            ProcessNodeForAssets(childnode_elem);
+            ProcessNodeForAssets(childnode_elem, in_asset_dir);
         
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
     }
 }
 
-void SceneImporter::ProcessAssets(const std::string& filename, const std::string& in_asset_dir, const std::string& out_asset_dir, bool localassets)
+void SceneImporter::ProcessAssets(const std::string& matfilename, const std::string& in_asset_dir, const std::string& out_asset_dir, bool localassets)
 {
-    std::string matfilename = ReplaceSubstring(filename, ".scene", ".material");
-    
     std::set<std::string> used_textures = ProcessMaterialFile(matfilename, material_names_, out_asset_dir, localassets);
     ProcessTextures(used_textures, in_asset_dir, out_asset_dir);
     
@@ -496,10 +471,10 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Sce
         }
         if (!quat_elem.isNull())
         {
-            rotx = ParseString<float>(rot_elem.attribute("x").toStdString(), 0.0f);
-            roty = ParseString<float>(rot_elem.attribute("y").toStdString(), 0.0f);
-            rotz = ParseString<float>(rot_elem.attribute("z").toStdString(), 0.0f);
-            rotw = ParseString<float>(rot_elem.attribute("w").toStdString(), 1.0f);
+            rotx = ParseString<float>(quat_elem.attribute("x").toStdString(), 0.0f);
+            roty = ParseString<float>(quat_elem.attribute("y").toStdString(), 0.0f);
+            rotz = ParseString<float>(quat_elem.attribute("z").toStdString(), 0.0f);
+            rotw = ParseString<float>(quat_elem.attribute("w").toStdString(), 1.0f);
         }
         
         scalex = ParseString<float>(scale_elem.attribute("x").toStdString(), 1.0f);
@@ -534,7 +509,8 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Sce
             node_names_.insert(node_name);
             
             // Get mesh name from map
-            QString mesh_name = QString::fromStdString(mesh_names_[entity_elem.attribute("meshFile").toStdString()]);
+            std::string orig_mesh_name = entity_elem.attribute("meshFile").toStdString();
+            QString mesh_name = QString::fromStdString(mesh_names_[orig_mesh_name]);
             
             bool cast_shadows = ParseBool(entity_elem.attribute("castShadows").toStdString());
             
@@ -593,16 +569,31 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Sce
                             subentity_elem = subentity_elem.nextSiblingElement("subentity");
                         }
                     }
+                    else
+                    {
+                        // If no subentity element, use the inspected material names we stored earlier
+                        const std::vector<std::string>& default_materials = mesh_default_materials_[orig_mesh_name];
+                        materials.resize(default_materials.size());
+                        for (uint i = 0; i < default_materials.size(); ++i)
+                        {
+                            QString material_name = QString::fromStdString(default_materials[i]) + ".material";
+                            if (localassets)
+                                material_name = "file://" + material_name;
+                            materials[i] = material_name;
+                        }
+                    }
                     
                     Transform entity_transform;
                     
                     if (!flipyz)
                     {
+                        //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
                         Vector3df rot_euler;
-                        newrot.toEuler(rot_euler);
+                        Quaternion adjustedrot = Quaternion(0, 0, PI) * newrot;
+                        adjustedrot.toEuler(rot_euler);
                         entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
                         entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                        entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                        entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
                     }
                     else
                     {
@@ -613,9 +604,10 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Sce
                         entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
                         entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
                         entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
-                        meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
                     }
-
+                    
+                    meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
+                    
                     placeablePtr->transform.Set(entity_transform, change);
                     meshPtr->meshResourceId.Set(mesh_name, change);
                     meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), change);
@@ -690,7 +682,7 @@ std::set<std::string> SceneImporter::ProcessMaterialFile(const std::string& matf
                                 matoutfile.close();
                             
                             std::string matname = line.substr(9);
-                            ReplaceSubstringInplace(matname, "/", "_");
+                            ReplaceCharInplace(matname, '/', '_');
                             line = "material " + matname;
                             if (used_materials.find(matname) == used_materials.end())
                             {
@@ -783,6 +775,70 @@ bool SceneImporter::CopyAsset(const std::string& name, const std::string& in_ass
         {
             asset_out.write(bytes);
             asset_out.close();
+        }
+    }
+    
+    return true;
+}
+
+bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const std::string& meshname, std::vector<std::string>& material_names, std::string& skeleton_name)
+{
+    material_names.clear();
+    
+    QFile mesh_in((meshname).c_str());
+    if (!mesh_in.open(QFile::ReadOnly))
+    {
+        TundraLogicModule::LogError("Could not open input mesh file " + meshname);
+        return false;
+    }
+    else
+    {
+        QByteArray mesh_bytes = mesh_in.readAll();
+        mesh_in.close();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+        {
+            TundraLogicModule::LogError("Renderer does not exist");
+            return false;
+        }
+        
+        std::string uniquename = renderer->GetUniqueObjectName();
+        try
+        {
+            Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            if (tempmesh.isNull())
+            {
+                TundraLogicModule::LogError("Failed to create temp mesh");
+                return false;
+            }
+            
+            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)mesh_bytes.data(), mesh_bytes.size(), false));
+            Ogre::MeshSerializer serializer;
+            serializer.importMesh(stream, tempmesh.getPointer());
+            
+            for (uint i = 0; i < tempmesh->getNumSubMeshes(); ++i)
+            {
+                Ogre::SubMesh* submesh = tempmesh->getSubMesh(i);
+                if (submesh)
+                {
+                    // Replace / with _ from material name
+                    std::string submeshmat = submesh->getMaterialName();
+                    ReplaceCharInplace(submeshmat, '/', '_');
+                    
+                    material_names.push_back(submeshmat);
+                }
+            }
+            skeleton_name = tempmesh->getSkeletonName();
+            
+            // Now delete the mesh as we're done with inspecting it
+            tempmesh.setNull();
+            Ogre::MeshManager::getSingleton().remove(uniquename);
+        }
+        catch (...)
+        {
+            TundraLogicModule::LogError("Exception while inspecting mesh " + meshname);
+            return false;
         }
     }
     
