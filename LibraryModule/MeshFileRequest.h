@@ -23,11 +23,13 @@ namespace Library
         Vector3df GetRayCastPos() { return ray_cast_pos_; };
         QUrl GetMeshFileUrl() { return mesh_file_url_; };
         QList<QString> GetMaterialIds() { return material_ids_; };
+        QList<QUrl> GetMeshImages() { return mesh_images_; };
         request_tag_t GetMeshRequestTag() { return mesh_request_tag_; };
         QString GetRootUrl();
         
         void SetMeshFileUrl(const QUrl url) { mesh_file_url_ = url; };
         void SetMaterialFileRequest(const request_tag_t tag, const QUrl url); 
+        void SetMeshImageUrl(const QUrl url); 
         void SetMeshRequestTag(const request_tag_t tag) { mesh_request_tag_ = tag; };
 
         bool AreMaterialsReady();
@@ -38,6 +40,7 @@ namespace Library
         Vector3df ray_cast_pos_;
         QMap<request_tag_t, QUrl> material_file_requests_;
         QList<QString> material_ids_;
+        QList<QUrl> mesh_images_;
         request_tag_t mesh_request_tag_;
 
     };

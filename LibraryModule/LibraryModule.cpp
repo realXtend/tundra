@@ -115,6 +115,42 @@ namespace Library
     void LibraryModule::AssignMaterials()
     {
 
+        //First assign pure images and ignore materials for now. Change to handle both in the same request in the future
+        if (!mesh_file_request_->GetMeshImages().isEmpty())
+        {
+            EC_OpenSimPrim *prim = entity_->GetComponent<EC_OpenSimPrim>().get();
+            MaterialMap materials = prim->Materials;
+
+            QList<QUrl> mesh_images = mesh_file_request_->GetMeshImages();
+            if (mesh_images.count() != 0)
+            {
+                for (int j = 0; j < mesh_images.count(); j++)
+                {
+                    QString id = mesh_images.at(j).toString();
+                    MaterialMap::const_iterator i = materials.begin();
+                    while (i != materials.end())
+                    {
+                        MaterialData newmaterialdata;
+                        newmaterialdata.Type = RexTypes::RexAT_Texture;
+                        newmaterialdata.asset_id = id.toStdString();
+                        materials[j] = newmaterialdata;
+
+                        ++i;
+                    }
+                }
+
+                prim->Materials = materials;        
+                prim->SendRexPrimDataUpdate();
+
+                entity_ = 0;
+                SAFE_DELETE(mesh_file_request_);
+
+                library_widget_->SetInfoText("Drag & drop mesh is ready.");
+
+                return;
+            }
+        }
+
         if (mesh_file_request_->GetMaterialFileRequests().isEmpty())
         {
             // No assinable materials in request queue. Consider mesh ready.
@@ -133,18 +169,21 @@ namespace Library
         QList<QString> material_ids = mesh_file_request_->GetMaterialIds();
 
         MaterialMap materials = prim->Materials;
-        for (int j = 0; j < material_ids.count(); j++)
+        if (material_ids.count() != 0)
         {
-            QString id = material_ids.at(j);
-            MaterialMap::const_iterator i = materials.begin();
-            while (i != materials.end())
+            for (int j = 0; j < material_ids.count(); j++)
             {
-                MaterialData newmaterialdata;
-                newmaterialdata.Type = RexTypes::RexAT_MaterialScript;
-                newmaterialdata.asset_id = id.toStdString();
-                materials[j] = newmaterialdata;
+                QString id = material_ids.at(j);
+                MaterialMap::const_iterator i = materials.begin();
+                while (i != materials.end())
+                {
+                    MaterialData newmaterialdata;
+                    newmaterialdata.Type = RexTypes::RexAT_MaterialScript;
+                    newmaterialdata.asset_id = id.toStdString();
+                    materials[j] = newmaterialdata;
 
-                ++i;
+                    ++i;
+                }
             }
         }
 
@@ -345,7 +384,7 @@ namespace Library
                     EC_Mesh *mesh = cast_result.entity_->GetComponent<EC_Mesh>().get();
                     EC_OpenSimPrim *prim = cast_result.entity_->GetComponent<EC_OpenSimPrim>().get();
                     uint submesh = cast_result.submesh_;
-                    if (submesh != 0 && mesh && prim)
+                    if (mesh && prim)
                     {
                         MaterialMap materials = prim->Materials;
                         
@@ -405,6 +444,10 @@ namespace Library
                 {
                     mesh_file_request_->SetMaterialFileRequest(tag, url);
                 }
+            }
+            else if (url.toString().endsWith(".png") || url.toString().endsWith(".jpg"))
+            {
+                mesh_file_request_->SetMeshImageUrl(url);
             }
         }
     }
