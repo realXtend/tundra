@@ -6,14 +6,22 @@
 #include <QObject>
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
+#include "AttributeChangeType.h"
 
 class UiProxyWidget;
 class IEventData;
+
+class EC_VoiceChannel;
 
 namespace Foundation
 {
     class Framework;
 }
+namespace Scene
+{
+    class Entity;
+}
+class IComponent;
 
 namespace MumbleVoip
 {
@@ -37,16 +45,24 @@ namespace MumbleVoip
         virtual QList<QString> Statistics();
 
         virtual void ShowMicrophoneAdjustmentDialog();
+    private slots:
+        void OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+        void OnChannelExpired(QString channel);
+
+        void OnSceneAdded(const QString &name);
+
     private:
+        void CreateSession();
         void CloseSession();
+
         Foundation::Framework* framework_;
         QString description_;
         MumbleVoip::Session* session_;  //! \todo Use shared ptr ...
         ServerInfoProvider* server_info_provider_;
-        ServerInfo* server_info_;
         event_category_id_t networkstate_event_category_;
         Settings* settings_;
         QWidget* microphone_adjustment_widget_;
+        QList<EC_VoiceChannel*> ec_voice_channels_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);

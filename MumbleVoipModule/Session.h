@@ -31,7 +31,7 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        Session(Foundation::Framework* framework, const ServerInfo &server_info, Settings* settings);
+        Session(Foundation::Framework* framework, Settings* settings);
         virtual ~Session();
     public slots:
 
@@ -53,11 +53,17 @@ namespace MumbleVoip
         virtual int GetAverageBandwithIn() const;
         virtual int GetAverageBandwithOut() const;
 
+        virtual QString GetActiveChannel() const;
+        virtual void SetActiveChannel(QString channel);
+        virtual QStringList GetChannels();
+
         virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const;
 
         virtual void Update(f64 frametime);
         virtual QList<QString> Statistics();
         virtual QString GetServerInfo() const;
+        virtual void AddChannel(QString name, const ServerInfo &server_info);
+        virtual void RemoveChannel(QString name);
 
     private:
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
@@ -72,6 +78,8 @@ namespace MumbleVoip
         void PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame);
         boost::shared_ptr<ISoundService> SoundService();
         void ApplyMicrophoneLevel(PCMAudioFrame* frame);
+        //virtual void AddChannel(EC_VoiceChannel* channel);
+        //virtual void RemoveChannel(EC_VoiceChannel* channel);
 
         Foundation::Framework* framework_;
         State state_;
@@ -86,14 +94,17 @@ namespace MumbleVoip
         QList<MumbleLib::User*> other_channel_users_;
         MumbleLib::Connection* connection_; // // In future session could have multiple connections
         double speaker_voice_activity_;
-        const ServerInfo &server_info_;
         MumbleLib::User* self_user_;
-        QString channel_name_;
+        QString current_mumble_channel_;
         QMap<int, sound_id_t> audio_playback_channels_;
         std::string recording_device_;
         Settings* settings_;
         bool local_echo_mode_; // if true then acudio is only played locally
         QString server_address_;
+//        QList<EC_VoiceChannel*> voice_channels_;
+//        EC_VoiceChannel* active_voice_channel_;
+        QString active_channel_;
+        QMap<QString, ServerInfo> channels_;
 
     private slots:
         void CreateNewParticipant(MumbleLib::User*);

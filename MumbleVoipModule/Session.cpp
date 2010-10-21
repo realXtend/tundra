@@ -26,7 +26,7 @@
 namespace MumbleVoip
 {
     const double Session::DEFAULT_AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
-    Session::Session(Foundation::Framework* framework, const ServerInfo &server_info, Settings* settings) : 
+    Session::Session(Foundation::Framework* framework, Settings* settings) : 
         state_(STATE_INITIALIZING),
         reason_(""),
         framework_(framework),
@@ -36,14 +36,11 @@ namespace MumbleVoip
         audio_sending_enabled_(false),
         audio_receiving_enabled_(true),
         speaker_voice_activity_(0),
-        server_info_(server_info),
         connection_(0),
         settings_(settings),
         local_echo_mode_(false),
         server_address_("")
     {
-        channel_name_ = server_info.channel;
-        OpenConnection(server_info);
         connect(settings_, SIGNAL(PlaybackBufferSizeMsChanged(int)), this, SLOT(SetPlaybackBufferSizeMs(int)));
         connect(settings_, SIGNAL(EncodeQualityChanged(double)), this, SLOT(SetEncodeQuality(double)));
     }
@@ -65,6 +62,7 @@ namespace MumbleVoip
 
     void Session::OpenConnection(ServerInfo server_info)
     {
+        /// @todo Check that closed connection can be reopened
         SAFE_DELETE(connection_);
         connection_ = new MumbleLib::Connection(server_info, 200);
         if (connection_->GetState() == MumbleLib::Connection::STATE_ERROR)
@@ -73,8 +71,9 @@ namespace MumbleVoip
             reason_ = connection_->GetReason();
             return;
         }
+        current_mumble_channel_ = server_info.channel;
         state_ = STATE_OPEN;
-        server_address_ = server_info_.server;
+        server_address_ = server_info.server;
 
         connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
         connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
@@ -235,7 +234,7 @@ namespace MumbleVoip
             return; 
         }
 
-        if (user->Channel()->FullName() != channel_name_)
+        if (user->Channel()->FullName() != current_mumble_channel_)
         {
             other_channel_users_.append(user);
             return; 
@@ -259,7 +258,7 @@ namespace MumbleVoip
         if (user->IsLeft())
             return;
 
-        if (user->Channel()->FullName() == channel_name_)
+        if (user->Channel()->FullName() == current_mumble_channel_)
         {
             foreach(MumbleLib::User* u, other_channel_users_)
             {
@@ -638,6 +637,48 @@ namespace MumbleVoip
     QString Session::GetServerInfo() const
     {
         return server_address_;
+    }
+
+    QString Session::GetActiveChannel() const
+    {
+        return active_channel_;
+    }
+
+    void Session::SetActiveChannel(QString channel_name) 
+    {
+        if (!channels_.contains(channel_name))
+        {
+            Close();
+            return;
+        }
+
+        ServerInfo server_info = channels_[channel_name];
+        OpenConnection(server_info);
+        active_channel_ = channel_name;
+        emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged(channel_name);
+    }
+
+    QStringList Session::GetChannels()
+    {
+        return QStringList(channels_.keys());
+    }
+
+    void Session::AddChannel(QString name, const ServerInfo &server_info)
+    {
+        channels_[name] = server_info;
+        emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
+    }
+
+    void Session::RemoveChannel(QString name)
+    {
+        if (active_channel_ == name)
+        {
+            emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged("");
+            SetActiveChannel("");
+        }
+
+        channels_.remove(name);
+        emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
     }
 
 } // MumbleVoip
