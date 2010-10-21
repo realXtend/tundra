@@ -39,6 +39,8 @@ namespace ECEditor
     {
         if(!IsValid())
             return false;
+
+        PROFILE(ComponentGroup_IsSameComponent);
         /*if(components_[0].expired())
             return false;
         // Make sure that attribute type and name is same in both components.

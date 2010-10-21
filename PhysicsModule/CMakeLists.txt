@@ -1,10 +1,3 @@
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
-##############
-
 # Define target name and output directory
 init_target (PhysicsModule OUTPUT modules/core)
 
@@ -29,11 +22,11 @@ use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
 use_package_bullet()
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon)
 link_ogre()
 link_package (BOOST)
 link_package (POCO)
@@ -59,6 +52,8 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
+if (WIN32)
 target_link_libraries (${TARGET_NAME} ws2_32.lib)
+endif()
 
 final_target ()

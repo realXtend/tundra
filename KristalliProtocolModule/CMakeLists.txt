@@ -46,6 +46,8 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
+if (WIN32)
 target_link_libraries (${TARGET_NAME} ws2_32.lib)
+endif()
 
 final_target ()

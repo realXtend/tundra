@@ -65,17 +65,17 @@ namespace ECEditor
         return name_line_edit_->text();
     }
 
-    AttributeChange::Type AddComponentDialog::GetSynchronization() const
+    bool AddComponentDialog::GetSynchronization() const
     {
         if(synch_combo_box_)
         {
             QString synchText = synch_combo_box_->currentText();
             if(synchText == "Replicate")
-                return AttributeChange::Replicate;
+                return true;
             else if(synchText == "Local")
-                return AttributeChange::LocalOnly;
+                return true;
         }
-        return AttributeChange::Default;
+        return true;
     }
 
     QList<entity_id_t> AddComponentDialog::GetEntityIds() const

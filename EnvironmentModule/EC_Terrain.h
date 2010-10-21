@@ -253,6 +253,8 @@ signals:
 
     void MaterialChanged(QString newMaterial);
 
+    void TerrainRegenerated();
+    
 private slots:
     //! Emitted when the parrent entity has been set.
     void UpdateSignals();
@@ -292,6 +294,9 @@ private:
 
     /// Sets the given patch to use the currently set material and textures.
     void UpdateTerrainPatchMaterial(int patchX, int patchY);
+
+    /// Updates the root node transform from the current attribute values, if the root node exists.
+    void UpdateRootNodeTransform();
 
     void ResizeTerrain(int newPatchWidth, int newPatchHeight);
 

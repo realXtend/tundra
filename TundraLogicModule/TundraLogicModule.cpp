@@ -84,7 +84,9 @@ void TundraLogicModule::PostInitialize()
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
     if (!kristalliModule_.get())
-        LogFatal("Could not get KristalliProtocolModule");
+    {
+        throw Exception("Fatal: could not get KristalliProtocolModule");
+    }
 }
 
 void TundraLogicModule::Uninitialize()

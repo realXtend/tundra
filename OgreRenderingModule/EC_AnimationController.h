@@ -31,7 +31,7 @@ Registered by OgreRenderer::OgreRenderingModule.
         \param looped Is animation looped
         \param fadein Animation fadein time, 0 = instant
         \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
-        \return true if animation exists and could be enabled
+        \return true if animation exists and was enabled.
 <li>"EnableExclusiveAnimation": Enables an exclusive animation. 
         This means that other animations will start fading out with the fade-out time specified
         \param name Animation name

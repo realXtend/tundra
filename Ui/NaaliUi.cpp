@@ -123,12 +123,6 @@ NaaliUi::NaaliUi(Foundation::Framework *owner_)
 
 NaaliUi::~NaaliUi()
 {
-    if (mainWindow)
-        mainWindow->SaveWindowSettingsToFile();
-
-    delete graphicsView;
-    delete graphicsScene;
-    delete mainWindow;    
 }
 
 NaaliMainWindow *NaaliUi::MainWindow() const

@@ -9,6 +9,8 @@
 #include "ModuleManager.h"
 #include "CoreException.h"
 
+#include "AssetAPI.h"
+
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
@@ -115,6 +117,10 @@ namespace Foundation
             Foundation::RootLogWarning("Attempted to send event with illegal category");
             return false;
         }
+
+        /// The following line exists for legacy purposes to help transition period to new Asset API. Will be removed. -jj
+        if (framework_->Asset())
+            framework_->Asset()->HandleEvent(category_id, event_id, data);
 
         // Send event in priority order, until someone returns true
         for (int i = 0; i < module_subscribers_.size(); ++i)

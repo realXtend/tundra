@@ -12,6 +12,7 @@
 #include <RexTypes.h>
 #include <QWidget>
 #include <QLabel>
+#include "OgreAssetEditorModuleApi.h"
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
@@ -52,7 +53,7 @@ protected:
     virtual void mousePressEvent(QMouseEvent *ev);
 };
 
-class TexturePreviewEditor: public QWidget
+class ASSET_EDITOR_MODULE_API TexturePreviewEditor: public QWidget
 {
     Q_OBJECT
 public:
@@ -70,6 +71,10 @@ public:
 
     TexturePreviewEditor(Foundation::Framework *framework, QWidget* parent = 0);
 
+    //! Open Ogre texture
+    void OpenOgreTexture(const QString& name);
+
+     
 public slots:
     /// Close the window.
     void Closed();
@@ -82,6 +87,7 @@ public slots:
     //! Listenes when image label has been pressed.
     void TextureLabelClicked(QMouseEvent *ev);
 
+ 
 signals:
     /// This signal is emitted when the editor is closed.
     void Closed(const QString &inventory_id, asset_type_t asset_type);

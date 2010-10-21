@@ -10,7 +10,7 @@
 #define KRISTALLIPROTOCOL_MODULE_API __declspec(dllimport) 
 #endif
 #else
-#define KRISTALLIPROTOCOL
+#define KRISTALLIPROTOCOL_MODULE_API
 #endif
 
 #endif

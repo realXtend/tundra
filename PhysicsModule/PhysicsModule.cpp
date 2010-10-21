@@ -2,7 +2,10 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "EC_Mesh.h"
+#include "EC_Placeable.h"
 #include "EC_RigidBody.h"
+#include "EC_Terrain.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "MemoryLeakCheck.h"
@@ -54,6 +57,9 @@ void PhysicsModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand("startphysics",
         "(Re)starts physics simulation.",
         Console::Bind(this, &PhysicsModule::ConsoleStartPhysics)));
+    RegisterConsoleCommand(Console::CreateCommand("autocollisionmesh",
+        "Auto-assigns static rigid bodies with collision mesh to all visible meshes.",
+        Console::Bind(this, &PhysicsModule::ConsoleAutoCollisionMesh)));
 }
 
 Console::CommandResult PhysicsModule::ConsoleToggleDebugGeometry(const StringVector& params)
@@ -77,6 +83,31 @@ Console::CommandResult PhysicsModule::ConsoleStartPhysics(const StringVector& pa
     return Console::ResultSuccess();
 }
 
+Console::CommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVector& params)
+{
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene");
+    
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+        Scene::EntityPtr entity = iter->second;
+        // Only assign to entities that don't have a rigidbody yet, but have a mesh and a placeable
+        if ((!entity->GetComponent<EC_RigidBody>()) && (entity->GetComponent<EC_Placeable>()) && (entity->GetComponent<EC_Mesh>()))
+        {
+            EC_RigidBody* body = checked_static_cast<EC_RigidBody*>(entity->GetOrCreateComponent(EC_RigidBody::TypeNameStatic(), "", AttributeChange::Default).get());
+            body->SetShapeFromVisibleMesh();
+        }
+        // Terrain mode: assign if no rigid body, but there is a terrain component
+        if ((!entity->GetComponent<EC_RigidBody>()) && (entity->GetComponent<Environment::EC_Terrain>()))
+        {
+            EC_RigidBody* body = checked_static_cast<EC_RigidBody*>(entity->GetOrCreateComponent(EC_RigidBody::TypeNameStatic(), "", AttributeChange::Default).get());
+            body->shapeType.Set(EC_RigidBody::Shape_HeightField, AttributeChange::Default);
+        }
+    }
+    
+    return Console::ResultSuccess();
+}
 
 void PhysicsModule::Update(f64 frametime)
 {

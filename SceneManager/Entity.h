@@ -389,6 +389,16 @@ namespace Scene
         */
         void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QStringList &params);
 
+        //! Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
+        /*! By definition, all components of a temporary entity are temporary as well.
+         */
+        void SetTemporary(bool enable);
+         
+        //! Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
+        /*! By definition, all components of a temporary entity are temporary as well.
+         */
+        bool IsTemporary() const { return temporary_; }
+        
     private:
         /// Validates that the action has receivers. If not, deletes the action and removes it from the registered actions.
         /** @param action Action to be validated.
@@ -409,6 +419,9 @@ namespace Scene
 
         //! Map of registered entity actions.
         ActionMap actions_;
+        
+        //! Temporary-flag
+        bool temporary_;
    };
 }
 
