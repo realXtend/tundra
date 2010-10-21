@@ -23,6 +23,7 @@ namespace Physics
 {
     class PhysicsModule;
     class PhysicsWorld;
+    struct ConvexHullSet;
 }
 
 //! Physics rigid body entity component
@@ -111,7 +112,8 @@ public:
         Shape_Cylinder,
         Shape_Capsule,
         Shape_TriMesh,
-        Shape_HeightField
+        Shape_HeightField,
+        Shape_ConvexHull
     };
     
     //! Mass of the body. Set to 0 for static
@@ -258,6 +260,9 @@ private:
     //! Create a heightfield collisionshape from EC_Terrain
     void CreateHeightFieldFromTerrain();
     
+    //! Create a convex hull set collisionshape
+    void CreateConvexHullSetShape();
+    
     //! Create the body. No-op if the scene is not associated with a physics world.
     void CreateBody();
     
@@ -271,6 +276,9 @@ private:
     
     //! Update scale from placeable & own size setting
     void UpdateScale();
+    
+    //! Request mesh resource (for trimesh & convexhull shapes)
+    void RequestMesh();
     
     //! Placeable pointer
     boost::weak_ptr<EC_Placeable> placeable_;
@@ -287,7 +295,7 @@ private:
     //! Bullet collision shape
     btCollisionShape* shape_;
     
-    //! Physics world
+    //! Physics world. May be 0 if the scene does not have a physics world. In that case most of EC_RigidBody's functionality is a no-op
     Physics::PhysicsWorld* world_;
     
     //! PhysicsModule pointer
@@ -306,10 +314,13 @@ private:
     //! Bullet triangle mesh
     boost::shared_ptr<btTriangleMesh> triangleMesh_;
     
+    //! Convex hull set
+    boost::shared_ptr<Physics::ConvexHullSet> convexHullSet_;
+    
     //! Bullet heightfield shape. Note: this is always put inside a compound shape (shape_)
     btHeightfieldTerrainShape* heightField_;
     
-    //! Heightfield values
+    //! Heightfield values, for the case the shape is a heightfield.
     std::vector<float> heightValues_;
 };
 
