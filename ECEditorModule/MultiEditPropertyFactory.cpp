@@ -5,6 +5,8 @@
 #include "qteditorfactory.h"
 #include <QLayout>
 
+#include "NaaliApplication.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace ECEditor
@@ -29,7 +31,15 @@ namespace ECEditor
     QWidget *MultiEditPropertyFact::createEditor(MultiEditPropertyManager *manager, QtProperty *property, QWidget *parent)
     {
         QPushButton *multiEditButton = new QPushButton(parent);
-        QInputDialog *dialog = new QInputDialog(parent);
+
+        /// \bug QInputContext has a bug where if you have a QInputDialog in a QGraphicsView and close the dialog, the QInputContext
+        /// will access a dangling pointer and crash. This bug can be avoided by never freeing the QInputDialog (and leaking),
+        /// which allows QInputContext::setFocusWidget to go through. The following commented out line would be preferred, but
+        /// at the moment is not possible. See http://clb.demon.fi/dump/QWinInputContextUpdateCrash.png . -jj.
+//        QInputDialog *dialog = new QInputDialog(parent);
+        // Now as a workaround, create the input dialog without a parent so that we won't crash.
+        QInputDialog *dialog = new QInputDialog();
+
         QStringList attributes = manager->AttributeValue(property);
         dialog->setComboBoxItems(attributes);
         dialog->setInputMode(QInputDialog::TextInput);

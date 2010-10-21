@@ -113,7 +113,9 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         if(iter1 == oldAttributes.end())
         {
             for(;iter2 != deserializedAttributes.end(); iter2++)
+            {
                 addAttributes.push_back(*iter2);
+            }
             break;
         }
         // Only old attributes are left and they can be removed from the dynamic component.
@@ -129,8 +131,12 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         {
             //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
             for(AttributeVector::const_iterator attr_iter = attributes_.begin(); attr_iter != attributes_.end(); attr_iter++)
-                if ((*attr_iter)->GetNameString() == iter2->name_)
+            {
+                if((*attr_iter)->GetNameString() == iter2->name_)
+                {
                     (*attr_iter)->FromString(iter2->value_, change);
+                }
+            }
             iter2++;
             iter1++;
         }
@@ -167,11 +173,11 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
 IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change)
 {
     IAttribute *attribute = 0;
-    if (ContainsAttribute(name))
+    if(ContainsAttribute(name))
         return attribute;
 
     attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
-    if (attribute)
+    if(attribute)
         emit AttributeAdded(attribute);
 
     AttributeChanged(attribute, change);

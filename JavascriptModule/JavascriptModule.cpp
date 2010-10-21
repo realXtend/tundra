@@ -15,7 +15,6 @@
 #include "EC_Script.h"
 #include "EC_DynamicComponent.h"
 #include "SceneManager.h"
-#include "InputContext.h"
 #include "Input.h"
 #include "UiServiceInterface.h"
 #include "ISoundService.h"
@@ -79,14 +78,11 @@ void JavascriptModule::Initialize()
 
 void JavascriptModule::PostInitialize()
 {
-    input_ = GetFramework()->GetInput()->RegisterInputContext("ScriptInput", 100);
-    UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-
     RegisterNaaliCoreMetaTypes();
 
     // Add Naali Core API objcects as js services.
-    services_["input"] = input_.get();
-    services_["ui"] = ui;
+    services_["input"] = GetFramework()->GetInput();
+    services_["ui"] = GetFramework()->UiService();
     services_["audio"] = GetFramework()->Audio();
     services_["frame"] = GetFramework()->GetFrame();
     services_["console"] = GetFramework()->Console();

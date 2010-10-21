@@ -174,23 +174,7 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     }
     else if (changedAttribute == nodeTransformation.GetNameString())
     {
-        if (!rootNode)
-            CreateRootNode();
-        if (!rootNode)
-            return;
-
-        const Transform &tm = nodeTransformation.Get();
-
-        Ogre::Matrix3 rot_new;
-        rot_new.FromEulerAnglesXYZ(Ogre::Degree(tm.rotation.x), Ogre::Degree(tm.rotation.y), Ogre::Degree(tm.rotation.z));
-        Ogre::Quaternion q_new(rot_new);
-        rootNode->setOrientation(Ogre::Quaternion(rot_new));
-
-        rootNode->setPosition(tm.position.x, tm.position.y, tm.position.z);
-
-        rootNode->setScale(tm.scale.x, tm.scale.y, tm.scale.z);
-
-        ///\todo support tm change.
+        UpdateRootNodeTransform();
     }
     else if (changedAttribute == material.GetNameString())
     {
@@ -494,6 +478,22 @@ void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
     }
 }
 
+void EC_Terrain::UpdateRootNodeTransform()
+{
+    if (!rootNode)
+        return;
+
+    const Transform &tm = nodeTransformation.Get();
+
+    Ogre::Matrix3 rot_new;
+    rot_new.FromEulerAnglesXYZ(Ogre::Degree(tm.rotation.x), Ogre::Degree(tm.rotation.y), Ogre::Degree(tm.rotation.z));
+    Ogre::Quaternion q_new(rot_new);
+
+    rootNode->setOrientation(Ogre::Quaternion(rot_new));
+    rootNode->setPosition(tm.position.x, tm.position.y, tm.position.z);
+    rootNode->setScale(tm.scale.x, tm.scale.y, tm.scale.z);
+}
+
 /// Creates Ogre geometry data for the single given patch, or updates the geometry for an existing
 /// patch if the associated Ogre resources already exist.
 void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
@@ -667,6 +667,8 @@ void EC_Terrain::CreateRootNode()
 
     rootNode = sceneMgr->createSceneNode();
     sceneMgr->getRootSceneNode()->addChild(rootNode);
+
+    UpdateRootNodeTransform();
 }
 
 void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
@@ -755,6 +757,8 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
             if (neighborsLoaded)
                 GenerateTerrainGeometryForOnePatch(x, y);
         }
+        
+    emit TerrainRegenerated();
 }
 
 

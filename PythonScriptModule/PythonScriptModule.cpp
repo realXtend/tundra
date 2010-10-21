@@ -629,19 +629,17 @@ namespace PythonScript
     }
 
     //this whole thing could be probably implemented in py now as well, but perhaps ok in c++ for speed
-    QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, uint refresh_rate)
+  QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate)
     {
         // Iterate the scene to find all submeshes that use this texture uuid
         QList<uint> submeshes_;
         QList<Scene::Entity*> affected_entitys_;
 
-        char* uuidstr;
-
         if (!qwidget_ptr)
             return affected_entitys_;
 
         RexUUID texture_uuid = RexUUID();
-        texture_uuid.FromString(std::string(uuidstr));
+        texture_uuid.FromString(uuidstr.toStdString());
 
         Scene::ScenePtr scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
         if (!scene)

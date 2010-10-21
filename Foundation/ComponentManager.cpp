@@ -39,6 +39,18 @@ namespace Foundation
         if (factories_.find(component) == factories_.end())
         {
             uint hash = GetHash(component);
+            
+            // Check for hash collision
+            ComponentFactoryMap::const_iterator i = factories_.begin();
+            while (i != factories_.end())
+            {
+                if ((GetHash(i->first) == hash) && (i->first != component))
+                {
+                    throw Exception(std::string("Fatal: component factory hash collision: " + i->first.toStdString() + " vs " + component.toStdString()).c_str());
+                }
+                ++i;
+            }
+            
             factories_[component] = factory;
             factories_hash_[hash] = factory;
             hashToTypeName_[hash] = component;

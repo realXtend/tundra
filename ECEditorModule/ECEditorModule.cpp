@@ -87,6 +87,7 @@ namespace ECEditor
 
     bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
+        PROFILE(ECEditorModule_HandleEvent);
         if (category_id == scene_event_category_)
         {
             switch(event_id)

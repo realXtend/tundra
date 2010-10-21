@@ -1,8 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "EC_Mesh.h"
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
+#include "EC_Terrain.h"
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
@@ -13,6 +15,7 @@
 #include "ServiceManager.h"
 
 #include "btBulletDynamicsCommon.h"
+#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
@@ -25,7 +28,8 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     body_(0),
     world_(0),
     shape_(0),
-    placeableDisconnected_(false),
+    heightField_(0),
+    disconnected_(false),
     owner_(checked_static_cast<PhysicsModule*>(module)),
     mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
@@ -37,6 +41,9 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     angularDamping(this, "Angular damping", 0.0f),
     linearFactor(this, "Linear factor", Vector3df(1,1,1)),
     angularFactor(this, "Angular factor", Vector3df(1,1,1)),
+    linearVelocity(this, "Linear velocity", Vector3df(0,0,0)),
+    angularVelocity(this, "Angular velocity", Vector3df(0,0,0)),
+    phantom(this, "Phantom", false),
     cachedShapeType_(-1),
     collision_mesh_tag_(0)
 {
@@ -79,30 +86,124 @@ EC_RigidBody::~EC_RigidBody()
     RemoveCollisionShape();
 }
 
+bool EC_RigidBody::SetShapeFromVisibleMesh()
+{
+    Scene::Entity* parent = GetParentEntity();
+    if (!parent)
+        return false;
+    EC_Mesh* mesh = parent->GetComponent<EC_Mesh>().get();
+    if (!mesh)
+        return false;
+    mass.Set(0.0f, AttributeChange::Default);
+    shapeType.Set(Shape_TriMesh, AttributeChange::Default);
+    collisionMeshId.Set(mesh->meshResourceId.Get(), AttributeChange::Default);
+    return true;
+}
+
+void EC_RigidBody::SetLinearVelocity(const Vector3df& velocity)
+{
+    linearVelocity.Set(velocity, AttributeChange::Default);
+}
+
+void EC_RigidBody::SetAngularVelocity(const Vector3df& velocity)
+{
+    angularVelocity.Set(velocity, AttributeChange::Default);
+}
+
+void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
+{
+    if (!body_)
+        CreateBody();
+    if (body_)
+    {
+        if (position == Vector3df::ZERO)
+            body_->applyCentralForce(ToBtVector3(force));
+        else
+            body_->applyForce(ToBtVector3(force), ToBtVector3(position));
+    }
+}
+
+void EC_RigidBody::ApplyTorque(const Vector3df& torque)
+{
+    if (!body_)
+        CreateBody();
+    if (body_)
+        body_->applyTorque(ToBtVector3(torque));
+}
+
+void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& position)
+{
+    if (!body_)
+        CreateBody();
+    if (body_)
+    {
+        if (position == Vector3df::ZERO)
+            body_->applyCentralImpulse(ToBtVector3(impulse));
+        else
+            body_->applyImpulse(ToBtVector3(impulse), ToBtVector3(position));
+    }
+}
+
+void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
+{
+    if (!body_)
+        CreateBody();
+    if (body_)
+        body_->applyTorqueImpulse(ToBtVector3(torqueImpulse));
+}
+
+void EC_RigidBody::Activate()
+{
+    if (!body_)
+        CreateBody();
+    if (body_)
+        body_->activate();
+}
+
+void EC_RigidBody::ResetForces()
+{
+    if (!body_)
+        CreateBody();
+    if (body_)
+        body_->clearForces();
+}
+
 void EC_RigidBody::UpdateSignals()
 {
     Scene::Entity* parent = GetParentEntity();
     if (!parent)
         return;
     
-    connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceable()));
+    connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceableAndTerrain()));
     
     Scene::SceneManager* scene = parent->GetScene();
     world_ = owner_->GetPhysicsWorldForScene(scene);
 }
 
-void EC_RigidBody::CheckForPlaceable()
+void EC_RigidBody::CheckForPlaceableAndTerrain()
 {
-    if (placeable_.lock().get())
-        return;
     Scene::Entity* parent = GetParentEntity();
     if (!parent)
         return;
-    boost::shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
-    if (placeable)
+    
+    if (!placeable_.lock().get())
     {
-        placeable_ = placeable;
-        connect(placeable.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
+        boost::shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
+        if (placeable)
+        {
+            placeable_ = placeable;
+            connect(placeable.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
+        }
+    }
+    if (!terrain_.lock().get())
+    {
+        boost::shared_ptr<Environment::EC_Terrain> terrain = parent->GetComponent<Environment::EC_Terrain>();
+        if (terrain)
+        {
+            terrain_ = terrain;
+            connect(terrain.get(), SIGNAL(TerrainRegenerated()), this, SLOT(OnTerrainRegenerated()));
+            connect(terrain.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(TerrainUpdated(IAttribute*)));
+        }
     }
 }
 
@@ -137,6 +238,8 @@ void EC_RigidBody::CreateCollisionShape()
     case Shape_TriMesh:
         if (triangleMesh_)
             shape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
+    case Shape_HeightField:
+        CreateHeightFieldFromTerrain();
         break;
     }
     
@@ -155,6 +258,11 @@ void EC_RigidBody::RemoveCollisionShape()
         delete shape_;
         shape_ = 0;
     }
+    if (heightField_)
+    {
+        delete heightField_;
+        heightField_ = 0;
+    }
 }
 
 void EC_RigidBody::CreateBody()
@@ -162,7 +270,7 @@ void EC_RigidBody::CreateBody()
     if ((!world_) || (body_))
         return;
     
-    CheckForPlaceable();
+    CheckForPlaceableAndTerrain();
     
     btVector3 localInertia(0.0f, 0.0f, 0.0f);
     
@@ -177,8 +285,17 @@ void EC_RigidBody::CreateBody()
     if ((shape_) && (m > 0.0f))
         shape_->calculateLocalInertia(m, localInertia);
     
+    bool isDynamic = m > 0.0f;
+    bool isPhantom = phantom.Get();
+    int collisionFlags = 0;
+    if (!isDynamic)
+        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
+    if (isPhantom)
+        collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+    
     body_ = new btRigidBody(m, this, shape_, localInertia);
     body_->setUserPointer(this);
+    body_->setCollisionFlags(collisionFlags);
     world_->GetWorld()->addRigidBody(body_);
     body_->activate();
 }
@@ -199,6 +316,15 @@ void EC_RigidBody::ReaddBody()
         shape_->calculateLocalInertia(m, localInertia);
     body_->setCollisionShape(shape_);
     body_->setMassProps(m, localInertia);
+    
+    bool isDynamic = m > 0.0f;
+    bool isPhantom = phantom.Get();
+    int collisionFlags = 0;
+    if (!isDynamic)
+        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
+    if (isPhantom)
+        collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+    body_->setCollisionFlags(collisionFlags);
     
     world_->GetWorld()->removeRigidBody(body_);
     world_->GetWorld()->addRigidBody(body_);
@@ -238,12 +364,12 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     if (!placeable)
         return;
     
-    // Important: disconnect our own response to the attribute change update to not create an endless loop!
-    placeableDisconnected_ = true;
+    // Important: disconnect our own response to attribute changes to not create an endless loop!
+    disconnected_ = true;
     
+    // Set transform
     Vector3df position = ToVector3(worldTrans.getOrigin());
     Quaternion orientation = ToQuaternion(worldTrans.getRotation());
-    
     Transform newTrans = placeable->transform.Get();
     Vector3df euler;
     orientation.toEuler(euler);
@@ -251,11 +377,28 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     newTrans.SetRot(euler.x * RADTODEG, euler.y * RADTODEG, euler.z * RADTODEG);
     placeable->transform.Set(newTrans, AttributeChange::Default);
     
-    placeableDisconnected_ = false;
+    // Set linear & angular velocity
+    if (body_)
+    {
+        linearVelocity.Set(ToVector3(body_->getLinearVelocity()), AttributeChange::Default);
+        const btVector3& angular = body_->getAngularVelocity();
+        angularVelocity.Set(Vector3df(angular.x() * RADTODEG, angular.y() * RADTODEG, angular.z() * RADTODEG), AttributeChange::Default);
+    }
+    
+    disconnected_ = false;
+}
+
+void EC_RigidBody::OnTerrainRegenerated()
+{
+    if (shapeType.Get() == Shape_HeightField)
+        CreateCollisionShape();
 }
 
 void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
 {
+    if (disconnected_)
+        return;
+    
     bool requestMesh = false;
     
     if (attribute == &mass)
@@ -320,10 +463,44 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
             else
                 requestMesh = true;
         }
+        if (!body_)
+            CreateBody();
     }
     
     if ((attribute == &collisionMeshId) && (shapeType.Get() == Shape_TriMesh))
         requestMesh = true;
+    
+    if (attribute == &phantom)
+    {
+        if (!body_)
+            CreateBody();
+        else
+            // Readd body to the world in case phantom classification changed
+            ReaddBody();
+    }
+    
+    if (attribute == &linearVelocity)
+    {
+        if (!body_)
+            CreateBody();
+        if (body_)
+        {
+            body_->setLinearVelocity(ToBtVector3(linearVelocity.Get()));
+            body_->activate();
+        }
+    }
+    
+    if (attribute == &angularVelocity)
+    {
+        if (!body_)
+            CreateBody();
+        if (body_)
+        {
+            const Vector3df& angular = angularVelocity.Get();
+            body_->setAngularVelocity(btVector3(angular.x * DEGTORAD, angular.y * DEGTORAD, angular.z * DEGTORAD));
+            body_->activate();
+        }
+    }
     
     if (requestMesh)
     {
@@ -341,7 +518,7 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
 void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
 {
     // Do not respond to our own change
-    if ((placeableDisconnected_) || (!body_))
+    if ((disconnected_) || (!body_))
         return;
     
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(sender());
@@ -365,6 +542,16 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
         
         UpdateScale();
     }
+}
+
+void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
+{
+    Environment::EC_Terrain* terrain = terrain_.lock().get();
+    if (!terrain)
+        return;
+    //! \todo It is suboptimal to regenerate the whole heightfield when just the terrain's transform changes
+    if ((attribute == &terrain->nodeTransformation) && (shapeType.Get() == Shape_HeightField))
+        CreateCollisionShape();
 }
 
 bool EC_RigidBody::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
@@ -420,5 +607,60 @@ void EC_RigidBody::UpdateScale()
         else
             shape_->setLocalScaling(btVector3(sizeVec.x * trans.scale.x, sizeVec.y * trans.scale.z, sizeVec.z * trans.scale.y));
     }
+}
+
+void EC_RigidBody::CreateHeightFieldFromTerrain()
+{
+    CheckForPlaceableAndTerrain();
+    
+    Environment::EC_Terrain* terrain = terrain_.lock().get();
+    if (!terrain)
+        return;
+    
+    int width = terrain->PatchWidth() * Environment::EC_Terrain::cPatchSize;
+    int height = terrain->PatchHeight() * Environment::EC_Terrain::cPatchSize;
+    
+    if ((!width) || (!height))
+        return;
+    
+    heightValues_.resize(width * height);
+    
+    float xySpacing = 1.0f;
+    float zSpacing = 1.0f;
+    float minZ = 1000000000;
+    float maxZ = -1000000000;
+    for (uint y = 0; y < height; ++y)
+    {
+        for (uint x = 0; x < width; ++x)
+        {
+            float value = terrain->GetPoint(x, y);
+            if (value < minZ)
+                minZ = value;
+            if (value > maxZ)
+                maxZ = value;
+            heightValues_[y * width + x] = value;
+        }
+    }
+    
+    Vector3df scale = terrain->nodeTransformation.Get().scale;
+    Vector3df bbMin(0, 0, minZ);
+    Vector3df bbMax(xySpacing * (width - 1), xySpacing * (height - 1), maxZ);
+    Vector3df bbCenter = scale * (bbMin + bbMax) * 0.5f;
+    
+    heightField_ = new btHeightfieldTerrainShape(width, height, &heightValues_[0], zSpacing, minZ, maxZ, 2, PHY_FLOAT, false);
+    
+    /*! \todo EC_Terrain uses its own transform that is independent of the placeable. It is not nice to support, since rest of EC_RigidBody assumes
+        the transform is in the placeable. Right now, we only support position & scaling. Here, we also counteract Bullet's nasty habit to center 
+        the heightfield on its own. Also, Bullet's collisionshapes generally do not support arbitrary transforms, so we must construct a "compound shape"
+        and add the heightfield as its child, to be able to specify the transform.
+     */
+    heightField_->setLocalScaling(ToBtVector3(scale));
+    
+    Vector3df positionAdjust = terrain->nodeTransformation.Get().position;
+    positionAdjust += bbCenter;
+    
+    btCompoundShape* compound = new btCompoundShape();
+    shape_ = compound;
+    compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(positionAdjust)), heightField_);
 }
 

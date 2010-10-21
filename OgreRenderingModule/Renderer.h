@@ -261,9 +261,6 @@ namespace OgreRenderer
         QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
 
     private:
-        //! Initialises Qt
-        void InitializeQt();
-
         //! Initialises the events related info for this module
         void InitializeEvents();
 

@@ -12,6 +12,16 @@
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
 
+#ifdef CAELUM
+    namespace Caelum
+    {
+        class CaelumSystem;
+    }
+
+
+#endif
+
+
 namespace Environment
 {
     class Terrain;
@@ -20,6 +30,7 @@ namespace Environment
     class Sky;
     class EnvironmentEditor;
     class PostProcessWidget;
+    class TerrainWeightEditor;
 
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
@@ -131,7 +142,9 @@ namespace Environment
 
         //! @return Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
-
+#ifdef CAELUM
+        Caelum::CaelumSystem* GetCaelum();
+#endif 
 
 
     private:
@@ -157,6 +170,9 @@ namespace Environment
         void ReleaseWater();
         void ReleaseEnvironment();
         void ReleaseSky();
+
+        //! Editor for terrain texture weights
+        TerrainWeightEditor* w_editor_;
 
         //! Event manager pointer.
         Foundation::EventManagerPtr event_manager_;

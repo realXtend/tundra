@@ -35,12 +35,9 @@
 #undef SAFE_DELETE_ARRAY
 
 #include <d3d9.h>
-#include <RenderSystems/Direct3D9/include/OgreD3D9HardwarePixelBuffer.h>
-#include <RenderSystems/Direct3D9/include/OgreD3D9RenderWindow.h>
+#include <OgreD3D9HardwarePixelBuffer.h>
+#include <OgreD3D9RenderWindow.h>
 #endif
-
-
-//#include <OgreRenderQueue.h>
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -137,7 +134,6 @@ namespace OgreRenderer
         scenemanager_(0),
         default_camera_(0),
         camera_(0),
-//        renderwindow_(0),
         viewport_(0),
         object_id_(0),
         group_id_(0),
@@ -147,8 +143,6 @@ namespace OgreRenderer
         ray_query_(0),
         window_title_(window_title),
         renderWindow(0),
-//        main_window_(0),
-//        q_ogre_ui_view_(0),
         last_width_(0),
         last_height_(0),
         capture_screen_pixel_data_(0),
@@ -158,7 +152,6 @@ namespace OgreRenderer
         texturequality_(Texture_Normal),
         c_handler_(new CompositionHandler)
     {
-        InitializeQt();
         InitializeEvents();
     }
 
@@ -177,43 +170,10 @@ namespace OgreRenderer
             else
                 OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
 
-//        if (renderwindow_)
-        {
-            /*
-            QDesktopWidget *desktop = QApplication::desktop();
-            int desktop_max_width = 0;
-            int desktop_max_height = desktop->screenGeometry().height();
-            for (int index = 0; index < desktop->screenCount(); index++)
-                desktop_max_width += desktop->screenGeometry(index).width();
+        if (framework_->Ui() && framework_->Ui()->MainWindow())
+            framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();
 
-            int width, height, left, top;
-            left = main_window_->geometry().x();
-            if (left < 0 || left > desktop_max_width)
-                left = 0;
-            top = main_window_->geometry().y();
-            if (top < 0 || top > desktop_max_height)
-                top = 0;
-            width = main_window_->geometry().width();
-            if (width < 0 || width > desktop_max_width)
-                width = 800;
-            height = main_window_->geometry().height();
-            if (height < 0 || height > desktop_max_height)
-                height = 600;
-
-            bool maximized = main_window_->isMaximized();
-
-            // Do not store the maximized geometry
-            if (!maximized)
-            {
-                framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_width", width);
-                framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_height", height);
-                framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_left", left);
-                framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_top", top);
-            }*/
-//            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_maximized", maximized);
-            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
-//            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "fullscreen", IsFullScreen());
-        }
+        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
 
         ///\todo Is compositorInstance->removeLister(listener) needed here?
         foreach(GaussianListener* listener, gaussianListeners_)
@@ -222,7 +182,6 @@ namespace OgreRenderer
         resource_handler_.reset();
         root_.reset();
         SAFE_DELETE(c_handler_);
-//        SAFE_DELETE(q_ogre_world_view_);
         SAFE_DELETE(renderWindow);
     }
 
@@ -233,12 +192,6 @@ namespace OgreRenderer
             Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
             log_listener_.reset();
         }
-    }
-
-    void Renderer::InitializeQt()
-    {
-        // NaaliApplication owns the main window.
-//        NaaliMainWindow *main_window_ = framework_->Ui()->MainWindow();
     }
 
     void Renderer::InitializeEvents()
@@ -272,22 +225,9 @@ namespace OgreRenderer
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
         log_listener_ = OgreLogListenerPtr(new LogListener);
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
-/*
-        // Read naali config
-        int width = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_width", 800);
-        int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_height", 600);
-        int window_left = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_left", -1);
-        int window_top = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_top", -1);
-        bool maximized = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_maximized", false); 
-        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false); */
+
         view_distance_ = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "view_distance", 500.0);
-/*
-        // Be sure that window is not out of boundaries.
-        if (window_left < 0)
-            window_left = 0;
-        if (window_top < 25)
-            window_top = 25;
-*/
+
         // Load plugins
         LoadPlugins(plugins_filename_);
 
@@ -340,24 +280,17 @@ namespace OgreRenderer
             int window_top = 0;
             renderWindow = new NaaliRenderWindow();
             bool fullscreen = false;
-//            renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView(), window_title_.c_str(), width, height, window_left, window_top, false);
+
             renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
             connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
             renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
-            // Create rendering window with QOgreUIView (will pass a Qt winID for rendering. Don't tell to go fullscreen, because Qt handles this)
-//            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(viewportWidget, window_title_, width, height, window_left, window_top, false /*fullscreen*/);
+
             if(fullscreen)
             {
                 framework_->Ui()->MainWindow()->showFullScreen();
             }
             else
                 framework_->Ui()->MainWindow()->show();
-
-            // Create QOgreWorldView that controls ogres window and ui overlay
-//            q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
- //           q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
-  //          q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->viewport()->width(), q_ogre_ui_view_->viewport()->height());
-//            q_ogre_world_view_->SetTargetFPSLimit(20);
         }
         catch (Ogre::Exception &/*e*/)
         {

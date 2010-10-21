@@ -31,6 +31,7 @@ from xml.dom.minidom import getDOMImplementation
 
 import Queue
 
+glocalscene = None # need this to access directly from C++ LibraryModule
 
 class LocalScene(Component):
     def __init__(self):
@@ -71,6 +72,7 @@ class LocalScene(Component):
         self.publishName = None
 
         self.sceneActions = None # sceneactions.SceneActions()
+        globals()["glocalscene"] = self
         self.bLocalSceneLoaded = False
 
         #self.libMod = r.getLibraryModule()
@@ -255,7 +257,7 @@ class LocalScene(Component):
     def onUploadSceneFile(self, url, x, y, z):
         # print "onUploadSceneFile"
         offset = str(x) + "," + str(y) + "," + str(z);
-        print offset
+        #print offset
         param = (url, offset)
         self.startSceneAction("UploadSceneUrl", param)
         pass
@@ -321,3 +323,6 @@ class SceneSaver:
         contents = '\n'.join(lines)
         f.write(contents)
         f.close()
+
+def getLocalScene():
+    return glocalscene
