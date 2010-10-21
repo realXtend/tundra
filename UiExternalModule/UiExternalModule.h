@@ -91,7 +91,7 @@ namespace UiExternalServices
 		//!Static toolbar
 		StaticToolBar* staticToolBar_;
 		
-		//event_category_id_t scene_event_category_;
+		event_category_id_t scene_event_category_;
     };
 }
 

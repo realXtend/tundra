@@ -35,7 +35,7 @@ namespace UiExternalServices
 		return owner_->GetExternalMenuManager()->RemoveExternalMenuPanel(widget);
 	}
 
-	QDockWidget* UiExternalService::GetExternalMenuPanel(QString *widget){
+	QDockWidget* UiExternalService::GetExternalMenuPanel(QString &widget){
 		return owner_->GetExternalPanelManager()->GetExternalMenuPanel(widget);
 	}
 

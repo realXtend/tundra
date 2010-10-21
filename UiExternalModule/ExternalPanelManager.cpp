@@ -13,7 +13,7 @@ namespace UiExternalServices
 {
 	ExternalPanelManager::ExternalPanelManager(QMainWindow *qWin):
           qWin_(qWin),
-		  edit_mode_(false)
+		  edit_mode_(true)
     {
         assert(qWin_);
 		//Define QDockAreas allowed, or configuration staff
@@ -71,8 +71,15 @@ namespace UiExternalServices
     }
     
 	void ExternalPanelManager::ShowWidget(QWidget *widget){
-		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))
+		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget()))){
+			//QDockWidget *aux = dynamic_cast<QDockWidget *>(widget->parentWidget());
+			//if (!aux)
+			//	return;
+			////Hide or show the widget; we make every widget a qdockwidget before integrate it in the qmainwindow
+			//if (aux->isHidden())
+			//	aux->show();
 			widget->parentWidget()->show();	
+		}
 	}
 
 	void ExternalPanelManager::HideWidget(QWidget *widget){
@@ -97,10 +104,12 @@ namespace UiExternalServices
 	void ExternalPanelManager::SceneChanged(const QString &old_name, const QString &new_name)
     {
         if (new_name == "Ether")
-			DisableDockWidgets();            
+			DisableDockWidgets();  
+		else if(old_name == "Ether")
+			EnableDockWidgets();
     }
 
-	QDockWidget* ExternalPanelManager::GetExternalMenuPanel(QString *widget){
+	QDockWidget* ExternalPanelManager::GetExternalMenuPanel(QString &widget){
 		QDockWidget *s;
 		foreach( s , all_qdockwidgets_in_window_ )
 			if (s->windowTitle() == widget)

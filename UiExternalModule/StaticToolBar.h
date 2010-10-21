@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QToolBar>
+#include <QMenu>
 
 namespace UiExternalServices
 {
@@ -61,6 +62,10 @@ namespace UiExternalServices
 		void freeCameraMode();
 		//! Switch between play and edit mode.
 		void editMode();
+		//! Open the EC Editor Window.
+		void openECEditor();
+		//! Open the Build Window..
+		void openBuild();
 
 	private:
 
@@ -68,6 +73,7 @@ namespace UiExternalServices
 		void createActions();
 		//! Add actions to this class (toolbar)
 		void addActions();
+		void CreateMenu();
 
 		//! Fly action of toolbar
 		QAction *flyAction_;
@@ -80,10 +86,14 @@ namespace UiExternalServices
 		Foundation::Framework *framework_;
 
 		//! Query category of events
-		// event_category_id_t scene_event_category_;
+		 event_category_id_t scene_event_category_;
 	
 		//! Entity selected
-		// entity_id_t entitySelected_;
+		 Scene::Entity* entitySelected_;
+
+		 QMenu* menu_asset;
+
+		 QString currentScene;
 	};
 }
 

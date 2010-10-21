@@ -106,7 +106,7 @@ namespace UiExternalServices
 		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
          *  \param widget Name of the widget.
          */
-		QDockWidget* GetExternalMenuPanel(QString *widget);
+		QDockWidget* GetExternalMenuPanel(QString &widget);
 
     private:
         //! Owner UI module.

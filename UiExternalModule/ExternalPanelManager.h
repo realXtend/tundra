@@ -89,7 +89,7 @@ namespace UiExternalServices
 		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
          *  \param widget Name of the widget.
          */
-		QDockWidget* GetExternalMenuPanel(QString *widget);
+		QDockWidget* GetExternalMenuPanel(QString &widget);
 		
 	/*! Switch on/off the edit mode and emit the signal to connected panels
 		 *  \param b Enable/disable the edit mode

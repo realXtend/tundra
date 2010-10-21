@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -10,7 +11,9 @@
 #include "DebugOperatorNew.h"
 #include "MaterialWizard.h"
 #include "OgreAssetEditorModule.h"
-
+//$ BEGIN_MOD $
+#include "UiExternalServiceInterface.h"
+//$ END_MOD $
 #include "Inventory/InventoryEvents.h"
 
 #include <QUiLoader>
@@ -18,13 +21,15 @@
 // Useful defines
 #define ENABLE(p) p->setEnabled(true);
 #define DISABLE(p) p->setEnabled(false);
-
-MaterialWizard::MaterialWizard(QWidget *parent) :
-    QWidget(parent),
+//$ BEGIN_MOD $   
+MaterialWizard::MaterialWizard(QWidget *parent, Foundation::Framework *framework) :
+    QWidget(),
     mainWidget_(0),
     currentOptions_(Material_None),
+	framework_(framework),
     scriptName_("")
 {
+//$ END_MOD $  
     QUiLoader loader;
     QFile file("./data/ui/materialwizard.ui");
     if (!file.exists())
@@ -89,14 +94,23 @@ void MaterialWizard::Create()
     event_data.names.push_back(scriptName_);
 
     emit NewMaterial(&event_data);
-
-    graphicsProxyWidget()->hide();
+//$ BEGIN_MOD $   
+	Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+	if (!uiExternal)
+	    graphicsProxyWidget()->hide();
+//$ END_MOD $  
     ClearSelections();
 }
 
 void MaterialWizard::Close()
 {
-    graphicsProxyWidget()->hide();
+//$ BEGIN_MOD $   
+	Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+    if (uiExternal)
+		this->parentWidget()->hide();	
+	else
+	    graphicsProxyWidget()->hide();
+//$ END_MOD $  
     ClearSelections();
 }
 

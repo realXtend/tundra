@@ -67,7 +67,7 @@ void OgreAssetEditorModule::PostInitialize()
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
 
-    materialWizard_ = new MaterialWizard;
+    materialWizard_ = new MaterialWizard(0,GetFramework());
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 

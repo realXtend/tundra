@@ -146,7 +146,10 @@ namespace ECEditor
 		if (uiExternal){
 				uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(editor_window_,"Entity-component Editor"),"EC Editor","Panels");
 				uiExternal->AddPanelToEditMode(editor_window_);
-				//Used to register it as universal widget; to get it in the WorldBuildingModule				UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);				ui->RegisterUniversalWidget("Components", editor_proxy);		}else{
+				//Used to register it as universal widget; to get it in the WorldBuildingModule		
+				UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);			
+				ui->RegisterUniversalWidget("Components", editor_proxy);		
+		}else{
 			UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
 			ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
 			ui->RegisterUniversalWidget("Components", editor_proxy);

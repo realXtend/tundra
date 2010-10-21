@@ -26,16 +26,21 @@ use_package (QT4)
 use_package (POCO)
 use_package (CURL)
 use_package (XMLRPC)
-use_modules (UiExternalModule UiModule Core Foundation Interfaces  RexCommon ProtocolUtilities SupportModules SceneManager)
+use_package (OGRE)
+use_modules (UiExternalModule UiModule Core Foundation Interfaces RexCommon ProtocolUtilities SupportModules SceneManager OgreRenderingModule EntityComponents/EC_Highlight)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities SupportModules SceneManager)
+LinkEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
+
+
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities SupportModules SceneManager OgreRenderingModule EntityComponents/EC_Highlight)
 link_package (BOOST)
 link_package (QT4)
 link_package (POCO)
 link_package (XMLRPC)
 link_package (CURL)
+use_package (OGRE)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()
