@@ -15,6 +15,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QUrl>
 
 namespace WorldBuilding
 {
@@ -31,9 +32,11 @@ namespace WorldBuilding
 
     public slots:
         /// Service interface implementation
-        virtual void PublishToServer(const QString &load_filename, bool adjust_pos_to_avatar);
+        virtual void PublishToServer(QUrl xml_url, Vector3df drop_position = Vector3df::ZERO);
         /// Service interface implementation
-        virtual void PublishToServer(const QByteArray &content, bool adjust_pos_to_avatar);
+        virtual void PublishToServer(const QString &load_filename, bool adjust_pos_to_avatar, Vector3df drop_position = Vector3df::ZERO);
+        /// Service interface implementation
+        virtual void PublishToServer(const QByteArray &content, bool adjust_pos_to_avatar, Vector3df drop_position = Vector3df::ZERO);
         /// Service interface implementation
         virtual void StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities);
 
@@ -46,6 +49,8 @@ namespace WorldBuilding
         void MouseLeftPressed(MouseEvent *mouse);
         void SceneUploadResponse(QNetworkReply *reply);
 
+        Vector3df GetAvatarDropPosition();
+
     private:
         QNetworkAccessManager *network_manager_;
         ProtocolUtilities::WorldStreamPtr current_stream_;
@@ -55,6 +60,8 @@ namespace WorldBuilding
         OpenSimSceneWidget *scene_widget_;
 
         QString capability_name_;
+
+        QMap<QUrl, Vector3df> url_to_position_;
     };
 }
 #endif

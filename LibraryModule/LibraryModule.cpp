@@ -17,6 +17,7 @@
 #include "UiServiceInterface.h"
 #include "WorldLogicInterface.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "IOpenSimSceneService.h"
 #include "OgreRenderingModule.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
@@ -44,16 +45,16 @@ namespace Library
 {
 
     LibraryModule::LibraryModule() :
-    IModule(NameStatic()),
-    networkStateEventCategory_(0),
-    networkInEventCategory_(0),
-    frameworkEventCategory_(0),
-    resource_event_category_(0),
-    library_widget_(0),
-    raycast_pos_(0),
-    mesh_file_request_(0),
-    entity_(0),
-    time_from_last_update_ms_(0)
+        IModule(NameStatic()),
+        networkStateEventCategory_(0),
+        networkInEventCategory_(0),
+        frameworkEventCategory_(0),
+        resource_event_category_(0),
+        library_widget_(0),
+        raycast_pos_(0),
+        mesh_file_request_(0),
+        entity_(0),
+        time_from_last_update_ms_(0)
     {
     }
 
@@ -87,7 +88,6 @@ namespace Library
 
             connect(ui_view, SIGNAL(DropEvent(QDropEvent *)), SLOT(DropEvent(QDropEvent *) ));
         }
-
     }
 
     void LibraryModule::Update(f64 frametime)
@@ -114,7 +114,6 @@ namespace Library
 
     void LibraryModule::AssignMaterials()
     {
-
         //First assign pure images and ignore materials for now. Change to handle both in the same request in the future
         if (!mesh_file_request_->GetMeshImages().isEmpty())
         {
@@ -296,13 +295,23 @@ namespace Library
         Foundation::RaycastResult cast_result = renderer->Raycast(drop_event->pos().x(), drop_event->pos().y());
         raycast_pos_ = cast_result.pos_;
         Scene::Entity *entity = cast_result.entity_;
-        if (!entity) // User didn't click on terrain or other entities.
-            return;
 
         QString urlString = QUrl(drop_event->mimeData()->urls().at(0)).toString();
         QStringList urlList = urlString.split(";");
-        
-        //Process single files
+
+        // Service for xml drops
+        IOpenSimSceneService *scene_service = framework_->GetService<IOpenSimSceneService>();
+
+        // User didn't drop on terrain or other objects
+        if (!entity) 
+        {
+            // Lets still handle xml files with dropping it in front of avatar
+            if (urlList.count() == 1 && scene_service && urlString.endsWith(".xml"))
+                scene_service->PublishToServer(QUrl(urlString));
+            return;
+        }
+
+        // Process single files
         if (urlList.count() == 1)
         {
             QUrl url(urlString);
@@ -395,10 +404,14 @@ namespace Library
 
                         prim->Materials = materials;        
                         prim->SendRexPrimDataUpdate();
-
                     }
                 }
-            }                
+            }
+            else if (url.toString().endsWith(".xml"))
+            {
+                if (scene_service)
+                    scene_service->PublishToServer(url, raycast_pos_);
+            }
 
             //Don´t proceed to urlList
             return;
