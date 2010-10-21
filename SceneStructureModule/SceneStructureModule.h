@@ -41,7 +41,7 @@ public slots:
         @param clearScene Do we want to clear the scene before adding new content.
         @return List of created entities.
     */
-    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df &worldPos, bool clearScene);
+    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene);
 
 private:
     //! Type name of the module.
