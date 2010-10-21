@@ -277,6 +277,9 @@ private:
     //! Update scale from placeable & own size setting
     void UpdateScale();
     
+    //! Request mesh resource (for trimesh & convexhull shapes)
+    void RequestMesh();
+    
     //! Placeable pointer
     boost::weak_ptr<EC_Placeable> placeable_;
     
@@ -292,7 +295,7 @@ private:
     //! Bullet collision shape
     btCollisionShape* shape_;
     
-    //! Physics world
+    //! Physics world. May be 0 if the scene does not have a physics world. In that case most of EC_RigidBody's functionality is a no-op
     Physics::PhysicsWorld* world_;
     
     //! PhysicsModule pointer
@@ -317,7 +320,7 @@ private:
     //! Bullet heightfield shape. Note: this is always put inside a compound shape (shape_)
     btHeightfieldTerrainShape* heightField_;
     
-    //! Heightfield values
+    //! Heightfield values, for the case the shape is a heightfield.
     std::vector<float> heightValues_;
 };
 

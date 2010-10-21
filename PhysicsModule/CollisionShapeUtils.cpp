@@ -40,8 +40,6 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes)
             
             btAlignedObjectArray<btVector3> vertices;
             
-            std::cout << "Generated a convex hull with " << result.mHullVcount << " vertices" << std::endl;
-            
             for (uint i = 0; i < result.mHullVcount; ++i)
             {
                 btVector3 vertex(result.mHullVertices[i*3],result.mHullVertices[i*3+1],result.mHullVertices[i*3+2]);
