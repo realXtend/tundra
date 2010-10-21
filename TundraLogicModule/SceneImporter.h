@@ -52,7 +52,7 @@ public:
         \param localassets Whether to put file:// prefix into all asset references
         \return Entity pointer if successful (null if failed)
      */
-    Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
+    Scene::EntityPtr ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
         const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets);
     
     //! Import a dotscene
