@@ -8,6 +8,8 @@
 #include "EC_Terrain.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
+#include "CollisionShapeUtils.h"
+#include "ConvexHull.h"
 #include "MemoryLeakCheck.h"
 #include "Entity.h"
 #include "Framework.h"
@@ -266,77 +268,32 @@ boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogr
     
     // Create new, then interrogate the Ogre mesh
     ptr = boost::shared_ptr<btTriangleMesh>(new btTriangleMesh());
-    
-    for(uint i = 0; i < mesh->getNumSubMeshes(); ++i)
-    {
-        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
-        
-        Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-        const Ogre::VertexElement* posElem = vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-        Ogre::HardwareVertexBufferSharedPtr vbuf = vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
-        unsigned char* vertices = static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-        uint vertexSize = vbuf->getVertexSize();
-        float* pReal = 0;
-        
-        Ogre::IndexData* index_data = submesh->indexData;
-        size_t numTris = index_data->indexCount / 3;
-        Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
-        unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
-        bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
-        
-        if (use32bitindexes)
-        {
-            for(size_t k = 0; k < numTris * 3; k += 3)
-            {
-                uint i1 = pLong[k];
-                uint i2 = pLong[k+1];
-                uint i3 = pLong[k+2];
-                
-                //! Haxor the collision mesh for the Ogre->Opensim coordinate space adjust
-                /*! \todo Hopefully the need for this is eliminated soon
-                 */
-                posElem->baseVertexPointerToElement(vertices + i1 * vertexSize, &pReal);
-                btVector3 v1(-pReal[0], pReal[2], pReal[1]);
-                posElem->baseVertexPointerToElement(vertices + i2 * vertexSize, &pReal);
-                btVector3 v2(-pReal[0], pReal[2], pReal[1]);
-                posElem->baseVertexPointerToElement(vertices + i3 * vertexSize, &pReal);
-                btVector3 v3(-pReal[0], pReal[2], pReal[1]);
-                
-                ptr->addTriangle(v1, v2, v3);
-            }
-        }
-        else
-        {
-            for(size_t k = 0; k < numTris * 3; k += 3)
-            {
-                uint i1 = pShort[k];
-                uint i2 = pShort[k+1];
-                uint i3 = pShort[k+2];
-                
-                //! Haxor the collision mesh for the Ogre->Opensim coordinate space adjust
-                /*! \todo Hopefully the need for this is eliminated soon
-                 */
-                posElem->baseVertexPointerToElement(vertices + i1 * vertexSize, &pReal);
-                btVector3 v1(-pReal[0], pReal[2], pReal[1]);
-                posElem->baseVertexPointerToElement(vertices + i2 * vertexSize, &pReal);
-                btVector3 v2(-pReal[0], pReal[2], pReal[1]);
-                posElem->baseVertexPointerToElement(vertices + i3 * vertexSize, &pReal);
-                btVector3 v3(-pReal[0], pReal[2], pReal[1]);
-                
-                ptr->addTriangle(v1, v2, v3);
-            }
-        }
-        
-        vbuf->unlock();
-        ibuf->unlock();
-    }
-    
+    GenerateTriangleMesh(mesh, ptr.get(), true);
+
     triangleMeshes_[mesh->getName()] = ptr;
     
     return ptr;
 }
 
+boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh)
+{
+    boost::shared_ptr<ConvexHullSet> ptr;
+    if (!mesh)
+        return ptr;
+    
+    // Check if has already been converted
+    ConvexHullSetMap::const_iterator iter = convexHullSets_.find(mesh->getName());
+    if (iter != convexHullSets_.end())
+        return iter->second;
+    
+    // Create new, then interrogate the Ogre mesh
+    ptr = boost::shared_ptr<ConvexHullSet>(new ConvexHullSet());
+    GenerateConvexHullSet(mesh, ptr.get(), true);
+
+    convexHullSets_[mesh->getName()] = ptr;
+    
+    return ptr;
+}
 
 }
 

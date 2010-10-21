@@ -5,6 +5,7 @@
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"
+#include "ConvexHull.h"
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
@@ -57,6 +58,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
         metadata.enums[Shape_Capsule] = "Capsule";
         metadata.enums[Shape_TriMesh] = "TriMesh";
         metadata.enums[Shape_HeightField] = "HeightField";
+        metadata.enums[Shape_ConvexHull] = "ConvexHull";
         metadataInitialized = true;
     }
     shapeType.SetMetadata(&metadata);
@@ -240,6 +242,9 @@ void EC_RigidBody::CreateCollisionShape()
             shape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
     case Shape_HeightField:
         CreateHeightFieldFromTerrain();
+        break;
+    case Shape_ConvexHull:
+        CreateConvexHullSetShape();
         break;
     }
     
@@ -454,7 +459,7 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
     {
         if ((shapeType.Get() != cachedShapeType_) || (size.Get() != cachedSize_))
         {
-            if (shapeType.Get() != Shape_TriMesh)
+            if ((shapeType.Get() != Shape_TriMesh) && (shapeType.Get() != Shape_ConvexHull))
             {
                 CreateCollisionShape();
                 cachedShapeType_ = shapeType.Get();
@@ -467,7 +472,7 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
             CreateBody();
     }
     
-    if ((attribute == &collisionMeshId) && (shapeType.Get() == Shape_TriMesh))
+    if ((attribute == &collisionMeshId) && ((shapeType.Get() == Shape_TriMesh) || (shapeType.Get() == Shape_ConvexHull)))
         requestMesh = true;
     
     if (attribute == &phantom)
@@ -569,8 +574,16 @@ bool EC_RigidBody::HandleEvent(event_category_id_t category_id, event_id_t event
                     Ogre::Mesh* mesh = res->GetMesh().getPointer();
                     if (mesh)
                     {
-                        triangleMesh_ = owner_->GetTriangleMeshFromOgreMesh(mesh);
-                        CreateCollisionShape();
+                        if (shapeType.Get() == Shape_TriMesh)
+                        {
+                            triangleMesh_ = owner_->GetTriangleMeshFromOgreMesh(mesh);
+                            CreateCollisionShape();
+                        }
+                        if (shapeType.Get() == Shape_ConvexHull)
+                        {
+                            convexHullSet_ = owner_->GetConvexHullSetFromOgreMesh(mesh);
+                            CreateCollisionShape();
+                        }
                         cachedShapeType_ = shapeType.Get();
                         cachedSize_ = size.Get();
                     }
@@ -662,5 +675,15 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
     btCompoundShape* compound = new btCompoundShape();
     shape_ = compound;
     compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(positionAdjust)), heightField_);
+}
+
+void EC_RigidBody::CreateConvexHullSetShape()
+{
+    if (!convexHullSet_)
+        return;
+    btCompoundShape* compound = new btCompoundShape();
+    shape_ = compound;
+    for (uint i = 0; i < convexHullSet_->hulls_.size(); ++i)
+        compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(convexHullSet_->hulls_[i].position_)), convexHullSet_->hulls_[i].hull_.get());
 }
 
