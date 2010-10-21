@@ -59,6 +59,7 @@ namespace CommUI
         void UpdateInWorldVoiceIndicator();
         void ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface* p);
         void UninitializeInWorldVoice();
+        void ActiveChannelChanged(QString channel);
 
     private:
         Foundation::Framework* framework_;
