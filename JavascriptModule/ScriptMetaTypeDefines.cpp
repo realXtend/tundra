@@ -39,6 +39,7 @@ Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 //! Naali Scene defines.
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
+Q_DECLARE_METATYPE(EntityAction::ExecutionType);
 Q_DECLARE_METATYPE(AttributeChange*);
 Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(AttributeChange::Type);
@@ -73,7 +74,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
     //qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
     qScriptRegisterMetaType(engine, toScriptValueEnum<AttributeChange::Type>, fromScriptValueEnum<AttributeChange::Type>);
-    qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
+    //qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
+    qScriptRegisterMetaType(engine, toScriptValueEnum<EntityAction::ExecutionType>, fromScriptValueEnum<EntityAction::ExecutionType>);
 
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
