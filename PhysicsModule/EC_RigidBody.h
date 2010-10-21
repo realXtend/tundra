@@ -23,6 +23,7 @@ namespace Physics
 {
     class PhysicsModule;
     class PhysicsWorld;
+    struct ConvexHullSet;
 }
 
 //! Physics rigid body entity component
@@ -111,7 +112,8 @@ public:
         Shape_Cylinder,
         Shape_Capsule,
         Shape_TriMesh,
-        Shape_HeightField
+        Shape_HeightField,
+        Shape_ConvexHull
     };
     
     //! Mass of the body. Set to 0 for static
@@ -258,6 +260,9 @@ private:
     //! Create a heightfield collisionshape from EC_Terrain
     void CreateHeightFieldFromTerrain();
     
+    //! Create a convex hull set collisionshape
+    void CreateConvexHullSetShape();
+    
     //! Create the body. No-op if the scene is not associated with a physics world.
     void CreateBody();
     
@@ -305,6 +310,9 @@ private:
     
     //! Bullet triangle mesh
     boost::shared_ptr<btTriangleMesh> triangleMesh_;
+    
+    //! Convex hull set
+    boost::shared_ptr<Physics::ConvexHullSet> convexHullSet_;
     
     //! Bullet heightfield shape. Note: this is always put inside a compound shape (shape_)
     btHeightfieldTerrainShape* heightField_;

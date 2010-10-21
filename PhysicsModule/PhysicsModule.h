@@ -24,6 +24,7 @@ class btTriangleMesh;
 namespace Physics
 {
 
+struct ConvexHullSet;
 class PhysicsWorld;
 
 class PHYSICS_MODULE_API PhysicsModule : public QObject, public IModule, public btIDebugDraw
@@ -84,7 +85,12 @@ public:
     //! Get a Bullet triangle mesh corresponding to an Ogre mesh.
     /*! If already has been generated, returns the previously created one
      */
-    boost::shared_ptr<btTriangleMesh> GetTriangleMeshFromOgreMesh(Ogre::Mesh* ogreMesh);
+    boost::shared_ptr<btTriangleMesh> GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh);
+
+    //! Get a Bullet convex hull set (using minimum recursion, not very accurate but fast) corresponding to an Ogre mesh.
+    /*! If already has been generated, returns the previously created one
+     */
+    boost::shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
     
 public slots:
     //! Create a physics world for a scene
@@ -120,6 +126,10 @@ private:
     typedef std::map<std::string, boost::shared_ptr<btTriangleMesh> > TriangleMeshMap;
     //! Bullet triangle meshes generated from Ogre meshes
     TriangleMeshMap triangleMeshes_;
+
+    typedef std::map<std::string, boost::shared_ptr<ConvexHullSet> > ConvexHullSetMap;
+    //! Bullet convex hull sets generated from Ogre meshes
+    ConvexHullSetMap convexHullSets_;
     
     //! Debug geometry enabled flag
     bool drawDebugGeometry_;
