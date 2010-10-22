@@ -19,6 +19,8 @@ namespace WorldBuilding
         setupUi(internal_widget_);
         setWindowTitle(internal_widget_->windowTitle());
 
+        connect(internal_widget_, SIGNAL(destroyed(QObject*)), SLOT(InternalDestroyed(QObject*)));
+
         label_caps_fail->hide();
         label_export_help->setText("Click 'Start Exporting' and start selecting inworld object");
 
@@ -34,6 +36,11 @@ namespace WorldBuilding
 
     OpenSimSceneWidget::~OpenSimSceneWidget()
     {
+    }
+
+    void OpenSimSceneWidget::InternalDestroyed(QObject *obj)
+    {
+        internal_widget_ = 0;
     }
 
     void OpenSimSceneWidget::ShowFunctionality(bool enabled)

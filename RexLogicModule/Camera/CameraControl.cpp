@@ -111,6 +111,7 @@ namespace RexLogic
             proxy_widget_->setMaximumWidth(600);
 			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
 		}
+        connect(proxy_widget_, SIGNAL(Visible(bool)), this, SLOT(Visible(bool)));
 	}
 
     void CameraControl::CameraTripod(bool checked)
@@ -498,6 +499,9 @@ namespace RexLogic
 
     void CameraControl::Update(float frametime)
     {
+        #define MOVE_SENSITIVITY 3
+        #define ZOOM_SENSITIVITY 18
+
         if (widget_state_ == Object)
         {
             if (camera_up_pressed_)
@@ -505,7 +509,7 @@ namespace RexLogic
                 MouseEvent mouse_event;
                 mouse_event.button = MouseEvent::LeftButton;
                 mouse_event.relativeX = 0;
-                mouse_event.relativeY = -5;
+                mouse_event.relativeY = -MOVE_SENSITIVITY;
                 rex_logic_->GetObjectCameraController().get()->MouseLeftPressed(&mouse_event);
                 rex_logic_->GetObjectCameraController().get()->MouseMove(&mouse_event);
             }
@@ -514,7 +518,7 @@ namespace RexLogic
                 MouseEvent mouse_event;
                 mouse_event.button = MouseEvent::LeftButton;
                 mouse_event.relativeX = 0;
-                mouse_event.relativeY = 5;
+                mouse_event.relativeY = MOVE_SENSITIVITY;
                 rex_logic_->GetObjectCameraController().get()->MouseLeftPressed(&mouse_event);
                 rex_logic_->GetObjectCameraController().get()->MouseMove(&mouse_event);
             }
@@ -523,7 +527,7 @@ namespace RexLogic
                 MouseEvent mouse_event;
                 mouse_event.eventType = MouseEvent::MousePressed;
                 mouse_event.button = MouseEvent::LeftButton;
-                mouse_event.relativeX = -5;
+                mouse_event.relativeX = -MOVE_SENSITIVITY;
                 mouse_event.relativeY = 0;
                 rex_logic_->GetObjectCameraController().get()->MouseLeftPressed(&mouse_event);
                 rex_logic_->GetObjectCameraController().get()->MouseMove(&mouse_event);
@@ -532,7 +536,7 @@ namespace RexLogic
             {
                 MouseEvent mouse_event;
                 mouse_event.button = MouseEvent::LeftButton;
-                mouse_event.relativeX = 5;
+                mouse_event.relativeX = MOVE_SENSITIVITY;
                 mouse_event.relativeY = 0;
                 rex_logic_->GetObjectCameraController().get()->MouseLeftPressed(&mouse_event);
                 rex_logic_->GetObjectCameraController().get()->MouseMove(&mouse_event);
@@ -540,13 +544,13 @@ namespace RexLogic
             if (zoom_in_pressed_)
             {
                 MouseEvent mouse_event;
-                mouse_event.relativeZ = 30;
+                mouse_event.relativeZ = ZOOM_SENSITIVITY;
                 rex_logic_->GetObjectCameraController().get()->MouseScroll(&mouse_event);
             }
             if (zoom_out_pressed_)
             {
                 MouseEvent mouse_event;
-                mouse_event.relativeZ = -30;
+                mouse_event.relativeZ = -ZOOM_SENSITIVITY;
                 rex_logic_->GetObjectCameraController().get()->MouseScroll(&mouse_event);
             }
         }
@@ -559,7 +563,7 @@ namespace RexLogic
                 movement.y_.abs_ = 0;
                 movement.z_.abs_ = 0;
                 movement.x_.rel_ = 0;
-                movement.y_.rel_ = -5;
+                movement.y_.rel_ = -MOVE_SENSITIVITY;
                 movement.z_.rel_ = -1;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
                 framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOUSELOOK, &movement);
@@ -571,7 +575,7 @@ namespace RexLogic
                 movement.y_.abs_ = 0;
                 movement.z_.abs_ = 0;
                 movement.x_.rel_ = 0;
-                movement.y_.rel_ = 5;
+                movement.y_.rel_ = MOVE_SENSITIVITY;
                 movement.z_.rel_ = -1;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
                 framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOUSELOOK, &movement);
@@ -582,7 +586,7 @@ namespace RexLogic
                 movement.x_.abs_ = 0;
                 movement.y_.abs_ = 0;
                 movement.z_.abs_ = 0;
-                movement.x_.rel_ = -5;
+                movement.x_.rel_ = -MOVE_SENSITIVITY;
                 movement.y_.rel_ = 0;
                 movement.z_.rel_ = -1;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
@@ -594,7 +598,7 @@ namespace RexLogic
                 movement.x_.abs_ = 0;
                 movement.y_.abs_ = 0;
                 movement.z_.abs_ = 0;
-                movement.x_.rel_ = 5;
+                movement.x_.rel_ = MOVE_SENSITIVITY;
                 movement.y_.rel_ = 0;
                 movement.z_.rel_ = -1;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
@@ -614,5 +618,11 @@ namespace RexLogic
                 framework_->GetEventManager()->SendEvent(event_category, InputEvents::ZOOM_OUT_PRESSED, 0);
             }
         }
+    }
+
+    void CameraControl::Visible(bool visible)
+    {
+        cameraAVATAR_button->setChecked(visible);
+        CameraAvatar(true);
     }
 }

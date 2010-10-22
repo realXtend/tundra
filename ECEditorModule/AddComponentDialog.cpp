@@ -73,7 +73,7 @@ namespace ECEditor
             if(synchText == "Replicate")
                 return true;
             else if(synchText == "Local")
-                return true;
+                return false;
         }
         return true;
     }

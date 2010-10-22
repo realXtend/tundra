@@ -99,7 +99,7 @@ namespace ECEditor
         //! If any component group wasn't found return .end() iterator value.
         /*! @param comp component that we want to find in some of the component group.
          */
-        ComponentGroupList::iterator FindSuitableGroup(const IComponent &comp);
+        ComponentGroupList::iterator FindSuitableGroup(ComponentPtr comp);
 
         //! Try to find component group for spesific QTreeWidgetItem.
         /*! @param item QTreeWidgetItem that we want to use to find a right component group.
@@ -115,7 +115,7 @@ namespace ECEditor
         //! Remove component from registered componentgroup. Do nothing if component was not found of any component groups.
         /*! @param comp that we want to remove from  the component group.
          */
-        void RemoveComponentFromGroup(IComponent *comp);
+        void RemoveComponentFromGroup(ComponentPtr comp);
 
         //! Remove whole component group object from the browser.
         /*! componentGroup component group object that we want to remove from the editor.
