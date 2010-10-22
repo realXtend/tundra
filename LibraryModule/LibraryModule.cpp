@@ -84,7 +84,7 @@ namespace Library
 
             UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();                
             UiProxyWidget *lib_proxy = ui->AddWidgetToScene(library_widget_);
-            ui->RegisterUniversalWidget("library", lib_proxy);
+            ui->RegisterUniversalWidget("Library", lib_proxy);
 
             connect(ui_view, SIGNAL(DropEvent(QDropEvent *)), SLOT(DropEvent(QDropEvent *) ));
         }

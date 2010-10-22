@@ -19,13 +19,15 @@ namespace Library
 
     public:        
         LibraryWidget(QGraphicsView *ui_view);
+        virtual ~LibraryWidget();
+
         void SetInfoText(const QString);
         bool stopDownload;
         void HideStopButton();
         void ShowStopButton();
 
     private:
-        QGraphicsView * ui_view_;
+        QGraphicsView *ui_view_;
 
     private slots:
         void SetWebViewUrl();
