@@ -223,9 +223,9 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
     // Do the scene load as replicable only if we are a server
     QList<Scene::Entity *> entities;
     if (!useBinary)
-        entities = scene->LoadSceneXML(params[0], true/*clearScene*/, AttributeChange::Default);
+        entities = scene->LoadSceneXML(params[0], true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
     else
-        entities = scene->LoadSceneBinary(params[0], true/*clearScene*/, AttributeChange::Default);
+        entities = scene->LoadSceneBinary(params[0], true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
     
     if (!entities.empty())
     {

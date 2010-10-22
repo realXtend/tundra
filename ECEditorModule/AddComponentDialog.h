@@ -24,7 +24,7 @@ namespace ECEditor
         Q_OBJECT
 
     public:
-        AddComponentDialog(Foundation::Framework *framework, QList<entity_id_t> entities, QWidget *parent = 0, Qt::WindowFlags f = 0);
+        AddComponentDialog(Foundation::Framework *framework, const QList<entity_id_t> &entities, QWidget *parent = 0, Qt::WindowFlags f = 0);
         ~AddComponentDialog();
 
         //! Set list of available component types.
@@ -52,12 +52,10 @@ namespace ECEditor
         void CheckComponentName(const QString &name);
 
     protected:
-        //! Over-ride event from QDialog.
+        //! Override event from QDialog.
         void hideEvent(QHideEvent *event);
 
     private:
-        void Initialize();
-
         QLabel *component_count_label_;
         QLabel *component_type_label_;
         QLabel *component_name_label_;

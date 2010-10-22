@@ -10,13 +10,12 @@
 #include "SceneManager.h"
 #include "LinearMath/btIDebugDraw.h"
 
+#include <QObject>
+
 namespace Ogre
 {
-    class ManualObject;
     class Mesh;
 }
-
-#include <QObject>
 
 class btVector3;
 class btTriangleMesh;
@@ -26,6 +25,7 @@ namespace Physics
 
 struct ConvexHullSet;
 class PhysicsWorld;
+class DebugLines;
 
 class PHYSICS_MODULE_API PhysicsModule : public QObject, public IModule, public btIDebugDraw
 {
@@ -134,19 +134,14 @@ private:
     //! Debug geometry enabled flag
     bool drawDebugGeometry_;
     
-    //! Manual object for the debug geometry
-    Ogre::ManualObject* debugGeometryObject_;
+    //! Lines object for the debug geometry
+    DebugLines* debugGeometryObject_;
     
     //! Whether should run physics. Default true
     bool runPhysics_;
     
     //! Bullet debug draw / debug behaviour flags
     int debugDrawMode_;
-    
-    //! Accept debug lines flag (ie. manual object is open for editing)
-    /*! This is a safety for the case Bullet decides to call drawLine() at an unexpected time
-     */ 
-    bool acceptDebugLines_;
 };
 
 }
