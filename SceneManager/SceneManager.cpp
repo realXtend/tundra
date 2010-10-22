@@ -308,7 +308,7 @@ namespace Scene
         return ret;
     }
 
-    QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change)
+    QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change)
     {
         QList<Entity *> ret;
         QDomDocument scene_doc("Scene");
@@ -331,7 +331,7 @@ namespace Scene
         if (clearScene)
             RemoveAllEntities(true, change);
 
-        return CreateContentFromXml(scene_doc, true, change);
+        return CreateContentFromXml(scene_doc, replaceOnConflict, change);
     }
     
     bool SceneManager::SaveSceneXML(const std::string& filename)
@@ -360,7 +360,7 @@ namespace Scene
         }
     }
     
-    QList<Entity *> SceneManager::LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change)
+    QList<Entity *> SceneManager::LoadSceneBinary(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change)
     {
         QList<Entity *> ret;
         QFile file(filename.c_str());
@@ -382,7 +382,7 @@ namespace Scene
         if (clearScene)
             RemoveAllEntities(true, change);
 
-        return CreateContentFromBinary(bytes.data(), bytes.size(), false/*replaceOnConflict*/, change);
+        return CreateContentFromBinary(bytes.data(), bytes.size(), replaceOnConflict, change);
     }
 
     bool SceneManager::SaveSceneBinary(const std::string& filename)
