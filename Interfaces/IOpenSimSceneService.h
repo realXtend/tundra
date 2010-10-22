@@ -46,6 +46,9 @@ public slots:
     /// @param QString - filename where xml scene data will be stored
     /// @param QList of Scene::Entity* - entities to be exported to file
     virtual void StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities) = 0;
+
+    /// Gets a position in front of the avatar, used for drops when raycast does not hit any object
+    virtual Vector3df GetPosFrontOfAvatar() = 0;
 };
 
 typedef boost::shared_ptr<IOpenSimSceneService> OpenSimSceneServicePtr;

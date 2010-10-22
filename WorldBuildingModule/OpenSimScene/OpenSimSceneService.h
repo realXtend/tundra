@@ -39,6 +39,8 @@ namespace WorldBuilding
         virtual void PublishToServer(const QByteArray &content, bool adjust_pos_to_avatar, Vector3df drop_position = Vector3df::ZERO);
         /// Service interface implementation
         virtual void StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities);
+        /// Service interface implementation
+        virtual Vector3df GetPosFrontOfAvatar();
 
         void SetWorldStream(ProtocolUtilities::WorldStreamPtr stream) { current_stream_ = stream; }
         void ResetWorldStream() { current_stream_.reset(); }
@@ -48,8 +50,6 @@ namespace WorldBuilding
     private slots:
         void MouseLeftPressed(MouseEvent *mouse);
         void SceneUploadResponse(QNetworkReply *reply);
-
-        Vector3df GetAvatarDropPosition();
 
     private:
         QNetworkAccessManager *network_manager_;

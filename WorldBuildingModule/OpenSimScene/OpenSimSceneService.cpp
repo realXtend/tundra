@@ -94,7 +94,7 @@ namespace WorldBuilding
 
         if (drop_position == Vector3df::ZERO)
         {
-            drop_position = GetAvatarDropPosition();
+            drop_position = GetPosFrontOfAvatar();
             if (drop_position == Vector3df::ZERO)
             {
                 WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get avatar position, cant upload scene in front of avatar.");
@@ -135,7 +135,7 @@ namespace WorldBuilding
             QByteArray publish_data;
             if (adjust_pos_to_avatar)
             {
-                Vector3df av_vector = GetAvatarDropPosition();
+                Vector3df av_vector = GetPosFrontOfAvatar();
                 if (av_vector == Vector3df::ZERO)
                 {
                     WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get avatar position, cant upload scene in front of avatar.");
@@ -177,7 +177,7 @@ namespace WorldBuilding
         scene_parser_->ExportToFile(save_filename, entities);
     }
 
-    Vector3df OpenSimSceneService::GetAvatarDropPosition()
+    Vector3df OpenSimSceneService::GetPosFrontOfAvatar()
     {
         Vector3df return_pos = Vector3df::ZERO;
         Foundation::WorldLogicInterface *world_logic = framework_->GetService<Foundation::WorldLogicInterface>();
