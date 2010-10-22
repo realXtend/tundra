@@ -77,7 +77,7 @@ function build-regular {
 }
 
 what=bullet-2.77
-if test -f $tags/$what-done; then
+if test -f $tags/$what-done -a -d $prefix/include/bullet/ConvexDecomposition; then
     echo $what is done
 else
     cd $build
