@@ -207,6 +207,14 @@ namespace WorldBuilding
             tranfer_widgets_[name].first->show();
             scene_widget = false;
         }
+        else if (name_compare == "library")
+        {
+            tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
+            widget->setWidget(0);
+            object_manip_ui.tab_widget->addTab(tranfer_widgets_[name].first, name);
+            tranfer_widgets_[name].first->show();
+            scene_widget = false;
+        }
 
         if (scene_widget)
         {

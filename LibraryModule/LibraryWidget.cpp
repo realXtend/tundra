@@ -15,8 +15,8 @@ namespace Library
 {
 
     LibraryWidget::LibraryWidget(QGraphicsView *ui_view) : 
-            QWidget(),
-                ui_view_(ui_view)
+        QWidget(),
+        ui_view_(ui_view)
     {
         setupUi(this);        
 
@@ -31,19 +31,20 @@ namespace Library
         urlLineEdit->setText("http://www.realxtend.org/rexlib/");
 
         pushButtonStop->hide();
+    }
 
+    LibraryWidget::~LibraryWidget()
+    {
+        if (webView)
+            webView->stop();
     }
 
     void LibraryWidget::SetWebViewUrl()
     {          
         QString url = urlLineEdit->text();
         if (url.isEmpty())
-        {
             return;
-        }
-        
         webView->setUrl(QUrl(url));        
-
     }
 
     void LibraryWidget::StopDownload()
@@ -58,14 +59,11 @@ namespace Library
 
     void LibraryWidget::HideStopButton()
     {
-            pushButtonStop->hide();
+        pushButtonStop->hide();
     }
 
     void LibraryWidget::ShowStopButton()
     {
-            pushButtonStop->show();
+        pushButtonStop->show();
     }
-
-
-
 }
