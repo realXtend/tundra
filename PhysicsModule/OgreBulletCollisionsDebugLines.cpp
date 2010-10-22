@@ -47,7 +47,6 @@ DebugLines::DebugLines() : SimpleRenderable()
 	mRenderOp.vertexData->vertexStart = 0;
 	mRenderOp.operationType = RenderOperation::OT_LINE_LIST;
 	mRenderOp.useIndexes = false;
-    _drawn = false;
 
     setCastShadows (false);
     this->setMaterial("PhysicsDebug");
@@ -57,13 +56,9 @@ DebugLines::DebugLines() : SimpleRenderable()
 //------------------------------------------------------------------------------------------------
 void DebugLines::clear()
 {
-    if (_drawn)
-    {
-        _drawn = false;
-        _lines.clear();
-        mRenderOp.vertexData->vertexCount = 0;
-    }
+    _lines.clear();
 }
+
 //------------------------------------------------------------------------------------------------
 DebugLines::~DebugLines(void)
 { 
@@ -74,10 +69,11 @@ DebugLines::~DebugLines(void)
 //------------------------------------------------------------------------------------------------
 void DebugLines::draw()
 {
-    if (_drawn || _lines.empty()) 
+    if (_lines.empty())
+    {
+        mRenderOp.vertexData->vertexCount = 0;
         return;
-    else 
-        _drawn = true;
+    }
     
     // Initialization stuff
     mRenderOp.vertexData->vertexCount = _lines.size() * 2;
@@ -179,6 +175,8 @@ void DebugLines::draw()
 
     mBox.setInfinite();
 	//mBox.Extents(vaabMin, vaabMax);
+	
+	clear();
 }
 //------------------------------------------------------------------------------------------------
 Real DebugLines::getSquaredViewDepth(const Camera *cam) const
