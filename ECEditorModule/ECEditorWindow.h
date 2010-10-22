@@ -8,36 +8,23 @@
 #ifndef incl_ECEditorModule_ECEditorWindow_h
 #define incl_ECEditorModule_ECEditorWindow_h
 
-#if defined (_WINDOWS)
-#if defined(ECEDITOR_MODULE_EXPORTS)
-#define ECEDITOR_MODULE_API __declspec(dllexport)
-#else
-#define ECEDITOR_MODULE_API __declspec(dllimport)
-#endif
-#else
-#define ECEDITOR_MODULE_API
-#endif
-
+#include "ECEditorModuleApi.h"
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
+#include "Entity.h"
 
 #include <QMap>
 #include <QSet>
-
 #include <QListWidgetItem>
 #include <QPointer>
-#include "Entity.h"
-
 #include <QWidget>
 
 extern std::vector<std::string> AttributeTypenames;
 
-QT_BEGIN_NAMESPACE;
 class QPushButton;
 class QListWidget;
 class QTreeWidget;
 class QPoint;
-QT_END_NAMESPACE;
 
 struct EntityComponentSelection
 {
@@ -66,10 +53,9 @@ namespace ECEditor
         QPointer<Scene::Entity> entity_ptr_;
     };
     
-    //! ECEditorWindow
-    /*! /todo add description.
-     *  \ingroup ECEditorModuleClient.
-     */
+    //! Entity-component editor window.
+    /*! \ingroup ECEditorModuleClient.
+    */
     class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
     {
         Q_OBJECT
