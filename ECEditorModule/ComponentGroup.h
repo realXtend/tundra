@@ -47,10 +47,10 @@ namespace ECEditor
          *  @param component The component we want to compare.
          *  @return Return true if component is identical with component group's items.
          */
-        bool IsSameComponent(const IComponent &component) const;
+        bool IsSameComponent(ComponentPtr component) const;
 
         //! Fast check for testing if given component is inculded in this component group.
-        bool ContainsComponent(const IComponent *component) const;
+        bool ContainsComponent(ComponentPtr component) const;
 
         bool ContainsAttribute(const QString &name) const;
 
@@ -59,7 +59,7 @@ namespace ECEditor
 
         //! Try to find right component from component info and if found remove it from this object and ECComponentEditor.
         //! If ECComponentEditor doesn't contain any of components editor object will be released.
-        bool RemoveComponent(IComponent *comp);
+        bool RemoveComponent(ComponentPtr comp);
 
         bool IsDynamic() const { return isDynamic_; }
 

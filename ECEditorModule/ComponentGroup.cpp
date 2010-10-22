@@ -12,9 +12,9 @@
 namespace ECEditor
 {
     ComponentGroup::ComponentGroup(ComponentPtr component,
-                                 ECComponentEditor *editor,
-                                 QTreeWidgetItem *listItem,
-                                 bool isDynamic):
+                                   ECComponentEditor *editor,
+                                   QTreeWidgetItem *listItem,
+                                   bool isDynamic):
         editor_(editor),
         browserListItem_(listItem),
         isDynamic_(isDynamic)
@@ -35,7 +35,8 @@ namespace ECEditor
     }
 
     //! Checks if components type and name are same.
-    bool ComponentGroup::IsSameComponent(const IComponent &component) const
+    //! @todo made some major changes to this mehtod ensure that everything is working right.
+    bool ComponentGroup::IsSameComponent(ComponentPtr component) const
     {
         if(!IsValid())
             return false;
@@ -43,8 +44,8 @@ namespace ECEditor
             return false;
         // Make sure that attribute type and name is same in both components.
         IComponent *myComponent = components_[0].lock().get();*/
-        if(component.TypeName() != typeName_ ||
-           component.Name() != name_)
+        if(component->TypeName() != typeName_ ||
+           component->Name() != name_)
             return false;
 
         //Include extra check for dynamic component, so that we can be sure that their name, typename and attributes are exactly same.
@@ -52,24 +53,24 @@ namespace ECEditor
         {
             if(components_[0].expired())
                 return false;
-            const EC_DynamicComponent &thisComponent = dynamic_cast<const EC_DynamicComponent&>(*components_[0].lock().get());
-            const EC_DynamicComponent &compareComponent = dynamic_cast<const EC_DynamicComponent&>(component);
-            if(!(&compareComponent) || !(&thisComponent))
+            EC_DynamicComponent *thisComponent = dynamic_cast<EC_DynamicComponent*>(components_[0].lock().get());
+            EC_DynamicComponent *compareComponent = dynamic_cast<EC_DynamicComponent*>(component.get());
+            if(!compareComponent || !thisComponent)
                 return false;
             
-            if(!thisComponent.ContainSameAttributes(compareComponent))
+            if(!thisComponent->ContainSameAttributes(*compareComponent))
                 return false;
         }
         return true;
     }
 
-    bool ComponentGroup::ContainsComponent(const IComponent *component) const
+    bool ComponentGroup::ContainsComponent(ComponentPtr component) const
     {
         for(uint i = 0; i < components_.size(); i++)
         {
             if(components_[i].expired())
                 continue;
-            if(components_[i].lock().get() == component)
+            if(components_[i].lock().get() == component.get())
                 return true;
         }
         return false;
@@ -93,14 +94,14 @@ namespace ECEditor
     bool ComponentGroup::AddComponent(ComponentPtr comp)
     {
         //Check if the component have already added to component group or it's name or type are different for the component group.
-        if(ContainsComponent(comp.get()) || comp->Name() != name_ || comp->TypeName() != typeName_) 
+        if(ContainsComponent(comp) || comp->Name() != name_ || comp->TypeName() != typeName_) 
             return false;
         components_.push_back(ComponentWeakPtr(comp));
         editor_->AddNewComponent(comp, false);
         return true;
     }
 
-    bool ComponentGroup::RemoveComponent(IComponent *comp)
+    bool ComponentGroup::RemoveComponent(ComponentPtr comp)
     {
         if(!ContainsComponent(comp))
             return false;

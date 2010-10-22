@@ -20,6 +20,9 @@
 #include <QDomDocument>
 #include <QMimeData>
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
+
 #include "MemoryLeakCheck.h"
 
 namespace ECEditor
@@ -51,7 +54,6 @@ namespace ECEditor
 
         //! @todo merge entity.h and entity.cpp from tundra to develope and begin to use their ComponentAdded and ComponentRemoved signals.
         connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
-
         connect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
     }
 
@@ -62,11 +64,12 @@ namespace ECEditor
 
         for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); iter++)
         {
-            if (!(*iter).expired() && (*iter).lock().get() == entity.get())
+            Scene::EntityPtr ent_ptr = (*iter).lock();
+            if (ent_ptr && ent_ptr.get() == entity.get())
             {
-                Scene::Entity::ComponentVector components = (*iter).lock()->GetComponentVector();
+                Scene::Entity::ComponentVector components = ent_ptr->GetComponentVector();
                 for(uint i = 0; i < components.size(); i++)
-                    RemoveComponentFromGroup(components[i].get());
+                    RemoveComponentFromGroup(components[i]);
                 entities_.erase(iter);
                 break;
             }
@@ -415,16 +418,21 @@ namespace ECEditor
         Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
         if(!HasEntity(entity_ptr))
             return;
+        ComponentPtr comp_ptr = comp->GetSharedPtr();
+        if(!comp_ptr)
+        {
+            LogError("Fail to add new component to ECBroser. Make sure that component's parent entity is setted.");
+            return;
+        }
 
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
-        {
-            if((*iterComp)->ContainsComponent(comp))
+            if((*iterComp)->ContainsComponent(comp_ptr))
+            {
+                LogWarning("Fail to add new component to a component group, because component was already added.");
                 return;
-        }
-        ComponentPtr componentPtr = entity_ptr->GetComponent(comp->TypeName(), comp->Name());
-        assert(componentPtr.get());
-        AddNewComponentToGroup(componentPtr);
+            }
+        AddNewComponentToGroup(comp_ptr);
     }
 
     void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
@@ -432,16 +440,19 @@ namespace ECEditor
         Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
         if(!HasEntity(entity_ptr))
             return;
+        ComponentPtr comp_ptr = comp->GetSharedPtr();
+        if(!comp_ptr)
+        {
+            LogError("Fail to remove component from ECBroser. Make sure that component's parent entity is setted.");
+            return;
+        }
 
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
         {
-            if(!(*iterComp)->ContainsComponent(comp))
+            if(!(*iterComp)->ContainsComponent(comp_ptr))
                 continue;
-            
-            ComponentPtr componentPtr = entity_ptr->GetComponent(comp->TypeName(), comp->Name());
-            assert(componentPtr.get());
-            RemoveComponentFromGroup(comp);
+            RemoveComponentFromGroup(comp_ptr);
             return;
         }
     }
@@ -571,11 +582,17 @@ namespace ECEditor
         EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender());
         if(!component)
             return;
+        ComponentPtr comp_ptr = component->GetSharedPtr();
+        if(!comp_ptr)
+        {
+            LogError("Couldn't update dynamic component " + component->Name().toStdString() + ", cause parent entity was null.");
+            return;
+        }
 
         Scene::Entity *entity = component->GetParentEntity();
         ComponentPtr compPtr = entity->GetComponent(component);
-        RemoveComponentFromGroup(component);
-        AddNewComponentToGroup(compPtr);
+        RemoveComponentFromGroup(comp_ptr);
+        AddNewComponentToGroup(comp_ptr);
     }
 
     void ECBrowser::ComponentNameChanged(const QString &newName)
@@ -583,12 +600,14 @@ namespace ECEditor
         IComponent *component = dynamic_cast<IComponent*>(sender());
         if(component)
         {
-            RemoveComponentFromGroup(component);
-            Scene::Entity *entity = component->GetParentEntity();
-            if(!entity)
+            ComponentPtr comp_ptr = component->GetSharedPtr();
+            if(!comp_ptr)
+            {
+                LogError("Couldn't update component name, cause parent entity was null.");
                 return;
-            ComponentPtr compPtr = entity->GetComponent(component);
-            AddNewComponentToGroup(compPtr);
+            }
+            RemoveComponentFromGroup(comp_ptr);
+            AddNewComponentToGroup(comp_ptr);
         }
     }
 
@@ -668,14 +687,12 @@ namespace ECEditor
         //RemoveComponentGroup(*iter);
     }
 
-    ComponentGroupList::iterator ECBrowser::FindSuitableGroup(const IComponent &comp)
+    ComponentGroupList::iterator ECBrowser::FindSuitableGroup(ComponentPtr comp)
     {
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
-        {
             if((*iter)->IsSameComponent(comp))
                 return iter;
-        }
         return iter;
     }
 
@@ -684,7 +701,7 @@ namespace ECEditor
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
-            if((*iter)->browserListItem_ == &item)
+            if ((*iter)->browserListItem_ == &item)
                 return iter;
         }
         return iter;
@@ -692,26 +709,27 @@ namespace ECEditor
 
     void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     {
-        assert(comp.get());
-        if(!comp.get() && !treeWidget_)
+        assert(comp);
+        if (!comp.get() && !treeWidget_)
             return;
 
-        ComponentGroupList::iterator iter = FindSuitableGroup(*comp.get());
-        if(iter != componentGroups_.end())
+        ComponentGroupList::iterator iter = FindSuitableGroup(comp);
+        if (iter != componentGroups_.end())
         {
+            ComponentGroup *comp_group = *iter;
             // No point to add same component multiple times.
-            if((*iter)->ContainsComponent(comp.get()))
+            if (comp_group->ContainsComponent(comp))
                 return;
 
-            (*iter)->editor_->AddNewComponent(comp, false);
-            (*iter)->components_.push_back(ComponentWeakPtr(comp));
-            if((*iter)->IsDynamic())
+            comp_group->editor_->AddNewComponent(comp, false);
+            comp_group->components_.push_back(ComponentWeakPtr(comp));
+            if (comp_group->IsDynamic())
             {
                 EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
                 connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
                 connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
                 connect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString&)),
-                    SLOT(ComponentNameChanged(const QString&)));
+                        SLOT(ComponentNameChanged(const QString&)));
             }
             return;
         }
@@ -757,23 +775,24 @@ namespace ECEditor
         }
     }
 
-    void ECBrowser::RemoveComponentFromGroup(IComponent *comp)
+    void ECBrowser::RemoveComponentFromGroup(ComponentPtr comp)
     {
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
-            if(!(*iter)->ContainsComponent(comp))
+            ComponentGroup *comp_group = *iter;
+            if(!comp_group->ContainsComponent(comp))
                 continue;
-            if((*iter)->IsDynamic())
+            if(comp_group->IsDynamic())
             {
-                EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp);
+                EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 disconnect(dc, SIGNAL(AttributeAdded(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
                 disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
                 disconnect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString &)), this, SLOT(ComponentNameChanged(const QString&)));
             }
-            (*iter)->RemoveComponent(comp);
+            comp_group->RemoveComponent(comp);
             //Ensure that coponent group is valid and if it's not, remove it from the browser list.
-            if(!(*iter)->IsValid())
+            if(!comp_group->IsValid())
             {
                 SAFE_DELETE(*iter)
                 componentGroups_.erase(iter);
