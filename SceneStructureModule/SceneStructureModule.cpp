@@ -29,10 +29,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
 #include "MemoryLeakCheck.h"
 
-std::string SceneStructureModule::typeNameStatic = "SceneStructure";
-
 SceneStructureModule::SceneStructureModule() :
-    IModule(typeNameStatic),
+    IModule("SceneStructure"),
     sceneWindow(0)
 {
 }
@@ -109,7 +107,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
     else if (filename.toLower().indexOf(".xml") != -1)
     {
-        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, AttributeChange::Replicate);
+        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
     }
     else if (filename.toLower().indexOf(".nbf") != -1)
     {

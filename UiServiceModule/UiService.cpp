@@ -31,12 +31,16 @@ UiService::~UiService()
 
 UiProxyWidget *UiService::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
 {
+    if (!widget)
+        return 0;
+
     /*  QGraphicsProxyWidget maintains symmetry for the following states:
      *  state, enabled, visible, geometry, layoutDirection, style, palette,
      *  font, cursor, sizeHint, getContentsMargins and windowTitle
      */
 
     UiProxyWidget *proxy = new UiProxyWidget(widget, flags);
+    assert(proxy->widget());
 
     // Synchorize windowState flags
     proxy->widget()->setWindowState(widget->windowState());
@@ -54,6 +58,9 @@ UiProxyWidget *UiService::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flag
 
 bool UiService::AddWidgetToScene(UiProxyWidget *widget)
 {
+    if (!widget)
+        return false;
+
     if (widgets_.contains(widget))
         return false;
 
@@ -92,14 +99,22 @@ void UiService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, con
 
 void UiService::RemoveWidgetFromScene(QWidget *widget)
 {
-    scene_->removeItem(widget->graphicsProxyWidget());
+    if (!widget)
+        return;
+
+    if (scene_)
+        scene_->removeItem(widget->graphicsProxyWidget());
     widgets_.removeOne(widget->graphicsProxyWidget());
     fullScreenWidgets_.removeOne(widget->graphicsProxyWidget());
 }
 
 void UiService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
 {
-    scene_->removeItem(widget);
+    if (!widget)
+        return;
+
+    if (scene_)
+        scene_->removeItem(widget);
     widgets_.removeOne(widget);
     fullScreenWidgets_.removeOne(widget);
 }
@@ -126,16 +141,31 @@ void UiService::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
 
 void UiService::ShowWidget(QWidget *widget) const
 {
-    widget->graphicsProxyWidget()->show();
+    if (!widget)
+        return;
+
+    if (widget->graphicsProxyWidget())
+        widget->graphicsProxyWidget()->show();
+    else
+        widget->show();
 }
 
 void UiService::HideWidget(QWidget *widget) const
 {
-    widget->graphicsProxyWidget()->hide();
+    if (!widget)
+        return;
+
+    if (widget->graphicsProxyWidget())
+        widget->graphicsProxyWidget()->hide();
+    else
+        widget->hide();
 }
 
 void UiService::BringWidgetToFront(QWidget *widget) const
 {
+    if (!widget)
+        return;
+
     ShowWidget(widget);
     scene_->setActiveWindow(widget->graphicsProxyWidget());
     scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
@@ -143,6 +173,9 @@ void UiService::BringWidgetToFront(QWidget *widget) const
 
 void UiService::BringWidgetToFront(QGraphicsProxyWidget *widget) const
 {
+    if (!widget)
+        return;
+
     scene_->setActiveWindow(widget);
     scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
 }

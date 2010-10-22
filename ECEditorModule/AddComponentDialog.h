@@ -52,7 +52,7 @@ namespace ECEditor
         void CheckComponentName(const QString &name);
 
     protected:
-        //! Over-ride event from QDialog.
+        //! Override event from QDialog.
         void hideEvent(QHideEvent *event);
 
     private:

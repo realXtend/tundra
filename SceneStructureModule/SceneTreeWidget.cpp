@@ -179,6 +179,36 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->addAction(importAction);
     menu->addAction(openNewSceneAction);
 
+    // Entity action menu. Quick'n'dirty test implementation.
+    Selection sel = GetSelection();
+    if (sel.entities.size() == 1)
+    {
+        const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+        assert(scene.get());
+        if (scene)
+        {
+            Scene::EntityPtr entity = scene->GetEntity(sel.entities[0]->id);
+            if (entity)
+            {
+                if (entity->Actions().size() > 0)
+                {
+                    menu->addSeparator();
+                    QMenu *actionMenu = new QMenu(tr("Actions"), menu);
+                    menu->addMenu(actionMenu);
+
+                    Scene::Entity::ActionMap::const_iterator it = entity->Actions().begin();
+                    while(it != entity->Actions().end())
+                    {
+                        QAction *entityAction = new QAction((*it)->Name(), actionMenu);
+                        connect(entityAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
+                        actionMenu->addAction(entityAction);
+                        ++it;
+                    }
+                }
+            }
+        }
+    }
+
     // Show menu.
     menu->popup(e->globalPos());
 }
@@ -204,6 +234,10 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
     const QMimeData *data = e->mimeData();
     if (data->hasUrls())
     {
+        SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
+        if (!sceneStruct)
+            LogError("Could not retrieve SceneStructureModule. Cannot instantiate content.");
+
         foreach(QUrl url, data->urls())
         {
             QString filename = url.path();
@@ -212,7 +246,8 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
             // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            framework->GetModule<SceneStructureModule>()->InstantiateContent(filename, Vector3df(), false);
+            if (sceneStruct)
+                sceneStruct->InstantiateContent(filename, Vector3df(), false);
         }
 
         e->acceptProposedAction();
@@ -289,7 +324,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
                 if (entity)
                 {
                     ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
-                    if (component->IsSerializable())
+                    if (component && component->IsSerializable())
                         component->SerializeTo(scene_doc, scene_elem);
                 }
             }
@@ -367,16 +402,29 @@ void SceneTreeWidget::Rename()
     if (!scene)
         return;
 
-    Selection sel = GetSelection();
     QModelIndex index = selectionModel()->currentIndex();
-    if (sel.entities.size() == 1 && index.isValid())
+    if (!index.isValid())
+        return;
+
+    Selection sel = GetSelection();
+    if (sel.entities.size() == 1)
     {
         EntityItem *eItem = sel.entities[0];
         // Remove the entity ID from the text when user is editing entity's name.
         eItem->setText(0, scene->GetEntity(eItem->id)->GetName());
-        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
         edit(index);
+        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
     }
+/*
+    else if (sel.components.size() == 1)
+    {
+        ComponentItem *cItem = sel.components[0];
+        // Remove the type name from the text when user is editing entity's name.
+        cItem->setText(0, cItem->name);
+        edit(index);
+//        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
+    }
+*/
 }
 
 void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
@@ -389,11 +437,31 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
     EntityItem *eItem = dynamic_cast<EntityItem *>(item);
     if (eItem)
     {
-        QString newName = eItem->text(0);
-        disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
-        // We don't need to set text to the item here. It's done when be SceneStructureWindow.
-        scene->GetEntity(eItem->id)->SetName(newName);
+        Scene::EntityPtr entity = scene->GetEntity(eItem->id);
+        assert(entity);
+        if (entity)
+        {
+            QString newName = eItem->text(0);
+            disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
+            // We don't need to set item text here. It's done when SceneStructureWindow gets AttributeChanged() signal from Scene.
+            entity->SetName(newName);
+            return;
+        }
     }
+/*
+    ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
+    EntityItem *parentItem = dynamic_cast<EntityItem *>(cItem->parent());
+    if (cItem && parentItem)
+    {
+        Scene::EntityPtr entity = scene->GetEntity(parentItem->id);
+        QString newName = cItem->text(0);
+        disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
+        ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
+        if (component)
+            component->SetName(newName);
+        //cItem->typeName
+    }
+*/
 }
 
 void SceneTreeWidget::New()
@@ -542,7 +610,7 @@ void SceneTreeWidget::Import()
     if (fileDialog)
         fileDialog->close();
     fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
-        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" + cOgreMeshFileFilter,
+        cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
@@ -555,6 +623,27 @@ void SceneTreeWidget::OpenNewScene()
         tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
+void SceneTreeWidget::EntityActionTriggered()
+{
+    QAction *action = dynamic_cast<QAction *>(sender());
+    assert(action);
+    if (!action)
+        return;
+
+    Selection sel = GetSelection();
+    if (sel.entities.size() !=  1)
+        return;
+
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return;
+
+    Scene::EntityPtr entity = scene->GetEntity(sel.entities[0]->id);
+    if (entity)
+        entity->Exec(EntityAction::Local, action->text());
+}
+
 void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 {
     QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
@@ -562,7 +651,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
     if (!dialog)
         return;
 
-    if (result != 1)
+    if (result != QDialog::Accepted)
         return;
 
     QStringList files = dialog->selectedFiles();
@@ -639,7 +728,7 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
     if (!dialog)
         return;
 
-    if (result != 1)
+    if (result != QDialog::Accepted)
         return;
 
     QStringList files = dialog->selectedFiles();
@@ -684,7 +773,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
     if (!dialog)
         return;
 
-    if (result != 1)
+    if (result != QDialog::Accepted)
         return;
 
     const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
@@ -699,7 +788,11 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
         if (dialog->windowTitle() == tr("Open New Scene"))
             clearScene = true;
 
-        framework->GetModule<SceneStructureModule>()->InstantiateContent(filename, Vector3df(), clearScene);
+        SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
+        if (sceneStruct)
+            sceneStruct->InstantiateContent(filename, Vector3df(), clearScene);
+        else
+            LogError("Could not retrieve SceneStructureModule. Cannot instantiate content.");
     }
 }
 

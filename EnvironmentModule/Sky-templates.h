@@ -51,6 +51,7 @@ namespace Environment
                    entity->RemoveComponent(entity->GetComponent(EC_SkyPlane::TypeNameStatic()), AttributeChange::Replicate);
                if ( entity->HasComponent(EC_SkyBox::TypeNameStatic()))
                    entity->RemoveComponent(entity->GetComponent(EC_SkyBox::TypeNameStatic()), AttributeChange::Replicate);
+           
                
 
            }
