@@ -28,9 +28,9 @@ namespace Foundation
         typedef ComponentList::const_iterator const_iterator;
         typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
         typedef std::map<uint, ComponentFactoryPtr> ComponentFactoryHashMap;
-        
+
         //! default constructor
-        ComponentManager(Framework *framework);
+        explicit ComponentManager(Framework *framework);
 
         //! destructor
         ~ComponentManager() { }
@@ -88,7 +88,7 @@ namespace Foundation
             \param name name of the component to create
         */
         ComponentPtr CreateComponent(uint type_hash, const QString &name);
-        
+
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentPtr &component);
 
@@ -98,21 +98,25 @@ namespace Foundation
         //! Returns list of supported attribute types.
         StringVector GetAttributeTypes() const;
 
-        //! Get all component factories
+        //! Returns all component factories.
         const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
+
+        //! Returns string list of available component type names.
+        QStringList GetAvailableComponentTypeNames() const;
 
         //! Get component typename from typename hash
         /*! \param type_hash String hash of component typename
             \return Typename, or empty if not found
          */
         const QString& GetComponentTypeName(uint type_hash) const;
-        
+
     private:
         //! Map of component factories
         ComponentFactoryMap factories_;
+
         //! Map of component factories by hash
         ComponentFactoryHashMap factories_hash_;
-        
+
         //! Map of component typename hash to typename
         std::map<uint, QString> hashToTypeName_;
 

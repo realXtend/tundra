@@ -205,7 +205,7 @@ void SceneStructureWindow::ClearAssetReferences()
 
 void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
-    EntityItem *item = new EntityItem(entity->GetId());
+    EntityItem *item = new EntityItem(entity->GetSharedPtr());
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
     item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
 
@@ -240,13 +240,16 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->id == entity->GetId()))
         {
-            ComponentItem *cItem = new ComponentItem(comp->TypeName(), comp->Name(), eItem);
+            // This is a bit ugly, but we want to get the shared pointer.
+            ComponentPtr cPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+            assert(cPtr.get());
+            ComponentItem *cItem = new ComponentItem(cPtr, eItem);
             cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
             cItem->setHidden(!showComponents);
 
             if (comp->IsTemporary()) // Set temporary component's font color red
                 cItem->setTextColor(0, QColor(Qt::red));
-            else if (entity->IsLocal()) // Set local entity's components font color blue
+            else if(entity->IsLocal()) // Set local entity's components font color blue
                 cItem->setTextColor(0, QColor(Qt::blue));
 
             eItem->addChild(cItem);

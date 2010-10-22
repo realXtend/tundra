@@ -18,10 +18,10 @@
 
 namespace ECEditor
 {
-    AddComponentDialog::AddComponentDialog(Foundation::Framework *framework, const QList<entity_id_t> &entities, QWidget *parent, Qt::WindowFlags f):
+    AddComponentDialog::AddComponentDialog(Foundation::Framework *fw, const QList<entity_id_t> &ids, QWidget *parent, Qt::WindowFlags f):
         QDialog(parent, f),
-        framework_(framework),
-        entities_(entities),
+        framework_(fw),
+        entities_(ids),
         component_type_label_(0),
         component_name_label_(0),
         name_line_edit_(0),

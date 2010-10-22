@@ -10,7 +10,6 @@
 #include "SceneTreeWidget.h"
 #include "SceneStructureModule.h"
 
-#include "ECEditorWindow.h"
 #include "UiServiceInterface.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
@@ -20,7 +19,9 @@
 #include "ModuleManager.h"
 #include "TundraEvents.h"
 #include "EventManager.h"
+#include "ECEditorWindow.h"
 #include "EntityActionDialog.h"
+#include "AddComponentDialog.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -32,11 +33,70 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
 #include "MemoryLeakCheck.h"
 
+// File filter definitions for supported files.
 const QString cOgreSceneFileFilter(QApplication::translate("SceneTreeWidget", "OGRE scene (*.scene)"));
 const QString cOgreMeshFileFilter(QApplication::translate("SceneTreeWidget", "OGRE mesh (*.mesh)"));
 const QString cNaaliXmlFileFilter(QApplication::translate("SceneTreeWidget", "Naali scene XML(*.xml)"));
 const QString cNaaliBinaryFileFilter(QApplication::translate("SceneTreeWidget", "Naali Binary Format (*.nbf)"));
 const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf)"));
+
+// EntityItem
+
+EntityItem::EntityItem(const Scene::EntityPtr &entity) :
+    ptr(entity), id(entity->GetId())
+{
+}
+Scene::EntityPtr EntityItem::Entity() const
+{
+    return ptr.lock();
+}
+
+// ComponentItem
+
+ComponentItem::ComponentItem(const ComponentPtr &comp, EntityItem *parent) :
+    QTreeWidgetItem(parent), parentItem(parent), ptr(comp), typeName(comp->TypeName()), name(comp->Name())
+{
+}
+
+ComponentPtr ComponentItem::Component() const
+{
+    return ptr.lock();
+}
+
+EntityItem *ComponentItem::Parent() const
+{
+    return parentItem;
+}
+
+// Selection
+
+bool Selection::IsEmpty() const
+{
+    return entities.size() == 0 && components.size() == 0;
+}
+
+bool Selection::HasEntities() const
+{
+    return entities.size() > 0;
+}
+
+bool Selection::HasComponents() const
+{
+    return components.size() > 0;
+}
+
+QSet<entity_id_t> Selection::EntityIds() const
+{
+    QSet<entity_id_t> ids;
+    foreach(EntityItem *e, entities)
+        ids.insert(e->id);
+    foreach(ComponentItem *c, components)
+        ids.insert(c->Parent()->id);
+
+    return ids;
+}
+
+// SceneTreeWidget
 
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
@@ -85,136 +145,12 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 
     mousePressEvent(&mouseEvent);
 
-    // Create context menu
+    // Create context menu and show it.
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
-    // Create context menu actions
-    // "New entity...", "Import..." and "Open new scene..." actions are available always
-    QAction *newAction = new QAction(tr("New entity..."), menu);
-    QAction *importAction = new QAction(tr("Import..."), menu);
-    QAction *openNewSceneAction = new QAction(tr("Open new scene..."), menu);
+    AddAvailableActions(menu);
 
-    connect(newAction, SIGNAL(triggered()), SLOT(New()));
-    connect(importAction, SIGNAL(triggered()), SLOT(Import()));
-    connect(openNewSceneAction, SIGNAL(triggered()), SLOT(OpenNewScene()));
-
-    // "Paste" action is available only if we have valid entity-component XML data in clipboard.
-    QAction *pasteAction = 0;
-    bool pastePossible = false;
-    {
-        QDomDocument scene_doc("Scene");
-        pastePossible = scene_doc.setContent(QApplication::clipboard()->text());
-        if (pastePossible)
-        {
-            pasteAction = new QAction(tr("Paste"), menu);
-            connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
-        }
-    }
-
-    // "Save scene as..." action is possible if we have at least one entity in the scene.
-    bool saveSceneAsPossible = (topLevelItemCount() > 0);
-    QAction *saveSceneAsAction = 0;
-    if (saveSceneAsPossible)
-    {
-        saveSceneAsAction = new QAction(tr("Save scene as..."), menu);
-        connect(saveSceneAsAction, SIGNAL(triggered()), SLOT(SaveSceneAs()));
-    }
-
-    // "Edit", "Edit in new", "Delete",and "Copy" actions are available only if we have selection.
-    QAction *editAction = 0, *editInNewAction = 0, *deleteAction = 0, *renameAction = 0,
-        *copyAction = 0, *saveAsAction = 0;
-
-    bool hasSelection = !selectionModel()->selection().isEmpty();
-    if (hasSelection)
-    {
-        editAction = new QAction(tr("Edit"), menu);
-        editInNewAction = new QAction(tr("Edit in new window"), menu);
-        deleteAction = new QAction(tr("Delete"), menu);
-        copyAction = new QAction(tr("Copy"), menu);
-        saveAsAction = new QAction(tr("Save as..."), menu);
-
-        connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
-        connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
-        connect(deleteAction, SIGNAL(triggered()), SLOT(Delete()));
-        connect(copyAction, SIGNAL(triggered()), SLOT(Copy()));
-        connect(saveAsAction, SIGNAL(triggered()), SLOT(SaveAs()));
-    }
-
-    // "Rename" action is possible only if have one entity selected.
-    bool renamePossible = (selectionModel()->selection().size() == 1);
-    if (renamePossible)
-    {
-        renameAction = new QAction(tr("Rename"), menu);
-        connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
-    }
-
-    if (renamePossible)
-        menu->addAction(renameAction);
-
-    if (hasSelection)
-    {
-        menu->addAction(editAction);
-        menu->addAction(editInNewAction);
-    }
-
-    menu->addAction(newAction);
-
-    if (hasSelection)
-    {
-        menu->addAction(deleteAction);
-        menu->addAction(copyAction);
-    }
-
-    if (pastePossible)
-        menu->addAction(pasteAction);
-
-    menu->addSeparator();
-
-    if (hasSelection)
-        menu->addAction(saveAsAction);
-
-    if (saveSceneAsPossible)
-        menu->addAction(saveSceneAsAction);
-
-    menu->addAction(importAction);
-    menu->addAction(openNewSceneAction);
-
-    // Entity action menu.
-    Selection sel = GetSelection();
-    if (sel.HasEntities())
-    {
-        // Set available actions is union of all actions of the selected entities.
-        QSet<QString> actions;
-
-        const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-        assert(scene.get());
-        if (scene)
-            foreach(EntityItem *eItem, sel.entities)
-            {
-                Scene::EntityPtr entity = scene->GetEntity(eItem->id);
-                if (entity && entity->Actions().size() > 0)
-                    foreach(EntityAction *act, entity->Actions())
-                        actions.insert(act->Name());
-            }
-
-        // Create "Action" menu the availabe actions.
-        if (!actions.empty())
-        {
-            menu->addSeparator();
-            QMenu *actionMenu = new QMenu(tr("Actions"), menu);
-            menu->addMenu(actionMenu);
-
-            foreach(QString act, actions)
-            {
-                QAction *entityAction = new QAction(act, actionMenu);
-                connect(entityAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
-                actionMenu->addAction(entityAction);
-            }
-        }
-    }
-
-    // Show menu.
     menu->popup(e->globalPos());
 }
 
@@ -261,6 +197,195 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
         QTreeWidget::dropEvent(e);
 }
 
+void SceneTreeWidget::AddAvailableActions(QMenu *menu)
+{
+    assert(menu);
+
+    // "New entity...", "Import..." and "Open new scene..." actions are available always
+    QAction *newEntityAction = new QAction(tr("New entity..."), menu);
+    QAction *importAction = new QAction(tr("Import..."), menu);
+    QAction *openNewSceneAction = new QAction(tr("Open new scene..."), menu);
+
+    connect(newEntityAction, SIGNAL(triggered()), SLOT(NewEntity()));
+    connect(importAction, SIGNAL(triggered()), SLOT(Import()));
+    connect(openNewSceneAction, SIGNAL(triggered()), SLOT(OpenNewScene()));
+
+    // "Paste" action is available only if we have valid entity-component XML data in clipboard.
+    QAction *pasteAction = 0;
+    bool pastePossible = false;
+    {
+        QDomDocument scene_doc("Scene");
+        pastePossible = scene_doc.setContent(QApplication::clipboard()->text());
+        if (pastePossible)
+        {
+            pasteAction = new QAction(tr("Paste"), menu);
+            connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
+        }
+    }
+
+    // "Save scene as..." action is possible if we have at least one entity in the scene.
+    bool saveSceneAsPossible = (topLevelItemCount() > 0);
+    QAction *saveSceneAsAction = 0;
+    if (saveSceneAsPossible)
+    {
+        saveSceneAsAction = new QAction(tr("Save scene as..."), menu);
+        connect(saveSceneAsAction, SIGNAL(triggered()), SLOT(SaveSceneAs()));
+    }
+
+    // "Edit", "Edit in new", "New component...", "Delete", "Copy", "Actions..." and "Functions..."
+    // actions are available only if we have selection.
+    QAction *editAction = 0, *editInNewAction = 0, *newComponentAction = 0, *deleteAction = 0,
+        *renameAction = 0, *copyAction = 0, *saveAsAction = 0;//, *actionsAction = 0, *functionsActions = 0;
+
+    bool hasSelection = !selectionModel()->selection().isEmpty();
+    if (hasSelection)
+    {
+        editAction = new QAction(tr("Edit"), menu);
+        editInNewAction = new QAction(tr("Edit in new window"), menu);
+        newComponentAction = new QAction(tr("New component..."), menu);
+        deleteAction = new QAction(tr("Delete"), menu);
+        copyAction = new QAction(tr("Copy"), menu);
+        saveAsAction = new QAction(tr("Save as..."), menu);
+//        actionsAction = new QAction(tr("Actions..."), menu);
+//        QAction *functionsAction = new QAction(tr("Functions..."), menu);
+
+        connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
+        connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
+        connect(newComponentAction, SIGNAL(triggered()), SLOT(NewComponent()));
+        connect(deleteAction, SIGNAL(triggered()), SLOT(Delete()));
+        connect(copyAction, SIGNAL(triggered()), SLOT(Copy()));
+        connect(saveAsAction, SIGNAL(triggered()), SLOT(SaveAs()));
+//        connect(actionsAction, SIGNAL(triggered()), SLOT(ShowEntityActionsDialog()));
+//        connect(functionsActions, SIGNAL(triggered()), SLOT(ShowFunctionsDialog()));
+    }
+
+    // "Rename" action is possible only if have one entity selected.
+    bool renamePossible = (selectionModel()->selection().size() == 1);
+    if (renamePossible)
+    {
+        renameAction = new QAction(tr("Rename"), menu);
+        connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
+    }
+
+    if (renamePossible)
+        menu->addAction(renameAction);
+
+    if (hasSelection)
+    {
+        menu->addAction(editAction);
+        menu->addAction(editInNewAction);
+//        menu->addAction(actionsAction);
+//        menu->addAction(functionsAction);
+    }
+
+    menu->addAction(newEntityAction);
+
+    if (hasSelection)
+    {
+        menu->addAction(newComponentAction);
+        menu->addAction(deleteAction);
+        menu->addAction(copyAction);
+    }
+
+    if (pastePossible)
+        menu->addAction(pasteAction);
+
+    menu->addSeparator();
+
+    if (hasSelection)
+        menu->addAction(saveAsAction);
+
+    if (saveSceneAsPossible)
+        menu->addAction(saveSceneAsAction);
+
+    menu->addAction(importAction);
+    menu->addAction(openNewSceneAction);
+
+    Selection sel = GetSelection();
+    if (sel.HasEntities())
+    {
+        // Entity actions and functions
+        // Set available actions is union of all actions of the selected entities.
+        QSet<QString> actions;
+        QStringList methods;
+
+        foreach(EntityItem *eItem, sel.entities)
+        {
+            Scene::EntityPtr entity = eItem->Entity();
+            if (entity)
+            {
+                //if (entity->Actions().size() > 0)
+                foreach(EntityAction *act, entity->Actions())
+                    actions.insert(act->Name());
+
+                const QMetaObject *mo = entity->metaObject();
+                for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+                    methods << QString(mo->className()) + "::" + QString::fromLatin1(mo->method(i).signature());
+            }
+        }
+
+        // Create "Action" menu the availabe actions.
+        if (!actions.empty())
+        {
+            menu->addSeparator();
+            QMenu *actionMenu = new QMenu(tr("Actions"), menu);
+            menu->addMenu(actionMenu);
+
+            foreach(QString act, actions)
+            {
+                QAction *entityAction = new QAction(act, actionMenu);
+                connect(entityAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
+                actionMenu->addAction(entityAction);
+            }
+        }
+
+        // Create "Functions" menu.
+        if (!methods.empty())
+        {
+            if (actions.empty())
+                menu->addSeparator();
+
+            QMenu *functionMenu = new QMenu(tr("Functions"), menu);
+            menu->addMenu(functionMenu);
+
+            foreach(QString method, methods)
+            {
+                QAction *functionAction = new QAction(method, functionMenu);
+                //connect(functionAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
+                functionMenu->addAction(functionAction);
+            }
+        }
+    }
+    else if (sel.HasComponents())
+    {
+        QStringList methods;
+        foreach(ComponentItem *cItem, sel.components)
+        {
+            ComponentPtr component = cItem->Component();
+            if (component)
+            {
+                const QMetaObject *mo = component->metaObject();
+                for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
+                    methods << QString(mo->className()) + "::" + QString::fromLatin1(mo->method(i).signature());
+            }
+        }
+        // Create "Functions" menu.
+        if (!methods.empty())
+        {
+            menu->addSeparator();
+            QMenu *functionMenu = new QMenu(tr("Functions"), menu);
+            menu->addMenu(functionMenu);
+
+            foreach(QString method, methods)
+            {
+                QAction *functionAction = new QAction(method, functionMenu);
+                //connect(functionAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
+                functionMenu->addAction(functionAction);
+            }
+        }
+    }
+}
+
 Selection SceneTreeWidget::GetSelection() const
 {
     Selection ret;
@@ -284,11 +409,6 @@ Selection SceneTreeWidget::GetSelection() const
 
 QString SceneTreeWidget::GetSelectionAsXml() const
 {
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
-        return QString();
-
     Selection selection = GetSelection();
     if (selection.IsEmpty())
         return QString();
@@ -301,7 +421,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     {
         foreach(EntityItem *eItem, selection.entities)
         {
-            Scene::EntityPtr entity = scene->GetEntity(eItem->id);
+            Scene::EntityPtr entity = eItem->Entity();
             assert(entity.get());
             if (entity)
             {
@@ -322,17 +442,9 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     {
         foreach(ComponentItem *cItem, selection.components)
         {
-            EntityItem *eItem = dynamic_cast<EntityItem *>(cItem->parent());
-            if (eItem)
-            {
-                Scene::EntityPtr entity = scene->GetEntity(eItem->id);
-                if (entity)
-                {
-                    ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
-                    if (component && component->IsSerializable())
-                        component->SerializeTo(scene_doc, scene_elem);
-                }
-            }
+            ComponentPtr component = cItem->Component();
+            if (component && component->IsSerializable())
+                component->SerializeTo(scene_doc, scene_elem);
         }
 
         scene_doc.appendChild(scene_elem);
@@ -402,11 +514,6 @@ void SceneTreeWidget::EditInNew()
 
 void SceneTreeWidget::Rename()
 {
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
-        return;
-
     QModelIndex index = selectionModel()->currentIndex();
     if (!index.isValid())
         return;
@@ -415,10 +522,14 @@ void SceneTreeWidget::Rename()
     if (sel.entities.size() == 1)
     {
         EntityItem *eItem = sel.entities[0];
-        // Remove the entity ID from the text when user is editing entity's name.
-        eItem->setText(0, scene->GetEntity(eItem->id)->GetName());
-        edit(index);
-        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
+        Scene::EntityPtr entity = eItem->Entity();
+        if (entity)
+        {
+            // Remove the entity ID from the text when user is editing entity's name.
+            eItem->setText(0, entity->GetName());
+            edit(index);
+            connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
+        }
     }
 /*
     else if (sel.components.size() == 1)
@@ -434,15 +545,10 @@ void SceneTreeWidget::Rename()
 
 void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
 {
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
-        return;
-
     EntityItem *eItem = dynamic_cast<EntityItem *>(item);
     if (eItem)
     {
-        Scene::EntityPtr entity = scene->GetEntity(eItem->id);
+        Scene::EntityPtr entity = eItem->Entity();
         assert(entity);
         if (entity)
         {
@@ -469,7 +575,7 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
 */
 }
 
-void SceneTreeWidget::New()
+void SceneTreeWidget::NewEntity()
 {
     const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
     assert(scene.get());
@@ -508,6 +614,62 @@ void SceneTreeWidget::New()
     scene->EmitEntityCreated(entity, changeType);
 }
 
+void SceneTreeWidget::NewComponent()
+{
+    Selection sel = GetSelection();
+    if (!sel.HasEntities())
+        return;
+
+    ECEditor::AddComponentDialog *dialog = new ECEditor::AddComponentDialog(framework, sel.EntityIds().toList(), this);
+    dialog->SetComponentList(framework->GetComponentManager()->GetAvailableComponentTypeNames());
+    connect(dialog, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
+    dialog->show();
+}
+
+void SceneTreeWidget::ComponentDialogFinished(int result)
+{
+    ECEditor::AddComponentDialog *dialog = qobject_cast<ECEditor::AddComponentDialog *>(sender());
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    if (!scene)
+    {
+       LogWarning("Fail to add new component to entity, since default world scene was null");
+        return;
+    }
+
+    QList<entity_id_t> entities = dialog->GetEntityIds();
+    for(uint i = 0; i < entities.size(); i++)
+    {
+        Scene::EntityPtr entity = scene->GetEntity(entities[i]);
+        if (!entity)
+        {
+            LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(entities[i]));
+            continue;
+        }
+
+        // Check if component has been already added to a entity.
+        ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
+        if (comp)
+        {
+            LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
+            continue;
+        }
+
+        comp = framework->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
+        assert(comp.get());
+        if (comp)
+        {
+            comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
+            entity->AddComponent(comp, AttributeChange::Default);
+        }
+    }
+}
+
 void SceneTreeWidget::Delete()
 {
     const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
@@ -515,9 +677,21 @@ void SceneTreeWidget::Delete()
     if (!scene)
         return;
 
+    Selection sel = GetSelection();
+    // If we have components selected, remove them first.
+    if (sel.HasComponents())
+        foreach(ComponentItem *cItem, sel.components)
+        {
+            Scene::EntityPtr entity = cItem->Parent()->Entity();
+            ComponentPtr component = cItem->Component();
+            if (entity && component)
+                entity->RemoveComponent(component, AttributeChange::Default);
+        }
+
     // Remove entities.
-    foreach(entity_id_t id, GetSelection().EntityIds())
-        scene->RemoveEntity(id, AttributeChange::Replicate);
+    if (sel.HasEntities())
+        foreach(entity_id_t id, GetSelection().EntityIds())
+            scene->RemoveEntity(id, AttributeChange::Replicate);
 }
 
 void SceneTreeWidget::Copy()
@@ -561,7 +735,7 @@ void SceneTreeWidget::Paste()
         // Get currently selected entities and paste components to them.
         foreach(EntityItem *eItem, GetSelection().entities)
         {
-            Scene::EntityPtr entity = scene->GetEntity(eItem->id);
+            Scene::EntityPtr entity = eItem->Entity();
             if (entity)
             {
                 while(!componentElem.isNull())
@@ -635,11 +809,6 @@ void SceneTreeWidget::EntityActionTriggered()
     if (!action)
         return;
 
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
-        return;
-
     Selection sel = GetSelection();
     if (!sel.HasEntities())
         return;
@@ -647,7 +816,7 @@ void SceneTreeWidget::EntityActionTriggered()
     QList<Scene::EntityWeakPtr> entities;
     foreach(EntityItem *eItem, sel.entities)
     {
-        Scene::EntityPtr e = scene->GetEntity(eItem->id);
+        Scene::EntityPtr e = eItem->Entity();
         if (e)
             entities.append(e);
     }
@@ -685,11 +854,6 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 
     QStringList files = dialog->selectedFiles();
     if (files.size() != 1)
-        return;
-
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
         return;
 
     // Check out file extension. If filename has none, use the selected name filter from the save file dialog.
@@ -734,9 +898,9 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 
             dest.Add<u32>(sel.entities.size());
 
-            foreach(EntityItem *e, sel.entities)
+            foreach(EntityItem *eItem, sel.entities)
             {
-                Scene::EntityPtr entity = scene->GetEntity(e->id);
+                Scene::EntityPtr entity = eItem->Entity();
                 assert(entity.get());
                 if (entity)
                     entity->SerializeToBinary(dest);
@@ -803,11 +967,6 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
         return;
 
     if (result != QDialog::Accepted)
-        return;
-
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
         return;
 
     foreach(QString filename, dialog->selectedFiles())
