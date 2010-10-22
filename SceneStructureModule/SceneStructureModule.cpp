@@ -63,7 +63,8 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     if (worldPos == Vector3df())
     {
         bool ok;
-        QString posString = QInputDialog::getText(0, tr("Position"), tr("position (x;y;z):"), QLineEdit::Normal, "20.00;20.00;20.00", &ok);
+        QString posString = QInputDialog::getText(0, tr("Position"), tr("position (x;y;z):"), QLineEdit::Normal, "0.00;0.00;0.00", &ok);
+        posString = posString.trimmed();
         if (!ok)
             return ret;
 

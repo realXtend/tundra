@@ -117,7 +117,7 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
         }
 
         // Replace tabs (ASCII code decimal 9) with 4 spaces because tabs might appear incorrectly.
-        script.trimmed();
+        script = script.trimmed();
         script.replace(QChar(9), "    ");
 
         CreateTextEdit();
@@ -137,7 +137,7 @@ void OgreScriptEditor::SaveAs()
     if (assetType_ == RexTypes::RexAT_ParticleScript)
     {
         script = textEdit_->toPlainText();
-        script.trimmed();
+        script = script.trimmed();
         if (script.isEmpty() || script.isNull())
         {
             OgreAssetEditorModule::LogError("Empty script cannot be saved.");
@@ -188,7 +188,7 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
         return;
 
     QString newValueString(valueItem->text());
-    newValueString.trimmed();
+    newValueString = newValueString.trimmed();
     bool valid = true;
 
     QString type = typeItem->text();
