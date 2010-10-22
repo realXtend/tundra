@@ -54,11 +54,6 @@ var fc = comp.fontColorAttr;
 	bMouseIn = false;
 }
 
- function ScriptChanged()
-{ 
-	comp.AnimatedHide();
-}
-
 //Checking if EC_Hoveringtext component has added after EC_Script to Entity
  function CheckComponent(entity, component, type)
 {
