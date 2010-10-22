@@ -34,6 +34,8 @@ EC_Placeable::EC_Placeable(IModule* module) :
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
+    
+    AttachNode();
 }
 
 EC_Placeable::~EC_Placeable()
@@ -132,7 +134,6 @@ QVector3D EC_Placeable::GetQLocalZAxis() const
 void EC_Placeable::SetPosition(const Vector3df& position)
 {
     link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
-    AttachNode(); // Nodes become visible only after having their position set at least once
 }
 
 void EC_Placeable::SetOrientation(const Quaternion& orientation)
@@ -330,8 +331,6 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
             scale.z = 0.0000001f;
 
         link_scene_node_->setScale(scale.x, scale.y, scale.z);
-        
-        AttachNode(); // Nodes become visible only after having their position set at least once
     }
 }
 
