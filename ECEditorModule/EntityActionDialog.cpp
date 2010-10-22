@@ -73,7 +73,6 @@ EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entiti
 
 EntityActionDialog::~EntityActionDialog()
 {
-    std::cout << "jhraejgfda" << std::endl;
 }
 
 QList<Scene::EntityWeakPtr> EntityActionDialog::Entities() const
