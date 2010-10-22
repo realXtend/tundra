@@ -82,6 +82,7 @@ namespace Environment
         
         // If there exist placeable copy its position for default position and rotation.
        
+        /*
         EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if ( placeable != 0)
         {
@@ -92,6 +93,7 @@ namespace Environment
             rotationAttr.Set(rot, AttributeChange::Default);
             ComponentChanged(AttributeChange::Default);
         }
+        */
     }
     
     EC_WaterPlane::~EC_WaterPlane()
@@ -128,12 +130,7 @@ namespace Environment
                 AttachEntity();
             }
                 
-            Vector3df vec = placeable->GetPosition();
-            positionAttr.Set(vec,AttributeChange::Disconnected);
-       
-            Quaternion rot =placeable->GetOrientation();
-            rotationAttr.Set(rot, AttributeChange::Disconnected);
-            ComponentChanged(AttributeChange::Disconnected);
+          
         }
 
         QObject::connect(parent_entity_,SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(ComponentAdded(IComponent*, AttributeChange::Type)));
@@ -146,7 +143,22 @@ namespace Environment
         if ( component->TypeName() == EC_Placeable::TypeNameStatic() )
         {
             DetachEntity();
-            AttachEntity();
+            
+            EC_Placeable* placeable = static_cast<EC_Placeable* >(component);
+            if ( placeable == 0)
+                return;
+
+            if ( entity_ == 0)
+                return;
+
+            Ogre::SceneNode* node = placeable->GetSceneNode();
+            
+            node->addChild(node_);
+            node_->attachObject(entity_);
+            node_->setVisible(true);
+      
+            attached_ = true;
+            
         }
     }
 
@@ -168,15 +180,7 @@ namespace Environment
             attachedToRoot_ = true;
             attached_ = true;
             
-            // Take position and orientation from old placeable. 
-
-            EC_Placeable* placeable = static_cast<EC_Placeable* >(component);
-            if ( placeable == 0)
-                return;
-
-            positionAttr.Set(placeable->GetPosition(),AttributeChange::Default);
-            rotationAttr.Set(placeable->GetOrientation(), AttributeChange::Default);
-           
+          
         }
     }
 
@@ -298,15 +302,14 @@ namespace Environment
     {
         
         Vector3df vec = positionAttr.Get();
+                
         //node_->setPosition(vec.x, vec.y, vec.z);
 
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
-        Ogre::Vector3 current_pos = node_->_getDerivedPosition();
-        Ogre::Vector3 tmp(vec.x,vec.y,vec.z);
-        tmp = current_pos + tmp;
-        
-        Vector3df pos(tmp.x, tmp.y, tmp.z);
-        if ( !RexTypes::IsValidPositionVector(pos) )
+        //Ogre::Vector3 current_pos = node_->_getDerivedPosition();
+        Ogre::Vector3 tmp(vec.x,vec.y,vec.z);      
+      
+        if ( !RexTypes::IsValidPositionVector(tmp) )
             return;
        
         node_->setPosition(tmp);
@@ -316,7 +319,8 @@ namespace Environment
             return;
         
 
-        node_->_setDerivedPosition(pos);
+        //node_->_setDerivedPosition(pos);
+        node_->setPosition(pos);
 #endif
 
     }
