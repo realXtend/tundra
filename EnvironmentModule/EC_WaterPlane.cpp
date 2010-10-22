@@ -78,7 +78,7 @@ namespace Environment
         lastYsize_ = ySizeAttr.Get();
         
         CreateWaterPlane();
-        QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(AttachEntity()));
+        QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(SetParent()));
         
         // If there exist placeable copy its position for default position and rotation.
        
@@ -110,7 +110,76 @@ namespace Environment
         }
     }
 
- 
+    void EC_WaterPlane::SetParent()
+    {
+        // Parent entity has set.
+               
+        // Has parent a placeable?
+        
+        EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
+        
+        if ( placeable != 0)
+        {
+            // Are we currently attached?
+            if ( attached_ )
+            {
+                // Now there might be that we are attached to OgreRoot not to placeable node.
+                DetachEntity();
+                AttachEntity();
+            }
+                
+            Vector3df vec = placeable->GetPosition();
+            positionAttr.Set(vec,AttributeChange::Disconnected);
+       
+            Quaternion rot =placeable->GetOrientation();
+            rotationAttr.Set(rot, AttributeChange::Disconnected);
+            ComponentChanged(AttributeChange::Disconnected);
+        }
+
+        QObject::connect(parent_entity_,SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(ComponentAdded(IComponent*, AttributeChange::Type)));
+        QObject::connect(parent_entity_,SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)));
+
+    }
+
+    void EC_WaterPlane::ComponentAdded(IComponent* component, AttributeChange::Type type)
+    {
+        if ( component->TypeName() == EC_Placeable::TypeNameStatic() )
+        {
+            DetachEntity();
+            AttachEntity();
+        }
+    }
+
+    void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Type type)
+    {
+        if ( component->TypeName() == EC_Placeable::TypeNameStatic() )
+        {
+            DetachEntity();
+        
+            // Attacht entity directly to Ogre root.
+            
+            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+            if ( scene_mgr == 0)
+                return;
+
+            node_->attachObject(entity_);
+            scene_mgr->getRootSceneNode()->addChild(node_);
+            node_->setVisible(true);
+            attachedToRoot_ = true;
+            attached_ = true;
+            
+            // Take position and orientation from old placeable. 
+
+            EC_Placeable* placeable = static_cast<EC_Placeable* >(component);
+            if ( placeable == 0)
+                return;
+
+            positionAttr.Set(placeable->GetPosition(),AttributeChange::Default);
+            rotationAttr.Set(placeable->GetOrientation(), AttributeChange::Default);
+           
+        }
+    }
+
 
     bool EC_WaterPlane::IsUnderWater()
     {
@@ -227,17 +296,6 @@ namespace Environment
 
     void EC_WaterPlane::SetPosition()
     {
-        // Is attached?
-        if ( entity_ != 0 && !entity_->isAttached() && !attached_ )
-        {
-            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
-            node_->attachObject(entity_);
-            attached_ = true;
-            attachedToRoot_ = true;
-            scene_mgr->getRootSceneNode()->addChild(node_);
-            node_->setVisible(true);
-            
-        }
         
         Vector3df vec = positionAttr.Get();
         //node_->setPosition(vec.x, vec.y, vec.z);
@@ -265,17 +323,7 @@ namespace Environment
 
     void EC_WaterPlane::SetOrientation()
     {
-        // Is attached?
-        if ( entity_ != 0 && !entity_->isAttached() && attached_  )
-        {
-            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
-            node_->attachObject(entity_);
-            attached_ = true;
-            attachedToRoot_ = true;
-            scene_mgr->getRootSceneNode()->addChild(node_);
-            node_->setVisible(true);
-            
-        }
+       
 
          // Set orientation
         Quaternion rot = rotationAttr.Get();
@@ -393,42 +441,66 @@ namespace Environment
    
     void EC_WaterPlane::AttachEntity()
     {
-        EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
-        if ((!entity_) || (!placeable) || attached_)
+        if ( attached_ || entity_ == 0)
             return;
 
-        Ogre::SceneNode* node = placeable->GetSceneNode();
-        node->addChild(node_);
-        node_->attachObject(entity_);
+        EC_Placeable* placeable = dynamic_cast<EC_Placeable* >(FindPlaceable().get());
+        
+        // If there exist placeable attach node and entity to it
+        if ( placeable != 0 )
+        {
+            Ogre::SceneNode* node = placeable->GetSceneNode();
+            node->addChild(node_);
+            node_->attachObject(entity_);
+            node_->setVisible(true);
+        }
+        else
+        {
+            // There is no placeable attacht entity to OgreSceneRoot 
+            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+            node_->attachObject(entity_);
+            scene_mgr->getRootSceneNode()->addChild(node_);
+            node_->setVisible(true);
+            attachedToRoot_ = true;
 
-      
+        }
+        
         attached_ = true;
 
+     
     }
       
     void EC_WaterPlane::DetachEntity()
     {
+
+        if ( !attached_ || entity_ == 0 )
+            return;
+
+
         EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
-        if ((!attached_) || (!entity_) || (!placeable))
-            return;
-
-        if ( attachedToRoot_ )
+        
+        if ( placeable != 0 && !attachedToRoot_)
         {
-            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+            Ogre::SceneNode* node = placeable->GetSceneNode();
             node_->detachObject(entity_);
-            attached_ = false;
-            attachedToRoot_ = false;
-            scene_mgr->getRootSceneNode()->removeChild(node_);
-            return;
-            
+            node->removeChild(node_); 
         }
-
-        Ogre::SceneNode* node = placeable->GetSceneNode();
-        node_->detachObject(entity_);
-        node->removeChild(node_);
+        else
+        {
+            // Attached to root.
+            // Sanity check..
+            if ( entity_->isAttached() )
+            {
+                Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+                node_->detachObject(entity_);
+                scene_mgr->getRootSceneNode()->removeChild(node_);
+                attachedToRoot_ = false;
+            }
+        }
 
         attached_ = false;
 
+       
     }
 
 }
