@@ -20,6 +20,7 @@
 #include "ModuleManager.h"
 #include "TundraEvents.h"
 #include "EventManager.h"
+#include "EntityActionDialog.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -179,32 +180,36 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->addAction(importAction);
     menu->addAction(openNewSceneAction);
 
-    // Entity action menu. Quick'n'dirty test implementation.
+    // Entity action menu.
     Selection sel = GetSelection();
-    if (sel.entities.size() == 1)
+    if (sel.HasEntities())
     {
+        // Set available actions is union of all actions of the selected entities.
+        QSet<QString> actions;
+
         const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
         assert(scene.get());
         if (scene)
-        {
-            Scene::EntityPtr entity = scene->GetEntity(sel.entities[0]->id);
-            if (entity)
+            foreach(EntityItem *eItem, sel.entities)
             {
-                if (entity->Actions().size() > 0)
-                {
-                    menu->addSeparator();
-                    QMenu *actionMenu = new QMenu(tr("Actions"), menu);
-                    menu->addMenu(actionMenu);
+                Scene::EntityPtr entity = scene->GetEntity(eItem->id);
+                if (entity && entity->Actions().size() > 0)
+                    foreach(EntityAction *act, entity->Actions())
+                        actions.insert(act->Name());
+            }
 
-                    Scene::Entity::ActionMap::const_iterator it = entity->Actions().begin();
-                    while(it != entity->Actions().end())
-                    {
-                        QAction *entityAction = new QAction((*it)->Name(), actionMenu);
-                        connect(entityAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
-                        actionMenu->addAction(entityAction);
-                        ++it;
-                    }
-                }
+        // Create "Action" menu the availabe actions.
+        if (!actions.empty())
+        {
+            menu->addSeparator();
+            QMenu *actionMenu = new QMenu(tr("Actions"), menu);
+            menu->addMenu(actionMenu);
+
+            foreach(QString act, actions)
+            {
+                QAction *entityAction = new QAction(act, actionMenu);
+                connect(entityAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
+                actionMenu->addAction(entityAction);
             }
         }
     }
@@ -630,18 +635,42 @@ void SceneTreeWidget::EntityActionTriggered()
     if (!action)
         return;
 
-    Selection sel = GetSelection();
-    if (sel.entities.size() !=  1)
-        return;
-
     const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
     assert(scene.get());
     if (!scene)
         return;
 
-    Scene::EntityPtr entity = scene->GetEntity(sel.entities[0]->id);
-    if (entity)
-        entity->Exec(EntityAction::Local, action->text());
+    Selection sel = GetSelection();
+    if (!sel.HasEntities())
+        return;
+
+    QList<Scene::EntityWeakPtr> entities;
+    foreach(EntityItem *eItem, sel.entities)
+    {
+        Scene::EntityPtr e = scene->GetEntity(eItem->id);
+        if (e)
+            entities.append(e);
+    }
+
+    EntityActionDialog *d = new EntityActionDialog(entities, action->text(), this);
+    connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogClosed(int)));
+    d->show();
+}
+
+void SceneTreeWidget::EntityActionDialogClosed(int result)
+{
+    EntityActionDialog *dialog = qobject_cast<EntityActionDialog *>(sender());
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    foreach(Scene::EntityWeakPtr e, dialog->Entities())
+        if (e.lock())
+            e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
+
+    dialog->close();
 }
 
 void SceneTreeWidget::SaveSelectionDialogClosed(int result)
