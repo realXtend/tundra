@@ -266,7 +266,6 @@ namespace Library
 
     void LibraryModule::DropEvent(QDropEvent *drop_event)
     {
-
         if (library_widget_->stopDownload)
         {
             SAFE_DELETE(mesh_file_request_);
@@ -279,91 +278,62 @@ namespace Library
 
         if (mesh_file_request_)
         {
-            library_widget_->SetInfoText("Processing drag & drop, please wait.");
+            library_widget_->SetInfoText("Processing drag & drop, please wait...");
             library_widget_->ShowStopButton();
             return;
         }
             
+        // Only accept url drops for now
         if (drop_event->mimeData()->hasUrls() == false) 
             return;
 
-        //Do raycast for mouse position for scene file
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (!renderer)
-            return;
-
-        Foundation::RaycastResult cast_result = renderer->Raycast(drop_event->pos().x(), drop_event->pos().y());
-        raycast_pos_ = cast_result.pos_;
-        Scene::Entity *entity = cast_result.entity_;
-
+        // Parse all the urls from dropm mime data
         QString urlString = QUrl(drop_event->mimeData()->urls().at(0)).toString();
         QStringList urlList = urlString.split(";");
 
-        // Service for xml drops
-        IOpenSimSceneService *scene_service = framework_->GetService<IOpenSimSceneService>();
+        // Do a raycast to drop position, 
+        Foundation::RaycastResult cast_result = RayCast(drop_event);
+        raycast_pos_ = cast_result.pos_;
 
-        // User didn't drop on terrain or other objects
-        if (!entity) 
+        // Get drop pos in front of avatar if raycast did not hit any object
+        IOpenSimSceneService *scene_service = framework_->GetService<IOpenSimSceneService>();
+        if (raycast_pos_ == Vector3df::ZERO)
         {
-            // Lets still handle xml files with dropping it in front of avatar
-            if (urlList.count() == 1 && scene_service && urlString.endsWith(".xml"))
-                scene_service->PublishToServer(QUrl(urlString));
-            return;
+            if (scene_service)
+            {
+                raycast_pos_ = scene_service->GetPosFrontOfAvatar();
+                if (raycast_pos_ == Vector3df::ZERO) // still zero means something went really wrong
+                {
+                    LogDebug("Failed to get avatar position when raycast was a ZERO vector. Not accepting drop.");
+                    return;
+                }
+            }
+            else
+            {
+                LogDebug("Can't get avatar position when raycast was a ZERO vector. Not accepting drop.");
+                return;
+            }
         }
 
-        // Process single files
+        // Process single url drops
         if (urlList.count() == 1)
         {
             QUrl url(urlString);
-
-            if (url.toString().endsWith(".scene"))
+            if (urlString.endsWith(".scene"))
             {
-                //Call python directly (dont want to add dependency to optional module in pythonscript module)
-                //Change coords to string format for calling py
-                QString qx;
-                qx.append(QString("%1").arg(cast_result.pos_.x));
-                QString qy;
-                qy.append(QString("%1").arg(cast_result.pos_.y));
-                QString qz;
-                qz.append(QString("%1").arg(cast_result.pos_.z));
-
+                // Call python directly (dont want to add dependency to optional module in pythonscript module)
+                // Change coords to string format for calling py
                 Foundation::ServiceManagerPtr manager = this->framework_->GetServiceManager();
                 boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = manager->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
                 if (pyservice)
-                    pyservice->RunString("import localscene; lc = localscene.getLocalScene(); lc.onUploadSceneFile('" +
-                                          url.toString() + "', " +
-                                          qx +", " +
-                                          qy + ", " +
-                                          qz + ");");
+                    pyservice->RunString(QString("import localscene; lc = localscene.getLocalScene(); lc.onUploadSceneFile('" + url.toString() + "', %1, %2, %3);").arg(
+                        raycast_pos_.x, raycast_pos_.y, raycast_pos_.z));
             }
-            else if (url.toString().endsWith(".mesh"))
+            else if (urlString.endsWith(".mesh"))
             {
-
-                Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-                connect(scene.get(), SIGNAL(EntityCreated(Scene::Entity *, AttributeChange::Type)), SLOT(EntityCreated(Scene::Entity *, AttributeChange::Type)));
-
-                SAFE_DELETE(mesh_file_request_);
-
-                mesh_file_request_ = new MeshFileRequest(raycast_pos_);
-                mesh_file_request_->SetMeshFileUrl(url);
-
-                //Request mesh file           
-                boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
-                framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock();
-
-                if (!rendering_module)
-                    return;
-
-                OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
-
-                request_tag_t tag = renderer->RequestResource(url.toString().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
-                if (tag)
-                {
-                    mesh_file_request_->SetMeshRequestTag(tag);
-                }
-                
+               RequestMeshAssetAsCurrent(url);
             }
-            else if (url.toString().endsWith(".material"))
+            else if (urlString.endsWith(".material"))
             {
                 if (cast_result.entity_)
                 {
@@ -381,13 +351,14 @@ namespace Library
 
                         prim->Materials = materials;        
                         prim->SendRexPrimDataUpdate();
-
                     }
                 }
-            }
-            else if (url.toString().endsWith(".png") || url.toString().endsWith(".jpg"))
-            {
+                else
+                    LogDebug("You can drag&drop .materials only to meshes.");
                 
+            }
+            else if (urlString.endsWith(".png") || urlString.endsWith(".jpg") || urlString.endsWith(".jpeg"))
+            {
                 if (cast_result.entity_)
                 {
                     EC_Mesh *mesh = cast_result.entity_->GetComponent<EC_Mesh>().get();
@@ -406,63 +377,94 @@ namespace Library
                         prim->SendRexPrimDataUpdate();
                     }
                 }
+                else
+                    LogDebug("You can drag&drop texture images only to meshes.");
             }
-            else if (url.toString().endsWith(".xml"))
+            else if (urlString.endsWith(".xml"))
             {
                 if (scene_service)
                     scene_service->PublishToServer(url, raycast_pos_);
             }
 
-            //Don´t proceed to urlList
+            // Don´t proceed processing urlList
             return;
         }
 
-        //Assume mesh has dropped with materials
+        // For multiple url drop we accepts formats:
+        //   meshUrl;materialUrl1;materialUrl2;...;materialUrlN
+        //   meshUrl;textureUrl1;textureUrl2;...;textureUrlN
         foreach (QString sUrl, urlList)
         {
-            
             QUrl url(sUrl.trimmed());
-
             if (url.toString().endsWith(".mesh"))
             {
-
-                Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-                connect(scene.get(), SIGNAL(EntityCreated(Scene::Entity *, AttributeChange::Type)), SLOT(EntityCreated(Scene::Entity *, AttributeChange::Type)));
-
-                SAFE_DELETE(mesh_file_request_);
-
-                mesh_file_request_ = new MeshFileRequest(raycast_pos_);
-                mesh_file_request_->SetMeshFileUrl(url);
-
-                //Request mesh file           
-                boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
-                framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock();
-
-                if (!rendering_module)
-                    return;
-
-                OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
-
-                request_tag_t tag = renderer->RequestResource(url.toString().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
-                if (tag)
-                {
-                    mesh_file_request_->SetMeshRequestTag(tag);
-                }
-                
+                RequestMeshAssetAsCurrent(url);
             }
             else if (url.toString().endsWith(".material"))
             {
-                request_tag_t tag = renderer->RequestResource(url.toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
-                if (tag)
+                boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                if (renderer)
                 {
-                    mesh_file_request_->SetMaterialFileRequest(tag, url);
+                    request_tag_t tag = renderer->RequestResource(url.toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
+                    if (tag)
+                        mesh_file_request_->SetMaterialFileRequest(tag, url);
                 }
+                else
+                    LogDebug("Could not get rendering service, could not request .material asset from url");
             }
             else if (url.toString().endsWith(".png") || url.toString().endsWith(".jpg"))
             {
                 mesh_file_request_->SetMeshImageUrl(url);
             }
         }
+    }
+
+    Foundation::RaycastResult LibraryModule::RayCast(QDropEvent *drop_event)
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+        {
+            LogDebug("Could not get rendering service, could not raycast");
+            Foundation::RaycastResult fail_result;
+            fail_result.entity_ = 0;
+            fail_result.pos_ = Vector3df::ZERO;
+            return fail_result;
+        }
+
+        Foundation::RaycastResult cast_result = renderer->Raycast(drop_event->pos().x(), drop_event->pos().y());
+        if (!cast_result.entity_)
+            cast_result.pos_ = Vector3df::ZERO;
+        return cast_result;
+    }
+
+    void LibraryModule::RequestMeshAssetAsCurrent(const QUrl& mesh_url)
+    {
+        // Get scene
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+
+        // Unique connection, only once per each scene ptr
+        connect(scene.get(), SIGNAL(EntityCreated(Scene::Entity *, AttributeChange::Type)), 
+                this, SLOT(EntityCreated(Scene::Entity *, AttributeChange::Type)), Qt::UniqueConnection);
+
+        // New mesh file request
+        SAFE_DELETE(mesh_file_request_);
+        mesh_file_request_ = new MeshFileRequest(raycast_pos_);
+        mesh_file_request_->SetMeshFileUrl(mesh_url);
+
+        // Get renderer service
+        boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
+            framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock();
+        if (!rendering_module)
+        {
+            LogDebug("Could not get renderer service, can't request mesh asset. Aborting drop.");
+            return;
+        }
+
+        // Request the mesh file
+        OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
+        request_tag_t tag = renderer->RequestResource(mesh_url.toString().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
+        if (tag)
+            mesh_file_request_->SetMeshRequestTag(tag);
     }
 
     void LibraryModule::EntityCreated(Scene::Entity* entity, AttributeChange::Type change)
