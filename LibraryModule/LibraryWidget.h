@@ -7,6 +7,7 @@
 #include "UiModuleApi.h"
 #include "ui_LibraryWidget.h"
 
+#include <QGraphicsView>
 #include <QGraphicsProxyWidget>
 
 namespace Library

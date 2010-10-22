@@ -26,18 +26,24 @@ template <class T> inline bool _isnan(T f) { return f != f; }
 #include <QVector>
 #include <QStringList>
 
-typedef unsigned char u8;
-typedef unsigned char uchar;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned int uint;
-typedef unsigned long ulong;
-typedef short s16;
-typedef int s32;
+#include <boost/cstdint.hpp>
+
+typedef boost::uint8_t u8; ///< a single byte: 0-255.
+typedef boost::uint16_t u16; ///< 2 bytes: 0 - 65535.
+typedef boost::uint32_t u32; ///< 4 bytes: 0 - 4,294,967,295 ~ 4000 million or 4e9.
+typedef boost::uint64_t u64; ///< 8 bytes: 18,446,744,073,709,551,615 ~1.8e19.
+
+typedef boost::int8_t s8; ///< a single byte: -128 - 127.
+typedef boost::int16_t s16; ///< 2 bytes: -32768 - 32767.
+typedef boost::int32_t s32; ///< 4 bytes signed: max 2,147,483,647 ~ 2000 million or 2e9.
+typedef boost::int64_t s64; ///< 8 bytes signed. 9,223,372,036,854,775,807 ~ 9e18.
+
 typedef float f32;
 typedef double f64;
 
-// etc... add more
+typedef unsigned char uchar;
+typedef unsigned int uint;
+typedef unsigned long ulong;
 
 typedef int service_type_t;
 
