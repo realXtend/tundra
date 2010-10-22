@@ -40,36 +40,15 @@ export CC="ccache gcc"
 export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
-if lsb_release -c | grep -q lucid; then
+if lsb_release -c | egrep -q "lucid|maverick"; then
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libogre-dev libboost-all-dev libpoco-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
          libtelepathy-qt4-dev python-gst0.10-dev freeglut3-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev
-
-	
-fi
-
-if lsb_release -c | grep -q karmic; then
-	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
-	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
-	 build-essential g++ libogre-dev freeglut3-dev \
-	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev
-	sudo apt-get install 'libboost1.38.*-dev' 
-	
-fi
-
-if lsb_release -c | grep -q jaunty; then
-	sudo aptitude -y install build-essential libboost1.37-dev \
-	 libopenjpeg-dev libxmlrpc-epi-dev libcurl4-gnutls-dev libqt4-dev \
-	 libexpat1-dev libphonon-dev python-dev scons g++ python-gtk2-dev \
-	 libdbus-glib-1-dev ccache bison flex libxml2-dev libois-dev \
-	 libalut-dev libvorbis-dev libogg-dev
-	sudo apt-get install 'libboost1.37.*-dev' cmake
-	 
+	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev \
+	 liboil0.3-dev mercurial
 fi
 
 function build-regular {
@@ -106,15 +85,14 @@ else
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
     cd $what
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix .
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DINSTALL_EXTRA_LIBS=ON .
     make -j $nprocs
     make install
     touch $tags/$what-done
 fi
 
 what=knet
-if false && test -f $tags/what-done; then 
-#if false && test -f $tags/what-done; then
+if test -f $tags/$what-done; then 
    echo $what is done
 else
     cd $build

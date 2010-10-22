@@ -18,6 +18,7 @@
 #include "Profiler.h"
 #include "Renderer.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "OgreBulletCollisionsDebugLines.h"
 #include "btBulletDynamicsCommon.h"
 
 #include <Ogre.h>
@@ -30,7 +31,6 @@ const std::string PhysicsModule::moduleName = std::string("Physics");
 PhysicsModule::PhysicsModule() :
     IModule(NameStatic()),
     drawDebugGeometry_(false),
-    acceptDebugLines_(false),
     runPhysics_(true),
     debugGeometryObject_(0),
     debugDrawMode_(0)
@@ -39,7 +39,7 @@ PhysicsModule::PhysicsModule() :
 
 PhysicsModule::~PhysicsModule()
 {
-    // Delete the physics manual object if it exists
+    // Delete the physics debug object if it exists
     SetDrawDebugGeometry(false);
 }
 
@@ -194,19 +194,22 @@ void PhysicsModule::SetDrawDebugGeometry(bool enable)
     drawDebugGeometry_ = enable;
     if (!enable)
     {
+        setDebugMode(0);
+        
         if (debugGeometryObject_)
         {
             scenemgr->getRootSceneNode()->detachObject(debugGeometryObject_);
-            scenemgr->destroyManualObject(debugGeometryObject_);
+            delete debugGeometryObject_;
             debugGeometryObject_ = 0;
         }
     }
     else
     {
+        setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+        
         if (!debugGeometryObject_)
         {
-            debugGeometryObject_ = scenemgr->createManualObject("physics_debug");
-            debugGeometryObject_->setDynamic(true);
+            debugGeometryObject_ = new DebugLines();
             scenemgr->getRootSceneNode()->attachObject(debugGeometryObject_);
         }
     }
@@ -219,21 +222,16 @@ void PhysicsModule::UpdateDebugGeometry()
 
     PROFILE(PhysicsModule_UpdateDebugGeometry);
 
-    setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-
     // Draw debug only for the active scene
     PhysicsWorld* world = GetPhysicsWorldForScene(framework_->GetDefaultWorldScene());
     if (!world)
         return;
     
-    debugGeometryObject_->clear();
-    debugGeometryObject_->begin("PhysicsDebug", Ogre::RenderOperation::OT_LINE_LIST);
-    acceptDebugLines_ = true;
-    
+    // Get all lines of the physics world
     world->GetWorld()->debugDrawWorld();
-
-    acceptDebugLines_ = false;
-    debugGeometryObject_->end();
+    
+    // Build the debug vertex buffer
+    debugGeometryObject_->draw();
 }
 
 void PhysicsModule::reportErrorWarning(const char* warningString)
@@ -243,16 +241,8 @@ void PhysicsModule::reportErrorWarning(const char* warningString)
 
 void PhysicsModule::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
-    if (!acceptDebugLines_)
-        return;
-    
     if ((drawDebugGeometry_) && (debugGeometryObject_))
-    {
-        debugGeometryObject_->position(from.x(), from.y(), from.z());
-        debugGeometryObject_->colour(color.x(), color.y(), color.z(), 1.0f);
-        debugGeometryObject_->position(to.x(), to.y(), to.z());
-        debugGeometryObject_->colour(color.x(), color.y(), color.z(), 1.0f);
-    }
+        debugGeometryObject_->addLine(from, to, color);
 }
 
 boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh)
@@ -269,7 +259,7 @@ boost::shared_ptr<btTriangleMesh> PhysicsModule::GetTriangleMeshFromOgreMesh(Ogr
     // Create new, then interrogate the Ogre mesh
     ptr = boost::shared_ptr<btTriangleMesh>(new btTriangleMesh());
     GenerateTriangleMesh(mesh, ptr.get(), true);
-
+    
     triangleMeshes_[mesh->getName()] = ptr;
     
     return ptr;

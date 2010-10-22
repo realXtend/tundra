@@ -60,6 +60,8 @@ Registered by Physics::PhysicsModule.
 <div>Specifies the axes on which torques can act on the object, making it rotate. Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself.</div>
 <li>bool: phantom
 <div>If true, contact response is disabled, ie. there is no collision interaction between this object and others.</div>
+<li>bool: drawDebug
+<div>If true (default), collision shape will be visualized when physics debug drawing is enabled.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -159,6 +161,10 @@ public:
     //! Phantom flag. If true, contact response is disabled, ie. there is no collision interaction between this object and others
     Q_PROPERTY(bool phantom READ getphantom WRITE setphantom)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, phantom)
+    
+    //! DrawDebug flag. If true (default), collision shape will be visualized when physics debug drawing is enabled.
+    Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug)
     
     //! Linear velocity
     Q_PROPERTY(Vector3df linearVelocity READ getlinearVelocity WRITE setlinearVelocity)
@@ -279,6 +285,9 @@ private:
     
     //! Request mesh resource (for trimesh & convexhull shapes)
     void RequestMesh();
+    
+    //! Calculate mass, shape & static/dynamic-classification dependant properties
+    void GetProperties(btVector3& localInertia, float& m, int& collisionFlags);
     
     //! Placeable pointer
     boost::weak_ptr<EC_Placeable> placeable_;
