@@ -198,6 +198,9 @@ private slots:
     /// Loads new scene.
     void OpenNewScene();
 
+    /// Executes entity action on an entity. Entity action when menu action's triggered() signal is connected to this slot.
+    void EntityActionTriggered();
+
     /// Called by "Save Selection" save file dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */

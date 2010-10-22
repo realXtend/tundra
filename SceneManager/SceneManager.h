@@ -221,12 +221,11 @@ namespace Scene
         //! Load the scene from XML
         /*! \param filename File name
             \param clearScene Do we want to clear the existing scene.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
-
-            \todo Add replaceOnConflict parameter
          */
-        QList<Entity *> LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change);
+        QList<Entity *> LoadSceneXML(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change);
 
         //! Save the scene to XML
         /*! \param filename File name
@@ -238,12 +237,11 @@ namespace Scene
         /*! Note: will remove all existing entities
             \param filename File name
             \param clearScene Do we want to clear the existing scene.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
-
-            \todo Add replaceOnConflict parameter
          */
-        QList<Entity *> LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change);
+        QList<Entity *> LoadSceneBinary(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change);
 
         //! Save the scene to binary
         /*! \param filename File name
