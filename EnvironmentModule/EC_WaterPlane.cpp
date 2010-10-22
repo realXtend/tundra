@@ -309,7 +309,7 @@ namespace Environment
         //Ogre::Vector3 current_pos = node_->_getDerivedPosition();
         Ogre::Vector3 tmp(vec.x,vec.y,vec.z);      
       
-        if ( !RexTypes::IsValidPositionVector(tmp) )
+        if ( !RexTypes::IsValidPositionVector(vec) )
             return;
        
         node_->setPosition(tmp);
