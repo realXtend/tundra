@@ -249,6 +249,9 @@ namespace Scene
         */
         void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
 
+        //! Signal when the whole scene is cleared
+        void SceneCleared();
+        
     private:
         Q_DISABLE_COPY(SceneManager);
 
