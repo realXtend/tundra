@@ -68,6 +68,18 @@ void IComponent::SetParentEntity(Scene::Entity* entity)
         emit ParentEntityDetached();
 }
 
+ComponentPtr IComponent::GetSharedPtr()
+{
+    if(parent_entity_)
+    {
+        std::vector<ComponentPtr> components = parent_entity_->GetComponentVector();
+        for(uint i = 0; i < components.size(); i++)
+            if(components[i].get() == this)
+                return components[i];
+    }
+    return ComponentPtr();
+}
+
 Scene::Entity* IComponent::GetParentEntity() const
 {
     return parent_entity_;

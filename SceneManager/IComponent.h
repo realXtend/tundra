@@ -76,6 +76,11 @@ public:
     /// Although public, it is not intended to be called by users of IComponent.
     void SetParentEntity(Scene::Entity* entity);
 
+    /// Return component as shared pointer. 
+    /// @Note: this method wont create a new shared pointer, it only finds the right component
+    /// in it's parent entity and returns it. If parent entity was not found null pointer is returned.
+    ComponentPtr GetSharedPtr();
+
 public slots:
     /// Returns a pointer to the Naali framework instance.
     Foundation::Framework *GetFramework() const { return framework_; }

@@ -4,11 +4,13 @@
 #define incl_Interfaces_IOpenSimSceneService_h
 
 #include "ServiceInterface.h"
+#include "Vector3D.h"
 
 #include <QObject>
 #include <QByteArray>
 #include <QString>
 #include <QList>
+#include <QUrl>
 
 namespace Scene
 {
@@ -25,20 +27,28 @@ public:
     virtual ~IOpenSimSceneService() {};
 
 public slots:
+    /// Publish content from a web xml file
+    /// @param QUrl - url to the xml description file
+    /// @param bool - if set position will be adjusted to instantiate in front of avatar
+    virtual void PublishToServer(QUrl xml_url, Vector3df drop_position = Vector3df::ZERO) = 0;
+
     /// Publish content of the file to the active opensim server
     /// @param QString - filename to read the scene data
     /// @param bool - if set position will be adjusted to instantiate in front of avatar
-    virtual void PublishToServer(const QString &load_filename, bool adjust_pos_to_avatar) = 0;
+    virtual void PublishToServer(const QString &load_filename, bool adjust_pos_to_avatar, Vector3df drop_position = Vector3df::ZERO) = 0;
 
     /// Publish content of the file to the active opensim server
     /// @param QByteArray - scene data
     /// @param bool - if set position will be adjusted to instantiate in front of avatar
-    virtual void PublishToServer(const QByteArray &content, bool adjust_pos_to_avatar) = 0;
+    virtual void PublishToServer(const QByteArray &content, bool adjust_pos_to_avatar, Vector3df drop_position = Vector3df::ZERO) = 0;
 
     /// Publish content of the file to the active opensim server
     /// @param QString - filename where xml scene data will be stored
     /// @param QList of Scene::Entity* - entities to be exported to file
     virtual void StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities) = 0;
+
+    /// Gets a position in front of the avatar, used for drops when raycast does not hit any object
+    virtual Vector3df GetPosFrontOfAvatar() = 0;
 };
 
 typedef boost::shared_ptr<IOpenSimSceneService> OpenSimSceneServicePtr;
