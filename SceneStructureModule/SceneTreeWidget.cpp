@@ -651,7 +651,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
     if (!dialog)
         return;
 
-    if (result != 1)
+    if (result != QDialog::Accepted)
         return;
 
     QStringList files = dialog->selectedFiles();
@@ -728,7 +728,7 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
     if (!dialog)
         return;
 
-    if (result != 1)
+    if (result != QDialog::Accepted)
         return;
 
     QStringList files = dialog->selectedFiles();
@@ -773,7 +773,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
     if (!dialog)
         return;
 
-    if (result != 1)
+    if (result != QDialog::Accepted)
         return;
 
     const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
