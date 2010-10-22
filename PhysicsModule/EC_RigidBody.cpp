@@ -45,6 +45,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     linearVelocity(this, "Linear velocity", Vector3df(0,0,0)),
     angularVelocity(this, "Angular velocity", Vector3df(0,0,0)),
     phantom(this, "Phantom", false),
+    drawDebug(this, "Draw Debug", true),
     cachedShapeType_(-1),
     collision_mesh_tag_(0)
 {
@@ -297,6 +298,8 @@ void EC_RigidBody::CreateBody()
         collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
     if (isPhantom)
         collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+    if (!drawDebug.Get())
+        collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
     
     body_ = new btRigidBody(m, this, shape_, localInertia);
     body_->setUserPointer(this);
@@ -329,6 +332,8 @@ void EC_RigidBody::ReaddBody()
         collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
     if (isPhantom)
         collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+    if (!drawDebug.Get())
+        collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
     body_->setCollisionFlags(collisionFlags);
     
     world_->GetWorld()->removeRigidBody(body_);
@@ -454,6 +459,10 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
         // Readd body to the world in case phantom classification changed
         ReaddBody();
     
+    if (attribute == &drawDebug)
+        // Readd body to the world in case phantom classification changed
+        ReaddBody();
+        
     if (attribute == &linearVelocity)
     {
         body_->setLinearVelocity(ToBtVector3(linearVelocity.Get()));
