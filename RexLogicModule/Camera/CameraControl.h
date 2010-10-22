@@ -114,7 +114,8 @@ namespace RexLogic
 
         void Update(float);
 
-    private slots:
+        void Visible(bool);
+
         void CameraTripod(bool);
         void CameraFree(bool);
         void CameraFocus(bool);
