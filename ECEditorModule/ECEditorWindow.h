@@ -87,20 +87,10 @@ namespace ECEditor
         //! Remove coponent from entity and refresh property browser.
         void DeleteComponent(const QString &componentType, const QString &name);
 
-        /// Open a dialog window that will get information from the user what type of compoent he/she wants to create.
+        /// Opens a dialog that will handle new entity creation.
+        /** After the dialog is done, ComponentDialogFinished method is called.
+         */
         void CreateComponent();
-
-        /// Deletes entity.
-        void DeleteEntity();
-
-        /// Copy serializable component values to clipboard.
-        void CopyEntity();
-
-        /// Paste create a new entity and add serializable components.
-        void PasteEntity();
-
-        /// Highlights all entities from the list that owns the component.
-        void HighlightEntities(IComponent *component);
 
         /// If entity selection different from previous update change browser to fit those changes.
         void RefreshPropertyBrowser();
@@ -148,6 +138,20 @@ namespace ECEditor
         void changeEvent(QEvent *change_event);
 
     private slots:
+        /// Deletes entity.
+        void DeleteEntity();
+
+        /// Copy serializable component values to clipboard.
+        void CopyEntity();
+
+        /// Paste create a new entity and add serializable components.
+        void PasteEntity();
+
+        /// Highlights all entities from the entities_list that own a isntace of given component.
+        void HighlightEntities(IComponent *component);
+
+        /// Listenes when new entities are added to the world scene.
+        /// @todo Remove this when possible.
         void SceneAdded(const QString &name);
 
         //When user have pressed ok or cancel button in component dialog this mehtod is called.
@@ -156,6 +160,7 @@ namespace ECEditor
     private:
         /// Find given entity from the QListWidget and if it's found, bold QListWidgetItem's font.
         void BoldEntityListItem(entity_id_t, bool bold = true);
+
         /// Initializes the widget.
         void Initialize();
 
@@ -171,8 +176,6 @@ namespace ECEditor
         QPushButton* toggle_entities_button_;
         QListWidget* entity_list_;
         ECBrowser *browser_;
-        typedef QSet<entity_id_t> EntityIdSet;
-        EntityIdSet selectedEntities_;
         AddComponentDialog *component_dialog_;
     };
 }
