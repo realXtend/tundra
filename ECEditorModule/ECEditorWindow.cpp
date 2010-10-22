@@ -22,8 +22,10 @@
 #include "SceneEvents.h"
 #include "EventManager.h"
 #include "EC_Placeable.h"
-#include "AddComponentDialog.h"
 #include "Input.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("ECEditor");
 
 #include <QUiLoader>
 #include <QDomDocument>
@@ -148,7 +150,7 @@ namespace ECEditor
         Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
         if (!entity)
         {
-            ECEditorModule::LogError("Fail to remove entity, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
+            LogError("Fail to remove entity, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
             return;
         }
 
@@ -206,29 +208,27 @@ namespace ECEditor
         if(componentType.isEmpty())
             return;
 
-        QList<Scene::EntityPtr> entities = GetSelectedEntities();
-        for(uint i = 0; i < entities.size(); i++)
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
         {
-            ComponentPtr component = entities[i]->GetComponent(componentType, name);
-            if(component)
+            ComponentPtr component = entity->GetComponent(componentType, name);
+            if (component)
             {
-                entities[i]->RemoveComponent(component, AttributeChange::Default);
-                BoldEntityListItem(entities[i]->GetId(), false);
+                entity->RemoveComponent(component, AttributeChange::Default);
+                BoldEntityListItem(entity->GetId(), false);
             }
         }
     }
     
     void ECEditorWindow::CreateComponent()
     {
-        QList<Scene::EntityPtr> entities = GetSelectedEntities();
-        if(entities.size())
-        {
-            QList<entity_id_t> entity_ids;
-            for(uint i = 0; i < entities.size(); i++)
-                entity_ids.push_back(entities[i]->GetId());
+        QList<entity_id_t> ids;
+        foreach(Scene::EntityPtr e, GetSelectedEntities())
+            ids.push_back(e->GetId());
 
-            component_dialog_ = new AddComponentDialog(framework_, entity_ids, this);
-            component_dialog_->SetComponentList(GetAvailableComponents());
+        if (ids.size())
+        {
+            component_dialog_ = new AddComponentDialog(framework_, ids, this);
+            component_dialog_->SetComponentList(framework_->GetComponentManager()->GetAvailableComponentTypeNames());
             connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
             component_dialog_->show();
         }
@@ -249,19 +249,15 @@ namespace ECEditor
     {
         //! @todo will only take a copy of first entity of the selection. 
         //! should we support multi entity copy and paste functionality.
-        QList<Scene::EntityPtr> entities = GetSelectedEntities();
-        QClipboard *clipboard = QApplication::clipboard();
         QDomDocument temp_doc;
-        for(uint i = 0; i < entities.size(); i++)
+
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
         {
-            Scene::Entity *entity = entities[i].get();
-            if(entity)
+            Scene::Entity *e = entity.get();
+            if (e)
             {
                 QDomElement entity_elem = temp_doc.createElement("entity");
-                
-                QString id_str;
-                id_str.setNum((int)entity->GetId());
-                entity_elem.setAttribute("id", id_str);
+                entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
                 foreach(ComponentPtr component, entity->GetComponentVector())
                     if (component->IsSerializable())
@@ -270,7 +266,8 @@ namespace ECEditor
                 temp_doc.appendChild(entity_elem);
             }
         }
-        clipboard->setText(temp_doc.toString());
+
+        QApplication::clipboard()->setText(temp_doc.toString());
     }
 
     void ECEditorWindow::PasteEntity()
@@ -286,8 +283,7 @@ namespace ECEditor
             return;
         
         QDomDocument temp_doc;
-        QClipboard *clipboard = QApplication::clipboard();
-        if (temp_doc.setContent(clipboard->text()))
+        if (temp_doc.setContent(QApplication::clipboard()->text()))
         {
             //Check if clipboard contain infomation about entity's id,
             //which is used to find a right type of entity from the scene.
@@ -298,7 +294,7 @@ namespace ECEditor
             Scene::EntityPtr originalEntity = scene->GetEntity(ParseString<entity_id_t>(id.toStdString()));
             if(!originalEntity.get())
             {
-                ECEditorModule::LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
+                LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
                 return;
             }
             Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
@@ -342,14 +338,11 @@ namespace ECEditor
 
     void ECEditorWindow::HighlightEntities(IComponent *component)
     {
-        QList<Scene::EntityPtr> entities = GetSelectedEntities();
-        for(uint i = 0; i < entities.size(); i++)
-        {
-            if(entities[i]->GetComponent(component->TypeName(), component->Name()))
-                BoldEntityListItem(entities[i]->GetId(), true);
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
+            if (entity->GetComponent(component->TypeName(), component->Name()))
+                BoldEntityListItem(entity->GetId(), true);
             else
-                BoldEntityListItem(entities[i]->GetId(), false);
-        }
+                BoldEntityListItem(entity->GetId(), false);
     }
 
     void ECEditorWindow::RefreshPropertyBrowser() 
@@ -504,11 +497,10 @@ namespace ECEditor
         if(componentType.empty())
             return;
 
-        QList<Scene::EntityPtr> entities = GetSelectedEntities();
-        for(uint i = 0; i < entities.size(); i++)
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
         {
-            ComponentPtr component = entities[i]->GetComponent(QString::fromStdString(componentType));
-            if(component)
+            ComponentPtr component = entity->GetComponent(QString::fromStdString(componentType));
+            if (component)
                 emit EditComponentXml(component);
         }
     }
@@ -562,13 +554,13 @@ namespace ECEditor
     {
         if(!entity_list_)
         {
-            ECEditorModule::LogError("Fail to bold QListWidgetItem, since entity list pointer is null.");
+            LogError("Fail to bold QListWidgetItem, since entity list pointer is null.");
             return;
         }
         Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
         if(!entity)
         {
-            ECEditorModule::LogError("Fail to bold QListWidgetItem, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
+            LogError("Fail to bold QListWidgetItem, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
             return;
         }
 
@@ -594,7 +586,7 @@ namespace ECEditor
         QWidget *contents = loader.load(&file, this);
         if (!contents)
         {
-            ECEditorModule::LogError("Could not load editor layout");
+            LogError("Could not load editor layout");
             return;
         }
         file.close();
@@ -666,55 +658,44 @@ namespace ECEditor
     void ECEditorWindow::ComponentDialogFinished(int result)
     {
         AddComponentDialog *dialog = qobject_cast<AddComponentDialog*>(sender());
-        if(dialog)
+        if (!dialog)
+            return;
+
+        if (result != QDialog::Accepted)
+            return;
+
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        if (!scene)
         {
-            if(result == QDialog::Accepted)
+            LogWarning("Fail to add new component to entity, since default world scene was null");
+            return;
+        }
+
+        foreach(entity_id_t id, dialog->GetEntityIds())
+        {
+            Scene::EntityPtr entity = scene->GetEntity(id);
+            if (!entity)
             {
-                Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-                if(!scene)
-                {
-                    ECEditorModule::LogWarning("Fail to add new component to entity, since default world scene was null");
-                    return;
-                }
-                QList<entity_id_t> entities = dialog->GetEntityIds();
-                for(uint i = 0; i < entities.size(); i++)
-                {
-                    Scene::EntityPtr entity = scene->GetEntity(entities[i]);
-                    if(!entity)
-                    {
-                        ECEditorModule::LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(entities[i]));
-                        continue;
-                    }
-                    ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
-                    // Check if component has been already added to a entity.
-                    if(comp)
-                    {
-                        ECEditorModule::LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
-                        continue;
-                    }
-                    comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
-                    comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
-                    if (comp)
-                        entity->AddComponent(comp, AttributeChange::Default);
-                }
+                LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(id));
+                continue;
+            }
+
+            // Check if component has been already added to a entity.
+            ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
+            if (comp)
+            {
+                LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
+                continue;
+            }
+
+            comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
+            assert(comp.get());
+            if (comp)
+            {
+                comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
+                entity->AddComponent(comp, AttributeChange::Default);
             }
         }
-    }
-
-    QStringList ECEditorWindow::GetAvailableComponents() const
-    {
-        using namespace Foundation;
-        QStringList components;
-        ComponentManagerPtr comp_mgr = framework_->GetComponentManager();
-        const ComponentManager::ComponentFactoryMap& factories = comp_mgr->GetComponentFactoryMap();
-        ComponentManager::ComponentFactoryMap::const_iterator i = factories.begin();
-        while (i != factories.end())
-        {
-            components.append(i->first); //<< i->first.c_str();
-            ++i;
-        }
-
-        return components;
     }
 
     QList<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities() const

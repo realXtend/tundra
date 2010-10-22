@@ -166,9 +166,6 @@ namespace ECEditor
         /// Initializes the widget.
         void Initialize();
 
-        /// Returns string lists of EC's the ComponentManager can create.
-        QStringList GetAvailableComponents() const;
-
         /// Returns list of selected entities.
         QList<Scene::EntityPtr> GetSelectedEntities() const;
 

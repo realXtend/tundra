@@ -5,18 +5,14 @@
  *  @brief  Tree widget showing the scene structure.
  */
 
-#ifndef incl_InventoryModule_InventoryTreeView_h
-#define incl_InventoryModule_InventoryTreeView_h
+#ifndef incl_SceneStructureModule_SceneTreeWidget_h
+#define incl_SceneStructureModule_SceneTreeWidget_h
 
 #include "CoreTypes.h"
+#include "ForwardDefines.h"
 
 #include <QTreeWidget>
 #include <QPointer>
-
-namespace Foundation
-{
-    class Framework;
-}
 
 namespace ECEditor
 {
@@ -31,12 +27,19 @@ class EntityItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
-    /** @param entityID Entity ID.
+    /** @param entity Entity pointer.
     */
-    EntityItem(entity_id_t entityId) : id(entityId) {}
+    explicit EntityItem(const Scene::EntityPtr &entity);
 
     /// Entity ID associated with this tree widget item.
     entity_id_t id;
+
+    /// Returns pointer to the entity this item represents.
+    Scene::EntityPtr Entity() const;
+
+private:
+    /// Weak pointer to the component this item represents.
+    Scene::EntityWeakPtr ptr;
 };
 
 /// Tree widget item representing component.
@@ -44,18 +47,29 @@ class ComponentItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
-    /** @param tn Type name.
-        @param n Name, if applicable.
-        @param parent Parent item.
+    /** @param comp Component pointer.
+        @param parent Parent entity item.
     */
-    explicit ComponentItem(const QString &tn, const QString &n, QTreeWidgetItem *parent = 0) :
-        QTreeWidgetItem(parent), typeName(tn), name(n) {}
+    ComponentItem(const ComponentPtr &comp, EntityItem *parent);
 
     /// Type name.
     QString typeName;
 
     ///  Name, if applicable.
     QString name;
+
+    /// Returns pointer to the entity this item represents.
+    ComponentPtr Component() const;
+
+    /// Returns the parent entity item.
+    EntityItem *Parent() const;
+
+private:
+    /// Weak pointer to the component this item represents.
+    ComponentWeakPtr ptr;
+
+    /// Parent entity item.
+    EntityItem *parentItem;
 };
 
 /// Tree widget item representing asset reference.
@@ -67,7 +81,7 @@ public:
         @param t Type.
         @param parent Parent item.
     */
-    explicit AssetItem(const QString &i, const QString &t, QTreeWidgetItem *parent = 0) :
+    AssetItem(const QString &i, const QString &t, QTreeWidgetItem *parent = 0) :
         QTreeWidgetItem(parent), id(i), type(t) {}
 
     /// ID.
@@ -81,29 +95,16 @@ public:
 struct Selection
 {
     /// Returns true if no entity or component items selected.
-    bool IsEmpty() const { return entities.size() == 0 && components.size() == 0; }
+    bool IsEmpty() const;
 
     /// Returns true if selection contains entities;
-    bool HasEntities() const { return entities.size() > 0; }
+    bool HasEntities() const;
 
     /// Returns true if selected contains components.
-    bool HasComponents() const { return components.size() > 0; }
+    bool HasComponents() const;
 
     /// Returns set containing entity ID's of both selected entities and parent entities of selected components
-    QSet<entity_id_t> EntityIds() const
-    {
-        QSet<entity_id_t> ids;
-        foreach(EntityItem *e, entities)
-            ids.insert(e->id);
-        foreach(ComponentItem *c, components)
-        {
-            EntityItem *e = dynamic_cast<EntityItem *>(c->parent());
-            if (e)
-                ids.insert(e->id);
-        }
-
-        return ids;
-    }
+    QSet<entity_id_t> EntityIds() const;
 
     /// List of selected entities.
     QList<EntityItem *> entities;
@@ -144,6 +145,11 @@ protected:
     void dropEvent(QDropEvent *e);
 
 private:
+    /// Creates right-click context menu actions.
+    /** @param [out] menu Context menu.
+    */
+    void AddAvailableActions(QMenu *menu);
+
     /// Framework pointer.
     Foundation::Framework *framework;
 
@@ -169,15 +175,23 @@ private slots:
     /// Renames selected entity.
     void Rename();
 
-    ///
-    /** @item The item which was edited.
+    /// Sets new name for item (entity or component) when it's renamed.
+    /** @item The item which was renamed.
     */
     void OnItemEdited(QTreeWidgetItem *item);
 
-    /// Creates new entity.
-    void New();
+    /// Creates a new entity.
+    void NewEntity();
 
-    /// Deletes an existing entity.
+    /// Creates a new component.
+    void NewComponent();
+
+    /// Called by Add Component dialog when it's closed.
+    /** @param result Result of dialog closure. OK is 1, Cancel is 0.
+    */
+    void ComponentDialogFinished(int result);
+
+    /// Deletes an existing entity or component.
     void Delete();
 
     /// Copies selected entities as XML to clipboard.
