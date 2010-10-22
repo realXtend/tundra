@@ -84,7 +84,8 @@ to all users. This syncronized Water-plane component can also edit through envir
 
 Does not emit any actions.
 
-<b>Depends on the component Placeable</b>. The position in the Placeable component specifies the position in the world space where this water plane is by default is placed at. 
+<b>Can use component Placeable</b>. If entity has the position defined by the Placeable component then it also specifies the position in the world space where this water plane is by default 
+is placed at. Note component does not need Placeable component.  
 </table>
 
 */
@@ -189,6 +190,14 @@ class EC_WaterPlane : public IComponent
 
         /// Called If some of the attributes has been changed.
         void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+
+        /// Called if parent entity has set.
+        void SetParent();
+
+        /// Called if component is removed from parent entity.
+        void ComponentRemoved(IComponent* component, AttributeChange::Type type);
+        /// Called if component is added to parent entity.
+        void ComponentAdded(IComponent* component, AttributeChange::Type type);
 
     private:
         /** 
