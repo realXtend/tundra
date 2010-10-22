@@ -27,6 +27,8 @@ namespace Library
         setAcceptDrops(true);
         webView->setMouseTracking(true);
         webView->setAcceptDrops(true);
+        webView->setUrl(QUrl("http://www.realxtend.org/rexlib/"));
+        urlLineEdit->setText("http://www.realxtend.org/rexlib/");
 
         pushButtonStop->hide();
 

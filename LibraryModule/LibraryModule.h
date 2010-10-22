@@ -120,12 +120,12 @@ namespace Library
         void DropEvent(QDropEvent *drop_event);
         void EntityCreated(Scene::Entity* entity, AttributeChange::Type change);
 
-
     signals:
         void UploadSceneFile(QString url, int x, int y, int z);
         void CreateObject();
-        
 
+        /// Emitted when a url is dropped that this module will not process eg. .xml
+        void DragAndDropUrl(const QString &url);
    };
 }
 
