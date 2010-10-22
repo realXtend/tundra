@@ -287,7 +287,7 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
 
                                 TypeValuePair typeValuePair = val.toMap();
                                 QString newValueString(typeValuePair.begin().value().toByteArray());
-                                newValueString.trimmed();
+                                newValueString = newValueString.trimmed();
 
                                 // fill the float vector with new values
                                 it = newParamValue.begin();
@@ -367,7 +367,7 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
 
                                     TypeValuePair typeValuePair = val.toMap();
                                     QString newValueString(typeValuePair.begin().value().toByteArray());
-                                    newValueString.trimmed();
+                                    newValueString = newValueString.trimmed();
 
                                     // Fill the float vector with new values.
                                     it = newParamValue.begin();
@@ -426,7 +426,7 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
 
                     TypeValuePair typeValuePair = val.toMap();
                     QString newValueString(typeValuePair.begin().value().toByteArray());
-                    newValueString.trimmed();
+                    newValueString = newValueString.trimmed();
 
                     tu->setTextureName(newValueString.toStdString());
                     /*
