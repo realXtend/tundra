@@ -17,6 +17,8 @@
 #include "MeshFileRequest.h"
 #include "EC_OpenSimPrim.h"
 
+#include "RenderServiceInterface.h"
+
 #include <QDropEvent>
 #include <QObject>
 
@@ -85,6 +87,12 @@ namespace Library
 
     private:
         Q_DISABLE_COPY(LibraryModule);
+
+        /// Returns caycast entity pos, if no entity is hit, returns Vector3df::ZERO
+        Foundation::RaycastResult RayCast(QDropEvent *drop_event);
+
+        /// Request the inparam url as a mesh asset
+        void RequestMeshAssetAsCurrent(const QUrl& mesh_url);
 
         /// NetworkState event category.
         event_category_id_t networkStateEventCategory_;
