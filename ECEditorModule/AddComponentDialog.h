@@ -3,9 +3,11 @@
 #ifndef incl_ECEditorModule_AddComponentDialog_h
 #define incl_ECEditorModule_AddComponentDialog_h
 
-#include <QDialog>
+#include "ECEditorModuleApi.h"
 #include "CoreTypes.h"
 #include "AttributeChangeType.h"
+
+#include <QDialog>
 
 class QLabel;
 class QLineEdit;
@@ -19,32 +21,41 @@ namespace Foundation
 
 namespace ECEditor
 {
-    class AddComponentDialog: public QDialog
+    //! Dialog for adding new component to entity.
+    class ECEDITOR_MODULE_API AddComponentDialog: public QDialog
     {
         Q_OBJECT
 
     public:
-        AddComponentDialog(Foundation::Framework *framework, QList<entity_id_t> entities, QWidget *parent = 0, Qt::WindowFlags f = 0);
+        //! Constructs the dialog.
+        /*! \param fw Framework.
+            \param ids IDs of entities to which the component will be added.
+            \param parent Parent widget.
+             \param f Window flags.
+        */
+        AddComponentDialog(Foundation::Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
+
+        //! Destroyes the dialog.
         ~AddComponentDialog();
 
-        //! Set list of available component types.
+        //! Sets available component types.
         void SetComponentList(const QStringList &component_types);
 
-        //! Set default name.
+        //! Sets default name.
         void SetComponentName(const QString &name);
 
     public slots:
-        //! Get component typename
+        //! Returns component typename
         QString GetTypename() const;
 
-        //! Get component name
+        //! Returns component name
         QString GetName() const;
 
-        //! Get synchronization true if synchronization is setted to replicate and false if it's local only.
-        //! If for some reason combo box provides invalid synch mode, the mehtod will return true as a default value.
+        //! Returns true if synchronization is set to replicate and false if it's local only.
+        //! In case of invalid synch mode, true is returned.
         bool GetSynchronization() const;
 
-        //! Get the entity that component is added to.
+        //! Returns entity IDs of the entities to which the component is added to.
         QList<entity_id_t> GetEntityIds() const;
 
     private slots:
@@ -52,12 +63,10 @@ namespace ECEditor
         void CheckComponentName(const QString &name);
 
     protected:
-        //! Over-ride event from QDialog.
+        //! Override event from QDialog.
         void hideEvent(QHideEvent *event);
 
     private:
-        void Initialize();
-
         QLabel *component_count_label_;
         QLabel *component_type_label_;
         QLabel *component_name_label_;

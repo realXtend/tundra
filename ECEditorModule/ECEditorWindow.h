@@ -39,7 +39,7 @@ namespace ECEditor
     class ECBrowser;
     class AddComponentDialog;
 
-    //! EntityListWidgetItem contains entity pointer as QPointer. Class is used to identifie a right item using a entity id.
+    //! Contains entity pointer as a QPointer. This class is used to indentify a right item using an entity ID.
     //! \ingroup ECEditorModuleClient.
     class EntityListWidgetItem: public QListWidgetItem
     {
@@ -49,7 +49,7 @@ namespace ECEditor
             entity_ptr_(entity)
         {
         }
-        QPointer<Scene::Entity> GetEntity() const {return entity_ptr_;}
+        QPointer<Scene::Entity> GetEntity() const { return entity_ptr_; }
     private:
         //Weak pointer to entity switch will get released and setted to null when QObject's destructor is called.
         QPointer<Scene::Entity> entity_ptr_;
@@ -163,9 +163,6 @@ namespace ECEditor
 
         /// Initializes the widget.
         void Initialize();
-
-        /// Returns string lists of EC's the ComponentManager can create.
-        QStringList GetAvailableComponents() const;
 
         /// Returns list of selected entities.
         QList<Scene::EntityPtr> GetSelectedEntities() const;
