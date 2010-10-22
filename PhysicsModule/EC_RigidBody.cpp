@@ -278,28 +278,13 @@ void EC_RigidBody::CreateBody()
     
     CheckForPlaceableAndTerrain();
     
-    btVector3 localInertia(0.0f, 0.0f, 0.0f);
-    
     CreateCollisionShape();
     
-    float m = mass.Get();
-    if (m < 0.0f)
-        m = 0.0f;
-    // Trimesh shape can not move
-    if (shapeType.Get() == Shape_TriMesh)
-        m = 0.0f;
-    if ((shape_) && (m > 0.0f))
-        shape_->calculateLocalInertia(m, localInertia);
+    btVector3 localInertia;
+    float m;
+    int collisionFlags;
     
-    bool isDynamic = m > 0.0f;
-    bool isPhantom = phantom.Get();
-    int collisionFlags = 0;
-    if (!isDynamic)
-        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
-    if (isPhantom)
-        collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
-    if (!drawDebug.Get())
-        collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
+    GetProperties(localInertia, m, collisionFlags);
     
     body_ = new btRigidBody(m, this, shape_, localInertia);
     body_->setUserPointer(this);
@@ -313,27 +298,14 @@ void EC_RigidBody::ReaddBody()
     if ((!body_) || (!world_))
         return;
     
-    btVector3 localInertia(0.0f, 0.0f, 0.0f);
-    float m = mass.Get();
-    if (m < 0.0f)
-        m = 0.0f;
-    // Trimesh shape can not move
-    if (shapeType.Get() == Shape_TriMesh)
-        m = 0.0f;
-    if ((shape_) && (m > 0.0f))
-        shape_->calculateLocalInertia(m, localInertia);
+    btVector3 localInertia;
+    float m;
+    int collisionFlags;
+    
+    GetProperties(localInertia, m, collisionFlags);
+    
     body_->setCollisionShape(shape_);
     body_->setMassProps(m, localInertia);
-    
-    bool isDynamic = m > 0.0f;
-    bool isPhantom = phantom.Get();
-    int collisionFlags = 0;
-    if (!isDynamic)
-        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
-    if (isPhantom)
-        collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
-    if (!drawDebug.Get())
-        collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
     body_->setCollisionFlags(collisionFlags);
     
     world_->GetWorld()->removeRigidBody(body_);
@@ -656,3 +628,25 @@ void EC_RigidBody::CreateConvexHullSetShape()
         compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(convexHullSet_->hulls_[i].position_)), convexHullSet_->hulls_[i].hull_.get());
 }
 
+void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisionFlags)
+{
+    localInertia = btVector3(0.0f, 0.0f, 0.0f);
+    m = mass.Get();
+    if (m < 0.0f)
+        m = 0.0f;
+    // Trimesh shape can not move
+    if (shapeType.Get() == Shape_TriMesh)
+        m = 0.0f;
+    if ((shape_) && (m > 0.0f))
+        shape_->calculateLocalInertia(m, localInertia);
+    
+    bool isDynamic = m > 0.0f;
+    bool isPhantom = phantom.Get();
+    collisionFlags = 0;
+    if (!isDynamic)
+        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
+    if (isPhantom)
+        collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+    if (!drawDebug.Get())
+        collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
+}

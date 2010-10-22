@@ -54,13 +54,6 @@ namespace Physics
 
         void addLine (const btVector3& from, const btVector3& to, const btVector3& color)
         {
-            if (_drawn)
-            {
-                _drawn = false;
-                _lines.clear();
-                mRenderOp.vertexData->vertexCount = 0;
-            }
-            
             Line newLine;
             newLine._start.x = from.x();
             newLine._start.y = from.y();
@@ -84,7 +77,6 @@ namespace Physics
     protected:
 
         std::vector<Line> _lines;
-        bool _drawn;
         Ogre::HardwareVertexBufferSharedPtr _vbuf;
     };
 }
