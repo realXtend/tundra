@@ -178,7 +178,9 @@ private slots:
     /// Sets new name for item (entity or component) when it's renamed.
     /** @item The item which was renamed.
     */
-    void OnItemEdited(QTreeWidgetItem *item);
+    void OnItemEdited(QTreeWidgetItem *item, int);
+
+    void CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *);
 
     /// Creates a new entity.
     void NewEntity();
@@ -213,7 +215,7 @@ private slots:
     void OpenNewScene();
 
     /// Executes entity action on an entity. Entity action when menu action's triggered() signal is connected to this slot.
-    void EntityActionTriggered();
+    void OpenEntityActionDialog();
 
     /// Called by open file dialog when it's closed.
     /** @param result Result of dialog closure. OK is 1, Cancel is 0.
