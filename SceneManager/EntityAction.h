@@ -44,13 +44,18 @@ public:
     /** As combinations we get local+server, local+peers(all clients but not server),
         server+peers (everyone but me), local+server+peers (everyone).
         Not all of these sound immediately sensible even, but we know we need to be able to do different things at different times.
+        Use the ExecutionTypeField type to store logical OR combinations of execution types.
     */
     enum ExecutionType
     {
+        Invalid = 0, ///< Invalid.
         Local = 1, ///< Executed locally.
         Server = 2, ///< Executed on server.
         Peers = 4 ///< Executed on peers.
     };
+
+    /// Used to to store logical OR combinations of execution types.
+    typedef unsigned int ExecutionTypeField;
 
 signals:
     /// Emitted when action is triggered.
