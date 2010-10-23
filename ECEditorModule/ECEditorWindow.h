@@ -106,6 +106,14 @@ namespace ECEditor
         /// Paste create a new entity and add serializable components.
         void PasteEntity();
 
+        /// Shows dialog for invoking entity actions.
+        void OpenEntityActionDialog();
+
+        /// Called by entity action dialog when it's closed.
+        /** @param result Result of dialog closure. OK is 1, Cancel is 0.
+        */
+        void EntityActionDialogClosed(int result);
+
         /// Highlights all entities from the list that owns the component.
         void HighlightEntities(IComponent *component);
 
