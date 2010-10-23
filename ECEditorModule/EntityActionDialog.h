@@ -20,6 +20,9 @@ class QComboBox;
 class QCheckBox;
 
 /// Dialog for invoking entity actions.
+/** Emits finished(0) when "Close" is clicked, finished(1) when "Close and Execute" is cliked,
+    and finished(2), when "Execute" is cliked.
+*/
 class ECEDITOR_MODULE_API EntityActionDialog : public QDialog
 {
     Q_OBJECT
@@ -80,6 +83,9 @@ private:
 private slots:
     /// Checks that we have some execution type checked. If not, "Execute" and "Execute and Close" buttons are disabled.
     void CheckExecuteAccepted();
+
+    /// Emits finished(2).
+    void Execute();
 };
 
 #endif
