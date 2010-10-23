@@ -478,6 +478,33 @@ namespace OgreRenderer
         }
     }
 
+    void Renderer::DoFullUIRedraw()
+    {
+        PROFILE(Renderer_Render_QtBlit);
+
+        NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
+
+        QImage *backBuffer = view->BackBuffer();
+        if (!backBuffer)
+            return;
+
+        QSize viewsize(view->viewport()->size());
+        QRect viewrect(QPoint(0, 0), viewsize);
+
+        QSize gviewsize(view->size());
+
+        QSize mainwindowSize(framework_->Ui()->MainWindow()->size());
+        QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
+
+        backBuffer->fill(Qt::transparent);
+
+        // Paint ui view into buffer
+        QPainter painter(backBuffer);
+        view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+
+        renderWindow->UpdateOverlayImage(*backBuffer);
+    }
+
     void Renderer::Render()
     {
         using namespace std;
@@ -496,29 +523,13 @@ namespace OgreRenderer
             backBuffer = QImage(last_width_, last_height_, QImage::Format_ARGB32);
             backBuffer.fill(Qt::transparent);
 #endif
-
-//            viewportWidget->setGeometry(0, 0, backBuffer.width(), backBuffer.height());
-/*
-        QRect mwg = main_window_->geometry();
-        QRect mwga = main_window_->frameGeometry();
-
-        QRect amwg = q_ogre_ui_view_->geometry();
-        QRect amwga = q_ogre_ui_view_->frameGeometry();
-
-        QRect vp = viewportWidget->geometry();
-        QRect vpa = viewportWidget->frameGeometry();
-*/
         }
-
-//        if (viewportWidget->geometry().x() != 0 || viewportWidget->geometry().y() != 0)
-//            viewportWidget->setGeometry(0, 0, backBuffer.width(), backBuffer.height());
 
         bool applyFPSLimit = true;
 
         NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
 
 #ifdef USE_D3D9_SUBSURFACE_BLIT
-
         if (view->IsViewDirty() || resized_dirty_)
         {
             applyFPSLimit = false;
@@ -543,141 +554,122 @@ namespace OgreRenderer
             {
                 PROFILE(QPainter_Render);
 
-//                q_ogre_ui_view_->setTransform(QTransform(1,0,0,0,1,0));
-
                 // Paint ui view into buffer
                 QPainter painter(view->BackBuffer());
                 painter.setCompositionMode(QPainter::CompositionMode_Source);
                 painter.fillRect((int)dirtyRectangle.left(), (int)dirtyRectangle.top(), (int)dirtyRectangle.width(), (int)dirtyRectangle.height(),
                     Qt::transparent);
                 painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-//                q_ogre_ui_view_->render(&painter, dirtyRectangle, dirty);
-//                q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), dirtyRectangle, dirty);
-
                 view->viewport()->render(&painter, QPoint((int)dirtyRectangle.left(), (int)dirtyRectangle.top()), QRegion(dirty), QWidget::DrawChildren);
-    //            q_ogre_ui_view_->render(&painter, QRectF(), dirty);
-//                q_ogre_ui_view_->viewport()->render(&painter, dirtyRectangle, dirty);
             }
 
             Ogre::D3D9RenderWindow *d3d9rw = dynamic_cast<Ogre::D3D9RenderWindow*>(renderWindow->OgreRenderWindow());
-            Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderWindow->OverlayTextureName());
-            Ogre::HardwarePixelBufferSharedPtr pb = texture->getBuffer();
-            Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
-            assert(pixelBuffer);
-            LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(d3d9rw ? d3d9rw->getD3D9Device() : 0);
-            if (!surface)
+            if (!d3d9rw) // We're not using D3D9.
             {
-                std::cout << "No D3DSurface!" << std::endl;
-                return;
+                DoFullUIRedraw();
             }
-            D3DSURFACE_DESC desc;
-            HRESULT hr = surface->GetDesc(&desc);
-            if (FAILED(hr))
+            else
             {
-                std::cout << "surface->GetDesc failed!" << std::endl;
-                return;
-            }
-
-            if (dirty.right() > desc.Width) dirty.setRight(desc.Width);
-            if (dirty.bottom() > desc.Height) dirty.setBottom(desc.Height);
-            if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
-            if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
-
-            const int copyableHeight = min<int>(dirty.height(), min<int>(view->BackBuffer()->height() - dirty.top(), desc.Height - dirty.top()));
-            const int copyableWidthBytes = 4*min<int>(dirty.width(), min<int>(view->BackBuffer()->width() - dirty.left(), desc.Width - dirty.left()));
-            if (copyableHeight <= 0 || copyableWidthBytes <= 0)
-            {
-                std::cout << "Nothing to blit!" << std::endl;
-                return;
-            }
-
-            D3DLOCKED_RECT lock;
-
-            {
-                PROFILE(LockRect);
-//                HRESULT hr = surface->LockRect(&lock, 0, D3DLOCK_DISCARD); // for full UI redraw.
-                RECT lockRect = { dirty.left(), dirty.top(), dirty.right(), dirty.bottom() };
-                HRESULT hr = surface->LockRect(&lock, &lockRect, 0);
+                Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderWindow->OverlayTextureName());
+                Ogre::HardwarePixelBufferSharedPtr pb = texture->getBuffer();
+                Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
+                assert(pixelBuffer);
+                LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(d3d9rw ? d3d9rw->getD3D9Device() : 0);
+                if (!surface)
+                {
+#ifdef _DEBUG
+                    std::cout << "No D3DSurface!" << std::endl;
+#endif
+                    return;
+                }
+                D3DSURFACE_DESC desc;
+                HRESULT hr = surface->GetDesc(&desc);
                 if (FAILED(hr))
                 {
-                    std::cout << "SubRect Lock Failed!" << std::endl;
+#ifdef _DEBUG
+                    std::cout << "surface->GetDesc failed!" << std::endl;
+#endif
                     return;
-                    HRESULT hr = surface->LockRect(&lock, 0, 0);
+                }
+
+                if (dirty.right() > desc.Width) dirty.setRight(desc.Width);
+                if (dirty.bottom() > desc.Height) dirty.setBottom(desc.Height);
+                if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
+                if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
+
+                const int copyableHeight = min<int>(dirty.height(), min<int>(view->BackBuffer()->height() - dirty.top(), desc.Height - dirty.top()));
+                const int copyableWidthBytes = 4*min<int>(dirty.width(), min<int>(view->BackBuffer()->width() - dirty.left(), desc.Width - dirty.left()));
+                if (copyableHeight <= 0 || copyableWidthBytes <= 0)
+                {
+#ifdef _DEBUG
+                    std::cout << "Nothing to blit!" << std::endl;
+#endif
+                    return;
+                }
+
+                D3DLOCKED_RECT lock;
+
+                {
+                    PROFILE(LockRect);
+    //                HRESULT hr = surface->LockRect(&lock, 0, D3DLOCK_DISCARD); // for full UI redraw.
+                    RECT lockRect = { dirty.left(), dirty.top(), dirty.right(), dirty.bottom() };
+                    HRESULT hr = surface->LockRect(&lock, &lockRect, 0);
                     if (FAILED(hr))
                     {
-                        std::cout << "Surface LockRect Failed!" << std::endl;
+#ifdef _DEBUG
+                        std::cout << "SubRect Lock Failed!" << std::endl;
+#endif
+                        return;
+                        HRESULT hr = surface->LockRect(&lock, 0, 0);
+                        if (FAILED(hr))
+                        {
+#ifdef _DEBUG
+                            std::cout << "Surface LockRect Failed!" << std::endl;
+#endif
+                            return;
+                        }
+                    }
+                    assert(lock.Pitch >= desc.Width*4);
+                }
+                char *surfacePtr = (char *)lock.pBits;
+
+                char *scanlines = (char*)view->BackBuffer()->bits();
+                 assert(scanlines);
+                 if (!scanlines)
+                     return;
+
+                {
+                    PROFILE(surface_memcpy);
+
+    // Full UI blit: Profiled to be slower than the non-D3DLOCK_DISCARD -update.
+    //                for(int y = 0; y < desc.Height; ++y)
+    //                    memcpy(surfacePtr + y * lock.Pitch, &scanlines[y * backBuffer.width()*4], min<int>(desc.Width, backBuffer.width())*4);
+
+                    // Update the regions that have changed.
+                    for(int y = 0; y < copyableHeight; ++y)
+                        memcpy(surfacePtr + y * lock.Pitch, &scanlines[dirty.left()*4 + (y+dirty.top()) * view->BackBuffer()->width()*4], copyableWidthBytes);
+                }
+
+                {
+                    PROFILE(UnlockRect);
+                    hr = surface->UnlockRect();
+                    if (FAILED(hr))
+                    {
+                        std::cout << "Unlock Failed!" << std::endl;
                         return;
                     }
                 }
-                assert(lock.Pitch >= desc.Width*4);
             }
-            char *surfacePtr = (char *)lock.pBits;
-
-            char *scanlines = (char*)view->BackBuffer()->bits();
-             assert(scanlines);
-             if (!scanlines)
-                 return;
-
-            {
-                PROFILE(surface_memcpy);
-
-// Full UI blit: Profiled to be slower than the non-D3DLOCK_DISCARD -update.
-//                for(int y = 0; y < desc.Height; ++y)
-//                    memcpy(surfacePtr + y * lock.Pitch, &scanlines[y * backBuffer.width()*4], min<int>(desc.Width, backBuffer.width())*4);
-
-                // Update the regions that have changed.
-                for(int y = 0; y < copyableHeight; ++y)
-                    memcpy(surfacePtr + y * lock.Pitch, &scanlines[dirty.left()*4 + (y+dirty.top()) * view->BackBuffer()->width()*4], copyableWidthBytes);
-            }
-
-            {
-                PROFILE(UnlockRect);
-                hr = surface->UnlockRect();
-                if (FAILED(hr))
-                {
-                    std::cout << "Unlock Failed!" << std::endl;
-                    return;
-                }
-            }
-
-            if (resized_dirty_ > 0)
-                resized_dirty_--;
         }
-#else
+#else // Not using the subrectangle blit - just do a full UI blit.
         if (view->IsViewDirty())
         {
-            PROFILE(Renderer_Render_QtBlit);
-
-            QImage *backBuffer = view->BackBuffer();
-            if (!backBuffer)
-                return;
-
-            QSize viewsize(view->viewport()->size());
-            QRect viewrect(QPoint(0, 0), viewsize);
-
-            QSize gviewsize(view->size());
-
-            QSize mainwindowSize(framework_->Ui()->MainWindow()->size());
-            QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
-
-            // Compositing back buffer
-            if (backBuffer->width() != viewsize.width() || backBuffer->height() != viewsize.height() || backBuffer->format() != QImage::Format_ARGB32_Premultiplied)
-            {
-//                graphicsView->ResizeBackBuffer(
-//                delete backBuffer;
- //               backBuffer = new QImage(viewsize, QImage::Format_ARGB32_Premultiplied);
-            }
-            backBuffer->fill(Qt::transparent);
-
-            // Paint ui view into buffer
-            QPainter painter(backBuffer);
-            view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
-
-            renderWindow->UpdateOverlayImage(*backBuffer);
-            if (resized_dirty_ > 0)
-                resized_dirty_--;
+            DoFullUIRedraw();
         }
 #endif
+
+        if (resized_dirty_ > 0)
+            resized_dirty_--;
 
         // The RenderableListener will fill in visible entities for this frame
         visible_entities_.clear();
@@ -692,7 +684,6 @@ namespace OgreRenderer
 #endif
 
         root_->renderOneFrame();
-//        renderWindow->RenderFrame();
         view->MarkViewUndirty();
     }
 
