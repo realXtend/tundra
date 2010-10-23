@@ -40,6 +40,8 @@ namespace ECEditor
         //! Show EC editor window.
         Console::CommandResult ShowWindow(const StringVector &params);
 
+        Console::CommandResult ShowDocumentation(const StringVector &params);
+
         //! Added for testing EC_DynamicComponent.
         /*! @param params Params should be following:
          *  0 = entity id.
