@@ -20,6 +20,10 @@
 
 #include "MemoryLeakCheck.h"
 
+#include "DoxygenDocReader.h"
+
+#include <QWebView>
+
 namespace ECEditor
 {
     std::string ECEditorModule::name_static_ = "ECEditor";
@@ -62,6 +66,12 @@ namespace ECEditor
             " 4 = attribute type. !Only rem dont use in rem operation."
             " 5 = attribute value. !Only rem dont use in rem operation.",
             Console::Bind(this, &ECEditorModule::EditDynamicComponent)));
+
+        RegisterConsoleCommand(Console::CreateCommand("ShowDocumentation",
+            "Prints the class documentation for the given symbol."
+            "Params:"
+            " 0 = The symbol to fetch the documentation for.",
+            Console::Bind(this, &ECEditorModule::ShowDocumentation)));
 
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
@@ -161,6 +171,26 @@ namespace ECEditor
         }
         else
             return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
+    }
+
+    Console::CommandResult ECEditorModule::ShowDocumentation(const StringVector &params)
+    {
+        if (params.size() == 0)
+            return Console::ResultFailure("The first parameter must be the documentation symbol to find!");
+
+        QUrl styleSheetPath;
+        QString documentation;
+        bool success = DoxygenDocReader::GetSymbolDocumentation(params[0].c_str(), &documentation, &styleSheetPath);
+
+        if (documentation.length() == 0)
+            return Console::ResultFailure("Failed to find documentation!");
+         
+        QWebView *webview = new QWebView();
+        webview->setHtml(documentation, styleSheetPath);
+        webview->show();
+        webview->setAttribute(Qt::WA_DeleteOnClose);
+
+        return Console::ResultSuccess();
     }
 
     /* Params
