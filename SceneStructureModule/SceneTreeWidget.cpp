@@ -854,14 +854,12 @@ void SceneTreeWidget::EntityActionDialogClosed(int result)
     if (!dialog)
         return;
 
-    if (result != QDialog::Accepted)
+    if (result == QDialog::Rejected)
         return;
 
     foreach(Scene::EntityWeakPtr e, dialog->Entities())
         if (e.lock())
             e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
-
-    dialog->close();
 }
 
 void SceneTreeWidget::SaveSelectionDialogClosed(int result)

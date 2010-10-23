@@ -94,15 +94,15 @@ EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entiti
     mainLayout->insertLayout(-1, buttonsLayout);
 
     execButton = new QPushButton(tr("Execute"));
-//    execAndCloseButton = new QPushButton(tr("Execute and Close"));
+    execAndCloseButton = new QPushButton(tr("Execute and Close"));
     QPushButton *closeButton = new QPushButton(tr("Close"));
 
-    connect(execButton, SIGNAL(clicked()), SLOT(accept()));
-//    connect(execAndCloseButton, SIGNAL(clicked()), SLOT(accept()));
+    connect(execButton, SIGNAL(clicked()), SLOT(Execute()));
+    connect(execAndCloseButton, SIGNAL(clicked()), SLOT(accept()));
     connect(closeButton, SIGNAL(clicked()), SLOT(reject()));
 
     buttonsLayout->addWidget(execButton);
-//    buttonsLayout->addWidget(execAndCloseButton);
+    buttonsLayout->addWidget(execAndCloseButton);
     buttonsLayout->addWidget(closeButton);
 }
 
@@ -151,11 +151,16 @@ void EntityActionDialog::CheckExecuteAccepted()
     if (!localCheckBox->isChecked() && !serverComboBox->isChecked() && !peersComboBox->isChecked())
     {
         execButton->setEnabled(false);
-//        execAndCloseButton->setEnabled(false);
+        execAndCloseButton->setEnabled(false);
     }
     else
     {
         execButton->setEnabled(true);
-//        execAndCloseButton->setEnabled(true);
+        execAndCloseButton->setEnabled(true);
     }
+}
+
+void EntityActionDialog::Execute()
+{
+    emit finished(2);
 }

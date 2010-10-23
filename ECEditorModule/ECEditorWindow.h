@@ -110,7 +110,7 @@ namespace ECEditor
         void OpenEntityActionDialog();
 
         /// Called by entity action dialog when it's closed.
-        /** @param result Result of dialog closure. OK is 1, Cancel is 0.
+        /** @param result Result of dialog closure. Close is 0, Execute and Close is 1, Execute is 2.
         */
         void EntityActionDialogClosed(int result);
 
