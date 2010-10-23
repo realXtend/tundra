@@ -29,6 +29,7 @@ namespace Console
         ui_view_(ui_view),
         console_ui_(new Ui::ConsoleWidget()),
         console_widget_(new QWidget()),
+        proxy_widget_(0),
         visible_(false),
         opacity_(0.8),
         hooked_to_scenes_(false)
