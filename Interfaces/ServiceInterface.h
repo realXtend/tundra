@@ -52,6 +52,7 @@ namespace Foundation
             ST_Player,
             ST_WorldBuilding,
             ST_Login,
+            ST_OpenSimScene,
             ST_Unknown
         };
     }

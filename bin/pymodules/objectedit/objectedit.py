@@ -236,18 +236,17 @@ class ObjectEdit(Component):
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.Id == ent.Id:
                 self.sels.remove(_ent)
-            
+                self.worldstream.SendObjectDeselectPacket(ent.Id)
+
     def deselect_all(self):
         if len(self.sels) > 0:
-            #XXX might need something here?!
-            
             for ent in self.sels:
                 self.remove_highlight(ent)
                 self.removeSoundRuler(ent)
+                self.worldstream.SendObjectDeselectPacket(ent.Id)
             self.sels = []
-            #self.hideSelector()
-            
-            self.hideManipulator() #manipulator
+           
+            self.hideManipulator()
 
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0

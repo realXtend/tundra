@@ -164,6 +164,12 @@ namespace ProtocolUtilities
         */
         void SendObjectSelectPacket(std::vector<entity_id_t> object_id_list);
 
+        /// Sends a packet which indicates deselection of prim(s) 
+        /// (have to use unsigned longs for PythonQt correctness...)
+        /** @param Local ID of the object which is deselected. ent.Id in python
+        */
+        void SendObjectDeselectPacket(const unsigned long ent_id);
+
         /// Sends a packet which indicates deselection of prim(s).
         /** @param Local ID of the object which is deselected.
         */

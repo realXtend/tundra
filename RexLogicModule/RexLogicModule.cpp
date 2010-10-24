@@ -68,7 +68,6 @@
 
 #include "Camera/ObjectCameraController.h"
 #include "Camera/CameraControl.h"
-#include "NotificationWidget.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -268,8 +267,6 @@ void RexLogicModule::Initialize()
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
     obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
     camera_control_widget_ = CameraControlPtr(new CameraControl(this));
-    notification_widget_ = NotificationWidgetPtr(new NotificationWidget(this));
-    QObject::connect(obj_camera_controller_.get(), SIGNAL(FocusOnObject()), notification_widget_.get(), SLOT(FocusOnObject()));
     
     SceneInteract *sceneInteract = new SceneInteract(framework_);
     QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
@@ -311,10 +308,7 @@ void RexLogicModule::PostInitialize()
         &InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &ObjectCameraController::HandleInputEvent, obj_camera_controller_, _1, _2));
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &NotificationWidget::HandleInputEvent, notification_widget_, _1, _2));
     
-
     // Create the input handler that reacts to avatar-related input events and moves the avatar and default camera accordingly.
     avatarInput = boost::make_shared<RexMovementInput>(framework_);
 

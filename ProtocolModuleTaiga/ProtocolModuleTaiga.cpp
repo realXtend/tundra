@@ -287,6 +287,8 @@ namespace TaigaProtocol
             "<string>UntrustedSimulatorMessage</string>"
             "<string>ViewerStats</string>"
             "<string>GetTexture</string>"
+            "<string>UploadScene</string>"
+            "<string>UploadNaaliScene</string>"
             "<string>mumble_server_info</string>"
             "</array></llsd>";
 

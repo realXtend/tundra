@@ -136,21 +136,6 @@ void NaaliGraphicsView::resizeEvent(QResizeEvent *e)
 */
 }
 
-void NaaliGraphicsView::dragEnterEvent(QDragEnterEvent *e)
-{
-    emit DragEnterEvent(e);
-}
-
-void NaaliGraphicsView::dragMoveEvent(QDragMoveEvent *e)
-{
-    emit DragMoveEvent(e);
-}
-
-void NaaliGraphicsView::dropEvent(QDropEvent *e)
-{
-    emit DropEvent(e);
-}
-
 void NaaliGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
 {
     using namespace std;
@@ -179,4 +164,21 @@ void NaaliGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
     dirtyRectangle.setTop(max<int>(dirtyRectangle.top(), 0));
     dirtyRectangle.setRight(min<int>(dirtyRectangle.right(), width()));
     dirtyRectangle.setBottom(min<int>(dirtyRectangle.bottom(), height()));
+}
+
+void NaaliGraphicsView::dropEvent(QDropEvent *e)
+{        
+    emit DropEvent(e);
+}
+
+void NaaliGraphicsView::dragEnterEvent(QDragEnterEvent *e)
+{           
+    e->accept();
+    emit DragEnterEvent(e);
+}   
+
+void NaaliGraphicsView::dragMoveEvent(QDragMoveEvent *e)
+{
+    e->accept();
+    emit DragMoveEvent(e);
 }

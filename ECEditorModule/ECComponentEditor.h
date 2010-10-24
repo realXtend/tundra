@@ -44,7 +44,7 @@ namespace ECEditor
         void AddNewComponent(ComponentPtr component, bool updateUi = true);
 
         //! Remove component from the editor.
-        void RemoveComponent(IComponent *component);
+        void RemoveComponent(ComponentPtr component);
 
         //void UpdateEditorUI();
 
@@ -62,7 +62,11 @@ namespace ECEditor
         //! a new ECAttributeEditor instance is created and it's pointer returned to a user. If attribute type is not supported
         //! the method will return a null pointer.
         //! @return return attribute pointer if attribute type is supported and if not return null pointer.
-        static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser, ECComponentEditor *editor, IAttribute &attribute);
+        static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser,
+                                                            ECComponentEditor *editor,
+                                                            ComponentPtr component,
+                                                            const QString &name,
+                                                            const QString &type);
 
         //! Initialize editor and create attribute editors.
         //! @param component component is used to figure out what attrubtes it contain and what

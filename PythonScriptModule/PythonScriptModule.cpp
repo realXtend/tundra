@@ -545,7 +545,8 @@ namespace PythonScript
 
     PythonScriptModule* PythonScriptModule::GetInstance()
     {
-        assert(pythonScriptModuleInstance_);
+        // Do not assert here! This gets called for some 
+        // reason after module has unloaded from Log*() functions.
         return pythonScriptModuleInstance_;
     }
 
@@ -1366,7 +1367,8 @@ PyObject* PyLogInfo(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
         return NULL;
     }
-    PythonScript::self()->LogInfo(message);
+    if (PythonScript::self())
+        PythonScript::self()->LogInfo(message);
     Py_RETURN_NONE;
 }
 
@@ -1378,7 +1380,8 @@ PyObject* PyLogDebug(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
         return NULL;
     }
-    PythonScript::self()->LogDebug(message);
+    if (PythonScript::self())
+        PythonScript::self()->LogDebug(message);
     Py_RETURN_NONE;
 }
 
@@ -1390,7 +1393,8 @@ PyObject* PyLogWarning(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
         return NULL;
     }
-    PythonScript::self()->LogWarning(message);
+    if (PythonScript::self())
+        PythonScript::self()->LogWarning(message);
     Py_RETURN_NONE;
 }
 
@@ -1402,8 +1406,8 @@ PyObject* PyLogError(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
         return NULL;
     }
-    PythonScript::self()->LogError(message);
-    
+    if (PythonScript::self())
+        PythonScript::self()->LogError(message);
     Py_RETURN_NONE;
 }
 
