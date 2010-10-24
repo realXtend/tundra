@@ -9,7 +9,7 @@
 #include "DebugOperatorNew.h"
 
 #include "ECEditorWindow.h"
-#include "ECEditorModule.h"
+
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
 #include "AddComponentDialog.h"

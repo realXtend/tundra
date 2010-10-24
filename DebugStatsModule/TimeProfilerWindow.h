@@ -14,6 +14,8 @@
 #include <QString>
 #include <Ogre.h>
 
+#include <TexturePreviewEditor.h>
+
 class QTreeWidget;
 class QComboBox;
 class QTabWidget;
@@ -170,6 +172,7 @@ namespace DebugStats
         QTextEdit* text_scenecomplexity_;
 
         event_category_id_t asset_event_category_;
+        TexturePreviewEditor* tex_preview_;
     };
 }
 

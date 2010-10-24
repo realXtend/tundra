@@ -4,6 +4,9 @@
 #define incl_Core_NaaliGraphicsView_h
 
 #include <QGraphicsView>
+#include <QDropEvent>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
 
 #include "NaaliUiFwd.h"
 #include "UiApi.h"
@@ -34,7 +37,7 @@ public:
 
 signals:
     /// Emitted when this widget has been resized to a new size.
-    void WindowResized(int newWidth, int newHeight);
+    void WindowResized(int newWidth, int newHeight);    
 
     /// Emitted when DragEnterEvent is received for the main window.
     /** @param e Event.
@@ -65,8 +68,12 @@ private:
     /// Overridden to disable QEvent::UpdateRequest, QEvent::Paint and QEvent::Wheel events from being processed in the base class,
     /// which cause flickering on the screen (Qt internals have some hard-coded full-screen rectangle repaints on these signals).
     bool event(QEvent *event);
-    /// 
+
     void resizeEvent(QResizeEvent *e);
+
+    // We override the Qt widget drag-n-drop events to be able to expose them as Qt signals (DragEnterEvent, DragMoveEvent and DropEvent)
+    // to all Naali client applications. The individual modules can listen to those signals to be able to perform drag-n-drop
+    // handling of custom mime types.
     void dragEnterEvent(QDragEnterEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
     void dropEvent(QDropEvent *e);
