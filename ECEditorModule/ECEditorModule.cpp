@@ -6,6 +6,7 @@
 #include "ECEditorModule.h"
 #include "ECEditorWindow.h"
 #include "EcXmlEditorWidget.h"
+#include "DoxygenDocReader.h"
 
 #include "EventManager.h"
 #include "SceneEvents.h"
@@ -19,8 +20,6 @@
 #include "Input.h"
 
 #include "MemoryLeakCheck.h"
-
-#include "DoxygenDocReader.h"
 
 #include <QWebView>
 

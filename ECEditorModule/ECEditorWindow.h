@@ -99,6 +99,14 @@ namespace ECEditor
          */
         void CreateComponent();
 
+        /// Shows dialog for invoking entity actions.
+        void OpenEntityActionDialog();
+
+        /// Called by entity action dialog when it's closed.
+        /** @param result Result of dialog closure. Close is 0, Execute and Close is 1, Execute is 2.
+        */
+        void EntityActionDialogClosed(int result);
+
         /// If entity selection different from previous update change browser to fit those changes.
         void RefreshPropertyBrowser();
 
@@ -154,7 +162,7 @@ namespace ECEditor
         /// Paste create a new entity and add serializable components.
         void PasteEntity();
 
-        /// Highlights all entities from the entities_list that own a isntace of given component.
+        /// Highlights all entities from the entities_list that own an instance of given component.
         void HighlightEntities(IComponent *component);
 
         /// Listenes when new entities are added to the world scene.
