@@ -13,6 +13,7 @@
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
 #include "AddComponentDialog.h"
+#include "EntityActionDialog.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
@@ -336,6 +337,38 @@ namespace ECEditor
         }
     }
 
+    void ECEditorWindow::OpenEntityActionDialog()
+    {
+        QAction *action = dynamic_cast<QAction *>(sender());
+        if (!action)
+            return;
+
+        QList<Scene::EntityWeakPtr> entities;
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
+            entities.append(entity);
+
+        if (entities.size())
+        {
+            EntityActionDialog *d = new EntityActionDialog(entities, this);
+            connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogClosed(int)));
+            d->show();
+        }
+    }
+
+    void ECEditorWindow::EntityActionDialogClosed(int result)
+    {
+        EntityActionDialog *dialog = qobject_cast<EntityActionDialog *>(sender());
+        if (!dialog)
+            return;
+
+        if (result == QDialog::Rejected)
+            return;
+
+        foreach(Scene::EntityWeakPtr e, dialog->Entities())
+            if (e.lock())
+                e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
+    }
+
     void ECEditorWindow::HighlightEntities(IComponent *component)
     {
         foreach(Scene::EntityPtr entity, GetSelectedEntities())
@@ -442,18 +475,21 @@ namespace ECEditor
         QAction *addComponent = new QAction(tr("Add new component..."), menu);
         QAction *copyEntity = new QAction(tr("Copy"), menu);
         QAction *pasteEntity = new QAction(tr("Paste"), menu);
+        QAction *actions = new QAction(tr("Actions..."), menu);
 
         connect(editXml, SIGNAL(triggered()), this, SLOT(ShowXmlEditorForEntity()));
         connect(deleteEntity, SIGNAL(triggered()), this, SLOT(DeleteEntity()));
         connect(addComponent, SIGNAL(triggered()), this, SLOT(CreateComponent()));
         connect(copyEntity, SIGNAL(triggered()), this, SLOT(CopyEntity()));
         connect(pasteEntity, SIGNAL(triggered()), this, SLOT(PasteEntity()));
+        connect(actions, SIGNAL(triggered()), this, SLOT(OpenEntityActionDialog()));
 
         menu->addAction(editXml);
         menu->addAction(deleteEntity);
         menu->addAction(addComponent);
         menu->addAction(copyEntity);
         menu->addAction(pasteEntity);
+        menu->addAction(actions);
 
         menu->popup(entity_list_->mapToGlobal(pos));
     }

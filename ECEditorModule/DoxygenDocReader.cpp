@@ -1,3 +1,10 @@
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   DoxygenDocReader.cpp
+ *  @brief  Provides an utility function for extracting html documentation blocks for class symbols from the generated doxygen documentation files.
+ */
+
 #include "StableHeaders.h"
 
 #include "DoxygenDocReader.h"

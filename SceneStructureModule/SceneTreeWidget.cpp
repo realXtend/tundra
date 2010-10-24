@@ -103,7 +103,7 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     framework(fw),
     showComponents(false)
 {
-    setEditTriggers(QAbstractItemView::EditKeyPressed/* NoEditTriggers/*EditKeyPressed*/);
+//    setEditTriggers(/*QAbstractItemView::EditKeyPressed*/QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
 //    setDragEnabled(true);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -126,6 +126,8 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     connect(deleteShortcut, SIGNAL(activated()), this, SLOT(Delete()));
     connect(copyShortcut, SIGNAL(activated()), this, SLOT(Copy()));
     connect(pasteShortcut, SIGNAL(activated()), this, SLOT(Paste()));
+
+    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
 }
 
 SceneTreeWidget::~SceneTreeWidget()
@@ -235,7 +237,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
     // "Edit", "Edit in new", "New component...", "Delete", "Copy", "Actions..." and "Functions..."
     // actions are available only if we have selection.
     QAction *editAction = 0, *editInNewAction = 0, *newComponentAction = 0, *deleteAction = 0,
-        *renameAction = 0, *copyAction = 0, *saveAsAction = 0;//, *actionsAction = 0, *functionsActions = 0;
+        *renameAction = 0, *copyAction = 0, *saveAsAction = 0, *actionsAction = 0, *functionsActions = 0;
 
     bool hasSelection = !selectionModel()->selection().isEmpty();
     if (hasSelection)
@@ -246,7 +248,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         deleteAction = new QAction(tr("Delete"), menu);
         copyAction = new QAction(tr("Copy"), menu);
         saveAsAction = new QAction(tr("Save as..."), menu);
-//        actionsAction = new QAction(tr("Actions..."), menu);
+        actionsAction = new QAction(tr("Actions..."), menu);
 //        QAction *functionsAction = new QAction(tr("Functions..."), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
@@ -255,7 +257,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         connect(deleteAction, SIGNAL(triggered()), SLOT(Delete()));
         connect(copyAction, SIGNAL(triggered()), SLOT(Copy()));
         connect(saveAsAction, SIGNAL(triggered()), SLOT(SaveAs()));
-//        connect(actionsAction, SIGNAL(triggered()), SLOT(ShowEntityActionsDialog()));
+        connect(actionsAction, SIGNAL(triggered()), SLOT(OpenEntityActionDialog()));
 //        connect(functionsActions, SIGNAL(triggered()), SLOT(ShowFunctionsDialog()));
     }
 
@@ -274,8 +276,6 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
     {
         menu->addAction(editAction);
         menu->addAction(editInNewAction);
-//        menu->addAction(actionsAction);
-//        menu->addAction(functionsAction);
     }
 
     menu->addAction(newEntityAction);
@@ -301,6 +301,14 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
     menu->addAction(importAction);
     menu->addAction(openNewSceneAction);
 
+    if (hasSelection)
+    {
+        menu->addSeparator();
+        menu->addAction(actionsAction);
+//        menu->addAction(functionsAction);
+    }
+
+/*
     Selection sel = GetSelection();
     if (sel.HasEntities())
     {
@@ -384,6 +392,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
             }
         }
     }
+*/
 }
 
 Selection SceneTreeWidget::GetSelection() const
@@ -527,8 +536,11 @@ void SceneTreeWidget::Rename()
         {
             // Remove the entity ID from the text when user is editing entity's name.
             eItem->setText(0, entity->GetName());
+            openPersistentEditor(eItem);
+//            setCurrentIndex(index);
             edit(index);
-            connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
+            connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *, int)), Qt::UniqueConnection);
+            connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *)));
         }
     }
 /*
@@ -543,8 +555,11 @@ void SceneTreeWidget::Rename()
 */
 }
 
-void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
+void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
 {
+    if (column != 0)
+        return;
+
     EntityItem *eItem = dynamic_cast<EntityItem *>(item);
     if (eItem)
     {
@@ -553,9 +568,10 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
         if (entity)
         {
             QString newName = eItem->text(0);
-            disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
+            disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
             // We don't need to set item text here. It's done when SceneStructureWindow gets AttributeChanged() signal from Scene.
             entity->SetName(newName);
+//            closePersistentEditor(item);
             return;
         }
     }
@@ -573,6 +589,12 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
         //cItem->typeName
     }
 */
+}
+
+void SceneTreeWidget::CloseEditor(QTreeWidgetItem *c, QTreeWidgetItem *p)
+{
+//    foreach(EntityItem *eItem, GetSelection().entities)
+    closePersistentEditor(p);
 }
 
 void SceneTreeWidget::NewEntity()
@@ -802,7 +824,7 @@ void SceneTreeWidget::OpenNewScene()
         tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
-void SceneTreeWidget::EntityActionTriggered()
+void SceneTreeWidget::OpenEntityActionDialog()
 {
     QAction *action = dynamic_cast<QAction *>(sender());
     assert(action);
@@ -821,7 +843,7 @@ void SceneTreeWidget::EntityActionTriggered()
             entities.append(e);
     }
 
-    EntityActionDialog *d = new EntityActionDialog(entities, action->text(), this);
+    EntityActionDialog *d = new EntityActionDialog(entities, this);
     connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogClosed(int)));
     d->show();
 }
@@ -832,14 +854,12 @@ void SceneTreeWidget::EntityActionDialogClosed(int result)
     if (!dialog)
         return;
 
-    if (result != QDialog::Accepted)
+    if (result == QDialog::Rejected)
         return;
 
     foreach(Scene::EntityWeakPtr e, dialog->Entities())
         if (e.lock())
             e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
-
-    dialog->close();
 }
 
 void SceneTreeWidget::SaveSelectionDialogClosed(int result)
