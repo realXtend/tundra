@@ -32,7 +32,7 @@ namespace ECEditor
         //IAttribute &attribute) 
     {
         ECAttributeEditorBase *attributeEditor = 0;
-        if(type == "float")
+        if(type == "real")
             attributeEditor = new ECAttributeEditor<float>(browser, component, name, editor);//&attribute, editor);
         else if(type == "int")
             attributeEditor = new ECAttributeEditor<int>(browser, component, name, editor);
