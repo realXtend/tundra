@@ -324,47 +324,27 @@ void EC_Ruler::SetupRotationRuler()
     rulerObject->end();
 }
 
-static void getp(float in, float *pivot)
-{
-    float c = ceil(in);
-    float f = floor(in);
-    float cd = c - in;
-    float fd = in - f;
-    if(cd < fd) {
-        *pivot = c;
-    }
-    else {
-        *pivot = f;
-    }
-}
-
 void EC_Ruler::SetupTranslateRuler() {
     if(!rulerObject)
         return;
 
     float size = radiusAttr_.Get();
-    float x, y, z; /*pivot; crossp, crossaxis;*/
+    float x, y, z;
     int d = 0;
     
-    x = y = z = /*pivot = crossaxis = crossp =*/ 0.0f;
+    x = y = z = 0.0f;
     
     switch(axisAttr_.Get()) {
         case EC_Ruler::X:
             x = size;
-            //getp(pos_.x(), &pivot);
-            //crossaxis = newpos_.x()-pos_.x();
             d = floor(newpos_.x())-floor(pos_.x());
             break;
         case EC_Ruler::Y:
             y = size;
-            //getp(pos_.y(), &pivot);
-            //crossaxis = newpos_.y()-pos_.y();
             d = floor(newpos_.y())-floor(pos_.y());
             break;
         case EC_Ruler::Z:
             z = size;
-            //getp(pos_.z(), &pivot);
-            //crossaxis = newpos_.z()-pos_.z();
             d = floor(newpos_.z())-floor(pos_.z());
             break;
         default:
@@ -385,19 +365,13 @@ void EC_Ruler::SetupTranslateRuler() {
     movingObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
     
     for(int step=(-5+d); step <= (5+d); step += 1) {
-        //crossp = abs((float)step - crossaxis - 1);
-        //std::cout << crossp << " = abs(" << step << " - " << crossaxis << ") ";
         switch(axisAttr_.Get()) {
             case EC_Ruler::X:
                 // side one
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()+0.05f);
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()-0.05f);
-                //if(crossp < 0.5f)
-                //    movingObject->position(floor(pos_.x())+(float)step, pos_.y()-0.95f, pos_.z());
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1.05f, pos_.z());
                 // side two
-                //if(crossp < 0.5f)
-                //    movingObject->position(floor(pos_.x())+(float)step, pos_.y()+0.95f, pos_.z());
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1.05f, pos_.z());
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()+0.05f);
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()-0.05f);
@@ -406,17 +380,9 @@ void EC_Ruler::SetupTranslateRuler() {
                 // side one
                 movingObject->position(pos_.x()-1, floor(pos_.y())+(float)step, pos_.z()+0.05f);
                 movingObject->position(pos_.x()-1, floor(pos_.y())+(float)step, pos_.z()-0.05f);
-                /*rulerObject->position(-1, crossp, 0.05f);
-                rulerObject->position(-1, crossp, -0.05f);
-                if(abs(crossp) > 0.5f)
-                    rulerObject->position(-0.95f, crossp, 0);
-                rulerObject->position(-1.05f, crossp, 0);
+                movingObject->position(pos_.x()-1.05, floor(pos_.y())+(float)step, pos_.z());
                 // side two
-                if(abs(crossp) > 0.5f)
-                    rulerObject->position(0.95f, crossp, 0);
-                rulerObject->position(1.05f, crossp, 0);
-                rulerObject->position(1, crossp, 0.05f);
-                rulerObject->position(1, crossp, -0.05f);*/
+                movingObject->position(pos_.x()+1.05, floor(pos_.y())+(float)step, pos_.z());
                 movingObject->position(pos_.x()+1, floor(pos_.y())+(float)step, pos_.z()+0.05f);
                 movingObject->position(pos_.x()+1, floor(pos_.y())+(float)step, pos_.z()-0.05f);
                 break;
@@ -424,23 +390,14 @@ void EC_Ruler::SetupTranslateRuler() {
                 // side one
                 movingObject->position(pos_.x()-1, pos_.y()+0.05f, floor(pos_.z())+step);
                 movingObject->position(pos_.x()-1, pos_.y()-0.05f, floor(pos_.z())+step);
+                movingObject->position(pos_.x()-1.05, pos_.y(), floor(pos_.z())+step);
+                // side two
+                movingObject->position(pos_.x()+1.05, pos_.y(), floor(pos_.z())+step);
                 movingObject->position(pos_.x()+1, pos_.y()+0.05f, floor(pos_.z())+step);
                 movingObject->position(pos_.x()+1, pos_.y()-0.05f, floor(pos_.z())+step);
-                /*rulerObject->position(-1, 0.05f, crossp);
-                rulerObject->position(-1, -0.05f, crossp);
-                if(abs(crossp) > 0.5f)
-                    rulerObject->position(-0.95f, 0, crossp);
-                rulerObject->position(-1.05f, 0, crossp);
-                // side two
-                if(abs(crossp) > 0.5f)
-                    rulerObject->position(0.95f, 0, crossp);
-                rulerObject->position(1.05f, 0, crossp);
-                rulerObject->position(1, 0.05f, crossp);
-                rulerObject->position(1, -0.05f, crossp);*/
                 break;
         }
     }
-    //std::cout << std::endl;
     movingObject->end();
     rulerObject->end();
 }
