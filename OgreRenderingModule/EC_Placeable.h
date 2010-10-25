@@ -69,7 +69,11 @@ public:
     //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
     Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
-
+    
+    //! Show debug bounding box -attribute
+    Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug);
+    
     virtual ~EC_Placeable();
     
     //! Set component as serializable.

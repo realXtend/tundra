@@ -168,7 +168,7 @@ public:
     //! Will the mesh cast shadows.
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
-
+    
     //! Set component as serializable.
     /*! Note that despite this, in OpenSim worlds, the network sync will be disabled from the component,
         as mesh attributes are being transmitted through RexPrimData instead.
