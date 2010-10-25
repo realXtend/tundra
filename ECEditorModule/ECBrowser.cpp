@@ -43,6 +43,8 @@ namespace ECEditor
 
     void ECBrowser::AddEntity(Scene::EntityPtr entity)
     {
+        PROFILE(ECBrowser_AddNewEntity);
+
         assert(entity);
         if(!entity)
             return;
@@ -98,6 +100,8 @@ namespace ECEditor
 
     void ECBrowser::UpdateBrowser()
     {
+        PROFILE(ECBrowser_UpdateBrowser);
+
         // Sorting tend to be heavy operation so we disable it until we have made all changes to a ui.
         if(treeWidget_)
             treeWidget_->setSortingEnabled(false);
@@ -394,6 +398,8 @@ namespace ECEditor
     
     void ECBrowser::SelectionChanged()
     {
+        PROFILE(ECBrowser_SelectionChanged);
+
         QTreeWidgetItem *item = treeWidget_->currentItem();
         if(!item)
             return;
@@ -406,6 +412,7 @@ namespace ECEditor
         {
             for(uint i = 0; i < (*iter)->components_.size(); i++)
             {
+                PROFILE(ECBrowser_SelectionChanged_inner);
                 if((*iter)->components_[i].expired())
                     continue;
                 emit ComponentSelected((*iter)->components_[i].lock().get());
@@ -577,7 +584,7 @@ namespace ECEditor
         }
     }
 
-    void ECBrowser::DynamicComponentChanged(const QString &name)
+    void ECBrowser::DynamicComponentChanged()
     {
         EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender());
         if(!component)
@@ -689,6 +696,8 @@ namespace ECEditor
 
     ComponentGroupList::iterator ECBrowser::FindSuitableGroup(ComponentPtr comp)
     {
+        PROFILE(ECBrowser_FindSuitableGroup);
+
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
             if((*iter)->IsSameComponent(comp))
@@ -726,8 +735,8 @@ namespace ECEditor
             if (comp_group->IsDynamic())
             {
                 EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
-                connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
-                connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+                connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()));
+                connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()));
                 connect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString&)),
                         SLOT(ComponentNameChanged(const QString&)));
             }
@@ -759,8 +768,8 @@ namespace ECEditor
         if(dynamic)
         {
             EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
-            connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
-            connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+            connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()));
+            connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()));
             connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)));
         }
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
@@ -786,15 +795,15 @@ namespace ECEditor
             if(comp_group->IsDynamic())
             {
                 EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp.get());
-                disconnect(dc, SIGNAL(AttributeAdded(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
-                disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
+                disconnect(dc, SIGNAL(AttributeAdded(IAttribute *)), this, SLOT(DynamicComponentChanged()));
+                disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged()));
                 disconnect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString &)), this, SLOT(ComponentNameChanged(const QString&)));
             }
             comp_group->RemoveComponent(comp);
             //Ensure that coponent group is valid and if it's not, remove it from the browser list.
             if(!comp_group->IsValid())
             {
-                SAFE_DELETE(*iter)
+                SAFE_DELETE(comp_group);
                 componentGroups_.erase(iter);
             }
             break;
