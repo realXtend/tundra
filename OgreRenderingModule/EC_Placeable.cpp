@@ -11,6 +11,20 @@
 
 using namespace OgreRenderer;
 
+void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)
+{
+    if (!node)
+        return;
+    node->showBoundingBox(enable);
+    int numChildren = node->numChildren();
+    for (int i = 0; i < numChildren; ++i)
+    {
+        Ogre::SceneNode* childNode = dynamic_cast<Ogre::SceneNode*>(node->getChild(i));
+        if (childNode)
+            SetShowBoundingBoxRecursive(childNode, enable);
+    }
+}
+
 EC_Placeable::EC_Placeable(IModule* module) :
     IComponent(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
@@ -18,7 +32,8 @@ EC_Placeable::EC_Placeable(IModule* module) :
     link_scene_node_(0),
     attached_(false),
     select_priority_(0),
-    transform(this, "Transform")
+    transform(this, "Transform"),
+    drawDebug(this, "Show bounding box", false)
 {
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
@@ -332,6 +347,10 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
 
         link_scene_node_->setScale(scale.x, scale.y, scale.z);
     }
+    else if (attribute == &drawDebug)
+    {
+        SetShowBoundingBoxRecursive(link_scene_node_, drawDebug.Get());
+    }
 }
 
 void EC_Placeable::Show()
@@ -371,4 +390,5 @@ void EC_Placeable::RegisterActions()
 
     }
 }
+
 
