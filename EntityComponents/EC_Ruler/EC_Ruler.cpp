@@ -35,7 +35,7 @@ EC_Ruler::EC_Ruler(IModule *module) :
     radiusAttr_(this, "radius", 5),
     segmentsAttr_(this, "segments", 29),
     rulerObject(0),
-    movingObject(0),
+    gridObject(0),
     sceneNode_(0),
     type(EC_Ruler::Rotation)
 {
@@ -58,13 +58,13 @@ EC_Ruler::~EC_Ruler()
     {
         Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
         sceneMgr->destroyManualObject(rulerObject);
-        if(movingObject)
-            sceneMgr->destroyManualObject(movingObject);
+        if(gridObject)
+            sceneMgr->destroyManualObject(gridObject);
     }
     else
     {
         rulerObject = 0;
-        movingObject = 0;
+        gridObject = 0;
         sceneNode_ = 0;
     }
 }
@@ -80,8 +80,8 @@ void  EC_Ruler::Show()
         return;
     }
     
-    if ( movingObject )
-        movingObject->setVisible(true);
+    if ( gridObject )
+        gridObject->setVisible(true);
     
 }
 
@@ -96,8 +96,8 @@ void  EC_Ruler::Hide()
         return;
     }
     
-    if ( movingObject )
-        movingObject->setVisible(false);
+    if ( gridObject )
+        gridObject->setVisible(false);
 }
 
 bool EC_Ruler::IsVisible() const
@@ -145,15 +145,15 @@ void EC_Ruler::Create()
         rulerObject = scene_mgr->createManualObject(rulerName);
     }
     if(scene_mgr->hasManualObject(rulerMovingPartName)){
-        movingObject = scene_mgr->getManualObject(rulerMovingPartName);
-        if(movingObject->isAttached())
+        gridObject = scene_mgr->getManualObject(rulerMovingPartName);
+        if(gridObject->isAttached())
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
-            movingObject->detatchFromParent();
+            gridObject->detatchFromParent();
 #else
-            movingObject->detachFromParent();
+            gridObject->detachFromParent();
 #endif
     } else {
-        movingObject = scene_mgr->createManualObject(rulerMovingPartName);
+        gridObject = scene_mgr->createManualObject(rulerMovingPartName);
     }
     
     switch(typeAttr_.Get()) {
@@ -183,17 +183,17 @@ void EC_Ruler::Create()
             return;
             
         if(scene_mgr->hasSceneNode(movingNodeName)) {
-            movingSceneNode = scene_mgr->getSceneNode(movingNodeName);
+            anchorNode = scene_mgr->getSceneNode(movingNodeName);
         } else {
-            movingSceneNode = scene_mgr->getRootSceneNode()->createChildSceneNode(movingNodeName);
-            movingSceneNode->setVisible(true);
+            anchorNode = scene_mgr->getRootSceneNode()->createChildSceneNode(movingNodeName);
+            anchorNode->setVisible(true);
         }
-        assert(movingSceneNode);
-        if(!movingSceneNode)
+        assert(anchorNode);
+        if(!anchorNode)
             return;
         
-        movingSceneNode->setPosition(0,0,0);
-        movingSceneNode->attachObject(movingObject);
+        anchorNode->setPosition(0,0,0);
+        anchorNode->attachObject(gridObject);
     
         globalSceneNode->setPosition(sceneNode_->getParent()->getPosition());
         globalSceneNode->attachObject(rulerObject);
@@ -255,15 +255,12 @@ void EC_Ruler::SetupRotationRuler()
     float a2 = 0.0f;
     switch(axisAttr_.Get()) {
         case EC_Ruler::X:
-                //a1 = seul.x;
                 a2 = seul.x - eeul.x;
             break;
         case EC_Ruler::Y:
-                //a1 = seul.y;
                 a2 = seul.y - eeul.y;
             break;
         case EC_Ruler::Z:
-                //a1 = seul.z;
                 a2 = seul.z - eeul.z;
             break;
     }
@@ -360,45 +357,45 @@ void EC_Ruler::SetupTranslateRuler() {
     
     // create grid
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
-    movingObject->clear();
-    movingObject->setCastShadows(false);
-    movingObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+    gridObject->clear();
+    gridObject->setCastShadows(false);
+    gridObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
     
     for(int step=(-5+d); step <= (5+d); step += 1) {
         switch(axisAttr_.Get()) {
             case EC_Ruler::X:
                 // side one
-                movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()+0.05f);
-                movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()-0.05f);
-                movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1.05f, pos_.z());
+                gridObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()+0.05f);
+                gridObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()-0.05f);
+                gridObject->position(floor(pos_.x())+(float)step, pos_.y()-1.05f, pos_.z());
                 // side two
-                movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1.05f, pos_.z());
-                movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()+0.05f);
-                movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()-0.05f);
+                gridObject->position(floor(pos_.x())+(float)step, pos_.y()+1.05f, pos_.z());
+                gridObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()+0.05f);
+                gridObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()-0.05f);
                 break;
             case EC_Ruler::Y:
                 // side one
-                movingObject->position(pos_.x()-1, floor(pos_.y())+(float)step, pos_.z()+0.05f);
-                movingObject->position(pos_.x()-1, floor(pos_.y())+(float)step, pos_.z()-0.05f);
-                movingObject->position(pos_.x()-1.05, floor(pos_.y())+(float)step, pos_.z());
+                gridObject->position(pos_.x()-1, floor(pos_.y())+(float)step, pos_.z()+0.05f);
+                gridObject->position(pos_.x()-1, floor(pos_.y())+(float)step, pos_.z()-0.05f);
+                gridObject->position(pos_.x()-1.05, floor(pos_.y())+(float)step, pos_.z());
                 // side two
-                movingObject->position(pos_.x()+1.05, floor(pos_.y())+(float)step, pos_.z());
-                movingObject->position(pos_.x()+1, floor(pos_.y())+(float)step, pos_.z()+0.05f);
-                movingObject->position(pos_.x()+1, floor(pos_.y())+(float)step, pos_.z()-0.05f);
+                gridObject->position(pos_.x()+1.05, floor(pos_.y())+(float)step, pos_.z());
+                gridObject->position(pos_.x()+1, floor(pos_.y())+(float)step, pos_.z()+0.05f);
+                gridObject->position(pos_.x()+1, floor(pos_.y())+(float)step, pos_.z()-0.05f);
                 break;
             case EC_Ruler::Z:
                 // side one
-                movingObject->position(pos_.x()-1, pos_.y()+0.05f, floor(pos_.z())+step);
-                movingObject->position(pos_.x()-1, pos_.y()-0.05f, floor(pos_.z())+step);
-                movingObject->position(pos_.x()-1.05, pos_.y(), floor(pos_.z())+step);
+                gridObject->position(pos_.x()-1, pos_.y()+0.05f, floor(pos_.z())+step);
+                gridObject->position(pos_.x()-1, pos_.y()-0.05f, floor(pos_.z())+step);
+                gridObject->position(pos_.x()-1.05, pos_.y(), floor(pos_.z())+step);
                 // side two
-                movingObject->position(pos_.x()+1.05, pos_.y(), floor(pos_.z())+step);
-                movingObject->position(pos_.x()+1, pos_.y()+0.05f, floor(pos_.z())+step);
-                movingObject->position(pos_.x()+1, pos_.y()-0.05f, floor(pos_.z())+step);
+                gridObject->position(pos_.x()+1.05, pos_.y(), floor(pos_.z())+step);
+                gridObject->position(pos_.x()+1, pos_.y()+0.05f, floor(pos_.z())+step);
+                gridObject->position(pos_.x()+1, pos_.y()-0.05f, floor(pos_.z())+step);
                 break;
         }
     }
-    movingObject->end();
+    gridObject->end();
     rulerObject->end();
 }
 
