@@ -36,7 +36,6 @@ using namespace RexTypes;
 
 namespace ECEditor
 {
-    //! @bug code below causes a crash if user relog into the server and try to use ECEditorWindow.
     uint AddUniqueListItem(Scene::Entity *entity, QListWidget* list, const QString& name)
     {
         for (int i = 0; i < list->count(); ++i)
@@ -48,57 +47,6 @@ namespace ECEditor
 
         EntityListWidgetItem *new_item = new EntityListWidgetItem(name, list, entity);
         return list->count() - 1;
-    }
-
-    uint AddTreeItem(QTreeWidget *list, const QString &type_name, const QString &name, int entity_id)
-    {
-        for(int i = 0; i < list->topLevelItemCount(); ++i)
-        {
-            QTreeWidgetItem *existing = list->topLevelItem(i);
-            if (existing && existing->text(0) == type_name)
-            {
-                // We have already item for this EC. Create a dummy parent for the existing EC item and
-                // the new one we're adding if it's not already.
-                ///\todo Check/test if the code block below is required for real.
-                if (existing->text(2) == "(Multiple)")
-                {
-                    // It's already dummy parent. Add new item to its child.
-                    QTreeWidgetItem *item = new QTreeWidgetItem(existing);
-                    item->setText(0, type_name);
-                    item->setText(1, name);
-                    item->setText(2, QString::number(entity_id));
-                    existing->addChild(item);
-                    return i;
-                }
-
-                // The existing item is not dummy parent yet, make it now.
-                QTreeWidgetItem *dummyParent = new QTreeWidgetItem(list);
-                dummyParent->setText(0, type_name);
-                dummyParent->setText(1, "");
-                dummyParent->setText(2, "(Multiple)");
-
-                // Relocate the existing item from the top level to a child of the dummy parent.
-                existing = list->takeTopLevelItem(i);
-                dummyParent->addChild(existing);
-                list->addTopLevelItem(dummyParent);
-
-                // Finally, create new item for this EC.
-                QTreeWidgetItem *item = new QTreeWidgetItem(dummyParent);
-                item->setText(0, type_name);
-                item->setText(1, name);
-                item->setText(2, QString::number(entity_id));
-                dummyParent->addChild(item);
-                return i;
-            }
-        }
-
-        // No existing top level item, create one now.
-        QTreeWidgetItem *item = new QTreeWidgetItem(list);
-        item->setText(0, type_name);
-        item->setText(1, name);
-        item->setText(2, QString::number(entity_id));
-        list->addTopLevelItem(item);
-        return list->topLevelItemCount() - 1;
     }
 
     //! Function that is used by std::sort algorithm to sort entities by their ids.
@@ -612,12 +560,12 @@ namespace ECEditor
         if (entity_list_)
         {
             entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-            QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
+            /*QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
             QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_C), entity_list_);
             QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_V), entity_list_);
             connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
             connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyEntity()));
-            connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteEntity()));
+            connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteEntity()));*/
             connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
             connect(entity_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowEntityContextMenu(const QPoint &)));
         }
