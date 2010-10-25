@@ -330,13 +330,10 @@ static void getp(float in, float *pivot)
     float f = floor(in);
     float cd = c - in;
     float fd = in - f;
-    float i;
     if(cd < fd) {
-        i = (float)((int)c);
         *pivot = c;
     }
     else {
-        i = (float)((int)f);
         *pivot = f;
     }
 }
@@ -346,22 +343,29 @@ void EC_Ruler::SetupTranslateRuler() {
         return;
 
     float size = radiusAttr_.Get();
-    float x, y, z, pivot;
+    float x, y, z; /*pivot; crossp, crossaxis;*/
+    int d = 0;
     
-    x = y = z = pivot = 0;
+    x = y = z = /*pivot = crossaxis = crossp =*/ 0.0f;
     
     switch(axisAttr_.Get()) {
         case EC_Ruler::X:
             x = size;
-            getp(pos_.x(), &pivot);
+            //getp(pos_.x(), &pivot);
+            //crossaxis = newpos_.x()-pos_.x();
+            d = floor(newpos_.x())-floor(pos_.x());
             break;
         case EC_Ruler::Y:
             y = size;
-            getp(pos_.y(), &pivot);
+            //getp(pos_.y(), &pivot);
+            //crossaxis = newpos_.y()-pos_.y();
+            d = floor(newpos_.y())-floor(pos_.y());
             break;
         case EC_Ruler::Z:
             z = size;
-            getp(pos_.z(), &pivot);
+            //getp(pos_.z(), &pivot);
+            //crossaxis = newpos_.z()-pos_.z();
+            d = floor(newpos_.z())-floor(pos_.z());
             break;
         default:
             x = size;
@@ -379,32 +383,21 @@ void EC_Ruler::SetupTranslateRuler() {
     movingObject->clear();
     movingObject->setCastShadows(false);
     movingObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
-    int d = 0;
-    switch(axisAttr_.Get()) {
-        case EC_Ruler::X:
-            d = floor(newpos_.x())-floor(pos_.x());
-            break;
-        case EC_Ruler::Y:
-            d = floor(newpos_.y())-floor(pos_.y());
-            break;
-        case EC_Ruler::Z:
-            d = floor(newpos_.z())-floor(pos_.z());
-            break;
-    }
-    float crossp;
+    
     for(int step=(-5+d); step <= (5+d); step += 1) {
-        crossp = (float)step + pivot;
+        //crossp = abs((float)step - crossaxis - 1);
+        //std::cout << crossp << " = abs(" << step << " - " << crossaxis << ") ";
         switch(axisAttr_.Get()) {
             case EC_Ruler::X:
                 // side one
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()+0.05f);
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()-0.05f);
-                if(abs(crossp) > (floor(pos_.x())+0.5f))
-                    movingObject->position(floor(pos_.x())+(float)step, pos_.y()-0.95f, pos_.z());
+                //if(crossp < 0.5f)
+                //    movingObject->position(floor(pos_.x())+(float)step, pos_.y()-0.95f, pos_.z());
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1.05f, pos_.z());
                 // side two
-                if(abs(crossp) > (floor(pos_.x())+0.5f))
-                    movingObject->position(floor(pos_.x())+(float)step, pos_.y()+0.95f, pos_.z());
+                //if(crossp < 0.5f)
+                //    movingObject->position(floor(pos_.x())+(float)step, pos_.y()+0.95f, pos_.z());
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1.05f, pos_.z());
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()+0.05f);
                 movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()-0.05f);
