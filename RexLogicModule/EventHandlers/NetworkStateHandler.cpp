@@ -16,6 +16,7 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "WorldStream.h"
+#include "SceneManager.h"
 
 #ifndef UISERVICE_TEST
 #include "UiModule.h"
@@ -125,7 +126,15 @@ bool NetworkStateEventHandler::HandleTundraEvent(event_id_t event_id, IEventData
     switch(event_id)
     {
     case TundraLogic::Events::EVENT_TUNDRA_CONNECTED:
-        owner_->CreateOpenSimViewerCamera(owner_->GetFramework()->GetDefaultWorldScene(), true);
+        {
+            Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+            if (scene)
+            {
+                owner_->CreateOpenSimViewerCamera(owner_->GetFramework()->GetDefaultWorldScene(), true);
+                // Connect the sceneclear event also to perform recreation of the camera. \todo Soon we have no need for rexlogic to create tundra camera
+                QObject::connect(scene.get(), SIGNAL(SceneCleared()), owner_, SLOT(OnSceneCleared()));
+            }
+        }
         break;
     }
     return false;

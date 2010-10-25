@@ -421,6 +421,8 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundr
         LogWarning("Could not create an entity to the scene!");
         return;
     }
+    // Do not save the camera!!!
+    entity->SetTemporary(true);
 
     // Create camera entity into the scene
     Foundation::ComponentManagerPtr compMgr = framework_->GetComponentManager();
@@ -465,6 +467,14 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundr
         // Initialize viewing dir so that camera isn't upside down
         placeableptr->LookAt(Vector3df(1,0,0));
     }
+}
+
+void RexLogicModule::OnSceneCleared()
+{
+    // Tundra scene has been cleared, so recreate camera in freelook mode
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (scene)
+        CreateOpenSimViewerCamera(scene, true);
 }
 
 void RexLogicModule::DeleteScene(const QString &name)
