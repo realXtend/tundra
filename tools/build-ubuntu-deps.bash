@@ -48,7 +48,7 @@ if lsb_release -c | egrep -q "lucid|maverick"; then
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
          libtelepathy-qt4-dev python-gst0.10-dev freeglut3-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev \
-	 liboil0.3-dev mercurial
+	 liboil0.3-dev mercurial unzip
 fi
 
 function build-regular {
