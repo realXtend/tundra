@@ -35,6 +35,7 @@ EC_Ruler::EC_Ruler(IModule *module) :
     radiusAttr_(this, "radius", 5),
     segmentsAttr_(this, "segments", 29),
     rulerObject(0),
+    movingObject(0),
     sceneNode_(0),
     type(EC_Ruler::Rotation)
 {
@@ -43,6 +44,8 @@ EC_Ruler::EC_Ruler(IModule *module) :
     RexUUID uuid = RexUUID::CreateRandom();
     rulerName = uuid.ToString() + "ruler";
     nodeName = uuid.ToString() + "node";
+    rulerMovingPartName = uuid.ToString() + "mover";
+    movingNodeName = uuid.ToString() + "movingNode";
     
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateRuler()));
 }
@@ -54,11 +57,14 @@ EC_Ruler::~EC_Ruler()
     if (!renderer_.expired())
     {
         Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
-            sceneMgr->destroyManualObject(rulerObject);
+        sceneMgr->destroyManualObject(rulerObject);
+        if(movingObject)
+            sceneMgr->destroyManualObject(movingObject);
     }
     else
     {
         rulerObject = 0;
+        movingObject = 0;
         sceneNode_ = 0;
     }
 }
@@ -73,9 +79,10 @@ void  EC_Ruler::Show()
         LogError("EC_Ruler not initialized properly.");
         return;
     }
-
-    if (rulerObject)
-        rulerObject->setVisible(true);
+    
+    if ( movingObject )
+        movingObject->setVisible(true);
+    
 }
 
 void  EC_Ruler::Hide()
@@ -89,8 +96,8 @@ void  EC_Ruler::Hide()
         return;
     }
     
-    if (rulerObject)
-        rulerObject->setVisible(false);
+    if ( movingObject )
+        movingObject->setVisible(false);
 }
 
 bool EC_Ruler::IsVisible() const
@@ -137,6 +144,17 @@ void EC_Ruler::Create()
     } else {
         rulerObject = scene_mgr->createManualObject(rulerName);
     }
+    if(scene_mgr->hasManualObject(rulerMovingPartName)){
+        movingObject = scene_mgr->getManualObject(rulerMovingPartName);
+        if(movingObject->isAttached())
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+            movingObject->detatchFromParent();
+#else
+            movingObject->detachFromParent();
+#endif
+    } else {
+        movingObject = scene_mgr->createManualObject(rulerMovingPartName);
+    }
     
     switch(typeAttr_.Get()) {
         case EC_Ruler::Rotation:
@@ -163,6 +181,19 @@ void EC_Ruler::Create()
         assert(globalSceneNode);
         if(!globalSceneNode)
             return;
+            
+        if(scene_mgr->hasSceneNode(movingNodeName)) {
+            movingSceneNode = scene_mgr->getSceneNode(movingNodeName);
+        } else {
+            movingSceneNode = scene_mgr->getRootSceneNode()->createChildSceneNode(movingNodeName);
+            movingSceneNode->setVisible(true);
+        }
+        assert(movingSceneNode);
+        if(!movingSceneNode)
+            return;
+        
+        movingSceneNode->setPosition(0,0,0);
+        movingSceneNode->attachObject(movingObject);
     
         globalSceneNode->setPosition(sceneNode_->getParent()->getPosition());
         globalSceneNode->attachObject(rulerObject);
@@ -293,30 +324,21 @@ void EC_Ruler::SetupRotationRuler()
     rulerObject->end();
 }
 
-static void getp(float in, float *out, float *pivot)
+static void getp(float in, float *pivot)
 {
-	float c = ceil(in);
-	float f = floor(in);
-	float cd = c - in;
-	float fd = in - f;
-	float i;
-	if(cd < fd) {
-		i = (float)((int)c);
-		*pivot = c;
-	}
-	else {
-		i = (float)((int)f);
-		*pivot = f;
-	}
-	
-	
-	if(in > 0)
-		*out = in - i;
-	else
-		*out = i + in;
-		
-	//std::cout << in << " ... " << i << " .. " << *out << std::endl;
-	
+    float c = ceil(in);
+    float f = floor(in);
+    float cd = c - in;
+    float fd = in - f;
+    float i;
+    if(cd < fd) {
+        i = (float)((int)c);
+        *pivot = c;
+    }
+    else {
+        i = (float)((int)f);
+        *pivot = f;
+    }
 }
 
 void EC_Ruler::SetupTranslateRuler() {
@@ -324,27 +346,22 @@ void EC_Ruler::SetupTranslateRuler() {
         return;
 
     float size = radiusAttr_.Get();
-    float x, y, z, pivot, p, delta;
+    float x, y, z, pivot;
     
-    x = y = z = p = pivot = 0;
+    x = y = z = pivot = 0;
     
     switch(axisAttr_.Get()) {
         case EC_Ruler::X:
             x = size;
-            getp(pos_.x(), &p, &pivot);// p = fmodf(abs(pos_.x()), 1.0f);
-            delta = pos_.x()-newpos_.x();
+            getp(pos_.x(), &pivot);
             break;
         case EC_Ruler::Y:
             y = size;
-            //p = fmodf(abs(pos_.y()), 1.0f);
-            getp(pos_.y(), &p, &pivot);
-            delta = pos_.y()-newpos_.y();
+            getp(pos_.y(), &pivot);
             break;
         case EC_Ruler::Z:
             z = size;
-            //p = fmodf(abs(pos_.z()), 1.0f);
-            getp(pos_.z(), &p, &pivot);
-            delta = pos_.z()-newpos_.z();
+            getp(pos_.z(), &pivot);
             break;
         default:
             x = size;
@@ -359,27 +376,44 @@ void EC_Ruler::SetupTranslateRuler() {
     
     // create grid
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+    movingObject->clear();
+    movingObject->setCastShadows(false);
+    movingObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+    int d = 0;
+    switch(axisAttr_.Get()) {
+        case EC_Ruler::X:
+            d = floor(newpos_.x())-floor(pos_.x());
+            break;
+        case EC_Ruler::Y:
+            d = floor(newpos_.y())-floor(pos_.y());
+            break;
+        case EC_Ruler::Z:
+            d = floor(newpos_.z())-floor(pos_.z());
+            break;
+    }
     float crossp;
-    for(int step=-5; step <= 5; step += 1) {
-        crossp = (float)step + pivot; ////p + delta;
+    for(int step=(-5+d); step <= (5+d); step += 1) {
+        crossp = (float)step + pivot;
         switch(axisAttr_.Get()) {
             case EC_Ruler::X:
                 // side one
-                rulerObject->position(crossp, -1, 0.05f);
-                rulerObject->position(crossp, -1, -0.05f);
-                if(abs(crossp) > 0.5f)
-                    rulerObject->position(crossp, -0.95f, 0);
-                rulerObject->position(crossp, -1.05f, 0);
+                movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()+0.05f);
+                movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1, pos_.z()-0.05f);
+                if(abs(crossp) > (floor(pos_.x())+0.5f))
+                    movingObject->position(floor(pos_.x())+(float)step, pos_.y()-0.95f, pos_.z());
+                movingObject->position(floor(pos_.x())+(float)step, pos_.y()-1.05f, pos_.z());
                 // side two
-                if(abs(crossp) > 0.5f)
-                    rulerObject->position(crossp, 0.95f, 0);
-                rulerObject->position(crossp, 1.05f, 0);
-                rulerObject->position(crossp, 1, 0.05f);
-                rulerObject->position(crossp, 1, -0.05f);
+                if(abs(crossp) > (floor(pos_.x())+0.5f))
+                    movingObject->position(floor(pos_.x())+(float)step, pos_.y()+0.95f, pos_.z());
+                movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1.05f, pos_.z());
+                movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()+0.05f);
+                movingObject->position(floor(pos_.x())+(float)step, pos_.y()+1, pos_.z()-0.05f);
                 break;
             case EC_Ruler::Y:
                 // side one
-                rulerObject->position(-1, crossp, 0.05f);
+                movingObject->position(pos_.x()-1, floor(pos_.y())+(float)step, pos_.z()+0.05f);
+                movingObject->position(pos_.x()-1, floor(pos_.y())+(float)step, pos_.z()-0.05f);
+                /*rulerObject->position(-1, crossp, 0.05f);
                 rulerObject->position(-1, crossp, -0.05f);
                 if(abs(crossp) > 0.5f)
                     rulerObject->position(-0.95f, crossp, 0);
@@ -389,11 +423,17 @@ void EC_Ruler::SetupTranslateRuler() {
                     rulerObject->position(0.95f, crossp, 0);
                 rulerObject->position(1.05f, crossp, 0);
                 rulerObject->position(1, crossp, 0.05f);
-                rulerObject->position(1, crossp, -0.05f);
+                rulerObject->position(1, crossp, -0.05f);*/
+                movingObject->position(pos_.x()+1, floor(pos_.y())+(float)step, pos_.z()+0.05f);
+                movingObject->position(pos_.x()+1, floor(pos_.y())+(float)step, pos_.z()-0.05f);
                 break;
             case EC_Ruler::Z:
                 // side one
-                rulerObject->position(-1, 0.05f, crossp);
+                movingObject->position(pos_.x()-1, pos_.y()+0.05f, floor(pos_.z())+step);
+                movingObject->position(pos_.x()-1, pos_.y()-0.05f, floor(pos_.z())+step);
+                movingObject->position(pos_.x()+1, pos_.y()+0.05f, floor(pos_.z())+step);
+                movingObject->position(pos_.x()+1, pos_.y()-0.05f, floor(pos_.z())+step);
+                /*rulerObject->position(-1, 0.05f, crossp);
                 rulerObject->position(-1, -0.05f, crossp);
                 if(abs(crossp) > 0.5f)
                     rulerObject->position(-0.95f, 0, crossp);
@@ -403,10 +443,12 @@ void EC_Ruler::SetupTranslateRuler() {
                     rulerObject->position(0.95f, 0, crossp);
                 rulerObject->position(1.05f, 0, crossp);
                 rulerObject->position(1, 0.05f, crossp);
-                rulerObject->position(1, -0.05f, crossp);
+                rulerObject->position(1, -0.05f, crossp);*/
                 break;
         }
     }
+    //std::cout << std::endl;
+    movingObject->end();
     rulerObject->end();
 }
 
