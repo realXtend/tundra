@@ -27,14 +27,19 @@ namespace ECEditor
     typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
     typedef std::list<ComponentGroup*> ComponentGroupList;
 
-    //! ECBrowser is a widget that will display all selected entity components and their attributes.
-    /*! The ECBrowser will iterate all entity's components and pass them to a ECComponentEditor, which is responsible to handling component's attribute editing.
-     *  User can add new editable enitites by using AddEntity and RemoveEntity methods and the browser will iterate trhought all the entitys components and pass them to ECComponentEditors.
-     *  ECBrowser has implement options to add, delete, copy and paste components from the selected entities by using a CopyComponent, DeleteComponent, PasteComponent and EditXml mehtods.
-     *  User can add and remove attributes from the dynamic component aswell. CreateAttribute method can be used to create new attributes to a dynamic component and RemoveAttribute is used
-     *  to delete them from the dynamic component.
-     *  \todo Try to find a way to remove the unecessary paint events when we are updating the browser parameters.
-     *  \ingroup ECEditorModuleClient.
+    //! Widget that will display all selected entity components and their attributes.
+    /*! The ECBrowser will iterate all entity's components and pass them to an ECComponentEditor,
+        which is responsible to handling component's attribute editing.
+
+        User can add new editable entities by using AddEntity() and RemoveEntity() methods and the browser will 
+        iterate through all the entity's components and pass them to ECComponentEditors.
+        ECBrowser has implemented options to add, delete, copy and paste components from the selected entities by
+        using a CopyComponent(), DeleteComponent(), PasteComponent() and EditXml() methods.
+
+        User can add attributes to dynamic component by using CreateAttribute() and remove attributes with RemoveAttribute().
+
+        \todo Try to find a way to remove the unecessary paint events when we are updating the browser parameters.
+        \ingroup ECEditorModuleClient.
      */
     class ECBrowser: public QtTreePropertyBrowser
     {
@@ -91,6 +96,57 @@ namespace ECEditor
         //! dropEvent will call this after feching the information that is need from the QDropEvent data.
         bool dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action);
 
+    private slots:
+        //! User have right clicked the browser and QMenu need to be open to display copy, paste, delete ations etc.
+        /*! @param pos Mouse click position.
+         */
+        void ShowComponentContextMenu(const QPoint &pos);
+
+        //! QTreeWidget has changed it's focus and we need to highlight new entities from the editor window.
+        void SelectionChanged();
+
+        //! Called when a new component have been added to a entity.
+        /*! @param comp a new component that has added into the entity.
+         *  @param type attribute change type
+         */
+        void OnComponentAdded(IComponent* comp, AttributeChange::Type type);
+
+        //! Called when component have been removed from the entity.
+        /*! @param comp Component that will soon get removed from the entity.
+         *  @param type attribute change type
+         */
+        void OnComponentRemoved(IComponent* comp, AttributeChange::Type type);
+
+        //! User has selected xml edit action from a QMenu.
+        void OpenComponentXmlEditor();
+
+        //! User has selected copy action from a QMenu.
+        void CopyComponent();
+
+        //! User has selected paste action from a QMenu.
+        void PasteComponent();
+
+        //! New dynamic component attribute has been added.
+        /*! @todo When many attributes has been added/removed from the editor this method is called multiple times and each time this method seems to reinitialize the component editor.
+         * This will consume too much time and should be fixed so that coponent editor will be initialized only once when all the dynamic component's attributes have been added.
+         */
+        void DynamicComponentChanged(const QString &name);
+
+        //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
+        /*! @param newName component's new name.
+         */
+        void ComponentNameChanged(const QString &newName);
+
+        //! Show dialog, so that user can create a new attribute.
+        //! @Note: Only works with dynamic component.
+        void CreateAttribute();
+
+        //! Remove component or attribute based on selected QTreeWidgeItem.
+        /*! If selected TreeWidgetItem is a root item, then we can assume that we want to remove component.
+         *  But if item has parent setted, we can assume that selected item is attribute or it's value is selected.
+         */
+        void OnDeleteAction();
+
     private:
         //! Initialize browser widget and create all connections for different QObjects.
         void InitBrowser();
@@ -125,57 +181,14 @@ namespace ECEditor
         //! Checks if entity is already added to this editor.
         bool HasEntity(Scene::EntityPtr entity) const;
 
-    private slots:
-        //! User have right clicked the browser and QMenu need to be open to display copy, paste, delete ations etc.
-        /*! @param pos Mouse click position.
-         */
-        void ShowComponentContextMenu(const QPoint &pos);
+        //! Remove selected attribute item from the dynamic component.
+        /** @Note: This mehtod will only work with dynamic components.
+        */
+        void DeleteAttribute(QTreeWidgetItem *item);
 
-        //! QTreeWidget has changed it's focus and we need to highlight new entities from the editor window.
-        void SelectionChanged();
+        //! Remove selected component item from selected entities.
+        void DeleteComponent(QTreeWidgetItem *item);
 
-        //! Called when a new component have been added to a entity.
-        /*! @param comp a new component that has added into the entity.
-         *  @param type attribute change type
-         */
-        void OnComponentAdded(IComponent* comp, AttributeChange::Type type);
-
-        //! Called when component have been removed from the entity.
-        /*! @param comp Component that will soon get removed from the entity.
-         *  @param type attribute change type
-         */
-        void OnComponentRemoved(IComponent* comp, AttributeChange::Type type);
-
-        //! User has selected xml edit action from a QMenu.
-        void OpenComponentXmlEditor();
-
-        //! User has selected copy action from a QMenu.
-        void CopyComponent();
-
-        //! User has selected paste action from a QMenu.
-        void PasteComponent();
-
-        //! User has selected delete action from a QMenu.
-        void DeleteComponent();
-
-        //! New dynamic component attribute has been added.
-        /*! @todo When many attributes has been added/removed from the editor this method is called multiple times and each time this method seems to reinitialize the component editor.
-         * This will consume too much time and should be fixed so that coponent editor will be initialized only once when all the dynamic component's attributes have been added.
-         */
-        void DynamicComponentChanged(const QString &name);
-
-        //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
-        /*! @param newName component's new name.
-         */
-        void ComponentNameChanged(const QString &newName);
-
-        //! Show dialog, so that user can create a new attribute.
-        void CreateAttribute();
-
-        //! Remove selected attribute from the dynamic component.
-        void RemoveAttribute();
-
-    private:
         ComponentGroupList componentGroups_;
         typedef QList<Scene::EntityWeakPtr> EntityWeakPtrList;
         EntityWeakPtrList entities_;
