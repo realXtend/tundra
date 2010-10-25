@@ -238,7 +238,8 @@ namespace Environment
         {
             if (event_id == TundraLogic::Events::EVENT_TUNDRA_CONNECTED)
             {
-                if (GetFramework()->GetDefaultWorldScene().get())
+                Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+                if (scene)
                 {
                     CreateEnvironment();
                     //CreateTerrain();
@@ -246,6 +247,9 @@ namespace Environment
                     //CreateEnvironment();
                     //CreateSky();
                 }
+                // Hook to the SceneCleared event to recreate the necessary environment (Caelum) when scene is cleared
+                //! \todo Temp solution, will be removed
+                connect(scene.get(), SIGNAL(SceneCleared()), this, SLOT(OnSceneCleared()));
             }
 
             if (event_id == TundraLogic::Events::EVENT_TUNDRA_DISCONNECTED)
@@ -757,6 +761,13 @@ namespace Environment
     void EnvironmentModule::ReleaseSky()
     {
         sky_.reset();
+    }
+    
+    void EnvironmentModule::OnSceneCleared()
+    {
+        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        if (scene)
+            CreateEnvironment();
     }
 }
 

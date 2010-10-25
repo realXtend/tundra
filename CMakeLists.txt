@@ -1,5 +1,5 @@
 # Set project name
-project(naali-viewer)
+project(tundra)
 
 # CMake version requirement
 cmake_minimum_required(VERSION 2.4)
