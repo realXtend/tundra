@@ -6,8 +6,8 @@ set -x
 # script to build naali and most deps.
 #
 # if you want to use caelum, install ogre and nvidia cg from
-# ppa:andrewfenn/ogredev and change the caelum setting to 1 in
-# top-level CMakeLists.txt
+# ppa:andrewfenn/ogredev, change the caelum setting to 1 in
+# top-level CMakeBuildConfig.txt and enable Cg module in bin/plugins-unix.cfg
 
 
 viewer=$(dirname $(readlink -f $0))/..
@@ -77,7 +77,7 @@ function build-regular {
 }
 
 what=bullet-2.77
-if test -f $tags/$what-done -a -d $prefix/include/bullet/ConvexDecomposition; then
+if test -f $tags/$what-done; then
     echo $what is done
 else
     cd $build
