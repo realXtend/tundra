@@ -126,11 +126,9 @@ namespace ECEditor
         //! User has selected paste action from a QMenu.
         void PasteComponent();
 
-        //! New dynamic component attribute has been added.
-        /*! @todo When many attributes has been added/removed from the editor this method is called multiple times and each time this method seems to reinitialize the component editor.
-         * This will consume too much time and should be fixed so that coponent editor will be initialized only once when all the dynamic component's attributes have been added.
-         */
-        void DynamicComponentChanged(const QString &name);
+        //! Component's name has been changed and we need to remove component from it's previous
+        //! ComponentGroup and create/add component to another componentgroup.
+        void DynamicComponentChanged();
 
         //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
         /*! @param newName component's new name.
