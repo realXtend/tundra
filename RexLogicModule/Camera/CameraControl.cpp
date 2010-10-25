@@ -56,7 +56,8 @@ namespace RexLogic
         camera_left_pressed_(false),
         camera_right_pressed_(false),
         zoom_in_pressed_(false),
-        zoom_out_pressed_(false)
+        zoom_out_pressed_(false),
+        proxy_widget_(0)
     {
         setupUi(this);
         using namespace InputEvents;
@@ -107,11 +108,14 @@ namespace RexLogic
         if (ui_service)
 		{
 			proxy_widget_ = ui_service->AddWidgetToScene(this);
-            proxy_widget_->setMaximumHeight(800);
-            proxy_widget_->setMaximumWidth(600);
-			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
+			if (proxy_widget_)
+			{
+                proxy_widget_->setMaximumHeight(800);
+                proxy_widget_->setMaximumWidth(600);
+			    ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
+                connect(proxy_widget_, SIGNAL(Visible(bool)), this, SLOT(Visible(bool)));
+            }
 		}
-        connect(proxy_widget_, SIGNAL(Visible(bool)), this, SLOT(Visible(bool)));
 	}
 
     void CameraControl::CameraTripod(bool checked)
