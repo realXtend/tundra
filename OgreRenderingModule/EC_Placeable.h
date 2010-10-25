@@ -28,6 +28,8 @@ Registered by OgreRenderer::OgreRenderingModule.
 <ul>
 <li>Transform: transform
 <div>Sets the position, rotation and scale of the entity. Not usable and not replicated in Opensim worlds.</div>
+<li>bool: drawDebug
+<div>Shows the debug bounding box of geometry attached to the placeable.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
