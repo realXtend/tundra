@@ -96,13 +96,13 @@ namespace Environment
             if (!ui)
                 return;
 //$ BEGIN_MOD $   
-			Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-            if (uiExternal)
-				uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(postprocess_dialog_,"Post-processing"),"Post-processing","Panels");
-			else{
+			//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+   //         if (uiExternal)
+			//	uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(postprocess_dialog_,"Post-processing"),"Post-processing","Panels");
+			//else{
 				ui->AddWidgetToScene(postprocess_dialog_);
 				ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),"./data/ui/images/menus/edbutton_POSTPR_normal.png");
-			}
+			//}
 //$ END_MOD $
         }
 

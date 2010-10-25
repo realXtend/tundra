@@ -148,14 +148,14 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->move(100, 100);
 	profilerWindow_->resize(650, 530);
 //$ BEGIN_MOD $   
-	Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-    if (uiExternal)
-		uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(profilerWindow_,"Profiler"),"Profiler","Panels");
-	else{
+	//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+ //   if (uiExternal)
+	//	uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(profilerWindow_,"Profiler"),"Profiler","Panels");
+	//else{
 		UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
 		connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 		ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
-	}
+	//}
 //$ END_MOD $
 }
 
@@ -177,13 +177,13 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVecto
     if (profilerWindow_)
     {
 //$ BEGIN_MOD $   
-		Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		if (uiExternal)
-			uiExternal->ShowWidget(profilerWindow_);
-		else{
+		//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+		//if (uiExternal)
+		//	uiExternal->ShowWidget(profilerWindow_);
+		//else{
 			ui->BringWidgetToFront(profilerWindow_);
 			return Console::ResultSuccess();
-		}
+		//}
 //$ END_MOD $
     }
     else
@@ -199,13 +199,13 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
     if (participantWindow_)
     {
 //$ BEGIN_MOD $   
-		Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		if (uiExternal)
-			uiExternal->ShowWidget(participantWindow_);
-		else{
+		//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+		//if (uiExternal)
+		//	uiExternal->ShowWidget(participantWindow_);
+		//else{
 			ui->BringWidgetToFront(participantWindow_);
 			return Console::ResultSuccess();
-		}
+		//}
 //$ END_MOD $ 
     }
 
@@ -213,14 +213,14 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
     participantWindow_->move(100, 100);
     participantWindow_->setWindowFlags(Qt::Dialog);
 //$ BEGIN_MOD $   
-	Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-    if (uiExternal)
-		uiExternal->AddExternalPanel(participantWindow_,"Profiler");
-	else{
+	//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+ //   if (uiExternal)
+	//	uiExternal->AddExternalPanel(participantWindow_,"Profiler");
+	//else{
 		QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(participantWindow_);
 		ui->BringWidgetToFront(participantWindow_);
-	}
-//    proxy->show();
+	//}
+    proxy->show();
 //$ END_MOD $
     return Console::ResultSuccess();
 }

@@ -158,5 +158,10 @@ namespace UiServices
             emit TransferRequest(widget_name, widget);
         }
     }
+
+	void UiSceneService::TransferAllWidget()
+	{
+		owner_->GetInworldSceneController()->TransferAllWidget();
+	}
 }
 

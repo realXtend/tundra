@@ -258,16 +258,16 @@ namespace Environment
 
         setWindowTitle(tr("Environment Editor"));
 //$ BEGIN_MOD $
-		Foundation::UiExternalServiceInterface *uiExternal= environment_module_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		if (uiExternal)
-		{
-			uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(this,"Enviroment editor"),"Enviroment","Panels");
-		}
-		else{
+		//Foundation::UiExternalServiceInterface *uiExternal= environment_module_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+		//if (uiExternal)
+		//{
+		//	uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(this,"Enviroment editor"),"Enviroment","Panels");
+		//}
+		//else{
 			UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
 			ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
 			ui->RegisterUniversalWidget("Environment", editor_proxy);
-		}
+		//}
 //$ END_MOD $
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");

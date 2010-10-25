@@ -66,6 +66,8 @@ namespace UiExternalServices
 		void openECEditor();
 		//! Open the Build Window..
 		void openBuild();
+		//! Change to external/internal
+		void changeWindow();
 
 	private:
 
@@ -81,6 +83,8 @@ namespace UiExternalServices
 		QAction *cameraAction_;
 		//! Edit action of toolbar
 		QAction *editAction_;
+
+		QAction *changeAction_;
 
 		//! Framework pointer
 		Foundation::Framework *framework_;

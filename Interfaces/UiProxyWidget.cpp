@@ -35,8 +35,8 @@ UiProxyWidget::UiProxyWidget(QWidget *widget, Qt::WindowFlags flags):
     setObjectName(name);
 
     // Embed widget to this proxy widget.
-    setWidget(widget);
-    widget->installEventFilter(this);
+	setWidget(widget);
+	widget->installEventFilter(this);
 
     // Init effects and animations
     if (windowFlags() != Qt::Widget)
@@ -48,7 +48,7 @@ UiProxyWidget::UiProxyWidget(QWidget *widget, Qt::WindowFlags flags):
 
         animations_ = new QParallelAnimationGroup(this);
         animations_->setDirection(QAbstractAnimation::Forward);
-        connect(animations_, SIGNAL(finished()), this, SLOT(FinishHide()));
+        //connect(animations_, SIGNAL(finished()), this, SLOT(FinishHide()));
 
         fade_animation_ = new QPropertyAnimation(this, "opacity", this);
         fade_animation_->setDuration(300);
