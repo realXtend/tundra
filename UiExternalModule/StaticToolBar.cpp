@@ -108,10 +108,10 @@ namespace UiExternalServices
 				Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
 				if (entity_clicked_data && uiExternal->IsEditModeEnable()){
 					
-					if (entitySelected_ && currentScene!="WorldBuilding"){
+					if (entitySelected_ && currentScene!="WorldBuilding" && !entity_clicked_data->entity->HasComponent("EC_Terrain")){
 						menu_asset->exec(framework_->GetMainWindow()->cursor().pos());
 					}    
-					else if(!entitySelected_ && !entity_clicked_data->entity->HasComponent("EC_Terrain"){
+					else if(!entitySelected_ && !entity_clicked_data->entity->HasComponent("EC_Terrain")){
 						entitySelected_=entity_clicked_data->entity;
 						EC_Highlight *luz = checked_static_cast<EC_Highlight*>(entitySelected_->GetOrCreateComponent("EC_Highlight","editMode",AttributeChange::LocalOnly,true).get());
 						luz->Show();
