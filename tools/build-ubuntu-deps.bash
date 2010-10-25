@@ -85,7 +85,7 @@ else
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
     cd $what
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DINSTALL_EXTRA_LIBS=ON .
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -fPIC -DNDEBUG" .
     make -j $nprocs
     make install
     touch $tags/$what-done
