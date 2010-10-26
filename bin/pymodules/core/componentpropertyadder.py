@@ -17,6 +17,7 @@ compshorthand = {
     'EC_AttachedSound': 'sound',
     'EC_OpenSimPresence': 'opensimpresence',
     'EC_SoundRuler': 'soundruler',
+    'EC_Name': 'ecname',
     'EC_Ruler': 'ruler'
     }   
 
@@ -32,6 +33,10 @@ class ComponentPropertyAdder(circuits.BaseComponent):
         #s.connect("ComponentInitialized(Foundation::ComponentInterface*)", self.onComponentInitialized)
         s.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentAdded)
         s.connect("ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentRemoved)
+
+    @circuits.handler("on_exit")
+    def on_exit(self):
+        r.logInfo("componentpropertyaddr exiting... done")
 
     def onComponentAdded(self, ent, comp, changetype):
         #print "Comp added:", ent, comp, comp.TypeName, comp.Name, changetype
