@@ -41,14 +41,16 @@ public:
     void ProcessPostTick(float substeptime);
     
 public slots:
-    //! Set internal physics timestep (= length of each simulation step.) By default 1/60th of a second.
+    //! Set physics update period (= length of each simulation step.) By default 1/60th of a second.
+    /*! \param updatePeriod Update period
+     */
     void SetPhysicsUpdatePeriod(float updatePeriod);
     
     //! Return internal physics timestep
     float GetPhysicsUpdatePeriod() const { return physicsUpdatePeriod_; }
     
-    //! Set gravity
-    /*! Note: Bullet may behave oddly if gravity is changed after objects have already been created.
+    //! Set gravity that affects all moving objects of the physics world
+    /*! \param gravity Gravity vector
      */
     void SetGravity(const Vector3df& gravity);
     
