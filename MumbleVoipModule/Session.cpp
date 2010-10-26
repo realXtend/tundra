@@ -27,7 +27,7 @@ namespace MumbleVoip
 {
     const double Session::DEFAULT_AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
     Session::Session(Foundation::Framework* framework, Settings* settings) : 
-        state_(STATE_INITIALIZING),
+        state_(STATE_CLOSED),
         reason_(""),
         framework_(framework),
         description_(""),
@@ -47,21 +47,13 @@ namespace MumbleVoip
 
     Session::~Session()
     {
-        foreach(Participant* p, participants_)
-        {
-            SAFE_DELETE(p);
-        }
-        participants_.clear();
-        foreach(Participant* p, left_participants_)
-        {
-            SAFE_DELETE(p);
-        }
-        left_participants_.clear();
-        SAFE_DELETE(connection_);
+        Close();
     }
 
     void Session::OpenConnection(ServerInfo server_info)
     {
+        state_ = STATE_INITIALIZING;
+        emit StateChanged(state_);
         /// @todo Check that closed connection can be reopened
         SAFE_DELETE(connection_);
         connection_ = new MumbleLib::Connection(server_info, 200);
@@ -72,12 +64,12 @@ namespace MumbleVoip
             return;
         }
         current_mumble_channel_ = server_info.channel;
-        state_ = STATE_OPEN;
         server_address_ = server_info.server;
 
         connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
         connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
         connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()));
+
         connection_->Join(server_info.channel);
         connection_->SendAudio(sending_audio_);
         connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
@@ -85,26 +77,39 @@ namespace MumbleVoip
         connection_->SendAudio(audio_sending_enabled_);
         connection_->ReceiveAudio(audio_receiving_enabled_);
         
-        MumbleLib::MumbleLibrary::Start();
-
+        EnableAudioReceiving();
         if (settings_->GetDefaultVoiceMode() == Settings::ContinuousTransmission)
             EnableAudioSending();
         else
             DisableAudioSending();
-        EnableAudioReceiving();
+
+        MumbleLib::MumbleLibrary::Start();
+        state_ = STATE_OPEN;
+        emit StateChanged(state_);
     }
 
     void Session::Close()
     {
         if (connection_)
-        {
             connection_->Close();
-        }
+
         if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
         {
+            State old_state = state_;
             state_ = STATE_CLOSED;
-            emit StateChanged(state_);
+            if (old_state != state_)
+                emit StateChanged(state_);
         }
+        foreach(Participant* p, participants_)
+        {
+            SAFE_DELETE(p);
+        }
+        participants_.clear();
+        foreach(Participant* p, left_participants_)
+        {
+            SAFE_DELETE(p);
+        }
+        left_participants_.clear();
     }
 
     Communications::InWorldVoice::SessionInterface::State Session::GetState() const
@@ -646,11 +651,18 @@ namespace MumbleVoip
 
     void Session::SetActiveChannel(QString channel_name) 
     {
+        if (active_channel_ == channel_name)
+            return;
+
         if (!channels_.contains(channel_name))
         {
+            active_channel_ = "";
             Close();
             return;
         }
+
+        if (GetState() != STATE_CLOSED)
+            Close();
 
         ServerInfo server_info = channels_[channel_name];
         OpenConnection(server_info);
@@ -674,6 +686,7 @@ namespace MumbleVoip
         if (active_channel_ == name)
         {
             emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged("");
+            emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
             SetActiveChannel("");
         }
 

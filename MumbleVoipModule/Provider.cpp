@@ -66,6 +66,7 @@ namespace MumbleVoip
             case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
             case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 CloseSession();
+                SAFE_DELETE(session_);
                 break;
             }
         }
