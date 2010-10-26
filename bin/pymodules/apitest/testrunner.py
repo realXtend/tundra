@@ -28,8 +28,7 @@ class TestRunner(circuits.BaseComponent):
             # print "Test finished"
             return 
         except:
-            import traceback
-            traceback.print_exc()
+            r.logInfo(traceback.format_exc())
             r.logInfo("unhandled exception in test")
             r.logInfo("Test state: failure")
             r.exit()
