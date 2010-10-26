@@ -19,6 +19,10 @@ namespace UiExternalServices
 		return owner_->GetExternalPanelManager()->AddExternalPanel(widget, title, flags);
 	}
 
+	bool UiExternalService::AddExternalPanel(QDockWidget *widget) {
+		return owner_->GetExternalPanelManager()->AddQDockWidget(widget);
+	}
+
 	bool UiExternalService::RemoveExternalPanel(QWidget *widget){
 		return owner_->GetExternalPanelManager()->RemoveExternalPanel(widget);
 	}

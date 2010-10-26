@@ -71,7 +71,11 @@ namespace UiExternalServices
 
 		/*! Private Slot to manage the action clicked
 		*/
-        void ActionNodeClicked();		
+        void ActionNodeClickedInside();	
+
+		/*! Private Slot to manage the action clicked
+		*/
+        void ActionNodeClickedOutside();	
 
     private:
 

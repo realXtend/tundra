@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -12,11 +13,17 @@
 #define incl_UiModule_UiSceneService_h
 
 #include "UiServiceInterface.h"
+//$ BEGIN_MOD $
+#include "UiExternalServiceInterface.h"
+#include <QMap>
+//$ END_MOD $
 
 namespace UiServices
 {
     class UiModule;
-
+//$ BEGIN_MOD $
+	typedef QPair<QGraphicsProxyWidget*,QDockWidget*> proxyDock;
+//$ END_MOD $
     /** Implements UiServiceInterface and provides means of adding widgets to the 
      *  in-world scene and managing different UI scenes.
      *  Basically this class is just a wrapper around InworldSceneController
@@ -98,15 +105,23 @@ namespace UiServices
 
         /// UiServiceInterface override.
         QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
-
-		void TransferAllWidget();
-
+//$ BEGIN_MOD $
+		void TransferWidgetInOut(QString widgetToChange);
+//$ END_MOD $
     private slots:
         void TranferWidgets();
-
+//$ BEGIN_MOD $
+		void HandleTransferToBuild(const QString& old_name, const QString& new_name);
+//$ END_MOD $
     private:
         /// Owner UI module.
         UiModule *owner_;
+
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal;
+
+		QMap<QString, proxyDock> proxy_dock_list;
+//$ END_MOD $
     };
 }
 

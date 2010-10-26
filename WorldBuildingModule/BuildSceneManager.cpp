@@ -198,8 +198,7 @@ namespace WorldBuilding
 			Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
 			if (uiExternal) {
 				//Get QDockWidget from the UiExternalService
-				QString *namewid = new QString("Entity-component Editor");
-				QDockWidget *aux = uiExternal->GetExternalMenuPanel(namewid);
+				QDockWidget *aux = uiExternal->GetExternalMenuPanel(QString("Entity-component Editor"));
 				if(aux) {
 					//Save it in the new variables and put it in the scene
 					QWidget *wid = aux->widget();
@@ -232,8 +231,7 @@ namespace WorldBuilding
 			//$ MOD_DESCRIPTION If UiExternalService is available, we have to get Inventory from the QDockWidget in spite of getting it from the Scene $
 			Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
 			if (uiExternal) {
-				QString *namewid = new QString("Inventory");
-				QDockWidget *aux = uiExternal->GetExternalMenuPanel(namewid);
+				QDockWidget *aux = uiExternal->GetExternalMenuPanel(QString("Inventory"));
 				if(aux) {
 					QWidget *wid = aux->widget();
 					inventory_wid_.first = aux;

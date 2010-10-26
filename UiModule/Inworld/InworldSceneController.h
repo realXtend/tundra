@@ -5,7 +5,6 @@
 
 #include "UiModuleApi.h"
 #include "UiModuleFwd.h"
-#include "UiExternalServiceInterface.h"
 
 #include <QObject>
 #include <QList>
@@ -21,7 +20,6 @@ class UiProxyWidget;
 
 namespace UiServices
 {
-	typedef QPair<QGraphicsProxyWidget*,QDockWidget*> proxyDock;
 
     class UI_MODULE_API InworldSceneController : public QObject
     {
@@ -37,7 +35,7 @@ namespace UiServices
         ~InworldSceneController();
 
     public slots:
-		void TransferAllWidget();
+
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         /*! Convenience function if you dont want to bother and define your UiWidgetProperties.
          *
@@ -187,10 +185,6 @@ namespace UiServices
 
         //! QGraphicsProxyWidget from dock_w widget.
         QGraphicsProxyWidget *docking_widget_proxy_;
-
-		Foundation::UiExternalServiceInterface *uiExternal;
-
-		QMap<QString, proxyDock > proxy_dock_list;
 
     private slots:
         //! Slot for applying new ui settings to all proxy widgets

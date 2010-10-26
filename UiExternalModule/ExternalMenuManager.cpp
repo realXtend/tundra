@@ -58,66 +58,105 @@ namespace UiExternalServices
 	}
 
 	bool ExternalMenuManager::AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
-    {
-        QAction *action = new QAction(QIcon("./data/ui/images/menus/"+icon), name, widget);
+    {       
+		//Check if is not already
+		if (controller_panels_.contains(QString(menu+"+"+name)))
+			return false;
+		
+		//First of all, we create the Menu with 2options, internal and external
+		QMenu* newmenu = new QMenu(name, widget);
+		QAction *action1 = new QAction(QIcon("./data/ui/images/menus/"+icon), "In scene", dynamic_cast<QDockWidget*>(widget)->widget());
+		QAction *action2 = new QAction(QIcon("./data/ui/images/menus/"+icon), "Outside", dynamic_cast<QDockWidget*>(widget)->widget());
+		newmenu->addAction(action1);
+		newmenu->addAction(action2);
+
         if (menu.isEmpty())		
         {
 			AddMenu("Others");
-            category_menu_["Others"]->addAction(action);
+			category_menu_["Others"]->addMenu(newmenu);
         }
         else if (category_menu_.contains(menu))
         {
-            category_menu_[menu]->addAction(action);
+            category_menu_[menu]->addMenu(newmenu);
         }
         else
         {
             AddMenu(menu);
-            category_menu_[menu]->addAction(action);
+            category_menu_[menu]->addMenu(newmenu);
         }
 		
 		QString *aux = new QString(menu+"+"+name);
         controller_panels_[*aux] = widget;
-		controller_actions_[*aux]= action;
-		connect(action, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
+		controller_actions_[QString(menu+"+"+name+"in")]= action1;
+		controller_actions_[QString(menu+"+"+name+"out")]= action2;
+		connect(action1, SIGNAL(triggered()), SLOT(ActionNodeClickedInside()));
+		connect(action2, SIGNAL(triggered()), SLOT(ActionNodeClickedOutside()));
 		return true;
     }
 
     bool ExternalMenuManager::RemoveExternalMenuPanel(QWidget *controlled_widget)
     { 
+		//TODO DISCONNECT PROPERLY!!
 		//The widget is the widget of RealXtend that is inside a dockwidget!
 		QString del = controller_panels_.key(dynamic_cast<QDockWidget*>(controlled_widget->parentWidget()));
 		if (controller_actions_.contains(del)){
-			QAction *adel = controller_actions_[del];
+			QAction *adel = controller_actions_[del+"in"];
+			QAction *adel2 = controller_actions_[del+"out"];
 			//disconnect action
-			QObject::disconnect(adel, SIGNAL(triggered()), this, SLOT(ActionNodeClicked()));
+			QObject::disconnect(adel, SIGNAL(triggered()), this, SLOT(ActionNodeClickedInside()));
+			QObject::disconnect(adel2, SIGNAL(triggered()), this, SLOT(ActionNodeClickedOutside()));
 			//Get menu name and delete action from menu
 			QStringList menu = del.split("+");
 			if (category_menu_.contains(menu.at(0))) {
-				category_menu_[menu.at(0)]->removeAction(adel);
+				SAFE_DELETE(category_menu_[menu.at(0)]);
 				return true;
 			}
 		}
 		return false;
     }
 
-    void ExternalMenuManager::ActionNodeClicked()
+    void ExternalMenuManager::ActionNodeClickedInside()
     {
 		QAction *act = dynamic_cast<QAction*>(sender());
 
-		QDockWidget *aux = dynamic_cast<QDockWidget *>(act->parentWidget());
+		QDockWidget *aux = dynamic_cast<QDockWidget *>(act->parentWidget()->parentWidget());
+		QWidget *window = act->parentWidget();
 
-		if (!aux)
-            return;
-
-		//Hide or show the widget; we make every widget a qdockwidget before integrate it in the qmainwindow
-		if (aux->isHidden())
-			aux->show();
-		else
-			aux->hide();
-
-		//To test it
-		//RemoveExternalMenuPanel(aux->widget());
-		//owner_->GetExternalPanelManager()->RemoveExternalPanel(aux->widget());
-
+		//Check where it is
+		if (aux){
+			//is outside			
+			//Change to inside mode and show it
+			UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
+			if (ui){
+				ui->TransferWidgetInOut(aux->windowTitle());
+				//Not neccesary?? ui->ShowWidget(window);
+			}
+		} else {
+			//Is inside, just show or hide it
+			UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
+			if (ui)
+				ui->BringWidgetToFront(window);
+		}
     }
+
+	void ExternalMenuManager::ActionNodeClickedOutside()
+    {
+		QAction *act = dynamic_cast<QAction*>(sender());
+
+		QDockWidget  *aux = dynamic_cast<QDockWidget *>(act->parentWidget()->parentWidget());
+
+		if (aux){
+			//Is outside, just show/hide it
+			//Hide or show the widget; we make every widget a qdockwidget before integrate it in the qmainwindow
+			if (aux->isHidden())
+				aux->show();
+			else
+				aux->hide();
+		} else {
+			//Is inside, remove it and put it outside
+			UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
+			if (ui)
+				ui->TransferWidgetInOut(act->parentWidget()->windowTitle());
+		}
+	}
 }

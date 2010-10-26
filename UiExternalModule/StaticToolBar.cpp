@@ -91,8 +91,8 @@ namespace UiExternalServices
 	
 	void StaticToolBar::changeWindow()
 	{
-		UiServiceInterface* uiService=framework_->GetService<UiServiceInterface>();
-		uiService->TransferAllWidget();
+		//UiServiceInterface* uiService=framework_->GetService<UiServiceInterface>();
+		//uiService->TransferAllWidget();
 	}
 
 	void StaticToolBar::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
