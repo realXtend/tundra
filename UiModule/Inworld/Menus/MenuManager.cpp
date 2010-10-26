@@ -129,11 +129,13 @@ namespace CoreUi
         {
             recovered_node = it.next().value()->RemoveChildNode(remove_id);
 			if (recovered_node){
+				//$ BEGIN_MOD $
 				if(it.value()->GetChildNodeList().count()==0){
-					root_menu_->RemoveChildNode(controller_map_.key(it.value()));
+					root_menu_->RemoveChildNode(it.value()->GetID());
 					layout_manager_->RemoveItemFromScene(category_map_[it.key()]);
 					category_map_.remove(it.key());
 				}
+				//$ END_MOD $
                 break;
 			}
         }
@@ -144,11 +146,12 @@ namespace CoreUi
             disconnect(recovered_node, SIGNAL(ActionButtonClicked(const QUuid&)), this, SLOT(ActionNodeClicked(const QUuid&)));
             layout_manager_->RemoveItemFromScene(recovered_node);
         }
-
+//$ BEGIN_MOD $
 		if(controller_map_.empty())
 			root_menu_->setVisible(false);
 		else
 			Sort();
+//$ END_MOD $
     }
 
     void MenuManager::ActionNodeClicked(const QUuid &id)

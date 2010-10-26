@@ -74,12 +74,12 @@ namespace UiServices
          *  font, cursor, sizeHint, getContentsMargins and windowTitle
          */
 
-		UiProxyWidget *proxy = new UiProxyWidget(widget, flags);
-		if (!AddProxyWidget(proxy))
-		{
-			SAFE_DELETE(proxy);
-			return 0;
-		}
+        UiProxyWidget *proxy = new UiProxyWidget(widget, flags);
+        if (!AddProxyWidget(proxy))
+        {
+            SAFE_DELETE(proxy);
+            return 0;
+        }
 
         // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
         // signal to a slot which handles the deletion. This must be done because closing
@@ -126,73 +126,73 @@ namespace UiServices
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
         ///\todo This string comparison is awful, get rid of this.
-			if ( name.contains("inv", Qt::CaseInsensitive))
-			{
-				UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
-				control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
-			}
-			else
-				menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
+        if ( name.contains("inv", Qt::CaseInsensitive))
+        {
+            UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
+            control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
+        }
+        else
+            menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
     }
 
     void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
         ///\todo This string comparison is awful, get rid of this.
         //if (name== "Inventory")
-			if ( name.contains("inv", Qt::CaseInsensitive) )
-				control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
-			//else if (name== "Avatar Editor")
-			else if ( name.contains("avatar", Qt::CaseSensitive) )
-			   control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
-			else
-				menu_manager_->AddMenuItem(widget, name, menu, icon);
+        if ( name.contains("inv", Qt::CaseInsensitive) )
+            control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
+        //else if (name== "Avatar Editor")
+        else if ( name.contains("avatar", Qt::CaseSensitive) )
+           control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
+        else
+            menu_manager_->AddMenuItem(widget, name, menu, icon);
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
     {
-			inworld_scene_->removeItem(widget);
-			all_proxy_widgets_in_scene_.removeOne(widget);
+        inworld_scene_->removeItem(widget);
+        all_proxy_widgets_in_scene_.removeOne(widget);
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QWidget *widget)
     {
-		RemoveProxyWidgetFromScene(widget->graphicsProxyWidget());
+        RemoveProxyWidgetFromScene(widget->graphicsProxyWidget());
     }
 
     void InworldSceneController::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
     {
-		menu_manager_->RemoveMenuItem(widget);
+        menu_manager_->RemoveMenuItem(widget);
     }
 
     void InworldSceneController::BringProxyToFront(QGraphicsProxyWidget *widget) const
     {
-		if (inworld_scene_->isActive())
-		{
-			inworld_scene_->setActiveWindow(widget);
-			inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
-		}
+        if (inworld_scene_->isActive())
+        {
+            inworld_scene_->setActiveWindow(widget);
+            inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+        }
     }
 
     void InworldSceneController::BringProxyToFront(QWidget *widget) const
     {
-		if (inworld_scene_->isActive())
-		{
-			ShowProxyForWidget(widget);
-			inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
-			inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
-		}
+        if (inworld_scene_->isActive())
+        {
+            ShowProxyForWidget(widget);
+            inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
+            inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+        }
     }
 
     void InworldSceneController::ShowProxyForWidget(QWidget *widget) const
     {
         if (inworld_scene_)
-			widget->graphicsProxyWidget()->show();
+            widget->graphicsProxyWidget()->show();
     }
 
     void InworldSceneController::HideProxyForWidget(QWidget *widget) const
     {
         if (inworld_scene_)
-			widget->graphicsProxyWidget()->hide();
+            widget->graphicsProxyWidget()->hide();
     }
 
     bool InworldSceneController::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const

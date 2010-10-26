@@ -44,6 +44,8 @@ namespace Foundation
          */
         virtual QWidget* AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags = Qt::Dialog) = 0;
 
+		virtual bool AddExternalPanel(QDockWidget *widget) = 0;
+
 
         /*! TODO!
 		 *	\brief	Remove the QDockWidget that contains the widget passed from the main Window.

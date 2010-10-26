@@ -41,6 +41,8 @@ namespace UiExternalServices
          */
         QWidget* AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags = Qt::Dialog);
 
+		bool AddExternalPanel(QDockWidget *widget);
+
 		/*! TODO!
 		 *	\brief	Remove the QDockWidget that contains the widget passed from the main Window.
          *  \param	widget widget.

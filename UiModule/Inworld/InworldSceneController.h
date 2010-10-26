@@ -20,7 +20,6 @@ class UiProxyWidget;
 
 namespace UiServices
 {
-
     class UI_MODULE_API InworldSceneController : public QObject
     {
         Q_OBJECT
@@ -35,7 +34,6 @@ namespace UiServices
         ~InworldSceneController();
 
     public slots:
-
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         /*! Convenience function if you dont want to bother and define your UiWidgetProperties.
          *
@@ -198,7 +196,6 @@ namespace UiServices
         void DeleteCallingWidgetOnClose();
 
         void HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget);
-
     };
 }
 

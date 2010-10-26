@@ -45,10 +45,6 @@ namespace UiExternalServices
 		editAction_ = new QAction(tr("&Edit Mode"), this);
 		editAction_->setStatusTip(tr("Set edit mode to modify entity properties"));
 		connect(editAction_, SIGNAL(triggered()), this, SLOT(editMode()));
-
-		changeAction_ = new QAction(tr("Change Window"), this);
-		changeAction_->setStatusTip(tr("Chane the processing window to external/internal"));
-		connect(changeAction_, SIGNAL(triggered()), this, SLOT(changeWindow()));
 	}
 
 	void StaticToolBar::addActions()
@@ -56,7 +52,6 @@ namespace UiExternalServices
 		addAction(flyAction_);
 		addAction(cameraAction_);
 		addAction(editAction_);
-		addAction(changeAction_);
 	}
 
 	void StaticToolBar::flyMode()
@@ -89,12 +84,6 @@ namespace UiExternalServices
 		uiService->SwitchToScene("WorldBuilding");
 	}
 	
-	void StaticToolBar::changeWindow()
-	{
-		UiServiceInterface* uiService=framework_->GetService<UiServiceInterface>();
-		uiService->TransferAllWidget();
-	}
-
 	void StaticToolBar::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
        if (category_id == scene_event_category_)

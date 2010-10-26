@@ -106,7 +106,7 @@ namespace UiServices
         /// UiServiceInterface override.
         QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
 //$ BEGIN_MOD $
-		void TransferAllWidget();
+		void TransferWidgetInOut(QString widgetToChange);
 //$ END_MOD $
     private slots:
         void TranferWidgets();

@@ -22,6 +22,7 @@
 
 namespace UiServices
 {
+//$ BEGIN_MOD $
     UiSceneService::UiSceneService(UiModule *owner) : owner_(owner)
     {
         connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
@@ -90,9 +91,8 @@ namespace UiServices
 		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
 		if(qdock->widget())
 			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
-		else{
+		else
 			owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
-		}
     }
 
     void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
@@ -234,21 +234,25 @@ namespace UiServices
         }
     }
 //$ BEGIN_MOD $
-	void UiSceneService::TransferAllWidget()
+	void UiSceneService::TransferWidgetInOut(QString widgetToChange)
 	{
-		foreach(proxyDock pair,proxy_dock_list){
+		if (proxy_dock_list.contains(widgetToChange)){
+			proxyDock pair = proxy_dock_list.value(widgetToChange);
 			QDockWidget* qdock=pair.second;
 			UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
 			QWidget* widget;
 			if(qdock->widget()){
 				qdock->hide();
 				widget=qdock->widget();
-				uiExternal->RemoveExternalMenuPanel(widget);
+				//We are not going to Remove the menu of the widget..
+				//uiExternal->RemoveExternalMenuPanel(widget);
+				//If we remove Panel we have to Add it later
 				uiExternal->RemoveExternalPanel(widget);
 				widget->setParent(0);
 				proxy->setWidget(widget);
 				if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
 					owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
+					owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
 				}
 			}else{
 				proxy->hide();
@@ -257,7 +261,11 @@ namespace UiServices
 				owner_->GetInworldSceneController()->RemoveWidgetFromMenu(proxy);
 				proxy->setWidget(0);
 				qdock->setWidget(widget);
-				uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
+				//Add Panel..
+				if (uiExternal->AddExternalPanel(qdock)){
+					uiExternal->ShowWidget(widget);
+					uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
+				}
 			}
 		}
 	}
@@ -270,7 +278,7 @@ namespace UiServices
 				UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
 				QWidget* widget;
 				if(qdock->widget()){
-					if(qdock->widget()->windowTitle()=="Entity-component Editor" || qdock->widget()->windowTitle()=="Inventory"){
+					if(qdock->widget()->windowTitle()=="Entity-component Editor" || qdock->widget()->windowTitle()=="Inventory") {
 						qdock->hide();
 						widget=qdock->widget();
 						uiExternal->RemoveExternalMenuPanel(widget);
