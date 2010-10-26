@@ -15,6 +15,7 @@
 #include "UiProxyWidget.h"
 #include "Frame.h"
 #include "Console.h"
+#include "SceneManager.h"
 #include "ISoundService.h"
 #include "InputContext.h"
 
@@ -39,6 +40,7 @@ Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
+Q_DECLARE_METATYPE(Scene::SceneManager*);
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(AttributeChange*);
