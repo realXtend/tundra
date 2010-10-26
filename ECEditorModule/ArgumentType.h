@@ -161,6 +161,7 @@ void ArgumentType<bool>::UpdateValueFromEditor()
         value = e->isChecked();
 }
 
+template<>
 QString ArgumentType<bool>::ToString() const
 {
     return QString::number((int)value);
