@@ -6,6 +6,7 @@
 #include "EC_Placeable.h"
 #include "EC_Terrain.h"
 #include "ConvexHull.h"
+#include "PhysicsContact.h"
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
@@ -649,4 +650,9 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
         collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
     if (!drawDebug.Get())
         collisionFlags |= btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT;
+}
+
+void EC_RigidBody::EmitPhysicsCollision(Scene::Entity* entityB, const QVector<PhysicsContact*>& contacts)
+{
+    emit PhysicsCollision(entityB, contacts);
 }
