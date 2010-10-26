@@ -164,15 +164,18 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
 
 IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change)
 {
-    IAttribute *attribute = 0;
     if(ContainsAttribute(name))
-        return attribute;
-    attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
-    if(attribute)
-        emit AttributeAdded(attribute);
+        return IComponent::GetAttribute(name);
 
+    IAttribute *attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
+    if(!attribute)
+    {
+        LogError("Fail to create new attribute:" + name.toStdString() + " to dynamic component:" + Name().toStdString());
+        return 0;
+    }
+
+    emit AttributeAdded(attribute);
     AttributeChanged(attribute, change);
-
     return attribute;
 }
 
