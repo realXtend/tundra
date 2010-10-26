@@ -95,10 +95,6 @@ namespace CommUI
         {
             voice_users_info_widget_->show();
             voice_state_widget_->show();
-            //if (voice_controller_proxy_widget_)
-            //{
-            //    voice_controller_proxy_widget_->show();
-            //}
         }
 
         if (in_world_voice_session_->IsAudioSendingEnabled())
