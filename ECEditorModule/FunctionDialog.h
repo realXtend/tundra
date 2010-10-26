@@ -98,11 +98,11 @@ public slots:
     QString Function() const;
 
     /// Return argument type of the current functions return value.
-    IArgumentType *ReturnValueArgument() const { return returnValueArgument; }
+    IArgumentType *ReturnValueArgument() const;
 
     /// Returns list of arguments for the current function.
     /// Remember to call UpdateValueFromEditor() for each argument before using them.
-    QList<IArgumentType *> Arguments() const { return allocatedArguments; }
+    QList<IArgumentType *> Arguments() const;
 
 protected:
     /// QWidget override.

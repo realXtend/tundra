@@ -8,6 +8,7 @@
 #ifndef incl_ECEditorModule_ArgumentType_h
 #define incl_ECEditorModule_ArgumentType_h
 
+#include "ECEditorModuleApi.h"
 #include "CoreStringUtils.h"
 
 #include <QLineEdit>
@@ -16,7 +17,7 @@
 #include <QCheckBox>
 
 /// Pure virtual base class for different argument types.
-class IArgumentType
+class ECEDITOR_MODULE_API IArgumentType
 {
 public:
     /// Default constructor.
@@ -53,7 +54,7 @@ private:
 
 /// Template implementation of IArgumentType.
 template<typename T>
-class ArgumentType : public IArgumentType
+class ECEDITOR_MODULE_API ArgumentType : public IArgumentType
 {
 public:
     /// Constructor.
@@ -91,7 +92,7 @@ private:
 };
 
 /// Void argument type. Used for return values only.
-class VoidArgumentType : public IArgumentType
+class ECEDITOR_MODULE_API VoidArgumentType : public IArgumentType
 {
 public:
     /// Default constructor.
