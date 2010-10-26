@@ -6,8 +6,8 @@ set -x
 # script to build naali and most deps.
 #
 # if you want to use caelum, install ogre and nvidia cg from
-# ppa:andrewfenn/ogredev and change the caelum setting to 1 in
-# top-level CMakeLists.txt
+# ppa:andrewfenn/ogredev, change the caelum setting to 1 in
+# top-level CMakeBuildConfig.txt and enable Cg module in bin/plugins-unix.cfg
 
 
 viewer=$(dirname $(readlink -f $0))/..
@@ -48,7 +48,7 @@ if lsb_release -c | egrep -q "lucid|maverick"; then
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
          libtelepathy-qt4-dev python-gst0.10-dev freeglut3-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev \
-	 liboil0.3-dev mercurial
+	 liboil0.3-dev mercurial unzip xsltproc
 fi
 
 function build-regular {
@@ -77,7 +77,7 @@ function build-regular {
 }
 
 what=bullet-2.77
-if test -f $tags/$what-done -a -d $prefix/include/bullet/ConvexDecomposition; then
+if test -f $tags/$what-done; then
     echo $what is done
 else
     cd $build
@@ -85,7 +85,7 @@ else
     test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
     tar zxf $tarballs/$what.tgz
     cd $what
-    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DINSTALL_EXTRA_LIBS=ON .
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEMOS=OFF -DINSTALL_EXTRA_LIBS=ON -DCMAKE_CXX_FLAGS_RELEASE="-O2 -fPIC -DNDEBUG -DBT_NO_PROFILE" .
     make -j $nprocs
     make install
     touch $tags/$what-done
@@ -138,6 +138,9 @@ else
     test -f $zip || wget -O $zip http://downloads.sourceforge.net/project/pythonqt/pythonqt/$what-$ver/$what$ver.zip
     unzip $zip
     cd $what$ver
+    fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
+    sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
+    mv x $fn
     qmake
     make -j2
     rm -f $prefix/lib/lib$what*

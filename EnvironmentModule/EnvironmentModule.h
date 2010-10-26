@@ -44,8 +44,10 @@ namespace Environment
         Also module will handle all environment editing via EnvironmentEditor. Module receives network
         messages and send them forward to other components that will need them.
     */
-    class ENVIRONMENT_MODULE_API EnvironmentModule : public IModule
+    class ENVIRONMENT_MODULE_API EnvironmentModule : public QObject, public IModule
     {
+        Q_OBJECT
+        
     public:
         //! Constructor.
         EnvironmentModule();
@@ -146,6 +148,9 @@ namespace Environment
         Caelum::CaelumSystem* GetCaelum();
 #endif 
 
+    private slots:
+        //! Handle recreate of enviroment (relevant to Tundra only) when scene is cleared. Hopefully this will only be a temporary solution.
+        void OnSceneCleared();
 
     private:
         EnvironmentModule(const EnvironmentModule &);

@@ -380,7 +380,9 @@ namespace RexLogic
          *  @param component The removed component.
          */
         void ComponentRemoved(Scene::Entity *entity, IComponent *component);
-
+        
+        //! Called when Tundra scene is cleared, to recreate camera. \todo A temp solution, will be removed.
+        void OnSceneCleared();
     };
 }
 

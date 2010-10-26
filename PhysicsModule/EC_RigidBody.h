@@ -8,11 +8,14 @@
 #include "LinearMath/btMotionState.h"
 #include "Declare_EC.h"
 
+#include <QVector>
+
 class btRigidBody;
 class btCollisionShape;
 class btTriangleMesh;
 class btHeightfieldTerrainShape;
 class EC_Placeable;
+class PhysicsContact;
 
 namespace Environment
 {
@@ -102,6 +105,8 @@ Does not emit any actions.
 */
 class EC_RigidBody : public IComponent, public btMotionState
 {
+    friend class Physics::PhysicsWorld;
+    
     Q_OBJECT
     Q_ENUMS(EventType)
     
@@ -185,6 +190,13 @@ public:
     virtual void getWorldTransform(btTransform &worldTrans) const;
     //! btMotionState override. Called when Bullet wants to tell us the body's current transform
     virtual void setWorldTransform(const btTransform &worldTrans);
+
+signals:
+    //! A physics collision has happened between this rigidbody and another entity
+    /*! \param otherEntity The second entity
+        \param contacts A vector of contacts, which contain position, normal, distance, impulse information
+     */ 
+    void PhysicsCollision(Scene::Entity* otherEntity, const QVector<PhysicsContact*>& contacts);
     
 public slots:
     //! Set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
@@ -288,6 +300,9 @@ private:
     
     //! Calculate mass, shape & static/dynamic-classification dependant properties
     void GetProperties(btVector3& localInertia, float& m, int& collisionFlags);
+    
+    //! Emit a physics collision. Called from PhysicsWorld
+    void EmitPhysicsCollision(Scene::Entity* entityB, const QVector<PhysicsContact*>& contacts);
     
     //! Placeable pointer
     boost::weak_ptr<EC_Placeable> placeable_;
