@@ -48,7 +48,7 @@ if lsb_release -c | egrep -q "lucid|maverick"; then
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
          libtelepathy-qt4-dev python-gst0.10-dev freeglut3-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev \
-	 liboil0.3-dev mercurial unzip
+	 liboil0.3-dev mercurial unzip xsltproc
 fi
 
 function build-regular {
@@ -138,6 +138,9 @@ else
     test -f $zip || wget -O $zip http://downloads.sourceforge.net/project/pythonqt/pythonqt/$what-$ver/$what$ver.zip
     unzip $zip
     cd $what$ver
+    fn=generated_cpp/com_trolltech_qt_core/com_trolltech_qt_core0.h
+    sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
+    mv x $fn
     qmake
     make -j2
     rm -f $prefix/lib/lib$what*
