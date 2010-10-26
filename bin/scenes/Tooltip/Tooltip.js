@@ -22,7 +22,7 @@ me.Action("MouseHoverOut").Triggered.connect(MouseOut);
  function CheckComponent(entity, component, type)
 {
 	if (component.TypeName == "EC_HoveringText")
-		GetHoveringTextComponent();
+	GetHoveringTextComponent();
 }
 
 function GetHoveringTextComponent()
@@ -79,7 +79,6 @@ function Update(frametime)
 {
 	bMouseIn = false;
 }
-
 
 function OnScriptDestroyed()
 {	
