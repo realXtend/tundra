@@ -19,6 +19,8 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (OGRE)
+use_package_assimp()
+
 
 use_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule TundraLogicModule
     OgreRenderingModule)
@@ -26,6 +28,7 @@ use_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule Tun
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
+GetOpenAssetImport()
 
 link_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule TundraLogicModule
     OgreRenderingModule)
