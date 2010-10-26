@@ -187,9 +187,9 @@ class TestCreateDestroy(TestRunner):
         except AttributeError:
             try:
                 r.logInfo("removing highlight, but it doesn't exist anymore: %d" % ent.Id)
-            except ValueError: # ent.Id on destroyed object
+            except:
+                r.logInfo("====================================")
                 r.logInfo("failure")
-                yield "failure"
         else:
             ent.RemoveComponentRaw(h)
             r.logInfo("highlight removed")
@@ -199,14 +199,12 @@ class TestCreateDestroy(TestRunner):
         except AttributeError:
             try:
                 r.logInfo("removing ruler, but it doesn't exist anymore: %d" % ent.Id)
-            except ValueError: # ent.Id on destroyed object
+            except:
+                r.logInfo("====================================")
                 r.logInfo("failure")
-                yield "failure"
         else:
             ent.RemoveComponentRaw(ruler)
             r.logInfo("ruler removed")
-            r.logInfo("success")
-            yield "success"
 
 class TestDynamicProperties(TestRunner):
     def __init__(self, *args, **kw):
