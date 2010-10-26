@@ -1,4 +1,5 @@
 //Server side of the ChatApplication
+//Server shows the ChatWidget, but it's not able to use it to send own messages
 function ServerControl ()
 {
 	me.Action("ClientSendMessage").Triggered.connect(this, this.ClientMessage);
