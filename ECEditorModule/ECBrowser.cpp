@@ -540,39 +540,6 @@ namespace ECEditor
         }
     }
 
-    void ECBrowser::DeleteComponent()
-    {
-        QTreeWidgetItem *item = treeWidget_->currentItem();
-        if(!item)
-            return;
-
-        std::vector<ComponentWeakPtr> componentsToDelete;
-
-        // The deletion logic below is done in two steps to avoid depending on the internal componentGroups_ member
-        // while we are actually doing the deletion, since the Entity::RemoveComponent will call back to the 
-        // ECBrowser::ComponentRemoved to update the UI.
-
-        // Find the list of components we want to delete.
-        for(ComponentGroupList::iterator iter = componentGroups_.begin(); iter != componentGroups_.end(); iter++)
-            if (item == (*iter)->browserListItem_)
-            {
-                componentsToDelete = (*iter)->components_;
-                break;
-            }
-
-        // Perform the actual deletion.
-        for(std::vector<ComponentWeakPtr>::iterator iter = componentsToDelete.begin(); iter != componentsToDelete.end(); ++iter)
-        {
-            ComponentPtr comp = iter->lock();
-            if (comp.get())
-            {
-                Scene::Entity *entity = comp->GetParentEntity();
-                if (entity)
-                    entity->RemoveComponent(comp, AttributeChange::Default);
-            }
-        }
-    }
-
     void ECBrowser::DynamicComponentChanged()
     {
         EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender());
@@ -772,7 +739,7 @@ namespace ECEditor
                     disconnect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString &)), this, SLOT(ComponentNameChanged(const QString&)));
                 }
                 comp_group->RemoveComponent(comp);
-                //Ensure that coponent group is valid and if it's not, remove it from the browser list.
+                // Check if the component group still contains any components in it and if not, remove it from the browser list.
                 if (!comp_group->IsValid())
                 {
                     SAFE_DELETE(comp_group);
@@ -789,14 +756,12 @@ namespace ECEditor
     {
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
-        {
-            if (componentGroup != (*iter))
-                continue;
-
-            SAFE_DELETE(*iter);
-            componentGroups_.erase(iter);
-            break;
-        }
+            if (componentGroup == *iter)
+            {
+                SAFE_DELETE(*iter);
+                componentGroups_.erase(iter);
+                break;
+            }
     }
 
     bool ECBrowser::HasEntity(Scene::EntityPtr entity) const
@@ -839,29 +804,30 @@ namespace ECEditor
     void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
     {
         assert(item);
-        ComponentGroupList::iterator iter = FindSuitableGroup(*item); 
-        if(iter != componentGroups_.end())
-        {
-            ComponentGroup *componentGroup = (*iter);
-            // Remove all components from ComponentGroup container and after we are done stop iteration.
-            while(!componentGroup->components_.empty())
+
+        std::vector<ComponentWeakPtr> componentsToDelete;
+
+        // The deletion logic below is done in two steps to avoid depending on the internal componentGroups_ member
+        // while we are actually doing the deletion, since the Entity::RemoveComponent will call back to the 
+        // ECBrowser::ComponentRemoved to update the UI.
+
+        // Find the list of components we want to delete.
+        for(ComponentGroupList::iterator iter = componentGroups_.begin(); iter != componentGroups_.end(); iter++)
+            if (item == (*iter)->browserListItem_)
             {
-                ComponentPtr comp = componentGroup->components_.back().lock();
-                if(comp)
-                {
-                    Scene::Entity *entity = comp->GetParentEntity();
-                    if(entity)
-                        entity->RemoveComponent(comp, AttributeChange::Default);
-                }
-                else // If component has expired we just remove it form the component group.
-                {
-                    componentGroup->components_.pop_back();
-                    if(!componentGroup->IsValid())
-                    {
-                        SAFE_DELETE(componentGroup)
-                        componentGroups_.erase(iter);
-                    }
-                }
+                componentsToDelete = (*iter)->components_;
+                break;
+            }
+
+        // Perform the actual deletion.
+        for(std::vector<ComponentWeakPtr>::iterator iter = componentsToDelete.begin(); iter != componentsToDelete.end(); ++iter)
+        {
+            ComponentPtr comp = iter->lock();
+            if (comp.get())
+            {
+                Scene::Entity *entity = comp->GetParentEntity();
+                if (entity)
+                    entity->RemoveComponent(comp, AttributeChange::Default);
             }
         }
     }
