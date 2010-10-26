@@ -69,6 +69,7 @@ class TestCreateDestroy(TestRunner):
     def __init__(self, *args, **kw):
         self.finished = False
         self.scene = None
+        self.select_test_ent = None
         TestRunner.__init__(self, *args, **kw)
 
     def run(self):
@@ -90,12 +91,19 @@ class TestCreateDestroy(TestRunner):
         while not self.scene and not self.elapsed(self.wait_time):
             yield None
 
+        yield "waiting for Test_SelectTest"
+        while (not self.select_test_ent) and (not self.elapsed(self.wait_time)):
+            yield None
+
+        yield "done waiting for Test_SelectTest, continuing"
+
         yield "creating object"
         r.getServerConnection().SendObjectAddPacket(42, 42, 22)
         
         yield "waiting for EntityCreated"
         while (not self.finished) and (not self.elapsed(self.wait_time)):
             yield None
+
         yield "exiting"
         r.exit()
         if self.finished:
@@ -111,12 +119,33 @@ class TestCreateDestroy(TestRunner):
         self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)", self.handle_entity_created)
         r.logInfo("EntityCreated callback registered")
 
+    @circuits.handler("on_exit")
+    def onexit(self):
+        #yield "TestCreateDestroy exiting"
+        r.logInfo("TestCreateDestroy exiting...")
+        self.delete_extras(self.select_test_ent)
+        r.logInfo("...done.")
+        #yield "exit ready. done"
+
     # qt slot
     def handle_entity_created(self, ent, changetype):
         # fun fact: since we are called for every entity and
         # self.finished checked only every "update" event,
         # this often cleans up >1 test objects (in case any
         # are left over from failed tests)
+
+        if ent.Id==2525429102:
+            r.logInfo("##### found entity I need")
+            #name2=ent.GetOrCreateComponentRaw("EC_Name")
+            #print(name2, type(name2), dir(name2))
+            try:
+                name=ent.GetOrCreateComponentRaw("EC_Name")
+                #name = ent.ecname
+                r.logInfo(name.name)
+                print "########################",name.name, dir(name)
+                r.logInfo("######################## %s %s" % (name.objectName, dir(name)))
+            except AttributeError:
+                r.logInfo(" %s %d has no ecname" % (ent.Name, ent.Id))
 
         try:
             ec_netp = ent.network
@@ -125,7 +154,7 @@ class TestCreateDestroy(TestRunner):
         else:
             netp = ec_netp.Position
             # for some reason z coord ends up as 22.25
-            r.logInfo("found entity with netpos %s %s %s" % (netp.x(), netp.y(), netp.z()))
+            #r.logInfo("found entity with netpos %s %s %s" % (netp.x(), netp.y(), netp.z()))
             if netp.x() == 42.0 and netp.y() == 42.0 and int(netp.z()) == 22:
                 r.logInfo("found created test prim - naming, moving and deleting (finished=%s)" % self.finished)
                 ent.prim.Name = "Seppo"
@@ -138,6 +167,34 @@ class TestCreateDestroy(TestRunner):
                 r.getServerConnection().SendObjectDeRezPacket(
                     ent.Id, r.getTrashFolderId())
                 self.finished = True
+
+    # add_extras simulate object edit highlight and ruler usage
+    def add_extras(self, ent):
+        # add EC_Ruler
+        ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
+        ruler.SetVisible(True)
+
+        #add highlight
+        try:
+            ent.highlight
+        except AttributeError:
+            ent.GetOrCreateComponentRaw("EC_Highlight")
+
+        h = ent.highlight
+
+        if not h.IsVisible():
+            h.Show()
+
+    def delete_extras(self, ent):
+        try:
+            h = ent.highlight
+        except AttributeError:
+            r.logInfo("objectedit.remove_highlight called for a non-hilighted entity: %d" % ent.Id)
+        else:
+            ent.RemoveComponentRaw(h)
+
+        ruler = ent.ruler
+        ent.RemoveComponentRaw(ruler)
 
 class TestDynamicProperties(TestRunner):
     def __init__(self, *args, **kw):
