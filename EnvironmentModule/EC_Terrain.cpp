@@ -295,6 +295,38 @@ float EC_Terrain::GetPoint(int x, int y) const
     return GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)];
 }
 
+
+Vector3df EC_Terrain::GetPointOnMap(const Vector3df& point) const
+{
+     Ogre::Matrix4 matrix = rootNode->_getFullTransform();
+     Ogre::Vector3 local = matrix * OgreRenderer::ToOgreVector3(point);
+     float z = GetInterpolatedHeightValue(local.x, local.y);
+     return Vector3df(local.x, local.y, z);
+}
+
+float EC_Terrain::GetDistanceToTerrain(const Vector3df& point) const
+{
+    Vector3df mapPoint = GetPointOnMap(point);
+    Vector3df diffrence = mapPoint - point;
+    return diffrence.getLength();
+   
+}
+
+bool EC_Terrain::IsOnTopOfMap(const Vector3df& point) const
+{
+    Vector3df mapPoint = GetPointOnMap(point);
+    if ( mapPoint.x < 0 || mapPoint.y < 0 )
+        return false;
+    
+    int xMax = PatchWidth() * cPatchSize;
+    int yMax = PatchHeight() * cPatchSize;
+    if ( mapPoint.x > xMax || mapPoint.y > yMax )
+        return false;
+    
+    return true;
+}
+
+
 float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
 {
     int xFloor = (int)floor(x);
