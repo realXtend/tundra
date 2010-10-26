@@ -169,15 +169,22 @@ private:
 
     /// Ogre entity clone created for highlighting.
     Ogre::ManualObject *rulerObject;
+    /// object for grid part.
+    Ogre::ManualObject *gridObject;
 
     /// Ogre scene node where this EC is attached.
     Ogre::SceneNode *sceneNode_;
     
     /// Ogre scene node to attach EC to when we want global space axis vis
     Ogre::SceneNode *globalSceneNode;
+    /// grid anchor
+    Ogre::SceneNode *anchorNode;
+ 
     
     std::string rulerName;
+    std::string rulerMovingPartName;
     std::string nodeName;
+    std::string movingNodeName;
     
     EC_Ruler::Type type;
     
