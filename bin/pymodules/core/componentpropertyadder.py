@@ -17,6 +17,7 @@ compshorthand = {
     'EC_AttachedSound': 'sound',
     'EC_OpenSimPresence': 'opensimpresence',
     'EC_SoundRuler': 'soundruler',
+    'EC_Name': 'ecname',
     'EC_Ruler': 'ruler'
     }   
 
