@@ -36,8 +36,7 @@ class ComponentPropertyAdder(circuits.BaseComponent):
 
     @circuits.handler("on_exit")
     def on_exit(self):
-        r.logInfo("componentpropertyaddr exiting...")
-        r.logInfo("...done")
+        r.logInfo("componentpropertyaddr exiting... done")
 
     def onComponentAdded(self, ent, comp, changetype):
         #print "Comp added:", ent, comp, comp.TypeName, comp.Name, changetype
