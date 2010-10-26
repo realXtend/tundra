@@ -514,6 +514,11 @@ namespace OgreRenderer
             return;
 
         PROFILE(Renderer_Render);
+
+        // If fog is FOG_NONE, force it to some default ineffective settings, because otherwise SuperShader shows just white
+        if (scenemanager_->getFogMode() == Ogre::FOG_NONE)
+            scenemanager_->setFog(Ogre::FOG_LINEAR, Ogre::ColourValue::White, 0.001f, 2000.0f, 4000.0f);
+            
         // If rendering into different size window, dirty the UI view for now & next frame
         if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
         {
