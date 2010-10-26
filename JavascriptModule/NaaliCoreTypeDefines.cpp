@@ -4,11 +4,17 @@
 #include "Transform.h"
 #include "Vector3D.h"
 #include "Matrix4.h"
+#include "IAttribute.h"
 
 #include <QScriptEngine>
 #include <QColor>
 #include <QVector3D>
 #include <QQuaternion>
+
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
+
+Q_DECLARE_METATYPE(IAttribute*);
 
 QScriptValue toScriptValueColor(QScriptEngine *engine, const Color &s)
 {
@@ -132,6 +138,26 @@ void fromScriptValueTransform(const QScriptValue &obj, Transform &s)
     fromScriptValueVector3(obj.property("scale"), s.scale);
 }
 
+QScriptValue toScriptValueIAttribute(QScriptEngine *engine, const IAttribute *&s)
+{
+    QScriptValue obj = engine->newObject();
+    if(s)
+    {
+        obj.setProperty("name", QScriptValue(engine, QString::fromStdString(s->GetNameString())));
+        obj.setProperty("typename", QScriptValue(engine, QString::fromStdString(s->TypenameToString())));
+        obj.setProperty("value", QScriptValue(engine, QString::fromStdString(s->ToString())));
+    }
+    else
+    {
+        LogError("Fail to get attribute values from IAttribute pointer, cause pointer was a null. returning empty object.");
+    }
+    return obj;
+}
+
+void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
+{
+}
+
 void RegisterNaaliCoreMetaTypes()
 {
     qRegisterMetaType<Color>("Color");
@@ -149,4 +175,11 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueQuaternion, fromScriptValueQuaternion);
     qScriptRegisterMetaType(engine, toScriptValueQQuaternion, fromScriptValueQQuaternion);
     qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
+
+    //qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
+    int id = qRegisterMetaType<IAttribute*>("IAttribute*");
+    qScriptRegisterMetaType_helper(
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueIAttribute),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueIAttribute),
+        QScriptValue());
 }
