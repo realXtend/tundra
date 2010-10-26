@@ -34,6 +34,11 @@ class ComponentPropertyAdder(circuits.BaseComponent):
         s.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentAdded)
         s.connect("ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentRemoved)
 
+    @circuits.handler("on_exit")
+    def on_exit(self):
+        r.logInfo("componentpropertyaddr exiting...")
+        r.logInfo("...done")
+
     def onComponentAdded(self, ent, comp, changetype):
         #print "Comp added:", ent, comp, comp.TypeName, comp.Name, changetype
         
