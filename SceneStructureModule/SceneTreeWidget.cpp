@@ -22,6 +22,8 @@
 #include "ECEditorWindow.h"
 #include "EntityActionDialog.h"
 #include "AddComponentDialog.h"
+#include "FunctionDialog.h"
+#include "ArgumentType.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -103,7 +105,7 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     framework(fw),
     showComponents(false)
 {
-//    setEditTriggers(/*QAbstractItemView::EditKeyPressed*/QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
+    setEditTriggers(/*QAbstractItemView::EditKeyPressed*/QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
 //    setDragEnabled(true);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -237,7 +239,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
     // "Edit", "Edit in new", "New component...", "Delete", "Copy", "Actions..." and "Functions..."
     // actions are available only if we have selection.
     QAction *editAction = 0, *editInNewAction = 0, *newComponentAction = 0, *deleteAction = 0,
-        *renameAction = 0, *copyAction = 0, *saveAsAction = 0, *actionsAction = 0, *functionsActions = 0;
+        *renameAction = 0, *copyAction = 0, *saveAsAction = 0, *actionsAction = 0, *functionsAction = 0;
 
     bool hasSelection = !selectionModel()->selection().isEmpty();
     if (hasSelection)
@@ -249,7 +251,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         copyAction = new QAction(tr("Copy"), menu);
         saveAsAction = new QAction(tr("Save as..."), menu);
         actionsAction = new QAction(tr("Actions..."), menu);
-//        QAction *functionsAction = new QAction(tr("Functions..."), menu);
+        functionsAction = new QAction(tr("Functions..."), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
         connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
@@ -258,7 +260,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         connect(copyAction, SIGNAL(triggered()), SLOT(Copy()));
         connect(saveAsAction, SIGNAL(triggered()), SLOT(SaveAs()));
         connect(actionsAction, SIGNAL(triggered()), SLOT(OpenEntityActionDialog()));
-//        connect(functionsActions, SIGNAL(triggered()), SLOT(ShowFunctionsDialog()));
+        connect(functionsAction, SIGNAL(triggered()), SLOT(OpenFunctionDialog()));
     }
 
     // "Rename" action is possible only if have one entity selected.
@@ -305,94 +307,13 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
     {
         menu->addSeparator();
         menu->addAction(actionsAction);
-//        menu->addAction(functionsAction);
+        menu->addAction(functionsAction);
+
+        // "Functions..." is disabled if we have both entities and components selected simultaneously.
+        Selection sel = GetSelection();
+        if (sel.HasEntities() && sel.HasComponents())
+            functionsAction->setDisabled(true);
     }
-
-/*
-    Selection sel = GetSelection();
-    if (sel.HasEntities())
-    {
-        // Entity actions and functions
-        // Set available actions is union of all actions of the selected entities.
-        QSet<QString> actions;
-        QStringList methods;
-
-        foreach(EntityItem *eItem, sel.entities)
-        {
-            Scene::EntityPtr entity = eItem->Entity();
-            if (entity)
-            {
-                //if (entity->Actions().size() > 0)
-                foreach(EntityAction *act, entity->Actions())
-                    actions.insert(act->Name());
-
-                const QMetaObject *mo = entity->metaObject();
-                for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
-                    methods << QString(mo->className()) + "::" + QString::fromLatin1(mo->method(i).signature());
-            }
-        }
-
-        // Create "Action" menu the availabe actions.
-        if (!actions.empty())
-        {
-            menu->addSeparator();
-            QMenu *actionMenu = new QMenu(tr("Actions"), menu);
-            menu->addMenu(actionMenu);
-
-            foreach(QString act, actions)
-            {
-                QAction *entityAction = new QAction(act, actionMenu);
-                connect(entityAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
-                actionMenu->addAction(entityAction);
-            }
-        }
-
-        // Create "Functions" menu.
-        if (!methods.empty())
-        {
-            if (actions.empty())
-                menu->addSeparator();
-
-            QMenu *functionMenu = new QMenu(tr("Functions"), menu);
-            menu->addMenu(functionMenu);
-
-            foreach(QString method, methods)
-            {
-                QAction *functionAction = new QAction(method, functionMenu);
-                //connect(functionAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
-                functionMenu->addAction(functionAction);
-            }
-        }
-    }
-    else if (sel.HasComponents())
-    {
-        QStringList methods;
-        foreach(ComponentItem *cItem, sel.components)
-        {
-            ComponentPtr component = cItem->Component();
-            if (component)
-            {
-                const QMetaObject *mo = component->metaObject();
-                for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
-                    methods << QString(mo->className()) + "::" + QString::fromLatin1(mo->method(i).signature());
-            }
-        }
-        // Create "Functions" menu.
-        if (!methods.empty())
-        {
-            menu->addSeparator();
-            QMenu *functionMenu = new QMenu(tr("Functions"), menu);
-            menu->addMenu(functionMenu);
-
-            foreach(QString method, methods)
-            {
-                QAction *functionAction = new QAction(method, functionMenu);
-                //connect(functionAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
-                functionMenu->addAction(functionAction);
-            }
-        }
-    }
-*/
 }
 
 Selection SceneTreeWidget::GetSelection() const
@@ -536,11 +457,11 @@ void SceneTreeWidget::Rename()
         {
             // Remove the entity ID from the text when user is editing entity's name.
             eItem->setText(0, entity->GetName());
-            openPersistentEditor(eItem);
+//            openPersistentEditor(eItem);
 //            setCurrentIndex(index);
             edit(index);
             connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *, int)), Qt::UniqueConnection);
-            connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *)));
+//            connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)), SLOT(CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *)));
         }
     }
 /*
@@ -860,6 +781,86 @@ void SceneTreeWidget::EntityActionDialogClosed(int result)
     foreach(Scene::EntityWeakPtr e, dialog->Entities())
         if (e.lock())
             e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
+}
+
+void SceneTreeWidget::OpenFunctionDialog()
+{
+    QAction *action = dynamic_cast<QAction *>(sender());
+    assert(action);
+    if (!action)
+        return;
+
+    Selection sel = GetSelection();
+    if (sel.IsEmpty())
+        return;
+
+    QList<boost::weak_ptr<QObject> > objs;
+    if (sel.HasEntities())
+        foreach(EntityItem *eItem, sel.entities)
+        {
+            Scene::EntityPtr e = eItem->Entity();
+            if (e)
+                objs.append(boost::dynamic_pointer_cast<QObject>(e));
+        }
+    else if(sel.HasComponents())
+        foreach(ComponentItem *cItem, sel.components)
+        {
+            ComponentPtr c = cItem->Component();
+            if (c)
+                objs.append(boost::dynamic_pointer_cast<QObject>(c));
+        }
+
+    FunctionDialog *d = new FunctionDialog(objs, this);
+    connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogClosed(int)));
+    d->show();
+}
+
+void SceneTreeWidget::FunctionDialogClosed(int result)
+{
+    FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
+    if (!dialog)
+        return;
+
+    if (result == QDialog::Rejected)
+        return;
+
+    QList<IArgumentType *> arguments = dialog->Arguments();
+    foreach(IArgumentType *arg, arguments)
+        arg->UpdateValueFromEditor();
+
+    IArgumentType* retValArg = dialog->ReturnValueArgument();
+    if (!retValArg)
+    {
+        LogError("Invalid return value argument. Cannot execute " + dialog->Function().toStdString() + ".");
+        return;
+    }
+
+    foreach(boost::weak_ptr<QObject> obj, dialog->Objects())
+        if (obj.lock())
+        {
+            QGenericReturnArgument retArg = retValArg->ReturnValue();
+
+            QList<QGenericArgument> args;
+            for(int i = 0; i < arguments.size(); ++i)
+                args.push_back(arguments[i]->Value());
+
+            while(args.size() < 10)
+                args.push_back(QGenericArgument());
+
+            if (retValArg->ToString() == "void")
+            {
+                QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                    args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+            }
+            else
+            {
+                QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                    retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+
+                retValArg->SetValue(retArg.data());
+                LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
+            }
+        }
 }
 
 void SceneTreeWidget::SaveSelectionDialogClosed(int result)
