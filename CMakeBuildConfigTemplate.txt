@@ -46,6 +46,10 @@ endif()
 # currently this functionality resides in RexLogicModule and UiModule.
 SET(UISERVICE_TEST 1)
 
+# Enables Open Asset Import Library, which can be used to import various
+# mesh formats.
+SET(OPENASSETIMPORT 0)
+
 # The following are the core modules that are required for the project to build. None of these can be omitted.
 add_subdirectory(Core)
 add_subdirectory(Foundation)
@@ -130,6 +134,9 @@ add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
 add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
 add_subdirectory(CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
 add_subdirectory (SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
+if (OPENASSETIMPORT)
+	add_subdirectory(OpenAssetImport)    	# Allows import of various mesh file formats
+endif()
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
