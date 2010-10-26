@@ -270,7 +270,10 @@ class ObjectEdit(Component):
         try:
             h = ent.highlight
         except AttributeError:
-            r.logInfo("objectedit.remove_highlight called for a non-hilited entity: %d" % ent.Id)
+            try:
+                r.logInfo("objectedit.remove_highlight called for a non-hilighted entity: %d" % ent.Id)
+            except ValueError:
+                r.logInfo("objectedit.remove_highlight called, but entity already removed")
         else:
             ent.RemoveComponentRaw(h)
 
@@ -707,6 +710,7 @@ class ObjectEdit(Component):
             self.deselect_all()
  
     def on_activate_editing(self, activate):
+        r.logDebug("on_active_editing")
         # Restore stored state when exiting build mode
         if activate == False and self.windowActiveStoredState != None:
             self.windowActive = self.windowActiveStoredState
