@@ -95,6 +95,10 @@ class TestCreateDestroy(TestRunner):
         while (not self.select_test_ent) and (not self.elapsed(self.wait_time)):
             yield None
 
+        if self.select_test_ent:
+            self.add_extras(self.select_test_ent)
+            yield "added extras"
+
         yield "done waiting for Test_SelectTest, continuing"
 
         yield "creating object"
@@ -106,10 +110,11 @@ class TestCreateDestroy(TestRunner):
 
         yield "exiting"
         r.exit()
-        if self.finished:
-            yield "success"
-        else:
-            yield "failure"
+        if (not self.select_test_ent):
+            if self.finished:
+                yield "success"
+            else:
+                yield "failure"
 
     @circuits.handler("on_sceneadded")
     def sceneadded(self, name):
@@ -136,16 +141,7 @@ class TestCreateDestroy(TestRunner):
 
         if ent.Id==2525429102:
             r.logInfo("##### found entity I need")
-            #name2=ent.GetOrCreateComponentRaw("EC_Name")
-            #print(name2, type(name2), dir(name2))
-            try:
-                name=ent.GetOrCreateComponentRaw("EC_Name")
-                #name = ent.ecname
-                r.logInfo(name.name)
-                print "########################",name.name, dir(name)
-                r.logInfo("######################## %s %s" % (name.objectName, dir(name)))
-            except AttributeError:
-                r.logInfo(" %s %d has no ecname" % (ent.Name, ent.Id))
+            self.select_test_ent = ent
 
         try:
             ec_netp = ent.network
@@ -189,12 +185,28 @@ class TestCreateDestroy(TestRunner):
         try:
             h = ent.highlight
         except AttributeError:
-            r.logInfo("objectedit.remove_highlight called for a non-hilighted entity: %d" % ent.Id)
+            try:
+                r.logInfo("removing highlight, but it doesn't exist anymore: %d" % ent.Id)
+            except ValueError: # ent.Id on destroyed object
+                r.logInfo("failure")
+                yield "failure"
         else:
             ent.RemoveComponentRaw(h)
+            r.logInfo("highlight removed")
 
-        ruler = ent.ruler
-        ent.RemoveComponentRaw(ruler)
+        try:
+            ruler = ent.ruler
+        except AttributeError:
+            try:
+                r.logInfo("removing ruler, but it doesn't exist anymore: %d" % ent.Id)
+            except ValueError: # ent.Id on destroyed object
+                r.logInfo("failure")
+                yield "failure"
+        else:
+            ent.RemoveComponentRaw(ruler)
+            r.logInfo("ruler removed")
+            r.logInfo("success")
+            yield "success"
 
 class TestDynamicProperties(TestRunner):
     def __init__(self, *args, **kw):
