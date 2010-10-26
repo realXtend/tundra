@@ -80,7 +80,7 @@ namespace UiExternalServices
 	void StaticToolBar::openECEditor()
 	{
 		Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
-		uiExternal->ShowWidget(uiExternal->GetExternalMenuPanel(QString("Entity-component Editor"))->widget());
+		//uiExternal->ShowWidget(uiExternal->GetExternalMenuPanel(QString("Entity-component Editor"))->widget());
 	}
 
 	void StaticToolBar::openBuild()
@@ -106,16 +106,22 @@ namespace UiExternalServices
             {
 				Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
 				Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
-				if (entity_clicked_data && uiExternal->IsEditModeEnable()){
-					
-					if (entitySelected_ && currentScene!="WorldBuilding" && !entity_clicked_data->entity->HasComponent("EC_Terrain")){
+				if (entity_clicked_data && uiExternal->IsEditModeEnable() && !entity_clicked_data->entity->HasComponent("EC_Terrain") && currentScene!="WorldBuilding")
+				{
+					if (entitySelected_==entity_clicked_data->entity){
 						menu_asset->exec(framework_->GetMainWindow()->cursor().pos());
 					}    
-					else if(!entitySelected_ && !entity_clicked_data->entity->HasComponent("EC_Terrain")){
+					else{
+						if(entitySelected_)
+							entitySelected_->RemoveComponent(entitySelected_->GetComponent("EC_Highlight","editMode"));
 						entitySelected_=entity_clicked_data->entity;
 						EC_Highlight *luz = checked_static_cast<EC_Highlight*>(entitySelected_->GetOrCreateComponent("EC_Highlight","editMode",AttributeChange::LocalOnly,true).get());
 						luz->Show();
 					}
+				}else{
+					if(entitySelected_)
+						entitySelected_->RemoveComponent(entitySelected_->GetComponent("EC_Highlight","editMode"));
+					entitySelected_=0;
 				}
 				break;
             }

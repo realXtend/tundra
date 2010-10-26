@@ -79,6 +79,10 @@ namespace CoreUi
 
     void MenuManager::AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon)
     {
+		//$ BEGIN_MOD $
+		if(!root_menu_->isVisible())
+			root_menu_->setVisible(true);
+		//$ END_MOD $
         ActionNode *child_node = new ActionNode(name, icon);
         ///\todo hack protection for menu crashing when root having more than 5 items.
         /// Remove when Qt 4.7 supposedly fixes this.
@@ -104,7 +108,7 @@ namespace CoreUi
         connect(child_node, SIGNAL(ActionButtonClicked(const QUuid&)), SLOT(ActionNodeClicked(const QUuid&)));
         layout_manager_->AddItemToScene(child_node);
 
-        Sort();
+		Sort();
     }
 
     void MenuManager::RemoveMenuItem(QGraphicsProxyWidget *controlled_widget)
@@ -124,8 +128,14 @@ namespace CoreUi
         while(it.hasNext())
         {
             recovered_node = it.next().value()->RemoveChildNode(remove_id);
-            if (recovered_node)
+			if (recovered_node){
+				if(it.value()->GetChildNodeList().count()==0){
+					root_menu_->RemoveChildNode(controller_map_.key(it.value()));
+					layout_manager_->RemoveItemFromScene(category_map_[it.key()]);
+					category_map_.remove(it.key());
+				}
                 break;
+			}
         }
 
         if (recovered_node)
@@ -135,7 +145,10 @@ namespace CoreUi
             layout_manager_->RemoveItemFromScene(recovered_node);
         }
 
-        Sort();
+		if(controller_map_.empty())
+			root_menu_->setVisible(false);
+		else
+			Sort();
     }
 
     void MenuManager::ActionNodeClicked(const QUuid &id)
@@ -160,7 +173,10 @@ namespace CoreUi
             if (!naali_proxy->isVisible())
                 naali_proxy->show();
             else
-                naali_proxy->AnimatedHide();
+//$ BEGIN_MOD $
+				naali_proxy->hide();
+                //naali_proxy->AnimatedHide();
+//$ END_MOD $
         }
     }
 

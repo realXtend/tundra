@@ -35,9 +35,6 @@
 #include "ResourceInterface.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-//$ BEGIN_MOD $
-#include "UiExternalServiceInterface.h"
-//$ END_MOD $
 
 #ifndef UISERVICE_TEST
 #include "UiModule.h"
@@ -486,19 +483,19 @@ void InventoryModule::CreateInventoryWindow()
 
 	//$ BEGIN_MOD $ 
 	//$ MOD_DESCRIPTION If EXTERNAL ui module enabled, we use it$
-    Foundation::UiExternalServiceInterface *uiex = GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-	if (uiex){
-		QWidget *aux = uiex->AddExternalPanel(inventoryWindow_,"Inventory");
-		uiex->AddExternalMenuPanel(aux,"Inventory", "Panels");
-		//Used to register as universal widget, to use it in WorldBuildingModule
-		UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
-		ui->RegisterUniversalWidget("Inventory", inv_proxy);
-	}
-	else {
+ //   Foundation::UiExternalServiceInterface *uiex = GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+	//if (uiex){
+	//	QWidget *aux = uiex->AddExternalPanel(inventoryWindow_,"Inventory");
+	//	uiex->AddExternalMenuPanel(aux,"Inventory", "Panels");
+	//	//Used to register as universal widget, to use it in WorldBuildingModule
+	//	UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
+	//	ui->RegisterUniversalWidget("Inventory", inv_proxy);
+	//}
+	//else {
 		UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
 		ui->AddWidgetToMenu(inventoryWindow_);
 		ui->RegisterUniversalWidget("Inventory", inv_proxy);
-	}
+	//}
 	//$ END_MOD $
 
 #ifndef UISERVICE_TEST

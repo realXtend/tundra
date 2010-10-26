@@ -24,9 +24,6 @@
 #include "OgreRenderingModule.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-//$ BEGIN_MOD $
-#include "UiExternalServiceInterface.h"
-//$ END_MOD $
 #include <AttributeChangeType.h>
 
 #include <OgreManualObject.h>
@@ -258,16 +255,9 @@ namespace Environment
 
         setWindowTitle(tr("Environment Editor"));
 //$ BEGIN_MOD $
-		//Foundation::UiExternalServiceInterface *uiExternal= environment_module_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		//if (uiExternal)
-		//{
-		//	uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(this,"Enviroment editor"),"Enviroment","Panels");
-		//}
-		//else{
-			UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
-			ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
-			ui->RegisterUniversalWidget("Environment", editor_proxy);
-		//}
+		UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
+		ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
+		ui->RegisterUniversalWidget("Environment", editor_proxy);
 //$ END_MOD $
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");

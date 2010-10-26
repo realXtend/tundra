@@ -168,9 +168,9 @@ public slots:
         @todo move NotificationBaseWidget class to an public interface.
      */
     virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
-
+//$ BEGIN_MOD $
 	virtual void TransferAllWidget() = 0;
-
+//$ END_MOD $
     /** Load widget from .ui file and as default add it to a scene. This method is for scripters.
      *  @param file_path ui file location.
      *  @param parent Pointer to parent widget.

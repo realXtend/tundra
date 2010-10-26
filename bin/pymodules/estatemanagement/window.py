@@ -80,23 +80,19 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.gui = loader.load(uifile)
         self.controller = controller
         IncomingMessagesHandler.__init__(self, queue, self.endMethod)     
-#$ BEGIN_MOD $		
-        uiex = naali.uiexternal
+
         uism = naali.ui	
 #        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
 #        uiprops.SetMenuGroup("Server Tools")
 #        uiprops.name_ = "Estate Management"
-        if not uiex:
-			self.proxywidget = r.createUiProxyWidget(self.gui)
-			self.proxywidget.setWindowTitle("Estate Management")
-			
-			if not uism.AddWidgetToScene(self.proxywidget):
-				r.logInfo("Adding ProxyWidget failed.")
 
-			uism.AddWidgetToMenu(self.proxywidget, "Estate Management", "Server Tools", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
-        else:
-			uiex.AddExternalMenuPanel(uiex.AddExternalPanel(self.gui,"Estate Management"),"Estate Management","Panels")
-#$ END_MOD $
+        self.proxywidget = r.createUiProxyWidget(self.gui)
+        self.proxywidget.setWindowTitle("Estate Management")
+			
+        if not uism.AddWidgetToScene(self.proxywidget):
+			r.logInfo("Adding ProxyWidget failed.")
+
+        uism.AddWidgetToMenu(self.proxywidget, "Estate Management", "Server Tools", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
 
         self.btnLoadEstate = self.gui.findChild("QPushButton", "btnLoadEstate")
         self.listWEI = self.gui.findChild("QListWidget","listWidgetEstateInfo")

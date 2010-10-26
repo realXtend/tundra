@@ -30,9 +30,6 @@
 #include "OgreTextureResource.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-//$ BEGIN_MOD $
-#include "UiExternalServiceInterface.h"
-//$ END_MOD $
 #include "EC_OpenSimPresence.h"
 #include "Console.h"
 
@@ -148,14 +145,9 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->move(100, 100);
 	profilerWindow_->resize(650, 530);
 //$ BEGIN_MOD $   
-	//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
- //   if (uiExternal)
-	//	uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(profilerWindow_,"Profiler"),"Profiler","Panels");
-	//else{
-		UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
-		connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
-		ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
-	//}
+	UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
+	connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+	ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
 //$ END_MOD $
 }
 
@@ -176,15 +168,8 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVecto
     // If the window is already created, bring it to front.
     if (profilerWindow_)
     {
-//$ BEGIN_MOD $   
-		//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		//if (uiExternal)
-		//	uiExternal->ShowWidget(profilerWindow_);
-		//else{
-			ui->BringWidgetToFront(profilerWindow_);
-			return Console::ResultSuccess();
-		//}
-//$ END_MOD $
+		ui->BringWidgetToFront(profilerWindow_);
+		return Console::ResultSuccess();
     }
     else
         return Console::ResultFailure("Profiler window has not been initialised, something went wrong on startup!");
@@ -198,28 +183,16 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
 
     if (participantWindow_)
     {
-//$ BEGIN_MOD $   
-		//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		//if (uiExternal)
-		//	uiExternal->ShowWidget(participantWindow_);
-		//else{
 			ui->BringWidgetToFront(participantWindow_);
 			return Console::ResultSuccess();
-		//}
-//$ END_MOD $ 
     }
 
     participantWindow_ = new ParticipantWindow(framework_);
     participantWindow_->move(100, 100);
     participantWindow_->setWindowFlags(Qt::Dialog);
 //$ BEGIN_MOD $   
-	//Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
- //   if (uiExternal)
-	//	uiExternal->AddExternalPanel(participantWindow_,"Profiler");
-	//else{
-		QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(participantWindow_);
-		ui->BringWidgetToFront(participantWindow_);
-	//}
+	QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(participantWindow_);
+	ui->BringWidgetToFront(participantWindow_);
     proxy->show();
 //$ END_MOD $
     return Console::ResultSuccess();

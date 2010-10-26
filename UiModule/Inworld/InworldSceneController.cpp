@@ -10,7 +10,6 @@
 #include "View/CommunicationWidget.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
 #include "Inworld/ControlPanel/PersonalWidget.h"
-#include "UiExternalServiceInterface.h"
 
 #include "UiProxyWidget.h"
 
@@ -29,8 +28,6 @@ namespace UiServices
           docking_widget_(0)
     {
         assert(ui_view_);
-
-		uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
 
         // Store scene pointer
         inworld_scene_ = ui_view_->scene();
@@ -76,26 +73,19 @@ namespace UiServices
          *  state, enabled, visible, geometry, layoutDirection, style, palette,
          *  font, cursor, sizeHint, getContentsMargins and windowTitle
          */
-		uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
-		QWidget* qdock= new QDockWidget(widget->windowTitle());
+
 		UiProxyWidget *proxy = new UiProxyWidget(widget, flags);
-		if(uiExternal){
-			proxy->setWidget(0);
-			qdock = uiExternal->AddExternalPanel(widget,widget->windowTitle());
-		}else
-			if (!AddProxyWidget(proxy))
-			{
-				SAFE_DELETE(proxy);
-				return 0;
-			}
+		if (!AddProxyWidget(proxy))
+		{
+			SAFE_DELETE(proxy);
+			return 0;
+		}
 
         // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
         // signal to a slot which handles the deletion. This must be done because closing
         // proxy window in our system doesn't yield closeEvent, but hideEvent instead.
         if (widget->testAttribute(Qt::WA_DeleteOnClose))
             connect(proxy, SIGNAL(visibleChanged()), SLOT(DeleteCallingWidgetOnClose()));
-
-		proxy_dock_list[widget->windowTitle()]=proxyDock(proxy,dynamic_cast<QDockWidget*>(qdock));
 
         return proxy;
     }
@@ -135,10 +125,6 @@ namespace UiServices
 
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
-		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-		if(qdock->widget())
-			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
-		else
         ///\todo This string comparison is awful, get rid of this.
 			if ( name.contains("inv", Qt::CaseInsensitive))
 			{
@@ -151,7 +137,6 @@ namespace UiServices
 
     void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
-		if(widget->widget())
         ///\todo This string comparison is awful, get rid of this.
         //if (name== "Inventory")
 			if ( name.contains("inv", Qt::CaseInsensitive) )
@@ -161,70 +146,53 @@ namespace UiServices
 			   control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
 			else
 				menu_manager_->AddMenuItem(widget, name, menu, icon);
-		else{
-			QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
-		}
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
     {
-        inworld_scene_->removeItem(widget);
-        all_proxy_widgets_in_scene_.removeOne(widget);
+			inworld_scene_->removeItem(widget);
+			all_proxy_widgets_in_scene_.removeOne(widget);
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QWidget *widget)
     {
-        RemoveProxyWidgetFromScene(widget->graphicsProxyWidget());
+		RemoveProxyWidgetFromScene(widget->graphicsProxyWidget());
     }
 
     void InworldSceneController::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
     {
-        menu_manager_->RemoveMenuItem(widget);
+		menu_manager_->RemoveMenuItem(widget);
     }
 
     void InworldSceneController::BringProxyToFront(QGraphicsProxyWidget *widget) const
     {
-		if(widget->widget()){
-			if (inworld_scene_->isActive())
-			{
-				inworld_scene_->setActiveWindow(widget);
-				inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
-			}
-		}else
-			uiExternal->ShowWidget(proxy_dock_list[widget->windowTitle()].second->widget());
-			
+		if (inworld_scene_->isActive())
+		{
+			inworld_scene_->setActiveWindow(widget);
+			inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+		}
     }
 
     void InworldSceneController::BringProxyToFront(QWidget *widget) const
     {
-		if(proxy_dock_list[widget->windowTitle()].second->widget())
-			uiExternal->ShowWidget(widget->parentWidget());
-		else
-			if (inworld_scene_->isActive())
-			{
-				ShowProxyForWidget(widget);
-				inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
-				inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
-			}
+		if (inworld_scene_->isActive())
+		{
+			ShowProxyForWidget(widget);
+			inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
+			inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+		}
     }
 
     void InworldSceneController::ShowProxyForWidget(QWidget *widget) const
     {
         if (inworld_scene_)
-			if(proxy_dock_list[widget->windowTitle()].second->widget())
-				uiExternal->ShowWidget(widget->parentWidget());
-			else
-				widget->graphicsProxyWidget()->show();
+			widget->graphicsProxyWidget()->show();
     }
 
     void InworldSceneController::HideProxyForWidget(QWidget *widget) const
     {
         if (inworld_scene_)
-			if(proxy_dock_list[widget->windowTitle()].second->widget())
-				uiExternal->HideWidget(widget->parentWidget());
-			else
-				widget->graphicsProxyWidget()->hide();
+			widget->graphicsProxyWidget()->hide();
     }
 
     bool InworldSceneController::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const
@@ -459,36 +427,4 @@ namespace UiServices
         widget->setPos(50,250);
         widget->hide();
     }
-
-	void InworldSceneController::TransferAllWidget(){
-		foreach(proxyDock pair,proxy_dock_list){
-			QDockWidget* qdock=pair.second;
-			UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
-			QWidget* widget;
-			if(qdock->widget()){
-				qdock->hide();
-				widget=qdock->widget();
-				uiExternal->RemoveExternalMenuPanel(widget);
-				uiExternal->RemoveExternalPanel(widget);
-				widget->setParent(0);
-				proxy->setWidget(widget);
-				if (!AddProxyWidget(proxy)){
-					SAFE_DELETE(proxy);
-				}else{
-					AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
-					BringProxyToFront(proxy);
-					proxy->show();
-				}
-			}else{
-				proxy->hide();
-				widget=proxy->widget();
-				RemoveProxyWidgetFromScene(proxy);
-				RemoveWidgetFromMenu(proxy);
-				proxy->setWidget(0);
-				qdock->setWidget(widget);
-				uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
-				qdock->show();
-			}
-		}
-}
 }

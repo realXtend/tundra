@@ -36,16 +36,13 @@ class ToolBarWindow():
         #self.proxywidget = r.createUiProxyWidget(ui, uiprops)
 #$ BEGIN_MOD $
         uiex = naali.uiexternal	
-        if not uiex:
-			self.proxywidget = r.createUiProxyWidget(ui)
+        self.proxywidget = r.createUiProxyWidget(ui)
 
-			#if not uism.AddProxyWidget(self.proxywidget):
-			if not uism.AddWidgetToScene(self.proxywidget):
-				r.logInfo("Adding the ProxyWidget to the bar failed.")
-
-			uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
-        else:
-			uiex.AddExternalMenuPanel(uiex.AddExternalPanel(ui,"Local Scene"),"Local Scene","Panels")
+		#if not uism.AddProxyWidget(self.proxywidget):
+        if not uism.AddWidgetToScene(self.proxywidget):
+            r.logInfo("Adding the ProxyWidget to the bar failed.")
+        
+        uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
 #$ END_MOD $
         self.inputQueue = queue
         self.endApplication = endApplication
