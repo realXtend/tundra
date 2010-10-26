@@ -20,6 +20,7 @@ struct MumbleServerInfo
 /**
   Offer basic information for clients to join a mumble voice channel
   (?) Creates
+  @todo Define properties
 */
 class EC_VoiceChannel : public IComponent
 {

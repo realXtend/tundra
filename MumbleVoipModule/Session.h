@@ -27,6 +27,10 @@ namespace MumbleVoip
 
     typedef QList<Participant*> ParticipantList;
 
+    /**
+       Presents a voice session with one or more real connections to mumble servers.
+       Initial state is STATE_CLOSED.
+     */
     class Session : public Communications::InWorldVoice::SessionInterface
     {
         Q_OBJECT

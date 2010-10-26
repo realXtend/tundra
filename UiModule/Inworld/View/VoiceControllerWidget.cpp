@@ -178,8 +178,7 @@ namespace CommUI
             area_height = number*user_widgets_[0]->height() + userListLayout->spacing()*(number-1) + userListLayout->contentsMargins().bottom() + userListLayout->contentsMargins().top();
 
         const QRect& geometry = userListScrollAreaWidgetContents->geometry();
-        userListScrollAreaWidgetContents->
-        setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
+        userListScrollAreaWidgetContents->setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
     }
 
 } // CommUI

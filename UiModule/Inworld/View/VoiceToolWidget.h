@@ -18,6 +18,7 @@
 #include "Input.h"
 
 class UiProxyWidget;
+class QComboBox;
 
 namespace Foundation
 {
@@ -59,7 +60,7 @@ namespace CommUI
         void UpdateInWorldVoiceIndicator();
         void ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface* p);
         void UninitializeInWorldVoice();
-        void ActiveChannelChanged(QString channel);
+        void UpdateUI();
 
     private:
         Foundation::Framework* framework_;
@@ -69,6 +70,7 @@ namespace CommUI
         VoiceControllerWidget* voice_controller_widget_;
         UiProxyWidget* voice_controller_proxy_widget_;
         InputContextPtr input_context_;
+        QComboBox* channel_selection_;
     };
 
 } // namespace incl_UiModule_VoiceToolWidget_h
