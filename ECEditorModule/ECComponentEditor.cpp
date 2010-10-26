@@ -53,27 +53,6 @@ namespace ECEditor
         else if(type == "transform")
             attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, editor);
 
-        /*if(dynamic_cast<const Attribute<float> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<float>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<int> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<int>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<Vector3df> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Vector3df>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<Color> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Color>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<QString> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<QString>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<bool> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<bool>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<QVariant> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<QVariant>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<QVariantList > *>(&attribute))
-            attributeEditor = new ECAttributeEditor<QVariantList >(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<AssetReference> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<AssetReference>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<Transform> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Transform>(browser, &attribute, editor);*/
-
         return attributeEditor;
     }
 

@@ -96,6 +96,55 @@ namespace ECEditor
         //! dropEvent will call this after feching the information that is need from the QDropEvent data.
         bool dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action);
 
+    private slots:
+        //! User have right clicked the browser and QMenu need to be open to display copy, paste, delete ations etc.
+        /*! @param pos Mouse click position.
+         */
+        void ShowComponentContextMenu(const QPoint &pos);
+
+        //! QTreeWidget has changed it's focus and we need to highlight new entities from the editor window.
+        void SelectionChanged();
+
+        //! Called when a new component have been added to a entity.
+        /*! @param comp a new component that has added into the entity.
+         *  @param type attribute change type
+         */
+        void OnComponentAdded(IComponent* comp, AttributeChange::Type type);
+
+        //! Called when component have been removed from the entity.
+        /*! @param comp Component that will soon get removed from the entity.
+         *  @param type attribute change type
+         */
+        void OnComponentRemoved(IComponent* comp, AttributeChange::Type type);
+
+        //! User has selected xml edit action from a QMenu.
+        void OpenComponentXmlEditor();
+
+        //! User has selected copy action from a QMenu.
+        void CopyComponent();
+
+        //! User has selected paste action from a QMenu.
+        void PasteComponent();
+
+        //! Component's name has been changed and we need to remove component from it's previous
+        //! ComponentGroup and create/add component to another componentgroup.
+        void DynamicComponentChanged();
+
+        //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
+        /*! @param newName component's new name.
+         */
+        void ComponentNameChanged(const QString &newName);
+
+        //! Show dialog, so that user can create a new attribute.
+        //! @Note: Only works with dynamic component.
+        void CreateAttribute();
+
+        //! Remove component or attribute based on selected QTreeWidgeItem.
+        /*! If selected TreeWidgetItem is a root item, then we can assume that we want to remove component.
+         *  But if item has parent setted, we can assume that selected item is attribute or it's value is selected.
+         */
+        void OnDeleteAction();
+
     private:
         //! Initialize browser widget and create all connections for different QObjects.
         void InitBrowser();
@@ -130,55 +179,14 @@ namespace ECEditor
         //! Checks if entity is already added to this editor.
         bool HasEntity(Scene::EntityPtr entity) const;
 
-    private slots:
-        //! User have right clicked the browser and QMenu need to be open to display copy, paste, delete ations etc.
-        /*! @param pos Mouse click position.
-         */
-        void ShowComponentContextMenu(const QPoint &pos);
+        //! Remove selected attribute item from the dynamic component.
+        /** @Note: This mehtod will only work with dynamic components.
+        */
+        void DeleteAttribute(QTreeWidgetItem *item);
 
-        //! QTreeWidget has changed it's focus and we need to highlight new entities from the editor window.
-        void SelectionChanged();
+        //! Remove selected component item from selected entities.
+        void DeleteComponent(QTreeWidgetItem *item);
 
-        //! Called when a new component have been added to a entity.
-        /*! @param comp a new component that has added into the entity.
-         *  @param type attribute change type
-         */
-        void OnComponentAdded(IComponent* comp, AttributeChange::Type type);
-
-        //! Called when component have been removed from the entity.
-        /*! @param comp Component that will soon get removed from the entity.
-         *  @param type attribute change type
-         */
-        void OnComponentRemoved(IComponent* comp, AttributeChange::Type type);
-
-        //! User has selected xml edit action from a QMenu.
-        void OpenComponentXmlEditor();
-
-        //! User has selected copy action from a QMenu.
-        void CopyComponent();
-
-        //! User has selected paste action from a QMenu.
-        void PasteComponent();
-
-        //! User has selected delete action from a QMenu.
-        void DeleteComponent();
-
-        //! Component's name has been changed and we need to remove component from it's previous
-        //! ComponentGroup and create/add component to another componentgroup.
-        void DynamicComponentChanged();
-
-        //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
-        /*! @param newName component's new name.
-         */
-        void ComponentNameChanged(const QString &newName);
-
-        //! Show dialog, so that user can create a new attribute.
-        void CreateAttribute();
-
-        //! Remove selected attribute from the dynamic component.
-        void RemoveAttribute();
-
-    private:
         ComponentGroupList componentGroups_;
         typedef QList<Scene::EntityWeakPtr> EntityWeakPtrList;
         EntityWeakPtrList entities_;
