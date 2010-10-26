@@ -960,7 +960,8 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
     if (files[0].lastIndexOf('.') != -1)
     {
         fileExtension = files[0].mid(files[0].lastIndexOf('.'));
-        binary = true;
+        if (fileExtension.compare(".xml", Qt::CaseInsensitive) != 0)
+            binary = true;
     }
     else if (dialog->selectedNameFilter() == cNaaliXmlFileFilter)
     {
