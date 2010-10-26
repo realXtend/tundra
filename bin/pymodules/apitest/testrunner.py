@@ -2,6 +2,8 @@ import rexviewer as r
 import circuits
 import naali
 import time
+import sys
+import traceback
 
 user, pwd, server = "Test Bot", "test", "world.realxtend.org:9000"
 #user, pwd, server = "d d", "d", "world.evocativi.com:8002"
@@ -186,9 +188,11 @@ class TestCreateDestroy(TestRunner):
             h = ent.highlight
         except AttributeError:
             try:
+                r.logInfo(traceback.format_exc())
+                r.logInfo("Test state: failure")
                 r.logInfo("removing highlight, but it doesn't exist anymore: %d" % ent.Id)
             except:
-                r.logInfo("====================================")
+                r.logInfo(traceback.format_exc())
                 r.logInfo("Test state: failure")
         else:
             ent.RemoveComponentRaw(h)
@@ -198,9 +202,11 @@ class TestCreateDestroy(TestRunner):
             ruler = ent.ruler
         except AttributeError:
             try:
+                r.logInfo(traceback.format_exc())
+                r.logInfo("Test state: failure")
                 r.logInfo("removing ruler, but it doesn't exist anymore: %d" % ent.Id)
             except:
-                r.logInfo("====================================")
+                r.logInfo(traceback.format_exc())
                 r.logInfo("Test state: failure")
         else:
             ent.RemoveComponentRaw(ruler)
