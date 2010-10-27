@@ -13,7 +13,6 @@
 #include "EntityAction.h"
 
 #include <QDialog>
-#include <QItemDelegate>
 
 class QLineEdit;
 class QComboBox;

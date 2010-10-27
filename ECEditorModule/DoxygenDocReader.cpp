@@ -35,7 +35,7 @@ static QString StripSymbolReturnValue(QString symbol)
     return symbol.trimmed();
 }
 
-// Removes the return value of the function, i.e. 'void Foo::foo()' -> 'void Foo::foo'
+// Removes the parameter list of the function, i.e. 'void Foo::foo()' -> 'void Foo::foo'
 static QString StripSymbolParameterList(QString symbol)
 {
     if (symbol.contains("("))
