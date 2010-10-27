@@ -40,7 +40,10 @@ Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
 
 std::string SanitateAssetIdForOgre(const std::string& input)
 {
-    return ReplaceSubstring(input, "://", "_");
+    std::string ret = input;
+    ReplaceCharInplace(ret, ':', '_');
+    ReplaceCharInplace(ret, '/', '_');
+    return ret;
 }
 
 }
