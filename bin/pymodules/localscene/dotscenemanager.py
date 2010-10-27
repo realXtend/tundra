@@ -28,17 +28,18 @@ class DotSceneManager:
         self.yshift = y
         self.zshift = z
         for k, oNode in self.nodes.iteritems():
-            #print "set position for", k
+            ## print "set position for", k
             self.setOgreNodePosition(oNode, x, y ,z)
         
     def setScale(self, x, y, z):
         """ set x, y, z scale fro objects """
         for k, oNode in self.nodes.iteritems():
-            #print "set scale for", k
+            ## print "set scale for", k
             self.setOgreNodeScale(oNode, x, y ,z)
         
     def test(self):
-        print "test"
+        # print "test"
+        pass
         
     def setOgreNodePosition(self, on, x, y ,z):
         e = on.naali_ent
@@ -47,7 +48,7 @@ class DotSceneManager:
         ony = on.position.y()
         onz = on.position.z()
         p.Position = Vec(x + onx, y + ony, z + onz)
-        print p.Position
+        # print p.Position
         # if(self.flipZY):
             # p.Position = Vec(x + onx, z + onz, y + ony)
         # else:
@@ -75,8 +76,8 @@ class DotSceneManager:
             
     def setFlipZY(self, enabled):
         oldVal = self.flipZY
-        print "oldVal, enbled--------------------"
-        print oldVal, enabled
+        # print "oldVal, enbled--------------------"
+        # print oldVal, enabled
         self.flipZY = enabled
         
         for k, oNode in self.nodes.iteritems():
@@ -107,7 +108,8 @@ class DotSceneManager:
             if not h.IsVisible():
                 h.Show()
             else:
-                print "objectedit.highlight called for an already hilited entity: %d" % ent.id
+                # print "objectedit.highlight called for an already hilited entity: %d" % ent.id
+                pass
 
     def undoHighlight(self):
         for k, oNode in self.nodes.iteritems():
@@ -134,7 +136,7 @@ class DotSceneManager:
             centerZ = sumZ/float(self.nodes.__len__())
             relativeCenter = Vec(centerX, centerY, centerZ)
             self.centerPoint = Vec(centerX+self.xshift, centerY + self.yshift, centerZ + self.zshift)
-            print "center point: ", self.centerPoint.x(), self.centerPoint.y(), self.centerPoint.z()
+            # print "center point: ", self.centerPoint.x(), self.centerPoint.y(), self.centerPoint.z()
             # update shift
             self.xshift = self.centerPoint.x()
             self.yshift = self.centerPoint.y()
@@ -142,14 +144,13 @@ class DotSceneManager:
             
             # center Vecs
             for k, oNode in self.nodes.iteritems():
-                #diffVec = self.vectorDifference(oNode.position, self.centerPoint)
-                print "oNode.pos"
-                print oNode.position
-                print "relativeCenter"
-                print relativeCenter
+                # print "oNode.pos"
+                # print oNode.position
+                # print "relativeCenter"
+                # print relativeCenter
                 diffVec = self.vectorDifference(oNode.position, relativeCenter)
-                print "new Center Vec"
-                print diffVec
+                # print "new Center Vec"
+                # print diffVec
                 oNode.position = diffVec
                 self.nodeCenterVectors[oNode]=diffVec
         elif(self.nodes.__len__()==1):
@@ -178,28 +179,25 @@ class DotSceneManager:
         switch={'x': Quat(1,1,0,0), 'y': Quat(1,0,1,0), 'z': Quat(1,0,0,1), '-x': Quat(1,-1,0,0), '-y': Quat(1,0,-1,0), '-z': Quat(1,0,0,-1)}
         q = switch[axis]
         
-        print "rotations:"
+        # print "rotations:"
         
         if(self.nodes.__len__()>1): # only do rotations for locations if node amount > 1        
             for oNode, CVec in self.nodeCenterVectors.iteritems():
-                #
-                #CRot=CVec*q
                 CRot=q.rotatedVector(CVec)
                 calibVec = self.calibrateVec(CRot, CVec)
-                print calibVec
+                # print calibVec
                 self.nodeCenterVectors[oNode]=calibVec
             # set new Positions
             for k, oNode in self.nodes.iteritems():
                 centerVec = self.nodeCenterVectors[oNode]
                 newPos = self.vectorAdd(self.centerPoint, centerVec)
-                print "center point: ", self.centerPoint.x(), self.centerPoint.y(), self.centerPoint.z()
-                print "center vec: ", centerVec.x(), centerVec.y(), centerVec.z()
-                print "old pos: ", oNode.position.x(), oNode.position.y(), oNode.position.z()
-                print "set to new position: ", newPos.x(), newPos.y() ,newPos.z()
-                print "shift: ", self.xshift, self.yshift, self.zshift
-                #self.setOgreNodePosition(oNode, newPos.x(), newPos.y() ,newPos.z())
+                # print "center point: ", self.centerPoint.x(), self.centerPoint.y(), self.centerPoint.z()
+                # print "center vec: ", centerVec.x(), centerVec.y(), centerVec.z()
+                # print "old pos: ", oNode.position.x(), oNode.position.y(), oNode.position.z()
+                # print "set to new position: ", newPos.x(), newPos.y() ,newPos.z()
+                # print "shift: ", self.xshift, self.yshift, self.zshift
                 newNodePos = self.vectorDifference(newPos, Vec(self.xshift, self.yshift, self.zshift))
-                print "new node pos:", newNodePos
+                # print "new node pos:", newNodePos
                 oNode.position=newNodePos
                 self.setOgreNodePosition(oNode, self.xshift, self.yshift, self.zshift)
         elif(self.nodes.__len__()==1):
