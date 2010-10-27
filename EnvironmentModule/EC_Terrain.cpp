@@ -64,14 +64,8 @@ void EC_Terrain::UpdateSignals()
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             this, SLOT(AttributeUpdated(IAttribute*)));
 
-    connect(this, SIGNAL(TerrainSizeChanged(int)), this, SLOT(OnTerrainSizeChanged()));
     connect(this, SIGNAL(MaterialChanged(QString)), this, SLOT(OnMaterialChanged()));
     connect(this, SIGNAL(TextureChanged(QString)), this, SLOT(OnTextureChanged()));
-}
-
-void EC_Terrain::OnTerrainSizeChanged()
-{
-    ResizeTerrain(xPatches.Get(), yPatches.Get());
 }
 
 void EC_Terrain::OnMaterialChanged()
@@ -97,6 +91,13 @@ void EC_Terrain::MakePatchFlat(int x, int y, float heightValue)
     patch.heightData.clear();
     patch.heightData.insert(patch.heightData.end(), cPatchSize*cPatchSize, heightValue);
     patch.patch_geometry_dirty = true;
+}
+
+void EC_Terrain::MakeTerrainFlat(float heightValue)
+{
+    for(int y = 0; y < this->yPatches.Get(); ++y)
+        for(int x = 0; x < this->xPatches.Get(); ++x)
+            MakePatchFlat(x, y, heightValue);
 }
 
 void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
@@ -158,9 +159,6 @@ void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
             GetPatch(x,y).x = x;
             GetPatch(x,y).y = y;
         }
-
-    // Re-do all the geometry on the GPU.
-    RegenerateDirtyTerrainPatches();
 }
 
 //! Emitted when some of the attributes has been changed.
@@ -171,6 +169,8 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     if (changedAttribute == xPatches.GetNameString() || changedAttribute == yPatches.GetNameString())
     {
         ResizeTerrain(xPatches.Get(), yPatches.Get());
+        // Re-do all the geometry on the GPU.
+        RegenerateDirtyTerrainPatches();
     }
     else if (changedAttribute == nodeTransformation.GetNameString())
     {
@@ -295,39 +295,7 @@ float EC_Terrain::GetPoint(int x, int y) const
     return GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)];
 }
 
-
-Vector3df EC_Terrain::GetPointOnMap(const Vector3df& point) const
-{
-     Ogre::Matrix4 matrix = rootNode->_getFullTransform();
-     Ogre::Vector3 local = matrix * OgreRenderer::ToOgreVector3(point);
-     float z = GetInterpolatedHeightValue(local.x, local.y);
-     return Vector3df(local.x, local.y, z);
-}
-
-float EC_Terrain::GetDistanceToTerrain(const Vector3df& point) const
-{
-    Vector3df mapPoint = GetPointOnMap(point);
-    Vector3df diffrence = mapPoint - point;
-    return diffrence.getLength();
-   
-}
-
-bool EC_Terrain::IsOnTopOfMap(const Vector3df& point) const
-{
-    Vector3df mapPoint = GetPointOnMap(point);
-    if ( mapPoint.x < 0 || mapPoint.y < 0 )
-        return false;
-    
-    int xMax = PatchWidth() * cPatchSize;
-    int yMax = PatchHeight() * cPatchSize;
-    if ( mapPoint.x > xMax || mapPoint.y > yMax )
-        return false;
-    
-    return true;
-}
-
-
-float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
+ EC_Terrain::SetPointHeight(int x, int y, float height){    if (x < 0 || y < 0 || x >= cPatchSize * patchWidth || y >= cPatchSize * patchHeight)        return; // Out of bounds signals are silently ignored.    GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)] = height;    }Vector3df EC_Terrain::GetPointOnMap(const Vector3df& point) const{     Ogre::Matrix4 matrix = rootNode->_getFullTransform();     Ogre::Vector3 local = matrix * OgreRenderer::ToOgreVector3(point);     float z = GetInterpolatedHeightValue(local.x, local.y);     return Vector3df(local.x, local.y, z);}float EC_Terrain::GetDistanceToTerrain(const Vector3df& point) const{    Vector3df mapPoint = GetPointOnMap(point);    Vector3df diffrence = mapPoint - point;    return diffrence.getLength();   }bool EC_Terrain::IsOnTopOfMap(const Vector3df& point) const{    Vector3df mapPoint = GetPointOnMap(point);    if ( mapPoint.x < 0 || mapPoint.y < 0 )        return false;        int xMax = PatchWidth() * cPatchSize;    int yMax = PatchHeight() * cPatchSize;    if ( mapPoint.x > xMax || mapPoint.y > yMax )        return false;        return true;}float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
 {
     int xFloor = (int)floor(x);
     int xCeil = (int)ceil(x);
@@ -379,16 +347,16 @@ Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside)
     return normal;
 }
 
-void EC_Terrain::SaveToFile(QString filename)
+bool EC_Terrain::SaveToFile(QString filename)
 {
     if (patchWidth * patchHeight != patches.size())
-        return; ///\todo Log out error. The EC_Terrain is in inconsistent state. Cannot save.
+        return false; ///\todo Log out error. The EC_Terrain is in inconsistent state. Cannot save.
 
     FILE *handle = fopen(filename.toStdString().c_str(), "wb");
     if (!handle)
     {
         ///\todo Log out error!
-        return;
+        return false;
     }
 
     const u32 xPatches = patchWidth;
@@ -407,9 +375,10 @@ void EC_Terrain::SaveToFile(QString filename)
     }
     fclose(handle);
 
+    return true;
 }
 
-void EC_Terrain::LoadFromFile(QString filename)
+bool EC_Terrain::LoadFromFile(QString filename)
 {
     filename = filename.trimmed();
 
@@ -417,7 +386,7 @@ void EC_Terrain::LoadFromFile(QString filename)
     if (!handle)
     {
         ///\todo Log out error!
-        return;
+        return false;
     }
     u32 xPatches = 0;
     u32 yPatches = 0;
@@ -468,6 +437,65 @@ void EC_Terrain::LoadFromFile(QString filename)
 
     this->xPatches.Changed(AttributeChange::LocalOnly);
     this->yPatches.Changed(AttributeChange::LocalOnly);
+
+    return true;
+}
+
+bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
+{
+    Ogre::Image image;
+    image.load(filename.toStdString().c_str(), "TerrainTempGroup");
+
+    // Note: In the following, we round down, so if the image size is not a multiple of cPatchSize (== 16),
+    // we will not use the whole image contents.
+    xPatches.Set(image.getWidth() / cPatchSize, AttributeChange::Disconnected);
+    yPatches.Set(image.getHeight() / cPatchSize, AttributeChange::Disconnected);
+    ResizeTerrain(xPatches.Get(), yPatches.Get());
+
+    for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
+        for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+        {
+            Ogre::ColourValue c = image.getColourAt(x, y, 0);
+            float height = offset + scale * (c.r + c.g + c.b) / 3.f; // Treat the image as a grayscale heightmap field with the color in range [0,1].
+            SetPointHeight(x, y, height);
+        }
+
+    heightMap.Set("", AttributeChange::Disconnected);
+
+    xPatches.Changed(AttributeChange::LocalOnly);
+    yPatches.Changed(AttributeChange::LocalOnly);
+    heightMap.Changed(AttributeChange::LocalOnly);
+
+    return true;
+}
+
+void EC_Terrain::AffineTransform(float scale, float offset)
+{
+    for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
+        for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+            SetPointHeight(x, y, GetPoint(x, y) * scale + offset);
+}
+
+void EC_Terrain::RemapHeightValues(float minHeight, float maxHeight)
+{
+    float minHeightCur = 1e9f;
+    float maxHeightCur = -1e9f;
+
+    for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
+        for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+        {
+            minHeightCur = min(minHeightCur, GetPoint(x, y));
+            maxHeightCur = max(maxHeightCur, GetPoint(x, y));
+        }
+
+    // There is no height variance in the current terrain height values. Make the whole terrain show the minHeight value.
+    if (fabs(maxHeightCur - minHeightCur) < 1e-4f)
+    {
+        MakeTerrainFlat(minHeight);
+        return;
+    }        
+
+    AffineTransform((maxHeight - minHeight) / (maxHeightCur - minHeightCur), minHeight - minHeightCur);
 }
 
 void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
