@@ -115,7 +115,7 @@ QList<Scene::EntityWeakPtr> EntityActionDialog::Entities() const
     return entities;
 }
 
-    QString EntityActionDialog::Action() const
+QString EntityActionDialog::Action() const
 {
     return actionComboBox->currentText();
 }

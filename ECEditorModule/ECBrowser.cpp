@@ -54,9 +54,8 @@ namespace ECEditor
             return;
         entities_.push_back(Scene::EntityPtr(entity));
 
-        //! @todo merge entity.h and entity.cpp from tundra to develope and begin to use their ComponentAdded and ComponentRemoved signals.
-        connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
-        connect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+        connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+        connect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
     }
 
     void ECBrowser::RemoveEntity(Scene::EntityPtr entity)
@@ -64,18 +63,21 @@ namespace ECEditor
         if (!entity)
             return;
 
-        for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); iter++)
-        {
-            Scene::EntityPtr ent_ptr = (*iter).lock();
-            if (ent_ptr && ent_ptr.get() == entity.get())
+        for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
+            if (iter->lock() == entity)
             {
+                Scene::EntityPtr ent_ptr = iter->lock();
+
+                disconnect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
+                disconnect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+
                 Scene::Entity::ComponentVector components = ent_ptr->GetComponentVector();
                 for(uint i = 0; i < components.size(); i++)
                     RemoveComponentFromGroup(components[i]);
+
                 entities_.erase(iter);
                 break;
             }
-        }
     }
 
     QList<Scene::EntityPtr> ECBrowser::GetEntities() const
@@ -91,7 +93,7 @@ namespace ECEditor
     {
         while(!componentGroups_.empty())
         {
-            SAFE_DELETE(componentGroups_.back())
+            SAFE_DELETE(componentGroups_.back());
             componentGroups_.pop_back();
         }
         entities_.clear();
@@ -180,9 +182,8 @@ namespace ECEditor
             return false;
 
         QTreeWidgetItem *rootItem = item;
-        for(;rootItem->parent(); rootItem = rootItem->parent())
-        {
-        }
+        while(rootItem->parent())
+            rootItem = rootItem->parent();
 
         ComponentGroupList::iterator iter = FindSuitableGroup(*rootItem);
         if(iter != componentGroups_.end())
@@ -711,8 +712,7 @@ namespace ECEditor
             connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)), Qt::UniqueConnection);
         }
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
-        if(compGroup)
-            componentGroups_.push_back(compGroup);
+        componentGroups_.push_back(compGroup);
 
         if(treeWidget_)
         {
@@ -728,17 +728,27 @@ namespace ECEditor
         for(; iter != componentGroups_.end(); iter++)
         {
             ComponentGroup *comp_group = *iter;
-            if(!comp_group->ContainsComponent(comp))
-                continue;
-            comp_group->RemoveComponent(comp);
-            // Making sure that component group isn't empty after we removed one of it's components.
-            // If it's empty no need to keep it alive and we can remove the ECComponentEditor object aswell.
-            if(!comp_group->IsValid())
+            if (comp_group->ContainsComponent(comp))
             {
-                SAFE_DELETE(comp_group);
-                componentGroups_.erase(iter);
+                if (comp_group->IsDynamic())
+                {
+                    EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp.get());
+                    assert(dc);
+                    disconnect(dc, SIGNAL(AttributeAdded(IAttribute *)), this, SLOT(DynamicComponentChanged()));
+                    disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged()));
+                    disconnect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString &)), this, SLOT(ComponentNameChanged(const QString&)));
+                }
+                comp_group->RemoveComponent(comp);
+                // Check if the component group still contains any components in it and if not, remove it from the browser list.
+                if (!comp_group->IsValid())
+                {
+                    SAFE_DELETE(comp_group);
+                    componentGroups_.erase(iter);
+                }
+
+                // The component can only be a member of one group, so can break here (we have invalidated 'iter' now).
+                break;
             }
-            break;
         }
     }
 
@@ -746,14 +756,12 @@ namespace ECEditor
     {
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
-        {
-            if (componentGroup != (*iter))
-                continue;
-
-            SAFE_DELETE(*iter)
-            componentGroups_.erase(iter);
-            break;
-        }
+            if (componentGroup == *iter)
+            {
+                SAFE_DELETE(*iter);
+                componentGroups_.erase(iter);
+                break;
+            }
     }
 
     bool ECBrowser::HasEntity(Scene::EntityPtr entity) const
@@ -796,29 +804,30 @@ namespace ECEditor
     void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
     {
         assert(item);
-        ComponentGroupList::iterator iter = FindSuitableGroup(*item); 
-        if(iter != componentGroups_.end())
-        {
-            ComponentGroup *componentGroup = (*iter);
-            // Remove all components from ComponentGroup container and after we are done stop iteration.
-            while(!componentGroup->components_.empty())
+
+        std::vector<ComponentWeakPtr> componentsToDelete;
+
+        // The deletion logic below is done in two steps to avoid depending on the internal componentGroups_ member
+        // while we are actually doing the deletion, since the Entity::RemoveComponent will call back to the 
+        // ECBrowser::ComponentRemoved to update the UI.
+
+        // Find the list of components we want to delete.
+        for(ComponentGroupList::iterator iter = componentGroups_.begin(); iter != componentGroups_.end(); iter++)
+            if (item == (*iter)->browserListItem_)
             {
-                ComponentPtr comp = componentGroup->components_.back().lock();
-                if(comp)
-                {
-                    Scene::Entity *entity = comp->GetParentEntity();
-                    if(entity)
-                        entity->RemoveComponent(comp, AttributeChange::Default);
-                }
-                else // If component has expired we just remove it form the component group.
-                {
-                    componentGroup->components_.pop_back();
-                    if(!componentGroup->IsValid())
-                    {
-                        SAFE_DELETE(componentGroup)
-                        componentGroups_.erase(iter);
-                    }
-                }
+                componentsToDelete = (*iter)->components_;
+                break;
+            }
+
+        // Perform the actual deletion.
+        for(std::vector<ComponentWeakPtr>::iterator iter = componentsToDelete.begin(); iter != componentsToDelete.end(); ++iter)
+        {
+            ComponentPtr comp = iter->lock();
+            if (comp.get())
+            {
+                Scene::Entity *entity = comp->GetParentEntity();
+                if (entity)
+                    entity->RemoveComponent(comp, AttributeChange::Default);
             }
         }
     }

@@ -163,6 +163,11 @@ public slots:
     /// @param y In the range [0, EC_Terrain::PatchHeight * EC_Terrain::cPatchSize [.
     float GetPoint(int x, int y) const;
 
+    /// Sets a new height value to the given terrain map vertex. Marks the patch that vertex is part of dirty,
+    /// but does not immediately recreate the GPU surfaces. Use the RegenerateDirtyTerrainPatches() function
+    /// to regenerate the visible Ogre mesh geometry.
+    void SetPointHeight(int x, int y, float height);
+
     /// Returns the interpolated height value of the terrain at the given fractional coordinate.
     /// @param x In the range [0, EC_Terrain::PatchWidth * EC_Terrain::cPatchSize-1.0f ].
     /// @param y In the range [0, EC_Terrain::PatchHeight * EC_Terrain::cPatchSize-1.0f ].
@@ -174,8 +179,20 @@ public slots:
     /// Releases all GPU resources used for the given patch.
     void DestroyPatch(int patchX, int patchY);
 
-    /// Makes all the vertices of the given patch flat with the given height value.
+    /// Makes all the vertices of the given patch flat with the given height value. Dirties the patch, but does not regenerate it.
     void MakePatchFlat(int patchX, int patchY, float heightValue);
+
+    /// Makes the whole terrain flat with the given height value. Dirties the whole terrain, but does not regenerate it.
+    void MakeTerrainFlat(float heightValue);
+
+    /// Performs an 1D affine transform on the height values of the whole terrain, i.e. maps each vertex h' = scale*h + offset.
+    /// Dirties the whole terrain, but does not regenerate it.
+    void AffineTransform(float scale, float offset);
+
+    /// Affinely remaps the height values of the whole terrain in such a way that after the transform, the lowest point of
+    /// the terrain has the height value of minHeight, and the highest point of the terrain has a height value of maxHeight.
+    /// Dirties the whole terrain, but does not regenerate it.
+    void RemapHeightValues(float minHeight, float maxHeight);
 
     /// Returns how many patches there are in the terrain in the x-direction.
     /// This differs from the xPatches attribute in that the PatchWidth tells how many patches there
@@ -193,22 +210,31 @@ public slots:
 
     /// Saves the height map data and the associated per-vertex attributes to a Naali Terrain File. This is a binary
     /// dump file, and as a convention, use the file suffix ".ntf" for these.
-    void SaveToFile(QString filename);
+    /// @return True if the save succeeded.
+    bool SaveToFile(QString filename);
 
     /// Loads the terrain height map data from the given Naali Terrain File. You should prefer using
     /// the Attribute heightMap to recreate the terrain from a terrain file instead of calling this function directly,
     /// since this function only performs a local (hidden) change, whereas the heightMap attribute change is visible both
     /// locally and on the network.
-    void LoadFromFile(QString filename);
+    /// Note: Calling this function will not update the 'heightMap' attribute. If you want to load the terrain from a file
+    /// in such a way that is synchronized to the network, just set the 'heightMap' source attribute in a replicated way.
+    /// @return True if loading succeeded.
+    bool LoadFromFile(QString filename);
+
+    /// Loads the terrain from the given image file. Adjusts the xPatches and yPatches properties to that of the image file, 
+    /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this 
+    /// function will get the terrain contents desynchronized between the local system and network.
+    bool LoadFromImageFile(QString filename, float offset, float scale);
 
 public:
-    Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation NOTIFY TransformChanged);
+    Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
-    Q_PROPERTY(int xPatches READ getxPatches WRITE setxPatches NOTIFY TerrainSizeChanged);
+    Q_PROPERTY(int xPatches READ getxPatches WRITE setxPatches);
     DEFINE_QPROPERTY_ATTRIBUTE(int, xPatches);
 
-    Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches NOTIFY TerrainSizeChanged);
+    Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches);
     DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
 
     Q_PROPERTY(float uScale READ getuScale WRITE setuScale);
@@ -217,25 +243,25 @@ public:
     Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
     DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
 
-    Q_PROPERTY(QString material READ getmaterial WRITE setmaterial NOTIFY MaterialChanged);
+    Q_PROPERTY(QString material READ getmaterial WRITE setmaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, material);
 
-    Q_PROPERTY(QString texture0 READ gettexture0 WRITE settexture0 NOTIFY TextureChanged);
+    Q_PROPERTY(QString texture0 READ gettexture0 WRITE settexture0);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, texture0);
 
-    Q_PROPERTY(QString texture1 READ gettexture1 WRITE settexture1 NOTIFY TextureChanged);
+    Q_PROPERTY(QString texture1 READ gettexture1 WRITE settexture1);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, texture1);
 
-    Q_PROPERTY(QString texture2 READ gettexture2 WRITE settexture2 NOTIFY TextureChanged);
+    Q_PROPERTY(QString texture2 READ gettexture2 WRITE settexture2);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, texture2);
 
-    Q_PROPERTY(QString texture3 READ gettexture3 WRITE settexture3 NOTIFY TextureChanged);
+    Q_PROPERTY(QString texture3 READ gettexture3 WRITE settexture3);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, texture3);
 
-    Q_PROPERTY(QString texture4 READ gettexture4 WRITE settexture4 NOTIFY TextureChanged);
+    Q_PROPERTY(QString texture4 READ gettexture4 WRITE settexture4);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, texture4);
 
-    Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap NOTIFY HeightMapChanged);
+    Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, heightMap);
 
     /// Marks all terrain patches dirty.
@@ -248,7 +274,6 @@ public:
 
 signals:
     // The following signals are emitted from different events, so the parameter can not be used.
-    void TerrainSizeChanged(int /*newSize*/);
     void TextureChanged(QString /*newTexture*/);
 
     void MaterialChanged(QString newMaterial);
@@ -263,8 +288,6 @@ private slots:
     void AttributeUpdated(IAttribute *attribute);
 
 public slots:
-
-    void OnTerrainSizeChanged();
 
     void OnMaterialChanged();
 
@@ -298,6 +321,9 @@ private:
     /// Updates the root node transform from the current attribute values, if the root node exists.
     void UpdateRootNodeTransform();
 
+    /// Readjusts the terrain to contain the given number of patches in the horizontal and vertical directions. Preserves
+    /// as much of the terrain height data as possible. Dirties the patches, but does not regenerate them.
+    /// Note: This function does not adjust the xPatches or yPatches attributes.
     void ResizeTerrain(int newPatchWidth, int newPatchHeight);
 
     /// Updates the terrain material with the new texture on the given texture unit index.
