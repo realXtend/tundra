@@ -3,7 +3,18 @@
 from __main__ import _pythonscriptmodule
 from __main__ import _naali
 import rexviewer as r #the old module is still used , while porting away from it
+import sys #for stdout redirecting
 #from _naali import *
+
+#\todo: do we have version num info somewhere?
+#version = XXX
+
+#XXX \todo add buffering so don't get extra newlines
+class Logger:
+    def write(self, msg):
+        r.logInfo(msg)
+
+sys.stdout = Logger()
 
 #XXX do we actually want these style changes,
 #or is it better to just call the slots directly
