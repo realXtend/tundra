@@ -63,7 +63,7 @@ public:
     ArgumentType(const char *name) : typeName(name), editor(0) {}
 
     /// IArgumentType override.
-    virtual QWidget *CreateEditor(QWidget *parent = 0) {}
+    virtual QWidget *CreateEditor(QWidget *parent = 0) { return 0; }
 
     /// IArgumentType override.
     virtual void UpdateValueFromEditor() {}
@@ -78,7 +78,7 @@ public:
     QGenericReturnArgument ReturnValue() { return QGenericReturnArgument(typeName.c_str(), static_cast<void*>(&value)); }
 
     /// IArgumentType override.
-    virtual QString ToString() const {}
+    virtual QString ToString() const { return QString(); }
 
 private:
     /// Type name
@@ -161,6 +161,7 @@ void ArgumentType<bool>::UpdateValueFromEditor()
         value = e->isChecked();
 }
 
+template<>
 QString ArgumentType<bool>::ToString() const
 {
     return QString::number((int)value);

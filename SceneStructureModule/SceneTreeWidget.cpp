@@ -586,7 +586,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
     }
 
     QList<entity_id_t> entities = dialog->GetEntityIds();
-    for(uint i = 0; i < entities.size(); i++)
+    for(int i = 0; i < entities.size(); i++)
     {
         Scene::EntityPtr entity = scene->GetEntity(entities[i]);
         if (!entity)
