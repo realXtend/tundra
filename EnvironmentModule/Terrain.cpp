@@ -471,7 +471,6 @@ namespace Environment
         }
         terrainComponent->material.Set("Rex/TerrainPCF", AttributeChange::LocalOnly);
 
-        terrainComponent->OnTerrainSizeChanged();
         terrainComponent->OnMaterialChanged();
     }
 

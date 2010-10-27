@@ -206,7 +206,7 @@ namespace ECEditor
     template<> void ECAttributeEditor<float>::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
-        if(!useMultiEditor_)
+        if (!useMultiEditor_)
         {
             QtVariantPropertyManager *realPropertyManager = new QtVariantPropertyManager(this);
             QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
@@ -216,14 +216,14 @@ namespace ECEditor
 
             ComponentPtr comp = components_[0].lock();
             IAttribute *attribute = FindAttribute(comp);
-            if(!attribute) 
+            if (!attribute) 
             {
                 //! @todo add log error.
                 return;
             }
 
             AttributeMetadata *metaData = attribute->GetMetadata();
-            if(metaData)
+            if (metaData)
             {
                 if(!metaData->min.isEmpty())
                     metaDataFlag_ |= UsingMinValue;
@@ -261,10 +261,10 @@ namespace ECEditor
             //AttributeList::iterator iter = attributes_.begin();
             QtVariantPropertyManager *realPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
             assert(realPropertyManager);
-            if(!realPropertyManager)
+            if (!realPropertyManager)
                 return;
 
-            if(rootProperty_)
+            if (rootProperty_)
             {
                 Attribute<float> *attribute = dynamic_cast<Attribute<float>*>(FindAttribute(components_[0].lock()));
                 realPropertyManager->setValue(rootProperty_, attribute->Get());
@@ -291,7 +291,7 @@ namespace ECEditor
         {
             QtVariantPropertyManager *intPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
             assert(intPropertyManager);
-            if(!intPropertyManager)
+            if (!intPropertyManager)
                 return;
 
             if(rootProperty_)
@@ -311,7 +311,7 @@ namespace ECEditor
         {
             ComponentPtr comp = components_[0].lock();
             IAttribute *attribute = FindAttribute(comp);
-            if(!attribute)
+            if (!attribute)
             {
                 //! @todo add log error 
                 return;
@@ -379,15 +379,15 @@ namespace ECEditor
 
     template<> void ECAttributeEditor<int>::Set(QtProperty *property)
     {
-        if(listenEditorChangedSignal_)
+        if (listenEditorChangedSignal_)
         {
             int newValue = 0;
             std::string valueString = property->valueText().toStdString();
-            if((metaDataFlag_ & UsingEnums) != 0)
+            if ((metaDataFlag_ & UsingEnums) != 0)
             {
                 ComponentPtr comp = components_[0].lock();
                 IAttribute *attribute = FindAttribute(comp);
-                if(attribute)
+                if (!attribute)
                 {
                     //! @todo add log error
                     return;
@@ -396,7 +396,7 @@ namespace ECEditor
                 AttributeMetadata *metaData = attribute->GetMetadata();
                 AttributeMetadata::EnumDescMap_t::iterator iter = metaData->enums.begin();
                 for(; iter != metaData->enums.end(); iter++)
-                    if(valueString == iter->second)
+                    if (valueString == iter->second)
                         newValue = iter->first;
             }
             else
@@ -447,13 +447,16 @@ namespace ECEditor
         if(!useMultiEditor_)
         {
             QtVariantPropertyManager *boolPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-            if(!boolPropertyManager)
+            if (!boolPropertyManager)
                 return;
 
-            if(rootProperty_)
+            if (rootProperty_ && components_.size() > 0)
             {
                 ComponentPtr comp = components_[0].lock();
                 Attribute<bool> *attribute = dynamic_cast<Attribute<bool>*>(FindAttribute(comp));
+                if (!attribute)
+                    return;
+
                 boolPropertyManager->setValue(rootProperty_, attribute->Get());
             }
         }
@@ -475,7 +478,7 @@ namespace ECEditor
                 {
                     ComponentPtr comp = components_[0].lock();
                     Attribute<Vector3df> *attribute = dynamic_cast<Attribute<Vector3df> *>(FindAttribute(comp));
-                    if(!attribute)
+                    if (!attribute)
                         return;
 
                     Vector3df vectorValue = attribute->Get();
@@ -533,7 +536,7 @@ namespace ECEditor
             {
                 ComponentPtr comp = components_[0].lock();
                 Attribute<Vector3df> *attribute = dynamic_cast<Attribute<Vector3df> *>(FindAttribute(comp));
-                if(!attribute)
+                if (!attribute)
                     return;
 
                 Vector3df newValue = attribute->Get();
@@ -563,7 +566,7 @@ namespace ECEditor
                 {
                     ComponentPtr comp = components_[0].lock();
                     Attribute<Color> *attribute = dynamic_cast<Attribute<Color> *>(FindAttribute(comp));
-                    if(!attribute)
+                    if (!attribute)
                         return;
 
                     Color colorValue = attribute->Get();
@@ -634,7 +637,7 @@ namespace ECEditor
             {
                 ComponentPtr comp = components_[0].lock();
                 Attribute<Color> *attribute = dynamic_cast<Attribute<Color> *>(FindAttribute(comp));
-                if(!attribute)
+                if (!attribute)
                     return;
 
                 Color newValue = attribute->Get();
@@ -692,13 +695,13 @@ namespace ECEditor
             QtStringPropertyManager *qStringPropertyManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
 
             assert(qStringPropertyManager);
-            if(!qStringPropertyManager)
+            if (!qStringPropertyManager)
                 return;
 
             if (rootProperty_)
             {
                 Attribute<QString> *attribute = dynamic_cast<Attribute<QString>*>(FindAttribute(comp));
-                if(!attribute)
+                if (!attribute)
                 {
                     //! @todo add log error.
                     return;
