@@ -99,7 +99,7 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
         for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
         {
             const QMetaMethod &mm = mo->method(i);
-            if ((mm.methodType() == QMetaMethod::Slot) && (mm.access() == QMetaMethod::Public))
+            //if ((mm.methodType() == QMetaMethod::Slot) && (mm.access() == QMetaMethod::Public))
             {
                 // Craft full signature with return type and parameter names.
                 QString fullSig = mm.signature();
@@ -168,6 +168,10 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     editorLayout = new QGridLayout;
     mainLayout->insertLayout(-1, editorLayout);
 
+    returnValueLabel = new QLabel(tr("Latest return value: "));
+
+    mainLayout->addWidget(returnValueLabel);
+
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
     mainLayout->insertSpacerItem(-1, spacer);
 
@@ -214,6 +218,11 @@ IArgumentType *FunctionDialog::ReturnValueArgument() const
 QList<IArgumentType *> FunctionDialog::Arguments() const
 {
     return allocatedArguments;
+}
+
+void FunctionDialog::SetReturnValueText(const QString &text)
+{
+    returnValueLabel->setText(tr("Latest return value: ") + text);
 }
 
 void FunctionDialog::hideEvent(QHideEvent *)

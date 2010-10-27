@@ -16,6 +16,7 @@
 #include <QComboBox>
 
 class QGridLayout;
+class QLabel;
 
 class IArgumentType;
 
@@ -104,6 +105,11 @@ public slots:
     /// Remember to call UpdateValueFromEditor() for each argument before using them.
     QList<IArgumentType *> Arguments() const;
 
+    /// Sets return value text.
+    /** @param text text to be shown.
+    */
+    void SetReturnValueText(const QString &text);
+
 protected:
     /// QWidget override.
     void hideEvent(QHideEvent *);
@@ -129,6 +135,9 @@ private:
 
     /// Layout for dynamically created parameter editors.
     QGridLayout *editorLayout;
+
+    /// Label for showing return values of slots.
+    QLabel *returnValueLabel;
 
     /// List of objects.
     QList<boost::weak_ptr<QObject> > objects;
