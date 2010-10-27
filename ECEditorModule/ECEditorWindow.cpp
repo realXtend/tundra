@@ -9,11 +9,12 @@
 #include "DebugOperatorNew.h"
 
 #include "ECEditorWindow.h"
-
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
 #include "AddComponentDialog.h"
 #include "EntityActionDialog.h"
+#include "FunctionDialog.h"
+#include "ArgumentType.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
@@ -299,12 +300,12 @@ namespace ECEditor
         if (entities.size())
         {
             EntityActionDialog *d = new EntityActionDialog(entities, this);
-            connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogClosed(int)));
+            connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogFinished(int)));
             d->show();
         }
     }
 
-    void ECEditorWindow::EntityActionDialogClosed(int result)
+    void ECEditorWindow::EntityActionDialogFinished(int result)
     {
         EntityActionDialog *dialog = qobject_cast<EntityActionDialog *>(sender());
         if (!dialog)
@@ -316,6 +317,78 @@ namespace ECEditor
         foreach(Scene::EntityWeakPtr e, dialog->Entities())
             if (e.lock())
                 e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
+    }
+
+    void ECEditorWindow::OpenFunctionDialog()
+    {
+        QAction *action = dynamic_cast<QAction *>(sender());
+        assert(action);
+        if (!action)
+            return;
+
+        QList<boost::weak_ptr<QObject> >objs;
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
+            objs << boost::dynamic_pointer_cast<QObject>(entity);
+
+        if (objs.empty())
+            return;
+
+        FunctionDialog *d = new FunctionDialog(objs, this);
+        connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
+        d->show();
+    }
+
+    void ECEditorWindow::FunctionDialogFinished(int result)
+    {
+        FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
+        if (!dialog)
+            return;
+
+        if (result == QDialog::Rejected)
+            return;
+
+        QList<IArgumentType *> arguments = dialog->Arguments();
+        foreach(IArgumentType *arg, arguments)
+            arg->UpdateValueFromEditor();
+
+        IArgumentType* retValArg = dialog->ReturnValueArgument();
+        if (!retValArg)
+        {
+            LogError("Invalid return value argument. Cannot execute " + dialog->Function().toStdString() + ".");
+            return;
+        }
+
+        foreach(boost::weak_ptr<QObject> obj, dialog->Objects())
+            if (obj.lock())
+            {
+                QGenericReturnArgument retArg = retValArg->ReturnValue();
+
+                QList<QGenericArgument> args;
+                for(int i = 0; i < arguments.size(); ++i)
+                    args.push_back(arguments[i]->Value());
+
+                while(args.size() < 10)
+                    args.push_back(QGenericArgument());
+
+                if (retValArg->ToString() == "void")
+                {
+                    QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+
+                    dialog->SetReturnValueText("");
+                }
+                else
+                {
+                    QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                        retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+
+                    retValArg->SetValue(retArg.data());
+
+                    LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
+
+                    dialog->SetReturnValueText(retValArg->ToString());
+                }
+            }
     }
 
     void ECEditorWindow::HighlightEntities(IComponent *component)
@@ -425,6 +498,7 @@ namespace ECEditor
         QAction *copyEntity = new QAction(tr("Copy"), menu);
         QAction *pasteEntity = new QAction(tr("Paste"), menu);
         QAction *actions = new QAction(tr("Actions..."), menu);
+        QAction *functions = new QAction(tr("Functions..."), menu);
 
         connect(editXml, SIGNAL(triggered()), this, SLOT(ShowXmlEditorForEntity()));
         connect(deleteEntity, SIGNAL(triggered()), this, SLOT(DeleteEntity()));
@@ -432,6 +506,7 @@ namespace ECEditor
         connect(copyEntity, SIGNAL(triggered()), this, SLOT(CopyEntity()));
         connect(pasteEntity, SIGNAL(triggered()), this, SLOT(PasteEntity()));
         connect(actions, SIGNAL(triggered()), this, SLOT(OpenEntityActionDialog()));
+        connect(functions, SIGNAL(triggered()), this, SLOT(OpenFunctionDialog()));
 
         menu->addAction(editXml);
         menu->addAction(deleteEntity);
@@ -439,6 +514,7 @@ namespace ECEditor
         menu->addAction(copyEntity);
         menu->addAction(pasteEntity);
         menu->addAction(actions);
+        menu->addAction(functions);
 
         menu->popup(entity_list_->mapToGlobal(pos));
     }
