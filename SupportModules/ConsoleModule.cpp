@@ -8,6 +8,7 @@
 #include "UiConsoleManager.h"
 
 #include "Input.h"
+#include "InputContext.h"
 #include "Framework.h"
 #include "Profiler.h"
 #include "ServiceManager.h"
@@ -15,6 +16,8 @@
 #include "ModuleManager.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
+
+#include <QObject>
 
 namespace Console
 {
@@ -50,6 +53,13 @@ namespace Console
 
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         manager_->SetUiInitialized(!manager_->IsUiInitialized());
+
+        input_context_ = GetFramework()->GetInput()->RegisterInputContext("console", 100);
+        if (input_context_)
+        {
+            input_context_->SetTakeKeyboardEventsOverQt(true);
+            QObject::connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent *)), ui_console_manager_, SLOT(KeyPressed(KeyEvent *))); 
+        }
     }
 
     // virtual 
@@ -68,11 +78,6 @@ namespace Console
             PROFILE(ConsoleModule_Update);
             assert(manager_);
             manager_->Update(frametime);
-
-            // Read from the global top-level input context for console dropdown event.
-            if (framework_->GetInput()->IsKeyPressed(Qt::Key_F1))
-                //manager_->ToggleConsole();
-                ui_console_manager_->ToggleConsole();
         }
         RESETPROFILER;
     }
