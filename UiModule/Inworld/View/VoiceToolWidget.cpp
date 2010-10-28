@@ -174,6 +174,23 @@ namespace CommUI
         if (!voice_controller_)
         {
             voice_controller_ = new VoiceController(in_world_voice_session_);
+            /// @todo Use Settings class from MumbeVoipModule
+            QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
+            switch(settings.value("MumbleVoice/default_voice_mode").toInt())
+            {
+            case 0: 
+                voice_controller_->SetTransmissionMode(VoiceController::TransmissionMode::Mute);
+                break;
+            case 1: 
+                voice_controller_->SetTransmissionMode(VoiceController::TransmissionMode::ContinuousTransmission);
+                break;
+            case 2: 
+                voice_controller_->SetTransmissionMode(VoiceController::TransmissionMode::PushToTalk);
+                break;
+            case 3: 
+                voice_controller_->SetTransmissionMode(VoiceController::TransmissionMode::ToggleMode);
+                break;
+            }
         }
 
         if (!voice_state_widget_)
