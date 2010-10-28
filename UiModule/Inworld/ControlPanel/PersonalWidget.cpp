@@ -25,7 +25,7 @@ namespace CoreUi
         CheckStyle(false, "avatarToggle");
 		//$ BEGIN_MOD $
 		//$ MOD_DESCRIPTION Commented to use the new EXTERNAL ui module $
-        //CheckStyle(false, "inventoryToggle");
+        CheckStyle(false, "inventoryToggle");
 		//$ END_MOD $
     }
 

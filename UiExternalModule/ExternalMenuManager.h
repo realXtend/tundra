@@ -44,7 +44,7 @@ namespace UiExternalServices
 		 *
 		 *	\note: a new action is created and connected to the given widget
          */
-        bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, const QString &icon = 0);
+        bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, bool moveable = true);
 
         /*! Removes menu item.
          *  \param widget Controlled widget.

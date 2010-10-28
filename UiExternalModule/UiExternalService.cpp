@@ -27,8 +27,8 @@ namespace UiExternalServices
 		return owner_->GetExternalPanelManager()->RemoveExternalPanel(widget);
 	}
 
-	bool UiExternalService::AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, const QString &icon){
-		return owner_->GetExternalMenuManager()->AddExternalMenuPanel(widget, name, menu, icon);
+	bool UiExternalService::AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, bool moveable){
+		return owner_->GetExternalMenuManager()->AddExternalMenuPanel(widget, name, menu, moveable);
 	}
 
 	bool UiExternalService::AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon){

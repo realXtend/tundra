@@ -61,7 +61,7 @@ namespace UiExternalServices
          *         
          *  \return true if everything is ok (action addded and connected)
          */
-		bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, const QString &icon = 0);
+		bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, bool moveable = true);
 
 		/*! \brief	Insert the given action in the Menu of the main window
          *  \param  action Action

@@ -61,11 +61,10 @@ namespace Foundation
          *  \param  widget Widget.
          *  \param  name Name of the Action (usually the same as the widget)
 		 *	\param	menu name of the Menu to put the action inside it
-		 *	\param	icon Icon of the action
          *         
          *  \return true if everything is ok (action addded and connected)
          */
-		virtual bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, const QString &icon = 0) = 0;
+		virtual bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, bool moveable = true) = 0;
 
 		/*! \brief	Insert the given action in the Menu of the main window
          *  \param  action Action

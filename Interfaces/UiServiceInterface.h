@@ -47,7 +47,7 @@ public slots:
      *          For further information, see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
      *  @return Proxy widget of the added widget.
      */
-    virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog) = 0;
+    virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = false, bool outside = false, Qt::WindowFlags flags = Qt::Dialog) = 0;
 
     /** Adds user-created UiProxyWidget to the scene.
      *  @param widget Proxy widget.
@@ -169,7 +169,8 @@ public slots:
      */
     virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
 //$ BEGIN_MOD $
-	virtual void TransferWidgetInOut(QString widgetToChange) = 0;
+	virtual bool TransferWidgetInOut(QString widgetToChange) = 0;
+	virtual void BringWidgetToFront(QString widget) = 0;
 
 	virtual void TransferWidgetOut(QString widgetToChange, bool out) = 0;
 //$ END_MOD $

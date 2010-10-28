@@ -94,7 +94,7 @@ namespace UiServices
     {
         // Add to scene
         if (widget->isVisible())
-            widget->hide();
+           widget->hide();
 
         // If no position has been set for Qt::Dialog widget, use default one so that the window's title
         // bar - or any other critical part, doesn't go outside the view.

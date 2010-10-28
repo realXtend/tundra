@@ -54,8 +54,8 @@ namespace CoreUi
 		layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         connect(root_menu_, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
-		//$ END_MOD $         
-		
+		//$ END_MOD $   
+
 		///\todo Remove this hack at some point.
         QString hack_icon;
         QString base_url = "./data/ui/images/menus/";
@@ -74,7 +74,7 @@ namespace CoreUi
         connect(group_node, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
 
-        Sort();
+        Sort(); 
     }
 
     void MenuManager::AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon)

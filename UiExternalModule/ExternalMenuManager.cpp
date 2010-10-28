@@ -57,7 +57,7 @@ namespace UiExternalServices
 		return true;	
 	}
 
-	bool ExternalMenuManager::AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
+	bool ExternalMenuManager::AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, bool moveable)
     {       
 		//Check if is not already
 		if (controller_panels_.contains(QString(menu+"+"+name)))
@@ -65,9 +65,11 @@ namespace UiExternalServices
 		
 		//First of all, we create the Menu with 2options, internal and external
 		QMenu* newmenu = new QMenu(name, widget);
-		QAction *action1 = new QAction(QIcon("./data/ui/images/menus/"+icon), "In scene", dynamic_cast<QDockWidget*>(widget)->widget());
-		QAction *action2 = new QAction(QIcon("./data/ui/images/menus/"+icon), "Outside", dynamic_cast<QDockWidget*>(widget)->widget());
-		newmenu->addAction(action1);
+		QAction *action1 = new QAction("In scene", dynamic_cast<QDockWidget*>(widget)/*->widget()*/);
+		QAction *action2 = new QAction("Outside", dynamic_cast<QDockWidget*>(widget)/*->widget()*/);
+		//To avoid put the in scene action when it is not available to move
+		if (moveable)
+			newmenu->addAction(action1);
 		newmenu->addAction(action2);
 
         if (menu.isEmpty())		
@@ -119,23 +121,23 @@ namespace UiExternalServices
     {
 		QAction *act = dynamic_cast<QAction*>(sender());
 
-		QDockWidget *aux = dynamic_cast<QDockWidget *>(act->parentWidget()->parentWidget());
-		QWidget *window = act->parentWidget();
+		QDockWidget *aux = dynamic_cast<QDockWidget *>(act->parentWidget());
+		QWidget *window = aux->widget();
 
 		//Check where it is
-		if (aux){
+		if (window){
 			//is outside			
 			//Change to inside mode and show it
 			UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
 			if (ui){
-				ui->TransferWidgetInOut(aux->windowTitle());
+				ui->TransferWidgetInOut(window->windowTitle());
 				//Not neccesary?? ui->ShowWidget(window);
 			}
 		} else {
 			//Is inside, just show or hide it
 			UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
-			if (ui)
-				ui->BringWidgetToFront(window);
+			if (ui)			
+				ui->BringWidgetToFront(aux->windowTitle()); //We cant because we dont have it!!
 		}
     }
 
@@ -143,9 +145,9 @@ namespace UiExternalServices
     {
 		QAction *act = dynamic_cast<QAction*>(sender());
 
-		QDockWidget  *aux = dynamic_cast<QDockWidget *>(act->parentWidget()->parentWidget());
+		QDockWidget  *aux = dynamic_cast<QDockWidget *>(act->parentWidget());
 
-		if (aux){
+		if (aux->widget()){
 			//Is outside, just show/hide it
 			//Hide or show the widget; we make every widget a qdockwidget before integrate it in the qmainwindow
 			if (aux->isHidden())
@@ -156,7 +158,7 @@ namespace UiExternalServices
 			//Is inside, remove it and put it outside
 			UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
 			if (ui)
-				ui->TransferWidgetInOut(act->parentWidget()->windowTitle());
+				ui->TransferWidgetInOut(aux->windowTitle());
 		}
 	}
 }

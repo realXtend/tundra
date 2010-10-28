@@ -16,6 +16,7 @@
 //$ BEGIN_MOD $
 #include "UiExternalServiceInterface.h"
 #include <QMap>
+#include <QList>
 //$ END_MOD $
 
 namespace UiServices
@@ -23,6 +24,7 @@ namespace UiServices
     class UiModule;
 //$ BEGIN_MOD $
 	typedef QPair<UiProxyWidget*,QDockWidget*> proxyDock;
+	typedef QPair<QString, QString> menusPair;
 //$ END_MOD $
     /** Implements UiServiceInterface and provides means of adding widgets to the 
      *  in-world scene and managing different UI scenes.
@@ -44,7 +46,7 @@ namespace UiServices
 
     public slots:
         /// UiServiceInterface override.
-        UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
+        UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = false, bool outside = false, Qt::WindowFlags flags = Qt::Dialog);
 
         /// UiServiceInterface override.
         bool AddWidgetToScene(UiProxyWidget *widget);
@@ -106,7 +108,9 @@ namespace UiServices
         /// UiServiceInterface override.
         QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
 //$ BEGIN_MOD $
-		void TransferWidgetInOut(QString widgetToChange);
+		bool TransferWidgetInOut(QString widgetToChange);
+		/// UiServiceInterface override.
+        void BringWidgetToFront(QString widget);
 
 		void TransferWidgetOut(QString widgetToChange, bool out);
 //$ END_MOD $
@@ -121,8 +125,9 @@ namespace UiServices
 
 //$ BEGIN_MOD $
 		Foundation::UiExternalServiceInterface *uiExternal;
-
+		QList<QString> *moveable_widgets_;
 		QMap<QString, proxyDock> proxy_dock_list;
+		QMap<QString, menusPair> panels_menus_list_;
 //$ END_MOD $
     };
 }
