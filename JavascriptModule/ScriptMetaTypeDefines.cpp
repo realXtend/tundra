@@ -49,6 +49,7 @@ Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(AttributeChange::Type);
 
 //! Naali core API object defines.
+Q_DECLARE_METATYPE(Foundation::Framework*);
 Q_DECLARE_METATYPE(Frame*);
 Q_DECLARE_METATYPE(ScriptConsole*);
 Q_DECLARE_METATYPE(Command*);
@@ -73,6 +74,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
 
     // Scene metatypes.
+    qScriptRegisterQObjectMetaType<Scene::SceneManager*>(engine);
     qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
@@ -82,6 +84,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     //qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
     qScriptRegisterMetaType(engine, toScriptValueEnum<EntityAction::ExecutionType>, fromScriptValueEnum<EntityAction::ExecutionType>);
 
+    // Framework metatype
+    qScriptRegisterQObjectMetaType<Foundation::Framework*>(engine);
+    
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
     qScriptRegisterQObjectMetaType<Command*>(engine);

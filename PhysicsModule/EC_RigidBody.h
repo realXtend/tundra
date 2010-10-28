@@ -15,7 +15,6 @@ class btCollisionShape;
 class btTriangleMesh;
 class btHeightfieldTerrainShape;
 class EC_Placeable;
-class PhysicsContact;
 
 namespace Environment
 {
@@ -193,10 +192,15 @@ public:
 
 signals:
     //! A physics collision has happened between this rigidbody and another entity
-    /*! \param otherEntity The second entity
-        \param contacts A vector of contacts, which contain position, normal, distance, impulse information
-     */ 
-    void PhysicsCollision(Scene::Entity* otherEntity, const QVector<PhysicsContact*>& contacts);
+    /*! If there are several contact points, the signal will be sent multiple times for each contact.
+        \param otherEntity The second entity
+        \param position World position of collision
+        \param normal World normal of collision
+        \param distance Contact distance
+        \param impulse Impulse applied to the objects to separate them
+        \param newCollision True if same collision did not happen on the previous frame. If collision has multiple contact points, newCollision can only be true for the first of them.
+     */
+    void PhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
 public slots:
     //! Set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
@@ -302,7 +306,7 @@ private:
     void GetProperties(btVector3& localInertia, float& m, int& collisionFlags);
     
     //! Emit a physics collision. Called from PhysicsWorld
-    void EmitPhysicsCollision(Scene::Entity* entityB, const QVector<PhysicsContact*>& contacts);
+    void EmitPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
     //! Placeable pointer
     boost::weak_ptr<EC_Placeable> placeable_;
