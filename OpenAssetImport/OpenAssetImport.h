@@ -10,7 +10,11 @@ namespace OgreRenderer { class Renderer; }
 
 namespace AssImp
 {
-
+    /*! Imports an Ogre mesh from various different model formats.
+        The Ogre mesh is created to Ogre::MeshManager, this class
+        doesn't create any entities or components, the caller is
+        responsible for this.
+    */
     class OpenAssetImport
     {
     public:
@@ -19,7 +23,7 @@ namespace AssImp
 
         bool IsSupportedExtension(const QString& extension);
 
-		void Import(Foundation::Framework *framework, const QString& file);
+		void Import(Foundation::Framework *framework, const QString& file, std::vector<std::string> &outMeshNames);
 
 	private:
         class AssImpLogStream : public Assimp::LogStream
@@ -31,8 +35,9 @@ namespace AssImp
             void write(const char* message);
         };
 
-        void ImportScene(Foundation::Framework *framework, const struct aiScene *scene);
-        void ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const struct aiScene *scene, const struct aiNode *node);
+        void ImportScene(Foundation::Framework *framework, const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames);
+        void ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const struct aiScene *scene, 
+            const struct aiNode *node, const QString& file, std::vector<std::string> &outMeshNames);
 
 		boost::shared_ptr<Assimp::Importer> importer_;
         AssImpLogStream *logstream_;

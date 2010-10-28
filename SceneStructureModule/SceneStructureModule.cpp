@@ -121,12 +121,22 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     else
     {
         boost::filesystem::path path(filename.toStdString());
-        AssImp::OpenAssetImport importer;
+        AssImp::OpenAssetImport assimporter;
         QString extension = QString(path.extension().c_str());
-        if (importer.IsSupportedExtension(extension))
+        if (assimporter.IsSupportedExtension(extension))
         {
             std::string dirname = path.branch_path().string();
-            importer.Import(framework_, filename);
+            std::vector<std::string> importedMeshNames;
+            assimporter.Import(framework_, filename, importedMeshNames);
+
+            TundraLogic::SceneImporter sceneimporter(framework_);
+            for (size_t i=0 ; i<importedMeshNames.size() ; ++i)
+            {
+                Scene::EntityPtr entity = sceneimporter.ImportMesh(scene, importedMeshNames[i], dirname, "./data/assets",
+                    Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, false, true);
+                if (entity)
+                    scene->EmitEntityCreated(entity, AttributeChange::Default);
+            }
         } else
         {
             LogError("Unsupported file extension: " + filename.toStdString());

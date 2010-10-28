@@ -52,7 +52,7 @@ namespace AssImp
         return importer_->IsExtensionSupported(extension.toStdString());
     }
 
-    void OpenAssetImport::Import(Foundation::Framework *framework, const QString& file)
+    void OpenAssetImport::Import(Foundation::Framework *framework, const QString& file, std::vector<std::string> &outMeshNames)
     {
         const aiScene *scene = importer_->ReadFile(
             file.toStdString(), 
@@ -67,15 +67,17 @@ namespace AssImp
 
         if (scene)
         {
-            ImportScene(framework, scene);
+            
+            ImportScene(framework, scene, file, outMeshNames);
         } else
         {       
             // report error
+            Foundation::RootLogError(importer_->GetErrorString());
             //return QString(importer_->GetErrorString());
         }
     }
 
-    void OpenAssetImport::ImportScene(Foundation::Framework *framework, const struct aiScene *scene)
+    void OpenAssetImport::ImportScene(Foundation::Framework *framework, const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames)
     {
         const struct aiNode *rootNode = scene->mRootNode;
         
@@ -84,17 +86,22 @@ namespace AssImp
         
         if (renderer)
         {
-            ImportNode(renderer, scene, rootNode);
+            ImportNode(renderer, scene, rootNode, file, outMeshNames);
         }
 	}
 
-    void OpenAssetImport::ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const aiScene *scene, const aiNode *node)
+    void OpenAssetImport::ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const aiScene *scene, 
+        const aiNode *node, const QString& file, std::vector<std::string> &outMeshNames)
     {
         try
         {
+            boost::filesystem::path path(file.toStdString());
+            outMeshNames.push_back(path.filename());
+            std::string meshname = std::string("mesh___") + path.filename();
+
+
             aiMatrix4x4 transform = node->mTransformation;
-            String uniquename = renderer->GetUniqueObjectName();
-            Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual("mesh___test.mesh", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(meshname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             ogreMesh->setAutoBuildEdgeLists(false);
 
             Ogre::Vector3 vmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
@@ -145,7 +152,7 @@ namespace AssImp
                 Ogre::HardwareVertexBufferSharedPtr vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
                     decl->getVertexSize(0),                     // This value is the size of a vertex in memory
                     data->vertexCount,                          // The number of vertices you'll put into this buffer
-                    Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY // Properties
+                    Ogre::HardwareBuffer::HBU_DYNAMIC // Properties
                     );
                 Ogre::Real *vbData = static_cast<Ogre::Real*>(vbuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
                 
@@ -175,7 +182,7 @@ namespace AssImp
                 vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
                     decl->getVertexSize(1),                     // This value is the size of a vertex in memory
                     data->vertexCount,                          // The number of vertices you'll put into this buffer
-                    Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY // Properties
+                    Ogre::HardwareBuffer::HBU_DYNAMIC // Properties
                     );
                 vbData = static_cast<Ogre::Real*>(vbuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
                 
@@ -223,7 +230,7 @@ namespace AssImp
                 Ogre::HardwareIndexBufferSharedPtr ibuf = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
                     idxType,                                        // You can use several different value types here
                     numIndices,                                     // The number of indices you'll put in that buffer
-                    Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY     // Properties
+                    Ogre::HardwareBuffer::HBU_DYNAMIC     // Properties
                     );
                 
                 if (idxType == Ogre::HardwareIndexBuffer::IT_16BIT)
@@ -247,6 +254,7 @@ namespace AssImp
                         idxData[offset++] = mesh->mFaces[n].mIndices[2];
                     }
                 }
+                ibuf->unlock();
 
                 ogreSubmesh->indexData->indexBuffer = ibuf;         // The pointer to the index buffer
                 ogreSubmesh->indexData->indexCount = numIndices;    // The number of indices we'll use
@@ -264,11 +272,11 @@ namespace AssImp
 
         // import children
         for (int i=0 ; i<node->mNumChildren ; ++i)
-            ImportNode(renderer, scene, node->mChildren[i]);
+            ImportNode(renderer, scene, node->mChildren[i], file, outMeshNames);
     }
     
     void OpenAssetImport::AssImpLogStream::write(const char* message)
     {
-        
+        Foundation::RootLogInfo(message);
     }
 }
