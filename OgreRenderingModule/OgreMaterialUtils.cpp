@@ -9,6 +9,7 @@
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialResource.h"
 #include "OgreRenderingModule.h"
+#include "OgreConversionUtils.h"
 #include <Ogre.h>
 
 namespace OgreRenderer
@@ -85,9 +86,9 @@ namespace OgreRenderer
     Ogre::MaterialPtr CloneMaterial(const std::string& sourceMaterialName, const std::string &newName)
     {
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-        Ogre::MaterialPtr material = mm.getByName(sourceMaterialName);
+        Ogre::MaterialPtr material = mm.getByName(SanitateAssetIdForOgre(sourceMaterialName));
 
-        material = material->clone(newName);
+        material = material->clone(SanitateAssetIdForOgre(newName));
 
         assert(material.get());
         return material;
@@ -98,12 +99,12 @@ namespace OgreRenderer
         const char baseMaterialName[] = "LitTextured";
 
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-        Ogre::MaterialPtr material = mm.getByName(materialName);
+        Ogre::MaterialPtr material = mm.getByName(SanitateAssetIdForOgre(materialName));
 
         if (!material.get())
         {
-            Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName);
-            material = baseMaterial->clone(materialName);
+            Ogre::MaterialPtr baseMaterial = mm.getByName(SanitateAssetIdForOgre(baseMaterialName));
+            material = baseMaterial->clone(SanitateAssetIdForOgre(materialName));
         }
 
         assert(material.get());
@@ -115,12 +116,12 @@ namespace OgreRenderer
         const char baseMaterialName[] = "UnlitTextured";
 
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-        Ogre::MaterialPtr material = mm.getByName(materialName);
+        Ogre::MaterialPtr material = mm.getByName(SanitateAssetIdForOgre(materialName));
 
         if (!material.get())
         {
-            Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName);
-            material = baseMaterial->clone(materialName);
+            Ogre::MaterialPtr baseMaterial = mm.getByName(SanitateAssetIdForOgre(baseMaterialName));
+            material = baseMaterial->clone(SanitateAssetIdForOgre(materialName));
         }
 
         assert(material.get());
@@ -142,10 +143,12 @@ namespace OgreRenderer
         }
         const std::string& suffix = MaterialSuffix[variation];
         
+        std::string sanitatedtexname = SanitateAssetIdForOgre(texture_name);
+        
         Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
         
-        std::string material_name = texture_name + suffix;
+        std::string material_name = sanitatedtexname + suffix;
         Ogre::MaterialPtr material = mm.getByName(material_name);
         
         if (!material.get())
@@ -156,7 +159,7 @@ namespace OgreRenderer
         else
             return material;
         
-        Ogre::TexturePtr tex = tm.getByName(texture_name);
+        Ogre::TexturePtr tex = tm.getByName(sanitatedtexname);
         bool has_alpha = false;
         if (!tex.isNull())
         {
@@ -189,7 +192,9 @@ namespace OgreRenderer
         Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
         
-        Ogre::TexturePtr tex = tm.getByName(texture_name);
+        std::string sanitatedtexname = SanitateAssetIdForOgre(texture_name);
+        
+        Ogre::TexturePtr tex = tm.getByName(sanitatedtexname);
         bool has_alpha = false;
         if (!tex.isNull())
             if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
@@ -197,7 +202,7 @@ namespace OgreRenderer
 
         for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
         {
-            std::string material_name = texture_name + MaterialSuffix[i];
+            std::string material_name = sanitatedtexname + MaterialSuffix[i];
             Ogre::MaterialPtr material = mm.getByName(material_name);
             
             if (!material.get())
@@ -224,8 +229,10 @@ namespace OgreRenderer
         if (material.isNull())
             return;
         
+        std::string sanitatedtexname = SanitateAssetIdForOgre(texture_name);
+        
         Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
-        Ogre::TexturePtr tex = tm.getByName(texture_name);
+        Ogre::TexturePtr tex = tm.getByName(sanitatedtexname);
         
         Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
         while(iter.hasMoreElements())
@@ -246,7 +253,7 @@ namespace OgreRenderer
                     if (index == cmp_index) 
                     {
                         if (tex.get())
-                            texUnit->setTextureName(texture_name);
+                            texUnit->setTextureName(sanitatedtexname);
                         else
                             texUnit->setTextureName("TextureMissing.png");
 
@@ -263,8 +270,11 @@ namespace OgreRenderer
         if (material.isNull())
             return;
         
+        std::string sanitatedorgname = SanitateAssetIdForOgre(original_name);
+        std::string sanitatedtexname = SanitateAssetIdForOgre(texture_name);
+        
         Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
-        Ogre::TexturePtr tex = tm.getByName(texture_name);
+        Ogre::TexturePtr tex = tm.getByName(sanitatedtexname);
         
         Ogre::Material::TechniqueIterator iter = material->getTechniqueIterator();
         while(iter.hasMoreElements())
@@ -281,10 +291,10 @@ namespace OgreRenderer
                 while(texIter.hasMoreElements())
                 {
                     Ogre::TextureUnitState *texUnit = texIter.getNext();
-                    if (texUnit->getTextureName() == original_name)
+                    if (texUnit->getTextureName() == sanitatedorgname)
                     {
                         if (tex.get())
-                            texUnit->setTextureName(texture_name);
+                            texUnit->setTextureName(sanitatedtexname);
                         else
                             texUnit->setTextureName("TextureMissing.png");
                     }
@@ -350,20 +360,5 @@ namespace OgreRenderer
                 OgreRenderingModule::LogDebug("Failed to remove Ogre material:" + std::string(e.what()));
             }
         }
-    }
-
-    void DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b)
-    {
-        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-        Ogre::MaterialPtr material = mm.getByName(materialName);
-        if (material.get()) // The given material already exists, so no need to create it again.
-            return;
-
-        material = mm.getByName("SolidAmbient");
-        if (!material.get())
-            return;
-
-        Ogre::MaterialPtr newMaterial = material->clone(materialName);
-        newMaterial->setAmbient(r, g, b);
     }
 }

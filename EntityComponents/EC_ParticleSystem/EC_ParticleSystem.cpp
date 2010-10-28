@@ -8,6 +8,7 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "OgreParticleResource.h"
+#include "OgreConversionUtils.h"
 #include "SceneManager.h"
 #include "RexUUID.h"
 #include "EventManager.h"
@@ -74,7 +75,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
     {
         DeleteParticleSystem();
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), systemName.toStdString());
+        particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), OgreRenderer::SanitateAssetIdForOgre(systemName.toStdString()));
         if(particleSystem_)
         {
             EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
