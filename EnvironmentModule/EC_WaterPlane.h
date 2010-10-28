@@ -40,6 +40,14 @@ namespace OgreRenderer
 Registered by Enviroment::EnvironmentModule. Water plane component defines into world actually water cube. Inside of that water cube scene fog is changed to correspond, given
 water plane underwater fog properties. Water plane cannot visualize outside as a water cube (it still looks just plane). 
 
+<h3> Using component to syncronize ocean in Taiga </h3>
+
+Currently (not in Tundra) EC_WaterPlane component can be used to syncronize Ocean in Taiga worlds. This can be done
+so that user creates entity and sets entity EC_Name-component. If this component name is set as "WaterEnvironment" our current implementation
+will create automagically a EC_WaterPlane-component on it. This component is now usable for every users and all changes on it will be transfered 
+to all users. This syncronized Water-plane component can also edit through environment editor (in world tools).  
+
+
 <b>Attributes</b>:
 <ul>
 <li> int : xSizeAttr.

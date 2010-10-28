@@ -10,9 +10,12 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
-//#include <set>
 #include <QMap>
 #include <QSet>
+
+#include <QListWidgetItem>
+#include <QPointer>
+#include "Entity.h"
 
 #include <QWidget>
 
@@ -34,6 +37,23 @@ struct EntityComponentSelection
 namespace ECEditor
 {
     class ECBrowser;
+    class AddComponentDialog;
+
+    //! Contains entity pointer as a QPointer. This class is used to indentify a right item using an entity ID.
+    //! \ingroup ECEditorModuleClient.
+    class EntityListWidgetItem: public QListWidgetItem
+    {
+    public:
+        EntityListWidgetItem(const QString &name, QListWidget *list, Scene::Entity *entity):
+            QListWidgetItem(name, list),
+            entity_ptr_(entity)
+        {
+        }
+        QPointer<Scene::Entity> GetEntity() const { return entity_ptr_; }
+    private:
+        //Weak pointer to entity switch will get released and setted to null when QObject's destructor is called.
+        QPointer<Scene::Entity> entity_ptr_;
+    };
     
     //! ECEditorWindow
     /*! /todo add description.
@@ -67,20 +87,10 @@ namespace ECEditor
         //! Remove coponent from entity and refresh property browser.
         void DeleteComponent(const QString &componentType, const QString &name);
 
-        /// Open a dialog window that will get information from the user what type of compoent he/she wants to create.
+        /// Opens a dialog that will handle new entity creation.
+        /** After the dialog is done, ComponentDialogFinished method is called.
+         */
         void CreateComponent();
-
-        /// Deletes entity.
-        void DeleteEntity();
-
-        /// Copy serializable component values to clipboard.
-        void CopyEntity();
-
-        /// Paste create a new entity and add serializable components.
-        void PasteEntity();
-
-        /// Highlights all entities from the list that owns the component.
-        void HighlightEntities(IComponent *component);
 
         /// If entity selection different from previous update change browser to fit those changes.
         void RefreshPropertyBrowser();
@@ -105,6 +115,14 @@ namespace ECEditor
         /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
         void EntityRemoved(Scene::Entity* entity);
 
+        /// Set editor focus boolean value. Only one ECEditorWindow can have focus and if focus
+        /// is setted to true, this method will iterate all other ECEditorWindow intances and set their focus to false.
+        void SetFocus(bool focus);
+
+        /// Listens when editor's proxy widget gets the focus. If event type was focusInEvent
+        /// then method will call SetFocus method.
+        void FocusChanged(QFocusEvent *e);
+
     signals:
         /// Emitted user wants to edit entity's EC attributes in XML editor.
         void EditEntityXml(Scene::EntityPtr entity);
@@ -128,18 +146,38 @@ namespace ECEditor
         void changeEvent(QEvent *change_event);
 
     private slots:
-        void SceneAdded(const QString &name);
+        /// Listens SceneManager's ActionTriggered signal and if action was "MousePress"
+        /// add entity to editor window (assuming that editor has a focus).
+        void ActionTriggered(Scene::Entity *entity, const QString &action);
+
+        /// Deletes entity.
+        void DeleteEntity();
+
+        /// Copy serializable component values to clipboard.
+        void CopyEntity();
+
+        /// Paste create a new entity and add serializable components.
+        void PasteEntity();
+
+        /// Highlights all entities from the entities_list that own a isntace of given component.
+        void HighlightEntities(IComponent *component);
+
+        /// Listenes when default world scene has changed and clear the editor window.
+        /// @param scene new default world scene.
+        void DefaultSceneChanged(const Scene::ScenePtr &scene);
+
+        //When user have pressed ok or cancel button in component dialog this mehtod is called.
+        void ComponentDialogFinished(int result);
 
     private:
+        /// Find given entity from the QListWidget and if it's found, bold QListWidgetItem's font.
         void BoldEntityListItem(entity_id_t, bool bold = true);
+
         /// Initializes the widget.
         void Initialize();
 
-        /// Returns string lists of EC's the ComponentManager can create.
-        QStringList GetAvailableComponents() const;
-
         /// Returns list of selected entities.
-        std::vector<Scene::EntityPtr> GetSelectedEntities() const;
+        QList<Scene::EntityPtr> GetSelectedEntities() const;
 
         /// Framework pointer.
         Foundation::Framework *framework_;
@@ -147,10 +185,8 @@ namespace ECEditor
         QPushButton* toggle_entities_button_;
         QListWidget* entity_list_;
         ECBrowser *browser_;
-        typedef QMap<QString, QString> EntityIdToNameMap;
-        EntityIdToNameMap entity_id_to_name_;
-        typedef QSet<entity_id_t> EntityIdSet;
-        EntityIdSet selectedEntities_;
+        AddComponentDialog *component_dialog_;
+        bool has_focus_;
     };
 }
 

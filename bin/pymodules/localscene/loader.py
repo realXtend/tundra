@@ -53,8 +53,10 @@ class OgreNode:
         # this kind of rotations during import. But I guess this is old problem and similar rotations
         # are being done elsewhere too.
         # looks like objects are often exported wrong, so rotate along x axis
-        p.Orientation = o * Quat(1,1,0,0)
-
+        #p.Orientation = o * Quat(1,1,0,0)
+        # XXX if artists want rotate along x axis they can do it so now by checking flip z-y checkbox
+        p.Orientation = o
+        
         p.Scale = self.scale
 
 """
@@ -123,6 +125,7 @@ class NaaliSceneManagerFacade:
 def load_dotscene(fname):
     sm = NaaliSceneManagerFacade()
     ds = dotscene.DotScene(fname, sm)
+    ds.dotscenemanager.rotateScene90DegreesAlongAxis('x')
     return ds, ds.dotscenemanager
 
 def unload_dotscene(ds):

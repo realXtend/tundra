@@ -16,7 +16,6 @@
 #include <EC_Placeable.h>
 #include <EC_OgreCamera.h>
 
-
 #include <QObject>
 #include <QStringList>
 #include <QMap>
@@ -89,6 +88,9 @@ namespace RexLogic
         void TimeLineFinished();
 
         void Update(float);
+
+    signals:
+        void FocusOnObject();
 
     private:
         //! Current subscribed category events

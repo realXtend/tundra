@@ -46,7 +46,7 @@ namespace CommUI
 
         int user_count_;
         double voice_activity_;
-        QLabel count_label_;
+        QLabel* count_label_;
     };
 
 } // namespace CommUI

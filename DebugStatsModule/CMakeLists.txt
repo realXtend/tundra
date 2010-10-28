@@ -25,7 +25,7 @@ use_package (CURL)
 use_package (XMLRPC)
 
 use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule EnvironmentModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules AssetModule Ui)
+    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules AssetModule Ui OgreAssetEditorModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -37,8 +37,7 @@ link_package (CURL)
 link_package (XMLRPC)
 
 link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule EnvironmentModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules
-    AssetModule Ui)
+    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules AssetModule Ui OgreAssetEditorModule)
 
 LinkEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)
 LinkEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)

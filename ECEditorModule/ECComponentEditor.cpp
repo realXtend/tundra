@@ -26,29 +26,33 @@ namespace ECEditor
     ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         QtAbstractPropertyBrowser *browser,
         ECComponentEditor *editor,
-        IAttribute &attribute)
+        ComponentPtr component,
+        const QString &name,
+        const QString &type)
+        //IAttribute &attribute) 
     {
         ECAttributeEditorBase *attributeEditor = 0;
-        if(dynamic_cast<const Attribute<float> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<float>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<int> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<int>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<Vector3df> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Vector3df>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<Color> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Color>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<QString> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<QString>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<bool> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<bool>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<QVariant> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<QVariant>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<QVariantList > *>(&attribute))
-            attributeEditor = new ECAttributeEditor<QVariantList >(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<AssetReference> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<AssetReference>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<Transform> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Transform>(browser, &attribute, editor);
+        if(type == "real")
+            attributeEditor = new ECAttributeEditor<float>(browser, component, name, editor);
+        else if(type == "int")
+            attributeEditor = new ECAttributeEditor<int>(browser, component, name, editor);
+        else if(type == "vector3df")
+            attributeEditor = new ECAttributeEditor<Vector3df>(browser, component, name, editor);
+        else if(type == "color")
+            attributeEditor = new ECAttributeEditor<Color>(browser, component, name, editor);
+        else if(type == "string")
+            attributeEditor = new ECAttributeEditor<QString>(browser, component, name, editor);
+        else if(type == "bool")
+            attributeEditor = new ECAttributeEditor<bool>(browser, component, name, editor);
+        else if(type == "qvariant")
+            attributeEditor = new ECAttributeEditor<QVariant>(browser, component, name, editor);
+        else if(type == "qvariantlist")
+            attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, editor);
+        else if(type == "assetreference")
+            attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, editor);
+        else if(type == "transform")
+            attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, editor);
+
         return attributeEditor;
     }
 
@@ -58,9 +62,23 @@ namespace ECEditor
         groupPropertyManager_(0),
         propertyBrowser_(propertyBrowser)
     {
+        assert(component);
         typeName_ = component->TypeName();
         name_ = component->Name();
-        InitializeEditor(component);
+
+        assert(propertyBrowser_);
+        if(!propertyBrowser_)
+           return;
+
+        groupPropertyManager_ = new QtGroupPropertyManager(this);
+        if(groupPropertyManager_)
+        {
+            groupProperty_ = groupPropertyManager_->addProperty();
+            AddNewComponent(component, true);
+            CreateAttributeEditors(component);
+        }
+
+        propertyBrowser_->addProperty(groupProperty_);
     }
     
     ECComponentEditor::~ECComponentEditor()
@@ -75,27 +93,17 @@ namespace ECEditor
         }
     }
 
-    void ECComponentEditor::InitializeEditor(ComponentPtr component)
-    {
-        if(!propertyBrowser_)
-           return;
-
-        groupPropertyManager_ = new QtGroupPropertyManager(this);
-        if(groupPropertyManager_)
-        {
-            groupProperty_ = groupPropertyManager_->addProperty();
-            AddNewComponent(component, true);
-            CreateAttributeEditors(component);
-        }
-        propertyBrowser_->addProperty(groupProperty_);
-    }
-
     void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
     {
         AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
         {
-            ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this, *attributes[i]);
+            ECAttributeEditorBase *attributeEditor = 0;
+            attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_,
+                                                                       this, 
+                                                                       component, 
+                                                                       QString::fromStdString(attributes[i]->GetNameString()),
+                                                                       QString::fromStdString(attributes[i]->TypenameToString()));
             if(!attributeEditor)
                 continue;
             attributeEditors_[attributes[i]->GetName()] = attributeEditor;
@@ -110,9 +118,9 @@ namespace ECEditor
     {
         if(!groupProperty_ || !components_.size())
             return;
-        std::string componentName = typeName_.toStdString(); //\todo remove the back&forth string conversions XXX
-        ReplaceSubstringInplace(componentName, "EC_", "");
-        QString groupPropertyName = componentName.c_str();
+        QString componentName = typeName_;
+        componentName.replace("EC_", "");
+        QString groupPropertyName = componentName;
         if(!name_.isEmpty())
             groupPropertyName += " (" + name_ + ") ";
         if(components_.size() > 1)
@@ -145,14 +153,14 @@ namespace ECEditor
         {
             IAttribute *attribute = component->GetAttribute(iter->second->GetAttributeName());
             if(attribute)
-                iter->second->AddNewAttribute(attribute);
+                iter->second->AddComponent(component);
             iter++;
         }
         QObject::connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
         UpdateGroupPropertyText();
     }
 
-    void ECComponentEditor::RemoveComponent(IComponent *component)
+    void ECComponentEditor::RemoveComponent(ComponentPtr component)
     {
         if(!component)
             return;
@@ -164,14 +172,14 @@ namespace ECEditor
         while(iter != components_.end())
         {
             ComponentPtr componentPtr = (*iter).lock();
-            if(componentPtr.get() == component)
+            if(componentPtr.get() == component.get())
             {
                 AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
                 while(attributeIter != attributeEditors_.end())
                 {
                     IAttribute *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName());
                     if(attribute)
-                        attributeIter->second->RemoveAttribute(attribute);
+                        attributeIter->second->RemoveComponent(component);//RemoveAttribute(attribute);
                     attributeIter++;
                 }
                 disconnect(componentPtr.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));

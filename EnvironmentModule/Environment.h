@@ -16,6 +16,7 @@
 #include <QVector>
 #include <QObject>
 
+#include "EC_EnvironmentLight.h"
 
 namespace ProtocolUtilities
 {
@@ -54,6 +55,8 @@ namespace Environment
          * @return Enviroment entity component, or 0 if does not exist
          **/
         EC_OgreEnvironment* GetEnvironmentComponent();
+
+        EC_EnvironmentLight* GetEnvironmentLight();
 
         /**
          * Creates the environment EC to current active scene and adjust it using default parameters.
@@ -189,6 +192,8 @@ namespace Environment
         void CreateGlobalLight();
 
         EC_Fog* GetEnvironmentFog();
+
+     
 
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;

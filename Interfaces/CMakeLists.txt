@@ -7,7 +7,7 @@ file (GLOB H_FILES *.h)
 file (GLOB MOC_FILES CommunicationsService.h UiSettingsServiceInterface.h
     MediaPlayerService.h WorldBuildingServiceInterface.h
     UiServiceInterface.h UiWidgetProperties.h UiProxyWidget.h LoginServiceInterface.h WorldLogicInterface.h
-    ConsoleCommandServiceInterface.h ISoundService.h InputServiceInterface.h)
+    ConsoleCommandServiceInterface.h ISoundService.h InputServiceInterface.h IOpenSimSceneService.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 MocFolder ()
@@ -22,14 +22,14 @@ add_definitions (-DMODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (Core Foundation SceneManager Interfaces)
+use_modules (Core Foundation SceneManager Interfaces Asset)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation SceneManager Interfaces)
+link_modules (Core Foundation SceneManager Interfaces Asset)
 
 SetupCompileFlagsWithPCH()
 

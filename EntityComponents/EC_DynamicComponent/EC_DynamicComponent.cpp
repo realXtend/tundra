@@ -14,41 +14,38 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
 
 #include <QDomDocument>
 
-namespace
+struct DeserializeData
 {
-    struct DeserializeData
+    DeserializeData(const std::string name = std::string(""),
+                    const std::string type = std::string(""),
+                    const std::string value = std::string("")):
+        name_(name),
+        type_(type),
+        value_(value)
     {
-        DeserializeData(const std::string name = std::string(""),
-                        const std::string type = std::string(""),
-                        const std::string value = std::string("")):
-            name_(name),
-            type_(type),
-            value_(value)
-        {
-        }
-
-        //! Checks if any of data structure's values are null.
-        bool isNull() const
-        {
-            return name_ == "" || type_ == "" || value_ == "";
-        }
-
-        std::string name_;
-        std::string type_;
-        std::string value_;
-    };
-
-    //! Function that is used by std::sort algorithm to sort attributes by their name.
-    bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
-    {
-        return a->GetNameString() < b->GetNameString();
     }
 
-    //! Function that is used by std::sort algorithm to sort DeserializeData by their name.
-    bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
+    //! Checks if any of data structure's values are null.
+    bool isNull() const
     {
-        return a.name_ < b.name_;
+        return name_ == "" || type_ == "" || value_ == "";
     }
+
+    std::string name_;
+    std::string type_;
+    std::string value_;
+};
+
+//! Function that is used by std::sort algorithm to sort attributes by their name.
+bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
+{
+    return a->GetNameString() < b->GetNameString();
+}
+
+//! Function that is used by std::sort algorithm to sort DeserializeData by their name.
+bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
+{
+    return a.name_ < b.name_;
 }
 
 EC_DynamicComponent::EC_DynamicComponent(IModule *module):
@@ -167,15 +164,18 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
 
 IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change)
 {
-    IAttribute *attribute = 0;
     if(ContainsAttribute(name))
-        return attribute;
-    attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
-    if(attribute)
-        emit AttributeAdded(name);
+        return IComponent::GetAttribute(name);
 
+    IAttribute *attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
+    if(!attribute)
+    {
+        LogError("Fail to create new attribute:" + name.toStdString() + " to dynamic component:" + Name().toStdString());
+        return 0;
+    }
+
+    emit AttributeAdded(attribute);
     AttributeChanged(attribute, change);
-
     return attribute;
 }
 
@@ -187,6 +187,7 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
         {
             //! /todo Make sure that component removal is replicated to the server if change type is Replicate.
             AttributeChanged(*iter, change);
+            emit AttributeAboutToBeRemoved(*iter);
             SAFE_DELETE(*iter);
             attributes_.erase(iter);
             emit AttributeRemoved(name);
@@ -202,9 +203,10 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
     {
         Attribute<QVariant> *attribute = new Attribute<QVariant>(this, name.toStdString().c_str());
         AttributeChanged(attribute, change);
-        emit AttributeAdded(name);
+        emit AttributeAdded(attribute);
     }
-    LogWarning("Failed to add a new QVariant in name of " + name.toStdString() + ", cause there already is an attribute in that name.");
+    else
+        LogWarning("Failed to add a new QVariant in name of " + name.toStdString() + ", cause there already is an attribute in that name.");
 }
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const

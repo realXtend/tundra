@@ -10,7 +10,7 @@ file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES ui/*.ui)
 file (GLOB MOC_FILES RexLogicModule.h EventHandlers/LoginHandler.h RexMovementInput.h
     EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Environment/Primitive.h Communications/*.h
-    Communications/InWorldChat/*.h Camera/ObjectCameraController.h Camera/CameraControl.h SceneInteract.h)
+    Communications/InWorldChat/*.h Camera/ObjectCameraController.h Camera/CameraControl.h SceneInteract.h NotificationWidget.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
@@ -47,7 +47,7 @@ use_package (OPENJPEG)
 use_package (XMLRPC)
 
 use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule AvatarModule RexCommon
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Input)
+    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Input Asset)
 
 if (NOT UISERVICE_TEST)
     use_modules (UiModule)
@@ -77,7 +77,7 @@ LinkEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
 LinkEntityComponent(EntityComponents/EC_Light EC_Light)
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule AvatarModule RexCommon
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule)
+    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Asset)
 
 if (NOT UISERVICE_TEST)
     link_modules (UiModule)

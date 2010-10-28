@@ -14,7 +14,6 @@
 
 #include "EC_Script.h"
 #include "SceneManager.h"
-#include "InputContext.h"
 #include "Input.h"
 #include "UiServiceInterface.h"
 #include "ISoundService.h"
@@ -78,14 +77,11 @@ void JavascriptModule::Initialize()
 
 void JavascriptModule::PostInitialize()
 {
-    input_ = GetFramework()->GetInput()->RegisterInputContext("ScriptInput", 100);
-    UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-
     RegisterNaaliCoreMetaTypes();
 
     // Add Naali Core API objcects as js services.
-    services_["input"] = input_.get();
-    services_["ui"] = ui;
+    services_["input"] = GetFramework()->GetInput();
+    services_["ui"] = GetFramework()->UiService();
     services_["audio"] = GetFramework()->Audio();
     services_["frame"] = GetFramework()->GetFrame();
     services_["console"] = GetFramework()->Console();
@@ -97,10 +93,18 @@ void JavascriptModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand(
         "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
         Console::Bind(this, &JavascriptModule::ConsoleRunFile)));
+    
+    RegisterConsoleCommand(Console::CreateCommand(
+        "JsReloadScripts", "Reloads and re-executes startup scripts.",
+        Console::Bind(this, &JavascriptModule::ConsoleReloadScripts)));
+    
+    // Initialize startup scripts
+    LoadStartupScripts();
 }
 
 void JavascriptModule::Uninitialize()
 {
+    UnloadStartupScripts();
 }
 
 void JavascriptModule::Update(f64 frametime)
@@ -128,6 +132,13 @@ Console::CommandResult JavascriptModule::ConsoleRunFile(const StringVector &para
         return Console::ResultFailure("Usage: JsLoad(myfile.js)");
 
     JavascriptModule::RunScript(QString::fromStdString(params[0]));
+
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult JavascriptModule::ConsoleReloadScripts(const StringVector &params)
+{
+    LoadStartupScripts();
 
     return Console::ResultSuccess();
 }
@@ -172,29 +183,26 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
     if(!sender)
         return;
-
-    if (sender->type.Get() != "js")
+    
+    if(!scriptRef.endsWith(".js"))
     {
-        //Make sure that file type in't .js.
-        if(!sender->type.Get().endsWith(".js"))
+        // If script ref is empty or otherwise invalid we need to destroy the previous script if it's type is javascript.
+        if(dynamic_cast<JavascriptEngine*>(sender->GetScriptInstance()))
         {
-            // If script ref is empty we need to destroy the previous script if it's type is javascript.
-            if(!dynamic_cast<JavascriptEngine*>(sender->GetScriptInstance()))
-            {
-                JavascriptEngine *javaScriptInstance = new JavascriptEngine("");
-                sender->SetScriptInstance(javaScriptInstance);
-            }
-            return;
+            JavascriptEngine *javaScriptInstance = new JavascriptEngine("");
+            sender->SetScriptInstance(javaScriptInstance);
         }
+        return;
     }
-
+    
+    if (sender->type.Get() != "js")
+        return;
+    
     JavascriptEngine *javaScriptInstance = new JavascriptEngine(scriptRef);
     sender->SetScriptInstance(javaScriptInstance);
 
     //Register all services to script engine
-    ServiceMap::iterator iter = services_.begin();
-    for(; iter != services_.end(); iter++)
-        javaScriptInstance->RegisterService(iter.value(), iter.key());
+    PrepareScriptEngine(javaScriptInstance);
 
     //Send entity that owns the EC_Script component.
     javaScriptInstance->RegisterService(sender->GetParentEntity(), "me");
@@ -215,6 +223,63 @@ void JavascriptModule::ComponentRemoved(Scene::Entity* entity, IComponent* comp,
 {
     if(comp->TypeName() == "EC_Script")
         disconnect(comp, SIGNAL(ScriptRefChanged(const QString &)), this, SLOT(ScriptChanged(const QString &)));
+}
+
+void JavascriptModule::LoadStartupScripts()
+{
+    UnloadStartupScripts();
+    
+    std::string path = "./jsmodules/startup";
+    std::vector<std::string> scripts;
+    
+    try
+    {
+        boost::filesystem::directory_iterator i(path);
+        boost::filesystem::directory_iterator end_iter;
+        while (i != end_iter)
+        {
+            if (boost::filesystem::is_regular_file(i->status()))
+            {
+                std::string ext = i->path().extension();
+                boost::algorithm::to_lower(ext);
+                if (ext == ".js")
+                    scripts.push_back(i->path().string());
+            }
+            ++i;
+        }
+    }
+    catch (std::exception &/*e*/)
+    {
+    }
+    
+    // Create a scriptengine for each of the files, and try to run
+    for (uint i = 0; i < scripts.size(); ++i)
+    {
+        JavascriptEngine* javaScriptInstance = new JavascriptEngine(QString::fromStdString(scripts[i]));
+        
+        //Register all services to script engine
+        PrepareScriptEngine(javaScriptInstance);
+        
+        startupScripts_.push_back(javaScriptInstance);
+        javaScriptInstance->Run();
+    }
+}
+
+void JavascriptModule::UnloadStartupScripts()
+{
+    // Stop the startup scripts, if any running
+    for (uint i = 0; i < startupScripts_.size(); ++i)
+        startupScripts_[i]->Stop();
+    for (uint i = 0; i < startupScripts_.size(); ++i)
+        delete startupScripts_[i];
+    startupScripts_.clear();
+}
+
+void JavascriptModule::PrepareScriptEngine(JavascriptEngine* engine)
+{
+    ServiceMap::iterator iter = services_.begin();
+    for(; iter != services_.end(); iter++)
+        engine->RegisterService(iter.value(), iter.key());
 }
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)

@@ -4,6 +4,7 @@
 #define incl_SupportModules_ConsoleModule_h
 
 #include "IModule.h"
+#include "ForwardDefines.h"
 #include "ModuleLoggingFunctions.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleModuleApi.h"
@@ -55,6 +56,8 @@ namespace Console
 
         //! Console UI manager
         UiConsoleManager *ui_console_manager_;
+
+        InputContextPtr input_context_;
     };
 }
 

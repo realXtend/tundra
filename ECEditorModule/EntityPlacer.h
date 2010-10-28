@@ -43,7 +43,7 @@ namespace ECEditor
         void MouseMove(MouseEvent *mouse);
 
     signals:
-        void Finnished(Vector3df location, Quaternion orientation);
+        void Finished(Vector3df location, Quaternion orientation);
         void LocationChanged(Vector3df location);
         void OrientationChanged(Quaternion orientation);
 
@@ -62,7 +62,7 @@ namespace ECEditor
         OgreRenderer::RendererWeakPtr renderer_;
         int previousScrollValue_;
 
-        bool finnished_;
+        bool finished_;
         bool useCustomMesh_;
     };
 }

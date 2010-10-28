@@ -88,7 +88,7 @@ EC_OpenSimPrim::EC_OpenSimPrim(IModule* module) :
     //CastShadows = false;
     LightCreatesShadows = false;
     DescriptionTexture = false;
-    ScaleToPrim = true;
+    ScaleToPrim = false;
     //DrawDistance = 0;
     //LOD = 0;
 

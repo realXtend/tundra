@@ -198,7 +198,10 @@ namespace CoreUi
 
             current_scene_->setSceneRect(view_->viewport()->rect());
             if (view_->scene() != current_scene_)
+            {
                 view_->setScene(current_scene_);
+                current_scene_->invalidate();
+            }
 
             connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( HandleSceneChanged(const QList<QRectF> &)));
 

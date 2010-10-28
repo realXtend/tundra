@@ -76,6 +76,11 @@ public:
     /// Although public, it is not intended to be called by users of IComponent.
     void SetParentEntity(Scene::Entity* entity);
 
+    /// Return component as shared pointer. 
+    /// @Note: this method wont create a new shared pointer, it only finds the right component
+    /// in it's parent entity and returns it. If parent entity was not found null pointer is returned.
+    ComponentPtr GetSharedPtr();
+
 public slots:
     /// Returns a pointer to the Naali framework instance.
     Foundation::Framework *GetFramework() const { return framework_; }
@@ -144,6 +149,14 @@ public slots:
     ///       because the parent entity has not yet been set with a call to SetParentEntity at that point.
     Scene::Entity* GetParentEntity() const;
 
+    //! Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
+    void SetTemporary(bool enable);
+     
+    //! Returns whether component is temporary. Temporary components won't be saved when the scene is saved.
+    /*! Note: if parent entity is temporary, this returns always true regardless of the component's temporary flag
+     */
+    bool IsTemporary() const;
+    
 public:
     /// Returns the list of all Attributes in this component for reflection purposes.
     const AttributeVector& GetAttributes() const { return attributes_; }
@@ -255,9 +268,13 @@ protected:
     /// Framework pointer. Needed to be able to perform important uninitialization etc. even when not in an entity.
     Foundation::Framework* framework_;
 
+    /// Temporary-flag
+    bool temporary_;
+    
 private:
     /// Called by IAttribute on initialization of each attribute
     void AddAttribute(IAttribute* attr) { attributes_.push_back(attr); }
+    
 };
 
 #endif

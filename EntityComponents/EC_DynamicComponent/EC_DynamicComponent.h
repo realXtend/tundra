@@ -96,12 +96,13 @@ public:
         {
             IAttribute *attribute = new Attribute<T>(this, name.toStdString().c_str());
             AttributeChanged(attribute, change);
-            emit AttributeAdded(name);
+            emit AttributeAdded(attribute);
         }
     }
 
 public slots:
     /// A factory method that constructs a new attribute given the typename. This factory is not extensible.
+    /// If attrbitue was already created mehtod will return it's pointer.
     IAttribute *CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Create new attribute that type is QVariant.
@@ -122,6 +123,12 @@ public slots:
     */
     QVariant GetAttribute(const QString &name) const;
 
+    /// Inserts new attribute value to attribute. Note: this is only meant to be used through javascripts.
+    /** @param name Name of the attribute.
+     *  @param value Value of the attribe.
+     *  @param change Change type.
+     *  @todo remove this from dynamic component when possible.
+     */
     void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change);
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
@@ -163,9 +170,14 @@ public slots:
 
 signals:
     /// Emitted when a new attribute is added to this component.
-    /** @param name Name of the attribute.
+    /** @param attr New attribute.
     */
-    void AttributeAdded(const QString &name);
+    void AttributeAdded(IAttribute *attr);
+
+    /// Emitted when attribute is about to be removed.
+    /** @param attr Attribute about to be removed.
+    */
+    void AttributeAboutToBeRemoved(IAttribute *attr);
 
     /// Emitted when attribute is removed from this component.
     /** @param name Name of the attribute.

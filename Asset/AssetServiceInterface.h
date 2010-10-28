@@ -6,14 +6,10 @@
 #include "ServiceInterface.h"
 #include "AssetProviderInterface.h"
 
+#include "AssetFwd.h"
+
 namespace Foundation
-{
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetPtr;
-    
-    class AssetProviderInterface;
-    typedef boost::shared_ptr<AssetProviderInterface> AssetProviderPtr;    
-    
+{    
     //! Asset cache info per assettype
     struct AssetCacheInfo
     {

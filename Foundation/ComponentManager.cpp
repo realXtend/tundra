@@ -117,4 +117,18 @@ namespace Foundation
     {
         return attributeTypes_;
     }
+
+    QStringList ComponentManager::GetAvailableComponentTypeNames() const
+    {
+        QStringList ret;
+
+        ComponentManager::ComponentFactoryMap::const_iterator i = factories_.begin();
+        while(i != factories_.end())
+        {
+            ret.append(i->first);
+            ++i;
+        }
+
+        return ret;
+    }
 }

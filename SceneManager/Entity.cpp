@@ -21,14 +21,16 @@ namespace Scene
 {
     Entity::Entity(Foundation::Framework* framework, SceneManager* scene) :
         framework_(framework),
-        scene_(scene)
+        scene_(scene),
+        temporary_(false)
     {
     }
     
     Entity::Entity(Foundation::Framework* framework, uint id, SceneManager* scene) :
         framework_(framework),
         id_(id),
-        scene_(scene)
+        scene_(scene),
+        temporary_(false)
     {
     }
 
@@ -58,7 +60,9 @@ namespace Scene
 
             component->SetParentEntity(this);
             components_.push_back(component);
-
+            
+            if (change != AttributeChange::Disconnected)
+                emit ComponentAdded(component.get(), change);
             if (scene_)
                 scene_->EmitComponentAdded(this, component.get(), change);
         }
@@ -86,6 +90,8 @@ namespace Scene
                     }
                 }
 
+                if (change != AttributeChange::Disconnected)
+                    emit ComponentRemoved((*iter).get(), change);
                 if (scene_)
                     scene_->EmitComponentRemoved(this, (*iter).get(), change);
 
@@ -219,6 +225,13 @@ namespace Scene
         return ret;
     }
 
+    void Entity::SetName(const QString &name)
+    {
+        ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);
+        EC_Name * ecName = checked_static_cast<EC_Name*>(comp.get());
+        ecName->name.Set(name, AttributeChange::Default);
+    }
+
     QString Entity::GetName() const
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
@@ -226,6 +239,13 @@ namespace Scene
             return name->name.Get();
         else
             return "";
+    }
+
+    void Entity::SetDescription(const QString &desc)
+    {
+        ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);
+        EC_Name * ecName = checked_static_cast<EC_Name*>(comp.get());
+        ecName->description.Set(desc, AttributeChange::Default);
     }
 
     QString Entity::GetDescription() const
@@ -276,6 +296,8 @@ namespace Scene
 
     void Entity::Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type)
     {
+        GetScene()->EmitActionTriggered(this, action, params, type);
+
         EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
@@ -293,8 +315,6 @@ namespace Scene
             else if (params.size() >= 4)
                 act->Trigger(params[0], params[1], params[2], params.mid(3));
         }
-
-        GetScene()->EmitActionTriggered(this, action, params, type);
     }
 
     bool Entity::HasReceivers(EntityAction *action)
@@ -309,5 +329,10 @@ namespace Scene
         }
 
         return true;
+    }
+    
+    void Entity::SetTemporary(bool enable)
+    {
+        temporary_ = enable;
     }
 }

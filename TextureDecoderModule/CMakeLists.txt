@@ -19,11 +19,11 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (OPENJPEG)
-use_modules (Core Foundation Interfaces RexCommon AssetModule)
+use_modules (Core Foundation Interfaces RexCommon AssetModule Asset)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon)
+link_modules (Core Foundation Interfaces RexCommon Asset)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)

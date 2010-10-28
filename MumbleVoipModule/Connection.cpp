@@ -189,6 +189,24 @@ namespace MumbleLib
 
     void Connection::Close()
     {
+        if (state_ == STATE_CONNECTING)
+        {
+            lock_state_.lockForWrite();
+            state_ = STATE_CLOSED;
+            lock_state_.unlock();
+            emit StateChanged(state_);
+            return;
+        }
+
+        if (state_ == STATE_AUTHENTICATING)
+        {
+            lock_state_.lockForWrite();
+            state_ = STATE_CLOSED;
+            lock_state_.unlock();
+            emit StateChanged(state_);
+            return;
+        }
+
         user_update_timer_.stop();
         QMutexLocker raw_udp_tunnel_locker(&mutex_raw_udp_tunnel_);
         lock_state_.lockForWrite();

@@ -293,6 +293,9 @@ private:
     /// Sets the given patch to use the currently set material and textures.
     void UpdateTerrainPatchMaterial(int patchX, int patchY);
 
+    /// Updates the root node transform from the current attribute values, if the root node exists.
+    void UpdateRootNodeTransform();
+
     void ResizeTerrain(int newPatchWidth, int newPatchHeight);
 
     /// Updates the terrain material with the new texture on the given texture unit index.
