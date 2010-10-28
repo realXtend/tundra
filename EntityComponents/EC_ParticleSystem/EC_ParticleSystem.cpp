@@ -35,7 +35,6 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
         event_manager->RegisterEventSubscriber(this, 99);
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
     }
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             this, SLOT(AttributeUpdated(IAttribute*)));
 }
@@ -153,10 +152,6 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
         if(particleSystem_)
             particleSystem_->setRenderingDistance(renderingDistance.Get());
     }
-}
-
-void EC_ParticleSystem::UpdateSignals()
-{
 }
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const

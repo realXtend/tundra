@@ -45,7 +45,7 @@ void JavascriptEngine::Unload()
 void JavascriptEngine::Run()
 {
     QString program = LoadScript();
-    //Before we begin to run the script.
+    //Before we begin to run the script check for syntax errors.
     QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(program);
     if(syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
     {

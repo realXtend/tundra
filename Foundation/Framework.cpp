@@ -756,7 +756,11 @@ namespace Foundation
 
     void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
     {
-        default_scene_ = scene;
+        if(scene != default_scene_)
+        {
+            default_scene_ = scene;
+            emit DefaultWorldSceneChanged(scene);
+        }
     }
 
     const Framework::SceneMap &Framework::GetSceneMap() const

@@ -115,6 +115,14 @@ namespace ECEditor
         /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
         void EntityRemoved(Scene::Entity* entity);
 
+        /// Set editor focus boolean value. Only one ECEditorWindow can have focus and if focus
+        /// is setted to true, this method will iterate all other ECEditorWindow intances and set their focus to false.
+        void SetFocus(bool focus);
+
+        /// Listens when editor's proxy widget gets the focus. If event type was focusInEvent
+        /// then method will call SetFocus method.
+        void FocusChanged(QFocusEvent *e);
+
     signals:
         /// Emitted user wants to edit entity's EC attributes in XML editor.
         void EditEntityXml(Scene::EntityPtr entity);
@@ -138,6 +146,10 @@ namespace ECEditor
         void changeEvent(QEvent *change_event);
 
     private slots:
+        /// Listens SceneManager's ActionTriggered signal and if action was "MousePress"
+        /// add entity to editor window (assuming that editor has a focus).
+        void ActionTriggered(Scene::Entity *entity, const QString &action);
+
         /// Deletes entity.
         void DeleteEntity();
 
@@ -150,9 +162,9 @@ namespace ECEditor
         /// Highlights all entities from the entities_list that own a isntace of given component.
         void HighlightEntities(IComponent *component);
 
-        /// Listenes when new entities are added to the world scene.
-        /// @todo Remove this when possible.
-        void SceneAdded(const QString &name);
+        /// Listenes when default world scene has changed and clear the editor window.
+        /// @param scene new default world scene.
+        void DefaultSceneChanged(const Scene::ScenePtr &scene);
 
         //When user have pressed ok or cancel button in component dialog this mehtod is called.
         void ComponentDialogFinished(int result);
@@ -174,6 +186,7 @@ namespace ECEditor
         QListWidget* entity_list_;
         ECBrowser *browser_;
         AddComponentDialog *component_dialog_;
+        bool has_focus_;
     };
 }
 

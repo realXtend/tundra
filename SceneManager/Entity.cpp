@@ -296,6 +296,8 @@ namespace Scene
 
     void Entity::Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type)
     {
+        GetScene()->EmitActionTriggered(this, action, params, type);
+
         EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
@@ -313,8 +315,6 @@ namespace Scene
             else if (params.size() >= 4)
                 act->Trigger(params[0], params[1], params[2], params.mid(3));
         }
-
-        GetScene()->EmitActionTriggered(this, action, params, type);
     }
 
     bool Entity::HasReceivers(EntityAction *action)

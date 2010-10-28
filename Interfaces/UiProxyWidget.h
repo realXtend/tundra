@@ -62,6 +62,8 @@ public slots:
     void AnimatedHide();
 
 signals:
+    void FocusChanged(QFocusEvent *event);
+
     /// Emitted when the proxy is closed/hidden.
     void Closed();
 

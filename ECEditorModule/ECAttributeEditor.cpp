@@ -387,7 +387,7 @@ namespace ECEditor
             {
                 ComponentPtr comp = components_[0].lock();
                 IAttribute *attribute = FindAttribute(comp);
-                if(attribute)
+                if(!attribute)
                 {
                     //! @todo add log error
                     return;

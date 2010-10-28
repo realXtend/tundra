@@ -28,9 +28,9 @@ EC_Sound::EC_Sound(IModule *module):
     static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain.SetMetadata(&metaData);
 
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            this, SLOT(AttributeUpdated(IAttribute*)));
+            SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_Sound::~EC_Sound()
@@ -63,6 +63,17 @@ void EC_Sound::RegisterActions()
     {
         entity->ConnectAction("PlaySound", this, SLOT(PlaySound()));
         entity->ConnectAction("StopSound", this, SLOT(StopSound()));
+    }
+}
+
+void EC_Sound::PositionChange(const QVector3D &pos)
+{
+    EC_Placeable *placeable = qobject_cast<EC_Placeable*>(sender());
+    ISoundService *soundService = framework_->Audio();
+    if(soundService && placeable && sound_id_)
+    {
+        Vector3df position(pos.x(), pos.y(), pos.z());
+        soundService->SetPosition(sound_id_, position);
     }
 }
 
@@ -147,5 +158,8 @@ ComponentPtr EC_Sound::FindPlaceable() const
         return comp;
     }
     comp = GetParentEntity()->GetComponent<EC_Placeable>();
+    //We need to update sound source position when placeable component has changed it's transformation.
+    connect(comp.get(), SIGNAL(PositionChanged(const QVector3D &)),
+            SLOT(PositionChange(const QVector3D &)), Qt::UniqueConnection);
     return comp;
 }
