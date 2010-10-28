@@ -163,10 +163,22 @@ public slots:
     /// @param y In the range [0, EC_Terrain::PatchHeight * EC_Terrain::cPatchSize [.
     float GetPoint(int x, int y) const;
 
-    /// Sets a new height value to the given terrain map vertex. Marks the patch that vertex is part of dirty,
-    /// but does not immediately recreate the GPU surfaces. Use the RegenerateDirtyTerrainPatches() function
-    /// to regenerate the visible Ogre mesh geometry.
-    void SetPointHeight(int x, int y, float height);
+    /// Sets a new height value to the given terrain map vertex. Marks the patch that vertex is part of dirty,   
+    /// but does not immediately recreate the GPU surfaces. Use the RegenerateDirtyTerrainPatches() function    
+    /// to regenerate the visible Ogre mesh geometry.    
+    void SetPointHeight(int x, int y, float height);   
+    
+    /// Returns the corresponding terrain point in world coordinate system for given param.    
+    /// @param point is 3d point in world coordinate system.    
+    Vector3df GetPointOnMap(const Vector3df& point) const;    
+    
+    /// Returns the distance from terrain cprresponding terrain point.     
+    /// @param point is 3d point in world coordinate system.    
+    float GetDistanceToTerrain(const Vector3df& point) const;    
+    
+    /// Returns true if given param point is on map.     
+    /// @param point is 3d point in world coordinate system.   
+    bool IsOnTopOfMap(const Vector3df& point) const;    
 
     /// Returns the interpolated height value of the terrain at the given fractional coordinate.
     /// @param x In the range [0, EC_Terrain::PatchWidth * EC_Terrain::cPatchSize-1.0f ].

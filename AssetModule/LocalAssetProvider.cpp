@@ -96,8 +96,8 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
             filestr.close();
     }
     
-    //AssetModule::LogInfo("Failed to load local asset " + asset_id.substr(7));
-    return false;
+    AssetModule::LogInfo("Failed to load local asset " + asset_id.substr(7));
+    return true;
 }
 
 bool LocalAssetProvider::InProgress(const std::string& asset_id)

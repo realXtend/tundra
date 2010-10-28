@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "OgreSkeletonResource.h"
 #include "OgreRenderingModule.h"
+#include "OgreConversionUtils.h"
 
 #include <Ogre.h>
 
@@ -42,7 +43,7 @@ namespace OgreRenderer
             if (ogre_skeleton_.isNull())
             {
                 ogre_skeleton_ = Ogre::SkeletonManager::getSingleton().create(
-                    id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                    SanitateAssetIdForOgre(id_), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
                 if (ogre_skeleton_.isNull())
                 {

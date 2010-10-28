@@ -18,6 +18,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 #include <OgreQuaternion.h>
 #include <OgreColourValue.h>
 #include <OgreMath.h>
+#include <OgreConversionUtils.h>
 // NaN - check
 #include <RexNetworkUtils.h>
 
@@ -112,6 +113,7 @@ namespace Environment
         }
     }
 
+
     void EC_WaterPlane::SetParent()
     {
         // Parent entity has set.
@@ -184,6 +186,56 @@ namespace Environment
         }
     }
 
+    
+    float EC_WaterPlane::GetDistanceToWaterPlane(const Vector3df& point) const
+    {
+         if ( node_ == 0)
+            return 0;
+
+        Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
+        float depth = depthAttr.Get();
+        float length = fabs(local.z);
+
+        if ( local.z >= 0 )
+        {
+           //On top of plane
+            return length;
+            
+        }
+        else if ( length < depth)
+        {
+            return -length;
+        }
+        else
+        {
+            return length;
+        }
+     
+
+    }
+
+    bool EC_WaterPlane::IsTopOrBelowWaterPlane(const Vector3df& point) const
+    {
+         if ( node_ == 0)
+            return false;
+         
+        Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
+     
+        int xSize = xSizeAttr.Get(), ySize = ySizeAttr.Get();
+        Ogre::Vector3 pos = node_->getPosition();
+
+        float xMax = pos.x + xSize*0.5;
+        float yMax = pos.y + ySize*0.5;
+        float xMin = pos.x - xSize*0.5;
+        float yMin = pos.y - ySize*0.5;
+
+        if ( local.x > xMin && local.x < xMax && local.y > yMin && local.y < yMax)
+            return true;
+
+        return false;
+        
+
+    }
 
     bool EC_WaterPlane::IsUnderWater()
     {
@@ -195,7 +247,18 @@ namespace Environment
 
       Ogre::Camera *camera = renderer_.lock()->GetCurrentCamera();
       Ogre::Vector3 posCamera = camera->getDerivedPosition();
-      
+        
+      if ( IsTopOrBelowWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z)))
+      {
+            float d = GetDistanceToWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z));
+            if ( d < 0 )
+                return true;
+
+      }
+
+      return false;
+
+      /*
       Ogre::Vector3 pos;
     
       if (node_ != 0)
@@ -232,6 +295,7 @@ namespace Environment
          }
       
          return false;
+         */
     }
     
     void EC_WaterPlane::CreateWaterPlane()

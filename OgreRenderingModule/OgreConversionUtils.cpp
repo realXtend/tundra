@@ -3,7 +3,7 @@
 /// Contains some common methods for conversions between Ogre and Core variable types.
 
 #include "StableHeaders.h"
-
+#include "CoreStringUtils.h"
 #include "OgreConversionUtils.h"
 
 namespace OgreRenderer
@@ -36,6 +36,14 @@ Ogre::Vector3 ToOgreVector3(const Vector3df &vector)
 Ogre::Quaternion ToOgreQuaternion(const Quaternion &quat)
 {
     return Ogre::Quaternion(quat.w, quat.x, quat.y, quat.z);
+}
+
+std::string SanitateAssetIdForOgre(const std::string& input)
+{
+    std::string ret = input;
+    ReplaceCharInplace(ret, ':', '_');
+    ReplaceCharInplace(ret, '/', '_');
+    return ret;
 }
 
 }
