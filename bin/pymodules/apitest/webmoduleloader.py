@@ -3,6 +3,8 @@ import circuits
 import imp
 import urllib
 
+TRUSTEDBASEURL = "http://localhost:8000/"
+
 def loadwebmodule(srcurl):
     filepath = urllib.urlretrieve(srcurl)[0]
     f = open(filepath)
