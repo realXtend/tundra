@@ -65,10 +65,9 @@ NaaliUi::NaaliUi(Foundation::Framework *owner_)
     mainWindow->setAutoFillBackground(false);
 //    mainWindow->setUpdatesEnabled(false);
 
-    // Apply the Naali main window icon. \todo Load a real icon from file.
-    QPixmap pm(16,16);
-    pm.fill(Qt::transparent);
-    mainWindow->setWindowIcon(QIcon(pm));
+    // Apply the Naali main window icon. \todo use .ico file type
+    QIcon icon("./data/ui/images/naali_icon.png");
+    mainWindow->setWindowIcon(icon);
 
     graphicsView = new NaaliGraphicsView(mainWindow);
 
