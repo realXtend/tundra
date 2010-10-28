@@ -31,11 +31,14 @@ namespace CommUI
     class VoiceUserWidget;
     class VoiceUsersInfoWidget;
 
+    /**
+     * Voice tranmission controller logic
+     * - Determinated if the receiving and sending audio data is disabled or enabled according current state
+     *
+     */
     class VoiceController : public QObject
     {
         Q_OBJECT
-//        Q_PROPERTY(TransmissionMode transmissionMode READ GetTransmissionMode WRITE SetTransmissionMode)
-
     public:
         enum State { Disabled, Connecting, Connected, ConnectionLost };
         enum TransmissionMode { Mute, ContinuousTransmission, PushToTalk, ToggleMode, VoiceActivity };
@@ -49,7 +52,7 @@ namespace CommUI
         virtual void SetPushToTalkOff();
         virtual void Toggle();
         virtual Communications::InWorldVoice::SessionInterface* GetSession() { return in_world_voice_session_; }
-//        virtual TransmissionMode GetTransmissionMode();
+        virtual TransmissionMode GetTransmissionMode() { return transmission_mode_; };
 
     signals:
         void TransmittingAudioStarted();
