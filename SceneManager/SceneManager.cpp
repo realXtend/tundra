@@ -153,6 +153,7 @@ namespace Scene
             ++it;
         }
         entities_.clear();
+        emit SceneCleared();
     }
     
     EntityList SceneManager::GetEntitiesWithComponent(const QString &type_name) const
@@ -314,7 +315,7 @@ namespace Scene
         while(it != entities_.end())
         {
             Scene::Entity *entity = it->second.get();
-            if (entity)
+            if ((entity) && (!entity->IsTemporary()))
             {
                 QDomElement entity_elem = scene_doc.createElement("entity");
                 
@@ -324,7 +325,7 @@ namespace Scene
 
                 const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
                 for(uint i = 0; i < components.size(); ++i)
-                    if (components[i]->IsSerializable())
+                    if ((components[i]->IsSerializable()) && (!components[i]->IsTemporary()))
                         components[i]->SerializeTo(scene_doc, entity_elem);
 
                 scene_elem.appendChild(entity_elem);

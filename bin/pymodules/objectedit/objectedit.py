@@ -236,18 +236,20 @@ class ObjectEdit(Component):
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.Id == ent.Id:
                 self.sels.remove(_ent)
-            
+                self.worldstream.SendObjectDeselectPacket(ent.Id)
+
     def deselect_all(self):
         if len(self.sels) > 0:
-            #XXX might need something here?!
-            
             for ent in self.sels:
                 self.remove_highlight(ent)
                 self.removeSoundRuler(ent)
+                try:
+                    self.worldstream.SendObjectDeselectPacket(ent.Id)
+                except ValueError:
+                    r.logInfo("objectedit.deselect_all: entity doesn't exist anymore")
             self.sels = []
-            #self.hideSelector()
-            
-            self.hideManipulator() #manipulator
+           
+            self.hideManipulator()
 
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0
@@ -271,7 +273,10 @@ class ObjectEdit(Component):
         try:
             h = ent.highlight
         except AttributeError:
-            r.logInfo("objectedit.remove_highlight called for a non-hilited entity: %d" % ent.Id)
+            try:
+                r.logInfo("objectedit.remove_highlight called for a non-hilighted entity: %d" % ent.Id)
+            except ValueError:
+                r.logInfo("objectedit.remove_highlight called, but entity already removed")
         else:
             ent.RemoveComponentRaw(h)
 
@@ -290,13 +295,16 @@ class ObjectEdit(Component):
             sr.UpdateSoundRuler()
 
     def removeSoundRuler(self, ent):
-        if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
-            try:
-                sr = ent.soundruler
-            except AttributeError:
-                r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.Id)
-            else:
-                ent.RemoveComponentRaw(sr)
+        try:
+            if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
+                try:
+                    sr = ent.soundruler
+                except AttributeError:
+                    r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.Id)
+                else:
+                    ent.RemoveComponentRaw(sr)
+        except AttributeError:
+            r.logInfo("objectedit.removeSoundRuler: entity already removed. Prim doesn't exist anymore")
 
     def changeManipulator(self, id):
         newmanipu = self.manipulators[id]
@@ -708,6 +716,7 @@ class ObjectEdit(Component):
             self.deselect_all()
  
     def on_activate_editing(self, activate):
+        r.logDebug("on_active_editing")
         # Restore stored state when exiting build mode
         if activate == False and self.windowActiveStoredState != None:
             self.windowActive = self.windowActiveStoredState

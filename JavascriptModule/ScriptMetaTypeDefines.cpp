@@ -15,7 +15,9 @@
 #include "UiProxyWidget.h"
 #include "Frame.h"
 #include "Console.h"
+#include "SceneManager.h"
 #include "ISoundService.h"
+#include "InputContext.h"
 
 #include "EntityAction.h"
 
@@ -31,12 +33,14 @@ Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
 //! Naali input defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
+Q_DECLARE_METATYPE(InputContext*)
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
+Q_DECLARE_METATYPE(Scene::SceneManager*);
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(AttributeChange*);
@@ -62,6 +66,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     // Input metatypes.
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
+    qScriptRegisterQObjectMetaType<InputContext*>(engine);
     qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
     qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");

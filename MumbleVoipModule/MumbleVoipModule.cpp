@@ -18,6 +18,7 @@
 #include "MumbleLibrary.h"
 #include "SettingsWidget.h"
 #include "UiServiceInterface.h"
+#include "EC_VoiceChannel.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -53,6 +54,7 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Load()
     {
+        DECLARE_MODULE_EC(EC_VoiceChannel);
         if (use_native_mumble_client_)
         {
             server_info_provider_ = new ServerInfoProvider(framework_);

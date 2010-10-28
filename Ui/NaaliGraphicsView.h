@@ -4,6 +4,9 @@
 #define incl_Core_NaaliGraphicsView_h
 
 #include <QGraphicsView>
+#include <QDropEvent>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
 
 #include "NaaliUiFwd.h"
 #include "UiApi.h"
@@ -32,7 +35,10 @@ public:
 
 signals:
     /// Emitted when this widget has been resized to a new size.
-    void WindowResized(int newWidth, int newHeight);
+    void WindowResized(int newWidth, int newHeight);    
+    void DropEvent(QDropEvent *e);
+    void DragEnterEvent(QDragEnterEvent *e);
+    void DragMoveEvent(QDragMoveEvent *e);
 
 public slots:
     /// Sets a new size for this widget. Will emit the WindowResized signal.
@@ -50,6 +56,9 @@ private:
     bool event(QEvent *event);
     /// 
     void resizeEvent(QResizeEvent *e);
+    void dropEvent (QDropEvent * event); 
+    void dragEnterEvent (QDragEnterEvent * event);
+    void dragMoveEvent (QDragMoveEvent * event);
 
 private slots:
     void HandleSceneChanged(const QList<QRectF> &rectangles);

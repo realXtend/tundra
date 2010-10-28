@@ -166,6 +166,7 @@ void UiProxyWidget::focusInEvent(QFocusEvent *e)
     if (windowFlags() != Qt::Widget)
         if (isVisible() && animations_->state() != QAbstractAnimation::Running)
             setOpacity(1.0);
+    emit FocusChanged(e);
 }
 
 void UiProxyWidget::focusOutEvent(QFocusEvent *e)
@@ -174,6 +175,7 @@ void UiProxyWidget::focusOutEvent(QFocusEvent *e)
 
     if (windowFlags() != Qt::Widget)
         setOpacity(unfocus_opacity_);
+    emit FocusChanged(e);
 }
 
 QVariant UiProxyWidget::itemChange(GraphicsItemChange change, const QVariant &value)

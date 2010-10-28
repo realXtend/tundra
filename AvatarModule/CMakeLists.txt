@@ -36,7 +36,7 @@ use_package (OGRE)
 use_package (CURL)    # NEEDED BY ProtocolUtilities
 use_package (XMLRPC)  # NEEDED BY ProtocolUtilities
 use_modules (AvatarModule Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
-			 AssetModule OgreRenderingModule Input)
+			 AssetModule OgreRenderingModule Input Asset)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -48,7 +48,7 @@ link_ogre()
 link_package (CURL)   # NEEDED BY ProtocolUtilities
 link_package (XMLRPC) # NEEDED BY ProtocolUtilities
 link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
-			  AssetModule OgreRenderingModule Input)
+			  AssetModule OgreRenderingModule Input Asset)
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
 LinkEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)

@@ -40,9 +40,6 @@ namespace CoreUi
         return tool_widget_;
     }
 
-
-
-
     ToolManagerWidget::ToolManagerWidget() 
     {
         setupUi(this);

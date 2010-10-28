@@ -13,6 +13,12 @@
 #include "ResourceInterface.h"
 #include "TextureServiceInterface.h"
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("TexturePreviewEditor")
+
+#include <Renderer.h>
+#include <NaaliRenderWindow.h>
+
 #include <QUiLoader>
 #include <QFile>
 #include <QPushButton>
@@ -263,6 +269,55 @@ void TexturePreviewEditor::Initialize()
     QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
     proxy->show();
     ui->BringWidgetToFront(proxy);
+}
+
+void TexturePreviewEditor::OpenOgreTexture(const QString& name)
+{
+
+    if ( name.contains(".dds") )
+    {
+        LogWarning("currently cannot show .dds files. ");
+        // Set black background image that will be replaced once the real image has been received.
+        QImage emptyImage = QImage(QSize(256, 256), QImage::Format_ARGB32);
+        emptyImage.fill(qRgba(0,0,0,0));
+        if ( imageLabel_ != 0)
+            imageLabel_->setPixmap(QPixmap::fromImage(emptyImage));
+        
+        return;
+    }
+
+
+     
+    Ogre::ResourcePtr res = Ogre::TextureManager::getSingleton().getByName(name.toStdString().c_str());
+    Ogre::Texture* tex = static_cast<Ogre::Texture* >(res.get());
+
+    int width = tex->getWidth();
+    int height = tex->getHeight();
+    Ogre::Box bounds(0, 0, width, height);
+    Ogre::uchar* pixelData = new Ogre::uchar[width * height * 4];
+    Ogre::PixelBox pixels(bounds, Ogre::PF_A8R8G8B8, pixelData);
+    tex->getBuffer()->blitToMemory(pixels);
+    
+    // Create image of texture, and show it into label.
+
+    u8* p = static_cast<u8 *>(pixels.data);
+    int widthPixels = pixels.getWidth();
+    int heightPixels= pixels.getHeight();
+    
+    QImage img = ConvertToQImage(p, widthPixels, heightPixels, 4);
+
+    if(!img.isNull() && imageLabel_ != 0)
+    {
+        imageLabel_->setPixmap(QPixmap::fromImage(img));
+        imageLabel_->show();
+    }
+
+  
+
+    delete[] pixelData;
+    
+    
+
 }
 
 void TexturePreviewEditor::UseTextureOriginalSize(bool use)

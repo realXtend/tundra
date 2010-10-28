@@ -20,7 +20,8 @@ IComponent::IComponent(Foundation::Framework* framework) :
     parent_entity_(0),
     framework_(framework),
     network_sync_(true),
-    updatemode_(AttributeChange::Replicate)
+    updatemode_(AttributeChange::Replicate),
+    temporary_(false)
 {
 }
 
@@ -28,7 +29,8 @@ IComponent::IComponent(const IComponent &rhs) :
     framework_(rhs.framework_),
     parent_entity_(rhs.parent_entity_),
     network_sync_(rhs.network_sync_),
-    updatemode_(rhs.updatemode_)
+    updatemode_(rhs.updatemode_),
+    temporary_(false)
 {
 }
 
@@ -66,6 +68,18 @@ void IComponent::SetParentEntity(Scene::Entity* entity)
         emit ParentEntityDetached();
 }
 
+ComponentPtr IComponent::GetSharedPtr()
+{
+    if(parent_entity_)
+    {
+        std::vector<ComponentPtr> components = parent_entity_->GetComponentVector();
+        for(uint i = 0; i < components.size(); i++)
+            if(components[i].get() == this)
+                return components[i];
+    }
+    return ComponentPtr();
+}
+
 Scene::Entity* IComponent::GetParentEntity() const
 {
     return parent_entity_;
@@ -90,6 +104,8 @@ QDomElement IComponent::BeginSerialization(QDomDocument& doc, QDomElement& base_
     comp_element.setAttribute("type", TypeName());
     if (!name_.isEmpty())
         comp_element.setAttribute("name", name_);
+    // Components with no network sync are never network-serialized. However we might be serializing to a file
+    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(network_sync_)));
     
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
@@ -122,6 +138,7 @@ bool IComponent::BeginDeserialization(QDomElement& comp_element)
     if (type == TypeName())
     {
         SetName(comp_element.attribute("name"));
+        SetNetworkSyncEnabled(ParseString<bool>(comp_element.attribute("sync").toStdString(), true));
         return true;
     }
     return false;
@@ -223,4 +240,16 @@ void IComponent::ComponentChanged(AttributeChange::Type change)
     
     //! \todo: this is deprecated and will be removed in the future. Do not rely on OnChanged() signal.
     OnChanged();
+}
+
+void IComponent::SetTemporary(bool enable)
+{
+    temporary_ = enable;
+}
+
+bool IComponent::IsTemporary() const
+{
+    if ((parent_entity_) && (parent_entity_->IsTemporary()))
+        return true;
+    return temporary_;
 }

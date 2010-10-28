@@ -29,6 +29,7 @@ namespace Console
         ui_view_(ui_view),
         console_ui_(new Ui::ConsoleWidget()),
         console_widget_(new QWidget()),
+        proxy_widget_(0),
         visible_(false),
         opacity_(0.8),
         hooked_to_scenes_(false)
@@ -97,6 +98,12 @@ namespace Console
         {
             proxy_widget_->hide();
         }
+    }
+
+    void UiConsoleManager::KeyPressed(KeyEvent *key_event)
+    {
+        if (key_event->keyCode == Qt::Key_F1)
+            ToggleConsole();
     }
 
     void UiConsoleManager::ToggleConsole()

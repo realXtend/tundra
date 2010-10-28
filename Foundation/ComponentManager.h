@@ -76,6 +76,9 @@ namespace Foundation
         //! Get all component factories
         const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
 
+        //! Returns string list of available component type names.
+        QStringList GetAvailableComponentTypeNames() const;
+
     private:
         //! Map of component factories
         ComponentFactoryMap factories_;

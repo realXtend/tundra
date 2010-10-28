@@ -453,6 +453,12 @@ void WorldStream::SendObjectSelectPacket(std::vector<entity_id_t> object_id_list
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendObjectDeselectPacket(const unsigned long ent_id)
+{
+    entity_id_t object_id = ent_id;
+    SendObjectDeselectPacket(object_id);
+}
+
 void WorldStream::SendObjectDeselectPacket(entity_id_t object_id)
 {
     if (!connected_)
@@ -612,13 +618,6 @@ void WorldStream::SendMultipleObjectUpdatePacket(const std::vector<MultiObjectUp
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendObjectNamePacket(const ObjectNameInfo& name_info)
-{
-    std::vector<ObjectNameInfo> vector;
-    vector.push_back(name_info);
-    SendObjectNamePacket(vector);
-}
-
 void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list)
 {
     if (!connected_)
@@ -643,6 +642,13 @@ void WorldStream::SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_i
     }
 
     FinishMessageBuilding(m);
+}
+
+void WorldStream::SendObjectNamePacket(const ObjectNameInfo& name_info)
+{
+    std::vector<ObjectNameInfo> vector;
+    vector.push_back(name_info);
+    SendObjectNamePacket(vector);
 }
 
 void WorldStream::SendObjectGrabPacket(entity_id_t object_id)

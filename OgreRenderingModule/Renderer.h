@@ -68,13 +68,6 @@ namespace OgreRenderer
         //! Do a frustum query to the world from viewport coordinates.
         virtual QVariantList FrustumQuery(QRect &viewrect);
 
-        //! Hides world view
-        //also added for the webserver plugin
-//        void HideCurrentWorldView(); 
-
-        //! Shows world view
-//        void ShowCurrentWorldView();
-
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
 
@@ -220,13 +213,6 @@ namespace OgreRenderer
         //! returns the composition handler responsible of the post-processing effects
         CompositionHandler *GetCompositionHandler() const { return c_handler_; }
 
-        //! Returns the main window.
-//        Foundation::MainWindow *GetMainWindow() const { return main_window_; }
-
-        /// Returns the backbuffer image that contains the UI layer of the application screen.
-        /// Used to perform alpha-keying based input.
-//        QImage &GetBackBuffer() { return backBuffer; }
-
         //! Returns shadow quality
         ShadowQuality GetShadowQuality() const { return shadowquality_; }
 
@@ -260,10 +246,11 @@ namespace OgreRenderer
 
         QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
 
-    private:
-        //! Initialises Qt
-        void InitializeQt();
+        //! Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
+        void DoFullUIRedraw();
 
+    private:
+        
         //! Initialises the events related info for this module
         void InitializeEvents();
 
