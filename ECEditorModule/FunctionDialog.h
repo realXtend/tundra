@@ -17,6 +17,7 @@
 
 class QGridLayout;
 class QLabel;
+class QWebView;
 
 class IArgumentType;
 
@@ -138,6 +139,9 @@ private:
 
     /// Label for showing return values of slots.
     QLabel *returnValueLabel;
+
+    /// Web view for doxygen documentation.
+    QWebView *doxygenView;
 
     /// List of objects.
     QList<boost::weak_ptr<QObject> > objects;
