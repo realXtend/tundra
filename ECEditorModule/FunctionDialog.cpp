@@ -75,9 +75,10 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     connect(functionComboBox, SIGNAL(currentIndexChanged(int)), SLOT(UpdateEditors()));
 
     doxygenView = new QWebView;
-//    doxygenView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-//    doxygenView->setMaximumSize(1000, 300);
-//    doxygenView->hide();
+    doxygenView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    doxygenView->setMinimumSize(300, 50);
+    doxygenView->setMaximumSize(600, 200);
+    doxygenView->hide();
 
     mainLayout->addWidget(targetsLabel);
     mainLayout->addWidget(doxygenView);
@@ -316,11 +317,7 @@ void FunctionDialog::UpdateEditors()
     if (documentation.length() != 0)
     {
         doxygenView->setHtml(documentation, styleSheetPath);
-        //doxygenView->show();
-        doxygenView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        doxygenView->setMinimumSize(300, 50);
-        doxygenView->setMaximumSize(700, 300);
-        //resize(width(), 600);
+        doxygenView->show();
     }
     else
     {
