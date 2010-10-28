@@ -28,6 +28,8 @@
 //! Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
+Q_SCRIPT_DECLARE_QMETAOBJECT(QTimer, QObject*);
+
 
 ///\todo Remove these two and move to Input API once NaaliCore is merged.
 //! Naali input defines
@@ -61,6 +63,8 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("QPushButton", object);
     object = engine->scriptValueFromQMetaObject<QWidget>();
     engine->globalObject().setProperty("QWidget", object);
+    object = engine->scriptValueFromQMetaObject<QTimer>();
+    engine->globalObject().setProperty("QTimer", object);
 }
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
