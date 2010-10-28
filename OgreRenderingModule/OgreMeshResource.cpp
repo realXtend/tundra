@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "OgreMeshResource.h"
 #include "OgreRenderingModule.h"
+#include "OgreConversionUtils.h"
 #include "Profiler.h"
 
 #include <Ogre.h>
@@ -44,7 +45,7 @@ namespace OgreRenderer
             if (ogre_mesh_.isNull())
             {   
                 ogre_mesh_ = Ogre::MeshManager::getSingleton().createManual(
-                    id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                    SanitateAssetIdForOgre(id_), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 if (ogre_mesh_.isNull())
                 {
                     OgreRenderingModule::LogError("Failed to create mesh " + id_);

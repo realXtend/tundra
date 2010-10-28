@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "OgreTextureResource.h"
 #include "OgreRenderingModule.h"
+#include "OgreConversionUtils.h"
 
 #include <Ogre.h>
 
@@ -59,7 +60,7 @@ namespace OgreRenderer
             image.load(stream);
             if (texturequality_ == Texture_Low)
                 image.resize(image.getWidth() / 2, image.getHeight() / 2);
-            ogre_texture_ = Ogre::TextureManager::getSingleton().loadImage(id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+            ogre_texture_ = Ogre::TextureManager::getSingleton().loadImage(SanitateAssetIdForOgre(id_), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
             
         }
         catch (Ogre::Exception &e)
@@ -123,7 +124,7 @@ namespace OgreRenderer
             if (ogre_texture_.isNull())
             {   
                 ogre_texture_ = Ogre::TextureManager::getSingleton().createManual(
-                    id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+                    SanitateAssetIdForOgre(id_), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
                     source->GetWidth(), source->GetHeight(), Ogre::MIP_DEFAULT, pixel_format, Ogre::TU_DEFAULT); 
 
                 if (ogre_texture_.isNull())

@@ -87,10 +87,6 @@ namespace OgreRenderer
     
     //! Deletes a material. Note: the material pointer passed in will be set to null
     void OGRE_MODULE_API RemoveMaterial(Ogre::MaterialPtr& material);
-
-    /// Clones a new Ogre material that renders using the given ambient color. 
-    /// This function will be removed or refactored later on, once proper material system is present. -jj.
-    void OGRE_MODULE_API DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b);
 }
 
 #endif
