@@ -9,6 +9,7 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "RexTypes.h"
+#include "OgreConversionUtils.h"
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreSkeletonResource.h"
@@ -290,7 +291,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         return false;
     RendererPtr renderer = renderer_.lock();
 
-    Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeleton_name);
+    Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(SanitateAssetIdForOgre(skeleton_name));
     if (skel.isNull())
     {
         OgreRenderingModule::LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": not found");
@@ -554,7 +555,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
     
     try
     {
-        entity_->getSubEntity(index)->setMaterialName(material_name);
+        entity_->getSubEntity(index)->setMaterialName(SanitateAssetIdForOgre(material_name));
     }
     catch (Ogre::Exception& e)
     {
@@ -592,7 +593,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
     
     try
     {
-        attachment_entities_[index]->getSubEntity(submesh_index)->setMaterialName(material_name);
+        attachment_entities_[index]->getSubEntity(submesh_index)->setMaterialName(SanitateAssetIdForOgre(material_name));
     }
     catch (Ogre::Exception& e)
     {
@@ -749,7 +750,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
     RendererPtr renderer = renderer_.lock();   
         
     Ogre::MeshManager& mesh_mgr = Ogre::MeshManager::getSingleton();
-    Ogre::MeshPtr mesh = mesh_mgr.getByName(mesh_name);
+    Ogre::MeshPtr mesh = mesh_mgr.getByName(SanitateAssetIdForOgre(mesh_name));
     
     // For local meshes, mesh will not get automatically loaded until used in an entity. Load now if necessary
     if (mesh.isNull())

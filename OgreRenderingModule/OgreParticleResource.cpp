@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "OgreConversionUtils.h"
 #include "OgreMaterialResource.h"
 #include "OgreParticleResource.h"
 #include "OgreTextureResource.h"
@@ -89,7 +90,7 @@ namespace OgreRenderer
                         // If not a brace and on level 0, it should be a new particlesystem; replace name with resource ID + ordinal
                         if (brace_level == 0)
                         {
-                            line = id_ + "_" + ToString<size_t>(new_templates.size());
+                            line = SanitateAssetIdForOgre(id_) + "_" + ToString<size_t>(new_templates.size());
                             new_templates.push_back(line);
                             // New script compilers need this
                             line = "particle_system " + line;
@@ -115,10 +116,10 @@ namespace OgreRenderer
                                 {
                                     std::string mat_name = line_vec[1];
                                     // Material script mode
-                                    if ((line_vec.size() >= 3) && (line_vec[2].substr(0,6) == "script"))
+                                    if ((line_vec.size() >= 3) && ((line_vec[2].substr(0,6) == "script") || (line_vec[2].substr(0,3) == "mat")))
                                     {
                                         references_.push_back(Foundation::ResourceReference(mat_name, OgreMaterialResource::GetTypeStatic()));
-                                        line = "material " + mat_name;
+                                        line = "material " + SanitateAssetIdForOgre(mat_name);
                                     }
                                     // Texture mode
                                     else 
@@ -131,7 +132,7 @@ namespace OgreRenderer
                                             variation = "";
                                             
                                         references_.push_back(Foundation::ResourceReference(mat_name, OgreTextureResource::GetTypeStatic()));
-                                        line = "material " + mat_name + variation;
+                                        line = "material " + SanitateAssetIdForOgre(mat_name);
                                         
                                         // Create the legacy material we expect in advance
                                         GetOrCreateLegacyMaterial(mat_name, variation);

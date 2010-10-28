@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
+#include "OgreConversionUtils.h"
 #include "Renderer.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
@@ -75,7 +76,7 @@ bool EC_OgreParticleSystem::AddParticleSystem(const std::string& system_name)
         }
         
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), system_name);
+        Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), SanitateAssetIdForOgre(system_name));
         if (system)
         {
             adjustment_node_->attachObject(system);
