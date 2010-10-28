@@ -767,11 +767,11 @@ void SceneTreeWidget::OpenEntityActionDialog()
     }
 
     EntityActionDialog *d = new EntityActionDialog(entities, this);
-    connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogClosed(int)));
+    connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogFinished(int)));
     d->show();
 }
 
-void SceneTreeWidget::EntityActionDialogClosed(int result)
+void SceneTreeWidget::EntityActionDialogFinished(int result)
 {
     EntityActionDialog *dialog = qobject_cast<EntityActionDialog *>(sender());
     if (!dialog)
@@ -813,11 +813,11 @@ void SceneTreeWidget::OpenFunctionDialog()
         }
 
     FunctionDialog *d = new FunctionDialog(objs, this);
-    connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogClosed(int)));
+    connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
     d->show();
 }
 
-void SceneTreeWidget::FunctionDialogClosed(int result)
+void SceneTreeWidget::FunctionDialogFinished(int result)
 {
     FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
     if (!dialog)
@@ -853,6 +853,8 @@ void SceneTreeWidget::FunctionDialogClosed(int result)
             {
                 QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
                     args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+
+                dialog->SetReturnValueText("");
             }
             else
             {
@@ -860,7 +862,10 @@ void SceneTreeWidget::FunctionDialogClosed(int result)
                     retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
 
                 retValArg->SetValue(retArg.data());
+
                 LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
+
+                dialog->SetReturnValueText(retValArg->ToString());
             }
         }
 }
