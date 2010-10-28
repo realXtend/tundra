@@ -147,6 +147,11 @@ namespace ECEditor
         event->ignore();
     }
 
+    void ECBrowser::focusInEvent(QFocusEvent *event)
+    {
+        QtTreePropertyBrowser::focusInEvent(event);
+    }
+
     bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action)
     {
         if (action == Qt::IgnoreAction)

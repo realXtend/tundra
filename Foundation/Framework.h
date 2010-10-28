@@ -298,6 +298,11 @@ namespace Foundation
         */
         void SceneRemoved(const QString &name);
 
+        /// Emmitted when default world scene changes.
+        /** @param scene new default world scene object.
+        */
+        void DefaultWorldSceneChanged(const Scene::ScenePtr &scene);
+
     public slots:
         //! Signal the framework to exit
         void Exit();

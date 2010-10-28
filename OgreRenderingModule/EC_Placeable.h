@@ -187,6 +187,16 @@ public slots:
     //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
     void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
 
+signals:
+    //! emmitted when position has changed.
+    void PositionChanged(const QVector3D &pos);
+
+    //! emmitted when rotation has changed.
+    void OrientationChanged(const QQuaternion &rot);
+
+    //! emmitted when scale has changed.
+    void ScaleChanged(const QVector3D &scale);
+
 private slots:
     //! Handle attributechange
     /*! \param attribute Attribute that changed.

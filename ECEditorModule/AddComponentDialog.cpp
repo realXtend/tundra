@@ -112,7 +112,7 @@ namespace ECEditor
         if(synchText == tr("Replicate"))
             return true;
         else if(synchText == tr("Local"))
-            return true;
+            return false;
 
         return true;
     }

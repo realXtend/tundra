@@ -93,6 +93,8 @@ namespace ECEditor
         //! Override from QWidget.
         void dragMoveEvent(QDragMoveEvent *event);
 
+        void focusInEvent(QFocusEvent *event);
+
         //! dropEvent will call this after feching the information that is need from the QDropEvent data.
         bool dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action);
 

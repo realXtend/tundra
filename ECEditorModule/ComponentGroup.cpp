@@ -19,9 +19,9 @@ namespace ECEditor
         browserListItem_(listItem),
         isDynamic_(isDynamic)
     {
-        assert(component.get());
-        // We assume that first component has been already added to the component editor when it was created.
-        if(component.get())
+        assert(component);
+        // No point to add component to editor cause it's already added in ECBrowser's AddNewComponentToGroup mehtod.
+        if(component)
         {
             components_.push_back(ComponentWeakPtr(component));
             name_ = component->Name();
@@ -38,26 +38,23 @@ namespace ECEditor
     //! @todo made some major changes to this mehtod ensure that everything is working right.
     bool ComponentGroup::IsSameComponent(ComponentPtr component) const
     {
+        assert(component);
         if(!IsValid())
             return false;
-        /*if(components_[0].expired())
-            return false;
-        // Make sure that attribute type and name is same in both components.
-        IComponent *myComponent = components_[0].lock().get();*/
+
         if(component->TypeName() != typeName_ ||
            component->Name() != name_)
             return false;
 
-        //Include extra check for dynamic component, so that we can be sure that their name, typename and attributes are exactly same.
+        // If component type is dynamic component we need to compere their attributes aswell. To ensure
+        // that they are holding exactly the same attributes.
         if(isDynamic_)
         {
-            if(components_[0].expired())
-                return false;
             EC_DynamicComponent *thisComponent = dynamic_cast<EC_DynamicComponent*>(components_[0].lock().get());
             EC_DynamicComponent *compareComponent = dynamic_cast<EC_DynamicComponent*>(component.get());
             if(!compareComponent || !thisComponent)
                 return false;
-            
+
             if(!thisComponent->ContainSameAttributes(*compareComponent))
                 return false;
         }
@@ -83,9 +80,8 @@ namespace ECEditor
 
         for(uint i = 0; i < components_.size(); i++)
         {
-            if(components_[i].expired())
-                continue;
-            if(components_[i].lock()->GetAttribute(name))
+            ComponentPtr comp = components_[i].lock();
+            if(comp && comp->GetAttribute(name))
                 return true;
         }
         return false;
@@ -109,14 +105,11 @@ namespace ECEditor
         std::vector<ComponentWeakPtr>::iterator iter = components_.begin();
         for(; iter != components_.end(); iter++)
         {
-            if(iter->expired())
-                continue;
-            if(iter->lock()->GetParentEntity()->GetId() == comp->GetParentEntity()->GetId())
+            ComponentPtr comp = iter->lock();
+            if(comp && comp->GetParentEntity()->GetId() == comp->GetParentEntity()->GetId())
             {
                 editor_->RemoveComponent(comp);
                 components_.erase(iter);
-                if(!editor_->ComponentsCount())
-                    SAFE_DELETE(editor_);
                 return true;
             }
         }
