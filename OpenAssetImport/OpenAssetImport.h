@@ -17,7 +17,7 @@ namespace AssImp
 		OpenAssetImport();
 		~OpenAssetImport();
 
-		void import(Foundation::Framework *framework, const QString& file);
+		void Import(Foundation::Framework *framework, const QString& file);
 
 	private:
         class AssImpLogStream : public Assimp::LogStream
@@ -29,8 +29,8 @@ namespace AssImp
             void write(const char* message);
         };
 
-        void importScene(Foundation::Framework *framework, const struct aiScene *scene);
-        void importNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const struct aiScene *scene, const struct aiNode *node);
+        void ImportScene(Foundation::Framework *framework, const struct aiScene *scene);
+        void ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const struct aiScene *scene, const struct aiNode *node);
 
 		boost::shared_ptr<Assimp::Importer> importer_;
         AssImpLogStream *logstream_;
