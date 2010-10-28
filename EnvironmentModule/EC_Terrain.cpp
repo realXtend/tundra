@@ -308,17 +308,24 @@ float EC_Terrain::GetPoint(int x, int y) const
  
 Vector3df EC_Terrain::GetPointOnMap(const Vector3df& point) const 
 {     
-    Ogre::Matrix4 matrix = rootNode->_getFullTransform();     
-    Ogre::Vector3 local = matrix * OgreRenderer::ToOgreVector3(point);     
+    Ogre::Vector3 local = rootNode->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - rootNode->_getDerivedPosition() ) / rootNode->_getDerivedScale();
     float z = GetInterpolatedHeightValue(local.x, local.y);     
     return Vector3df(local.x, local.y, z);
 }
 
 float EC_Terrain::GetDistanceToTerrain(const Vector3df& point) const
 {    
-    Vector3df mapPoint = GetPointOnMap(point);    
-    Vector3df diffrence = mapPoint - point;    
-    return diffrence.getLength();   
+    Vector3df pointOnMap = GetPointOnMap(point);    
+   
+    Ogre::Vector3 local = rootNode->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - rootNode->_getDerivedPosition() ) / rootNode->_getDerivedScale();
+    Vector3df p(local.x, local.y, local.z);
+    Vector3df diffrence = pointOnMap - p;   
+    
+    if ( p.z >= pointOnMap.z )
+        return diffrence.getLength();
+    else
+        return -diffrence.getLength();
+
 }
 
 bool EC_Terrain::IsOnTopOfMap(const Vector3df& point) const

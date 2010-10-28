@@ -20,7 +20,7 @@ static QString GuessClassDocumentationFilename(QString functionName)
             functionName.replace(i, 1, QString("_") + functionName[i].toLower());
 
     // The namespace scope is also escaped with the following special sequences.
-    functionName.replace("::", "_1_1_");
+    functionName.replace("::", "_1_1");
 
     QString filename = QString("class") + functionName + ".html";
 
@@ -103,7 +103,7 @@ bool DoxygenDocReader::GetSymbolDocumentation(QString doxygenDocDirectory, QStri
 
     ///\todo proper cross-platform path lookup.
     QFile file(doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName));
-    std::cout << (doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName)).toStdString();
+    std::cout << ("Trying to open file: " + doxygenDocDirectory + "/" + GuessFunctionDocumentationFilename(functionName)).toStdString() << std::endl;;
 
     if (!file.open(QIODevice::ReadOnly))
     {
@@ -153,12 +153,12 @@ bool DoxygenDocReader::GetSymbolDocumentation(QString functionName, QString *doc
     const char documentationPath2[] = "./dox"; // In compiled builds, let's store the documentation here.
     // Idea: Could add here as a third path the http://www.realxtend.org/doxygen/ url, and use online documentation if no local one is installed.
 
-    QString docPath = documentationPath1;
+    QString docPath = documentationPath2;
     bool success = GetSymbolDocumentation(documentationPath1, functionName, documentationOut);
     if (!success)
     {
         success = GetSymbolDocumentation(documentationPath2, functionName, documentationOut);
-        docPath = documentationPath2;
+        //docPath = documentationPath2;
     }
 
     QDir dir(docPath);
