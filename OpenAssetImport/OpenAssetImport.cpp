@@ -47,7 +47,7 @@ namespace AssImp
         delete logstream_;
     }
 
-    void OpenAssetImport::import(Foundation::Framework *framework, const QString& file)
+    void OpenAssetImport::Import(Foundation::Framework *framework, const QString& file)
     {
         const aiScene *scene = importer_->ReadFile(
             file.toStdString(), 
@@ -62,7 +62,7 @@ namespace AssImp
 
         if (scene)
         {
-            importScene(framework, scene);
+            ImportScene(framework, scene);
         } else
         {       
             // report error
@@ -70,7 +70,7 @@ namespace AssImp
         }
     }
 
-    void OpenAssetImport::importScene(Foundation::Framework *framework, const struct aiScene *scene)
+    void OpenAssetImport::ImportScene(Foundation::Framework *framework, const struct aiScene *scene)
     {
         const struct aiNode *rootNode = scene->mRootNode;
         
@@ -79,11 +79,11 @@ namespace AssImp
         
         if (renderer)
         {
-            importNode(renderer, scene, rootNode);
+            ImportNode(renderer, scene, rootNode);
         }
 	}
 
-    void OpenAssetImport::importNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const aiScene *scene, const aiNode *node)
+    void OpenAssetImport::ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const aiScene *scene, const aiNode *node)
     {
         try
         {
@@ -91,18 +91,19 @@ namespace AssImp
             String uniquename = renderer->GetUniqueObjectName();
             Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-            Ogre::Vector3 vmin(1e10);
-            Ogre::Vector3 vmax(-1e10);
+            Ogre::Vector3 vmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+            Ogre::Vector3 vmax(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
 
             for (unsigned int i=0 ; i<node->mNumMeshes ; ++i)
             {
                 const aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
                 
                 SubMesh *ogreSubmesh = ogreMesh->createSubMesh();
-                Ogre::VertexData *data = new Ogre::VertexData();
+                
                 ogreSubmesh->useSharedVertices = false;
-                ogreSubmesh->vertexData = data;
-                data->vertexCount = mesh->mNumVertices;
+                ogreSubmesh->vertexData = new Ogre::VertexData();
+                ogreSubmesh->vertexData->vertexCount = mesh->mNumVertices;
+                Ogre::VertexData *data = ogreSubmesh->vertexData;
                 
                 // Vertex declarations
                 size_t offset = 0;
@@ -192,13 +193,16 @@ namespace AssImp
                         }
                     }
 
-                    vbData[offset++] = mesh->mTangents[n].x;
-                    vbData[offset++] = mesh->mTangents[n].y;
-                    vbData[offset++] = mesh->mTangents[n].z;
+                    if (mesh->HasTangentsAndBitangents())
+                    {
+                        vbData[offset++] = mesh->mTangents[n].x;
+                        vbData[offset++] = mesh->mTangents[n].y;
+                        vbData[offset++] = mesh->mTangents[n].z;
 
-                    vbData[offset++] = mesh->mBitangents[n].x;
-                    vbData[offset++] = mesh->mBitangents[n].y;
-                    vbData[offset++] = mesh->mBitangents[n].z;
+                        vbData[offset++] = mesh->mBitangents[n].x;
+                        vbData[offset++] = mesh->mBitangents[n].y;
+                        vbData[offset++] = mesh->mBitangents[n].z;
+                    }
                 }
                 vbuf->unlock();
                 data->vertexBufferBinding->setBinding(1, vbuf);
@@ -206,7 +210,7 @@ namespace AssImp
                 // indices
                 size_t numIndices = mesh->mNumFaces * 3;            // support only triangles, so 3 indices per face
                 Ogre::HardwareIndexBufferSharedPtr ibuf = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
-                    Ogre::HardwareIndexBuffer::IT_16BIT,            // You can use several different value types here
+                    Ogre::HardwareIndexBuffer::IT_32BIT,            // You can use several different value types here
                     numIndices,                                     // The number of indices you'll put in that buffer
                     Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY     // Properties
                     );
@@ -236,7 +240,7 @@ namespace AssImp
 
         // import children
         for (int i=0 ; i<node->mNumChildren ; ++i)
-            importNode(renderer, scene, node->mChildren[i]);
+            ImportNode(renderer, scene, node->mChildren[i]);
     }
     
     void OpenAssetImport::AssImpLogStream::write(const char* message)

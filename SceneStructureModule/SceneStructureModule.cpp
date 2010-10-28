@@ -25,6 +25,10 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
+#ifdef ASSIMP_ENABLED
+#include <OpenAssetImport.h>
+#endif
+
 //#include <OgreCamera.h>
 
 #include "MemoryLeakCheck.h"
@@ -94,6 +98,18 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             LogError("Import failed");
         else
             LogInfo("Import succesful. " + ToString(ret.size()) + " entities created.");
+    }
+    else if (filename.endsWith(".mesh.xml", Qt::CaseInsensitive))
+    {
+        boost::filesystem::path path(filename.toStdString());
+        std::string dirname = path.branch_path().string();
+
+        AssImp::OpenAssetImport importer;
+        importer.Import(framework_, filename);
+        /*Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
+            Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
+        if (entity)
+            scene->EmitEntityCreated(entity, AttributeChange::Default);*/
     }
     else if (filename.toLower().indexOf(".mesh") != -1)
     {
