@@ -57,7 +57,7 @@ SceneImporter::~SceneImporter()
 }
 
 Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
-    const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets)
+    const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets, bool meshLoaded)
 {
     if (!scene)
     {
@@ -68,6 +68,8 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     std::string prefix;
     if (localassets)
         prefix = "file://";
+    else if (meshLoaded)
+        prefix = "mesh://";
     
     // Create output asset path if does not exist
     if (boost::filesystem::exists(out_asset_dir) == false)
@@ -98,8 +100,11 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     
     std::vector<std::string> material_names;
     std::string skeleton_name;
-    if (!ParseMeshForMaterialsAndSkeleton(meshname, material_names, skeleton_name))
-        return Scene::EntityPtr();
+    if (!meshLoaded)
+    {
+        if (!ParseMeshForMaterialsAndSkeleton(meshname, material_names, skeleton_name))
+            return Scene::EntityPtr();
+    }
     
     std::set<std::string> material_names_set;
     for (uint i = 0; i < material_names.size(); ++i)
@@ -111,18 +116,21 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     std::vector<std::string> material_files;
-    fs::directory_iterator iter(in_asset_dir);
-    fs::directory_iterator end_iter;
-    for(; iter != end_iter; ++iter )
+    if (!meshLoaded)
     {
-        if (fs::is_regular_file(iter->status()))
+        fs::directory_iterator iter(in_asset_dir);
+        fs::directory_iterator end_iter;
+        for(; iter != end_iter; ++iter )
         {
-            std::string ext = iter->path().extension();
-            boost::algorithm::to_lower(ext);
-            if (ext == ".material")
+            if (fs::is_regular_file(iter->status()))
             {
-                TundraLogicModule::LogDebug("Material file: " + iter->path().string());
-                material_files.push_back(iter->path().string());
+                std::string ext = iter->path().extension();
+                boost::algorithm::to_lower(ext);
+                if (ext == ".material")
+                {
+                    TundraLogicModule::LogDebug("Material file: " + iter->path().string());
+                    material_files.push_back(iter->path().string());
+                }
             }
         }
     }

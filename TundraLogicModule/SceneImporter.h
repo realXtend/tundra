@@ -53,7 +53,7 @@ public:
         \return Entity pointer if successful (null if failed)
      */
     Scene::EntityPtr ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
-        const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets);
+        const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets, bool meshLoaded = false);
     
     //! Import a dotscene
     /*! \param scene Destination scene
