@@ -50,9 +50,12 @@ QRectF NaaliGraphicsView::DirtyRectangle() const
     return dirtyRectangle;
 }
 
-void NaaliGraphicsView::drawBackground(QPainter *, const QRectF &)
+void NaaliGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
 {
-    return;
+    // Default backgroudBrush for QGraphicsScene and QGraphicsView is NoBrush,
+    // so this will essentially just paint the animated ether login screen background.
+    // Inworld and other scene should not do anything.
+    return QGraphicsView::drawBackground(painter, rect);
 }
 
 bool NaaliGraphicsView::event(QEvent *event)
