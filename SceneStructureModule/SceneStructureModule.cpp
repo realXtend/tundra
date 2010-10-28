@@ -99,19 +99,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         else
             LogInfo("Import succesful. " + ToString(ret.size()) + " entities created.");
     }
-    else if (filename.endsWith(".mesh.xml", Qt::CaseInsensitive))
-    {
-        boost::filesystem::path path(filename.toStdString());
-        std::string dirname = path.branch_path().string();
-
-        AssImp::OpenAssetImport importer;
-        importer.Import(framework_, filename);
-        /*Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
-            Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
-        if (entity)
-            scene->EmitEntityCreated(entity, AttributeChange::Default);*/
-    }
-    else if (filename.toLower().indexOf(".mesh") != -1)
+    else if (filename.endsWith(".mesh", Qt::CaseInsensitive))
     {
         boost::filesystem::path path(filename.toStdString());
         std::string dirname = path.branch_path().string();
@@ -122,7 +110,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         if (entity)
             scene->EmitEntityCreated(entity, AttributeChange::Default);
     }
-    else if (filename.toLower().indexOf(".xml") != -1)
+    else if (filename.toLower().indexOf(".xml") != -1 && filename.toLower().indexOf(".mesh") == -1)
     {
         ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
     }
@@ -132,7 +120,17 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
     else
     {
-        LogError("Unsupported file extension: " + filename.toStdString());
+        boost::filesystem::path path(filename.toStdString());
+        AssImp::OpenAssetImport importer;
+        QString extension = QString(path.extension().c_str());
+        if (importer.IsSupportedExtension(extension))
+        {
+            std::string dirname = path.branch_path().string();
+            importer.Import(framework_, filename);
+        } else
+        {
+            LogError("Unsupported file extension: " + filename.toStdString());
+        }
     }
 
     return ret;
