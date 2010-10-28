@@ -480,10 +480,7 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
         <item>
          <widget class="QFrame" name="frame_BottomButtons">
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::NoFrame</enum>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_6">
            <property name="spacing">
