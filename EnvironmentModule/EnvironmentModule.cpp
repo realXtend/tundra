@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *  @file   EnvironmentModule.cpp
@@ -30,6 +29,7 @@
 #include "RexNetworkUtils.h"
 #include "CompositionHandler.h"
 #include <EC_Name.h>
+
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
@@ -81,21 +81,20 @@ namespace Environment
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
 
-        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>(); 
+        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
         {
             // Initialize post-process dialog.
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
-			
+
             // Add to scene.
-         
-			UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+            UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
             if (!ui)
                 return;
-//$ BEGIN_MOD $   
-			ui->AddWidgetToScene(postprocess_dialog_, false, true);
-			ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),"./data/ui/images/menus/edbutton_POSTPR_normal.png");
-//$ END_MOD $
+
+            ui->AddWidgetToScene(postprocess_dialog_);
+            ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
+                "./data/ui/images/menus/edbutton_POSTPR_normal.png");
         }
 
         environment_editor_ = new EnvironmentEditor(this);

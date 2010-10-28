@@ -19,6 +19,7 @@
 namespace UiExternalServices
 {
 	class UiExternalModule;
+
 	/*! Is the Menu Manager of the main window, and implements the services offered by UiExternalService 
      *  All the actions and menus are managed by this class
      */
@@ -61,10 +62,16 @@ namespace UiExternalServices
          */
 		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0);
 
+		/*! Enable Menu "Panels" in the Menu Bar
+		 */
 		void EnableMenus();
 
+		/*! Disable Menu "Panels" in the Menu Bar
+		 */
 		void DisableMenus();
 
+		/*!Slot used when the scene is changed, if we "go" to ether Scene, then disable the Menu "Panels" in the Menu Bar
+		 */
 		void SceneChanged(const QString &old_name, const QString &new_name);
 
     private slots:

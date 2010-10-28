@@ -81,16 +81,16 @@ namespace UiExternalServices
 		//! Method to configure static content of the MainWindow
 		void createStaticContent();
 
-		//!MainWindow
+		//! MainWindow
 		QMainWindow* qWin_;
-		//!Managers of the Module
+		//! Managers of the Module
 		ExternalMenuManager* menu_manager_;
 		ExternalPanelManager* panel_manager_;
 		//! Type name of this module.
         static std::string type_name_static_;
-		//!Static toolbar
+		//! Static toolbar
 		StaticToolBar* staticToolBar_;
-		
+		//! Category event to handle
 		event_category_id_t scene_event_category_;
     };
 }

@@ -1,11 +1,8 @@
-#$ HEADER_MOD_FILE $
 import rexviewer as r
 import naali
 import PythonQt
 from PythonQt.QtUiTools import QUiLoader
-#$ BEGIN_MOD $
-from PythonQt.QtGui import QWidget, QDockWidget, QMessageBox
-#$ END_MOD $
+from PythonQt.QtGui import QWidget, QMessageBox
 from PythonQt.QtCore import QFile
 import Queue
 import sys
@@ -79,18 +76,18 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         uifile = QFile(EstateManagementWindow.UIFILE)
         self.gui = loader.load(uifile)
         self.controller = controller
-        IncomingMessagesHandler.__init__(self, queue, self.endMethod)     
-
-        uism = naali.ui	
+        IncomingMessagesHandler.__init__(self, queue, self.endMethod)        
+        
+        uism = naali.ui
 #        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
 #        uiprops.SetMenuGroup("Server Tools")
 #        uiprops.name_ = "Estate Management"
-
+        
         self.proxywidget = r.createUiProxyWidget(self.gui)
         self.proxywidget.setWindowTitle("Estate Management")
-			
+
         if not uism.AddWidgetToScene(self.proxywidget):
-			r.logInfo("Adding ProxyWidget failed.")
+            r.logInfo("Adding ProxyWidget failed.")
 
         uism.AddWidgetToMenu(self.proxywidget, "Estate Management", "Server Tools", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
 

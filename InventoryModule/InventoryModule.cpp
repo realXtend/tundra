@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -464,7 +463,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
         InventoryAsset *asset = dynamic_cast<InventoryAsset *>(inventory_->GetChildById(inventory_id));
         if (asset)
             ///\todo WebDAV needs the old name and we don't have it here.
-            inventory_->NotifyServerAboutItemUpdate(asset, asset->GetName()); 
+            inventory_->NotifyServerAboutItemUpdate(asset, asset->GetName());
     }
 
     SAFE_DELETE_LATER(wnd);
@@ -472,31 +471,17 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
 
 void InventoryModule::CreateInventoryWindow()
 {
-
     UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-	if (!ui)
+    if (!ui)
         return;
 
     SAFE_DELETE(inventoryWindow_);
     inventoryWindow_ = new InventoryWindow;
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-	//$ BEGIN_MOD $ 
-	//$ MOD_DESCRIPTION If EXTERNAL ui module enabled, we use it$
- //   Foundation::UiExternalServiceInterface *uiex = GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-	//if (uiex){
-	//	QWidget *aux = uiex->AddExternalPanel(inventoryWindow_,"Inventory");
-	//	uiex->AddExternalMenuPanel(aux,"Inventory", "Panels");
-	//	//Used to register as universal widget, to use it in WorldBuildingModule
-	//	UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
-	//	ui->RegisterUniversalWidget("Inventory", inv_proxy);
-	//}
-	//else {
-		UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
-		ui->AddWidgetToMenu(inventoryWindow_);
-		ui->RegisterUniversalWidget("Inventory", inv_proxy);
-	//}
-	//$ END_MOD $
+    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
+    ui->AddWidgetToMenu(inventoryWindow_);
+    ui->RegisterUniversalWidget("Inventory", inv_proxy);
 
 #ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();

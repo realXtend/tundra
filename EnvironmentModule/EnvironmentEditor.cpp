@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -254,11 +253,11 @@ namespace Environment
         setLayout(layout);
 
         setWindowTitle(tr("Environment Editor"));
-//$ BEGIN_MOD $
-		UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
-		ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
-		ui->RegisterUniversalWidget("Environment", editor_proxy);
-//$ END_MOD $
+
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
+        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
+        ui->RegisterUniversalWidget("Environment", editor_proxy);
+
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");
         if(tab_widget)

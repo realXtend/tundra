@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -143,12 +142,12 @@ void DebugStatsModule::AddProfilerWidgetToUi()
 
     profilerWindow_ = new TimeProfilerWindow(framework_);
     profilerWindow_->move(100, 100);
-	profilerWindow_->resize(650, 530);
-//$ BEGIN_MOD $   
-	UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
-	connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
-	ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
-//$ END_MOD $
+
+    profilerWindow_->resize(650, 530);
+    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
+    connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+
+    ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }
 
 void DebugStatsModule::StartProfiling(bool visible)
@@ -168,8 +167,8 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVecto
     // If the window is already created, bring it to front.
     if (profilerWindow_)
     {
-		ui->BringWidgetToFront(profilerWindow_);
-		return Console::ResultSuccess();
+        ui->BringWidgetToFront(profilerWindow_);
+        return Console::ResultSuccess();
     }
     else
         return Console::ResultFailure("Profiler window has not been initialised, something went wrong on startup!");
@@ -183,18 +182,18 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
 
     if (participantWindow_)
     {
-			ui->BringWidgetToFront(participantWindow_);
-			return Console::ResultSuccess();
+        ui->BringWidgetToFront(participantWindow_);
+        return Console::ResultSuccess();
     }
 
     participantWindow_ = new ParticipantWindow(framework_);
     participantWindow_->move(100, 100);
     participantWindow_->setWindowFlags(Qt::Dialog);
-//$ BEGIN_MOD $   
-	QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(participantWindow_);
-	ui->BringWidgetToFront(participantWindow_);
-    proxy->show();
-//$ END_MOD $
+
+    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(participantWindow_);
+    ui->BringWidgetToFront(participantWindow_);
+//    proxy->show();
+
     return Console::ResultSuccess();
 }
 

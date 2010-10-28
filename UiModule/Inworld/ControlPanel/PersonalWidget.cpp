@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -23,10 +22,7 @@ namespace CoreUi
         connect(inventoryToggle, SIGNAL(clicked()), SLOT(InventoryToggle()));
 
         CheckStyle(false, "avatarToggle");
-		//$ BEGIN_MOD $
-		//$ MOD_DESCRIPTION Commented to use the new EXTERNAL ui module $
         CheckStyle(false, "inventoryToggle");
-		//$ END_MOD $
     }
 
     void PersonalWidget::SetAvatarWidget(UiProxyWidget *avatar_widget)
@@ -37,9 +33,6 @@ namespace CoreUi
     {
         inventory_widget_ = inventory_widget;
         connect(inventory_widget_, SIGNAL(Visible(bool)), SLOT(InventoryVisibilityChanged(bool)));
-		//$ BEGIN_MOD $
-		CheckStyle(false, "inventoryToggle");
-		//$ END_MOD $ 
     }
 
     void PersonalWidget::AvatarToggle()

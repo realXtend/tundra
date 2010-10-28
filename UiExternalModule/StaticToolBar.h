@@ -19,6 +19,8 @@ namespace UiExternalServices
 	*		Switch between flying and walking mode
 	*		Switch between free camera and avatar camera
 	*		Switch between play and edit mode.
+	*
+	*	This class also provides right button click 
 	*/
 	 
 	class StaticToolBar : public QToolBar
@@ -73,6 +75,7 @@ namespace UiExternalServices
 		void createActions();
 		//! Add actions to this class (toolbar)
 		void addActions();
+		//! Create menu and actions to right button click functionality
 		void CreateMenu();
 
 		//! Fly action of toolbar
@@ -91,8 +94,10 @@ namespace UiExternalServices
 		//! Entity selected
 		 Scene::Entity* entitySelected_;
 
+		 //! Right button click menu
 		 QMenu* menu_asset;
 
+		 //! Name of the current scene
 		 QString currentScene;
 	};
 }

@@ -96,8 +96,6 @@ namespace UiExternalServices
 		 */
 		void SetEnableEditMode(bool b);
 
-
-
 		/*! Connect the panel to the signal for enable or disable with the edit mode
 		 *  \param widget Widget
 		 */

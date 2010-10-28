@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -18,6 +17,7 @@
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace ECEditor
@@ -137,11 +137,11 @@ namespace ECEditor
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
-//$ BEGIN_MOD $
-		UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
-		ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
-		ui->RegisterUniversalWidget("Components", editor_proxy);
-//$ END_MOD $
+
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
+        ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+        ui->RegisterUniversalWidget("Components", editor_proxy);
+
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
         connect(editor_window_, SIGNAL(EditComponentXml(ComponentPtr)), this, SLOT(CreateXmlEditor(ComponentPtr)));
         connect(editor_window_, SIGNAL(EditEntityXml(const QList<Scene::EntityPtr> &)), this, SLOT(CreateXmlEditor(const QList<Scene::EntityPtr> &)));
@@ -156,8 +156,8 @@ namespace ECEditor
 
         if (editor_window_)
         {
-			ui->BringWidgetToFront(editor_window_);
-			return Console::ResultSuccess();
+            ui->BringWidgetToFront(editor_window_);
+            return Console::ResultSuccess();
         }
         else
             return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
@@ -227,20 +227,17 @@ namespace ECEditor
     void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
     {
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
-
-		if (entities.empty() || !ui)
+        if (entities.empty() || !ui)
             return;
 
         if (!xmlEditor_)
         {
             xmlEditor_ = new EcXmlEditorWidget(framework_);
-//$ BEGIN_MOD $
-			ui->AddWidgetToScene(xmlEditor_);
-//$ END_MOD $
-		}
+            ui->AddWidgetToScene(xmlEditor_);
+        }
 
         xmlEditor_->SetEntity(entities);
-		ui->BringWidgetToFront(xmlEditor_);
+        ui->BringWidgetToFront(xmlEditor_);
     }
 
     void ECEditorModule::CreateXmlEditor(ComponentPtr component)
@@ -252,23 +249,18 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
     {
-
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
-
-		if (components.empty() || !ui)
+        if (components.empty() || !ui)
             return;
 
         if (!xmlEditor_)
         {
             xmlEditor_ = new EcXmlEditorWidget(framework_);
-//$ BEGIN_MOD $
-			ui->AddWidgetToScene(xmlEditor_);
-//$ END_MOD $
-		}
+            ui->AddWidgetToScene(xmlEditor_);
+        }
 
         xmlEditor_->SetComponent(components);
-		ui->BringWidgetToFront(xmlEditor_);
-
+        ui->BringWidgetToFront(xmlEditor_);
     }
 }
 

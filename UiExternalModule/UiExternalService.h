@@ -41,10 +41,14 @@ namespace UiExternalServices
          */
         QWidget* AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags = Qt::Dialog);
 
+		/*! \brief	Adds QDockWidget to the main Window.
+         *  \param  widget QDockWidget. 
+         *         
+         *  \return true if everything is ok
+         */
 		bool AddExternalPanel(QDockWidget *widget);
 
-		/*! TODO!
-		 *	\brief	Remove the QDockWidget that contains the widget passed from the main Window.
+		/*! \brief	Remove the QDockWidget that contains the widget passed from the main Window.
          *  \param	widget widget.
          *  \return	true if everything is ok (widget deleted)
          *
@@ -52,8 +56,7 @@ namespace UiExternalServices
          */
         bool RemoveExternalPanel(QWidget *widget);
 
-		/*! 
-		 *	\brief	Create a new Action, insert it in the Menu "Panels", and connect the action with the Widget to show/hide.
+		/*! \brief	Create a new Action, insert it in the Menu "Panels", and connect the action with the Widget to show/hide.
          *  \param  widget Widget.
          *  \param  name Name of the Action (usually the same as the widget)
 		 *	\param	menu name of the Menu to put the action inside it
@@ -105,14 +108,19 @@ namespace UiExternalServices
 		 *  \param widget Widget
 		 */
 		void AddPanelToEditMode(QWidget* widget);
-		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
+
+		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. 
+		 *  Used (at least) to use WorldBuildingModule with this module.
          *  \param widget Name of the widget.
+		 *
+		 *  \return QDockWidget
          */
 		QDockWidget* GetExternalMenuPanel(QString &widget);
 
     private:
         //! Owner UI module.
         UiExternalModule *owner_;
+
 		//!Main Window
 		QMainWindow *qWin_;
     };

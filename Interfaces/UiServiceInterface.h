@@ -169,9 +169,24 @@ public slots:
      */
     virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
 //$ BEGIN_MOD $
+    /*! Toggle the selected widget in/out of scene
+     *	\param widgetToChange name of the widget to change
+	 *
+	 *	\return true if everything is ok
+     */
 	virtual bool TransferWidgetInOut(QString widgetToChange) = 0;
+
+    /*! Show the widget
+     *	\param widget name of the widget to show
+     */
 	virtual void BringWidgetToFront(QString widget) = 0;
 
+    /*! Transfer the selected widget in/out of scene (without menu)
+     *	\param widgetToChange name of the widget to change
+	 *	\param out true if the widget goes out or false if it goes in the scene
+	 *
+	 *	\note For now, this method is only used for Console Widget
+     */
 	virtual void TransferWidgetOut(QString widgetToChange, bool out) = 0;
 //$ END_MOD $
     /** Load widget from .ui file and as default add it to a scene. This method is for scripters.

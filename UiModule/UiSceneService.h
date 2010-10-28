@@ -26,6 +26,7 @@ namespace UiServices
 	typedef QPair<UiProxyWidget*,QDockWidget*> proxyDock;
 	typedef QPair<QString, QString> menusPair;
 //$ END_MOD $
+
     /** Implements UiServiceInterface and provides means of adding widgets to the 
      *  in-world scene and managing different UI scenes.
      *  Basically this class is just a wrapper around InworldSceneController
@@ -111,22 +112,32 @@ namespace UiServices
 		bool TransferWidgetInOut(QString widgetToChange);
 		/// UiServiceInterface override.
         void BringWidgetToFront(QString widget);
-
+		/// UiServiceInterface override.
 		void TransferWidgetOut(QString widgetToChange, bool out);
 //$ END_MOD $
     private slots:
+		/// UiServiceInterface override.
         void TranferWidgets();
 //$ BEGIN_MOD $
+		/*! Transfer to the scene the widgets that WorldBuild uses when the current scene is WorldBuilding.
+		 *	This slot is connected with the SceneChanged signal
+		 *
+		 *	old_name name of the old current scene
+		 *	new_name name of the new current scene
+		*/
 		void HandleTransferToBuild(const QString& old_name, const QString& new_name);
 //$ END_MOD $
     private:
         /// Owner UI module.
         UiModule *owner_;
-
 //$ BEGIN_MOD $
+		//! UiExternal Service
 		Foundation::UiExternalServiceInterface *uiExternal;
+		//! List of movable widget
 		QList<QString> *moveable_widgets_;
+		//! QMap of widgets pairs
 		QMap<QString, proxyDock> proxy_dock_list;
+		//! QMap of menu pairs 
 		QMap<QString, menusPair> panels_menus_list_;
 //$ END_MOD $
     };

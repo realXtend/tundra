@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -29,6 +28,7 @@
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
+
 #include "MemoryLeakCheck.h"
 
 std::string OgreAssetEditorModule::type_name_static_ = "OgreAssetEditor";
@@ -64,20 +64,19 @@ void OgreAssetEditorModule::PostInitialize()
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
 
-    materialWizard_ = new MaterialWizard(0,GetFramework());
+    materialWizard_ = new MaterialWizard;
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
     uiService_ = framework_->GetServiceManager()->GetService<UiServiceInterface>(Foundation::Service::ST_Gui);
     if (!uiService_.expired())
     {
-//$ BEGIN_MOD $   
-		UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
-		uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material Wizard"), tr("World Tools"),
+        UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
+        uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material Wizard"), tr("World Tools"),
             "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
-		connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
-//$ END_MOD $
+        connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }
+
     editorManager_ = new EditorManager;
 }
 
@@ -221,21 +220,18 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                         editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager_->Add(id, at, editor);
                     editor->HandleAssetReady(downloaded->asset);
-//$ BEGIN_MOD $   
-					// Add widget to scene, show and bring to front
-					uiService_.lock()->AddWidgetToScene(editor);
-					uiService_.lock()->ShowWidget(editor);
-					uiService_.lock()->BringWidgetToFront(editor);
-//$ END_MOD $
+
+                    // Add widget to scene, show and bring to front
+                    uiService_.lock()->AddWidgetToScene(editor);
+                    uiService_.lock()->ShowWidget(editor);
+                    uiService_.lock()->BringWidgetToFront(editor);
                 }
                 else
                 {
                     // Editor already exists, bring it to front.
                     QWidget *editor = editorManager_->GetEditor(id, at);
-
-					if (editor){
-							uiService_.lock()->BringWidgetToFront(editor);
-					}
+                    if (editor)
+                        uiService_.lock()->BringWidgetToFront(editor);
                 }
                 // Surpress this event.
                 downloaded->handled = true; 
@@ -260,7 +256,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     QWidget *editor = editorManager_->GetEditor(id, at);
                     if (editor)
                     {
-						uiService_.lock()->BringWidgetToFront(editor);
+                        uiService_.lock()->BringWidgetToFront(editor);
                         AudioPreviewEditor *audioWidget = qobject_cast<AudioPreviewEditor*>(editor);
                         if(audioWidget)
                             audioWidget->HandleAssetReady(downloaded->asset);
@@ -288,7 +284,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     QWidget *editor = editorManager_->GetEditor(id, at);
                     if (editor != 0)
                     {
-						uiService_.lock()->BringWidgetToFront(editor);
+                        uiService_.lock()->BringWidgetToFront(editor);
                         MeshPreviewEditor *editorWidget = qobject_cast<MeshPreviewEditor*>(editor);
                         if(editorWidget)
                             editorWidget->RequestMeshAsset(downloaded->asset->GetId().c_str());
@@ -313,9 +309,8 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 {
                     // Editor already exists, bring it to front.
                     QWidget *editor = editorManager_->GetEditor(id, at);
-					if (editor){
-						uiService_.lock()->BringWidgetToFront(editor);
-					}
+                    if (editor)
+                        uiService_.lock()->BringWidgetToFront(editor);
                 }
 
                 downloaded->handled = true;

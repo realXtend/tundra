@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /* NOTES FOR FURTHER CLEANUP: this module depends largely on the rexlogic module now. 
@@ -79,9 +78,7 @@
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-//$ BEGIN_MOD $
-#include "UiExternalServiceInterface.h"
-//$ END_MOD $
+
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
@@ -152,23 +149,10 @@ namespace PythonScript
         pmmModule = pmmDict = pmmClass = pmmInstance = 0;
         foreach(UiProxyWidget *proxy, proxyWidgets)
             SAFE_DELETE(proxy);
-//$ BEGIN_MOD $
-        foreach(QDockWidget *qdock, qDockWidgets)
-            SAFE_DELETE(qdock);
-//$ END_MOD $
     }
 
     void PythonScriptModule::PostInitialize()
     {
-//$ BEGIN_MOD $
-		    PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-			Foundation::UiExternalServiceInterface *uiExternal = GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-			//if(uiExternal){
-				mainModule.addObject("_uiExternal", uiExternal);
-				PythonQt::self()->registerClass(&Foundation::UiExternalServiceInterface::staticMetaObject);
-				PythonQt::self()->registerClass(&QDockWidget::staticMetaObject);
-			//}
-//$ END_MOD $
         em_ = framework_->GetEventManager();
         
         // Reprioritize to be able to override behaviour
@@ -1996,7 +1980,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
             PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
-
 //            PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
             PythonQt::self()->registerClass(&ISoundService::staticMetaObject);
             PythonQt::self()->registerClass(&InputServiceInterface::staticMetaObject);

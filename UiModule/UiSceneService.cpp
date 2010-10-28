@@ -31,7 +31,7 @@ namespace UiServices
                 this, SLOT(TranferWidgets()));
 
         connect(owner_->GetNotificationManager(), SIGNAL(ShowNotificationCalled(const QString&)), this, SIGNAL(Notification(const QString&)));
-//$ BEGIN_MOD $
+
 		connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
 			this,SLOT(HandleTransferToBuild(const QString&, const QString&)));
 //$ END_MOD $
@@ -40,7 +40,7 @@ namespace UiServices
     UiSceneService::~UiSceneService()
     {
     }
-
+//$ BEGIN_MOD $
     UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool moveable , bool outside, Qt::WindowFlags flags)
     {
 
@@ -207,7 +207,6 @@ namespace UiServices
 			owner_->GetInworldSceneController()->BringProxyToFront(widget);
     }
 
-	//Begin
 	void UiSceneService::BringWidgetToFront(QString widget)
     {
 		//To show the widget, it has to exist
@@ -222,7 +221,6 @@ namespace UiServices
 				BringWidgetToFront(proxy->widget());
 		}
     }
-	//End
 
     void UiSceneService::BringWidgetToFront(QGraphicsProxyWidget *widget) const
     {
@@ -355,7 +353,6 @@ namespace UiServices
 					widget->setParent(0);
 					proxy->setWidget(widget);
 					owner_->GetInworldSceneController()->AddProxyWidget(proxy);
-					//owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
 				}
 			}else{
 				if(!qdock->widget()){
@@ -366,9 +363,7 @@ namespace UiServices
 					proxy->setWidget(0);
 					qdock->setWidget(widget);
 					//Add Panel..
-					if (uiExternal->AddExternalPanel(qdock)){
-						uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
-					}
+					uiExternal->AddExternalPanel(qdock);
 				}
 			}
 		}
@@ -380,6 +375,7 @@ namespace UiServices
 			QList<QString> panels;
 			panels << "Entity-component Editor";
 			panels << "Inventory";
+			panels << "Environment Editor";
 			foreach(QString s, panels){
 				proxyDock pair = proxy_dock_list.value(s);
 				QDockWidget* qdock=pair.second;
@@ -396,7 +392,6 @@ namespace UiServices
 					proxy->setWidget(widget);
 					if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
 						owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
-						//owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
 					}
 				}
 			}

@@ -22,6 +22,7 @@
 #define ENABLE(p) p->setEnabled(true);
 #define DISABLE(p) p->setEnabled(false);
 //$ BEGIN_MOD $   
+//$ MOD_DESCRIPTION Added the Framework param to constructo $ 
 MaterialWizard::MaterialWizard(QWidget *parent, Foundation::Framework *framework) :
     QWidget(),
     mainWidget_(0),
@@ -95,6 +96,7 @@ void MaterialWizard::Create()
 
     emit NewMaterial(&event_data);
 //$ BEGIN_MOD $   
+//$ MOD_DESCRIPTION now it uses the uiService to hide the widget $ 
 	UiServiceInterface *uiService= framework_->GetService<UiServiceInterface>();
 	if (uiService)
 		uiService->HideWidget(this);
@@ -105,6 +107,7 @@ void MaterialWizard::Create()
 void MaterialWizard::Close()
 {
 //$ BEGIN_MOD $   
+//$ MOD_DESCRIPTION now it uses the uiService to hide the widget $ 
 	UiServiceInterface *uiService= framework_->GetService<UiServiceInterface>();
 	if (uiService)
 		uiService->HideWidget(this);
