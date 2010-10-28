@@ -74,8 +74,8 @@ namespace UiExternalServices
 
 	void StaticToolBar::openECEditor()
 	{
-		Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
-		//uiExternal->ShowWidget(uiExternal->GetExternalMenuPanel(QString("Entity-component Editor"))->widget());
+		UiServiceInterface *uiService = framework_->GetService<UiServiceInterface>();
+		//uiService->ShowWidget(uiExternal->GetExternalMenuPanel(QString("Entity-component Editor"))->widget());
 	}
 
 	void StaticToolBar::openBuild()

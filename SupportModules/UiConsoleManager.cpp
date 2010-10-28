@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -44,9 +45,12 @@ namespace Console
             proxy_widget_->setOpacity(opacity_);
             proxy_widget_->setZValue(100);
             ui->RegisterUniversalWidget("Console", proxy_widget_);
+//$ BEGIN_MOD $
+			ui->TransferWidgetOut("ConsoleWidget",false);
+//$ END_MOD $  
         }
 
-        // Init animation
+        //// Init animation
         animation_.setTargetObject(proxy_widget_);
         animation_.setPropertyName("geometry");
         animation_.setDuration(300);

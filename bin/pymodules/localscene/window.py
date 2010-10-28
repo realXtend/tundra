@@ -61,6 +61,7 @@ class ToolBarWindow():
             uism = naali.ui
             uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
+
             return True
         except:
             r.logInfo("LocalSceneWindow failure:")

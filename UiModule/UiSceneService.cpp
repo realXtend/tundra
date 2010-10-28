@@ -45,14 +45,14 @@ namespace UiServices
     {
 		uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		QWidget* qdock= new QDockWidget(widget->windowTitle());
-		UiProxyWidget *proxy = new UiProxyWidget(widget, flags);
-
+		UiProxyWidget *proxy;
 		if(uiExternal){
+			proxy = new UiProxyWidget(widget, flags);
 			proxy->setWidget(0);
 			qdock = uiExternal->AddExternalPanel(widget,widget->windowTitle());
-		}else
+		}else{
 			proxy= owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
-
+		}
 		proxy_dock_list[widget->windowTitle()]=proxyDock(proxy,dynamic_cast<QDockWidget*>(qdock));
 
 		return proxy;
@@ -64,15 +64,14 @@ namespace UiServices
 		uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		widget->widget()->setWindowTitle(widget->windowTitle());
 		QWidget* qdock= new QDockWidget(widget->windowTitle());
-		UiProxyWidget *proxy = widget;
 		QWidget* wid = widget->widget();
 		if(uiExternal){
-			proxy->setWidget(0);
-			qdock = uiExternal->AddExternalPanel(wid,proxy->windowTitle());
+			widget->setWidget(0);
+			qdock = uiExternal->AddExternalPanel(wid,widget->windowTitle());
 		}else
 			owner_->GetInworldSceneController()->AddProxyWidget(widget);
 
-		proxy_dock_list[widget->windowTitle()]=proxyDock(proxy,dynamic_cast<QDockWidget*>(qdock));
+		proxy_dock_list[widget->windowTitle()]=proxyDock(widget,dynamic_cast<QDockWidget*>(qdock));
 
 		return true;
     }
@@ -80,26 +79,26 @@ namespace UiServices
     void UiSceneService::AddWidgetToMenu(QWidget *widget)
     {
 		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-		if(qdock->widget())
-			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
-		else
+		if(!qdock->widget())
 			owner_->GetInworldSceneController()->AddWidgetToMenu(widget, widget->windowTitle(), "", "");
+		if(uiExternal)
+			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon)
     {
 		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-		if(qdock->widget())
-			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
-		else
+		if(!qdock->widget())
 			owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
+		if(uiExternal)
+			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
     }
 
     void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
     {
 		if(widget->widget())
 			owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
-		else{
+		if(uiExternal){
 			QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
 			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
 		}
@@ -236,7 +235,7 @@ namespace UiServices
 //$ BEGIN_MOD $
 	void UiSceneService::TransferWidgetInOut(QString widgetToChange)
 	{
-		if (proxy_dock_list.contains(widgetToChange)){
+		if (proxy_dock_list.contains(widgetToChange) && uiExternal){
 			proxyDock pair = proxy_dock_list.value(widgetToChange);
 			QDockWidget* qdock=pair.second;
 			UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
@@ -270,29 +269,67 @@ namespace UiServices
 		}
 	}
 
+	void UiSceneService::TransferWidgetOut(QString widgetToChange,bool out)
+	{
+		if (proxy_dock_list.contains(widgetToChange) && uiExternal){
+			proxyDock pair = proxy_dock_list.value(widgetToChange);
+			QDockWidget* qdock=pair.second;
+			UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
+			QWidget* widget;
+			if(!out){
+				if(qdock->widget()){
+					qdock->hide();
+					widget=qdock->widget();
+					uiExternal->RemoveExternalPanel(widget);
+					widget->setParent(0);
+					proxy->setWidget(widget);
+					owner_->GetInworldSceneController()->AddProxyWidget(proxy);
+					//owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
+				}
+			}else{
+				if(!qdock->widget()){
+					proxy->hide();
+					widget=proxy->widget();
+					owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy);
+					owner_->GetInworldSceneController()->RemoveWidgetFromMenu(proxy);
+					proxy->setWidget(0);
+					qdock->setWidget(widget);
+					//Add Panel..
+					if (uiExternal->AddExternalPanel(qdock)){
+						uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
+					}
+				}
+			}
+		}
+	}
+
 	void UiSceneService::HandleTransferToBuild(const QString& old_name, const QString& new_name)
 	{
-		if(new_name=="WorldBuilding")
-			foreach(proxyDock pair,proxy_dock_list){
+		if(new_name=="WorldBuilding"){
+			QList<QString> panels;
+			panels << "Entity-component Editor";
+			panels << "Inventory";
+			foreach(QString s, panels){
+				proxyDock pair = proxy_dock_list.value(s);
 				QDockWidget* qdock=pair.second;
 				UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
 				QWidget* widget;
 				if(qdock->widget()){
-					if(qdock->widget()->windowTitle()=="Entity-component Editor" || qdock->widget()->windowTitle()=="Inventory") {
-						qdock->hide();
-						widget=qdock->widget();
-						uiExternal->RemoveExternalMenuPanel(widget);
-						uiExternal->RemoveExternalPanel(widget);
-						widget->setParent(0);
-						proxy->setWidget(widget);
-						if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
-							owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
-							owner_->GetInworldSceneController()->BringProxyToFront(proxy);
-						}
+					qdock->hide();
+					widget=qdock->widget();
+					//We are not going to Remove the menu of the widget..
+					//uiExternal->RemoveExternalMenuPanel(widget);
+					//If we remove Panel we have to Add it later
+					uiExternal->RemoveExternalPanel(widget);
+					widget->setParent(0);
+					proxy->setWidget(widget);
+					if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
+						owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
+						//owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
 					}
 				}
 			}
+		}
 	}
 //$ END_MOD $
 }
-

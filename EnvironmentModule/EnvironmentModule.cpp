@@ -172,8 +172,8 @@ namespace Environment
                 {
                     CreateEnvironment();
                     CreateTerrain();
-                    //CreateWater();
-                    CreateEnvironment();
+                    CreateWater();
+                    //CreateEnvironment();
                     CreateSky();
                 }
             }

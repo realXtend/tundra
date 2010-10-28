@@ -176,10 +176,7 @@ namespace CoreUi
             if (!naali_proxy->isVisible())
                 naali_proxy->show();
             else
-//$ BEGIN_MOD $
-				naali_proxy->hide();
-                //naali_proxy->AnimatedHide();
-//$ END_MOD $
+                naali_proxy->AnimatedHide();
         }
     }
 

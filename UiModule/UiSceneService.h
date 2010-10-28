@@ -107,6 +107,8 @@ namespace UiServices
         QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
 //$ BEGIN_MOD $
 		void TransferWidgetInOut(QString widgetToChange);
+
+		void TransferWidgetOut(QString widgetToChange, bool out);
 //$ END_MOD $
     private slots:
         void TranferWidgets();
