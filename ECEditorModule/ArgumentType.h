@@ -124,70 +124,19 @@ private:
 };
 
 // QString
-template<>
-QWidget *ArgumentType<QString>::CreateEditor(QWidget *parent)
-{
-    editor = new QLineEdit(parent);
-    return editor;
-}
-
-template<>
-void ArgumentType<QString>::UpdateValueFromEditor()
-{
-    QLineEdit *e = dynamic_cast<QLineEdit *>(editor);
-    if (e)
-        value = e->text();
-}
-
-template<>
-QString ArgumentType<QString>::ToString() const
-{
-    return value;
-}
+template<> QWidget *ArgumentType<QString>::CreateEditor(QWidget *parent);
+template<> void ArgumentType<QString>::UpdateValueFromEditor();
+template<> QString ArgumentType<QString>::ToString() const;
 
 // Boolean
-template<>
-QWidget *ArgumentType<bool>::CreateEditor(QWidget *parent)
-{
-    editor = new QCheckBox(parent);
-    return editor;
-}
-
-template<>
-void ArgumentType<bool>::UpdateValueFromEditor()
-{
-    QCheckBox *e = dynamic_cast<QCheckBox *>(editor);
-    if (e)
-        value = e->isChecked();
-}
-
-template<>
-QString ArgumentType<bool>::ToString() const
-{
-    return QString::number((int)value);
-}
+template<> QWidget *ArgumentType<bool>::CreateEditor(QWidget *parent);
+template<> void ArgumentType<bool>::UpdateValueFromEditor();
+template<> QString ArgumentType<bool>::ToString() const;
 
 // Integer
-template<>
-QWidget *ArgumentType<int>::CreateEditor(QWidget *parent)
-{
-    editor = new QSpinBox(parent);
-    return editor;
-}
-
-template<>
-void ArgumentType<int>::UpdateValueFromEditor()
-{
-    QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
-    if (e)
-        value = e->value();
-}
-
-template<>
-QString ArgumentType<int>::ToString() const
-{
-    return QString::number((int)value);
-}
+template<> QWidget *ArgumentType<int>::CreateEditor(QWidget *parent);
+template<> void ArgumentType<int>::UpdateValueFromEditor();
+template<> QString ArgumentType<int>::ToString() const;
 
 // Unsigned int and its most common typedefs 
 /*
@@ -253,47 +202,13 @@ QString ArgumentType<entity_id_t>::ToString() const
 */
 
 // Float
-template<>
-QWidget *ArgumentType<float>::CreateEditor(QWidget *parent)
-{
-    editor = new QDoubleSpinBox(parent);
-    return editor;
-}
-
-template<>
-void ArgumentType<float>::UpdateValueFromEditor()
-{
-    QDoubleSpinBox *e = dynamic_cast<QDoubleSpinBox *>(editor);
-    if (e)
-        value = e->value();
-}
-
-template<>
-QString ArgumentType<float>::ToString() const
-{
-    return QString::number((float)value);
-}
+template<> QWidget *ArgumentType<float>::CreateEditor(QWidget *parent);
+template<> void ArgumentType<float>::UpdateValueFromEditor();
+template<> QString ArgumentType<float>::ToString() const;
 
 // Double
-template<>
-QWidget *ArgumentType<double>::CreateEditor(QWidget *parent)
-{
-    editor = new QDoubleSpinBox(parent);
-    return editor;
-}
-
-template<>
-void ArgumentType<double>::UpdateValueFromEditor()
-{
-    QDoubleSpinBox *e = dynamic_cast<QDoubleSpinBox *>(editor);
-    if (e)
-        value = e->value();
-}
-
-template<>
-QString ArgumentType<double>::ToString() const
-{
-    return QString::number((double)value);
-}
+template<> QWidget *ArgumentType<double>::CreateEditor(QWidget *parent);
+template<> void ArgumentType<double>::UpdateValueFromEditor();
+template<> QString ArgumentType<double>::ToString() const;
 
 #endif
