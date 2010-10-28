@@ -306,9 +306,6 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
 {
     if (attribute == &transform)
     {
-        // Safety & legacy world compatibility: in non-networksynced mode, do nothing
-        if (!GetNetworkSyncEnabled())
-            return;
         if (!link_scene_node_)
             return;
         

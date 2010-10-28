@@ -19,6 +19,7 @@ class QScriptEngine;
 class QScriptContext;
 class QScriptEngine;
 class QScriptValue;
+class JavascriptEngine;
 
 /// Enables Javascript execution and scripting in Naali.
 /**
@@ -68,7 +69,8 @@ public:
 
     Console::CommandResult ConsoleRunString(const StringVector &params);
     Console::CommandResult ConsoleRunFile(const StringVector &params);
-
+    Console::CommandResult ConsoleReloadScripts(const StringVector &params);
+    
 public slots:
     //! New scene has been added to foundation.
     void SceneAdded(const QString &name);
@@ -83,12 +85,27 @@ public slots:
     void ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
 private:
+    //! Load & execute startup scripts
+    /*! Destroys old scripts if they exist
+     */
+    void LoadStartupScripts();
+    
+    //! Stop & delete startup scripts
+    void UnloadStartupScripts();
+    
+    //! Prepare a script engine by registering all needed services to it
+    void PrepareScriptEngine(JavascriptEngine* engine);
+    
     /// Type name of the module.
     static std::string type_name_static_;
     typedef QMap<QString, QObject*> ServiceMap;
     ServiceMap services_;
 
+    /// Default engine for console & commandline script execution
     QScriptEngine *engine;
+    
+    /// Engines for executing startup (possibly persistent) scripts
+    std::vector<JavascriptEngine*> startupScripts_;
 };
 
 //api stuff

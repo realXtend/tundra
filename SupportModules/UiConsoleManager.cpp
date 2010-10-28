@@ -100,6 +100,12 @@ namespace Console
         }
     }
 
+    void UiConsoleManager::KeyPressed(KeyEvent *key_event)
+    {
+        if (key_event->keyCode == Qt::Key_F1)
+            ToggleConsole();
+    }
+
     void UiConsoleManager::ToggleConsole()
     {
         if (!ui_view_)

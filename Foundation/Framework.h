@@ -276,6 +276,12 @@ namespace Foundation
         /// Returns the Naali core API Audio object.
         ISoundService *Audio() const;
 
+        /// Returns the default scene.
+        Scene::SceneManager* DefaultScene() const;
+        
+        /// Returns a scene by name
+        Scene::SceneManager* Scene(const QString& name) const;
+        
         AssetAPI *Asset() const;
         /// Stores the given QObject as a dynamic property into the Framework. This is done to implement
         /// easier script access for QObject-based interface objects.
