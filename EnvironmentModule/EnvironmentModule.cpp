@@ -93,7 +93,7 @@ namespace Environment
             if (!ui)
                 return;
 //$ BEGIN_MOD $   
-			ui->AddWidgetToScene(postprocess_dialog_);
+			ui->AddWidgetToScene(postprocess_dialog_, false, true);
 			ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),"./data/ui/images/menus/edbutton_POSTPR_normal.png");
 //$ END_MOD $
         }

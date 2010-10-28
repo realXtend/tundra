@@ -107,8 +107,10 @@ namespace UiExternalServices
         Foundation::LoginServiceInterface *handler = framework_->GetService<Foundation::LoginServiceInterface>();
 		if (handler)
 		{
-			connect(handler, SIGNAL(LoginFailed(const QString &)), panel_manager_, SLOT(DisableDockWidgets()));
-			connect(handler, SIGNAL(LoginSuccessful()), panel_manager_, SLOT(EnableDockWidgets()));
+			//connect(handler, SIGNAL(LoginFailed(const QString &)), panel_manager_, SLOT(DisableDockWidgets()));
+			//connect(handler, SIGNAL(LoginSuccessful()), panel_manager_, SLOT(EnableDockWidgets()));
+			connect(handler, SIGNAL(LoginFailed(const QString &)), menu_manager_, SLOT(DisableMenus()));
+			connect(handler, SIGNAL(LoginSuccessful()), menu_manager_, SLOT(EnableMenus()));
 			connect(handler, SIGNAL(LoginFailed(const QString &)), staticToolBar_, SLOT(Disabled()));
 			connect(handler, SIGNAL(LoginSuccessful()), staticToolBar_, SLOT(Enabled()));
         }
@@ -117,10 +119,11 @@ namespace UiExternalServices
 		if (ui_service){
 			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), panel_manager_, SLOT(SceneChanged(const QString&, const QString&)));
 			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), staticToolBar_, SLOT(SceneChanged(const QString&, const QString&)));
+			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), menu_manager_, SLOT(SceneChanged(const QString&, const QString&)));
 		}
 		
 		//File -> Enter World
-		QAction *action = new QAction("Enter World", qWin_);
+		QAction *action = new QAction("Ether", qWin_);
 		menu_manager_->AddExternalMenuAction(action, "Enter World", "File");
 		QString *enter = new QString("Ether");
 		if (!connect(action, SIGNAL(triggered()), SLOT(SwitchToEtherScene())))

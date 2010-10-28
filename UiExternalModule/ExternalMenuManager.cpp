@@ -161,4 +161,24 @@ namespace UiExternalServices
 				ui->TransferWidgetInOut(aux->windowTitle());
 		}
 	}
+
+	void ExternalMenuManager::EnableMenus(){
+		//Enable 
+		QMenu * aux = category_menu_.value("Panels");
+		aux->setEnabled(true);
+	}
+
+	void ExternalMenuManager::DisableMenus(){
+		//Disable 
+		QMenu * aux = category_menu_.value("Panels");
+		aux->setEnabled(false);
+	}
+
+	void ExternalMenuManager::SceneChanged(const QString &old_name, const QString &new_name)
+    {
+        if (new_name == "Ether")
+			DisableMenus();     
+		else
+			EnableMenus();
+    }
 }

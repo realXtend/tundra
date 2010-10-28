@@ -69,18 +69,11 @@ namespace UiServices
     bool UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
     {
 		//Not moveable!!
-		uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		widget->widget()->setWindowTitle(widget->windowTitle());
 		QWidget* qdock= new QDockWidget(widget->windowTitle());
 		QWidget* wid = widget->widget();
-		if(uiExternal){
-			widget->setWidget(0);
-			qdock = uiExternal->AddExternalPanel(wid,widget->windowTitle());
-		}else
-			owner_->GetInworldSceneController()->AddProxyWidget(widget);
-
+		owner_->GetInworldSceneController()->AddProxyWidget(widget);
 		proxy_dock_list[widget->windowTitle()]=proxyDock(widget,dynamic_cast<QDockWidget*>(qdock));
-
 		return true;
     }
 

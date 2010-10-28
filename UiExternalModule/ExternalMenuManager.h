@@ -61,6 +61,12 @@ namespace UiExternalServices
          */
 		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0);
 
+		void EnableMenus();
+
+		void DisableMenus();
+
+		void SceneChanged(const QString &old_name, const QString &new_name);
+
     private slots:
 
 		/*! Adds a new Menu in the Main MenuBar

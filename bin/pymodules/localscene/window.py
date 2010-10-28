@@ -1,10 +1,8 @@
-#$ HEADER_MOD_FILE $
 import rexviewer as r
 import naali
 import PythonQt
-#$ BEGIN_MOD $
-from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QFileDialog, QMessageBox, QWidget, QTableWidgetItem, QDockWidget
-#$ END_MOD $
+from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QFileDialog, QMessageBox, QWidget, QTableWidgetItem
+
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize, SIGNAL
 
@@ -34,16 +32,15 @@ class ToolBarWindow():
         
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         #self.proxywidget = r.createUiProxyWidget(ui, uiprops)
-#$ BEGIN_MOD $
-        uiex = naali.uiexternal	
+        
         self.proxywidget = r.createUiProxyWidget(ui)
 
-		#if not uism.AddProxyWidget(self.proxywidget):
+        #if not uism.AddProxyWidget(self.proxywidget):
         if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
-        
+
         uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
-#$ END_MOD $
+            
         self.inputQueue = queue
         self.endApplication = endApplication
         
@@ -61,7 +58,6 @@ class ToolBarWindow():
             uism = naali.ui
             uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
-
             return True
         except:
             r.logInfo("LocalSceneWindow failure:")
