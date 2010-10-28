@@ -753,6 +753,16 @@ namespace Foundation
     {
         return default_scene_;
     }
+    
+    Scene::SceneManager* Framework::DefaultScene() const
+    {
+        return default_scene_.get();
+    }
+    
+    Scene::SceneManager* Framework::Scene(const QString& name) const
+    {
+        return GetScene(name).get();
+    }
 
     void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
     {

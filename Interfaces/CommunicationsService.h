@@ -264,6 +264,10 @@ namespace Communications
             virtual int GetAverageBandwithIn() const = 0;
             virtual int GetAverageBandwithOut() const = 0;
 
+            virtual QString GetActiveChannel() const = 0;
+            virtual void SetActiveChannel(QString channel) = 0;
+            virtual QStringList GetChannels() = 0;
+
             //virtual void SetSelfPosition(const vector3df& pos) = 0;
 
             //! \todo: Give weak_ptr instead
@@ -278,6 +282,8 @@ namespace Communications
             void StartReceivingAudio();
             void StopReceivingAudio();
             void SpeakerVoiceActivityChanged(double volume);
+            void ActiceChannelChanged(QString new_channel);
+            void ChannelListChanged(QStringList list);
 //            void ReceivedVoiceActivity(double volume);
         };
 

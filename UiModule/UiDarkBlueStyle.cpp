@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "UiDarkBlueStyle.h"
 
+#include <QStyleOptionTitleBar>
 #include <QWebView>
 
 #include "MemoryLeakCheck.h"
@@ -15,6 +16,12 @@ namespace UiServices
     UiDarkBlueStyle::UiDarkBlueStyle()
     {
         default_palette_ = QApplication::palette();
+        win_style_ = new QWindowsStyle();
+    }
+
+    UiDarkBlueStyle::~UiDarkBlueStyle()
+    {
+        SAFE_DELETE(win_style_);
     }
 
     void UiDarkBlueStyle::polish(QPalette &palette)
@@ -89,6 +96,7 @@ namespace UiServices
 
     int UiDarkBlueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
     {
+        //qDebug() << "pixelMetric() - " << metric;
 #ifndef Q_WS_X11
         switch (metric)
         {
@@ -116,7 +124,10 @@ namespace UiServices
             case SH_EtchDisabledText:
                 return int(true);
             default:
-                return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
+                // Get style hints from one style below the QCleanlooksStyle, that is QWindowsStyle
+                // this gets us scrollbars to combobox dropdown items and other size hints that will make it look more
+                // like windows instead of the simplistic QCleanlooksStyle that fails to 'hint' some things right for the painting.
+                return win_style_->styleHint(hint, option, widget, returnData);
         }
     }
     
@@ -161,7 +172,7 @@ namespace UiServices
     void UiDarkBlueStyle::drawComplexControl(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
     {
         switch (control)
-        {
+        {  
             case QStyle::CC_TitleBar:
             {
                 const int buttonMargin = 0;
@@ -217,9 +228,12 @@ namespace UiServices
                         bool sunken = (myTitleBar->activeSubControls & SC_TitleBarSysMenu) && (myTitleBar->state & State_Sunken);
 
                         QRect iconRect = proxy()->subControlRect(CC_TitleBar, myTitleBar, SC_TitleBarSysMenu, widget);
-                        if (!myTitleBar->icon.isNull()) {
+                        if (!myTitleBar->icon.isNull()) 
+                        {
                             myTitleBar->icon.paint(painter, QRect(0, 0, 0, 0));
-                        } else {
+                        } 
+                        else 
+                        {
                             myTitleBar->icon.paint(painter, QRect(0, 0, 0, 0));
                             painter->save();
                             painter->restore();

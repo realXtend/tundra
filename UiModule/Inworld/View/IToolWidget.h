@@ -8,7 +8,6 @@
 
 namespace CoreUi
 {
-    /// @todo Move to separate file
     class IToolWidget: public QWidget
     {
         Q_OBJECT
