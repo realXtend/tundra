@@ -17,6 +17,8 @@ namespace AssImp
 		OpenAssetImport();
 		~OpenAssetImport();
 
+        bool IsSupportedExtension(const QString& extension);
+
 		void Import(Foundation::Framework *framework, const QString& file);
 
 	private:

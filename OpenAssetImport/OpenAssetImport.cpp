@@ -47,6 +47,11 @@ namespace AssImp
         delete logstream_;
     }
 
+    bool OpenAssetImport::IsSupportedExtension(const QString& extension)
+    {
+        return importer_->IsExtensionSupported(extension.toStdString());
+    }
+
     void OpenAssetImport::Import(Foundation::Framework *framework, const QString& file)
     {
         const aiScene *scene = importer_->ReadFile(
@@ -89,7 +94,8 @@ namespace AssImp
         {
             aiMatrix4x4 transform = node->mTransformation;
             String uniquename = renderer->GetUniqueObjectName();
-            Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual("mesh___test.mesh", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            ogreMesh->setAutoBuildEdgeLists(false);
 
             Ogre::Vector3 vmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
             Ogre::Vector3 vmax(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
@@ -209,19 +215,37 @@ namespace AssImp
 
                 // indices
                 size_t numIndices = mesh->mNumFaces * 3;            // support only triangles, so 3 indices per face
+                
+                Ogre::HardwareIndexBuffer::IndexType idxType = Ogre::HardwareIndexBuffer::IT_16BIT;
+                if (numIndices > 65535)
+                    idxType = Ogre::HardwareIndexBuffer::IT_32BIT;
+
                 Ogre::HardwareIndexBufferSharedPtr ibuf = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(
-                    Ogre::HardwareIndexBuffer::IT_32BIT,            // You can use several different value types here
+                    idxType,                                        // You can use several different value types here
                     numIndices,                                     // The number of indices you'll put in that buffer
                     Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY     // Properties
                     );
                 
-                int *idxData = static_cast<int*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
-                offset = 0;
-                for (int n=0 ; n<mesh->mNumFaces ; ++n)
+                if (idxType == Ogre::HardwareIndexBuffer::IT_16BIT)
                 {
-                    idxData[offset++] = mesh->mFaces[n].mIndices[0];
-                    idxData[offset++] = mesh->mFaces[n].mIndices[1];
-                    idxData[offset++] = mesh->mFaces[n].mIndices[2];
+                    u16 *idxData = static_cast<u16*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
+                    offset = 0;
+                    for (int n=0 ; n<mesh->mNumFaces ; ++n)
+                    {
+                        idxData[offset++] = mesh->mFaces[n].mIndices[0];
+                        idxData[offset++] = mesh->mFaces[n].mIndices[1];
+                        idxData[offset++] = mesh->mFaces[n].mIndices[2];
+                    }
+                } else
+                {
+                    u32 *idxData = static_cast<u32*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
+                    offset = 0;
+                    for (int n=0 ; n<mesh->mNumFaces ; ++n)
+                    {
+                        idxData[offset++] = mesh->mFaces[n].mIndices[0];
+                        idxData[offset++] = mesh->mFaces[n].mIndices[1];
+                        idxData[offset++] = mesh->mFaces[n].mIndices[2];
+                    }
                 }
 
                 ogreSubmesh->indexData->indexBuffer = ibuf;         // The pointer to the index buffer
