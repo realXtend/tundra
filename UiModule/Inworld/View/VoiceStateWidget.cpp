@@ -5,8 +5,8 @@
 
 namespace CommUI
 {
-    VoiceStateWidget::VoiceStateWidget(QWidget * parent, Qt::WindowFlags f)
-        : QPushButton(parent),
+    VoiceStateWidget::VoiceStateWidget()
+        : QPushButton(0),
           state_(STATE_OFFLINE)
     {
         setObjectName("stateIndicatorWidget"); // for style sheets ( works only if there is only one instance of this class )

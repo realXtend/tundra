@@ -14,7 +14,6 @@
 #include <CommunicationsService.h>
 #include <QMouseEvent>
 #include "VoiceUsersWidget.h" /// @todo Separate to VoiceParticipantWidget.h/cpp
-#include "VoiceControl.h"
 
 #include "DebugOperatorNew.h"
 
