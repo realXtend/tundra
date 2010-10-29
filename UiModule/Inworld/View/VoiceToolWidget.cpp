@@ -21,6 +21,7 @@
 #include "VoiceController.h"
 #include <QSettings>
 #include <QComboBox>
+#include <QGraphicsScene>
 
 #include "DebugOperatorNew.h"
 
@@ -264,7 +265,7 @@ namespace CommUI
             connect(transmission_mode_widget_, SIGNAL(TransmissionModeSelected(int)), this, SLOT(ChangeTransmissionMode(int)));
             
             UiProxyWidget* proxy = framework_->UiService()->AddWidgetToScene(transmission_mode_widget_, Qt::Widget);
-            connect(proxy->scene(), SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(UpdateTransmissionModeWidgetPosition()));
+            QObject::connect(proxy->scene(), SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(UpdateTransmissionModeWidgetPosition()));
             UpdateTransmissionModeWidgetPosition();
             transmission_mode_widget_->show();
         }
