@@ -46,4 +46,11 @@ std::string SanitateAssetIdForOgre(const std::string& input)
     return ret;
 }
 
+std::string SanitateAssetIdForOgre(const char* input)
+{
+    if (!input)
+        return std::string();
+    return SanitateAssetIdForOgre(std::string(input));
+}
+
 }

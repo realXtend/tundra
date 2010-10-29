@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "Foundation.h"
 #include "OgreRenderingModule.h"
+#include "OgreConversionUtils.h"
 #include "Renderer.h"
 #include "EC_OgreSky.h"
 
@@ -294,7 +295,7 @@ void EC_OgreSky::SetSkyDomeMaterialTexture(const char *texture_name)
     Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyDomeParameters.material);
     if (!skyMaterial.isNull())
     {
-        skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(texture_name);
+        skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(SanitateAssetIdForOgre(texture_name));
         skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
         CreateSky();
     }
@@ -308,7 +309,7 @@ void EC_OgreSky::SetSkyPlaneMaterialTexture(const char *texture_name)
     Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyPlaneParameters.material);
     if (!skyMaterial.isNull())
     {
-        skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(texture_name);
+        skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(SanitateAssetIdForOgre(texture_name));
         skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
         CreateSky();
     }

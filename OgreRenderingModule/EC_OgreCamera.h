@@ -25,6 +25,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
+<li>"AutoSetPlaceable": sets placeable from the same entity
 <li>"SetActive": sets as active camera in the viewport
 <li>"SetNearClip": sets near clip distance
         \note EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
@@ -69,6 +70,9 @@ public:
     void SetPlaceable(ComponentPtr placeable);
 public slots:
 
+    //! automatically find the placeable and set it
+    void AutoSetPlaceable();
+    
     //! sets as active camera in the viewport
     void SetActive();
     

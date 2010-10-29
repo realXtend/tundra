@@ -364,7 +364,7 @@ namespace RexLogic
 
     public:
         //! Creates a new camera entity to the scene.
-        void CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundra_mode);
+        void CreateOpenSimViewerCamera(Scene::SceneManager* scene, bool tundra_mode);
 
     private slots:
         /** Called when new component is added to the active scene.
@@ -382,7 +382,7 @@ namespace RexLogic
         void ComponentRemoved(Scene::Entity *entity, IComponent *component);
         
         //! Called when Tundra scene is cleared, to recreate camera. \todo A temp solution, will be removed.
-        void OnSceneCleared();
+        void OnSceneCleared(Scene::SceneManager* scene);
     };
 }
 

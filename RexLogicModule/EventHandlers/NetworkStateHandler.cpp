@@ -130,9 +130,9 @@ bool NetworkStateEventHandler::HandleTundraEvent(event_id_t event_id, IEventData
             Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
             if (scene)
             {
-                owner_->CreateOpenSimViewerCamera(owner_->GetFramework()->GetDefaultWorldScene(), true);
+                owner_->CreateOpenSimViewerCamera(scene.get(), true);
                 // Connect the sceneclear event also to perform recreation of the camera. \todo Soon we have no need for rexlogic to create tundra camera
-                QObject::connect(scene.get(), SIGNAL(SceneCleared()), owner_, SLOT(OnSceneCleared()));
+                QObject::connect(scene.get(), SIGNAL(SceneCleared(Scene::SceneManager*)), owner_, SLOT(OnSceneCleared(Scene::SceneManager*)));
             }
         }
         break;

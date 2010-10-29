@@ -21,7 +21,6 @@
 
 #endif
 
-
 namespace Environment
 {
     class Terrain;
@@ -150,7 +149,7 @@ namespace Environment
 
     private slots:
         //! Handle recreate of enviroment (relevant to Tundra only) when scene is cleared. Hopefully this will only be a temporary solution.
-        void OnSceneCleared();
+        void OnSceneCleared(Scene::SceneManager* scene);
 
     private:
         EnvironmentModule(const EnvironmentModule &);
