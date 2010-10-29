@@ -907,6 +907,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     if (result == QDialog::Rejected)
         return;
 
+    // Get the list of parameters we will pass to the function we are invoking, and update the latest values to them from the editor widgets the user inputted.
     QList<IArgumentType *> arguments = dialog->Arguments();
     foreach(IArgumentType *arg, arguments)
         arg->UpdateValueFromEditor();
@@ -914,7 +915,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     IArgumentType* retValArg = dialog->ReturnValueArgument();
     if (!retValArg)
     {
-        LogError("Invalid return value argument. Cannot execute " + dialog->Function().toStdString() + ".");
+        LogError("The return value argument type for the given function call is missing. Cannot execute " + dialog->Function().toStdString() + ".");
         return;
     }
 
@@ -927,11 +928,10 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             QObject *obj = o.lock().get();
             QString objName = obj->metaObject()->className();
 
-            QGenericReturnArgument retArg = retValArg->ReturnValue();
-
+            // Generate/get argumetns for QMetaObject::invokeMethod.
+            // Also craft InvokeItem struct while we're at it.
             InvokeItem iItem;
             iItem.type = Function;
-            iItem.name = dialog->Function();
 
             QList<QGenericArgument> args;
             for(int i = 0; i < arguments.size(); ++i)
@@ -944,26 +944,41 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             while(args.size() < 10)
                 args.push_back(QGenericArgument());
 
-            if (retValArg->ToString() == "void")
+            try
             {
-                QMetaObject::invokeMethod(obj, dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                    args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+                QGenericReturnArgument retArg = retValArg->ReturnValue();
+                if (retValArg->ToString() == "void")
+                {
+                    QMetaObject::invokeMethod(obj, dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
 
-                dialog->SetReturnValueText(objName + ' ' + retValArg->ToString());
+                    dialog->AppendReturnValueText(objName + ' ' + retValArg->ToString());
+                }
+                else
+                {
+                    QMetaObject::invokeMethod(obj, dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                        retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+
+                    LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
+
+                   dialog->AppendReturnValueText(objName + ' ' + retValArg->ToString());
+                }
             }
-            else
+            catch(const Exception &e)
             {
-                QMetaObject::invokeMethod(obj, dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                    retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
-
-                retValArg->SetValue(retArg.data());
-
-                LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
-
-                dialog->AppendReturnValueText(objName + ' ' + retValArg->ToString());
+                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw an Exception \"") + e.what() + "\"!");
+            }
+            catch(const std::exception &e)
+            {
+                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw a std::exception \"") + e.what() + "\"!");
+            }
+            catch(...)
+            {
+                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw an exception of unknown type!"));
             }
 
             // Save invoke item
+            iItem.name = dialog->Function();
             InvokeItem *mruItem = FindMruItem();
             if (mruItem)
                 iItem.mruOrder = mruItem->mruOrder + 1;
