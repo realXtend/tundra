@@ -120,6 +120,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
     else
     {
+#ifdef ASSIMP_ENABLED
         boost::filesystem::path path(filename.toStdString());
         AssImp::OpenAssetImport assimporter;
         QString extension = QString(path.extension().c_str()).toLower();
@@ -138,6 +139,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
                     scene->EmitEntityCreated(entity, AttributeChange::Default);
             }
         } else
+#endif
         {
             LogError("Unsupported file extension: " + filename.toStdString());
         }
