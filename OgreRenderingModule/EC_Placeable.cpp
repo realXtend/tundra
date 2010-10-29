@@ -149,6 +149,8 @@ QVector3D EC_Placeable::GetQLocalZAxis() const
 
 void EC_Placeable::SetPosition(const Vector3df& position)
 {
+   assert(!RexTypes::IsValidPositionVector(position));
+   
    if ( !RexTypes::IsValidPositionVector(position) )
         return;
     link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
