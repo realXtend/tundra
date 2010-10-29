@@ -824,6 +824,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     if (result == QDialog::Rejected)
         return;
 
+    // Get the list of parameters we will pass to the function we are invoking, and update the latest values to them from the editor widgets the user inputted.
     QList<IArgumentType *> arguments = dialog->Arguments();
     foreach(IArgumentType *arg, arguments)
         arg->UpdateValueFromEditor();
@@ -831,7 +832,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     IArgumentType* retValArg = dialog->ReturnValueArgument();
     if (!retValArg)
     {
-        LogError("Invalid return value argument. Cannot execute " + dialog->Function().toStdString() + ".");
+        LogError("The return value argument type for the given function call is missing. Cannot execute " + dialog->Function().toStdString() + ".");
         return;
     }
 
@@ -847,23 +848,34 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             while(args.size() < 10)
                 args.push_back(QGenericArgument());
 
-            if (retValArg->ToString() == "void")
+            try
             {
-                QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                    args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+                if (retValArg->ToString() == "void")
+                {
+                    QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+                    dialog->SetReturnValueText("The function call was successful.");
+                }
+                else
+                {
+                    QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                        retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
 
-                dialog->SetReturnValueText("");
-            }
-            else
+                    retValArg->SetValue(retArg.data());
+
+                    LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
+
+                    dialog->SetReturnValueText(retValArg->ToString());
+                }
+            } catch(const Exception &e)
             {
-                QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                    retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
-
-                retValArg->SetValue(retArg.data());
-
-                LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
-
-                dialog->SetReturnValueText(retValArg->ToString());
+                dialog->SetReturnValueText(QString("The function call threw an Exception \"") + e.what() + "\"!");
+            } catch(const std::exception &e)
+            {
+                dialog->SetReturnValueText(QString("The function call threw a std::exception \"") + e.what() + "\"!");
+            } catch(...)
+            {
+                dialog->SetReturnValueText(QString("The function call threw an exception of unknown type!"));
             }
         }
 }
