@@ -23,6 +23,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 #include <QPushButton>
 #include <QUiLoader>
 #include <QVBoxLayout>
+#include <QGraphicsScene>
 
 #include "MemoryLeakCheck.h"
 
@@ -55,6 +56,10 @@ void EC_3DCanvasSource::OnClick()
 {
     if ((getshow2d() == true) && (widget_) && (proxy_))
     {
+        if (!proxy_->scene())
+            return;
+        if (!proxy_->scene()->isActive())
+            return;
         if (proxy_->isVisible())
             proxy_->AnimatedHide();
         else
