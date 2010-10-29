@@ -109,7 +109,13 @@ public slots:
     /*! use with caution. never set the position of the camera directly, use the placeable component for that.
      */
     Ogre::Camera* GetCamera() { return camera_; }
-            
+
+private slots:
+    //! Called when the parent entity has been set.
+    void UpdateSignals();
+    //! Called when component has been removed from the parent entity. Checks if the component removed was the mesh, and autodissociates it.
+    void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
+    
 private:
     //! constructor
     /*! \param module renderer module

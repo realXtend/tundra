@@ -188,6 +188,9 @@ public:
     void Update(f64 frametime);
     
 public slots:
+    //! Auto-associate mesh component if not yet set
+    void AutoSetMesh();
+    
     //! Enables animation with optional fade-in time
     /* \param name Animation name
        \param looped Is animation looped
@@ -309,7 +312,15 @@ public:
 private slots:
     //! Called when the parent entity has been set.
     void UpdateSignals();
-
+    //! Called when component has been removed from the parent entity. Checks if the component removed was the mesh, and autodissociates it.
+    void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
+    
+signals:
+    //! Emitted when a non-looping animation has finished
+    void AnimationFinished(const QString& animationName);
+    //! Emitted when a looping animation has completed a cycle
+    void AnimationCycled(const QString& animationName);
+    
 private:
     //! Constructor
     /*! \param module renderer module
@@ -325,9 +336,6 @@ private:
         \return animationstate, or null if not found
      */
     Ogre::AnimationState* GetAnimationState(Ogre::Entity* entity, const QString& name);
-    
-    //! Auto-associate mesh component if not yet set
-    void AutoAssociateMesh();
     
     //! Resets internal state
     void ResetState();

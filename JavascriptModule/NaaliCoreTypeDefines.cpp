@@ -158,6 +158,33 @@ void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
 {
 }
 
+QScriptValue createColor(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Color newColor;
+    return engine->toScriptValue(newColor);
+}
+
+QScriptValue createVector3df(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df newVec;
+    newVec.x = 0;
+    newVec.y = 0;
+    newVec.z = 0;
+    return engine->toScriptValue(newVec);
+}
+
+QScriptValue createQuaternion(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Quaternion newQuat;
+    return engine->toScriptValue(newQuat);
+}
+
+QScriptValue createTransform(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Transform newTransform;
+    return engine->toScriptValue(newTransform);
+}
+
 void RegisterNaaliCoreMetaTypes()
 {
     qRegisterMetaType<Color>("Color");
@@ -182,4 +209,14 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueIAttribute),
         reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueIAttribute),
         QScriptValue());
+        
+    // Register constructors
+    QScriptValue ctorColor = engine->newFunction(createColor);
+    engine->globalObject().setProperty("Color", ctorColor);
+    QScriptValue ctorVector3df = engine->newFunction(createVector3df);
+    engine->globalObject().setProperty("Vector3df", ctorVector3df);
+    QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);
+    engine->globalObject().setProperty("Quaternion", ctorQuaternion);
+    QScriptValue ctorTransform = engine->newFunction(createTransform);
+    engine->globalObject().setProperty("Transform", ctorTransform);
 }
