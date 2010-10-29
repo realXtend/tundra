@@ -25,6 +25,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("FunctionDialog");
 
 FunctionComboBox::FunctionComboBox(QWidget *parent) : QComboBox(parent)
 {
+    //setInsertPolicy(QComboBox::InsertAlphabetically);
+    setMinimumContentsLength(50);
+    setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
 }
 
 void FunctionComboBox::AddFunction(const FunctionMetaData &f)
@@ -73,12 +76,13 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     targetsLabel->setWordWrap(true);
 
     functionComboBox = new FunctionComboBox;
+//    functionComboBox->sets
     connect(functionComboBox, SIGNAL(currentIndexChanged(int)), SLOT(UpdateEditors()));
 
-    doxygenView = new QWebView;
-    doxygenView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    doxygenView->setMinimumSize(300, 50);
-    doxygenView->setMaximumSize(600, 200);
+    doxygenView = new QTextEdit/*QWebView*/;
+//    doxygenView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//    doxygenView->setMinimumSize(300, 50);
+//    doxygenView->setMaximumSize(600, 200);
     doxygenView->hide();
 
     mainLayout->addWidget(targetsLabel);
@@ -309,6 +313,7 @@ void FunctionDialog::Execute()
 
 void FunctionDialog::UpdateEditors()
 {
+    QPoint orgPos = pos();
     // delete widgets from gridlayout
     QLayoutItem *child;
     while((child = editorLayout->takeAt(0)) != 0)
@@ -335,7 +340,7 @@ void FunctionDialog::UpdateEditors()
     bool success = DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
     if (documentation.length() != 0)
     {
-        doxygenView->setHtml(documentation, styleSheetPath);
+        doxygenView->setHtml(documentation);//, styleSheetPath);
         doxygenView->show();
     }
     else
@@ -361,5 +366,7 @@ void FunctionDialog::UpdateEditors()
 
         ++idx;
     }
+
+    move(orgPos);
 }
 

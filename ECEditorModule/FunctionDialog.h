@@ -113,7 +113,7 @@ protected:
     void hideEvent(QHideEvent *);
 
 private:
-    ///
+    /// Generates the targel label and list of available functions according to current object selection and function filter.
     void GenerateTargetLabelAndFunctions();
 
     /// Creates list of argument types for the current function.
@@ -132,7 +132,7 @@ private:
     FunctionComboBox *functionComboBox;
 
     /// Web view for doxygen documentation.
-    QWebView *doxygenView;
+    /*QWebView*/ QTextEdit *doxygenView;
 
     /// Layout for dynamically created parameter editors.
     QGridLayout *editorLayout;
