@@ -98,6 +98,14 @@ namespace AssImp
             boost::filesystem::path path(file.toStdString());
             std::string meshname = path.filename() + boost::lexical_cast<std::string>(nodeIdx);
 
+            /*if (scene->mNumMaterials > 0)
+            {
+                // testing getting Ogre material.xml names
+                aiString name;
+                scene->mMaterials[0]->Get(AI_MATKEY_NAME,name);
+                Foundation::RootLogInfo(std::string("Found material ") + std::string(name.data));
+            }*/
+
 
             aiMatrix4x4 transform = node->mTransformation;
             if (node->mNumMeshes > 0)
