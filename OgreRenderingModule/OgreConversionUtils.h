@@ -36,6 +36,7 @@ namespace OgreRenderer
         should be recorded and used to request other the depended upon assets
      */
     std::string OGRE_MODULE_API SanitateAssetIdForOgre(const std::string& input);
+    std::string OGRE_MODULE_API SanitateAssetIdForOgre(const char* input);
 }
 
 #endif

@@ -325,7 +325,7 @@ namespace Scene
         void Removed(Scene::SceneManager* scene);
         
         //! Signal when the whole scene is cleared
-        void SceneCleared();
+        void SceneCleared(Scene::SceneManager* scene);
         
     private:
         Q_DISABLE_COPY(SceneManager);

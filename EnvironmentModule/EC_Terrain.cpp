@@ -306,34 +306,35 @@ float EC_Terrain::GetPoint(int x, int y) const
  }
  
  
-Vector3df EC_Terrain::GetPointOnMap(const Vector3df& point) const 
-{     
-    Ogre::Matrix4 matrix = rootNode->_getFullTransform();     
-    Ogre::Vector3 local = matrix * OgreRenderer::ToOgreVector3(point);     
-    float z = GetInterpolatedHeightValue(local.x, local.y);     
-    return Vector3df(local.x, local.y, z);
+Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const 
+{
+    Ogre::Quaternion rot = rootNode->_getDerivedOrientation();
+    Ogre::Vector3 trans = rootNode->_getDerivedPosition();
+    Ogre::Vector3 scale = rootNode->_getDerivedScale();
+
+    Ogre::Matrix4 worldTM;
+    worldTM.makeTransform(trans, scale, rot);
+
+    // In Ogre 1.7.1 we could simply use the following line, but since we're also supporting Ogre 1.6.4 for now, the above
+    // lines are used instead, which work in both.
+//    Ogre::Matrix4 worldTM = rootNode->_getFullTransform(); // local->world. 
+
+    Ogre::Matrix4 inv = worldTM.inverse(); // world->local
+    Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
+    local.z = GetInterpolatedHeightValue(local.x, local.y);
+    Ogre::Vector4 world = worldTM * local;
+    return Vector3df(world.x, world.y, world.z);
 }
 
-float EC_Terrain::GetDistanceToTerrain(const Vector3df& point) const
+float EC_Terrain::GetDistanceToTerrain(const Vector3df &point) const
 {    
-    Vector3df mapPoint = GetPointOnMap(point);    
-    Vector3df diffrence = mapPoint - point;    
-    return diffrence.getLength();   
+    Vector3df pointOnMap = GetPointOnMap(point);
+    return point.z - pointOnMap.z;
 }
 
-bool EC_Terrain::IsOnTopOfMap(const Vector3df& point) const
-{    
-    Vector3df mapPoint = GetPointOnMap(point);    
-    if ( mapPoint.x < 0 || mapPoint.y < 0 )        
-        return false;        
-    
-    int xMax = PatchWidth() * cPatchSize;    
-    int yMax = PatchHeight() * cPatchSize;    
-    
-    if ( mapPoint.x > xMax || mapPoint.y > yMax )       
-        return false;        
-    
-    return true;
+bool EC_Terrain::IsOnTopOfMap(const Vector3df &point) const
+{
+    return GetDistanceToTerrain(point) >= 0.f;
 }
 
 float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
