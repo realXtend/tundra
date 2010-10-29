@@ -44,12 +44,19 @@ EC_Terrain::EC_Terrain(IModule* module) :
 {
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
-    xPatches.Set(1, AttributeChange::LocalOnly);
-    yPatches.Set(1, AttributeChange::LocalOnly);
+    xPatches.Set(1, AttributeChange::Disconnected);
+    yPatches.Set(1, AttributeChange::Disconnected);
     patches.resize(1);
     MakePatchFlat(0, 0, 0.f);
-    uScale.Set(0.13f, AttributeChange::LocalOnly);
-    vScale.Set(0.13f, AttributeChange::LocalOnly);
+    uScale.Set(0.13f, AttributeChange::Disconnected);
+    vScale.Set(0.13f, AttributeChange::Disconnected);
+    texture0.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    texture1.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    texture2.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    texture3.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    texture4.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    material.Set("Rex/TerrainPCF", AttributeChange::Disconnected);
+//    heightMap.Set("media/samples/terrain.ntf", AttributeChange::Disconnected);
 }
 
 EC_Terrain::~EC_Terrain()
@@ -66,6 +73,17 @@ void EC_Terrain::UpdateSignals()
 
     connect(this, SIGNAL(MaterialChanged(QString)), this, SLOT(OnMaterialChanged()));
     connect(this, SIGNAL(TextureChanged(QString)), this, SLOT(OnTextureChanged()));
+/*
+    // Manually signal the resource-requiring attributes to have been changed. This guarantees that if we are using
+    // the default values from ctor, these resources will be loaded in.
+    texture0.Changed(AttributeChange::LocalOnly);
+    texture1.Changed(AttributeChange::LocalOnly);
+    texture2.Changed(AttributeChange::LocalOnly);
+    texture3.Changed(AttributeChange::LocalOnly);
+    texture4.Changed(AttributeChange::LocalOnly);
+    material.Changed(AttributeChange::LocalOnly);
+    heightMap.Changed(AttributeChange::LocalOnly);
+*/
 }
 
 void EC_Terrain::OnMaterialChanged()
@@ -295,17 +313,14 @@ float EC_Terrain::GetPoint(int x, int y) const
     return GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)];
 }
 
- void EC_Terrain::SetPointHeight(int x, int y, float height)
- {   
-     
-     if (x < 0 || y < 0 || x >= cPatchSize * patchWidth || y >= cPatchSize * patchHeight)        
-                return; // Out of bounds signals are silently ignored.   
- 
-     GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)] = height;    
- 
- }
- 
- 
+void EC_Terrain::SetPointHeight(int x, int y, float height)
+{
+    if (x < 0 || y < 0 || x >= cPatchSize * patchWidth || y >= cPatchSize * patchHeight)
+        return; // Out of bounds signals are silently ignored.
+
+    GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)] = height;
+}
+
 Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const 
 {
     Ogre::Quaternion rot = rootNode->_getDerivedOrientation();
@@ -327,7 +342,7 @@ Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const
 }
 
 float EC_Terrain::GetDistanceToTerrain(const Vector3df &point) const
-{    
+{
     Vector3df pointOnMap = GetPointOnMap(point);
     return point.z - pointOnMap.z;
 }
@@ -483,10 +498,43 @@ bool EC_Terrain::LoadFromFile(QString filename)
     return true;
 }
 
+bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
+{
+    FILE *handle = fopen(filename, "rb");
+    if (!handle)
+    {
+        ///\todo Log out warning.
+        return false;
+    }
+    fseek(handle, 0, SEEK_END);
+    long numBytes = ftell(handle);
+    if (numBytes == 0)
+    {
+        fclose(handle);
+        return false;
+    }
+    fseek(handle, 0, SEEK_SET);
+    dst.resize(numBytes);
+    size_t numRead = fread(&dst[0], sizeof(u8), numBytes, handle);
+    fclose(handle);
+
+    return numRead == numBytes;
+}
+
 bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
 {
     Ogre::Image image;
-    image.load(filename.toStdString().c_str(), "TerrainTempGroup");
+    try
+    {
+        std::vector<u8> imageFile;
+        LoadFileToVector(filename.toStdString().c_str(), imageFile);
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
+        image.load(stream);
+    } catch(...)
+    {
+        ///\todo Log out warning.
+        return false;
+    }
 
     // Note: In the following, we round down, so if the image size is not a multiple of cPatchSize (== 16),
     // we will not use the whole image contents.
@@ -508,6 +556,43 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
     yPatches.Changed(AttributeChange::LocalOnly);
     heightMap.Changed(AttributeChange::LocalOnly);
 
+    DirtyAllTerrainPatches();
+    RegenerateDirtyTerrainPatches();
+
+    return true;
+}
+
+bool EC_Terrain::SaveToImageFile(QString filename, float minHeight, float maxHeight)
+{
+    const int xVertices = xPatches.Get() * cPatchSize;
+    const int yVertices = yPatches.Get() * cPatchSize;
+
+    if (minHeight <= -1e8f)
+        minHeight = GetTerrainMinHeight();
+    if (maxHeight >= 1e8f)
+        maxHeight = GetTerrainMaxHeight();
+    
+    std::vector<uchar> imageData(3*xVertices*yVertices, 0);
+
+    if (maxHeight - minHeight > 1e-5f) // If the terrain is not flat, read the actual values. If the terrain is flat, a black image is outputted.
+        for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
+            for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+            {
+                float height = 255.f * (GetPoint(x, y) - minHeight) / (maxHeight - minHeight);
+                int h = min(255, max((int)height, 0));
+                imageData[(y*xVertices+x)*3] = imageData[(y*xVertices+x)*3+1] = imageData[(y*xVertices+x)*3+2] = (uchar)h;
+            }
+    
+    try
+    {
+        Ogre::Image image;
+        image.loadDynamicImage(&imageData[0], xVertices, yVertices, Ogre::PF_R8G8B8);
+        image.save(filename.toStdString().c_str());
+    } catch(...)
+    {
+        ///\todo Log out warning.
+        return false;
+    }
     return true;
 }
 
@@ -804,17 +889,32 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
     node->setPosition(patchOrigin);
 }
 
-void EC_Terrain::GetTerrainHeightRange(float &minHeight, float &maxHeight)
+float EC_Terrain::GetTerrainMinHeight() const
 {
-    minHeight = std::numeric_limits<float>::max();
-    maxHeight = std::numeric_limits<float>::min();
+    float minHeight = std::numeric_limits<float>::max();
 
     for(int i = 0; i < patches.size(); ++i)
         for(int j = 0; j < patches[i].heightData.size(); ++j)
-        {
             minHeight = min(minHeight, patches[i].heightData[j]);
+
+    return minHeight;
+}
+
+float EC_Terrain::GetTerrainMaxHeight() const
+{
+    float maxHeight = -std::numeric_limits<float>::max();
+
+    for(int i = 0; i < patches.size(); ++i)
+        for(int j = 0; j < patches[i].heightData.size(); ++j)
             maxHeight = max(maxHeight, patches[i].heightData[j]);
-        }
+
+    return maxHeight;
+}
+
+void EC_Terrain::GetTerrainHeightRange(float &minHeight, float &maxHeight) const
+{
+    minHeight = GetTerrainMinHeight();
+    maxHeight = GetTerrainMaxHeight();
 }
 
 void EC_Terrain::DirtyAllTerrainPatches()
