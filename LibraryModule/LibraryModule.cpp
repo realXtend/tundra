@@ -340,7 +340,7 @@ namespace Library
                     EC_Mesh *mesh = cast_result.entity_->GetComponent<EC_Mesh>().get();
                     EC_OpenSimPrim *prim = cast_result.entity_->GetComponent<EC_OpenSimPrim>().get();
                     uint submesh = cast_result.submesh_;
-                    if (submesh != 0 && mesh && prim)
+                    if (mesh && prim)
                     {
                         MaterialMap materials = prim->Materials;
                         

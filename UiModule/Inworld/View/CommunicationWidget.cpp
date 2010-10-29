@@ -9,7 +9,6 @@
 #include "UiModule.h"
 #include "ModuleManager.h"
 #include "VoiceUsersWidget.h"
-#include "VoiceControl.h"
 #include "UiServiceInterface.h"
 #include "VoiceControllerWidget.h"
 
