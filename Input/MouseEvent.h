@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_QtInputModule_MouseEvent_h
-#define incl_QtInputModule_MouseEvent_h
+#ifndef incl_Input_MouseEvent_h
+#define incl_Input_MouseEvent_h
 
 #include "CoreTypes.h"
 #include "IEventData.h"
@@ -17,7 +17,7 @@ class QGraphicsItem;
 
 namespace QtInputEvents
 {
-    // These are the mouse-related input events provided by the QtInputModule.
+    // These are the mouse-related input events provided by the Input API.
     // For input events on keyboard, see \see KeyEvent.h.
 
 	static const event_id_t MousePressed = 3;

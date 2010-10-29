@@ -186,31 +186,41 @@ namespace Environment
         }
     }
 
-    
+    Vector3df EC_WaterPlane::GetPointOnPlane(const Vector3df &point) const 
+    {
+        if  ( node_ == 0 )
+            return Vector3df();
+
+        Ogre::Quaternion rot = node_->_getDerivedOrientation();
+        Ogre::Vector3 trans = node_->_getDerivedPosition();
+        Ogre::Vector3 scale = node_->_getDerivedScale();
+
+        Ogre::Matrix4 worldTM;
+        worldTM.makeTransform(trans, scale, rot);
+
+        // In Ogre 1.7.1 we could simply use the following line, but since we're also supporting Ogre 1.6.4 for now, the above
+        // lines are used instead, which work in both.
+        // Ogre::Matrix4 worldTM = node_->_getFullTransform(); // local->world. 
+
+        Ogre::Matrix4 inv = worldTM.inverse(); // world->local
+        Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
+     
+        local.z = 0;
+        Ogre::Vector4 world = worldTM * local;
+        return Vector3df(world.x, world.y, world.z);
+    }
+
     float EC_WaterPlane::GetDistanceToWaterPlane(const Vector3df& point) const
     {
          if ( node_ == 0)
             return 0;
-
-        Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
-        float depth = depthAttr.Get();
-        float length = fabs(local.z);
-
-        if ( local.z >= 0 )
-        {
-           //On top of plane
-            return length;
-            
-        }
-        else if ( length < depth)
-        {
-            return -length;
-        }
-        else
-        {
-            return length;
-        }
-     
+    
+       
+        Vector3df pointOnPlane = GetPointOnPlane(point);        
+   
+        //Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
+      
+        return point.z - pointOnPlane.z;
 
     }
 
@@ -222,13 +232,12 @@ namespace Environment
         Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
      
         int xSize = xSizeAttr.Get(), ySize = ySizeAttr.Get();
-        Ogre::Vector3 pos = node_->getPosition();
-
-        float xMax = pos.x + xSize*0.5;
-        float yMax = pos.y + ySize*0.5;
-        float xMin = pos.x - xSize*0.5;
-        float yMin = pos.y - ySize*0.5;
-
+    
+        float xMax = xSize*0.5;
+        float yMax = ySize*0.5;
+        float xMin = -xSize*0.5;
+        float yMin = -ySize*0.5;
+        
         if ( local.x > xMin && local.x < xMax && local.y > yMin && local.y < yMax)
             return true;
 
@@ -237,65 +246,48 @@ namespace Environment
 
     }
 
-    bool EC_WaterPlane::IsUnderWater()
+    bool EC_WaterPlane::IsPointInsideWaterCube(const Vector3df& point) const
+    {
+        if ( entity_ == 0)
+            return false;
+     
+      if ( IsTopOrBelowWaterPlane(point))
+      {
+            float depth = depthAttr.Get();
+            float d = GetDistanceToWaterPlane(point);
+            if ( d < 0 && depth >= fabs(d) )
+                return true;
+
+      }
+
+      return false; 
+
+    }
+
+
+
+    bool EC_WaterPlane::IsCameraInsideWaterCube()
     {
       // Check that is camera inside of defined waterplane. 
-      ///todo this cannot be done this way, mesh orientation etc. must take care. Now we just assume that plane does not have orientation.
-
+   
       if ( entity_ == 0)
         return false;
 
       Ogre::Camera *camera = renderer_.lock()->GetCurrentCamera();
       Ogre::Vector3 posCamera = camera->getDerivedPosition();
+     
         
       if ( IsTopOrBelowWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z)))
       {
+            float depth = depthAttr.Get();
             float d = GetDistanceToWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z));
-            if ( d < 0 )
+            if ( d < 0 && depth >= fabs(d) )
                 return true;
 
       }
 
       return false;
 
-      /*
-      Ogre::Vector3 pos;
-    
-      if (node_ != 0)
-          pos = node_->_getDerivedPosition();  
-      else
-          return false;
-
-      int xSize = xSizeAttr.Get(), ySize = ySizeAttr.Get(), depth = depthAttr.Get();
-      int x = posCamera.x, y = posCamera.y, z = posCamera.z;
-    
-      // HACK this is strange, i thought that it should be 0.5 but some reason, visually it looks like that you can travel really "outside" from water. 
-      int tmpMax = pos.x + 0.25*xSize;
-      int tmpMin = pos.x - 0.25*xSize;
-          
-      if ( x >= tmpMin && x <= tmpMax )
-        {
-            tmpMax = pos.y + 0.25*ySize;
-            tmpMin = pos.y - 0.25*ySize;
-        
-            if ( y >= tmpMin && y <= tmpMax)
-            {
-                tmpMax = pos.z;
-                tmpMin = pos.z - depth;
-            
-                if ( z >= tmpMin && z <= tmpMax)
-                {
-                    return true;
-                }
-                else
-                    return false;
-            }
-            else
-                return false;
-         }
-      
-         return false;
-         */
     }
     
     void EC_WaterPlane::CreateWaterPlane()
