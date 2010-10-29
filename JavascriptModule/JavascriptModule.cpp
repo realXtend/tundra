@@ -86,7 +86,9 @@ void JavascriptModule::PostInitialize()
     services_["audio"] = GetFramework()->Audio();
     services_["frame"] = GetFramework()->GetFrame();
     services_["console"] = GetFramework()->Console();
-
+    // Add framework itself as a service, so that we can connect to scene creation
+    services_["framework"] = GetFramework();
+    
     RegisterConsoleCommand(Console::CreateCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
         Console::Bind(this, &JavascriptModule::ConsoleRunString)));

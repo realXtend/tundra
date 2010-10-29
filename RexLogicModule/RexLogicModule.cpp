@@ -409,11 +409,11 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
     // Listen to component changes to serialize them via RexFreeData
     primitive_->RegisterToComponentChangeSignals(scene);
 
-    CreateOpenSimViewerCamera(scene, false);
+    CreateOpenSimViewerCamera(scene.get(), false);
     return scene;
 }
 
-void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundra_mode)
+void RexLogicModule::CreateOpenSimViewerCamera(Scene::SceneManager* scene, bool tundra_mode)
 {
     Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeIdLocal());
     if (!entity)
@@ -469,10 +469,10 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundr
     }
 }
 
-void RexLogicModule::OnSceneCleared()
+void RexLogicModule::OnSceneCleared(Scene::SceneManager* scene)
 {
     // Tundra scene has been cleared, so recreate camera in freelook mode
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    //! \todo will be superseded by FreelookCameraApplication
     if (scene)
         CreateOpenSimViewerCamera(scene, true);
 }

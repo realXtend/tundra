@@ -10,6 +10,7 @@
 #include "OgreMaterialProperties.h"
 #include "OgreMaterialResource.h"
 #include "Renderer.h"
+#include "OgreConversionUtils.h"
 
 #include <OgreMaterial.h>
 #include <OgreTechnique.h>
@@ -428,7 +429,7 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                     QString newValueString(typeValuePair.begin().value().toByteArray());
                     newValueString = newValueString.trimmed();
 
-                    tu->setTextureName(newValueString.toStdString());
+                    tu->setTextureName(OgreRenderer::SanitateAssetIdForOgre(newValueString.toStdString()));
                     /*
                     //QString new_texture_name = iter->second;
                     RexUUID new_name(iter->second);

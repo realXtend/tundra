@@ -10,11 +10,16 @@
 
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
+#include "DoxygenDocReader.h"
 
 #include "Entity.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("FunctionDialog");
+
+#include <QWebView>
 
 #include "MemoryLeakCheck.h"
-
 
 // FunctionComboBox
 
@@ -52,7 +57,9 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     objects(objs),
     returnValueArgument(0)
 {
+    // Set up the UI
     setAttribute(Qt::WA_DeleteOnClose);
+
     if (graphicsProxyWidget())
         graphicsProxyWidget()->setWindowTitle(tr("Trigger Function"));
 
@@ -62,6 +69,49 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(6);
 
+    QLabel *targetsLabel = new QLabel;
+
+    functionComboBox = new FunctionComboBox;
+    connect(functionComboBox, SIGNAL(currentIndexChanged(int)), SLOT(UpdateEditors()));
+
+    doxygenView = new QWebView;
+    doxygenView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    doxygenView->setMinimumSize(300, 50);
+    doxygenView->setMaximumSize(600, 200);
+    doxygenView->hide();
+
+    mainLayout->addWidget(targetsLabel);
+    mainLayout->addWidget(doxygenView);
+    mainLayout->addWidget(functionComboBox);
+
+    editorLayout = new QGridLayout;
+    mainLayout->insertLayout(-1, editorLayout);
+
+    returnValueLabel = new QLabel(tr("Latest return value: "));
+
+    mainLayout->addWidget(returnValueLabel);
+
+    QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    mainLayout->insertSpacerItem(-1, spacer);
+
+    QHBoxLayout *buttonsLayout = new QHBoxLayout;
+    QSpacerItem *buttonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    buttonsLayout->addSpacerItem(buttonSpacer);
+    mainLayout->insertLayout(-1, buttonsLayout);
+
+    QPushButton *execButton = new QPushButton(tr("Execute"));
+    QPushButton *execAndCloseButton = new QPushButton(tr("Execute and Close"));
+    QPushButton *closeButton = new QPushButton(tr("Close"));
+
+    connect(execButton, SIGNAL(clicked()), SLOT(Execute()));
+    connect(execAndCloseButton, SIGNAL(clicked()), SLOT(accept()));
+    connect(closeButton, SIGNAL(clicked()), SLOT(reject()));
+
+    buttonsLayout->addWidget(execButton);
+    buttonsLayout->addWidget(execAndCloseButton);
+    buttonsLayout->addWidget(closeButton);
+
+    // Generate functions for the function combo box.
     QList<FunctionMetaData> fmds;
     QSet<QString> functions;
 
@@ -72,12 +122,16 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     else
         targetText.append(tr("Targets: "));
 
-    for(int i = 0; i < objects.size(); ++i)
+    int objectsTotal = objects.size();
+    for(int i = 0; i < objectsTotal; ++i)
     {
         QObject *obj = objects[i].lock().get();
         assert(obj);
         if (!obj)
+        {
+            --objectsTotal;
             continue;
+        }
 
         const QMetaObject *mo = obj->metaObject();
         targetText.append(mo->className());
@@ -94,12 +148,10 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
         if (i < objects.size() - 1)
             targetText.append(" ,");
 
-        QStringList methods;
-
         for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
         {
             const QMetaMethod &mm = mo->method(i);
-            //if ((mm.methodType() == QMetaMethod::Slot) && (mm.access() == QMetaMethod::Public))
+            if ((mm.methodType() == QMetaMethod::Slot) && (mm.access() == QMetaMethod::Public))
             {
                 // Craft full signature with return type and parameter names.
                 QString fullSig = mm.signature();
@@ -135,12 +187,12 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
 
                 // Construct FunctionMetaData struct.
                 FunctionMetaData f;
-                f.returnType = returnType;
-                f.fullSignature = fullSig;
-                f.signature = mm.signature();
                 int start = fullSig.indexOf(' ');
                 int end = fullSig.indexOf('(');
                 f.function = fullSig.mid(start + 1, end - start - 1);
+                f.returnType = returnType;
+                f.fullSignature = fullSig;
+                f.signature = mm.signature();
 
                 for(int k = 0; k < pTypes.size(); ++k)
                     if (k < pNames.size())
@@ -154,43 +206,8 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
         }
     }
 
-    QLabel *targetsLabel = new QLabel(targetText);
-
-    functionComboBox = new FunctionComboBox;
-    connect(functionComboBox, SIGNAL(currentIndexChanged(int)), SLOT(UpdateEditors()));
+    targetsLabel->setText(targetText);
     functionComboBox ->AddFunctions(fmds);
-
-    QLabel *functionLabel = new QLabel(tr("Function: "));
-
-    mainLayout->addWidget(targetsLabel);
-    mainLayout->addWidget(functionComboBox);
-
-    editorLayout = new QGridLayout;
-    mainLayout->insertLayout(-1, editorLayout);
-
-    returnValueLabel = new QLabel(tr("Latest return value: "));
-
-    mainLayout->addWidget(returnValueLabel);
-
-    QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    mainLayout->insertSpacerItem(-1, spacer);
-
-    QHBoxLayout *buttonsLayout = new QHBoxLayout;
-    QSpacerItem *buttonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    buttonsLayout->addSpacerItem(buttonSpacer);
-    mainLayout->insertLayout(-1, buttonsLayout);
-
-    QPushButton *execButton = new QPushButton(tr("Execute"));
-    QPushButton *execAndCloseButton = new QPushButton(tr("Execute and Close"));
-    QPushButton *closeButton = new QPushButton(tr("Close"));
-
-    connect(execButton, SIGNAL(clicked()), SLOT(Execute()));
-    connect(execAndCloseButton, SIGNAL(clicked()), SLOT(accept()));
-    connect(closeButton, SIGNAL(clicked()), SLOT(reject()));
-
-    buttonsLayout->addWidget(execButton);
-    buttonsLayout->addWidget(execAndCloseButton);
-    buttonsLayout->addWidget(closeButton);
 
     UpdateEditors();
 }
@@ -261,7 +278,7 @@ IArgumentType *FunctionDialog::CreateArgumentType(const QString &type)
     else if (type == "double")
         arg = new ArgumentType<double>("double");
     else
-        std::cerr << "Invalid argument type: " << type.toStdString() << std::endl;
+        LogDebug("Invalid argument type: " + type.toStdString());
 
     return arg;
 }
@@ -273,9 +290,6 @@ void FunctionDialog::Execute()
 
 void FunctionDialog::UpdateEditors()
 {
-    if (functionComboBox->CurrentFunction().function.isEmpty())
-        return;
-
     // delete widgets from gridlayout
     QLayoutItem *child;
     while((child = editorLayout->takeAt(0)) != 0)
@@ -285,8 +299,31 @@ void FunctionDialog::UpdateEditors()
         SAFE_DELETE(w);
     }
 
+    QString func = functionComboBox->CurrentFunction().function;
+    if (func.isEmpty())
+        return;
+
+    if (objects[0].expired())
+        return;
+
     SAFE_DELETE(returnValueArgument);
     returnValueArgument = CreateArgumentType(functionComboBox->CurrentFunction().returnType);
+
+    // Create and show doxygen documentation for the function.
+    QString doxyFuncName = QString(objects[0].lock()->metaObject()->className()) + "::" + func;
+    QUrl styleSheetPath;
+    QString documentation;
+    bool success = DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
+    if (documentation.length() != 0)
+    {
+        doxygenView->setHtml(documentation, styleSheetPath);
+        doxygenView->show();
+    }
+    else
+    {
+        LogDebug("Failed to find documentation!");
+        //doxygenView->hide();
+    }
 
     CreateArgumentList();
     if (allocatedArguments.empty())
@@ -301,7 +338,7 @@ void FunctionDialog::UpdateEditors()
 
         // Layout takes ownership of label and editor.
         editorLayout->addWidget(label, idx, 0);
-        editorLayout->addWidget(editor, idx, 1);
+        editorLayout->addWidget(editor, idx, 1, Qt::AlignLeft);
 
         ++idx;
     }

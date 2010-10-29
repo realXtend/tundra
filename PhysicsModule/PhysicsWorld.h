@@ -18,7 +18,6 @@ class btDiscreteDynamicsWorld;
 class btDispatcher;
 class btDynamicsWorld;
 class btCollisionObject;
-class PhysicsContact;
 
 namespace Physics
 {
@@ -62,12 +61,17 @@ public slots:
     
 signals:
     //! A physics collision has happened between two entities. 
-    /*! Note: both rigidbodies participating in the collision will also emit a signal separately.
+    /*! Note: both rigidbodies participating in the collision will also emit a signal separately. 
+        Also, if there are several contact points, the signal will be sent multiple times for each contact.
         \param entityA The first entity
         \param entityB The second entity
-        \param contacts A vector of contacts, which contain position, normal, distance, impulse information
+        \param position World position of collision
+        \param normal World normal of collision
+        \param distance Contact distance
+        \param impulse Impulse applied to the objects to separate them
+        \param newCollision True if same collision did not happen on the previous frame. If collision has multiple contact points, newCollision can only be true for the first of them.
      */
-    void PhysicsCollision(Scene::Entity* entityA, Scene::Entity* entityB, const QVector<PhysicsContact*>& contacts);
+    void PhysicsCollision(Scene::Entity* entityA, Scene::Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
 private:
     //! Bullet collision config
@@ -86,9 +90,6 @@ private:
     
     //! Previous frame's collisions. We store these to know whether the collision was new or "ongoing"
     std::set<std::pair<btCollisionObject*, btCollisionObject*> > previousCollisions_;
-    
-    //! Storage for re-using PhysicsContact structures
-    std::vector<PhysicsContact*> contactsStore_;
 };
 
 }

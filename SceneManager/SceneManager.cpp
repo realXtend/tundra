@@ -213,7 +213,7 @@ namespace Scene
         }
         entities_.clear();
         if (send_events)
-            emit SceneCleared();
+            emit SceneCleared(this);
     }
     
     EntityList SceneManager::GetEntitiesWithComponent(const QString &type_name) const
