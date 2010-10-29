@@ -53,7 +53,7 @@ public:
     ~Input();
 
     /// Proceeds the input system one application frame forward (Ages all double-buffered input data).
-    /// Called by QtInputModule. Not for client use.
+    /// Called internally by the Framework to update the polling Input API. Not for client use.
     void Update(float frametime);
 
     /// Creates a new input context with the given name. The name is not an ID, i.e. it does not have to be unique with 

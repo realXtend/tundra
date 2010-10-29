@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_QtInputModule_KeyEvent_h
-#define incl_QtInputModule_KeyEvent_h
+#ifndef incl_Input_KeyEvent_h
+#define incl_Input_KeyEvent_h
 
 #include "CoreTypes.h"
 #include "IEventData.h"

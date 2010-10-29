@@ -212,7 +212,7 @@ namespace Scene
         entity_id_t GetId() const { return id_; }
 
         //! Returns if this entity is local
-        bool IsLocal() const { return id_ & LocalEntity; }
+        bool IsLocal() const { return (id_ & LocalEntity) != 0; }
 
         //! introspection for the entity, returns all components
         const ComponentVector &GetComponentVector() const { return components_; }

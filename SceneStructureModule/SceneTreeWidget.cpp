@@ -19,11 +19,13 @@
 #include "ModuleManager.h"
 #include "TundraEvents.h"
 #include "EventManager.h"
+#include "ConfigurationManager.h"
 #include "ECEditorWindow.h"
 #include "EntityActionDialog.h"
 #include "AddComponentDialog.h"
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
+#include "InvokeItem.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -51,6 +53,11 @@ EntityItem::EntityItem(const Scene::EntityPtr &entity) :
 Scene::EntityPtr EntityItem::Entity() const
 {
     return ptr.lock();
+}
+
+entity_id_t EntityItem::Id() const
+{
+    return id;
 }
 
 // ComponentItem
@@ -87,15 +94,15 @@ bool Selection::HasComponents() const
     return components.size() > 0;
 }
 
-QSet<entity_id_t> Selection::EntityIds() const
+QList<entity_id_t> Selection::EntityIds() const
 {
     QSet<entity_id_t> ids;
     foreach(EntityItem *e, entities)
-        ids.insert(e->id);
+        ids.insert(e->Id());
     foreach(ComponentItem *c, components)
-        ids.insert(c->Parent()->id);
+        ids.insert(c->Parent()->Id());
 
-    return ids;
+    return ids.toList();
 }
 
 // SceneTreeWidget
@@ -124,12 +131,13 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), this);
     QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), this);
 
-    connect(renameShortcut, SIGNAL(activated()), this, SLOT(Rename()));
-    connect(deleteShortcut, SIGNAL(activated()), this, SLOT(Delete()));
-    connect(copyShortcut, SIGNAL(activated()), this, SLOT(Copy()));
-    connect(pasteShortcut, SIGNAL(activated()), this, SLOT(Paste()));
+    connect(renameShortcut, SIGNAL(activated()), SLOT(Rename()));
+    connect(deleteShortcut, SIGNAL(activated()), SLOT(Delete()));
+    connect(copyShortcut, SIGNAL(activated()), SLOT(Copy()));
+    connect(pasteShortcut, SIGNAL(activated()), SLOT(Paste()));
 
-    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
+//    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
+    LoadInvokeHistory();
 }
 
 SceneTreeWidget::~SceneTreeWidget()
@@ -314,6 +322,42 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         if (sel.HasEntities() && sel.HasComponents())
             functionsAction->setDisabled(true);
     }
+/*
+    if (invokeHistory.size())
+    {
+        menu->addSeparator();
+        int numberOfInvokeItemsVisible = 5;
+        for(int i = 0; i < numberOfInvokeItemsVisible; ++i)
+            if (i < invokeHistory.size())
+            {
+                QAction *invokeAction = new QAction(invokeHistory[i].ToString(), menu);
+                menu->addAction(invokeAction);
+                connect(invokeAction, SIGNAL(triggered()), SLOT(InvokeActionTriggered()));
+                invokeAction->setDisabled(true);
+            }
+    }
+*/
+}
+
+void SceneTreeWidget::LoadInvokeHistory()
+{
+    int idx = 0;
+    //framework->GetDefaultConfig().GetSetting<int>("InvokeHistory", "item" + ToString(idx));
+
+    invokeHistory = QList<InvokeItem>();
+    for(int i = 0; i< invokeHistory.size(); ++i)
+    {
+        invokeHistory[i].mruOrder = invokeHistory.size() - 1;
+    }
+}
+
+void SceneTreeWidget::SaveInvokeHistory()
+{
+    qSort(invokeHistory);
+
+    Foundation::ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
+    for(int idx = 0; idx < invokeHistory.size(); ++idx)
+        cfgMgr.SetSetting<std::string>("InvokeHistory", "item" + ToString(idx), invokeHistory[idx].ToSetting());
 }
 
 Selection SceneTreeWidget::GetSelection() const
@@ -383,6 +427,23 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     return scene_doc.toString();
 }
 
+InvokeItem *SceneTreeWidget::FindMruItem() const
+{
+    InvokeItem *mruItem = 0;
+
+    if (!invokeHistory.empty())
+        foreach(InvokeItem ii, invokeHistory)
+        {
+            if (mruItem == 0)
+                mruItem = &ii;
+            
+            if (ii.mruOrder > mruItem->mruOrder)
+                mruItem = &ii;
+        }
+
+    return mruItem;
+}
+
 void SceneTreeWidget::Edit()
 {
     Selection selection = GetSelection();
@@ -392,12 +453,12 @@ void SceneTreeWidget::Edit()
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     assert(ui);
 
-    // If we have existing editor instance, use it.
+    // If we have an existing editor instance, use it.
     if (ecEditor)
     {
         foreach(entity_id_t id, selection.EntityIds())
             ecEditor->AddEntity(id);
-        ecEditor->SetSelectedEntities(selection.EntityIds().toList());
+        ecEditor->SetSelectedEntities(selection.EntityIds());
         ui->BringWidgetToFront(ecEditor);
         return;
     }
@@ -409,7 +470,7 @@ void SceneTreeWidget::Edit()
     ecEditor->hide();
     foreach(entity_id_t id, selection.EntityIds())
         ecEditor->AddEntity(id);
-    ecEditor->SetSelectedEntities(selection.EntityIds().toList());
+    ecEditor->SetSelectedEntities(selection.EntityIds());
 
     ui->AddWidgetToScene(ecEditor);
     ui->ShowWidget(ecEditor);
@@ -432,7 +493,7 @@ void SceneTreeWidget::EditInNew()
     editor->hide();
     foreach(entity_id_t id, selection.EntityIds())
         editor->AddEntity(id);
-    editor->SetSelectedEntities(selection.EntityIds().toList());
+    editor->SetSelectedEntities(selection.EntityIds());
 
     if (!ecEditor)
         ecEditor = editor;
@@ -563,9 +624,9 @@ void SceneTreeWidget::NewComponent()
     if (!sel.HasEntities())
         return;
 
-    ECEditor::AddComponentDialog *dialog = new ECEditor::AddComponentDialog(framework, sel.EntityIds().toList(), this);
+    ECEditor::AddComponentDialog *dialog = new ECEditor::AddComponentDialog(framework, sel.EntityIds(), this);
     dialog->SetComponentList(framework->GetComponentManager()->GetAvailableComponentTypeNames());
-    connect(dialog, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
+    connect(dialog, SIGNAL(finished(int)), SLOT(ComponentDialogFinished(int)));
     dialog->show();
 }
 
@@ -778,9 +839,30 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
     if (result == QDialog::Rejected)
         return;
 
+    EntityAction::ExecutionTypeField execTypes = dialog->ExecutionType();
+    QString action = dialog->Action();
+    QStringList params = dialog->Parameters();
+
     foreach(Scene::EntityWeakPtr e, dialog->Entities())
         if (e.lock())
-            e.lock()->Exec(dialog->ExecutionType(), dialog->Action(), dialog->Parameters());
+            e.lock()->Exec(execTypes, action, params);
+
+    // Save invoke item
+    InvokeItem *mruItem = FindMruItem();
+
+    InvokeItem ii;
+    ii.type = Action;
+    ii.name = action;
+    ii.execTypes = execTypes;
+    if (mruItem)
+        ii.mruOrder = mruItem->mruOrder + 1;
+    else
+        ii.mruOrder = 0;
+
+    for(int i = 0; i < params.size(); ++i)
+        ii.parameters.push_back(qMakePair(QString("QString"), QVariant(params[i])));
+
+    invokeHistory.push_back(ii);
 }
 
 void SceneTreeWidget::OpenFunctionDialog()
@@ -811,8 +893,9 @@ void SceneTreeWidget::OpenFunctionDialog()
         }
 
     FunctionDialog *d = new FunctionDialog(objs, this);
-    connect(d, SIGNAL(finished(int)), this, SLOT(FunctionDialogFinished(int)));
+    connect(d, SIGNAL(finished(int)), SLOT(FunctionDialogFinished(int)));
     d->show();
+    d->move(300,300);
 }
 
 void SceneTreeWidget::FunctionDialogFinished(int result)
@@ -824,6 +907,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     if (result == QDialog::Rejected)
         return;
 
+    // Get the list of parameters we will pass to the function we are invoking, and update the latest values to them from the editor widgets the user inputted.
     QList<IArgumentType *> arguments = dialog->Arguments();
     foreach(IArgumentType *arg, arguments)
         arg->UpdateValueFromEditor();
@@ -831,40 +915,76 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     IArgumentType* retValArg = dialog->ReturnValueArgument();
     if (!retValArg)
     {
-        LogError("Invalid return value argument. Cannot execute " + dialog->Function().toStdString() + ".");
+        LogError("The return value argument type for the given function call is missing. Cannot execute " + dialog->Function().toStdString() + ".");
         return;
     }
 
-    foreach(boost::weak_ptr<QObject> obj, dialog->Objects())
-        if (obj.lock())
+    // Clear old return value from the dialog.
+    dialog->SetReturnValueText("");
+
+    foreach(boost::weak_ptr<QObject> o, dialog->Objects())
+        if (o.lock())
         {
-            QGenericReturnArgument retArg = retValArg->ReturnValue();
+            QObject *obj = o.lock().get();
+            QString objName = obj->metaObject()->className();
+
+            // Generate/get argumetns for QMetaObject::invokeMethod.
+            // Also craft InvokeItem struct while we're at it.
+            InvokeItem iItem;
+            iItem.type = Function;
 
             QList<QGenericArgument> args;
             for(int i = 0; i < arguments.size(); ++i)
-                args.push_back(arguments[i]->Value());
+            {
+                IArgumentType *arg = arguments[i];
+                args.push_back(arg->Value());
+                iItem.parameters.push_back(qMakePair(QString(arg->Value().name()), arg->ToQVariant()));
+            }
 
             while(args.size() < 10)
                 args.push_back(QGenericArgument());
 
-            if (retValArg->ToString() == "void")
+            try
             {
-                QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                    args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+                QGenericReturnArgument retArg = retValArg->ReturnValue();
+                if (retValArg->ToString() == "void")
+                {
+                    QMetaObject::invokeMethod(obj, dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
 
-                dialog->SetReturnValueText("");
+                    dialog->AppendReturnValueText(objName + ' ' + retValArg->ToString());
+                }
+                else
+                {
+                    QMetaObject::invokeMethod(obj, dialog->Function().toStdString().c_str(), Qt::DirectConnection,
+                        retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
+
+                    LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
+
+                   dialog->AppendReturnValueText(objName + ' ' + retValArg->ToString());
+                }
             }
+            catch(const Exception &e)
+            {
+                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw an Exception \"") + e.what() + "\"!");
+            }
+            catch(const std::exception &e)
+            {
+                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw a std::exception \"") + e.what() + "\"!");
+            }
+            catch(...)
+            {
+                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw an exception of unknown type!"));
+            }
+
+            // Save invoke item
+            iItem.name = dialog->Function();
+            InvokeItem *mruItem = FindMruItem();
+            if (mruItem)
+                iItem.mruOrder = mruItem->mruOrder + 1;
             else
-            {
-                QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                    retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
-
-                retValArg->SetValue(retArg.data());
-
-                LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
-
-                dialog->SetReturnValueText(retValArg->ToString());
-            }
+                iItem.mruOrder = 0;
+            invokeHistory.push_back(iItem);
         }
 }
 
@@ -1011,3 +1131,12 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
     }
 }
 
+void SceneTreeWidget::InvokeActionTriggered()
+{
+    QAction *action = dynamic_cast<QAction *>(sender());
+    assert(action);
+    if (!action)
+        return;
+
+    action->text();
+}

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_QtInputModule_KeyEventSignal_h
-#define incl_QtInputModule_KeyEventSignal_h
+#ifndef incl_Input_KeyEventSignal_h
+#define incl_Input_KeyEventSignal_h
 
 #include <QObject>
 
