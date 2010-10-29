@@ -95,7 +95,7 @@ namespace UiExternalServices
             {
 				Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
 				Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
-				if (entity_clicked_data && uiExternal->IsEditModeEnable() && !entity_clicked_data->entity->HasComponent("EC_Terrain") && currentScene!="WorldBuilding")
+				if (entity_clicked_data && uiExternal->IsEditModeEnable() && !entity_clicked_data->entity->HasComponent("EC_Terrain") && currentScene=="Inworld")
 				{
 					if (entitySelected_==entity_clicked_data->entity){
 						menu_asset->exec(framework_->GetMainWindow()->cursor().pos());

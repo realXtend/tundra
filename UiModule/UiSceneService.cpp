@@ -186,7 +186,7 @@ namespace UiServices
     void UiSceneService::ShowWidget(QWidget *widget) const
     {
 		if(proxy_dock_list[widget->windowTitle()].second->widget())
-			uiExternal->ShowWidget(widget->parentWidget());
+			uiExternal->ShowWidget(widget);
 		else
 			owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
     }
@@ -202,7 +202,7 @@ namespace UiServices
     void UiSceneService::BringWidgetToFront(QWidget *widget) const
     {
 		if(proxy_dock_list[widget->windowTitle()].second->widget())
-			uiExternal->ShowWidget(widget->parentWidget());
+			uiExternal->ShowWidget(widget);
 		else
 			owner_->GetInworldSceneController()->BringProxyToFront(widget);
     }
@@ -213,8 +213,7 @@ namespace UiServices
 		if (proxy_dock_list.contains(widget)){
 			proxyDock pair = proxy_dock_list.value(widget);
 			QDockWidget* qdock=pair.second;
-			UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
-			QWidget* widget;
+			UiProxyWidget* proxy=pair.first;
 			if(qdock->widget())
 				BringWidgetToFront(qdock->widget());
 			else
