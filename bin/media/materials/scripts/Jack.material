@@ -1,11 +1,11 @@
 import * from "LitTextured.material"
 
-material male/Body : LitTextured
+material male_Body : LitTextured
 {
     set_texture_alias baseMap Jack_body_yellow1.jpg
 }
 
-material male/Face : LitTextured
+material male_Face : LitTextured
 {
     set_texture_alias baseMap Jack_face_yellow.jpg
 }
