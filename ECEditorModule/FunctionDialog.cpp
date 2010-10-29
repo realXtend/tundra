@@ -76,7 +76,6 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     targetsLabel->setWordWrap(true);
 
     functionComboBox = new FunctionComboBox;
-//    functionComboBox->sets
     connect(functionComboBox, SIGNAL(currentIndexChanged(int)), SLOT(UpdateEditors()));
 
     doxygenView = new QTextEdit/*QWebView*/;

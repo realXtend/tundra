@@ -6,7 +6,16 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ArgumentType.h"
+
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QCheckBox>
+
+#include "MemoryLeakCheck.h"
 
 // QString
 template<> QWidget *ArgumentType<QString>::CreateEditor(QWidget *parent)
@@ -50,6 +59,7 @@ template<> QString ArgumentType<bool>::ToString() const
 template<> QWidget *ArgumentType<int>::CreateEditor(QWidget *parent)
 {
     editor = new QSpinBox(parent);
+    static_cast<QSpinBox *>(editor)->setRange(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
     return editor;
 }
 
@@ -69,6 +79,7 @@ template<> QString ArgumentType<int>::ToString() const
 template<> QWidget *ArgumentType<float>::CreateEditor(QWidget *parent)
 {
     editor = new QDoubleSpinBox(parent);
+    static_cast<QDoubleSpinBox *>(editor)->setRange(-std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
     return editor;
 }
 
@@ -88,6 +99,7 @@ template<> QString ArgumentType<float>::ToString() const
 template<> QWidget *ArgumentType<double>::CreateEditor(QWidget *parent)
 {
     editor = new QDoubleSpinBox(parent);
+    static_cast<QDoubleSpinBox *>(editor)->setRange(-std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
     return editor;
 }
 
