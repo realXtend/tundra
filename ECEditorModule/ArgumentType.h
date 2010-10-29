@@ -48,6 +48,9 @@ public:
     /// Returns the arguments value a string.
     virtual QString ToString() const = 0;
 
+    /// Returns the arguments value as a QVariant.
+    virtual QVariant ToQVariant() const = 0;
+
 private:
     Q_DISABLE_COPY(IArgumentType);
 };
@@ -80,15 +83,13 @@ public:
     /// IArgumentType override.
     virtual QString ToString() const { return QString(); }
 
+    /// IArgumentType override.
+    virtual QVariant ToQVariant() const { return QVariant::fromValue<T>(value); }
+
 private:
-    /// Type name
-    std::string typeName;
-
-    /// Value.
-    T value;
-
-    /// Editor widget dedicated for this argument type.
-    QWidget *editor;
+    std::string typeName; ///< Type name
+    T value; ///< Value.
+    QWidget *editor; ///< Editor widget dedicated for this argument type.
 };
 
 /// Void argument type. Used for return values only.
@@ -118,9 +119,11 @@ public:
     /// IArgumentType override. Returns "void".
     QString ToString() const { return typeName; }
 
+    /// IArgumentType override. Returns "void".
+    QVariant ToQVariant() const { return QVariant("void"); }
+
 private:
-    /// Type name
-    QString typeName;
+    QString typeName; ///< Type name
 };
 
 // QString

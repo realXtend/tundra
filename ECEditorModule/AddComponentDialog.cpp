@@ -138,7 +138,7 @@ namespace ECEditor
                     break;
                 }
             }
-            if(name_dublicates)
+            if (name_dublicates)
                 ok_button_->setEnabled(false);
             else
                 ok_button_->setEnabled(true);

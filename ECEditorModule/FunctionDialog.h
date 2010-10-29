@@ -14,30 +14,23 @@
 
 #include <QDialog>
 #include <QComboBox>
+#include <QMetaMethod>
 
 class QGridLayout;
 class QLabel;
 class QWebView;
+class QTextEdit;
 
 class IArgumentType;
 
 /// Utility data structure for indentifying and handling of function signatures.
 struct FunctionMetaData
 {
-    /// Function name in the simplest form
-    QString function;
-
-    /// Return type of the function.
-    QString returnType;
-
-    /// Signature of the function without return type and parameter names.
-    QString signature;
-
-    /// Full signature of the function including return type and parameter names.
-    QString fullSignature;
-
-    /// typename-name pairs of the parameters.
-    QList<QPair<QString, QString> > parameters;
+    QString function; ///< Function name in the simplest form
+    QString returnType; ///< Return type of the function.
+    QString signature; ///< Signature of the function without return type and parameter names.
+    QString fullSignature; ///< Full signature of the function including return type and parameter names.
+    QList<QPair<QString, QString> > parameters; ///< Typename-name pairs of the parameters.
 };
 
 /// Combo box containing function meta data items.
@@ -92,7 +85,6 @@ public:
     /// Destructor.
     ~FunctionDialog();
 
-public slots:
     /// Returns list of entities for which the action is triggered.
     QList<boost::weak_ptr<QObject> > Objects() const;
 
@@ -107,15 +99,23 @@ public slots:
     QList<IArgumentType *> Arguments() const;
 
     /// Sets return value text.
-    /** @param text text to be shown.
+    /** @param text Text to be shown.
     */
     void SetReturnValueText(const QString &text);
+
+    /// Append text in the return value text field. The given @c text always starts from a new line.
+    /** @param text Text to be added.
+    */
+    void AppendReturnValueText(const QString &text);
 
 protected:
     /// QWidget override.
     void hideEvent(QHideEvent *);
 
 private:
+    ///
+    void GenerateTargetLabelAndFunctions();
+
     /// Creates list of argument types for the current function.
     void CreateArgumentList();
 
@@ -125,8 +125,17 @@ private:
     */
     IArgumentType *CreateArgumentType(const QString &type);
 
+    /// Label showing the target objects.
+    QLabel *targetsLabel;
+
     /// Function combo box
     FunctionComboBox *functionComboBox;
+
+    /// Web view for doxygen documentation.
+    QWebView *doxygenView;
+
+    /// Layout for dynamically created parameter editors.
+    QGridLayout *editorLayout;
 
     /// "Execute" button.
     QPushButton *execButton;
@@ -134,14 +143,8 @@ private:
     /// "Execute and Close" button.
     QPushButton *execAndCloseButton;
 
-    /// Layout for dynamically created parameter editors.
-    QGridLayout *editorLayout;
-
-    /// Label for showing return values of slots.
-    QLabel *returnValueLabel;
-
-    /// Web view for doxygen documentation.
-    QWebView *doxygenView;
+        /// Text edit field for showing return values of functions.
+    QTextEdit *returnValueEdit;
 
     /// List of objects.
     QList<boost::weak_ptr<QObject> > objects;
@@ -151,6 +154,12 @@ private:
 
     /// Return value argument.
     IArgumentType *returnValueArgument;
+
+    /// 
+    typedef QPair<QMetaMethod::Access, QMetaMethod::MethodType> FunctionFilter;
+
+    /// 
+    FunctionFilter functionFilter;
 
 private slots:
     /// Emits finished(2).
