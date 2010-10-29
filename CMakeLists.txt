@@ -114,7 +114,7 @@ endif()
 
 # Turn on warnings
 if (MSVC)
-    add_definitions (/W2)
+    add_definitions (/W3)
 else ()
     add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
 endif()
