@@ -211,7 +211,6 @@ namespace Foundation
             RootLogCritical(std::string("QApp::notify caught an unknown exception!"));
             throw;
         }
-        return true;
     }
     
     void NaaliApplication::UpdateFrame()
