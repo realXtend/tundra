@@ -262,7 +262,8 @@ namespace CommUI
             connect(transmission_mode_widget_, SIGNAL(TransmissionModeSelected(int)), this, SLOT(ChangeTransmissionMode(int)));
             
             UiProxyWidget* proxy = framework_->UiService()->AddWidgetToScene(transmission_mode_widget_, Qt::Widget);
-            proxy->setWindowTitle("Voice Transmission Mode");
+            connect(proxy->scene(), SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(UpdateTransmissionModeWidgetPosition()));
+            UpdateTransmissionModeWidgetPosition();
             transmission_mode_widget_->show();
         }
         else
@@ -272,12 +273,21 @@ namespace CommUI
             else
             {
                 transmission_mode_widget_->show();
-                /// @todo fixme HACK BEGIN
-                //transmission_mode_widget_->moveBy(1,1);
-                //transmission_mode_widget_->moveBy(-1,-1);
-                /// HACK END
             }
         }
+    }
+
+    void VoiceToolWidget::UpdateTransmissionModeWidgetPosition()
+    {
+        QPoint absolute_pos;
+        QWidget* p = parentWidget();
+        while (p)
+        {
+            absolute_pos += p->pos();
+            p = p->parentWidget();
+        }
+        absolute_pos.setY(absolute_pos.y() - transmission_mode_widget_->height());
+        transmission_mode_widget_->move(absolute_pos);
     }
 
     void VoiceToolWidget::ChangeTransmissionMode(int mode)
