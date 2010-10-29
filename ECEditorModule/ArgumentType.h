@@ -11,11 +11,6 @@
 #include "ECEditorModuleApi.h"
 #include "CoreStringUtils.h"
 
-#include <QLineEdit>
-#include <QSpinBox>
-#include <QDoubleSpinBox>
-#include <QCheckBox>
-
 /// Pure virtual base class for different argument types.
 class ECEDITOR_MODULE_API IArgumentType
 {
