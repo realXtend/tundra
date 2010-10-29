@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_QtInputModule_KeyBindingsConfigWindow_h
-#define incl_QtInputModule_KeyBindingsConfigWindow_h
+#ifndef incl_Input_KeyBindingsConfigWindow_h
+#define incl_Input_KeyBindingsConfigWindow_h
 
 #include <QWidget>
 #include <QKeySequence>
