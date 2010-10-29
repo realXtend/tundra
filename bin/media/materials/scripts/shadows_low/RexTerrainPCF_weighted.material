@@ -1,0 +1,131 @@
+vertex_program Rex/TerrainPCFVS_weighted cg
+{
+	source RexTerrainPCF_weighted.cg
+	entry_point mainVS
+	profiles vs_3_0 arbvp1
+	compile_arguments -DSHADOW_MAPPING
+
+	default_params
+	{
+		param_named_auto worldViewProjMatrix worldviewproj_matrix
+		param_named_auto lightViewProj0 texture_viewproj_matrix
+		param_named_auto worldMatrix world_matrix
+
+		//Directional lighting
+		param_named_auto lightDir0 light_position_object_space 0
+		param_named_auto lightDiffuseColor0 light_diffuse_colour 0
+
+		//Take 2 point lights
+		param_named_auto lightPos1 light_position_object_space 1
+		param_named_auto lightDiffuseColor1 light_diffuse_colour 1
+		param_named_auto lightAttenuation1 light_attenuation 1
+
+		param_named_auto lightPos2 light_position_object_space 2
+		param_named_auto lightDiffuseColor2 light_diffuse_colour 2
+		param_named_auto lightAttenuation2 light_attenuation 2
+
+		//Ambient
+		param_named_auto ambient ambient_light_colour
+
+		//Fog
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program Rex/TerrainPCFFS_weighted cg
+{
+	source RexTerrainPCF_weighted.cg
+	entry_point mainPS
+	profiles ps_3_0 arbfp1
+	compile_arguments -DSHADOW_MAPPING
+
+	default_params
+	{
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0 0 0
+
+		param_named invShadowmapSize float 0.000488281
+	}
+}
+
+material Rex/TerrainPCF_weighted
+{
+	technique TerrainPCF
+	{
+		pass
+		{
+			iteration once
+			ambient 0 0 0
+			
+			fragment_program_ref Rex/TerrainPCFFS
+			{
+			}
+
+			vertex_program_ref Rex/TerrainPCFVS
+			{
+				//For weighted texunit
+				param_named scale0 float2 20.0 20.0
+				
+				//For 1st texunit (detail0)
+				param_named scale1 float2 1.00 1.00
+
+				//For 2nd texunit (detail1)
+				param_named scale2 float2 1.00 1.00
+
+				//For 3rd texunit (detail2)
+				param_named scale3 float2 1.00 1.00
+
+				//For 4th texunit (detail3)
+				param_named scale4 float2 1.00 1.00
+			}
+
+			//Weights
+			texture_unit weights
+			{
+				texture terr_dirt-grass.jpg
+			}
+			//Detail0
+			texture_unit detail0
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			//Detail1
+			texture_unit detail1
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			//Detail2
+			texture_unit detail2
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			//Detail3
+			texture_unit detail3
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			texture_unit shadowMap0
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+		}
+	}
+
+	// fallback
+	technique Fallback
+	{
+		pass
+		{
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+		}
+      }	
+}

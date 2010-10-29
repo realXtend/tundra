@@ -28,6 +28,7 @@ namespace Environment
     void TerrainLabel::mouseMoveEvent(QMouseEvent *event)
     {
         emit SendMouseEvent(event);
+        emit SendMouseEventWithCanvasName(event, objectName());
     }
 
     void TerrainLabel::mouseReleaseEvent(QMouseEvent *event)
