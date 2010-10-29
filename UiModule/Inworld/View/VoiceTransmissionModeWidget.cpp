@@ -11,7 +11,7 @@
 
 #include "VoiceTransmissionModeWidget.h"
 #include "CommunicationsService.h"
-#include "QSettings.h"
+#include <QSettings.h>
 
 #include "DebugOperatorNew.h"
 
