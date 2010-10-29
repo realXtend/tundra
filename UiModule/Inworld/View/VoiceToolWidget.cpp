@@ -19,6 +19,8 @@
 #include "VoiceUsersInfoWidget.h"
 #include "VoiceTransmissionModeWidget.h"
 #include "VoiceController.h"
+#include "QSettings.h"
+#include "QComboBox.h"
 
 #include "DebugOperatorNew.h"
 
@@ -179,16 +181,16 @@ namespace CommUI
             switch(settings.value("MumbleVoice/default_voice_mode").toInt())
             {
             case 0: 
-                voice_controller_->SetTransmissionMode(VoiceController::TransmissionMode::Mute);
+                voice_controller_->SetTransmissionMode(VoiceController::Mute);
                 break;
             case 1: 
-                voice_controller_->SetTransmissionMode(VoiceController::TransmissionMode::ContinuousTransmission);
+                voice_controller_->SetTransmissionMode(VoiceController::ContinuousTransmission);
                 break;
             case 2: 
-                voice_controller_->SetTransmissionMode(VoiceController::TransmissionMode::PushToTalk);
+                voice_controller_->SetTransmissionMode(VoiceController::PushToTalk);
                 break;
             case 3: 
-                voice_controller_->SetTransmissionMode(VoiceController::TransmissionMode::ToggleMode);
+                voice_controller_->SetTransmissionMode(VoiceController::ToggleMode);
                 break;
             }
         }
