@@ -28,6 +28,8 @@
 //! Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
+Q_SCRIPT_DECLARE_QMETAOBJECT(QTimer, QObject*);
+
 
 ///\todo Remove these two and move to Input API once NaaliCore is merged.
 //! Naali input defines
@@ -49,6 +51,7 @@ Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(AttributeChange::Type);
 
 //! Naali core API object defines.
+Q_DECLARE_METATYPE(Foundation::Framework*);
 Q_DECLARE_METATYPE(Frame*);
 Q_DECLARE_METATYPE(ScriptConsole*);
 Q_DECLARE_METATYPE(Command*);
@@ -60,6 +63,8 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("QPushButton", object);
     object = engine->scriptValueFromQMetaObject<QWidget>();
     engine->globalObject().setProperty("QWidget", object);
+    object = engine->scriptValueFromQMetaObject<QTimer>();
+    engine->globalObject().setProperty("QTimer", object);
 }
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
@@ -73,6 +78,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
 
     // Scene metatypes.
+    qScriptRegisterQObjectMetaType<Scene::SceneManager*>(engine);
     qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
@@ -82,6 +88,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     //qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
     qScriptRegisterMetaType(engine, toScriptValueEnum<EntityAction::ExecutionType>, fromScriptValueEnum<EntityAction::ExecutionType>);
 
+    // Framework metatype
+    qScriptRegisterQObjectMetaType<Foundation::Framework*>(engine);
+    
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
     qScriptRegisterQObjectMetaType<Command*>(engine);

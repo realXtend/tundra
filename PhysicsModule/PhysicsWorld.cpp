@@ -4,7 +4,6 @@
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
-#include "PhysicsContact.h"
 #include "Profiler.h"
 #include "EC_RigidBody.h"
 
@@ -54,10 +53,6 @@ PhysicsWorld::~PhysicsWorld()
     
     delete collisionConfiguration_;
     collisionConfiguration_ = 0;
-    
-    for (uint i = 0; i < contactsStore_.size(); ++i)
-        delete contactsStore_[i];
-    contactsStore_.clear();
 }
 
 void PhysicsWorld::SetPhysicsUpdatePeriod(float updatePeriod)
@@ -111,7 +106,11 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             
             btCollisionObject* objectA = static_cast<btCollisionObject*>(contactManifold->getBody0());
             btCollisionObject* objectB = static_cast<btCollisionObject*>(contactManifold->getBody1());
-            std::pair<btCollisionObject*, btCollisionObject*> objectPair(objectA, objectB);
+            std::pair<btCollisionObject*, btCollisionObject*> objectPair;
+            if (objectA < objectB)
+                objectPair = std::make_pair(objectA, objectB);
+            else
+                objectPair = std::make_pair(objectB, objectA);
             
             EC_RigidBody* bodyA = static_cast<EC_RigidBody*>(objectA->getUserPointer());
             EC_RigidBody* bodyB = static_cast<EC_RigidBody*>(objectB->getUserPointer());
@@ -130,34 +129,23 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             
             bool newCollision = previousCollisions_.find(objectPair) == previousCollisions_.end();
             
-            //! Create new contact structures if not enough room
-            int oldSize = contactsStore_.size();
-            if (numContacts > oldSize)
-            {
-                contactsStore_.resize(numContacts);
-                for (int j = oldSize; j < numContacts; ++j)
-                    contactsStore_[j] = new PhysicsContact();
-            }
-            
-            QVector<PhysicsContact*> contacts;
-            
             for (int j = 0; j < numContacts; ++j)
             {
                 btManifoldPoint& point = contactManifold->getContactPoint(j);
                 
-                PhysicsContact* newContact = contactsStore_[j];
+                Vector3df position = ToVector3(point.m_positionWorldOnB);
+                Vector3df normal = ToVector3(point.m_normalWorldOnB);
+                float distance = point.m_distance1;
+                float impulse = point.m_appliedImpulse;
                 
-                newContact->position = ToVector3(point.m_positionWorldOnB);
-                newContact->normal = ToVector3(point.m_normalWorldOnB);
-                newContact->distance = point.m_distance1;
-                newContact->impulse = point.m_appliedImpulse;
-                newContact->newCollision = newCollision;
-                contacts.push_back(newContact);
+                emit PhysicsCollision(entityA, entityB, position, normal, distance, impulse, newCollision);
+                bodyA->EmitPhysicsCollision(entityB, position, normal, distance, impulse, newCollision);
+                bodyB->EmitPhysicsCollision(entityA, position, normal, distance, impulse, newCollision);
+                
+                // Report newCollision = true only for the first contact, in case there are several contacts, and application does some logic depending on it
+                // (for example play a sound -> avoid multiple sounds being played)
+                newCollision = false;
             }
-            
-            emit PhysicsCollision(entityA, entityB, contacts);
-            bodyA->EmitPhysicsCollision(entityB, contacts);
-            bodyB->EmitPhysicsCollision(entityA, contacts);
             
             currentCollisions.insert(objectPair);
         }

@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-
+#include "OgreConversionUtils.h"
 #include "EC_SkyPlane.h"
 
 #include "Renderer.h"
@@ -146,7 +146,7 @@ namespace Environment
 
             if ( materialPtr->getNumTechniques() >= 1 && materialPtr->getTechnique(0)->getNumPasses() >= 1 &&  materialPtr->getTechnique(0)->getPass(0)->getNumTextureUnitStates() >= 1)
             {
-                materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(textureName.toStdString().c_str());
+                materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(OgreRenderer::SanitateAssetIdForOgre(textureName.toStdString()));
                 materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);
             }
             else

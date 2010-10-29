@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_OgreCamera.h"
 #include "EC_Placeable.h"
+#include "Entity.h"
 #include "OgreRenderingModule.h"
 
 #include <Ogre.h>
@@ -45,6 +46,17 @@ EC_OgreCamera::~EC_OgreCamera()
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();         
         scene_mgr->destroyCamera(camera_);
         camera_ = 0;       
+    }
+}
+
+void EC_OgreCamera::AutoSetPlaceable()
+{
+    Scene::Entity* entity = GetParentEntity();
+    if (entity)
+    {
+        ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
+        if (placeable)
+            SetPlaceable(placeable);
     }
 }
 
