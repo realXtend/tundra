@@ -168,17 +168,19 @@ public slots:
     /// to regenerate the visible Ogre mesh geometry.    
     void SetPointHeight(int x, int y, float height);   
     
-    /// Returns the corresponding terrain point in world coordinate system for given param.    
-    /// @param point is 3d point in world coordinate system.    
-    Vector3df GetPointOnMap(const Vector3df& point) const;    
+    /// Returns the point on the terrain in world space that lies on top of the given world space coordinate.
+    /// @param point The point in world space to get the corresponding map point (in world space) for.
+    Vector3df GetPointOnMap(const Vector3df &point) const;    
     
-    /// Returns the distance from terrain cprresponding terrain point.     
-    /// @param point is 3d point in world coordinate system.    
-    float GetDistanceToTerrain(const Vector3df& point) const;    
+    /// Returns the signed distance (in world space) of the given point to the corresponding map point on the terrain.
+    /// @param point The point in world space to test.
+    /// @return The signed distance to the terrain. If the given point is above the terrain, the distance test returns a positive number.
+    /// If the point is below the terrain, a negative number is returned. The above/below concept is measured along the
+    /// local up axis of the terrain (not the global world space up axis).
+    float GetDistanceToTerrain(const Vector3df &point) const;    
     
-    /// Returns true if given param point is on map.     
-    /// @param point is 3d point in world coordinate system.   
-    bool IsOnTopOfMap(const Vector3df& point) const;    
+    /// Returns true if given point in world space is on top (in terms of the local terrain up axis) of, or lying on, the terrain.
+    bool IsOnTopOfMap(const Vector3df &point) const;    
 
     /// Returns the interpolated height value of the terrain at the given fractional coordinate.
     /// @param x In the range [0, EC_Terrain::PatchWidth * EC_Terrain::cPatchSize-1.0f ].
