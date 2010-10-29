@@ -69,7 +69,8 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(6);
 
-    QLabel *targetsLabel = new QLabel;
+    targetsLabel = new QLabel;
+    targetsLabel->setWordWrap(true);
 
     functionComboBox = new FunctionComboBox;
     connect(functionComboBox, SIGNAL(currentIndexChanged(int)), SLOT(UpdateEditors()));
@@ -87,9 +88,11 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     editorLayout = new QGridLayout;
     mainLayout->insertLayout(-1, editorLayout);
 
-    returnValueLabel = new QLabel(tr("Latest return value: "));
+    QLabel *returnValueLabel = new QLabel(tr("Return value(s):"));
+    returnValueEdit = new QTextEdit;
 
     mainLayout->addWidget(returnValueLabel);
+    mainLayout->addWidget(returnValueEdit);
 
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
     mainLayout->insertSpacerItem(-1, spacer);
@@ -111,6 +114,58 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     buttonsLayout->addWidget(execAndCloseButton);
     buttonsLayout->addWidget(closeButton);
 
+    GenerateTargetLabelAndFunctions();
+
+    UpdateEditors();
+}
+
+FunctionDialog::~FunctionDialog()
+{
+    qDeleteAll(allocatedArguments);
+}
+
+QList<boost::weak_ptr<QObject> > FunctionDialog::Objects() const
+{
+    return objects;
+}
+
+QString FunctionDialog::Function() const
+{
+    return functionComboBox->CurrentFunction().function;
+}
+
+IArgumentType *FunctionDialog::ReturnValueArgument() const
+{
+    return returnValueArgument;
+}
+
+QList<IArgumentType *> FunctionDialog::Arguments() const
+{
+    return allocatedArguments;
+}
+
+void FunctionDialog::SetReturnValueText(const QString &text)
+{
+    returnValueEdit->setText(text);
+}
+
+void FunctionDialog::AppendReturnValueText(const QString &text)
+{
+    QString newText = returnValueEdit->toPlainText();
+    if (!newText.isEmpty())
+        newText.append('\n');
+    newText.append(text);
+
+    returnValueEdit->setText(newText);
+}
+
+void FunctionDialog::hideEvent(QHideEvent *)
+{
+    close();
+}
+
+void FunctionDialog::GenerateTargetLabelAndFunctions()
+{
     // Generate functions for the function combo box.
     QList<FunctionMetaData> fmds;
     QSet<QString> functions;
@@ -146,12 +201,13 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
         }
 
         if (i < objects.size() - 1)
-            targetText.append(" ,");
+            targetText.append(", ");
 
         for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
         {
             const QMetaMethod &mm = mo->method(i);
-            if ((mm.methodType() == QMetaMethod::Slot) && (mm.access() == QMetaMethod::Public))
+            //if ((mm.methodType() == QMetaMethod::Slot) && (mm.access() == QMetaMethod::Public))
+            // if (mm matches with current filter)
             {
                 // Craft full signature with return type and parameter names.
                 QString fullSig = mm.signature();
@@ -208,43 +264,6 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
 
     targetsLabel->setText(targetText);
     functionComboBox ->AddFunctions(fmds);
-
-    UpdateEditors();
-}
-
-FunctionDialog::~FunctionDialog()
-{
-    qDeleteAll(allocatedArguments);
-}
-
-QList<boost::weak_ptr<QObject> > FunctionDialog::Objects() const
-{
-    return objects;
-}
-
-QString FunctionDialog::Function() const
-{
-    return functionComboBox->CurrentFunction().function;
-}
-
-IArgumentType *FunctionDialog::ReturnValueArgument() const
-{
-    return returnValueArgument;
-}
-
-QList<IArgumentType *> FunctionDialog::Arguments() const
-{
-    return allocatedArguments;
-}
-
-void FunctionDialog::SetReturnValueText(const QString &text)
-{
-    returnValueLabel->setText(tr("Latest return value: ") + text);
-}
-
-void FunctionDialog::hideEvent(QHideEvent *)
-{
-    close();
 }
 
 void FunctionDialog::CreateArgumentList()
@@ -338,7 +357,7 @@ void FunctionDialog::UpdateEditors()
 
         // Layout takes ownership of label and editor.
         editorLayout->addWidget(label, idx, 0);
-        editorLayout->addWidget(editor, idx, 1, Qt::AlignLeft);
+        editorLayout->addWidget(editor, idx, 1);
 
         ++idx;
     }
