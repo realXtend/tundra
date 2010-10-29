@@ -5,6 +5,7 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
+#include "RexNetworkUtils.h"
 
 #include <Ogre.h>
 #include <QDebug>
@@ -148,6 +149,8 @@ QVector3D EC_Placeable::GetQLocalZAxis() const
 
 void EC_Placeable::SetPosition(const Vector3df& position)
 {
+   if ( !RexTypes::IsValidPositionVector(position) )
+        return;
     link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
 }
 
