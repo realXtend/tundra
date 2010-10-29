@@ -46,6 +46,9 @@ public:
     //! IModule override.
     void Update(f64 frametime);
 
+    //! IModule override.
+    void Uninitialize();
+
     //! Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return moduleName; }
 
