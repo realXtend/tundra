@@ -10,6 +10,7 @@
 
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
+#include "EntityAction.h"
 
 #include <QTreeWidget>
 #include <QPointer>
@@ -19,10 +20,12 @@ namespace ECEditor
     class ECEditorWindow;
 }
 
+struct InvokeItem;
+
 class QWidget;
 class QFileDialog;
 
-/// Tree widget item representing entity.
+/// Tree widget item representing an entity.
 class EntityItem : public QTreeWidgetItem
 {
 public:
@@ -31,18 +34,18 @@ public:
     */
     explicit EntityItem(const Scene::EntityPtr &entity);
 
-    /// Entity ID associated with this tree widget item.
-    entity_id_t id;
-
     /// Returns pointer to the entity this item represents.
     Scene::EntityPtr Entity() const;
 
+    /// Return Entity ID of the entity associated with this tree widget item.
+    entity_id_t Id() const;
+
 private:
-    /// Weak pointer to the component this item represents.
-    Scene::EntityWeakPtr ptr;
+    entity_id_t id; ///< Entity ID associated with this tree widget item.
+    Scene::EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.
 };
 
-/// Tree widget item representing component.
+/// Tree widget item representing a component.
 class ComponentItem : public QTreeWidgetItem
 {
 public:
@@ -52,27 +55,21 @@ public:
     */
     ComponentItem(const ComponentPtr &comp, EntityItem *parent);
 
-    /// Type name.
-    QString typeName;
-
-    ///  Name, if applicable.
-    QString name;
-
     /// Returns pointer to the entity this item represents.
     ComponentPtr Component() const;
 
     /// Returns the parent entity item.
     EntityItem *Parent() const;
 
-private:
-    /// Weak pointer to the component this item represents.
-    ComponentWeakPtr ptr;
+    QString typeName; ///< Type name.
+    QString name; ///< Name, if applicable.
 
-    /// Parent entity item.
-    EntityItem *parentItem;
+private:
+    ComponentWeakPtr ptr; ///< Weak pointer to the component this item represents.
+    EntityItem *parentItem; ///< Parent entity item.
 };
 
-/// Tree widget item representing asset reference.
+/// Tree widget item representing an asset reference.
 class AssetItem : public QTreeWidgetItem
 {
 public:
@@ -84,17 +81,14 @@ public:
     AssetItem(const QString &i, const QString &t, QTreeWidgetItem *parent = 0) :
         QTreeWidgetItem(parent), id(i), type(t) {}
 
-    /// ID.
-    QString id;
-
-    /// Type.
-    QString type;
+    QString id; ///< ID.
+    QString type; ///< Type.
 };
 
 /// Represents selection of selected scene tree widget items.
 struct Selection
 {
-    /// Returns true if no entity or component items selected.
+    ///< Returns true if no entity or component items selected.
     bool IsEmpty() const;
 
     /// Returns true if selection contains entities;
@@ -103,14 +97,11 @@ struct Selection
     /// Returns true if selected contains components.
     bool HasComponents() const;
 
-    /// Returns set containing entity ID's of both selected entities and parent entities of selected components
-    QSet<entity_id_t> EntityIds() const;
+    /// Returns list containing unique entity ID's of both selected entities and parent entities of selected components
+    QList<entity_id_t> EntityIds() const;
 
-    /// List of selected entities.
-    QList<EntityItem *> entities;
-
-    /// List of selected components.
-    QList<ComponentItem *> components;
+    QList<EntityItem *> entities; ///< List of selected entities.
+    QList<ComponentItem *> components; ///< List of selected components.
 };
 
 /// Tree widget showing the scene structure.
@@ -145,10 +136,16 @@ protected:
     void dropEvent(QDropEvent *e);
 
 private:
-    /// Creates right-click context menu actions.
+    /// Creates and adds applicable actions to the right-click context menu.
     /** @param [out] menu Context menu.
     */
     void AddAvailableActions(QMenu *menu);
+
+    /// Loads invoke history from config file.
+    void LoadInvokeHistory();
+
+    /// Saves incoke history to config file.
+    void SaveInvokeHistory();
 
     /// Framework pointer.
     Foundation::Framework *framework;
@@ -162,8 +159,14 @@ private:
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
 
+    /// Return most recently used InvokeItem.
+    InvokeItem *FindMruItem() const;
+
     /// Keeps track of the latest opened file save/open dialog, so that we won't multiple open at the same time.
     QPointer<QFileDialog> fileDialog;
+
+    /// Keeps track of recently invoked entity actions and functions.
+    QList<InvokeItem> invokeHistory;
 
 private slots:
     /// Opens selected entities in EC editor window. An exisiting editor window is used if possible.
@@ -244,6 +247,9 @@ private slots:
     /** @param result Result of dialog closure. Open is 1, Cancel is 0.
     */
     void OpenFileDialogClosed(int result);
+
+    ///
+    void InvokeActionTriggered();
 };
 
 #endif

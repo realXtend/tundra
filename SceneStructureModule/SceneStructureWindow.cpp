@@ -148,7 +148,7 @@ void SceneStructureWindow::CreateAssetReferences()
         if (!eItem)
             continue;
 
-        Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->id);
+        Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
         if (!entity)
             continue;
 
@@ -225,7 +225,7 @@ void SceneStructureWindow::RemoveEntity(Scene::Entity* entity)
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
-        if (item && (item->id == entity->GetId()))
+        if (item && (item->Id() == entity->GetId()))
         {
             SAFE_DELETE(item);
             break;
@@ -238,7 +238,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
-        if (eItem && (eItem->id == entity->GetId()))
+        if (eItem && (eItem->Id() == entity->GetId()))
         {
             // This is a bit ugly, but we want to get the shared pointer.
             ComponentPtr cPtr = entity->GetComponent(comp->TypeName(), comp->Name());
@@ -285,7 +285,7 @@ void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* co
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
-        if (eItem && (eItem->id == entity->GetId()))
+        if (eItem && (eItem->Id() == entity->GetId()))
         {
             for (int j = 0; j < eItem->childCount(); ++j)
             {
@@ -359,7 +359,7 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
         for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         {
             EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
-            if (eItem && (eItem->id == entity->GetId()))
+            if (eItem && (eItem->Id() == entity->GetId()))
             {
                 parentItem = eItem;
                 break;
@@ -423,7 +423,7 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
         if (eItem)
         {
             if (!showComponents)
-                if (eItem->id == parentEntity->GetId())
+                if (eItem->Id() == parentEntity->GetId())
                 {
                     parentItem = eItem;
                     break;
@@ -476,7 +476,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
-        if (item && (item->id == entity->GetId()))
+        if (item && (item->Id() == entity->GetId()))
             item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
     }
 }
