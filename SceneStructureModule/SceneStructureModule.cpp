@@ -122,7 +122,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     {
         boost::filesystem::path path(filename.toStdString());
         AssImp::OpenAssetImport assimporter;
-        QString extension = QString(path.extension().c_str());
+        QString extension = QString(path.extension().c_str()).toLower();
         if (assimporter.IsSupportedExtension(extension))
         {
             std::string dirname = path.branch_path().string();

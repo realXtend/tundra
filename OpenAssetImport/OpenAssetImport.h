@@ -37,7 +37,7 @@ namespace AssImp
 
         void ImportScene(Foundation::Framework *framework, const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames);
         void ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const struct aiScene *scene, 
-            const struct aiNode *node, const QString& file, std::vector<std::string> &outMeshNames);
+            const struct aiNode *node, const QString& file, int nodeIdx, std::vector<std::string> &outMeshNames);
 
 		boost::shared_ptr<Assimp::Importer> importer_;
         AssImpLogStream *logstream_;
