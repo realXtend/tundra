@@ -19,8 +19,8 @@
 #include "VoiceUsersInfoWidget.h"
 #include "VoiceTransmissionModeWidget.h"
 #include "VoiceController.h"
-#include "QSettings.h"
-#include "QComboBox.h"
+#include <QSettings>
+#include <QComboBox>
 
 #include "DebugOperatorNew.h"
 
