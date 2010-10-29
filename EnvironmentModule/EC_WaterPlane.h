@@ -174,11 +174,18 @@ class EC_WaterPlane : public IComponent
         
          
         /// Returns true if camera is inside of watercube. 
-        bool IsUnderWater();
+        bool IsCameraInsideWaterCube();
+
+        /// Returns true if point is inside of watercube
+        /// @param point in world coordinate system.
+        bool IsPointInsideWaterCube(const Vector3df& point) const;
+
+        /// Returns the point on the water plane in world space that lies on top of the given world space coordinate.
+        /// @param point The point in world space to get the corresponding map point (in world space) for.
+        Vector3df GetPointOnPlane(const Vector3df &point) const; 
 
         /// Returns distance from plane (note, here is assumption that point is top/or below plane), distance in here is distance from waterplane surface.
         /// @param point is point in world coordinate system.
-        /// @note if distance is negative it means that given point is inside of watercube. 
         float GetDistanceToWaterPlane(const Vector3df& point) const;    
         
         /// Returns true if given point is top or below water plane. 

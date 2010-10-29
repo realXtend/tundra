@@ -357,7 +357,7 @@ void Environment::Update(f64 frametime)
         Scene::EntityPtr ent = *iter;
         Scene::Entity* e = ent.get();
         plane = e->GetComponent<EC_WaterPlane >().get();        
-        if ( plane != 0 && plane->IsUnderWater() )
+        if ( plane != 0 && plane->IsCameraInsideWaterCube() )
         {
             underWater = true;
             break;
