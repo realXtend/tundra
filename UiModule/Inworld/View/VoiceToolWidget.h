@@ -66,6 +66,7 @@ namespace CommUI
         void UninitializeInWorldVoice();
         void UpdateUI();
         void ChangeTransmissionMode(int mode);
+        void UpdateTransmissionModeWidgetPosition();
 
     private:
         Foundation::Framework* framework_;

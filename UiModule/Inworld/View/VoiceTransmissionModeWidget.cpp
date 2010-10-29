@@ -17,7 +17,8 @@
 
 namespace CommUI
 {
-    VoiceTransmissionModeWidget::VoiceTransmissionModeWidget(int initial_mode)
+    VoiceTransmissionModeWidget::VoiceTransmissionModeWidget(int initial_mode) : 
+        QWidget(0)
     {
         setupUi(this);
         switch(initial_mode)
