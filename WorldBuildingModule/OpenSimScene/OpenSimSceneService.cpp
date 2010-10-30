@@ -31,6 +31,7 @@ namespace WorldBuilding
         connect(network_manager_, SIGNAL(finished(QNetworkReply*)), SLOT(SceneUploadResponse(QNetworkReply*)));
         connect(scene_widget_, SIGNAL(PublishFromFile(const QString&, bool)), SLOT(PublishToServer(const QString &, bool)));
         connect(scene_widget_, SIGNAL(ExportToFile(const QString&, QList<Scene::Entity *>)), SLOT(StoreEntities(const QString &, QList<Scene::Entity *>)));
+        connect(scene_widget_, SIGNAL(destroyed()), this, SLOT(AbandonSceneWidget()));
     }
 
     OpenSimSceneService::~OpenSimSceneService()
@@ -228,5 +229,10 @@ namespace WorldBuilding
         }
         reply->close();
         reply->deleteLater();
+    }
+
+    void OpenSimSceneService::AbandonSceneWidget()
+    {
+        scene_widget_ = 0;
     }
 }
