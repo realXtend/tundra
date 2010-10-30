@@ -104,7 +104,10 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
         if (entity)
+        {
             scene->EmitEntityCreated(entity, AttributeChange::Default);
+            ret << entity.get();
+        }
     }
     else if (filename.toLower().indexOf(".xml") != -1)
     {
@@ -120,6 +123,43 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
 
     return ret;
+}
+
+void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QList<Scene::Entity *> &entities)
+{
+    Vector3df minPos(1e9f, 1e9f, 1e9f);
+    Vector3df maxPos(-1e9f, -1e9f, -1e9f);
+
+    foreach(Scene::Entity *e, entities)
+    {
+        EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
+        if (p)
+        {
+            Vector3df pos = p->transform.Get().position;
+            minPos.x = std::min(minPos.x, pos.x);
+            minPos.y = std::min(minPos.y, pos.y);
+            minPos.z = std::min(minPos.z, pos.z);
+            maxPos.x = std::max(maxPos.x, pos.x);
+            maxPos.y = std::max(maxPos.y, pos.y);
+            maxPos.z = std::max(maxPos.z, pos.z);
+        }
+    }
+
+    // We assume that world's up axis is Z-coordinate axis.
+    Vector3df importPivotPos = Vector3df((minPos.x + maxPos.x) / 2, (minPos.y + maxPos.y) / 2, minPos.z);
+    Vector3df offset = pos - importPivotPos;
+
+    foreach(Scene::Entity *e, entities)
+    {
+        EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
+        if (p)
+        {
+            Transform t = p->transform.Get();
+            t.position += offset;
+            p->transform.Set(t, AttributeChange::Default);
+        }
+    }
+
 }
 
 void SceneStructureModule::ShowSceneStructureWindow()
@@ -170,6 +210,8 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
 {
     if (e->mimeData()->hasUrls())
     {
+        QList<Scene::Entity *> importedEntities;
+
         Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         if (!renderer)
             return;
@@ -213,8 +255,12 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            InstantiateContent(filename, worldPos, false);
+            importedEntities.append(InstantiateContent(filename, worldPos, false));
         }
+
+        // Calculate import pivot and offset for new content
+        if (importedEntities.size())
+            CentralizeEntitiesTo(worldPos, importedEntities);
 
         e->acceptProposedAction();
     }

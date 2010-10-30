@@ -36,6 +36,30 @@ template<> QString ArgumentType<QString>::ToString() const
     return value;
 }
 
+// std::string
+template<> QWidget *ArgumentType<std::string>::CreateEditor(QWidget *parent)
+{
+    editor = new QLineEdit(parent);
+    return editor;
+}
+
+template<> void ArgumentType<std::string>::UpdateValueFromEditor()
+{
+    QLineEdit *e = dynamic_cast<QLineEdit *>(editor);
+    if (e)
+        value = e->text().toStdString();
+}
+
+template<> QString ArgumentType<std::string>::ToString() const
+{
+    return QString(value.c_str());
+}
+
+template<> QVariant ArgumentType<std::string>::ToQVariant() const
+{
+    return QVariant(value.c_str());
+}
+
 // Boolean
 template<> QWidget *ArgumentType<bool>::CreateEditor(QWidget *parent)
 {
@@ -55,11 +79,30 @@ template<> QString ArgumentType<bool>::ToString() const
     return QString::number((int)value);
 }
 
+// Unsigned integer.
+template<> QWidget *ArgumentType<unsigned int>::CreateEditor(QWidget *parent)
+{
+    editor = new QSpinBox(parent);
+    return editor;
+}
+
+template<> void ArgumentType<unsigned int>::UpdateValueFromEditor()
+{
+    QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
+    if (e)
+        value = e->value();
+}
+
+template<> QString ArgumentType<unsigned int>::ToString() const
+{
+    return QString::number((unsigned int)value);
+}
+
 // Integer
 template<> QWidget *ArgumentType<int>::CreateEditor(QWidget *parent)
 {
     editor = new QSpinBox(parent);
-    static_cast<QSpinBox *>(editor)->setRange(std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+    static_cast<QSpinBox *>(editor)->setRange(-std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
     return editor;
 }
 

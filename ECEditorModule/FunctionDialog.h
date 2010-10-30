@@ -137,13 +137,7 @@ private:
     /// Layout for dynamically created parameter editors.
     QGridLayout *editorLayout;
 
-    /// "Execute" button.
-    QPushButton *execButton;
-
-    /// "Execute and Close" button.
-    QPushButton *execAndCloseButton;
-
-        /// Text edit field for showing return values of functions.
+    /// Text edit field for showing return values of functions.
     QTextEdit *returnValueEdit;
 
     /// List of objects.
