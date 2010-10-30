@@ -43,6 +43,12 @@ public slots:
     */
     QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene);
 
+    /// Centralizes group of entities around same center point. The entities must have EC_Placeable component present.
+    /** @param pos Center point for entities.
+        @param entities List of entities.
+    */
+    void CentralizeEntitiesTo(const Vector3df &pos, const QList<Scene::Entity *> &entities);
+
 private:
     /// Scene structure window.
     SceneStructureWindow *sceneWindow;

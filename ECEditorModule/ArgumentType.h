@@ -126,78 +126,26 @@ template<> QWidget *ArgumentType<QString>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<QString>::UpdateValueFromEditor();
 template<> QString ArgumentType<QString>::ToString() const;
 
+// std::string
+template<> QWidget *ArgumentType<std::string>::CreateEditor(QWidget *parent);
+template<> void ArgumentType<std::string>::UpdateValueFromEditor();
+template<> QString ArgumentType<std::string>::ToString() const;
+template<> QVariant ArgumentType<std::string>::ToQVariant() const;
+
 // Boolean
 template<> QWidget *ArgumentType<bool>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<bool>::UpdateValueFromEditor();
 template<> QString ArgumentType<bool>::ToString() const;
 
+// Unsigned integer
+template<> QWidget *ArgumentType<unsigned int>::CreateEditor(QWidget *parent);
+template<> void ArgumentType<unsigned int>::UpdateValueFromEditor();
+template<> QString ArgumentType<unsigned int>::ToString() const;
+
 // Integer
 template<> QWidget *ArgumentType<int>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<int>::UpdateValueFromEditor();
 template<> QString ArgumentType<int>::ToString() const;
-
-// Unsigned int and its most common typedefs 
-/*
-template<>
-QWidget *ArgumentType<unsigned int>::CreateEditor(QWidget *parent)
-{
-    return new QSpinBox(parent);
-}
-
-template<>
-QString ArgumentType<unsigned int>::ToString() const
-{
-    return QString::number((unsigned int)value);
-}
-
-template<>
-QWidget *ArgumentType<uint>::CreateEditor(QWidget *parent)
-{
-    return new QSpinBox(parent);
-}
-
-template<>
-QString ArgumentType<uint>::ToString() const
-{
-    return QString::number((unsigned int)value);
-}
-
-template<>
-QWidget *ArgumentType<size_t>::CreateEditor(QWidget *parent)
-{
-    return new QSpinBox(parent);
-}
-
-template<>
-QString ArgumentType<size_t>::ToString() const
-{
-    return QString::number((unsigned int)value);
-}
-
-template<>
-QWidget *ArgumentType<size_t>::CreateEditor(QWidget *parent)
-{
-    return new QSpinBox(parent);
-}
-
-template<>
-QString ArgumentType<size_t>::ToString() const
-{
-    return QString::number((unsigned int)value);
-}
-
-template<>
-QWidget *ArgumentType<entity_id_t>::CreateEditor(QWidget *parent)
-{
-    return new QSpinBox(parent);
-}
-
-template<>
-QString ArgumentType<entity_id_t>::ToString() const
-{
-    return QString::number((unsigned int)value);
-}
-*/
 
 // Float
 template<> QWidget *ArgumentType<float>::CreateEditor(QWidget *parent);

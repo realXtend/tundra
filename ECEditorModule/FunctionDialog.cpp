@@ -287,18 +287,21 @@ void FunctionDialog::CreateArgumentList()
 IArgumentType *FunctionDialog::CreateArgumentType(const QString &type)
 {
     IArgumentType *arg = 0;
+    const char *typeChar = type.toStdString().c_str();
     if (type == "void")
         arg = new VoidArgumentType;
     else if (type == "QString")
-        arg = new ArgumentType<QString>("QString");
+        arg = new ArgumentType<QString>(typeChar);
     else if (type == "bool")
-        arg = new ArgumentType<bool>("bool");
+        arg = new ArgumentType<bool>(typeChar);
     else if (type == "int")
-        arg = new ArgumentType<int>("int");
+        arg = new ArgumentType<int>(typeChar);
     else if (type == "float")
-        arg = new ArgumentType<float>("float");
+        arg = new ArgumentType<float>(typeChar);
     else if (type == "double")
-        arg = new ArgumentType<double>("double");
+        arg = new ArgumentType<double>(typeChar);
+    else if(type == "unsigned int" || type == "uint" || type == "size_t" || type == "entity_id_t")
+        arg = new ArgumentType<unsigned int>("unsigned int"/*typeChar*/);
     else
         LogDebug("Invalid argument type: " + type.toStdString());
 
@@ -313,6 +316,7 @@ void FunctionDialog::Execute()
 void FunctionDialog::UpdateEditors()
 {
     QPoint orgPos = pos();
+
     // delete widgets from gridlayout
     QLayoutItem *child;
     while((child = editorLayout->takeAt(0)) != 0)
@@ -322,18 +326,18 @@ void FunctionDialog::UpdateEditors()
         SAFE_DELETE(w);
     }
 
-    QString func = functionComboBox->CurrentFunction().function;
-    if (func.isEmpty())
+    FunctionMetaData fmd = functionComboBox->CurrentFunction();
+    if (fmd.function.isEmpty())
         return;
 
     if (objects[0].expired())
         return;
 
     SAFE_DELETE(returnValueArgument);
-    returnValueArgument = CreateArgumentType(functionComboBox->CurrentFunction().returnType);
+    returnValueArgument = CreateArgumentType(fmd.returnType);
 
     // Create and show doxygen documentation for the function.
-    QString doxyFuncName = QString(objects[0].lock()->metaObject()->className()) + "::" + func;
+    QString doxyFuncName = QString(objects[0].lock()->metaObject()->className()) + "::" + fmd.function;
     QUrl styleSheetPath;
     QString documentation;
     bool success = DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
@@ -345,25 +349,22 @@ void FunctionDialog::UpdateEditors()
     else
     {
         LogDebug("Failed to find documentation!");
-        //doxygenView->hide();
+        doxygenView->hide();
     }
 
     CreateArgumentList();
-    if (allocatedArguments.empty())
+    if (allocatedArguments.empty() || (allocatedArguments.size() != fmd.parameters.size()))
         return;
 
-    int idx = 0;
-    foreach(IArgumentType *arg, allocatedArguments)
+    for(int idx = 0; idx < allocatedArguments.size(); ++idx)
     {
-        QLabel *label = new QLabel(arg->Value().name());
+        QLabel *label = new QLabel(fmd.parameters[idx].first + ' ' + fmd.parameters[idx].second);
         label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        QWidget *editor = arg->CreateEditor();
+        QWidget *editor = allocatedArguments[idx]->CreateEditor();
 
         // Layout takes ownership of label and editor.
         editorLayout->addWidget(label, idx, 0);
         editorLayout->addWidget(editor, idx, 1);
-
-        ++idx;
     }
 
     move(orgPos);

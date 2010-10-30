@@ -926,7 +926,16 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
         if (o.lock())
         {
             QObject *obj = o.lock().get();
+
             QString objName = obj->metaObject()->className();
+            {
+                Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
+                IComponent *c = dynamic_cast<IComponent *>(obj);
+                if (e)
+                    objName.append('(' + QString::number((uint)e->GetId()) + ')');
+                else if (c)
+                    objName.append('(' + c->Name() + ')');
+            }
 
             // Generate/get argumetns for QMetaObject::invokeMethod.
             // Also craft InvokeItem struct while we're at it.
