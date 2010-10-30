@@ -288,22 +288,27 @@ IArgumentType *FunctionDialog::CreateArgumentType(const QString &type)
 {
     IArgumentType *arg = 0;
     const char *typeChar = type.toStdString().c_str();
+
     if (type == "void")
         arg = new VoidArgumentType;
     else if (type == "QString")
         arg = new ArgumentType<QString>(typeChar);
+    else if (type == "QStringList")
+        arg = new ArgumentType<QStringList>(typeChar);
+    else if (type == "std::string")
+        arg = new ArgumentType<std::string>(typeChar);
     else if (type == "bool")
         arg = new ArgumentType<bool>(typeChar);
+    else if(type == "unsigned int" || type == "uint" || type == "size_t" || type == "entity_id_t")
+        arg = new ArgumentType<unsigned int>(typeChar);
     else if (type == "int")
         arg = new ArgumentType<int>(typeChar);
     else if (type == "float")
         arg = new ArgumentType<float>(typeChar);
     else if (type == "double")
         arg = new ArgumentType<double>(typeChar);
-    else if(type == "unsigned int" || type == "uint" || type == "size_t" || type == "entity_id_t")
-        arg = new ArgumentType<unsigned int>("unsigned int"/*typeChar*/);
     else
-        LogDebug("Invalid argument type: " + type.toStdString());
+        LogDebug("Unsupported argument type: " + type.toStdString());
 
     return arg;
 }

@@ -126,6 +126,11 @@ template<> QWidget *ArgumentType<QString>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<QString>::UpdateValueFromEditor();
 template<> QString ArgumentType<QString>::ToString() const;
 
+// QStringList
+template<> QWidget *ArgumentType<QStringList>::CreateEditor(QWidget *parent);
+template<> void ArgumentType<QStringList>::UpdateValueFromEditor();
+template<> QString ArgumentType<QStringList>::ToString() const;
+
 // std::string
 template<> QWidget *ArgumentType<std::string>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<std::string>::UpdateValueFromEditor();

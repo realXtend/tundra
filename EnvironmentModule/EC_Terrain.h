@@ -13,6 +13,7 @@ namespace Ogre
 {
     class SceneNode;
     class Entity;
+    class Matrix4;
 }
 
 namespace Environment
@@ -224,10 +225,6 @@ public slots:
     /// Returns the number of vertices in the whole terrain in the local Y-direction.
     int VerticesHeight() const { return PatchHeight() * cPatchSize; }
 
-    ///\todo Add the following scriptable functions:
-    /// void SetHeight(int x, int y, float height);
-    /// void LoadFromAsset(const char *texture); // Takes a texture and converts it to a height map.
-
     /// Saves the height map data and the associated per-vertex attributes to a Naali Terrain File. This is a binary
     /// dump file, and as a convention, use the file suffix ".ntf" for these.
     /// @return True if the save succeeded.
@@ -255,6 +252,14 @@ public slots:
     /// gets the 0.0 grayscale pixel value in the image, and the largest position gets the 1.0 value.
     /// The file that is saved will be a three-channel color image, but will only contain grayscale values.
     bool SaveToImageFile(QString filename, float minHeight = -1e9f, float maxHeight = 1e9f);
+
+    /// Converts the given Ogre Mesh to a terrain grid. This function will raycast the contours of the mesh to generate the height map data points.
+    /// The Mesh resource must be previously loaded into the Ogre Mesh resource pool.
+    void GenerateFromOgreMesh(QString ogreMeshResourceName);
+
+    void GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::Matrix4 &transform);
+
+    void GenerateFromSceneEntity(QString entityName);
 
     /// Marks all terrain patches dirty.
     void DirtyAllTerrainPatches();
