@@ -111,7 +111,8 @@ class AnimationSync(circuits.BaseComponent):
                 return
 
             #print a
-            a.SetAnimationTimePosition("Wave", v)
+            animname = self.comp.GetAttribute('animname') or "Wave"
+            a.SetAnimationTimePosition(animname, v)
             self.widget.value = v * 100 #needs changetypes to work well, i guess
             
         else:
