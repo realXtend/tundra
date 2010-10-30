@@ -62,6 +62,7 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
 {
     // Set up the UI
     setAttribute(Qt::WA_DeleteOnClose);
+    resize(500, 200);
 
     if (graphicsProxyWidget())
         graphicsProxyWidget()->setWindowTitle(tr("Trigger Function"));
@@ -287,26 +288,25 @@ void FunctionDialog::CreateArgumentList()
 IArgumentType *FunctionDialog::CreateArgumentType(const QString &type)
 {
     IArgumentType *arg = 0;
-    const char *typeChar = type.toStdString().c_str();
 
     if (type == "void")
         arg = new VoidArgumentType;
     else if (type == "QString")
-        arg = new ArgumentType<QString>(typeChar);
+        arg = new ArgumentType<QString>(type.toStdString().c_str());
     else if (type == "QStringList")
-        arg = new ArgumentType<QStringList>(typeChar);
+        arg = new ArgumentType<QStringList>(type.toStdString().c_str());
     else if (type == "std::string")
-        arg = new ArgumentType<std::string>(typeChar);
+        arg = new ArgumentType<std::string>(type.toStdString().c_str());
     else if (type == "bool")
-        arg = new ArgumentType<bool>(typeChar);
+        arg = new ArgumentType<bool>(type.toStdString().c_str());
     else if(type == "unsigned int" || type == "uint" || type == "size_t" || type == "entity_id_t")
-        arg = new ArgumentType<unsigned int>(typeChar);
+        arg = new ArgumentType<unsigned int>(type.toStdString().c_str());
     else if (type == "int")
-        arg = new ArgumentType<int>(typeChar);
+        arg = new ArgumentType<int>(type.toStdString().c_str());
     else if (type == "float")
-        arg = new ArgumentType<float>(typeChar);
+        arg = new ArgumentType<float>(type.toStdString().c_str());
     else if (type == "double")
-        arg = new ArgumentType<double>(typeChar);
+        arg = new ArgumentType<double>(type.toStdString().c_str());
     else
         LogDebug("Unsupported argument type: " + type.toStdString());
 
