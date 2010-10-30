@@ -8,7 +8,11 @@
 #include <QList>
 #include <QEvent>
 #include <QResizeEvent>
+#include <QGraphicsItem>
+
 #include <utility>
+
+#include "CoreException.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -166,19 +170,75 @@ void NaaliGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
     dirtyRectangle.setBottom(min<int>(dirtyRectangle.bottom(), height()));
 }
 
+QGraphicsItem *NaaliGraphicsView::GetVisibleItemAtCoords(int x, int y)
+{
+    // Silently just ignore any invalid coordinates we get. (and we do get them, it seems!)
+    if (x < 0 || y < 0 || x >= width() || y >= height())
+		return 0;
+
+    QGraphicsItem *item = 0;
+    ///\bug Not sure if this function returns the items in the proper depth order! We might not get the topmost window
+    /// when this loop finishes.
+    QList<QGraphicsItem *> itemsUnderCoord = items(x, y);
+    for(int i = 0; i < itemsUnderCoord.size(); ++i)
+        if (itemsUnderCoord[i]->isVisible())
+		{
+			item = itemsUnderCoord[i];
+			break;
+		}    
+
+	if (!item)
+		return 0;
+
+    if (!backBuffer)
+        throw Exception("NaaliGraphicsView::backBuffer not initialized properly!");
+
+	// Do alpha keying: If we have clicked on a transparent part of a widget, act as if we didn't click on a widget at all.
+    // This allows clicks to go through to the 3D scene from transparent parts of a widget.
+    if (x < backBuffer->width() && y < backBuffer->height() && (backBuffer->pixel(x, y) & 0xFF000000) == 0x00000000)
+		item = 0;
+
+    return item;
+}
+
 void NaaliGraphicsView::dropEvent(QDropEvent *e)
-{        
+{
+    // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
+    if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
+    {
+        QGraphicsView::dropEvent(e);
+        return;
+    }
+
+    // There was no widget on top of the are where the event occurred. Pass the drop event on as a global "3D scene drag-n-drop event".
+    // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
     emit DropEvent(e);
 }
 
 void NaaliGraphicsView::dragEnterEvent(QDragEnterEvent *e)
 {           
-    e->accept();
+    // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
+    if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
+    {
+        QGraphicsView::dragEnterEvent(e);
+        return;
+    }
+
+    // There was no widget on top of the are where the event occurred. Pass the drop event on as a global "3D scene drag-n-drop event".
+    // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
     emit DragEnterEvent(e);
 }   
 
 void NaaliGraphicsView::dragMoveEvent(QDragMoveEvent *e)
 {
-    e->accept();
+    // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.
+    if (GetVisibleItemAtCoords(e->pos().x(), e->pos().y()))
+    {
+        QGraphicsView::dragMoveEvent(e);
+        return;
+    }
+
+    // There was no widget on top of the are where the event occurred. Pass the drop event on as a global "3D scene drag-n-drop event".
+    // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
     emit DragMoveEvent(e);
 }
