@@ -67,9 +67,6 @@ public:
     typedef std::map<std::string, QKeySequence> KeyActionsMap;
 
 public slots:
-    /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
-	QGraphicsItem *GetVisibleItemAtCoords(int x, int y);
-
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
     /// @param visible If true, shows mouse cursor and allows free movement. If false, hides the mouse cursor 
     ///                and switches into relative mouse movement input mode.

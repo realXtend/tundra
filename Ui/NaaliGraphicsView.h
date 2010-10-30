@@ -55,6 +55,9 @@ signals:
     void DropEvent(QDropEvent *e);
 
 public slots:
+    /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
+	QGraphicsItem *GetVisibleItemAtCoords(int x, int y);
+
     /// Sets a new size for this widget. Will emit the WindowResized signal.
     void Resize(int newWidth, int newHeight);
 
