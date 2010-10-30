@@ -135,6 +135,12 @@ namespace ECEditor
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
+
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
+        // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
+        // it's attached to QGraphicsProxyWidget.
+        connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
+
         // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly.
         ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
         ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
