@@ -291,6 +291,8 @@ IArgumentType *FunctionDialog::CreateArgumentType(const QString &type)
         arg = new VoidArgumentType;
     else if (type == "QString")
         arg = new ArgumentType<QString>("QString");
+    else if (type == "QStringList")
+        arg = new ArgumentType<QStringList>("QStringList");
     else if (type == "bool")
         arg = new ArgumentType<bool>("bool");
     else if (type == "int")
