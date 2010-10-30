@@ -77,11 +77,6 @@ namespace Console
             PROFILE(ConsoleModule_Update);
             assert(manager_);
             manager_->Update(frametime);
-
-            // Read from the global top-level input context for console dropdown event.
-            if (framework_->GetInput()->IsKeyPressed(Qt::Key_F1))
-                //manager_->ToggleConsole();
-                ui_console_manager_->ToggleConsole();
         }
         RESETPROFILER;
     }
