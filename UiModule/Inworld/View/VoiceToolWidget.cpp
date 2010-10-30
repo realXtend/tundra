@@ -17,6 +17,11 @@
 #include "UiProxyWidget.h"
 #include "VoiceControllerWidget.h"
 #include "VoiceUsersInfoWidget.h"
+#include "VoiceTransmissionModeWidget.h"
+#include "VoiceController.h"
+#include <QSettings>
+#include <QComboBox>
+#include <QGraphicsScene>
 
 #include "DebugOperatorNew.h"
 
@@ -29,7 +34,9 @@ namespace CommUI
         voice_state_widget_(0),
         voice_controller_widget_(0),
         voice_controller_proxy_widget_(0),
-        channel_selection_(0)
+        channel_selection_(0),
+        transmission_mode_widget_(0),
+        voice_controller_(0)
     {
         setupUi(this);
         InitializeInWorldVoice();
@@ -140,6 +147,9 @@ namespace CommUI
             framework_->UiService()->RemoveWidgetFromScene(voice_controller_proxy_widget_);
         if (voice_controller_widget_)
             SAFE_DELETE(voice_controller_widget_);
+
+        if (voice_controller_)
+            SAFE_DELETE(voice_controller_);
         in_world_voice_session_ = 0;
     }
 
@@ -164,10 +174,32 @@ namespace CommUI
     {
         QString channel = in_world_voice_session_->GetActiveChannel();
 
+        if (!voice_controller_)
+        {
+            voice_controller_ = new VoiceController(in_world_voice_session_);
+            /// @todo Use Settings class from MumbeVoipModule
+            QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
+            switch(settings.value("MumbleVoice/default_voice_mode").toInt())
+            {
+            case 0: 
+                voice_controller_->SetTransmissionMode(VoiceController::Mute);
+                break;
+            case 1: 
+                voice_controller_->SetTransmissionMode(VoiceController::ContinuousTransmission);
+                break;
+            case 2: 
+                voice_controller_->SetTransmissionMode(VoiceController::PushToTalk);
+                break;
+            case 3: 
+                voice_controller_->SetTransmissionMode(VoiceController::ToggleMode);
+                break;
+            }
+        }
+
         if (!voice_state_widget_)
         {
-            voice_state_widget_ = new VoiceStateWidget(0);
-            connect(voice_state_widget_, SIGNAL( clicked() ), SLOT(ToggleVoiceControlWidget() ) );
+            voice_state_widget_ = new VoiceStateWidget();
+            connect(voice_state_widget_, SIGNAL( clicked() ), SLOT(ToggleTransmissionModeWidget() ) );
             this->layout()->addWidget(voice_state_widget_);
             voice_state_widget_->show();
         }
@@ -212,15 +244,58 @@ namespace CommUI
             voice_controller_proxy_widget_->moveBy(-1,-1);
             /// HACK END
 
-            if (framework_)
-            {
-                /// @todo Make these configurable
-                input_context_ = framework_->GetInput()->RegisterInputContext("CommunicationWidget", 90);
-                connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(SetPushToTalkOn()));
-                connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent*)),voice_controller_widget_, SLOT(SetPushToTalkOff()));
-                connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(Toggle()));
-            }
+            /// @todo Make these configurable
+            input_context_ = framework_->GetInput()->RegisterInputContext("CommunicationWidget", 90);
+            connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_, SLOT(SetPushToTalkOn()));
+            connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent*)),voice_controller_, SLOT(SetPushToTalkOff()));
+            connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_, SLOT(Toggle()));
         }
         UpdateInWorldVoiceIndicator();
     }
+
+    void VoiceToolWidget::ToggleTransmissionModeWidget()
+    {
+        if (!transmission_mode_widget_)
+        {
+            /// @todo Use Settings class from MumbeVoipModule
+            QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
+            int default_voice_mode = settings.value("MumbleVoice/default_voice_mode").toInt();
+
+            transmission_mode_widget_ = new VoiceTransmissionModeWidget(default_voice_mode);
+            connect(transmission_mode_widget_, SIGNAL(TransmissionModeSelected(int)), this, SLOT(ChangeTransmissionMode(int)));
+            
+            UiProxyWidget* proxy = framework_->UiService()->AddWidgetToScene(transmission_mode_widget_, Qt::Widget);
+            QObject::connect(proxy->scene(), SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(UpdateTransmissionModeWidgetPosition()));
+            UpdateTransmissionModeWidgetPosition();
+            transmission_mode_widget_->show();
+        }
+        else
+        {
+            if (transmission_mode_widget_->isVisible())
+                transmission_mode_widget_->hide();
+            else
+            {
+                transmission_mode_widget_->show();
+            }
+        }
+    }
+
+    void VoiceToolWidget::UpdateTransmissionModeWidgetPosition()
+    {
+        QPoint absolute_pos;
+        QWidget* p = parentWidget();
+        while (p)
+        {
+            absolute_pos += p->pos();
+            p = p->parentWidget();
+        }
+        absolute_pos.setY(absolute_pos.y() - transmission_mode_widget_->height());
+        transmission_mode_widget_->move(absolute_pos);
+    }
+
+    void VoiceToolWidget::ChangeTransmissionMode(int mode)
+    {
+        voice_controller_->SetTransmissionMode(static_cast<VoiceController::TransmissionMode>(mode));
+    }
+
 } // CommUI

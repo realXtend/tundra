@@ -16,6 +16,7 @@
 #include "IToolWidget.h"
 #include <QPushButton>
 #include "Input.h"
+#include "VoiceController.h"
 
 class UiProxyWidget;
 class QComboBox;
@@ -39,6 +40,8 @@ namespace CommUI
     class VoiceStateWidget;
     class VoiceControllerWidget;
     class VoiceUsersInfoWidget;
+    class VoiceTransmissionModeWidget;
+    class VoiceController;
 
     class VoiceToolWidget : public CoreUi::IToolWidget , private Ui::voiceToolWidget
     {
@@ -55,12 +58,15 @@ namespace CommUI
         virtual void Maximize();
     private slots:
         void ToggleVoiceControlWidget();
+        void ToggleTransmissionModeWidget();
         void InitializeInWorldVoice();
         void ConnectInWorldVoiceSession(Communications::InWorldVoice::SessionInterface* session);
         void UpdateInWorldVoiceIndicator();
         void ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface* p);
         void UninitializeInWorldVoice();
         void UpdateUI();
+        void ChangeTransmissionMode(int mode);
+        void UpdateTransmissionModeWidgetPosition();
 
     private:
         Foundation::Framework* framework_;
@@ -71,6 +77,9 @@ namespace CommUI
         UiProxyWidget* voice_controller_proxy_widget_;
         InputContextPtr input_context_;
         QComboBox* channel_selection_;
+        VoiceTransmissionModeWidget* transmission_mode_widget_;
+
+        VoiceController* voice_controller_;
     };
 
 } // namespace incl_UiModule_VoiceToolWidget_h

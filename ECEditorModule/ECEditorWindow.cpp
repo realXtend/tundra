@@ -172,7 +172,7 @@ namespace ECEditor
 
     void ECEditorWindow::ActionTriggered(Scene::Entity *entity, const QString &action)
     {
-        if(has_focus_ && action == "MousePress")
+        if(has_focus_ && action == "MousePress" && isVisible())
         {
             AddEntity(entity->GetId());
         }
@@ -523,7 +523,6 @@ namespace ECEditor
         ClearEntities();
         if(browser_)
             browser_->clear();
-        SetFocus(false);
         QWidget::hideEvent(hide_event);
     }
 
@@ -617,18 +616,6 @@ namespace ECEditor
 
         if (toggle_entities_button_)
             connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
-
-        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-        if (ui)
-        {
-            UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
-            assert(editor_proxy);
-            // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
-            // it's attached to QGraphicsProxyWidget.
-            connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
-        }
-        else
-            LogError("Fail to add ECEditorWindow to ui service.");
 
         // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
         connect(framework_, SIGNAL(DefaultWorldSceneChanged(const Scene::ScenePtr &)), SLOT(DefaultSceneChanged(const Scene::ScenePtr &)));

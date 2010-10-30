@@ -50,6 +50,7 @@ namespace WorldBuilding
     private slots:
         void MouseLeftPressed(MouseEvent *mouse);
         void SceneUploadResponse(QNetworkReply *reply);
+        void AbandonSceneWidget();
 
     private:
         QNetworkAccessManager *network_manager_;
