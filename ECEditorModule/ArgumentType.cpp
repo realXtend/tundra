@@ -36,6 +36,33 @@ template<> QString ArgumentType<QString>::ToString() const
     return value;
 }
 
+// QStringList
+template<> QWidget *ArgumentType<QStringList>::CreateEditor(QWidget *parent)
+{
+    editor = new QTextEdit(parent);
+    return editor;
+}
+
+template<> void ArgumentType<QStringList>::UpdateValueFromEditor()
+{
+    QTextEdit *e = dynamic_cast<QTextEdit *>(editor);
+    if (e)
+    {
+        value = e->toPlainText().split("\n", QString::SkipEmptyParts);
+    }
+}
+
+template<> QString ArgumentType<QStringList>::ToString() const
+{
+    QString str;
+    foreach(QString item, value)
+    {
+        str += item + "\n";
+    }
+    return str;
+}
+
+
 // Boolean
 template<> QWidget *ArgumentType<bool>::CreateEditor(QWidget *parent)
 {
