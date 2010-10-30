@@ -721,6 +721,8 @@ namespace OgreRenderer
         const Ogre::Quaternion &orient,
         const Ogre::Vector3 &scale)
     {
+        PROFILE(Renderer_GetMeshInformation);
+
         bool added_shared = false;
         size_t current_offset = 0;
         size_t shared_offset = 0;
