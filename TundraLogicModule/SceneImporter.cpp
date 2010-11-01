@@ -68,8 +68,8 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     std::string prefix;
     if (localassets)
         prefix = "file://";
-    else if (meshLoaded)
-        prefix = "mesh://";
+    //else if (meshLoaded)
+    //    prefix = "mesh://";
     
     // Create output asset path if does not exist
     if (boost::filesystem::exists(out_asset_dir) == false)
