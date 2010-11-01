@@ -765,12 +765,16 @@ void EC_Terrain::GenerateFromSceneEntity(QString entityName)
     if (!position)
         return;
 
-    Ogre::SceneNode *ogreNode = position->GetSceneNode();
-    if (!ogreNode)
-        return;
-
     EC_Mesh *mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
+        return;
+
+    Ogre::Entity *ogreEntity = mesh->GetEntity();
+    if (!ogreEntity)
+        return;
+
+    Ogre::SceneNode *ogreNode = ogreEntity->getParentSceneNode();
+    if (!ogreNode)
         return;
 
     std::string ogreMeshName = mesh->GetMeshName();
