@@ -43,7 +43,8 @@ Registered by RexLogic::RexLogicModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"Start": 
+<li>"Start":
+<li>"Update":
 <li>"Setup":
 <li>"SetWidget":
 <li>"SetRefreshRate":
@@ -75,6 +76,7 @@ public:
 
 public slots:
     void Start();
+    void Update();
     void Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second);
 
     void SetWidget(QWidget *widget);
@@ -83,6 +85,8 @@ public slots:
     void SetSubmeshes(const QList<uint> &submeshes);
 
     QWidget *GetWidget() { return widget_; }
+    const int GetRefreshRate() { return update_interval_msec_; }
+    QList<uint> GetSubMeshes() { return submeshes_; }
 
 private:
     explicit EC_3DCanvas(IModule *module);
@@ -90,7 +94,7 @@ private:
 
 private slots:
     void WidgetDestroyed(QObject *obj);
-    void Update();
+    
 
 private:
     QWidget *widget_;
