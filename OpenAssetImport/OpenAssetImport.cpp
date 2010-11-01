@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "OpenAssetImport.h"
-#include "Renderer.h"
 
 #include <assimp.hpp>      // C++ importer interface
 #include <aiScene.h>       // Output data structure
@@ -19,7 +18,15 @@ namespace AssImp
     OpenAssetImport::OpenAssetImport() : 
         importer_(new Importer()), 
         logstream_(new AssImpLogStream()), 
-        loglevels_(Logger::DEBUGGING | Logger::INFO | Logger::ERR | Logger::WARN)
+        loglevels_(Logger::DEBUGGING | Logger::INFO | Logger::ERR | Logger::WARN),
+        default_flags_( aiProcess_JoinIdenticalVertices		|
+                        aiProcess_Triangulate				|
+                        aiProcess_RemoveComponent			|
+                        aiProcess_GenNormals				|	// ignored if model already has normals
+                        aiProcess_LimitBoneWeights			|
+                        aiProcess_SortByPType				|	// remove point and line primitive types
+                        aiProcess_ValidateDataStructure         // makes sure that all indices are valid, all animations and bones are linked correctly, all material references are correct...
+                      )
     {
         // set up importer
         importer_->SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, 4);	// limit bone weights to 4 vertices
@@ -47,28 +54,21 @@ namespace AssImp
         delete logstream_;
     }
 
-    bool OpenAssetImport::IsSupportedExtension(const QString& extension)
+    bool OpenAssetImport::IsSupportedExtension(const QString& filename)
     {
+        boost::filesystem::path path(filename.toStdString());
+        QString extension = QString(path.extension().c_str()).toLower();
+
         return importer_->IsExtensionSupported(extension.toStdString());
     }
 
-    void OpenAssetImport::Import(Foundation::Framework *framework, const QString& file, std::vector<std::string> &outMeshNames)
+    void OpenAssetImport::Import(const QString& file, std::vector<std::string> &outMeshNames)
     {
-        const aiScene *scene = importer_->ReadFile(
-            file.toStdString(), 
-            aiProcess_JoinIdenticalVertices		|
-            aiProcess_Triangulate				|
-            aiProcess_RemoveComponent			|
-            aiProcess_GenNormals				|	// ignored if model already has normals
-            aiProcess_LimitBoneWeights			|
-            aiProcess_SortByPType				|	// remove point and line primitive types
-            aiProcess_ValidateDataStructure         // makes sure that all indices are valid, all animations and bones are linked correctly, all material references are correct...
-            );
+        const aiScene *scene = importer_->ReadFile(file.toStdString(), default_flags_);
 
         if (scene)
         {
-            
-            ImportScene(framework, scene, file, outMeshNames);
+            ImportScene(scene, file, outMeshNames);
         } else
         {       
             // report error
@@ -77,26 +77,40 @@ namespace AssImp
         }
     }
 
-    void OpenAssetImport::ImportScene(Foundation::Framework *framework, const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames)
+    void OpenAssetImport::Import(const void *data, size_t length, const QString &name, std::vector<std::string> &outMeshNames)
+    {
+        boost::filesystem::path path(name.toStdString());
+        QString extension = QString(path.extension().c_str()).toLower();
+
+        const aiScene *scene = importer_->ReadFileFromMemory(data, length, default_flags_, extension.toLatin1());
+
+        if (scene)
+        {
+            ImportScene(scene, name, outMeshNames);
+        } else
+        {       
+            // report error
+            Foundation::RootLogError(importer_->GetErrorString());
+            //return QString(importer_->GetErrorString());
+        }
+    }
+
+    void OpenAssetImport::ImportScene(const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames)
     {
         const struct aiNode *rootNode = scene->mRootNode;
         
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        
-        if (renderer)
-        {
-            ImportNode(renderer, scene, rootNode, file, 0, outMeshNames);
-        }
+        ImportNode(scene, rootNode, file, 0, outMeshNames);
 	}
 
-    void OpenAssetImport::ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const aiScene *scene, 
-        const aiNode *node, const QString& file, int nodeIdx, std::vector<std::string> &outMeshNames)
+    void OpenAssetImport::ImportNode(const aiScene *scene, const aiNode *node, const QString& file,
+        int nodeIdx, std::vector<std::string> &outMeshNames)
     {
         try
         {
-            boost::filesystem::path path(file.toStdString());
-            std::string meshname = path.filename() + boost::lexical_cast<std::string>(nodeIdx);
+   //         boost::filesystem::path path(file.toStdString());
+   //         std::string meshname = path.filename() + boost::lexical_cast<std::string>(nodeIdx);
+            std::string ogreMeshName = file.toStdString(); //std::string("mesh___") + meshname;
+            meshname = ogreMeshName;
 
             /*if (scene->mNumMaterials > 0)
             {
@@ -108,9 +122,9 @@ namespace AssImp
 
 
             aiMatrix4x4 transform = node->mTransformation;
-            if (node->mNumMeshes > 0)
+            if (node->mNumMeshes > 0 && !Ogre::MeshManager::getSingleton().resourceExists(ogreMeshName))
             {
-                Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(std::string("mesh___") + meshname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(ogreMeshName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 ogreMesh->setAutoBuildEdgeLists(false);
 
                 Ogre::Vector3 vmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
@@ -286,11 +300,12 @@ namespace AssImp
 
         // import children
         for (int i=0 ; i<node->mNumChildren ; ++i)
-            ImportNode(renderer, scene, node->mChildren[i], file, ++nodeIdx, outMeshNames);
+            ImportNode(scene, node->mChildren[i], file, ++nodeIdx, outMeshNames);
     }
     
     void OpenAssetImport::AssImpLogStream::write(const char* message)
     {
+        //! \todo doesn't work, check assimp docs for reason -cmayhem
         Foundation::RootLogInfo(message);
     }
 }
