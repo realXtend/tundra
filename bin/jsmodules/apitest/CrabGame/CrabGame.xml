@@ -16,6 +16,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-13.0084,5.27644,77.0754,1.36603e-05,1.19462e-13,-2.73299e-06,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="2">
@@ -34,6 +35,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-51.6706,38.1271,77.0121,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="3">
@@ -52,6 +54,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-70.4417,-2.40896,77.4204,180,-1.61649e-05,90,1.39324,2.99447,1.39324" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="4">
@@ -70,6 +73,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-70.4417,-1.20897,77.4204,180,-1.61649e-05,90,1.39324,2.99447,1.39324" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="5">
@@ -88,6 +92,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1448,-4.32484,76.9296,-180,-1.57239e-12,180,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="6">
@@ -106,6 +111,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1446,-4.34276,76.7393,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="7">
@@ -124,6 +130,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1446,-4.33785,77.353,-180,-1.57239e-12,180,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="8">
@@ -142,6 +149,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1439,-4.34563,76.3336,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="9">
@@ -160,6 +168,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1451,-4.34803,76.1316,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="10">
@@ -178,6 +187,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1446,-4.34275,77.1442,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="11">
@@ -196,6 +206,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1435,-4.34331,76.6653,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="12">
@@ -214,6 +225,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1069,-4.36444,76.0187,-90,0,0,0.813853,28.9391,0.813853" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="13">
@@ -232,6 +244,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1401,-4.34783,77.225,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="14">
@@ -250,6 +263,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1411,-4.37194,76.2523,0,-15,-90,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="15">
@@ -268,6 +282,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1549,-4.34984,77.4752,1.36603e-05,0,0,0.961759,1,0.961759" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="16">
@@ -286,6 +301,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-37.4361,-19.6616,80.734,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="17">
@@ -304,6 +320,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-74.953,36.7083,77.7425,1.36603e-05,-4.37894e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="18">
@@ -322,6 +339,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-95.6992,5.66023,77.7419,1.36603e-05,-4.37894e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="19">
@@ -340,6 +358,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-0.953814,15.1556,77.1789,1.36603e-05,4.37894e-13,-1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="20">
@@ -358,6 +377,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-68.1442,-4.35709,76.5231,-180,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="21">
@@ -376,6 +396,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-37.1292,-23.1318,77.8529,1.36603e-05,-4.37894e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="22">
@@ -394,6 +415,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-34.3668,7.21826,77.8415,1.36603e-05,-4.37894e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="23">
@@ -412,6 +434,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-30.8437,36.6745,77.8258,1.36603e-05,-4.37894e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="24">
@@ -430,6 +453,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="13.4045,36.7094,77.8043,1.36603e-05,-4.37894e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="25">
@@ -448,6 +472,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="33.1537,7.44768,77.8831,1.36603e-05,-4.37894e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="26">
@@ -466,6 +491,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-30.2723,42.8609,76.8369,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="27">
@@ -484,6 +510,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-51.6706,12.9823,77.0197,-1.86694e-05,-3.78169e-13,180,0.46734,0.68771,0.539346" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="28">
@@ -502,6 +529,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-7.72479,33.2215,77.8758,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_HoveringText" sync="1" name="Test">
    <attribute value="trucktest" name="Text"/>
@@ -538,6 +566,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.66324,7.97219,76.212,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="30">
@@ -556,6 +585,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="14.8529,9.90431,76.0955,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="31">
@@ -574,6 +604,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="14.9082,9.88628,76.5546,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="32">
@@ -592,6 +623,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.66324,7.97219,76.1319,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="33">
@@ -610,6 +642,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="14.8501,11.7064,76.8032,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="34">
@@ -628,6 +661,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="7.14187,-63.0845,76.4441,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="35">
@@ -646,6 +680,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="12.2863,10.246,76.312,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="36">
@@ -664,6 +699,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-26.9257,-30.3201,80.3357,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="37">
@@ -682,6 +718,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="22.8592,-64.3739,76.4441,-3.82822e-20,-4.37897e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="38">
@@ -700,6 +737,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="14.8693,9.61397,75.9825,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="39">
@@ -718,6 +756,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-17.2141,-33.0715,81.7859,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="40">
@@ -736,6 +775,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-8.80668,19.3024,76.3306,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="41">
@@ -754,6 +794,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-13.7668,1.82284,77.9703,-3.82822e-20,-4.37897e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="42">
@@ -772,6 +813,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-1.8857,18.7255,77.0181,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="43">
@@ -790,6 +832,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="3.31509,-13.5266,76.7554,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="44">
@@ -808,6 +851,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.4949,-13.4425,76.4857,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="45">
@@ -826,6 +870,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="10.3211,-13.6727,76.3579,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="46">
@@ -844,6 +889,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.67419,-13.2513,76.4213,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="47">
@@ -862,6 +908,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.29245,26.8797,77.1767,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_AnimationController" sync="1">
    <attribute value="" name="Animation state"/>
@@ -883,6 +930,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="36.6494,21.1356,77.8227,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="49">
@@ -901,6 +949,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="31.3417,-16.4483,77.2141,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="50">
@@ -919,6 +968,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-25.83,-26.1677,78.0283,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="51">
@@ -937,6 +987,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="27.0389,30.8519,80.8091,1.36603e-05,0,0,1.17415,1.17415,1.17415" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="52">
@@ -955,6 +1006,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="105.627,-44.6351,83.7913,1.36603e-05,0,0,0.971794,0.971794,0.971794" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="53">
@@ -973,6 +1025,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="108.092,-40.0363,85.0474,1.36603e-05,0,0,0.971794,0.971794,0.971794" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="54">
@@ -991,6 +1044,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-13.8942,-115.766,84.2803,1.36278e-05,4.02734e-07,-9.2536,0.715158,0.8248,0.715158" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="55">
@@ -1009,6 +1063,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="16.6632,-115.145,84.5046,1.35589e-05,7.05596e-07,-16.3638,0.936571,0.841424,0.936571" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="56">
@@ -1027,6 +1082,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="14.8457,11.8067,77.0062,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="57">
@@ -1045,6 +1101,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="14.8482,9.91362,76.6292,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="58">
@@ -1063,6 +1120,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="1.81508,28.9543,76.9365,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="59">
@@ -1081,6 +1139,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="11.9921,100.213,84.6477,1.36603e-05,-4.37894e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="60">
@@ -1099,6 +1158,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="6.07158,107.449,85.5426,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="61">
@@ -1117,6 +1177,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-34.5524,7.22968,77.7674,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="62">
@@ -1135,6 +1196,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-23.0835,36.4632,77.7727,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="63">
@@ -1153,6 +1215,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-1.01751,-22.9738,77.7674,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="64">
@@ -1171,6 +1234,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="33.1054,7.48309,77.7727,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="65">
@@ -1189,6 +1253,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="12.9531,36.4632,77.7727,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="66">
@@ -1207,6 +1272,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-98.4328,-51.2733,83.2858,1.13742e-05,2.49495e-06,-85,0.678171,0.678171,0.678171" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="67">
@@ -1225,6 +1291,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-100.107,-45.4648,86.1092,1.07425e-05,2.47012e-06,-99.5004,0.706783,0.647399,0.706783" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="68">
@@ -1243,6 +1310,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="41.3274,6.9081,83.4222,1.15237e-05,-2.47733e-06,81.5551,1.1935,1.1935,1.1935" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="69">
@@ -1261,6 +1329,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-8.49514,-13.4492,76.6544,-90,0,0,5.68482,5.68482,5.68482" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="70">
@@ -1279,6 +1348,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.4949,-14.1103,76.4857,8.65143e-06,6.84918e-09,-179.843,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="71">
@@ -1297,6 +1367,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.62484,-13.8119,76.4857,8.65143e-06,6.84918e-09,-179.843,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="72">
@@ -1315,6 +1386,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.67419,-13.1591,76.4205,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="73">
@@ -1333,6 +1405,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.48382,-13.6727,76.3579,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="74">
@@ -1351,6 +1424,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="6.66866,-13.6727,76.3579,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="75">
@@ -1369,6 +1443,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-10.7489,-13.5247,76.3579,1.10029e-05,-2.4998e-06,93.5022,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="76">
@@ -1387,6 +1462,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-6.22366,-13.5247,76.3579,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="77">
@@ -1405,6 +1481,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-8.10776,-13.5247,76.3579,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="78">
@@ -1423,6 +1500,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-8.78966,-14.9379,76.3579,1.14078e-05,-2.49178e-06,84.2272,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="79">
@@ -1441,6 +1519,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-5.85888,-14.9832,76.3579,1.3658e-05,-1.08561e-07,2.48437,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="80">
@@ -1459,6 +1538,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-8.12965,-14.9199,76.6544,-90,0,-0.886476,5.68482,7.62499,5.68482" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="81">
@@ -1477,6 +1557,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-10.3836,-14.9132,76.3579,8.65201e-06,-5.42158e-08,178.76,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="82">
@@ -1495,6 +1576,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-3.14329,-13.5266,76.7554,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="83">
@@ -1513,6 +1595,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.29245,28.8845,77.1767,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="84">
@@ -1531,6 +1614,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="10.8776,30.4994,77.1767,1.3605e-05,5.23602e-07,-12.0677,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="85">
@@ -1549,6 +1633,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="11.5445,28.1231,77.1767,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_AnimationController" sync="1">
    <attribute value="" name="Animation state"/>
@@ -1570,6 +1655,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="10.7692,25.7176,77.1767,1.18887e-05,-2.39488e-06,72.9871,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="87">
@@ -1588,6 +1674,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-10,-17.9,78,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="88">
@@ -1606,6 +1693,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-2,-18.01,78,1.25004e-05,-2.11297e-06,57.5311,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="89">
@@ -1624,6 +1712,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-12.4,-15.51,78,1.36295e-05,3.92434e-07,-9.01489,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="90">
@@ -1642,6 +1731,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-3.61,-17.4,78,1.21469e-05,-2.30008e-06,66.6916,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_Script" sync="1" name="test">
    <attribute value="js" name="Type"/>
@@ -1665,6 +1755,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-1.62513,17.1649,76.3579,1.35895e-05,-5.91456e-07,13.6601,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="92">
@@ -1683,6 +1774,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-3.06135,17.0445,76.3579,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="93">
@@ -1701,6 +1793,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-1.87765,18.7917,76.3579,1.35895e-05,-5.91456e-07,13.6601,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="94">
@@ -1719,6 +1812,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-3.97544,18.6703,76.3579,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="95">
@@ -1737,6 +1831,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-3.9609,18.7255,77.0181,9.89809e-06,-2.16572e-06,120.147,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="96">
@@ -1755,6 +1850,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-3.10728,17.102,77.0181,1.34524e-05,-9.9924e-07,23.5147,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="97">
@@ -1773,6 +1869,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-1.63181,17.1625,77.0181,1.26791e-05,1.98811e-06,-52.5434,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="98">
@@ -1791,6 +1888,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-14.0978,10.2035,77.9703,180,1.17447e-07,-177.312,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="99">
@@ -1809,6 +1907,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-47.6793,-3.1194,77.9703,180,-1.57363e-07,3.6024,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="100">
@@ -1827,6 +1926,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-4.49888,36.6781,77.9938,-90,0,0,0.171915,0.0942132,0.171915" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="101">
@@ -1845,6 +1945,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="30.1738,-19.7396,77.2141,1.34258e-05,1.05846e-06,-25,1.56115,1.56115,1.56115" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="102">
@@ -1863,6 +1964,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="27.2342,-20.4637,77.2141,1.15908e-05,2.46644e-06,-80.0001,1.2709,1.2709,1.2709" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="103">
@@ -1881,6 +1983,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="25.7549,-21.3268,77.2141,1.00975e-05,-2.26982e-06,115,1.2709,1.2709,1.2709" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="104">
@@ -1899,6 +2002,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="23.3225,-20.7053,77.2141,1.00975e-05,-2.26982e-06,115,0.929258,0.929258,0.929258" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="105">
@@ -1917,6 +2021,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-33.3333,-16.3006,77.2141,1.27657e-05,-1.91852e-06,50,0.929258,0.929258,0.929258" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="106">
@@ -1935,6 +2040,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-32.8686,-18.7678,77.2141,1.27657e-05,-1.91852e-06,50,1.2709,1.2709,1.2709" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="107">
@@ -1953,6 +2059,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-31.4612,-19.7437,77.2141,9.10435e-06,1.43651e-06,-145,1.2709,1.2709,1.2709" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="108">
@@ -1971,6 +2078,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-29.5626,-22.1019,77.2141,1.11559e-05,2.50448e-06,-90,1.56115,1.56115,1.56115" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="109">
@@ -1989,6 +2097,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-26.0861,-21.7694,77.2141,1.22143e-05,2.26983e-06,-65.0001,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="110">
@@ -2007,6 +2116,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="31.4811,32.8358,77.2141,1.30744e-05,-1.60984e-06,40,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="111">
@@ -2025,6 +2135,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="27.314,35.8279,77.2141,1.00975e-05,-2.26982e-06,115,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="112">
@@ -2043,6 +2154,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="53.9298,27.2357,80.2879,1.25924e-05,-2.05156e-06,55,0.856306,0.856306,0.856306" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="113">
@@ -2061,6 +2173,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="41.1307,31.1563,80.7361,1.34258e-05,-1.05846e-06,25,0.926842,0.926842,0.926842" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="114">
@@ -2079,6 +2192,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="55.4224,16.8817,81.0253,1.22143e-05,-2.26983e-06,65.0001,1.04499,1.04499,1.04499" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="115">
@@ -2097,6 +2211,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="55.2015,1.4355,80.5548,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="116">
@@ -2115,6 +2230,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="32.1644,54.0796,82.915,1.34258e-05,-1.05846e-06,25,1.46487,1.46487,1.46487" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="117">
@@ -2133,6 +2249,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="19.1394,57.4322,82.915,1.34258e-05,-1.05846e-06,25,1.46487,1.46487,1.46487" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="118">
@@ -2151,6 +2268,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="3.93434,52.8767,83.2658,1.34258e-05,-1.05846e-06,25,1.55209,1.55209,1.55209" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="119">
@@ -2169,6 +2287,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-9.65737,50.3599,82.0032,1.36603e-05,0,0,1.39667,1.39667,1.39667" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="120">
@@ -2187,6 +2306,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-28.3999,59.048,82.915,1.34258e-05,-1.05846e-06,25,1.46487,1.46487,1.46487" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="121">
@@ -2205,6 +2325,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-19.7564,51.9657,82.915,1.34258e-05,-1.05846e-06,25,1.46487,1.46487,1.46487" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="122">
@@ -2223,6 +2344,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-40.998,28.236,82.915,1.34258e-05,-1.05846e-06,25,1.46487,1.46487,1.46487" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="123">
@@ -2241,6 +2363,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-28.3467,-17.9543,80.5572,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="124">
@@ -2259,6 +2382,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-28.111,-29.8708,80.734,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="125">
@@ -2277,6 +2401,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-16.8595,-31.4884,80.734,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="126">
@@ -2295,6 +2420,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-3.63195,-32.9342,82.7641,1.36603e-05,0,0,1.387,1.387,1.387" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="127">
@@ -2313,6 +2439,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="9.06502,-38.6616,82.7641,1.13742e-05,2.49495e-06,-85,1.387,1.387,1.387" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="128">
@@ -2331,6 +2458,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="18.0533,-33.3671,82.7641,1.13742e-05,2.49495e-06,-85,1.387,1.387,1.387" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="129">
@@ -2349,6 +2477,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="34.7989,-19.1306,80.5548,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="130">
@@ -2367,6 +2496,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="23.9871,-25.3724,80.5548,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="131">
@@ -2385,6 +2515,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="16.9553,-30.1372,83.4222,1.15237e-05,-2.47733e-06,81.5551,1.1935,1.1935,1.1935" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="132">
@@ -2403,6 +2534,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="32.2029,-30.522,83.4222,1.15237e-05,-2.47733e-06,81.5551,1.1935,1.1935,1.1935" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="133">
@@ -2421,6 +2553,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="41.8168,-15.9275,82.7641,1.13742e-05,2.49495e-06,-85,1.387,1.387,1.387" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="134">
@@ -2439,6 +2572,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="38.7417,-26.0328,82.7641,1.13742e-05,2.49495e-06,-85,1.387,1.387,1.387" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="135">
@@ -2457,6 +2591,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-19.0331,-26.1677,78.0283,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="136">
@@ -2475,6 +2610,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-14.716,-26.1677,78.0283,1.18041e-05,2.41914e-06,-75,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="137">
@@ -2493,6 +2629,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-7.26858,-26.1677,78.0283,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="138">
@@ -2511,6 +2648,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="17.7587,-26.1677,78.0283,1.36603e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="139">
@@ -2529,6 +2667,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="7.51736,-26.1677,78.0283,1.36603e-05,0,0,0.669602,0.669602,0.669602" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="140">
@@ -2547,6 +2686,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="4.9903,-26.1677,78.0283,1.36603e-05,0,0,0.669602,0.669602,0.669602" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="141">
@@ -2565,6 +2705,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="2.81662,-26.1677,78.0283,1.36603e-05,0,0,0.669602,0.669602,0.669602" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="142">
@@ -2583,6 +2724,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="0.0821991,-26.1677,78.0283,1.29268e-05,1.77092e-06,-44.9999,0.669602,0.669602,0.669602" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="143">
@@ -2601,6 +2743,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="30.9863,34.2823,78.0283,1.27657e-05,1.91852e-06,-50,0.669602,0.669602,0.669602" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="144">
@@ -2619,6 +2762,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="28.8492,35.3721,78.0283,1.36603e-05,0,0,0.669602,0.669602,0.669602" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="145">
@@ -2637,6 +2781,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="4.75954,22.781,76.3679,-90,0,0,6.84139,6.84139,6.84139" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="146">
@@ -2655,6 +2800,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="36.2905,22.9768,77.8227,1.24081e-05,-2.16892e-06,60,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="147">
@@ -2673,6 +2819,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="35.6828,25.4599,77.8227,1.24081e-05,-2.16892e-06,60,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="148">
@@ -2691,6 +2838,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="1.73594,15.7537,76.3679,-90,0,90,6.84139,6.84139,6.84139" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="149">
@@ -2709,6 +2857,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="4.61105,25.2776,76.3051,2.73208e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="150">
@@ -2727,6 +2876,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="24.5257,23.9035,76.3679,-90,0,0,6.84139,6.84139,6.84139" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="151">
@@ -2745,6 +2895,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="28.0791,15.4616,76.3679,-90,0,-90,6.84139,6.84139,6.84139" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="152">
@@ -2763,6 +2914,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="28.0791,7.23051,76.3679,-90,0,-90,6.84139,6.84139,6.84139" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="153">
@@ -2781,6 +2933,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="4.75954,1.18021,76.3679,-90,0,180,6.84139,6.84139,6.84139" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="154">
@@ -2799,6 +2952,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-12.5383,12.0808,78.312,-90,0,90,0.114374,0.0626793,0.114374" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="155">
@@ -2817,6 +2971,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="24.5257,1.27147,76.3679,-90,0,180,6.84139,6.84139,6.84139" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="156">
@@ -2835,6 +2990,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="1.57475,7.48919,76.3679,-90,0,90,6.84139,6.84139,6.84139" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="157">
@@ -2853,6 +3009,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="5.08961,10.626,77.5854,2.73208e-05,0,0,0.202511,0.21952,1.02261" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="158">
@@ -2871,6 +3028,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="26.6893,30.8782,77.5352,-90,0,125,0.114374,0.0626793,0.0790632" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="159">
@@ -2889,6 +3047,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="24.6308,10.626,77.5854,2.73208e-05,0,0,0.202511,0.21952,1.02261" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="160">
@@ -2907,6 +3066,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="14.8698,7.8875,77.5854,2.48163e-05,-2.50443e-06,90,0.202511,0.21952,1.02261" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="161">
@@ -2925,6 +3085,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="14.8698,15.3072,77.5854,2.48163e-05,-2.50443e-06,90,0.202511,0.21952,1.02261" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="162">
@@ -2943,6 +3104,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="5.10265,15.5433,76.8054,2.73208e-05,0,0,1.18288,1.18288,1.18288" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="163">
@@ -2961,6 +3123,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="8.6225,5.02945,76.8835,2.73208e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="164">
@@ -2979,6 +3142,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="25.2023,-2.20756,76.8835,2.73208e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="165">
@@ -2997,6 +3161,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="21.5517,25.0255,76.8835,2.73208e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="166">
@@ -3015,6 +3180,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-29.7033,28.0296,83.4222,1.15237e-05,-2.47733e-06,81.5551,1.1935,1.1935,1.1935" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="168">
@@ -3033,6 +3199,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-14.3467,35.9074,77.9739,-90,0,0,0.164169,0.0899683,0.164169" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="169">
@@ -3051,6 +3218,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="24.6002,15.5433,76.8054,2.73208e-05,0,0,1.18288,1.18288,1.18288" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="170">
@@ -3069,6 +3237,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="24.6002,7.82908,76.8054,2.73208e-05,0,0,1.18288,1.18288,1.18288" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="171">
@@ -3087,6 +3256,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="21.3281,7.82908,76.8054,2.73208e-05,0,0,1.18288,1.18288,1.18288" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="172">
@@ -3105,6 +3275,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="21.3281,4.27027,76.8054,2.73208e-05,0,0,1.18288,1.18288,1.18288" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="173">
@@ -3123,6 +3294,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="9.51383,4.27027,76.8054,2.73208e-05,0,0,1.18288,1.18288,1.18288" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="174">
@@ -3141,6 +3313,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="5.10265,7.88363,76.8054,2.73208e-05,0,0,1.18288,1.18288,1.18288" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="175">
@@ -3159,6 +3332,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="9.47684,7.85594,76.8054,2.73208e-05,0,0,1.18288,1.18288,1.18288" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="176">
@@ -3177,6 +3351,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-12.0018,36.01,76.9282,2.73208e-05,-4.37907e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="177">
@@ -3195,6 +3370,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-2.88354,35.9074,77.9739,-90,0,0,0.164169,0.0899683,0.164169" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="178">
@@ -3213,6 +3389,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-5.42655,36.01,76.9282,-180,-4.37907e-13,1.00179e-05,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="179">
@@ -3231,6 +3408,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-12.8372,36.6781,77.9938,-90,0,0,0.176342,0.0966389,0.176342" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
  </entity>
  <entity id="180">
@@ -3256,7 +3434,8 @@
  </entity>
  <entity id="181">
   <component type="EC_Placeable" sync="1">
-   <attribute value="-2.28101,-3.24999,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="-8.538,-10.523,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
@@ -3273,6 +3452,7 @@
  <entity id="182">
   <component type="EC_Placeable" sync="1">
    <attribute value="-6,-20,82,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
@@ -3293,7 +3473,8 @@
  </entity>
  <entity id="183">
   <component type="EC_Placeable" sync="1">
-   <attribute value="-7.07702,-9.313,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="-7.91201,-8.274,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
@@ -3309,7 +3490,8 @@
  </entity>
  <entity id="184">
   <component type="EC_Placeable" sync="1">
-   <attribute value="-2.6885,-7.0605,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="-8.9465,-9.8495,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
@@ -3325,7 +3507,8 @@
  </entity>
  <entity id="185">
   <component type="EC_Placeable" sync="1">
-   <attribute value="-5.40551,-4.2785,77,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="-10.3815,-9.55253,77,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,2,2,2" name="Transform"/>
@@ -3342,6 +3525,7 @@
  <entity id="186">
   <component type="EC_Placeable" sync="1">
    <attribute value="-68,-4.32,80,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
@@ -3371,6 +3555,7 @@
    <attribute value="1 1 1" name="Linear factor"/>
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="true" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
    <attribute value="0 0 -1.63500023" name="Linear velocity"/>
    <attribute value="0 0 0" name="Angular velocity"/>
   </component>
@@ -3391,6 +3576,7 @@
   </component>
   <component type="EC_Placeable" sync="1">
    <attribute value="-6.13633,-7.18559,76.5,2.73208e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
@@ -3405,28 +3591,5 @@
   </component>
   <component type="EC_DynamicComponent" sync="0" name="server"/>
  </entity>
- <entity id="-2147483647">
-  <component type="EC_Placeable" sync="1">
-   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
-  </component>
- </entity>
  <entity id="-2147483646"/>
- <entity id="-2147483645">
-  <component type="EC_Placeable" sync="1">
-   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
-  </component>
- </entity>
- <entity id="-2147483644"/>
- <entity id="-2147483643">
-  <component type="EC_Placeable" sync="1">
-   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
-  </component>
- </entity>
- <entity id="-2147483642"/>
- <entity id="-2147483640">
-  <component type="EC_Placeable" sync="1">
-   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
-  </component>
- </entity>
- <entity id="-2147483639"/>
 </scene>
