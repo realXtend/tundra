@@ -372,9 +372,7 @@ class SceneSaver:
                 rotation = newdoc.createElement('rotation')
                 # XXX counter the 'fix' done in loading the scene
                 # loader.py in def create_naali_meshentity()
-                # XXX not countering rotations here, better to upload scene to server with same
-                # rotations the user sees locally
-                ort = oNode.naali_ent.placeable.Orientation #* QQuaternion(1, -1, 0, 0)
+                ort = oNode.naali_ent.placeable.Orientation * QQuaternion(1, 0, 0, 1) * QQuaternion(1, 0, 0, 1)
                 rotation.setAttribute("qx", str(ort.x()))
                 rotation.setAttribute("qy", str(ort.y()))
                 rotation.setAttribute("qz", str(ort.z()))
