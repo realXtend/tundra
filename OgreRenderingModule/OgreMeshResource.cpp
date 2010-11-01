@@ -36,6 +36,10 @@ namespace OgreRenderer
         }
         if (!source->GetSize())
         {
+            QString meshid = QString(id_.c_str());
+            if (meshid.startsWith("mesh://", Qt::CaseInsensitive) && Ogre::MeshManager::getSingleton().resourceExists(SanitateAssetIdForOgre(id_)))
+                return true;
+
             OgreRenderingModule::LogError("Zero sized mesh asset");     
             return false;
         }

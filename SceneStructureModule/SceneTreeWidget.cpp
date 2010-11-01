@@ -49,6 +49,7 @@ const QString cOgreMeshFileFilter(QApplication::translate("SceneTreeWidget", "OG
 const QString cNaaliXmlFileFilter(QApplication::translate("SceneTreeWidget", "Naali scene XML(*.xml)"));
 const QString cNaaliBinaryFileFilter(QApplication::translate("SceneTreeWidget", "Naali Binary Format (*.nbf)"));
 const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf)"));
+const QString cAllTypesFileFilter(QApplication::translate("SceneTreeWidget", "All types (*.*)"));
 
 // EntityItem
 
@@ -812,7 +813,8 @@ void SceneTreeWidget::Import()
     if (fileDialog)
         fileDialog->close();
     fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
-        cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+        cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + 
+        cNaaliBinaryFileFilter + ";;" + cAllTypesFileFilter,
         tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
@@ -821,8 +823,8 @@ void SceneTreeWidget::OpenNewScene()
     if (fileDialog)
         fileDialog->close();
     fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
-        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
-        tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
+        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" +
+        cAllTypesFileFilter, tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
 void SceneTreeWidget::OpenEntityActionDialog()
