@@ -113,7 +113,7 @@ void EC_AnimationController::Update(f64 frametime)
                         if (i->second.num_repeats_ > 1)
                             i->second.num_repeats_--;
 
-                        Ogre::Real rewindpos = i->second.speed_factor_ >= 0.f ? (animstate->getTimePosition() - animstate->getLength()) : animstate->getLength();
+                        float rewindpos = i->second.speed_factor_ >= 0.f ? (animstate->getTimePosition() - animstate->getLength()) : animstate->getLength();
                         animstate->setTimePosition(rewindpos);
                     }
                     else
@@ -146,15 +146,56 @@ void EC_AnimationController::Update(f64 frametime)
         // Set weight & step the animation forward
         if (i->second.phase_ != PHASE_STOP)
         {
-            Ogre::Real advance = i->second.speed_factor_ * frametime;
-            Ogre::Real new_weight = i->second.weight_ * i->second.weight_factor_;
+            float advance = i->second.speed_factor_ * frametime;
+            float new_weight = i->second.weight_ * i->second.weight_factor_;
+            
+            bool cycled = false;
+            float oldtimepos = animstate->getTimePosition();
+            float animlength = animstate->getLength();
             
             if (new_weight != animstate->getWeight())
-                animstate->setWeight((Ogre::Real)i->second.weight_ * i->second.weight_factor_);
+                animstate->setWeight((float)i->second.weight_ * i->second.weight_factor_);
             if (advance != 0.0f)
-                animstate->addTime((Ogre::Real)(i->second.speed_factor_ * frametime));
+                animstate->addTime((float)(i->second.speed_factor_ * frametime));
             if (!animstate->getEnabled())
                 animstate->setEnabled(true);
+            
+            // Check if we should fire an "animation finished" signal
+            float newtimepos = animstate->getTimePosition();
+            if (advance > 0.0f)
+            {
+                if (!animstate->getLoop())
+                {
+                    if ((oldtimepos < animlength) && (newtimepos >= animlength))
+                        cycled = true;
+                }
+                else
+                {
+                    if (newtimepos < oldtimepos)
+                        cycled = true;
+                }
+            }
+            else
+            {
+                if (!animstate->getLoop())
+                {
+                    if ((oldtimepos > 0.0f) && (newtimepos == 0.0f))
+                        cycled = true;
+                }
+                else
+                {
+                    if (newtimepos > oldtimepos)
+                        cycled = true;
+                }
+            }
+            
+            if (cycled)
+            {
+                if (animstate->getLoop())
+                    emit AnimationCycled(QString::fromStdString(animstate->getAnimationName()));
+                else
+                    emit AnimationFinished(QString::fromStdString(animstate->getAnimationName()));
+            }
         }
         else
         {
@@ -237,7 +278,7 @@ void EC_AnimationController::Update(f64 frametime)
 Ogre::Entity* EC_AnimationController::GetEntity()
 {
     if (!mesh)
-        AutoAssociateMesh();
+        AutoSetMesh();
 
     if (!mesh)
         return 0;
@@ -499,10 +540,13 @@ void EC_AnimationController::UpdateSignals()
         parent->ConnectAction("StopAllAnims", this, SLOT(StopAllAnims(const QString &)));
         parent->ConnectAction("SetAnimSpeed", this, SLOT(SetAnimSpeed(const QString &, const QString &)));
         parent->ConnectAction("SetAnimWeight", this, SLOT(SetAnimWeight(const QString &, const QString &)));
+
+        // Connect to ComponentRemoved signal of the parent entity, so we can check if the mesh gets removed
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
     }
 }
 
-void EC_AnimationController::AutoAssociateMesh()
+void EC_AnimationController::AutoSetMesh()
 {
     if (!mesh)
     {
@@ -514,6 +558,12 @@ void EC_AnimationController::AutoAssociateMesh()
                 SetMeshEntity(mesh);
         }
     }
+}
+
+void EC_AnimationController::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
+{
+    if (component == mesh)
+        SetMeshEntity(0);
 }
 
 void EC_AnimationController::PlayAnim(const QString &name, const QString &fadein, const QString &exclusive)

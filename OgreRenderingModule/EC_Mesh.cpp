@@ -96,6 +96,17 @@ void EC_Mesh::SetPlaceable(EC_Placeable* placeable)
      SetPlaceable(ptr);
 }
 
+void EC_Mesh::AutoSetPlaceable()
+{
+    Scene::Entity* entity = GetParentEntity();
+    if (entity)
+    {
+        ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
+        if (placeable)
+            SetPlaceable(placeable);
+    }
+}
+
 void EC_Mesh::SetAdjustPosition(const Vector3df& position)
 {
     Transform transform = nodeTransformation.Get();
@@ -804,6 +815,18 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
     
 void EC_Mesh::UpdateSignals()
 {
+    Scene::Entity* parent = GetParentEntity();
+    if (parent)
+    {
+        // Connect to ComponentRemoved signal of the parent entity, so we can check if the mesh gets removed
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+    }
+}
+
+void EC_Mesh::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
+{
+    if (component == placeable_.get())
+        SetPlaceable(ComponentPtr());
 }
 
 void EC_Mesh::AttributeUpdated(IAttribute *attribute)

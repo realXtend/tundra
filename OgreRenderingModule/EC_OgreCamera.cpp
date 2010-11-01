@@ -27,6 +27,7 @@ EC_OgreCamera::EC_OgreCamera(IModule* module) :
     
     camera_->setAspectRatio(Ogre::Real(viewport->getActualWidth() / Ogre::Real(viewport->getActualHeight())));
     camera_->setAutoAspectRatio(true);
+    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_OgreCamera::~EC_OgreCamera()
@@ -149,3 +150,18 @@ void EC_OgreCamera::AttachCamera()
     attached_ = true;
 }
 
+void EC_OgreCamera::UpdateSignals()
+{
+    Scene::Entity* parent = GetParentEntity();
+    if (parent)
+    {
+        // Connect to ComponentRemoved signal of the parent entity, so we can check if the mesh gets removed
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+    }
+}
+
+void EC_OgreCamera::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
+{
+    if (component == placeable_.get())
+        SetPlaceable(ComponentPtr());
+}

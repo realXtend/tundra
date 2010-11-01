@@ -201,7 +201,7 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
             filename = filename.mid(1);
 #endif
             if (sceneStruct)
-                sceneStruct->InstantiateContent(filename, Vector3df(), false);
+                sceneStruct->InstantiateContent(filename, Vector3df(), false, true);
         }
 
         e->acceptProposedAction();
@@ -928,7 +928,16 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
         if (o.lock())
         {
             QObject *obj = o.lock().get();
+
             QString objName = obj->metaObject()->className();
+            {
+                Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
+                IComponent *c = dynamic_cast<IComponent *>(obj);
+                if (e)
+                    objName.append('(' + QString::number((uint)e->GetId()) + ')');
+                else if (c)
+                    objName.append('(' + c->Name() + ')');
+            }
 
             // Generate/get argumetns for QMetaObject::invokeMethod.
             // Also craft InvokeItem struct while we're at it.
@@ -1127,7 +1136,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
 
         SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
         if (sceneStruct)
-            sceneStruct->InstantiateContent(filename, Vector3df(), clearScene);
+            sceneStruct->InstantiateContent(filename, Vector3df(), clearScene, true);
         else
             LogError("Could not retrieve SceneStructureModule. Cannot instantiate content.");
     }

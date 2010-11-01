@@ -348,6 +348,7 @@ namespace Foundation
             }
 
             frame->Update(frametime);
+            input->Update(frametime);
         }
 
         RESETPROFILER

@@ -56,15 +56,14 @@ void SceneStructureModule::PostInitialize()
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent *)), SLOT(HandleDropEvent(QDropEvent *)));
 }
 
-QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene)
+QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene, bool queryPosition)
 {
     QList<Scene::Entity *> ret;
     const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return ret;
 
-    // If zero vector position, query position from the user.
-    if (worldPos == Vector3df())
+    if (queryPosition)
     {
         bool ok;
         QString posString = QInputDialog::getText(0, tr("Position"), tr("position (x;y;z):"), QLineEdit::Normal, "0.00;0.00;0.00", &ok);
@@ -92,7 +91,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         TundraLogic::SceneImporter importer(framework_);
         ///\todo Take into account asset sources.
         ret = importer.Import(scene, filename.toStdString(), dirname, "./data/assets",
-            Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
+            Transform(worldPos, Vector3df(), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
 
         if (ret.empty())
             LogError("Import failed");
@@ -106,9 +105,12 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
 
         TundraLogic::SceneImporter importer(framework_);
         Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
-            Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
+            Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
         if (entity)
+        {
             scene->EmitEntityCreated(entity, AttributeChange::Default);
+            ret << entity.get();
+        }
     }
     else if (filename.toLower().indexOf(".xml") != -1 && filename.toLower().indexOf(".mesh") == -1)
     {
@@ -146,6 +148,43 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
 
     return ret;
+}
+
+void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QList<Scene::Entity *> &entities)
+{
+    Vector3df minPos(1e9f, 1e9f, 1e9f);
+    Vector3df maxPos(-1e9f, -1e9f, -1e9f);
+
+    foreach(Scene::Entity *e, entities)
+    {
+        EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
+        if (p)
+        {
+            Vector3df pos = p->transform.Get().position;
+            minPos.x = std::min(minPos.x, pos.x);
+            minPos.y = std::min(minPos.y, pos.y);
+            minPos.z = std::min(minPos.z, pos.z);
+            maxPos.x = std::max(maxPos.x, pos.x);
+            maxPos.y = std::max(maxPos.y, pos.y);
+            maxPos.z = std::max(maxPos.z, pos.z);
+        }
+    }
+
+    // We assume that world's up axis is Z-coordinate axis.
+    Vector3df importPivotPos = Vector3df((minPos.x + maxPos.x) / 2, (minPos.y + maxPos.y) / 2, minPos.z);
+    Vector3df offset = pos - importPivotPos;
+
+    foreach(Scene::Entity *e, entities)
+    {
+        EC_Placeable *p = e->GetComponent<EC_Placeable>().get();
+        if (p)
+        {
+            Transform t = p->transform.Get();
+            t.position += offset;
+            p->transform.Set(t, AttributeChange::Default);
+        }
+    }
+
 }
 
 void SceneStructureModule::ShowSceneStructureWindow()
@@ -196,6 +235,8 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
 {
     if (e->mimeData()->hasUrls())
     {
+        QList<Scene::Entity *> importedEntities;
+
         Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         if (!renderer)
             return;
@@ -239,8 +280,12 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            InstantiateContent(filename, worldPos, false);
+            importedEntities.append(InstantiateContent(filename, Vector3df(), false));
         }
+
+        // Calculate import pivot and offset for new content
+        if (importedEntities.size())
+            CentralizeEntitiesTo(worldPos, importedEntities);
 
         e->acceptProposedAction();
     }
