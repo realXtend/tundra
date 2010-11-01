@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include <QSignalMapper>
 #include "Provider.h"
 #include "Session.h"
 #include "MumbleVoipModule.h"
@@ -25,8 +26,11 @@ namespace MumbleVoip
         session_(0),
         server_info_provider_(0),
         settings_(settings),
-        microphone_adjustment_widget_(0)
+        microphone_adjustment_widget_(0),
+        signal_mapper_(new QSignalMapper(this))
     {
+        connect(signal_mapper_, SIGNAL(mapped(const QString &)),this, SLOT(ECVoiceChannelChanged(const QString &)));
+
         server_info_provider_ = new ServerInfoProvider(framework);
         connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
 
@@ -96,8 +100,9 @@ namespace MumbleVoip
         channel->setversion(info.version);
         channel->setusername(info.user_name);
         channel->setserverpassword(info.password);
-        channel->setchannelid(info.channel);
+        channel->setchannelid(info.channel_id);
         channel->setchannelname("Public");
+        channel->setenabled(true);
 
         Scene::EntityPtr e = framework_->GetDefaultWorldScene()->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
         e->AddComponent(component,  AttributeChange::LocalOnly);
@@ -181,22 +186,32 @@ namespace MumbleVoip
             return;
 
         if (ec_voice_channels_.contains(channel))
+        {
             return;
+        }
 
         ec_voice_channels_.append(channel);
         if (!session_ || session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
             CreateSession();
        
         connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)),Qt::UniqueConnection);
+        connect(channel, SIGNAL(OnChanged()), signal_mapper_, SLOT(map()));
+        signal_mapper_->setMapping(channel,QString::number(reinterpret_cast<unsigned int>(channel)));
 
         ServerInfo server_info;
         server_info.server = channel->getserveraddress();
         server_info.version = channel->getversion();
         server_info.password = channel->getserverpassword();
-        server_info.channel = channel->getchannelid();
+        server_info.channel_id = channel->getchannelid();
+        server_info.channel_name = channel->getchannelname();
         server_info.user_name = channel->getusername();
         
-        session_->AddChannel(channel->getchannelname(), server_info);
+        if (session_->GetChannels().contains(channel->getchannelname()))
+            channel->setenabled(false); // We do not want to create multiple channels with a same name
+
+        if (channel->getenabled())
+            session_->AddChannel(channel->getchannelname(), server_info);
+
         if (session_->GetActiveChannel() == "")
             session_->SetActiveChannel(channel->Name());
     }
@@ -207,6 +222,7 @@ namespace MumbleVoip
         {
             if (channel == obj)
             {
+                qDebug() << " --- EC_VoiceChannnel DESTROYED: " << channel->getchannelname();
                 if (session_)
                     session_->RemoveChannel(channel->getchannelname());
                 ec_voice_channels_.removeOne(channel);
@@ -222,6 +238,37 @@ namespace MumbleVoip
             return;
 
         connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)), SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
+    }
+
+    void Provider::ECVoiceChannelChanged(const QString &pointer)
+    {
+        if (!session_)        
+            return;
+
+        /// @todo If user have edited the active channel -> close, reopen
+
+        foreach(EC_VoiceChannel* channel, ec_voice_channels_)
+        {
+            if (QString::number(reinterpret_cast<unsigned int>(channel)) != pointer)
+                continue;
+
+            if (channel->getenabled() && !session_->GetChannels().contains(channel->getchannelname()))
+            {
+                ServerInfo server_info;
+                server_info.server = channel->getserveraddress();
+                server_info.version = channel->getversion();
+                server_info.password = channel->getserverpassword();
+                server_info.channel_id = channel->getchannelid();
+                server_info.channel_name = channel->getchannelname();
+                server_info.user_name = channel->getusername();
+
+                session_->AddChannel(channel->getchannelname(), server_info);
+            }
+            if (!channel->getenabled())
+            {
+                session_->RemoveChannel(channel->getchannelname());
+            }
+        }
     }
 
 } // MumbleVoip

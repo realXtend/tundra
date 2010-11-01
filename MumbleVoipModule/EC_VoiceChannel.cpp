@@ -12,10 +12,20 @@ EC_VoiceChannel::EC_VoiceChannel(IModule *module):
     serverpassword(this, "serverpassword", ""),
     username(this, "username", ""),
     channelname(this, "channelname", ""),
-    channelid(this, "channelid", "")
+    channelid(this, "channelid", ""),
+    enabled(this, "enabled", false)
 {
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AutoDisabelChannel(IAttribute*, AttributeChange::Type)));
 }
 
 EC_VoiceChannel::~EC_VoiceChannel()
 {
 }
+
+void EC_VoiceChannel::AutoDisabelChannel(IAttribute* attribute, AttributeChange::Type type)
+{
+    /// Would be nice but cannot be done easily now since we get changed signals from attributes that have not changed
+    //if (attribute->GetNameString() != "enabled" && getenabled() == true)    
+    //    setenabled(false);
+}
+

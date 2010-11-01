@@ -10,7 +10,7 @@
 
 class UiProxyWidget;
 class IEventData;
-
+class QSignalMapper;
 class EC_VoiceChannel;
 
 namespace Foundation
@@ -63,10 +63,12 @@ namespace MumbleVoip
         Settings* settings_;
         QWidget* microphone_adjustment_widget_;
         QList<EC_VoiceChannel*> ec_voice_channels_;
+        QSignalMapper* signal_mapper_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);
         void OnMicrophoneAdjustmentWidgetDestroyed();
+        void ECVoiceChannelChanged(const QString &channelname);
     };
 
 } // MumbleVoip

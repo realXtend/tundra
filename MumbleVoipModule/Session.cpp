@@ -63,14 +63,14 @@ namespace MumbleVoip
             reason_ = connection_->GetReason();
             return;
         }
-        current_mumble_channel_ = server_info.channel;
+        current_mumble_channel_ = server_info.channel_id;
         server_address_ = server_info.server;
 
         connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
         connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
         connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()));
 
-        connection_->Join(server_info.channel);
+        connection_->Join(server_info.channel_id);
         connection_->SendAudio(sending_audio_);
         connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
         connection_->SendPosition(true); 
