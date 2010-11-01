@@ -13,6 +13,7 @@ namespace Ogre
 {
     class SceneNode;
     class Entity;
+    class Matrix4;
 }
 
 namespace Environment
@@ -218,9 +219,11 @@ public slots:
     /// This value is understood in the similar way as above.
     int PatchHeight() const { return patchHeight; }
 
-    ///\todo Add the following scriptable functions:
-    /// void SetHeight(int x, int y, float height);
-    /// void LoadFromAsset(const char *texture); // Takes a texture and converts it to a height map.
+    /// Returns the number of vertices in the whole terrain in the local X-direction.
+    int VerticesWidth() const { return PatchWidth() * cPatchSize; }
+
+    /// Returns the number of vertices in the whole terrain in the local Y-direction.
+    int VerticesHeight() const { return PatchHeight() * cPatchSize; }
 
     /// Saves the height map data and the associated per-vertex attributes to a Naali Terrain File. This is a binary
     /// dump file, and as a convention, use the file suffix ".ntf" for these.
@@ -237,9 +240,39 @@ public slots:
     bool LoadFromFile(QString filename);
 
     /// Loads the terrain from the given image file. Adjusts the xPatches and yPatches properties to that of the image file, 
-    /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this 
-    /// function will get the terrain contents desynchronized between the local system and network.
+    /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this  
+    /// function will get the terrain contents desynchronized between the local system and network. The file is loaded using Ogre, so
+    /// this supports all the file formats Ogre has codecs loaded for (you can see a list of those in the console at startup).
+    /// Calling this function will regenerate all terrain patches on the GPU.
     bool LoadFromImageFile(QString filename, float offset, float scale);
+
+    /// Saves the terrain to an image file. The file format is determined from the suffix. The file is saved using Ogre, so
+    /// this supports all the file formats Ogre has codecs loaded for (you can see a list of those in the console at startup).
+    /// By default, the height range of the terrain is fitted into the [0.0, 1.0] range, i.e. the smallest position of the terrain
+    /// gets the 0.0 grayscale pixel value in the image, and the largest position gets the 1.0 value.
+    /// The file that is saved will be a three-channel color image, but will only contain grayscale values.
+    bool SaveToImageFile(QString filename, float minHeight = -1e9f, float maxHeight = 1e9f);
+
+    /// Converts the given Ogre Mesh to a terrain grid. This function will raycast the contours of the mesh to generate the height map data points.
+    /// The Mesh resource must be previously loaded into the Ogre Mesh resource pool.
+    void GenerateFromOgreMesh(QString ogreMeshResourceName);
+
+    void GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::Matrix4 &transform);
+
+    void GenerateFromSceneEntity(QString entityName);
+
+    /// Marks all terrain patches dirty.
+    void DirtyAllTerrainPatches();
+
+    void RegenerateDirtyTerrainPatches();
+
+    /// Returns the minimum height value in the whole terrain. This function blindly iterates through the whole terrain, so avoid
+    /// calling it in performance-critical code.
+    float GetTerrainMinHeight() const;
+
+    /// Returns the maximum height value in the whole terrain. This function blindly iterates through the whole terrain, so avoid
+    /// calling it in performance-critical code.
+    float GetTerrainMaxHeight() const;
 
 public:
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
@@ -278,13 +311,8 @@ public:
     Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, heightMap);
 
-    /// Marks all terrain patches dirty.
-    void DirtyAllTerrainPatches();
-
-    void RegenerateDirtyTerrainPatches();
-
     /// Returns the minimum and maximum extents of terrain heights.
-    void GetTerrainHeightRange(float &minHeight, float &maxHeight);
+    void GetTerrainHeightRange(float &minHeight, float &maxHeight) const;
 
 signals:
     // The following signals are emitted from different events, so the parameter can not be used.

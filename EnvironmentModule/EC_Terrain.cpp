@@ -6,6 +6,10 @@
 #include "Renderer.h"
 #include "IModule.h"
 #include "ServiceManager.h"
+#include "Entity.h"
+#include "SceneManager.h"
+#include "EC_Placeable.h"
+#include "EC_Mesh.h"
 
 #include <Ogre.h>
 #include "OgreMaterialUtils.h"
@@ -44,12 +48,19 @@ EC_Terrain::EC_Terrain(IModule* module) :
 {
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
-    xPatches.Set(1, AttributeChange::LocalOnly);
-    yPatches.Set(1, AttributeChange::LocalOnly);
+    xPatches.Set(1, AttributeChange::Disconnected);
+    yPatches.Set(1, AttributeChange::Disconnected);
     patches.resize(1);
     MakePatchFlat(0, 0, 0.f);
-    uScale.Set(0.13f, AttributeChange::LocalOnly);
-    vScale.Set(0.13f, AttributeChange::LocalOnly);
+    uScale.Set(0.13f, AttributeChange::Disconnected);
+    vScale.Set(0.13f, AttributeChange::Disconnected);
+    texture0.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    texture1.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    texture2.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    texture3.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    texture4.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
+    material.Set("Rex/TerrainPCF", AttributeChange::Disconnected);
+//    heightMap.Set("media/samples/terrain.ntf", AttributeChange::Disconnected);
 }
 
 EC_Terrain::~EC_Terrain()
@@ -66,6 +77,17 @@ void EC_Terrain::UpdateSignals()
 
     connect(this, SIGNAL(MaterialChanged(QString)), this, SLOT(OnMaterialChanged()));
     connect(this, SIGNAL(TextureChanged(QString)), this, SLOT(OnTextureChanged()));
+/*
+    // Manually signal the resource-requiring attributes to have been changed. This guarantees that if we are using
+    // the default values from ctor, these resources will be loaded in.
+    texture0.Changed(AttributeChange::LocalOnly);
+    texture1.Changed(AttributeChange::LocalOnly);
+    texture2.Changed(AttributeChange::LocalOnly);
+    texture3.Changed(AttributeChange::LocalOnly);
+    texture4.Changed(AttributeChange::LocalOnly);
+    material.Changed(AttributeChange::LocalOnly);
+    heightMap.Changed(AttributeChange::LocalOnly);
+*/
 }
 
 void EC_Terrain::OnMaterialChanged()
@@ -295,17 +317,14 @@ float EC_Terrain::GetPoint(int x, int y) const
     return GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)];
 }
 
- void EC_Terrain::SetPointHeight(int x, int y, float height)
- {   
-     
-     if (x < 0 || y < 0 || x >= cPatchSize * patchWidth || y >= cPatchSize * patchHeight)        
-                return; // Out of bounds signals are silently ignored.   
- 
-     GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)] = height;    
- 
- }
- 
- 
+void EC_Terrain::SetPointHeight(int x, int y, float height)
+{
+    if (x < 0 || y < 0 || x >= cPatchSize * patchWidth || y >= cPatchSize * patchHeight)
+        return; // Out of bounds signals are silently ignored.
+
+    GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)] = height;
+}
+
 Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const 
 {
     Ogre::Quaternion rot = rootNode->_getDerivedOrientation();
@@ -327,7 +346,7 @@ Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const
 }
 
 float EC_Terrain::GetDistanceToTerrain(const Vector3df &point) const
-{    
+{
     Vector3df pointOnMap = GetPointOnMap(point);
     return point.z - pointOnMap.z;
 }
@@ -483,10 +502,43 @@ bool EC_Terrain::LoadFromFile(QString filename)
     return true;
 }
 
+bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
+{
+    FILE *handle = fopen(filename, "rb");
+    if (!handle)
+    {
+        ///\todo Log out warning.
+        return false;
+    }
+    fseek(handle, 0, SEEK_END);
+    long numBytes = ftell(handle);
+    if (numBytes == 0)
+    {
+        fclose(handle);
+        return false;
+    }
+    fseek(handle, 0, SEEK_SET);
+    dst.resize(numBytes);
+    size_t numRead = fread(&dst[0], sizeof(u8), numBytes, handle);
+    fclose(handle);
+
+    return numRead == numBytes;
+}
+
 bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
 {
     Ogre::Image image;
-    image.load(filename.toStdString().c_str(), "TerrainTempGroup");
+    try
+    {
+        std::vector<u8> imageFile;
+        LoadFileToVector(filename.toStdString().c_str(), imageFile);
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
+        image.load(stream);
+    } catch(...)
+    {
+        ///\todo Log out warning.
+        return false;
+    }
 
     // Note: In the following, we round down, so if the image size is not a multiple of cPatchSize (== 16),
     // we will not use the whole image contents.
@@ -508,7 +560,309 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
     yPatches.Changed(AttributeChange::LocalOnly);
     heightMap.Changed(AttributeChange::LocalOnly);
 
+    DirtyAllTerrainPatches();
+    RegenerateDirtyTerrainPatches();
+
     return true;
+}
+
+bool EC_Terrain::SaveToImageFile(QString filename, float minHeight, float maxHeight)
+{
+    const int xVertices = xPatches.Get() * cPatchSize;
+    const int yVertices = yPatches.Get() * cPatchSize;
+
+    if (minHeight <= -1e8f)
+        minHeight = GetTerrainMinHeight();
+    if (maxHeight >= 1e8f)
+        maxHeight = GetTerrainMaxHeight();
+    
+    std::vector<uchar> imageData(3*xVertices*yVertices, 0);
+
+    if (maxHeight - minHeight > 1e-5f) // If the terrain is not flat, read the actual values. If the terrain is flat, a black image is outputted.
+        for(int y = 0; y < yPatches.Get() * cPatchSize; ++y)
+            for(int x = 0; x < xPatches.Get() * cPatchSize; ++x)
+            {
+                float height = 255.f * (GetPoint(x, y) - minHeight) / (maxHeight - minHeight);
+                int h = min(255, max((int)height, 0));
+                imageData[(y*xVertices+x)*3] = imageData[(y*xVertices+x)*3+1] = imageData[(y*xVertices+x)*3+2] = (uchar)h;
+            }
+    
+    try
+    {
+        Ogre::Image image;
+        image.loadDynamicImage(&imageData[0], xVertices, yVertices, Ogre::PF_R8G8B8);
+        image.save(filename.toStdString().c_str());
+    } catch(...)
+    {
+        ///\todo Log out warning.
+        return false;
+    }
+    return true;
+}
+
+/// An utility function that extracts geometry vertex and index data from an Ogre mesh. See Renderer.cpp, GetMeshInformation for the origin of this function.
+void GetUnskinnedMeshGeometry(
+    Ogre::Mesh *mesh, // The mesh to read the vertex and index data from.
+    std::vector<Ogre::Vector3>& vertices, // [out] The geometry vertex data.
+    std::vector<uint>& indices, // [out] The geometry index data.
+    std::vector<uint>& submeshstartindex) // [out] Points to the index buffer, specifies the range starts for distinct submeshes.
+{
+    PROFILE(Renderer_GetUnskinnedMeshGeometry);
+
+    bool added_shared = false;
+    size_t current_offset = 0;
+    size_t shared_offset = 0;
+    size_t next_offset = 0;
+    size_t index_offset = 0;
+    size_t vertex_count = 0;
+    size_t index_count = 0;
+
+    assert(mesh);
+
+    submeshstartindex.resize(mesh->getNumSubMeshes());
+
+    // Calculate how many vertices and indices we're going to need
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh( i );
+        // We only need to add the shared vertices once
+        if (submesh->useSharedVertices)
+        {
+            if (!added_shared)
+            {
+                vertex_count += mesh->sharedVertexData->vertexCount;
+                added_shared = true;
+            }
+        }
+        else
+        {
+            vertex_count += submesh->vertexData->vertexCount;
+        }
+
+        // Add the indices
+        submeshstartindex[i] = index_count;
+        index_count += submesh->indexData->indexCount;
+    }
+
+    // Allocate space for the vertices and indices
+    vertices.resize(vertex_count);
+    indices.resize(index_count);
+
+    added_shared = false;
+
+    // Run through the submeshes again, adding the data into the arrays
+    for(unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+
+        // Get vertex data
+        Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
+
+        if ((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
+        {
+            if(submesh->useSharedVertices)
+            {
+                added_shared = true;
+                shared_offset = current_offset;
+            }
+
+            const Ogre::VertexElement* posElem =
+                vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
+
+            Ogre::HardwareVertexBufferSharedPtr vbuf =
+                vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
+
+            unsigned char* vertex =
+                static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+
+            // There is _no_ baseVertexPointerToElement() which takes an Ogre::Real or a double
+            //  as second argument. So make it float, to avoid trouble when Ogre::Real will
+            //  be comiled/typedefed as double:
+            //      Ogre::Real* pReal;
+            float* pReal = 0;
+
+            for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
+            {
+                posElem->baseVertexPointerToElement(vertex, &pReal);
+
+                Ogre::Vector3 pt(pReal[0], pReal[1], pReal[2]);
+
+                vertices[current_offset + j] = pt;
+            }
+
+            vbuf->unlock();
+            next_offset += vertex_data->vertexCount;
+        }
+
+        Ogre::IndexData* index_data = submesh->indexData;
+        size_t numTris = index_data->indexCount / 3;
+        Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
+
+        unsigned long*  pLong = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
+        unsigned short* pShort = reinterpret_cast<unsigned short*>(pLong);
+        size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
+
+        bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
+        if (use32bitindexes)
+            for(size_t k = 0; k < numTris*3; ++k)
+                indices[index_offset++] = pLong[k] + static_cast<uint>(offset);
+        else
+            for(size_t k = 0; k < numTris*3; ++k)
+                indices[index_offset++] = static_cast<uint>(pShort[k]) + static_cast<unsigned long>(offset);
+
+        ibuf->unlock();
+        current_offset = next_offset;
+    }
+}
+
+float FindClosestRayIntersection(const Ogre::Ray &ray, const std::vector<Ogre::Vector3> &vertices, const std::vector<uint> &indices)
+{
+    using namespace std;
+
+    float distance = 1e9f;
+    for(size_t i = 0; i+2 < indices.size(); i += 3)
+    {
+        std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[i]],
+            vertices[indices[i+1]], vertices[indices[i+2]], true, true);
+        if (hit.first && hit.second >= 0.f)
+            distance = min(distance, hit.second);
+    }
+    return distance;
+}
+
+void ComputeAABB(const std::vector<Ogre::Vector3> &vertices, Ogre::Vector3 &minExtents, Ogre::Vector3 &maxExtents)
+{
+    minExtents = Ogre::Vector3(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+    maxExtents = Ogre::Vector3(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
+
+    for(size_t i = 0; i < vertices.size(); ++i)
+    {
+        minExtents.x = min(minExtents.x, vertices[i].x);
+        minExtents.y = min(minExtents.y, vertices[i].y);
+        minExtents.z = min(minExtents.z, vertices[i].z);
+
+        maxExtents.x = max(maxExtents.x, vertices[i].x);
+        maxExtents.y = max(maxExtents.y, vertices[i].y);
+        maxExtents.z = max(maxExtents.z, vertices[i].z);
+    }
+}
+
+void EC_Terrain::GenerateFromSceneEntity(QString entityName)
+{
+    Scene::Entity *parentEntity = GetParentEntity();
+    if (!parentEntity)
+        return;
+
+    Scene::SceneManager *scene = parentEntity->GetScene();
+    if (!scene)
+        return;
+
+    Scene::Entity *entity = scene->GetEntityByNameRaw(entityName);
+    if (!entity)
+        return;
+
+    EC_Placeable *position = entity->GetComponent<EC_Placeable>().get();
+    if (!position)
+        return;
+
+    Ogre::SceneNode *ogreNode = position->GetSceneNode();
+    if (!ogreNode)
+        return;
+
+    EC_Mesh *mesh = entity->GetComponent<EC_Mesh>().get();
+    if (!mesh)
+        return;
+
+    std::string ogreMeshName = mesh->GetMeshName();
+
+    Ogre::Quaternion rot = ogreNode->_getDerivedOrientation();
+    Ogre::Vector3 trans = ogreNode->_getDerivedPosition();
+    Ogre::Vector3 scale = ogreNode->_getDerivedScale();
+
+    Ogre::Matrix4 worldTM;
+    worldTM.makeTransform(trans, scale, rot);
+
+    GenerateFromOgreMesh(ogreMeshName.c_str(), worldTM);
+}
+
+void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName)
+{    
+    GenerateFromOgreMesh(ogreMeshResourceName, Ogre::Matrix4::IDENTITY);
+}
+
+void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::Matrix4 &transform)
+{
+    using namespace std;
+
+    Ogre::Mesh *mesh = dynamic_cast<Ogre::Mesh*>(Ogre::MeshManager::getSingleton().getByName(ogreMeshResourceName.toStdString().c_str()).get());
+    if (!mesh)
+    {
+        ///\todo Log out warning.
+        return;
+    }
+
+    std::vector<Ogre::Vector3> vertices;
+    std::vector<uint> indices;
+    std::vector<uint> submeshstartindex;
+
+    GetUnskinnedMeshGeometry(mesh, vertices, indices, submeshstartindex);
+
+    for(size_t i = 0; i < vertices.size(); ++i)
+    {
+        Ogre::Vector4 v = transform * Ogre::Vector4(vertices[i].x, vertices[i].y, vertices[i].z, 1.f);
+        vertices[i] = Ogre::Vector3(v.x, v.y, v.z);
+    }
+
+    Ogre::Vector3 minExtents;
+    Ogre::Vector3 maxExtents;
+    ComputeAABB(vertices, minExtents, maxExtents);
+
+    int xVertices = (int)ceil(maxExtents.x - minExtents.x);
+    int yVertices = (int)ceil(maxExtents.y - minExtents.y);
+    xVertices = ((xVertices + cPatchSize-1) / cPatchSize) * cPatchSize;
+    yVertices = ((yVertices + cPatchSize-1) / cPatchSize) * cPatchSize;
+
+    xPatches.Set(xVertices/cPatchSize, AttributeChange::Disconnected);
+    yPatches.Set(yVertices/cPatchSize, AttributeChange::Disconnected);
+    ResizeTerrain(xVertices/cPatchSize, yVertices/cPatchSize);
+
+    MakeTerrainFlat(1e9f);
+
+    float minHeight = std::numeric_limits<float>::max();
+    float maxHeight = -std::numeric_limits<float>::max();
+
+    const float raycastHeight = maxExtents.z + 100.f;
+
+    for(int y = 0; y < yVertices; ++y)
+        for(int x = 0; x < xVertices; ++x)
+        {
+            Ogre::Ray r(Ogre::Vector3(minExtents.x + x, minExtents.y + y, raycastHeight), Ogre::Vector3(0,0,-1.f));
+            float height = FindClosestRayIntersection(r, vertices, indices);
+            if (height < 1e8f)
+            {
+                height = raycastHeight - height;
+                SetPointHeight(x, y, height);
+                minHeight = min(minHeight, height);
+                maxHeight = max(maxHeight, height);
+            }
+        }
+
+    for(int y = 0; y < yVertices; ++y)
+        for(int x = 0; x < xVertices; ++x)
+            if (GetPoint(x, y) >= 1e8f)
+                SetPointHeight(x, y, minHeight);
+
+    // Adjust offset so that we always have the lowest point of the terrain at height 0.
+    RemapHeightValues(0.f, maxHeight - minHeight);
+
+    heightMap.Set("", AttributeChange::Disconnected);
+
+    xPatches.Changed(AttributeChange::LocalOnly);
+    yPatches.Changed(AttributeChange::LocalOnly);
+    heightMap.Changed(AttributeChange::LocalOnly);
+
+    DirtyAllTerrainPatches();
+    RegenerateDirtyTerrainPatches();
 }
 
 void EC_Terrain::AffineTransform(float scale, float offset)
@@ -804,17 +1158,32 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
     node->setPosition(patchOrigin);
 }
 
-void EC_Terrain::GetTerrainHeightRange(float &minHeight, float &maxHeight)
+float EC_Terrain::GetTerrainMinHeight() const
 {
-    minHeight = std::numeric_limits<float>::max();
-    maxHeight = std::numeric_limits<float>::min();
+    float minHeight = std::numeric_limits<float>::max();
 
     for(int i = 0; i < patches.size(); ++i)
         for(int j = 0; j < patches[i].heightData.size(); ++j)
-        {
             minHeight = min(minHeight, patches[i].heightData[j]);
+
+    return minHeight;
+}
+
+float EC_Terrain::GetTerrainMaxHeight() const
+{
+    float maxHeight = -std::numeric_limits<float>::max();
+
+    for(int i = 0; i < patches.size(); ++i)
+        for(int j = 0; j < patches[i].heightData.size(); ++j)
             maxHeight = max(maxHeight, patches[i].heightData[j]);
-        }
+
+    return maxHeight;
+}
+
+void EC_Terrain::GetTerrainHeightRange(float &minHeight, float &maxHeight) const
+{
+    minHeight = GetTerrainMinHeight();
+    maxHeight = GetTerrainMaxHeight();
 }
 
 void EC_Terrain::DirtyAllTerrainPatches()

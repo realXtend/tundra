@@ -37,11 +37,18 @@ public:
 public slots:
     /// Instantiates new content from file to the scene.
     /** @param filename File name.
-        @param worldPos Destination in-world position. If zero vector is given, the position is asked with a simple dialog.
+        @param worldPos Destination in-world position.
         @param clearScene Do we want to clear the scene before adding new content.
+        @param queryPosition 
         @return List of created entities.
     */
-    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene);
+    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene, bool queryPosition = false);
+
+    /// Centralizes group of entities around same center point. The entities must have EC_Placeable component present.
+    /** @param pos Center point for entities.
+        @param entities List of entities.
+    */
+    void CentralizeEntitiesTo(const Vector3df &pos, const QList<Scene::Entity *> &entities);
 
 private:
     /// Scene structure window.

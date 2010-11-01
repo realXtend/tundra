@@ -39,8 +39,6 @@ PhysicsModule::PhysicsModule() :
 
 PhysicsModule::~PhysicsModule()
 {
-    // Delete the physics debug object if it exists
-    SetDrawDebugGeometry(false);
 }
 
 void PhysicsModule::Load()
@@ -62,6 +60,12 @@ void PhysicsModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand("autocollisionmesh",
         "Auto-assigns static rigid bodies with collision mesh to all visible meshes.",
         Console::Bind(this, &PhysicsModule::ConsoleAutoCollisionMesh)));
+}
+
+void PhysicsModule::Uninitialize()
+{
+    // Delete the physics debug object if it exists
+    SetDrawDebugGeometry(false);
 }
 
 Console::CommandResult PhysicsModule::ConsoleToggleDebugGeometry(const StringVector& params)
@@ -186,6 +190,9 @@ void PhysicsModule::SetRunPhysics(bool enable)
 
 void PhysicsModule::SetDrawDebugGeometry(bool enable)
 {
+    if (!framework_ || !framework_->GetServiceManager())
+        return;
+
     boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     if (!renderer)
         return;

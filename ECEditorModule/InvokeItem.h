@@ -39,7 +39,9 @@ struct ECEDITOR_MODULE_API InvokeItem
     /// Returns this items information in a form that's suitable to be saved in a setting file.
     std::string ToSetting() const;
 
-    /// 
+    /// Constructs item from string read from setting file.
+    /** @param str String read from setting file.
+    */
     void FromSetting(const std::string &str);
 
     EntityAction::ExecutionTypeField execTypes; ///< Execution type (entity actions only).

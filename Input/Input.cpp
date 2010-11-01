@@ -109,44 +109,6 @@ Input::~Input()
     SaveKeyBindingsToFile();
 }
 
-QGraphicsItem *Input::GetVisibleItemAtCoords(int x, int y)
-{
-    // Silently just ignore any invalid coordinates we get. (and we do get them, it seems!)
-    if (x < 0 || y < 0 || x >= mainView->width() || y >= mainView->height())
-		return 0;
-
-    QGraphicsItem *itemUnderMouse = 0;
-    ///\bug Not sure if this function returns the items in the proper depth order! We might not get the topmost window
-    /// when this loop finishes.
-    QList<QGraphicsItem *> items = framework->Ui()->GraphicsView()->items(x, y);
-    for(int i = 0; i < items.size(); ++i)
-        if (items[i]->isVisible())
-		{
-			itemUnderMouse = items[i];
-			break;
-		}    
-
-	if (!itemUnderMouse)
-		return 0;
-
-    boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
-        framework->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-
-	if (!renderer.get())
-	{
-		LogWarning("Input::GetVisibleItemAtCoords: Could not find RenderServiceInterface!");
-		return 0;
-	}
-
-	// Do alpha keying: If we have clicked on a transparent part of a widget, act as if we didn't click on a widget at all.
-    // This allows clicks to go through to the 3D scene from transparent parts of a widget.
-	QImage *backBuffer = framework->Ui()->GraphicsView()->BackBuffer();
-    if (x < backBuffer->width() && y < backBuffer->height() && (backBuffer->pixel(x, y) & 0xFF000000) == 0x00000000)
-		itemUnderMouse = 0;
-
-    return itemUnderMouse;
-}
-
 void Input::SetMouseCursorVisible(bool visible)
 {
     if (mouseCursorVisible == visible)
@@ -655,7 +617,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         QPoint mousePos = MapPointToMainGraphicsView(obj, e->pos());
 
 		MouseEvent mouseEvent;
-        mouseEvent.itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         if ( !doubleClickDetected)
         {
@@ -712,7 +674,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         MouseEvent mouseEvent;
 		mouseEvent.eventType = MouseEvent::MouseMove;
 		mouseEvent.button = (MouseEvent::MouseButton)e->button();
-        mouseEvent.itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         ///\todo Set whether the previous press originated over a Qt widget or scene.
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
 
@@ -779,7 +741,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 
 		MouseEvent mouseEvent;
 		mouseEvent.eventType = MouseEvent::MouseScroll;
-        mouseEvent.itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         mouseEvent.button = MouseEvent::NoButton;
 		mouseEvent.otherButtons = e->buttons();

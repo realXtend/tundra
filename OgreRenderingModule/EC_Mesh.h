@@ -179,6 +179,9 @@ public:
     
     virtual ~EC_Mesh();
 public slots:
+    //! automatically find the placeable and set it
+    void AutoSetPlaceable();
+    
     //! sets placeable component
     /*! set a null placeable to detach the object, otherwise will attach
         \param placeable placeable component
@@ -362,6 +365,9 @@ private slots:
 
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
+    
+    //! Called when component has been removed from the parent entity. Checks if the component removed was the placeable, and autodissociates it.
+    void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
     
 private:
     //! constructor
