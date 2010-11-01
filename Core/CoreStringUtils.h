@@ -6,7 +6,18 @@
 #include <iomanip>
 
 #include <Poco/LocalDateTime.h>
+
+// Disable warnings C4702 coming from boost
+#ifdef _MSC_VER
+#pragma warning ( push )
+#pragma warning( disable : 4702 )
+#endif
+
 #include <boost/lexical_cast.hpp>
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 #include "CoreDefines.h"
 #include "CoreTypes.h"
