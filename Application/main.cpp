@@ -6,7 +6,13 @@
 #include "ModuleManager.h"
 #include "HttpUtilities.h"
 
+// Disable warning C4244 coming from boost
+#ifdef _MSC_VER
+#pragma warning ( push )
+#pragma warning( disable : 4244 )
 #include <boost/thread.hpp>
+#pragma warning( pop )
+#endif
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
