@@ -55,7 +55,8 @@ class OgreNode:
         # looks like objects are often exported wrong, so rotate along x axis
         #p.Orientation = o * Quat(1,1,0,0)
         # XXX if artists want rotate along x axis they can do it so now by checking flip z-y checkbox
-        p.Orientation = o
+		# at the moment it looks like, its needed to rotate each node 180 degrees along z axis to get it right
+        p.Orientation = o * Quat(1,0,0,1) * Quat(1,0,0,1)
         
         p.Scale = self.scale
 
