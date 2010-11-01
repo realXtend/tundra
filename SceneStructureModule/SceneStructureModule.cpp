@@ -25,6 +25,10 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
+#ifdef ASSIMP_ENABLED
+#include <OpenAssetImport.h>
+#endif
+
 //#include <OgreCamera.h>
 
 #include "MemoryLeakCheck.h"
@@ -94,7 +98,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         else
             LogInfo("Import succesful. " + ToString(ret.size()) + " entities created.");
     }
-    else if (filename.toLower().indexOf(".mesh") != -1)
+    else if (filename.endsWith(".mesh", Qt::CaseInsensitive))
     {
         boost::filesystem::path path(filename.toStdString());
         std::string dirname = path.branch_path().string();
@@ -108,7 +112,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             ret << entity.get();
         }
     }
-    else if (filename.toLower().indexOf(".xml") != -1)
+    else if (filename.toLower().indexOf(".xml") != -1 && filename.toLower().indexOf(".mesh") == -1)
     {
         ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
     }
@@ -118,7 +122,29 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
     else
     {
-        LogError("Unsupported file extension: " + filename.toStdString());
+#ifdef ASSIMP_ENABLED
+        boost::filesystem::path path(filename.toStdString());
+        AssImp::OpenAssetImport assimporter;
+        QString extension = QString(path.extension().c_str()).toLower();
+        if (assimporter.IsSupportedExtension(extension))
+        {
+            std::string dirname = path.branch_path().string();
+            std::vector<std::string> importedMeshNames;
+            assimporter.Import(framework_, filename, importedMeshNames);
+
+            TundraLogic::SceneImporter sceneimporter(framework_);
+            for (size_t i=0 ; i<importedMeshNames.size() ; ++i)
+            {
+                Scene::EntityPtr entity = sceneimporter.ImportMesh(scene, importedMeshNames[i], dirname, "./data/assets",
+                    Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, false, true);
+                if (entity)
+                    scene->EmitEntityCreated(entity, AttributeChange::Default);
+            }
+        } else
+#endif
+        {
+            LogError("Unsupported file extension: " + filename.toStdString());
+        }
     }
 
     return ret;

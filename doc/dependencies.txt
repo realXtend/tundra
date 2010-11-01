@@ -53,6 +53,8 @@ Naali has the following dependencies:
 
 - PythonQt, 2.0.1, http://pythonqt.sourceforge.net/
 
+- Open Asset Import Library 1.1: http://assimp.sourceforge.net/
+
 
 OBTAINING DEPENDENCIES
 ======================

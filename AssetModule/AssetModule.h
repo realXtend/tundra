@@ -71,6 +71,9 @@ namespace Asset
 
         //! Local asset provider
         Foundation::AssetProviderPtr local_asset_provider_;
+
+        //! Ogre MeshManager asset provider
+        Foundation::AssetProviderPtr ogre_asset_provider_;
         
         //! Http asset provider
         Foundation::AssetProviderPtr http_asset_provider_;
