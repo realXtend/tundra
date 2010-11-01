@@ -41,16 +41,31 @@ std::string InvokeItem::ToSetting() const
 {
     QString str;
     str.append(QString::number((int)type));
+    if (type == Action)
+        str.append('|' + QString::number((int)execTypes));
     str.append('|');
     str.append(name);
-    str.append('|');
     foreach(Parameter p, parameters)
-        str.append(p.first + '|' + p.second.toString());
+        str.append('|' + p.first + '|' + p.second.toString());
 
     return str.toStdString();
 }
 
 void InvokeItem::FromSetting(const std::string &str)
 {
-    QString s = str.c_str();
+    QStringList params = QString(str.c_str()).split('|');
+    if (params.size() < 2)
+        return;
+
+    int idx = 0;
+    type = (Type)params[idx++].toInt();
+    if (type == Action)
+        execTypes = (EntityAction::ExecutionTypeField)params[idx++].toInt();
+    name = params[idx++];
+
+    for(idx; idx < params.size(); ++idx)
+        if (idx+1 < params.size())
+            parameters.push_back(qMakePair(params[idx], QVariant(params[idx+1])));
+//        else
+//            parameters.push_back(qMakePair(params[idx], QVariant()));
 }
