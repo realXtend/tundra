@@ -119,6 +119,11 @@ public:
     /// Destructor.
     virtual ~SceneTreeWidget();
 
+    /// Sets new scene to be shown in the tree view.
+    /** @param scene Scene which contents we want to modify.
+    */
+    void SetScene(const Scene::ScenePtr &scene);
+
     /// Do we show components in the tree widget or not.
     bool showComponents;
 
@@ -141,26 +146,32 @@ private:
     */
     void AddAvailableActions(QMenu *menu);
 
-    /// Loads invoke history from config file.
-    void LoadInvokeHistory();
-
-    /// Saves incoke history to config file.
-    void SaveInvokeHistory();
-
-    /// Framework pointer.
-    Foundation::Framework *framework;
-
-    /// This widget's "own" EC editor.
-    QPointer<ECEditor::ECEditorWindow> ecEditor;
-
     /// Returns selected items as Selection struct, which contains both selected entities and components.
     Selection GetSelection() const;
 
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
 
+        /// Loads invoke history from config file.
+    void LoadInvokeHistory();
+
+    /// Saves incoke history to config file.
+    void SaveInvokeHistory();
+
     /// Return most recently used InvokeItem.
     InvokeItem *FindMruItem() const;
+
+    /// Framework pointer.
+    Foundation::Framework *framework;
+
+    /// Scene which we are showing the in tree widget currently.
+    Scene::SceneWeakPtr scene;
+
+    /// This widget's "own" EC editor.
+    QPointer<ECEditor::ECEditorWindow> ecEditor;
+
+    /// Number of bisible invoke items in the context-menu.
+    int numberOfInvokeItemsVisible;
 
     /// Keeps track of the latest opened file save/open dialog, so that we won't multiple open at the same time.
     QPointer<QFileDialog> fileDialog;

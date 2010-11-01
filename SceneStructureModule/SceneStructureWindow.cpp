@@ -64,6 +64,8 @@ void SceneStructureWindow::SetScene(const Scene::ScenePtr &s)
     }
 
     scene = s;
+    treeWidget->SetScene(s);
+
     SceneManager *scenePtr = scene.lock().get();
     connect(scenePtr, SIGNAL(EntityCreated(Scene::Entity *, AttributeChange::Type)), SLOT(AddEntity(Scene::Entity *)));
     connect(scenePtr, SIGNAL(EntityRemoved(Scene::Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Scene::Entity *)));

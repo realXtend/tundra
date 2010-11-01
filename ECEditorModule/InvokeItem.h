@@ -16,20 +16,21 @@
 #include <QList>
 #include <QVariant>
 
-///
-enum InvokeItemType
-{
-    Unknown = 0, ///< Unknown/invalid.
-    Action, ///< Entity Action
-    Function ///< Function
-};
-
-/// Parameter is pair of type name as QString and value as QVariant.
-typedef QPair<QString, QVariant> Parameter;
 
 ///
 struct ECEDITOR_MODULE_API InvokeItem
 {
+    /// Type enumeration.
+    enum Type
+    {
+        Unknown = 0, ///< Unknown/invalid.
+        Action, ///< Entity Action
+        Function ///< Function
+    };
+
+    /// Parameter is pair of type name as QString and value as QVariant.
+    typedef QPair<QString, QVariant> Parameter;
+
     /// Less than operator. Compares entries by the MRU order number.
     bool operator <(const InvokeItem &rhs) const { return mruOrder < rhs.mruOrder; }
 
@@ -45,7 +46,7 @@ struct ECEDITOR_MODULE_API InvokeItem
     void FromSetting(const std::string &str);
 
     EntityAction::ExecutionTypeField execTypes; ///< Execution type (entity actions only).
-    InvokeItemType type; ///< Type of the item.
+    Type type; ///< Type of the item.
     QString name; ///< Name of the function or entity action.
     QList<Parameter> parameters; ///< "type name - value pair, e.g. "float"-0.123
     int mruOrder; ///< Most recently used order.
