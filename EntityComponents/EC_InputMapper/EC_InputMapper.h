@@ -17,7 +17,8 @@
 #include <QVector>
 #include <QVariant>
 
-class KeyEvent;
+#include "KeyEvent.h"
+
 class InputContext;
 
 
@@ -100,25 +101,31 @@ public:
     /// Key sequence - action name mappings.
     Q_PROPERTY(QVariantList mappings READ getmappings WRITE setmappings);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, mappings);
+    
+    /// Execution mode for actions
+    Q_PROPERTY(int executionType READ getexecutionType WRITE setexecutionType)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, executionType);
+    
     //Attribute<QVariantList > mappings;
 
-    typedef QMap<QKeySequence, QString> Mappings_t;
+    typedef QMap<QPair<QKeySequence, KeyEvent::EventType>, QString> Mappings_t;
 
 public slots:
     /// Register new key sequence - action mapping for this input mapper.
     /** @param keySeq Key sequence.
         @param action Name of the action. If you want to use parameters the string should look the following: 
         "More(Forward)" or "Move(Forward,100)" etc.
+        @param eventType Event type (press, release), default press (1)
         @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
     */
-    void RegisterMapping(const QKeySequence &keySeq, const QString &action);
+    void RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType = 1);
 
     /** Register new key sequence - action mapping for this input mapper.
         @param keySeq Key sequence as in string. example Qt::CTRL+Qt::Key_O sequence eguals "Ctrl+O" string.
         @param action Name of the action. If you want to use parameters the string should look the following: 
         "More(Forward)" or "Move(Forward,100)" etc.
     */
-    void RegisterMapping(const QString &keySeqString, const QString &action);
+    void RegisterMapping(const QString &keySeqString, const QString &action, int eventType = 1);
 
     /// Returns the input context of this input mapper.
     InputContext *GetInputContext() const { return input_.get(); }

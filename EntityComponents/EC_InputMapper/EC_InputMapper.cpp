@@ -22,16 +22,18 @@ EC_InputMapper::~EC_InputMapper()
     input_.reset();
 }
 
-void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &action)
+void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType)
 {
-    mappings_[keySeq] = action;
+    mappings_[qMakePair(keySeq, (KeyEvent::EventType)eventType)] = action;
 }
 
-void EC_InputMapper::RegisterMapping(const QString &keySeq, const QString &action)
+void EC_InputMapper::RegisterMapping(const QString &keySeq, const QString &action, int eventType)
 {
     QKeySequence key(keySeq);
     if(!key.isEmpty())
-        mappings_[key] = action;
+    {
+        mappings_[qMakePair(key, (KeyEvent::EventType)eventType)] = action;
+    }
 }
 
 EC_InputMapper::EC_InputMapper(IModule *module):
@@ -40,8 +42,24 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     contextPriority(this, "Input context priority", 90),
     takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),
     takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
-    mappings(this, "Mappings")
+    mappings(this, "Mappings"),
+    executionType(this, "Action execution type", 1)
 {
+    static AttributeMetadata executionAttrData;
+    static bool metadataInitialized = false;
+    if(!metadataInitialized)
+    {
+        executionAttrData.enums[EntityAction::Local] = "Local";
+        executionAttrData.enums[EntityAction::Server] = "Server";
+        executionAttrData.enums[EntityAction::Server | EntityAction::Local] = "Local+Server";
+        executionAttrData.enums[EntityAction::Peers] = "Peers";
+        executionAttrData.enums[EntityAction::Peers | EntityAction::Local] = "Local+Peers";
+        executionAttrData.enums[EntityAction::Peers | EntityAction::Server] = "Local+Server";
+        executionAttrData.enums[EntityAction::Peers | EntityAction::Server | EntityAction::Local] = "Local+Server+Peers";
+        metadataInitialized = true;
+    }
+    executionType.SetMetadata(&executionAttrData);
+    
     connect(this, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
         SLOT(AttributeUpdated(IAttribute *, AttributeChange::Type)));
 
@@ -50,13 +68,6 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
     connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
-
-    RegisterMapping(Qt::Key_I, "Move(Forward)");
-    RegisterMapping(Qt::Key_K, "Move(Backward)");
-    RegisterMapping(Qt::Key_J, "Move(Left)");
-    RegisterMapping(Qt::Key_L, "Move(Right)");
-    RegisterMapping(Qt::Key_U, "Rotate(Left)");
-    RegisterMapping(Qt::Key_O, "Rotate(Right)");
 }
 
 void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
@@ -83,7 +94,8 @@ void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Ty
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
 {
-    Mappings_t::iterator it = mappings_.find(QKeySequence(e->keyCode | e->modifiers));
+    
+    Mappings_t::iterator it = mappings_.find(qMakePair(QKeySequence(e->keyCode | e->modifiers), e->eventType));
     if (it == mappings_.end())
         return;
 
@@ -106,10 +118,10 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringList parameters = parsedAction.split(',');
-        entity->Exec(EntityAction::Peers, act, parameters);
+        entity->Exec((EntityAction::ExecutionType)executionType.Get(), act, parameters);
     }
     else
-        entity->Exec(EntityAction::Peers, action);
+        entity->Exec((EntityAction::ExecutionType)executionType.Get(), action);
 }
 
 void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
@@ -117,23 +129,16 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     if (!GetParentEntity())
         return;
 
-    if (e->IsButtonDown(MouseEvent::MiddleButton))
+    //! \todo this hardcoding of look button logic (similar to RexMovementInput) is not nice!
+    if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->GetInput()->IsMouseCursorVisible()))
     {
-        if (e->relativeX > 0 && abs(e->relativeX) >= 1)
+        if (e->relativeX != 0)
         {
-            GetParentEntity()->Exec(EntityAction::Local, "Move" ,"Right");
+            GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
         }
-        if (e->relativeX < 0 && abs(e->relativeX) >= 1)
+        if (e->relativeY != 0)
         {
-            GetParentEntity()->Exec(EntityAction::Local, "Move", "Left");
-        }
-        if (e->relativeY > 0 && abs(e->relativeY) >= 1)
-        {
-            GetParentEntity()->Exec(EntityAction::Local, "Move" ,"Backward");
-        }
-        if (e->relativeY < 0 && abs(e->relativeY) >= 1)
-        {
-            GetParentEntity()->Exec(EntityAction::Local, "Move", "Forward");
+            GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
         }
     }
 }
