@@ -55,13 +55,16 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     /// Type of the script as string (js/py)
-    Attribute<QString> type;
-
+    Q_PROPERTY(QString type READ gettype WRITE settype);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, type);
+    
     /// Is the script run as soon as the script reference is set/loaded.
-    Attribute<bool> runOnLoad;
-
+    Q_PROPERTY(bool runOnLoad READ getrunOnLoad WRITE setrunOnLoad);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, runOnLoad);
+    
     /// Reference to a script file.
-    Attribute<QString> scriptRef;
+    Q_PROPERTY(QString scriptRef READ getscriptRef WRITE setscriptRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, scriptRef);
 
     /// Sets new script instance.
     /** Unloads and deletes possible already existing script instance.
