@@ -98,9 +98,7 @@ private:
     
     /// Type name of the module.
     static std::string type_name_static_;
-    typedef QMap<QString, QObject*> ServiceMap;
-    ServiceMap services_;
-
+    
     /// Default engine for console & commandline script execution
     QScriptEngine *engine;
     
