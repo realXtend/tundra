@@ -35,6 +35,7 @@ namespace MumbleVoip
         connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
 
         networkstate_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+        framework_event_category_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
         if (framework_ &&  framework_->GetServiceManager())
         {
@@ -71,6 +72,17 @@ namespace MumbleVoip
             case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 CloseSession();
                 SAFE_DELETE(session_);
+                break;
+            }
+        }
+        if (category_id == framework_event_category_)
+        {
+            switch (event_id)
+            {
+            case Foundation::WORLD_STREAM_READY:
+                ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+                if (event_data)
+                    world_stream_ = event_data->WorldStream;
                 break;
             }
         }
@@ -204,7 +216,7 @@ namespace MumbleVoip
         server_info.password = channel->getserverpassword();
         server_info.channel_id = channel->getchannelid();
         server_info.channel_name = channel->getchannelname();
-        server_info.user_name = channel->getusername();
+        server_info.user_name = GetUsername();
         
         if (session_->GetChannels().contains(channel->getchannelname()))
             channel->setenabled(false); // We do not want to create multiple channels with a same name
@@ -260,7 +272,7 @@ namespace MumbleVoip
                 server_info.password = channel->getserverpassword();
                 server_info.channel_id = channel->getchannelid();
                 server_info.channel_name = channel->getchannelname();
-                server_info.user_name = channel->getusername();
+                server_info.user_name = GetUsername();
 
                 session_->AddChannel(channel->getchannelname(), server_info);
             }
@@ -269,6 +281,14 @@ namespace MumbleVoip
                 session_->RemoveChannel(channel->getchannelname());
             }
         }
+    }
+
+    QString Provider::GetUsername()
+    {
+        if (world_stream_.get())
+            return world_stream_->GetInfo().agentID.ToQString();
+        else
+            return "";
     }
 
 } // MumbleVoip
