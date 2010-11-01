@@ -37,18 +37,18 @@ namespace MumbleVoip
     public:
         Provider(Foundation::Framework* framework, Settings* settings);
         virtual ~Provider();
+
     public slots:
         virtual Communications::InWorldVoice::SessionInterface* Session();
         virtual QString& Description();
         virtual void Update(f64 frametime);
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
         virtual QList<QString> Statistics();
-
         virtual void ShowMicrophoneAdjustmentDialog();
+
     private slots:
         void OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
-        void OnChannelExpired(QString channel);
-
+        void OnECVoiceChannelDestroyed(QObject* obj);
         void OnSceneAdded(const QString &name);
 
     private:

@@ -91,13 +91,13 @@ namespace MumbleVoip
         if (!channel)
             return;
 
-        MumbleServerInfo server_info;
-        server_info.address = info.server;
-        server_info.version = info.version;
-        server_info.password = info.password;
-        server_info.user_name = info.user_name;
-        server_info.channel = info.channel;
-        channel->SetServerInfo(server_info);
+        channel->setprotocol("mumble");
+        channel->setserveraddress(info.server);
+        channel->setversion(info.version);
+        channel->setusername(info.user_name);
+        channel->setserverpassword(info.password);
+        channel->setchannelid(info.channel);
+        channel->setchannelname("Public");
 
         Scene::EntityPtr e = framework_->GetDefaultWorldScene()->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
         e->AddComponent(component,  AttributeChange::LocalOnly);
@@ -187,26 +187,32 @@ namespace MumbleVoip
         if (!session_ || session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
             CreateSession();
        
-        connect(channel, SIGNAL(ChannelExpired(QString)), this, SLOT(OnChannelExpired(QString)),Qt::UniqueConnection);
+        connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)),Qt::UniqueConnection);
 
         ServerInfo server_info;
-        server_info.server = channel->GetServerInfo().address;
-        server_info.version = channel->GetServerInfo().version;
-        server_info.password = channel->GetServerInfo().password;
-        server_info.channel = channel->GetServerInfo().channel;
-        server_info.user_name = channel->GetServerInfo().user_name;
+        server_info.server = channel->getserveraddress();
+        server_info.version = channel->getversion();
+        server_info.password = channel->getserverpassword();
+        server_info.channel = channel->getchannelid();
+        server_info.user_name = channel->getusername();
         
-        session_->AddChannel(channel->Name(), server_info);
+        session_->AddChannel(channel->getchannelname(), server_info);
         if (session_->GetActiveChannel() == "")
             session_->SetActiveChannel(channel->Name());
     }
 
-    void Provider::OnChannelExpired(QString channel)
+    void Provider::OnECVoiceChannelDestroyed(QObject* obj)
     {
-        if (!session_)
-            return;
-
-        session_->RemoveChannel(channel);
+        foreach(EC_VoiceChannel* channel, ec_voice_channels_)
+        {
+            if (channel == obj)
+            {
+                if (session_)
+                    session_->RemoveChannel(channel->getchannelname());
+                ec_voice_channels_.removeOne(channel);
+                return;
+            }
+        }
     }
 
     void Provider::OnSceneAdded(const QString &name)

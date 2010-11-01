@@ -268,7 +268,7 @@ namespace MumbleVoip
             foreach(MumbleLib::User* u, other_channel_users_)
             {
                 if (u == user)
-                    other_channel_users_.removeOne(u);
+                    other_channel_users_.removeAll(u);
             }
             CreateNewParticipant(user);
             return;
@@ -657,6 +657,8 @@ namespace MumbleVoip
         if (!channels_.contains(channel_name))
         {
             active_channel_ = "";
+            MumbleVoipModule::LogInfo(QString("Active voice channel changed to: %1").arg(active_channel_).toStdString());
+            emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged(active_channel_);
             Close();
             return;
         }
@@ -667,6 +669,7 @@ namespace MumbleVoip
         ServerInfo server_info = channels_[channel_name];
         OpenConnection(server_info);
         active_channel_ = channel_name;
+        MumbleVoipModule::LogInfo(QString("Active voice channel changed to: %1").arg(active_channel_).toStdString());
         emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged(channel_name);
     }
 
@@ -685,13 +688,15 @@ namespace MumbleVoip
     {
         if (active_channel_ == name)
         {
-            emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged("");
-            emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
             SetActiveChannel("");
+            emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
         }
 
-        channels_.remove(name);
-        emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
+        if (channels_.contains(name))
+        {
+            channels_.remove(name);
+            emit Communications::InWorldVoice::SessionInterface::ChannelListChanged(GetChannels());
+        }
     }
 
 } // MumbleVoip
