@@ -37,6 +37,12 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
 #include "MemoryLeakCheck.h"
 
+/// Sorts invoke history descending by MRU order number
+bool SortDescedingByMruOrder(const InvokeItem &lhs, const InvokeItem &rhs)
+{
+    return lhs.mruOrder  < rhs.mruOrder;
+}
+
 // File filter definitions for supported files.
 const QString cOgreSceneFileFilter(QApplication::translate("SceneTreeWidget", "OGRE scene (*.scene)"));
 const QString cOgreMeshFileFilter(QApplication::translate("SceneTreeWidget", "OGRE mesh (*.mesh)"));
@@ -110,7 +116,8 @@ QList<entity_id_t> Selection::EntityIds() const
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
     framework(fw),
-    showComponents(false)
+    showComponents(false),
+    numberOfInvokeItemsVisible(5)
 {
     setEditTriggers(/*QAbstractItemView::EditKeyPressed*/QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
@@ -137,6 +144,7 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     connect(pasteShortcut, SIGNAL(activated()), SLOT(Paste()));
 
 //    disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *, int)));
+
     LoadInvokeHistory();
 }
 
@@ -146,6 +154,13 @@ SceneTreeWidget::~SceneTreeWidget()
         ecEditor->close();
     if (fileDialog)
         fileDialog->close();
+
+    SaveInvokeHistory();
+}
+
+void SceneTreeWidget::SetScene(const Scene::ScenePtr &s)
+{
+    scene = s;
 }
 
 void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
@@ -159,6 +174,7 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 
     // Create context menu and show it.
     QMenu *menu = new QMenu(this);
+//    menu->setFixedWidth(200);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
     AddAvailableActions(menu);
@@ -322,11 +338,10 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         if (sel.HasEntities() && sel.HasComponents())
             functionsAction->setDisabled(true);
     }
-/*
+
     if (invokeHistory.size())
     {
         menu->addSeparator();
-        int numberOfInvokeItemsVisible = 5;
         for(int i = 0; i < numberOfInvokeItemsVisible; ++i)
             if (i < invokeHistory.size())
             {
@@ -336,28 +351,6 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
                 invokeAction->setDisabled(true);
             }
     }
-*/
-}
-
-void SceneTreeWidget::LoadInvokeHistory()
-{
-    int idx = 0;
-    //framework->GetDefaultConfig().GetSetting<int>("InvokeHistory", "item" + ToString(idx));
-
-    invokeHistory = QList<InvokeItem>();
-    for(int i = 0; i< invokeHistory.size(); ++i)
-    {
-        invokeHistory[i].mruOrder = invokeHistory.size() - 1;
-    }
-}
-
-void SceneTreeWidget::SaveInvokeHistory()
-{
-    qSort(invokeHistory);
-
-    Foundation::ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
-    for(int idx = 0; idx < invokeHistory.size(); ++idx)
-        cfgMgr.SetSetting<std::string>("InvokeHistory", "item" + ToString(idx), invokeHistory[idx].ToSetting());
 }
 
 Selection SceneTreeWidget::GetSelection() const
@@ -427,19 +420,52 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     return scene_doc.toString();
 }
 
+void SceneTreeWidget::LoadInvokeHistory()
+{
+    invokeHistory.clear();
+
+    // Load and parse invoke history from settings.
+    Foundation::ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
+    
+    //for(int idx = 0; idx < invokeHistory.size(); ++idx)
+    int idx = 0;
+    std::string setting("dummy");
+    while (!setting.empty())
+    {
+        setting = cfgMgr.GetSetting<std::string>("InvokeHistory", "item" + ToString(idx));
+        if (setting.empty())
+            break;
+        InvokeItem ii;
+        ii.FromSetting(setting);
+        invokeHistory.push_back(ii);
+        ++idx;
+    }
+
+    // Set MRU order numbers.
+    for(int i = 0; i < invokeHistory.size(); ++i)
+        invokeHistory[i].mruOrder = invokeHistory.size() - i;
+}
+
+void SceneTreeWidget::SaveInvokeHistory()
+{
+    qSort(invokeHistory.begin(), invokeHistory.end(), SortDescedingByMruOrder);
+
+    Foundation::ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
+    for(int idx = 0; idx < invokeHistory.size(); ++idx)
+        cfgMgr.SetSetting<std::string>("InvokeHistory", "item" + ToString(idx), invokeHistory[idx].ToSetting());
+}
+
 InvokeItem *SceneTreeWidget::FindMruItem() const
 {
     InvokeItem *mruItem = 0;
 
-    if (!invokeHistory.empty())
-        foreach(InvokeItem ii, invokeHistory)
-        {
-            if (mruItem == 0)
-                mruItem = &ii;
-            
-            if (ii.mruOrder > mruItem->mruOrder)
-                mruItem = &ii;
-        }
+    foreach(InvokeItem ii, invokeHistory)
+    {
+        if (mruItem == 0)
+            mruItem = &ii;
+        if (ii.mruOrder > mruItem->mruOrder)
+            mruItem = &ii;
+    }
 
     return mruItem;
 }
@@ -581,9 +607,7 @@ void SceneTreeWidget::CloseEditor(QTreeWidgetItem *c, QTreeWidgetItem *p)
 
 void SceneTreeWidget::NewEntity()
 {
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
+    if (scene.expired())
         return;
 
     entity_id_t id;
@@ -598,12 +622,12 @@ void SceneTreeWidget::NewEntity()
 
     if (type == tr("Synchronized"))
     {
-        id = scene->GetNextFreeId();
+        id = scene.lock()->GetNextFreeId();
         changeType = AttributeChange::Replicate;
     }
     else if(type == tr("Local"))
     {
-        id =scene->GetNextFreeIdLocal();
+        id = scene.lock()->GetNextFreeIdLocal();
         changeType = AttributeChange::LocalOnly;
     }
     else
@@ -613,9 +637,9 @@ void SceneTreeWidget::NewEntity()
     }
 
     // Create entity.
-    Scene::EntityPtr entity = scene->CreateEntity(id, QStringList(), changeType);
+    Scene::EntityPtr entity = scene.lock()->CreateEntity(id, QStringList(), changeType);
     assert(entity.get());
-    scene->EmitEntityCreated(entity, changeType);
+    scene.lock()->EmitEntityCreated(entity, changeType);
 }
 
 void SceneTreeWidget::NewComponent()
@@ -639,8 +663,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
     if (result != QDialog::Accepted)
         return;
 
-    Scene::ScenePtr scene = framework->GetDefaultWorldScene();
-    if (!scene)
+    if (scene.expired())
     {
        LogWarning("Fail to add new component to entity, since default world scene was null");
         return;
@@ -649,7 +672,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
     QList<entity_id_t> entities = dialog->GetEntityIds();
     for(int i = 0; i < entities.size(); i++)
     {
-        Scene::EntityPtr entity = scene->GetEntity(entities[i]);
+        Scene::EntityPtr entity = scene.lock()->GetEntity(entities[i]);
         if (!entity)
         {
             LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(entities[i]));
@@ -676,9 +699,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
 
 void SceneTreeWidget::Delete()
 {
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
+    if (scene.expired())
         return;
 
     Selection sel = GetSelection();
@@ -695,7 +716,7 @@ void SceneTreeWidget::Delete()
     // Remove entities.
     if (sel.HasEntities())
         foreach(entity_id_t id, GetSelection().EntityIds())
-            scene->RemoveEntity(id, AttributeChange::Replicate);
+            scene.lock()->RemoveEntity(id, AttributeChange::Replicate);
 }
 
 void SceneTreeWidget::Copy()
@@ -707,9 +728,7 @@ void SceneTreeWidget::Copy()
 
 void SceneTreeWidget::Paste()
 {
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
+    if (scene.expired())
         return;
 
     QString errorMsg;
@@ -769,7 +788,7 @@ void SceneTreeWidget::Paste()
         }
     }
 
-    scene->CreateContentFromXml(scene_doc, false, AttributeChange::Replicate);
+    scene.lock()->CreateContentFromXml(scene_doc, false, AttributeChange::Replicate);
 }
 
 void SceneTreeWidget::SaveAs()
@@ -814,13 +833,16 @@ void SceneTreeWidget::OpenEntityActionDialog()
         return;
 
     Selection sel = GetSelection();
-    if (!sel.HasEntities())
+    if (sel.IsEmpty())
+        return;
+
+    if (scene.expired())
         return;
 
     QList<Scene::EntityWeakPtr> entities;
-    foreach(EntityItem *eItem, sel.entities)
+    foreach(entity_id_t id, sel.EntityIds())
     {
-        Scene::EntityPtr e = eItem->Entity();
+        Scene::EntityPtr e = scene.lock()->GetEntity(id);
         if (e)
             entities.append(e);
     }
@@ -851,7 +873,7 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
     InvokeItem *mruItem = FindMruItem();
 
     InvokeItem ii;
-    ii.type = Action;
+    ii.type = InvokeItem::Action;
     ii.name = action;
     ii.execTypes = execTypes;
     if (mruItem)
@@ -940,7 +962,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             // Generate/get argumetns for QMetaObject::invokeMethod.
             // Also craft InvokeItem struct while we're at it.
             InvokeItem iItem;
-            iItem.type = Function;
+            iItem.type = InvokeItem::Function;
 
             QList<QGenericArgument> args;
             for(int i = 0; i < arguments.size(); ++i)
@@ -1083,9 +1105,7 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
     if (files.size() != 1)
         return;
 
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
+    if (scene.expired())
         return;
 
     // Check out file extension. If filename has none, use the selected name filter from the save file dialog.
@@ -1110,9 +1130,9 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
     }
 
     if (binary)
-        scene->SaveSceneBinary(files[0].toStdString());
+        scene.lock()->SaveSceneBinary(files[0].toStdString());
     else
-        scene->SaveSceneXML(files[0].toStdString());
+        scene.lock()->SaveSceneXML(files[0].toStdString());
 }
 
 void SceneTreeWidget::OpenFileDialogClosed(int result)
