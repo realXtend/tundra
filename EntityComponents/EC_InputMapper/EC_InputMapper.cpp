@@ -43,7 +43,8 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),
     takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
     mappings(this, "Mappings"),
-    executionType(this, "Action execution type", 1)
+    executionType(this, "Action execution type", 1),
+    modifiersEnabled(this, "Key modifiers enable", true)
 {
     static AttributeMetadata executionAttrData;
     static bool metadataInitialized = false;
@@ -95,7 +96,11 @@ void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Ty
 void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
 {
     
-    Mappings_t::iterator it = mappings_.find(qMakePair(QKeySequence(e->keyCode | e->modifiers), e->eventType));
+    Mappings_t::iterator it;
+    if (modifiersEnabled.Get())
+        it = mappings_.find(qMakePair(QKeySequence(e->keyCode | e->modifiers), e->eventType));
+    else
+        it = mappings_.find(qMakePair(QKeySequence(e->keyCode), e->eventType));
     if (it == mappings_.end())
         return;
 

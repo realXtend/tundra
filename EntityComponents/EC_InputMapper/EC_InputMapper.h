@@ -45,6 +45,10 @@ Registered by RexLogic::RexLogicModule.
 <div>Does the mapper receive keyboard input events even when a Qt widget has focus.</div> 
 <li>bool: takeMouseEventsOverQt.
 <div>Does the mapper receive mouse input events even when a Qt widget has focus.</div>
+<li>int: executionType.
+<div>Action execution type that is used for the Entity Actions.</div>
+<li>bool: modifiersEnabled.
+<div>Whether modifiers are checked for in the key events. Default true.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -102,9 +106,13 @@ public:
     Q_PROPERTY(QVariantList mappings READ getmappings WRITE setmappings);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, mappings);
     
-    /// Execution mode for actions
+    /// Execution type for actions
     Q_PROPERTY(int executionType READ getexecutionType WRITE setexecutionType)
     DEFINE_QPROPERTY_ATTRIBUTE(int, executionType);
+    
+    /// Modifier mode for key events. Default true. If false, modifiers are not checked for key events
+    Q_PROPERTY(bool modifiersEnabled READ getmodifiersEnabled WRITE setmodifiersEnabled)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, modifiersEnabled);
     
     //Attribute<QVariantList > mappings;
 

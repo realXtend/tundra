@@ -26,6 +26,7 @@ if (!me.HasComponent("EC_OgreCamera"))
     // Register press & release action mappings to the inputmapper, use higher priority than RexMovementInput to be sure
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = true;
+    inputmapper.modifiersEnabled = false;
     inputmapper.RegisterMapping("W", "Move(forward)", 1);
     inputmapper.RegisterMapping("S", "Move(back)", 1);
     inputmapper.RegisterMapping("A", "Move(left)", 1);
