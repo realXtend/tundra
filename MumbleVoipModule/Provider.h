@@ -7,6 +7,7 @@
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
 #include "AttributeChangeType.h"
+#include "WorldStream.h"
 
 class UiProxyWidget;
 class IEventData;
@@ -54,16 +55,19 @@ namespace MumbleVoip
     private:
         void CreateSession();
         void CloseSession();
+        QString GetUsername();
 
         Foundation::Framework* framework_;
         QString description_;
         MumbleVoip::Session* session_;  //! \todo Use shared ptr ...
         ServerInfoProvider* server_info_provider_;
         event_category_id_t networkstate_event_category_;
+        event_category_id_t framework_event_category_;
         Settings* settings_;
         QWidget* microphone_adjustment_widget_;
         QList<EC_VoiceChannel*> ec_voice_channels_;
         QSignalMapper* signal_mapper_;
+        ProtocolUtilities::WorldStreamPtr world_stream_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);
