@@ -1,3 +1,5 @@
+print "NAALI MODULE FROM THE WEB"
+
 import rexviewer as r
 import naali
 import PythonQt
@@ -5,14 +7,9 @@ from PythonQt import QtGui
 from PythonQt.QtGui import QLineEdit, QGroupBox, QVBoxLayout, QPushButton
 
 from circuits import Component
+import core.circuits_manager
 
-#INTERNAL = 1
-#EXTERNAL = 0
-
-#print dir(PythonQt)
-#UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
-
-class TestGui(Component):
+class WebmoduleGuitest(Component):
     def __init__(self):
         Component.__init__(self)
         #loader = QUiLoader()
@@ -40,7 +37,7 @@ class TestGui(Component):
         self.widget = group
 
         #naali proxywidget boilerplate
-        GUINAME = "PythonQt Test"
+        GUINAME = "Python Webmodule Test"
         uism = naali.ui
         self.proxywidget = r.createUiProxyWidget(self.widget)
         self.proxywidget.setWindowTitle(GUINAME)
@@ -66,3 +63,5 @@ class TestGui(Component):
         uism = naali.ui
         uism.RemoveProxyWidgetFromScene(self.proxywidget)
         r.logInfo("TestGui proxywidget removed from scene.")
+
+core.circuits_manager.ComponentRunner.instance.m += WebmoduleGuitest()
