@@ -105,7 +105,6 @@ void EC_3DCanvasSource::UpdateWidgetAndCanvas(IAttribute *attribute, AttributeCh
                 my_submesh = 0;
             if (!canvas->GetSubMeshes().contains(my_submesh))
             {
-                qDebug() << "Setting submesh";
                 canvas->SetSubmesh(my_submesh);
                 update = true;
             }
@@ -117,7 +116,6 @@ void EC_3DCanvasSource::UpdateWidgetAndCanvas(IAttribute *attribute, AttributeCh
     {
         if (last_source_ != getsource())
         {
-            qDebug() << "Source changed";
             UpdateWidget();
             if (!canvas_started_)
                 UpdateCanvas();
@@ -273,7 +271,6 @@ void EC_3DCanvasSource::UpdateCanvas()
     EC_3DCanvas* canvas = checked_static_cast<EC_3DCanvas*>(comp.get());
     if (canvas->GetWidget() != content_widget_)
     {
-        qDebug() << "Setting widget";
         canvas->SetWidget(content_widget_);
     }
 
@@ -295,15 +292,12 @@ void EC_3DCanvasSource::UpdateCanvas()
     {
         canvas->Start();
         canvas_started_ = true;
-        qDebug() << "start()";
     }
     // Update otherwise
     else
     {
         canvas->Update();
-        qDebug() << "update()";
     }
-
 }
 
 void EC_3DCanvasSource::FetchWebViewUrl()
