@@ -40,6 +40,8 @@ namespace WorldBuilding
         /// Service interface implementation
         virtual void StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities);
         /// Service interface implementation
+        virtual QByteArray ExportEntities(QList<Scene::Entity *> entities);
+        /// Service interface implementation
         virtual Vector3df GetPosFrontOfAvatar();
 
         void SetWorldStream(ProtocolUtilities::WorldStreamPtr stream) { current_stream_ = stream; }

@@ -49,13 +49,16 @@ namespace WorldBuilding
 
     public slots:
         void ExportToFile(const QString &filename, QList<Scene::Entity *> entities);
+        QByteArray ExportToByteArray(QList<Scene::Entity *> entities);
         QByteArray ParseAndAdjust(const QByteArray &content, const Vector3df &avatar_position);
 
     private slots:
         QByteArray ExportXml(const QString &filename, const QList<Scene::Entity *> entity_list);
         QList<Scene::Entity*> GetAllPlaceableChildren(EC_Placeable *parent);
         void ProcessElement(QDomElement node_element, Vector3df adjust_pos);
+
         void AddExportData(Scene::Entity *entity);
+        void RemoveExportData(QList<Scene::Entity *> entities);
 
     private:
         Foundation::Framework *framework_;

@@ -165,8 +165,6 @@ namespace WorldBuilding
             QNetworkRequest request;
             request.setUrl(QUrl(upload_cap));
             request.setRawHeader("ImportMethod", "Upload");
-            request.setRawHeader("RegionX", QString::number(current_stream_->GetInfo().regionX).toAscii());
-            request.setRawHeader("RegionY", QString::number(current_stream_->GetInfo().regionY).toAscii());
             network_manager_->post(request, publish_data);
         }
         else
@@ -176,6 +174,11 @@ namespace WorldBuilding
     void OpenSimSceneService::StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities)
     {
         scene_parser_->ExportToFile(save_filename, entities);
+    }
+
+    QByteArray OpenSimSceneService::ExportEntities(QList<Scene::Entity *> entities)
+    {
+        return scene_parser_->ExportToByteArray(entities);
     }
 
     Vector3df OpenSimSceneService::GetPosFrontOfAvatar()

@@ -34,24 +34,24 @@ namespace WorldBuilding
 
     void SceneParser::ExportToFile(const QString &filename, QList<Scene::Entity *> entities)
     {
-        WorldBuildingModule::LogDebug(QString("Parser: Adding export data component to %1 entities").arg(entities.count()).toStdString().c_str());
+        WorldBuildingModule::LogDebug(QString("SceneParser: Adding export data component to %1 entities").arg(entities.count()).toStdString().c_str());
+
         foreach(Scene::Entity *entity, entities)
             AddExportData(entity);
-
         ExportXml(filename, entities);
+        RemoveExportData(entities);
+    }
 
-        WorldBuildingModule::LogDebug("Parser: Removing export data component from all entities");
+    QByteArray SceneParser::ExportToByteArray(QList<Scene::Entity *> entities)
+    {
+        WorldBuildingModule::LogDebug(QString("SceneParser: Adding export data component to %1 entities").arg(entities.count()).toStdString().c_str());
+
+        QByteArray return_array;
         foreach(Scene::Entity *entity, entities)
-        {
-            ComponentPtr export_component = entity->GetComponent(EC_DynamicComponent::TypeNameStatic(), export_component_name_);
-            if (export_component.get())
-            {
-                qDebug() << "found!";
-                entity->RemoveComponent(export_component, AttributeChange::Disconnected);
-            }
-            else
-                qDebug() << "not found!";
-        }
+            AddExportData(entity);
+        return_array = ExportXml("", entities);
+        RemoveExportData(entities);
+        return return_array;
     }
 
     QByteArray SceneParser::ExportXml(const QString &filename, const QList<Scene::Entity *> entity_list)
@@ -347,6 +347,16 @@ namespace WorldBuilding
         {
             export_data->SetAttribute("Materials", materials.join(";"), ct);
             export_data->SetAttribute("MaterialTypes", material_types.join(";"), ct);
+        }
+    }
+
+    void SceneParser::RemoveExportData(QList<Scene::Entity *> entities)
+    {
+        foreach(Scene::Entity *entity, entities)
+        {
+            ComponentPtr export_component = entity->GetComponent(EC_DynamicComponent::TypeNameStatic(), export_component_name_);
+            if (export_component.get())
+                entity->RemoveComponent(export_component, AttributeChange::Disconnected);
         }
     }
 
