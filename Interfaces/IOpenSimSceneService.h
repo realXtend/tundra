@@ -47,6 +47,11 @@ public slots:
     /// @param QList of Scene::Entity* - entities to be exported to file
     virtual void StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities) = 0;
 
+    /// Export xml data to QByteArray and return it
+    /// @param QList of Scene::Entity* - entities to be exported to file
+    /// @return QByteArray - xml content
+    virtual QByteArray ExportEntities(QList<Scene::Entity *> entities) = 0;
+
     /// Gets a position in front of the avatar, used for drops when raycast does not hit any object
     virtual Vector3df GetPosFrontOfAvatar() = 0;
 };
