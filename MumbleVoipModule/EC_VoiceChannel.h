@@ -10,7 +10,6 @@
 /// Mumble based voice channel
 /**
   Defines a mumble channel to join.
-  @todo 'enabled' attribute
 */
 class EC_VoiceChannel : public IComponent
 {
@@ -39,6 +38,7 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(QString, serverpassword);
 
     /// Mumbe server username eg. 'John'
+    /// @note We don't need this, the user name should be allways the client specific
     Q_PROPERTY(QString username READ getusername WRITE setusername);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, username);
 
@@ -50,11 +50,17 @@ public:
     Q_PROPERTY(QString channelid READ getchannelid WRITE setchannelid);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, channelid);
 
+    /// Mumble channel id eg. 'voip/regions/chat/channel24442'
+    Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
+
 private:
     /// Constuctor.
     /** @param module Declaring module.
     */
     explicit EC_VoiceChannel(IModule *module);
+private slots:
+    void AutoDisabelChannel(IAttribute*, AttributeChange::Type);
 };
 
 #endif // incl_MumbleVoip_EC_VoiceChannel_h
