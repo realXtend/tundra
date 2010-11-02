@@ -21,7 +21,38 @@
 #include "OgreBulletCollisionsDebugLines.h"
 #include "btBulletDynamicsCommon.h"
 
+#include <QtScript>
+
 #include <Ogre.h>
+
+Q_DECLARE_METATYPE(Physics::PhysicsModule*);
+Q_DECLARE_METATYPE(Physics::PhysicsWorld*);
+
+// The following functions help register a custom QObject-derived class to a QScriptEngine.
+// See http://lists.trolltech.com/qt-interest/2007-12/thread00158-0.html .
+template <typename Tp>
+QScriptValue qScriptValueFromQObject(QScriptEngine *engine, Tp const &qobject)
+{
+    return engine->newQObject(qobject);
+}
+
+template <typename Tp>
+void qScriptValueToQObject(const QScriptValue &value, Tp &qobject)
+{   
+    qobject = qobject_cast<Tp>(value.toQObject());
+}
+
+template <typename Tp>
+int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &prototype = QScriptValue()
+#ifndef qdoc
+    , Tp * = 0
+#endif
+    )
+{
+    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject,
+                                       qScriptValueToQObject, prototype);
+}
+
 
 namespace Physics
 {
@@ -44,6 +75,11 @@ PhysicsModule::~PhysicsModule()
 void PhysicsModule::Load()
 {
     DECLARE_MODULE_EC(EC_RigidBody);
+}
+
+void PhysicsModule::Initialize()
+{
+    framework_->RegisterDynamicObject("physics", this);
 }
 
 void PhysicsModule::PostInitialize()
@@ -135,7 +171,7 @@ void PhysicsModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene)
+Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene)
 {
     if (!scene)
         return 0;
@@ -157,7 +193,7 @@ PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene)
     return new_world.get();
 }
 
-PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::SceneManager* sceneraw)
+Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::SceneManager* sceneraw)
 {
     if (!sceneraw)
         return 0;
@@ -168,9 +204,14 @@ PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::SceneManager* scener
     return i->second.get();
 }
 
-PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::ScenePtr scene)
+Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::ScenePtr scene)
 {
     return GetPhysicsWorldForScene(scene.get());
+}
+
+Physics::PhysicsWorld* PhysicsModule::GetPhysicsWorld(QObject* scene)
+{
+    return GetPhysicsWorldForScene(dynamic_cast<Scene::SceneManager*>(scene));
 }
 
 void PhysicsModule::OnSceneRemoved(Scene::SceneManager* scene)
@@ -220,6 +261,12 @@ void PhysicsModule::SetDrawDebugGeometry(bool enable)
             scenemgr->getRootSceneNode()->attachObject(debugGeometryObject_);
         }
     }
+}
+
+void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
+{
+    qScriptRegisterQObjectMetaType<Physics::PhysicsModule*>(engine);
+    qScriptRegisterQObjectMetaType<Physics::PhysicsWorld*>(engine);
 }
 
 void PhysicsModule::UpdateDebugGeometry()

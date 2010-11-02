@@ -19,6 +19,7 @@ namespace Ogre
 
 class btVector3;
 class btTriangleMesh;
+class QScriptEngine;
 
 namespace Physics
 {
@@ -39,6 +40,9 @@ public:
 
     //! IModule override.
     void Load();
+    
+    //! IModule override.
+    void Initialize();
     
     //! IModule override.
     void PostInitialize();
@@ -95,15 +99,18 @@ public:
      */
     boost::shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
     
-public slots:
     //! Create a physics world for a scene
-    PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene);
+    Physics::PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene);
     
     //! Return the physics world for a scene if it exists
-    PhysicsWorld* GetPhysicsWorldForScene(Scene::ScenePtr scene);
+    Physics::PhysicsWorld* GetPhysicsWorldForScene(Scene::ScenePtr scene);
     
     //! Return the physics world for a scene if it exists
-    PhysicsWorld* GetPhysicsWorldForScene(Scene::SceneManager* sceneraw);
+    Physics::PhysicsWorld* GetPhysicsWorldForScene(Scene::SceneManager* sceneraw);
+    
+public slots:
+    //! Get a physics world for a scene. This version meant for scripts
+    Physics::PhysicsWorld* GetPhysicsWorld(QObject* scene);
     
     //! Enable/disable physics simulation
     void SetRunPhysics(bool enable);
@@ -114,6 +121,9 @@ public slots:
     //! Get debug geometry enabled status
     bool GetDrawDebugGeometry() const { return drawDebugGeometry_; }
     
+    //! Initialize physics datatypes for a script engine
+    void OnScriptEngineCreated(QScriptEngine* engine);
+    
 private slots:
     //! Scene has been removed, so delete also the physics world (if exists)
     void OnSceneRemoved(Scene::SceneManager* scene);
@@ -122,7 +132,7 @@ private:
     //! Update debug geometry manual object, if physics debug drawing is on
     void UpdateDebugGeometry();
     
-    typedef std::map<Scene::SceneManager*, boost::shared_ptr<PhysicsWorld> > PhysicsWorldMap;
+    typedef std::map<Scene::SceneManager*, boost::shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
     //! Map of physics worlds assigned to scenes
     PhysicsWorldMap physicsWorlds_;
     
