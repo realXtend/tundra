@@ -1,19 +1,32 @@
-// A startup script that hooks to scene added & scene cleared signals, and creates a freelook camera to the scene.
+// A startup script that hooks to scene added & scene cleared signals, and creates a local freelook camera upon either signal.
+
+framework.SceneAdded.connect(OnSceneAdded);
 
 function OnSceneAdded(scenename)
 {
+    // If scene is the OpenSim client scene, hardcodedly do not respond
+    if (scenename == "World")
+        return;
+
     // Get pointer to scene through framework
     scene = framework.Scene(scenename);
-    print("Scene " + scene.Name + " has been created");
-
-
-    // Connect scene clear signal
     scene.SceneCleared.connect(OnSceneCleared);
+    CreateCamera(scene);
 }
 
 function OnSceneCleared(scene)
 {
-    print("Scene " + scene.Name + " has been cleared");
+    CreateCamera(scene);
 }
 
-framework.SceneAdded.connect(OnSceneAdded);
+function CreateCamera(scene)
+{
+    var entity = scene.CreateEntityRaw(scene.NextFreeIdLocal(), ["EC_Script"]);
+    entity.SetName("FreeLookCamera");
+    entity.SetTemporary(true);
+
+    var script = entity.GetComponentRaw("EC_Script");
+    script.type = "js";
+    script.scriptRef = "./jsmodules/camera/freelookcamera.js";
+    script.Run();
+}

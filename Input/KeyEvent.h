@@ -54,10 +54,10 @@ public:
 
 	enum EventType
 	{
-        KeyEventInvalid, ///< An invalid event. Used to check for improperly filled structure.
-		KeyPressed, ///< The key was pressed, or repeated by key repeat. Read the keyPressCount field to distinguish between these.
-        KeyDown, ///< The key is being held down. This event is generated once per frame. \todo Not yet implemented.
-		KeyReleased, ///< The key was released.
+        KeyEventInvalid = 0, ///< An invalid event. Used to check for improperly filled structure.
+        KeyPressed = 1, ///< The key was pressed, or repeated by key repeat. Read the keyPressCount field to distinguish between these.
+        KeyDown = 2, ///< The key is being held down. This event is generated once per frame. \todo Not yet implemented.
+        KeyReleased = 3, ///< The key was released.
 	};
 
     /// Identifies whether this was a key press or a release event.
