@@ -35,6 +35,14 @@ if (!me.HasComponent("EC_OgreCamera"))
     inputmapper.RegisterMapping("S", "Stop(back)", 3);
     inputmapper.RegisterMapping("A", "Stop(left)", 3);
     inputmapper.RegisterMapping("D", "Stop(right)", 3);
+    inputmapper.RegisterMapping("Up", "Move(forward)", 1);
+    inputmapper.RegisterMapping("Down", "Move(back)", 1);
+    inputmapper.RegisterMapping("Left", "Move(left)", 1);
+    inputmapper.RegisterMapping("Right", "Move(right)", 1);
+    inputmapper.RegisterMapping("Up", "Stop(forward)", 3);
+    inputmapper.RegisterMapping("Down", "Stop(back)", 3);
+    inputmapper.RegisterMapping("Left", "Stop(left)", 3);
+    inputmapper.RegisterMapping("Right", "Stop(right)", 3);
     // Connect actions
     me.Action("Move").Triggered.connect(HandleMove);
     me.Action("Stop").Triggered.connect(HandleStop);

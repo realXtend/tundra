@@ -34,13 +34,18 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"translate": translate
-<li>"LookAt": LookAt wrapper that accepts a QVector3D for py & js e.g. camera use. 
+<li>"Translate": Translates the placeable. Modifies the transform attribute using Default changetype.
+<li>"TranslateRelative": Translates the placeable relative to orientation. Modifies the transform attribute using Default changetype.
+<li>"Show": Shows the Entity
+<li>"Hide": Hides the Entity
+<li>"ToggleVisibility": Toggles visibility
 </ul>
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>"ShowEntity": Shows the Entity
+<li>"HideEntity": Hides the Entity
+<li>"ToggleEntity": Toggles visibility
 </ul>
 </td>
 </tr>
@@ -48,6 +53,9 @@ Registered by OgreRenderer::OgreRenderingModule.
 Does not emit any actions.
 
 <b>Doesn't depend on any components</b>.
+
+Note: do not use the properties (Position, Scale, Orientation) below. They are deprecated and will hopefully be removed in the future.
+
 </table>
 */
 class OGRE_MODULE_API EC_Placeable : public IComponent

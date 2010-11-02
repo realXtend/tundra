@@ -271,14 +271,36 @@ void JavascriptModule::UnloadStartupScripts()
 
 void JavascriptModule::PrepareScriptEngine(JavascriptEngine* engine)
 {
-    // Register framework's dynamic properties and the framework itself to the script engine
+    static std::set<QObject*> checked;
+    
+    // Register framework's dynamic properties (service objects) and the framework itself to the script engine
     QList<QByteArray> properties = framework_->dynamicPropertyNames();
+    for (uint i = 0; i < properties.size(); ++i)
+    {
+        QString name = properties[i];
+        QObject* serviceobject = framework_->property(name.toStdString().c_str()).value<QObject*>();
+        engine->RegisterService(serviceobject, name);
+        
+        if (checked.find(serviceobject) == checked.end())
+        {
+            // Check if the service object has an OnScriptEngineCreated() slot, and give it a chance to perform further actions
+            const QMetaObject* meta = serviceobject->metaObject();
+            if (meta->indexOfSlot("OnScriptEngineCreated(QScriptEngine*)") != -1)
+                QObject::connect(this, SIGNAL(ScriptEngineCreated(QScriptEngine*)), serviceobject, SLOT(OnScriptEngineCreated(QScriptEngine*)));
+            
+            checked.insert(serviceobject);
+        }
+    }
+    
+    engine->RegisterService(framework_, "framework");
+    
     for (uint i = 0; i < properties.size(); ++i)
     {
         QString name = properties[i];
         engine->RegisterService(framework_->property(name.toStdString().c_str()).value<QObject*>(), name);
     }
-    engine->RegisterService(framework_, "framework");
+    
+    emit ScriptEngineCreated(engine->GetEngine());
 }
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
