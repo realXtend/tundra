@@ -115,8 +115,8 @@ endif()
 # Set compiler warning levels.
 # On MSVC, use warning level 4 but disable the following warnings:
 # C4100 'identifier' : unreferenced formal parameter
-# C4127 'class' : assignment operator could not be generated 
-# C4512 conditional expression is constant
+# C4127 conditional expression is constant
+# C4512 'class' : assignment operator could not be generated 
 # C4505 'function' : unreferenced local function has been removed
 if (MSVC)
     add_definitions (/W4 /wd4100 /wd4127 /wd4512 /wd4505)
