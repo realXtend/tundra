@@ -35,6 +35,8 @@ public:
 
     //void SetPrototype(QScriptable *prototype, );
 
+    QScriptEngine* GetEngine() const { return engine_; }
+
 private:
     QString LoadScript() const;
 

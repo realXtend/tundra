@@ -1063,8 +1063,14 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 
             manual->position(pos);
             manual->normal(OgreRenderer::ToOgreVector3(CalculateNormal(thisPatch->x, thisPatch->y, X, Y)));
+
+            // The UV set 0 contains the diffuse texture UV map. Do a planar mapping with the given specified UV scale.
 // Ogre:                manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.z + pos.z) * vScale);
             manual->textureCoord((patchOrigin.x + pos.x) * uScale, (patchOrigin.y + pos.y) * vScale);
+
+            // The UV set 1 contains the terrain blend mask UV map, which stretches once across the whole terrain.
+            manual->textureCoord((float)(patch.x*cPatchSize + x)/(VerticesWidth()-1), (float)(patch.y*cPatchSize + y)/(VerticesHeight()-1)); 
+
             ++curIndex;
         }
 

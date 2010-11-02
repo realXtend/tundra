@@ -30,11 +30,6 @@ namespace RexLogic
         /// @param event_id Event ID.
         /// @param data Event data.
         bool HandleNetworkStateEvent(event_id_t event_id, IEventData* data);
-
-        /// Handles
-        /// @param event_id Event ID.
-        /// @param data Event data.
-        bool HandleTundraEvent(event_id_t event_id, IEventData* data);
         
     private:
         /// Owner module.
