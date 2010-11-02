@@ -76,8 +76,8 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 void NaaliMainWindow::SaveWindowSettingsToFile()
 {
     // The values (0, 25) and (-50, -20) below serve to artificially limit the main window positioning into awkward places.
-    int windowX = max(0, min(DesktopWidth()-50, geometry().x()));
-    int windowY = max(25, min(DesktopHeight()-20, geometry().y()));
+    int windowX = max(0, min(DesktopWidth()-50, pos().x()));
+    int windowY = max(25, min(DesktopHeight()-20, pos().y()));
     int width = max(1, min(DesktopWidth()-windowX, size().width()));
     int height = max(1, min(DesktopHeight()-windowY, size().height()));
 
