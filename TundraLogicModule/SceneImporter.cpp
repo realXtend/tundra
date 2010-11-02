@@ -57,7 +57,8 @@ SceneImporter::~SceneImporter()
 }
 
 Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
-    const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets, bool meshLoaded)
+                                           const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change,
+                                           bool localassets, const std::string &meshName)
 {
     if (!scene)
     {
@@ -95,12 +96,14 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
             out_asset_dir += '/';
     }
     
+
     boost::filesystem::path path(meshname);
     std::string meshleafname = path.leaf();
+
     
     std::vector<std::string> material_names;
     std::string skeleton_name;
-    if (!meshLoaded)
+    if (meshName.empty())
     {
         if (!ParseMeshForMaterialsAndSkeleton(meshname, material_names, skeleton_name))
             return Scene::EntityPtr();
@@ -116,7 +119,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     std::vector<std::string> material_files;
-    if (!meshLoaded)
+    if (meshName.empty())
     {
         fs::directory_iterator iter(in_asset_dir);
         fs::directory_iterator end_iter;
@@ -151,6 +154,9 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     CopyAsset(meshleafname, in_asset_dir, out_asset_dir);
     if (!skeleton_name.empty())
         CopyAsset(skeleton_name, in_asset_dir, out_asset_dir);
+
+    // mesh copied, add mesh name inside the file
+    if (!meshName.empty()) meshleafname += std::string("/") + meshName;
     
     // Create a new entity in any case, with a new ID
     Scene::EntityPtr newentity = scene->CreateEntity(0, QStringList(), change, true);
