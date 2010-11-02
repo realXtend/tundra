@@ -43,16 +43,18 @@ namespace AssImp
             \param file path to file where to import meshes from
             \param outMeshNames Out string vector of generated Ogre mesh names
         */
-		void Import(const QString& file, std::vector<std::string> &outMeshNames);
+		//void Import(const QString& file, std::vector<std::string> &outMeshNames);
+
         //! Generates Ogre meshes from memory buffer
         /*!
             \param data memory buffer where to import meshes from
             \param length memory buffer length
             \param name file format hint for the importer, looks for extension within the name
+            \param hint file format hint for the importer, in practise file extension with the dot included
             \param node name of the node to import
             \param outMeshNames Out string vector of generated Ogre mesh names
         */
-        void Import(const void *data, size_t length, const QString &name, const QString &nodeName, std::vector<std::string> &outMeshNames);
+        void Import(const void *data, size_t length, const QString &name, const char* hint, const QString &nodeName, std::vector<std::string> &outMeshNames);
 
 	private:
         class AssImpLogStream : public Assimp::LogStream
@@ -65,8 +67,8 @@ namespace AssImp
         };
 
         void GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
-            std::vector<MeshData> &outMeshNames);
-        void ImportScene(const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames);
+            const Matrix4 &parentTransform, std::vector<MeshData> &outMeshNames);
+        
         void ImportNode(const struct aiScene *scene, const struct aiNode *node, const QString& file, const QString &nodeName, 
             std::vector<std::string> &outMeshNames);
 

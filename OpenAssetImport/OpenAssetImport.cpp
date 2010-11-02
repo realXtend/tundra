@@ -11,7 +11,6 @@
 #include <Ogre.h>
 
 using namespace Assimp;
-//using namespace Ogre;
 
 namespace AssImp
 {
@@ -69,8 +68,9 @@ namespace AssImp
         if (scene)
         {
             const struct aiNode *rootNode = scene->mRootNode;
-        
-            GetNodeData(scene, rootNode, file, outMeshData);
+            
+            Matrix4 transform;
+            GetNodeData(scene, rootNode, file, transform, outMeshData);
         } else
         {       
             // report error
@@ -78,33 +78,32 @@ namespace AssImp
         }
     }
 
-    void OpenAssetImport::Import(const QString& file, std::vector<std::string> &outMeshNames)
+    /*void OpenAssetImport::Import(const QString& file, std::vector<std::string> &outMeshNames)
     {
         const aiScene *scene = importer_->ReadFile(file.toStdString(), default_flags_);
 
         if (scene)
         {
-            ImportScene(scene, file, outMeshNames);
+            const struct aiNode *rootNode = scene->mRootNode;
+
+            ImportNode(scene, file, outMeshNames);
         } else
         {       
             // report error
             Foundation::RootLogError(importer_->GetErrorString());
             //return QString(importer_->GetErrorString());
         }
-    }
+    }*/
 
-    void OpenAssetImport::Import(const void *data, size_t length, const QString &name, const QString &nodeName, std::vector<std::string> &outMeshNames)
+    void OpenAssetImport::Import(const void *data, size_t length, const QString &name, const char* hint, const QString &nodeName, std::vector<std::string> &outMeshNames)
     {
-        boost::filesystem::path path(name.toStdString());
-        QString extension = QString(path.extension().c_str()).toLower();
-
-        const aiScene *scene = importer_->ReadFileFromMemory(data, length, default_flags_, extension.toLatin1());
+        const aiScene *scene = importer_->ReadFileFromMemory(data, length, default_flags_, hint);
 
         if (scene)
         {
             const struct aiNode *rootNode = scene->mRootNode;
+            
             ImportNode(scene, rootNode, name, nodeName, outMeshNames);
-            //ImportScene(scene, name, outMeshNames);
         } else
         {       
             // report error
@@ -114,49 +113,41 @@ namespace AssImp
     }
 
     void OpenAssetImport::GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
-        std::vector<MeshData> &outMeshNames)
+        const Matrix4 &parentTransform, std::vector<MeshData> &outMeshNames)
     {
-        //std::string meshname = file.toStdString();
         aiMatrix4x4 aiTransform = node->mTransformation;
+
+        // aiMatrix4x4::operator[] is buggy and doesn't work correctly, so we convert by hand
+        // also convert from row-major to column-major
+        Matrix4 transform;
+        transform[0] = aiTransform.a1;
+        transform[1] = aiTransform.b1;
+        transform[2] = aiTransform.c1;
+        transform[3] = aiTransform.d1;
+        transform[4] = aiTransform.a2;
+        transform[5] = aiTransform.b2;
+        transform[6] = aiTransform.c2;
+        transform[7] = aiTransform.d2;
+        transform[8] = aiTransform.a3;
+        transform[9] = aiTransform.b3;
+        transform[10] = aiTransform.c3;
+        transform[11] = aiTransform.d3;
+        transform[12] = aiTransform.a4;
+        transform[13] = aiTransform.b4;
+        transform[14] = aiTransform.c4;
+        transform[15] = aiTransform.d4;
+        Matrix4 worldTransform = transform * parentTransform;
+
         if (node->mNumMeshes > 0)
         {
-            //meshname.append("/");
-           // meshname.append(node->mName.data);
-            Matrix4 transform;
-            // aiMatrix4x4::operator[] is buggy and doesn't work correctly, so we convert by hand
-            // also convert from row-major to column-major
-            transform[0] = aiTransform.a1;
-            transform[1] = aiTransform.b1;
-            transform[2] = aiTransform.c1;
-            transform[3] = aiTransform.d1;
-            transform[4] = aiTransform.a2;
-            transform[5] = aiTransform.b2;
-            transform[6] = aiTransform.c2;
-            transform[7] = aiTransform.d2;
-            transform[8] = aiTransform.a3;
-            transform[9] = aiTransform.b3;
-            transform[10] = aiTransform.c3;
-            transform[11] = aiTransform.d3;
-            transform[12] = aiTransform.a4;
-            transform[13] = aiTransform.b4;
-            transform[14] = aiTransform.c4;
-            transform[15] = aiTransform.d4;
-
             MeshData data = { file, QString(node->mName.data), transform };
             outMeshNames.push_back(data);     
         }
 
         // import children
         for (int i=0 ; i<node->mNumChildren ; ++i)
-            GetNodeData(scene, node->mChildren[i], file, outMeshNames);
+            GetNodeData(scene, node->mChildren[i], file, worldTransform, outMeshNames);
     }
-
-    void OpenAssetImport::ImportScene(const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames)
-    {
-        const struct aiNode *rootNode = scene->mRootNode;
-        
-        ImportNode(scene, rootNode, file, 0, outMeshNames);
-	}
 
     void OpenAssetImport::ImportNode(const aiScene *scene, const aiNode *node, const QString& file,
         const QString &nodeName, std::vector<std::string> &outMeshNames)
@@ -257,7 +248,8 @@ namespace AssImp
                     vbuf->unlock();
                     data->vertexBufferBinding->setBinding(0, vbuf);
                     
-
+                    if (mesh->HasTextureCoords(0))
+                    {
                     vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
                         decl->getVertexSize(1),                     // This value is the size of a vertex in memory
                         data->vertexCount,                          // The number of vertices you'll put into this buffer
@@ -298,6 +290,7 @@ namespace AssImp
                     }
                     vbuf->unlock();
                     data->vertexBufferBinding->setBinding(1, vbuf);
+                    }
 
                     // indices
                     size_t numIndices = mesh->mNumFaces * 3;            // support only triangles, so 3 indices per face
