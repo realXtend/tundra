@@ -348,10 +348,18 @@ namespace UiServices
 				if(qdock->widget()){
 					qdock->hide();
 					widget=qdock->widget();
+					widget->adjustSize();
 					uiExternal->RemoveExternalPanel(widget);
 					widget->setParent(0);
 					proxy->setWidget(widget);
-					owner_->GetInworldSceneController()->AddProxyWidget(proxy);
+					if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
+						if (panels_menus_list_.contains(widget->windowTitle())){
+							menusPair par = panels_menus_list_.value(widget->windowTitle());
+							owner_->GetInworldSceneController()->AddWidgetToMenu(proxy, proxy->windowTitle(), par.first, par.second);
+						}
+						else
+							owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
+					}
 				}
 			}else{
 				if(!qdock->widget()){
@@ -361,8 +369,10 @@ namespace UiServices
 					owner_->GetInworldSceneController()->RemoveWidgetFromMenu(proxy);
 					proxy->setWidget(0);
 					qdock->setWidget(widget);
-					//Add Panel..
-					uiExternal->AddExternalPanel(qdock);
+					if (uiExternal->AddExternalPanel(qdock)){
+						uiExternal->ShowWidget(widget);
+						uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
+					}
 				}
 			}
 		}

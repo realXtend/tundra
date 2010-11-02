@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -64,7 +65,9 @@ void OgreAssetEditorModule::PostInitialize()
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
 
-    materialWizard_ = new MaterialWizard;
+//$ BEGIN_MOD $   
+    materialWizard_ = new MaterialWizard(0,framework_);
+//$ END_MOD $  
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
