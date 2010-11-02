@@ -87,6 +87,8 @@ namespace Library
             ui->RegisterUniversalWidget("Library", lib_proxy);
 
             connect(ui_view, SIGNAL(DropEvent(QDropEvent *)), SLOT(DropEvent(QDropEvent *) ));
+            connect(ui_view, SIGNAL(DragEnterEvent(QDragEnterEvent *)), SLOT(HandleDragEnterEvent(QDragEnterEvent *)));
+            connect(ui_view, SIGNAL(DragMoveEvent(QDragMoveEvent *)), SLOT(HandleDragMoveEvent(QDragMoveEvent *)));
         }
     }
 
@@ -262,6 +264,18 @@ namespace Library
         }
 
         return false;
+    }
+
+    void LibraryModule::HandleDragEnterEvent(QDragEnterEvent *e)
+    {
+        if (e->mimeData()->hasUrls())
+            e->accept();
+    }
+
+    void LibraryModule::HandleDragMoveEvent(QDragMoveEvent *e)
+    {
+        if (e->mimeData()->hasUrls())
+            e->accept();
     }
 
     void LibraryModule::DropEvent(QDropEvent *drop_event)
