@@ -10,6 +10,13 @@ namespace OgreRenderer { class Renderer; }
 
 namespace AssImp
 {
+    struct MeshData
+    {
+        QString file_;
+        QString name_;
+        Matrix4 transform_;
+    };
+
     /*! Imports an Ogre mesh from various different model formats.
         The Ogre mesh is created to Ogre::MeshManager. This class
         doesn't create any entities or components, the caller is
@@ -24,6 +31,13 @@ namespace AssImp
         //! Returns true if filename has an extension that implies supported file format
         bool IsSupportedExtension(const QString& filename);
 
+        //! Imports mesh data from a file.
+        /*!
+            \param file path to file where to import meshes from
+            \param outMeshData Out string vector of mesh names
+        */
+        void GetMeshData(const QString& file, std::vector<MeshData> &outMeshData);
+
         //! Generates Ogre meshes from file
         /*!
             \param file path to file where to import meshes from
@@ -35,9 +49,10 @@ namespace AssImp
             \param data memory buffer where to import meshes from
             \param length memory buffer length
             \param name file format hint for the importer, looks for extension within the name
+            \param node name of the node to import
             \param outMeshNames Out string vector of generated Ogre mesh names
         */
-        void Import(const void *data, size_t length, const QString &name, std::vector<std::string> &outMeshNames);
+        void Import(const void *data, size_t length, const QString &name, const QString &nodeName, std::vector<std::string> &outMeshNames);
 
 	private:
         class AssImpLogStream : public Assimp::LogStream
@@ -49,8 +64,10 @@ namespace AssImp
             void write(const char* message);
         };
 
+        void GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
+            std::vector<MeshData> &outMeshNames);
         void ImportScene(const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames);
-        void ImportNode(const struct aiScene *scene, const struct aiNode *node, const QString& file, int nodeIdx, 
+        void ImportNode(const struct aiScene *scene, const struct aiNode *node, const QString& file, const QString &nodeName, 
             std::vector<std::string> &outMeshNames);
 
 		boost::shared_ptr<Assimp::Importer> importer_;
