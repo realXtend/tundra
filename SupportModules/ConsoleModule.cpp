@@ -68,6 +68,9 @@ namespace Console
         framework_->GetServiceManager()->UnregisterService(checked_static_cast< ConsoleManager* >(manager_.get())->GetCommandManager());
         SAFE_DELETE(ui_console_manager_);
         assert (manager_);
+        ConsoleManager *mgr = dynamic_cast<ConsoleManager*>(manager_.get());
+        if (mgr)
+            mgr->UnsubscribeLogListener();
         manager_.reset();
     }
 
