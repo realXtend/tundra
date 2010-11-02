@@ -79,15 +79,6 @@ void JavascriptModule::Initialize()
 void JavascriptModule::PostInitialize()
 {
     RegisterNaaliCoreMetaTypes();
-
-    // Add Naali Core API objcects as js services.
-    services_["input"] = GetFramework()->GetInput();
-    services_["ui"] = GetFramework()->UiService();
-    services_["audio"] = GetFramework()->Audio();
-    services_["frame"] = GetFramework()->GetFrame();
-    services_["console"] = GetFramework()->Console();
-    // Add framework itself as a service, so that we can connect to scene creation
-    services_["framework"] = GetFramework();
     
     RegisterConsoleCommand(Console::CreateCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
@@ -280,9 +271,14 @@ void JavascriptModule::UnloadStartupScripts()
 
 void JavascriptModule::PrepareScriptEngine(JavascriptEngine* engine)
 {
-    ServiceMap::iterator iter = services_.begin();
-    for(; iter != services_.end(); iter++)
-        engine->RegisterService(iter.value(), iter.key());
+    // Register framework's dynamic properties and the framework itself to the script engine
+    QList<QByteArray> properties = framework_->dynamicPropertyNames();
+    for (uint i = 0; i < properties.size(); ++i)
+    {
+        QString name = properties[i];
+        engine->RegisterService(framework_->property(name.toStdString().c_str()).value<QObject*>(), name);
+    }
+    engine->RegisterService(framework_, "framework");
 }
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
