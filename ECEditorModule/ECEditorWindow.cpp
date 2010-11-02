@@ -340,6 +340,7 @@ namespace ECEditor
 
     void ECEditorWindow::FunctionDialogFinished(int result)
     {
+        /*
         FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
         if (!dialog)
             return;
@@ -389,6 +390,7 @@ namespace ECEditor
                     dialog->SetReturnValueText(retValArg->ToString());
                 }
             }
+        */
     }
 
     void ECEditorWindow::HighlightEntities(IComponent *component)
@@ -493,7 +495,7 @@ namespace ECEditor
         QMenu *menu = new QMenu(this);
         menu->setAttribute(Qt::WA_DeleteOnClose);
         QAction *editXml = new QAction(tr("Edit XML..."), menu);
-        QAction *deleteEntity= new QAction(tr("Delete"), menu);
+        QAction *deleteEntity = new QAction(tr("Delete"), menu);
         QAction *addComponent = new QAction(tr("Add new component..."), menu);
         QAction *copyEntity = new QAction(tr("Copy"), menu);
         QAction *pasteEntity = new QAction(tr("Paste"), menu);

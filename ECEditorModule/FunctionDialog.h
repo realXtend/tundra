@@ -18,10 +18,10 @@
 
 class QGridLayout;
 class QLabel;
-class QWebView;
 class QTextEdit;
 
 class IArgumentType;
+class FunctionInvoker;
 
 /// Utility data structure for indentifying and handling of function signatures.
 struct FunctionMetaData
@@ -91,9 +91,6 @@ public:
     /// Returns name of the funtion in the most simplest form, f.ex. "setValue".
     QString Function() const;
 
-    /// Return argument type of the current functions return value.
-    IArgumentType *ReturnValueArgument() const;
-
     /// Returns list of arguments for the current function.
     /// Remember to call UpdateValueFromEditor() for each argument before using them.
     QList<IArgumentType *> Arguments() const;
@@ -116,14 +113,8 @@ private:
     /// Generates the targel label and list of available functions according to current object selection and function filter.
     void GenerateTargetLabelAndFunctions();
 
-    /// Creates list of argument types for the current function.
-    void CreateArgumentList();
-
-    /// Returns Argument type object for spesific parameter type name.
-    /** @param type Type name of the function parameter.
-        @return Argument type, or 0 if invalid type name was given.
-    */
-    IArgumentType *CreateArgumentType(const QString &type);
+    /// Function invoker object.
+    FunctionInvoker *invoker;
 
     /// Label showing the target objects.
     QLabel *targetsLabel;
@@ -131,8 +122,8 @@ private:
     /// Function combo box
     FunctionComboBox *functionComboBox;
 
-    /// Web view for doxygen documentation.
-    /*QWebView*/ QTextEdit *doxygenView;
+    /// View for doxygen documentation.
+    QTextEdit *doxygenView;
 
     /// Layout for dynamically created parameter editors.
     QGridLayout *editorLayout;
@@ -143,16 +134,13 @@ private:
     /// List of objects.
     QList<boost::weak_ptr<QObject> > objects;
 
-    /// For keeping track of created argument type objects.
-    QList<IArgumentType *> allocatedArguments;
+    /// Argument types for currently active function in the combo box.
+    QList<IArgumentType *> currentArguments;
 
-    /// Return value argument.
-    IArgumentType *returnValueArgument;
-
-    /// 
+    /// Filter consists access level and type of a method 
     typedef QPair<QMetaMethod::Access, QMetaMethod::MethodType> FunctionFilter;
 
-    /// 
+    /// Filter used for controlling which functions are visible.
     FunctionFilter functionFilter;
 
 private slots:

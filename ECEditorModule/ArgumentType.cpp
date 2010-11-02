@@ -59,6 +59,7 @@ template<> QString ArgumentType<QStringList>::ToString() const
     return str;
 }
 
+// std::string
 template<> QWidget *ArgumentType<std::string>::CreateEditor(QWidget *parent)
 {
     editor = new QLineEdit(parent);
@@ -80,6 +81,11 @@ template<> QString ArgumentType<std::string>::ToString() const
 template<> QVariant ArgumentType<std::string>::ToQVariant() const
 {
     return QVariant(value.c_str());
+}
+
+template<> void ArgumentType<std::string>::FromQVariant(const QVariant &var)
+{
+    value = var.toString().toStdString();
 }
 
 // Boolean
