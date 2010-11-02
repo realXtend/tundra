@@ -304,7 +304,7 @@ void EC_HoveringText::Redraw()
             texPtr = Ogre::TextureManager::getSingleton().getByName(textureName_);
             assert(!texPtr.isNull());
             // See if size/format changed, have to delete/recreate internal resources
-            if (img.width() != texPtr->getWidth() || img.height() != texPtr->getHeight())
+            if (img.width() != (int)texPtr->getWidth() || img.height() != (int)texPtr->getHeight())
             {
                 texPtr->freeInternalResources();
                 texPtr->setWidth(img.width());

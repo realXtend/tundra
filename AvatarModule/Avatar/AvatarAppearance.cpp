@@ -482,8 +482,9 @@ namespace Avatar
     void AvatarAppearance::ResetBones(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        UNREFERENCED_PARAM(appearance);
         EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
-                
+
         Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
             return;

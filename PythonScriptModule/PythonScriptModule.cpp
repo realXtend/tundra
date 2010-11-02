@@ -360,7 +360,6 @@ namespace PythonScript
         {
             using namespace ProtocolUtilities;
             NetworkEventInboundData *event_data = static_cast<NetworkEventInboundData *>(data);
-            NetMsgID msgID = event_data->messageID;
             NetInMessage *msg = event_data->message;
             const NetMessageInfo *info = event_data->message->GetMessageInfo();
             //std::vector<ProtocolUtilities::NetMessageBlock> vec = info->blocks;
@@ -649,7 +648,7 @@ namespace PythonScript
             return affected_entitys_;
         }
 
-        Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
+//        Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
         /* was wrong way, how did this work? if (!worldLogic)
         {
           //PyErr_SetString(PyExc_RuntimeError, "Could not get world logic.");
@@ -931,8 +930,6 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 
     RexUUID ruuid = RexUUID();
     ruuid.FromString(std::string(uuidstr));
-
-    PythonScriptModule *owner = PythonScriptModule::GetInstance();
 
     RexLogic::RexLogicModule *rexlogic_ = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic_)

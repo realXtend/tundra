@@ -159,8 +159,6 @@ namespace OgreRenderer
     {
         RemoveLogListener();
 
-        NaaliMainWindow *main_window_ = framework_->Ui()->MainWindow();
-
         if ((scenemanager_) && (scenemanager_->getRenderQueue()))
             scenemanager_->getRenderQueue()->setRenderableListener(0);
 
@@ -526,6 +524,7 @@ namespace OgreRenderer
         }
 
         bool applyFPSLimit = true;
+        UNREFERENCED_PARAM(applyFPSLimit);
 
         NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
 
@@ -1168,7 +1167,7 @@ namespace OgreRenderer
             return QPixmap::fromImage(captured_pixmap);
 
         // Resize rendering texture if needed
-        if (image_rendering->getWidth() != window_width || image_rendering->getHeight() != window_height)
+        if ((int)image_rendering->getWidth() != window_width || (int)image_rendering->getHeight() != window_height)
         {
             ResetImageRendering();
             PrepareImageRendering(window_width, window_height);

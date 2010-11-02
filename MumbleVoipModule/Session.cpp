@@ -437,8 +437,8 @@ namespace MumbleVoip
 
     void Session::SendRecordedAudio()
     {
-		if (!connection_)
-			return;
+        if (!connection_)
+            return;
 
         Vector3df avatar_position;
         Vector3df avatar_direction;
@@ -456,6 +456,7 @@ namespace MumbleVoip
             int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
             PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
             int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
+            UNREFERENCED_PARAM(bytes);
             ApplyMicrophoneLevel(frame);
             UpdateSpeakerActivity(frame);
             assert(bytes_to_read == bytes);
@@ -478,11 +479,11 @@ namespace MumbleVoip
 
     void Session::PlaybackReceivedAudio()
     {
-		if (!connection_)
-			return;
+        if (!connection_)
+            return;
 
         if (!audio_receiving_enabled_)
-			return;
+            return;
 
         for(;;) // until we have 'em all
         {
@@ -490,17 +491,17 @@ namespace MumbleVoip
             if (packet.second == 0)
                 break; // there was nothing to play
 
-			bool source_muted = false;
-			foreach(Participant* participant, participants_)
-			{
-				if (participant->UserPtr() == packet.first && participant->IsMuted())
-				{
-					source_muted = true;
-					break;
-				}
-			}
-			if (!source_muted)
-				PlaybackAudioFrame(packet.first, packet.second);
+            bool source_muted = false;
+            foreach(Participant* participant, participants_)
+            {
+                if (participant->UserPtr() == packet.first && participant->IsMuted())
+                {
+                    source_muted = true;
+                    break;
+                }
+            }
+            if (!source_muted)
+                PlaybackAudioFrame(packet.first, packet.second);
             else
                 delete packet.second;
         }

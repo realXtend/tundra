@@ -240,6 +240,7 @@ Vector3df EC_OgreEnvironment::GetSunDirection() const
     {
         float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
         float relDayTime = fmod(julDay, 1);
+        UNREFERENCED_PARAM(relDayTime);
         Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
         return Vector3df(sunDir.x, sunDir.y, sunDir.z);
     }
@@ -288,7 +289,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         return;
     RendererPtr renderer = renderer_.lock();
     Ogre::Camera *camera = renderer->GetCurrentCamera();
-    Ogre::Viewport *viewport = renderer->GetViewport();
+//    Ogre::Viewport *viewport = renderer->GetViewport();
     Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
         
 #ifdef CAELUM
@@ -336,7 +337,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
     hydraxSystem_->setSunPosition(sunPos);
 #endif
-    Ogre::Entity* water = 0;
+//    Ogre::Entity* water = 0;
     
     cameraFarClip_ = renderer->GetViewDistance();
     

@@ -168,7 +168,7 @@ namespace Avatar
             RexUUID fullid = msg.ReadUUID();
             msg.SkipToNextVariable();        ///\todo Unhandled inbound variable 'CRC' U#"
             uint8_t pcode = msg.ReadU8();
-
+            UNREFERENCED_PARAM(pcode);
             bool existing_avatar = false;
             Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid, fullid, &existing_avatar);
             if (!entity)
@@ -487,7 +487,7 @@ namespace Avatar
         {
             RexUUID animid = msg.ReadUUID();
             s32 animsequence = msg.ReadS32();
-
+            UNREFERENCED_PARAM(animsequence);
             animations_to_start.push_back(animid);
             
             if(avatar_states_.find(animid) != avatar_states_.end())

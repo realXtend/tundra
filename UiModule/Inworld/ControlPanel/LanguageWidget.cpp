@@ -25,6 +25,7 @@ namespace CoreUi
         connect(settings_widget, SIGNAL(SaveSettingsClicked()), this, SLOT(ExportSettings()));
         connect(settings_widget, SIGNAL(CancelClicked()), this, SLOT(CancelClicked()));
         QVBoxLayout *layout = this->findChild<QVBoxLayout *>("verticalLayout");
+        UNREFERENCED_PARAM(layout);
         QListWidget* lstWidget = this->findChild<QListWidget* >("listWidget");
         
    

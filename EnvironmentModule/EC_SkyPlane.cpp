@@ -73,9 +73,11 @@ namespace Environment
             
             QString currentMaterial = materialAttr.Get();
             float scale = scaleAttr.Get();
+            UNREFERENCED_PARAM(scale);
             float tiling = tilingAttr.Get();
+            UNREFERENCED_PARAM(tiling);
             bool drawFirst = drawFirstAttr.Get();
-                
+            UNREFERENCED_PARAM(drawFirst);
             if ( xSegmentsAttr.Get() == 0 || ySegmentsAttr.Get() == 0)
             {
                  LogError("Could not set SkyPlane, because x-segments or y-segments values very zero");

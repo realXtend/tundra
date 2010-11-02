@@ -1,12 +1,17 @@
-#include "Input.h"
+// For conditions of distribution and use, see copyright notice in license.txt
 
-#include <sstream>
+#include "Input.h"
 
 #include "ServiceManager.h"
 #include "InputEvents.h"
 #include "Framework.h"
 #include "EventManager.h"
 #include "RenderServiceInterface.h"
+#include "NaaliUi.h"
+#include "NaaliGraphicsView.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 
 #include <QGraphicsItem>
 #include <QGraphicsView>
@@ -16,11 +21,7 @@
 
 #include <boost/make_shared.hpp>
 
-#include "NaaliUi.h"
-#include "NaaliGraphicsView.h"
-#include "LoggingFunctions.h"
-
-DEFINE_POCO_LOGGING_FUNCTIONS("Input")
+#include <sstream>
 
 Input::Input(Foundation::Framework *framework_)
 :lastMouseX(0),
@@ -52,7 +53,7 @@ framework(framework_)
 
     inputCategory = eventManager->RegisterEventCategory("SceneInput");
 
-	eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyPressed, "KeyPressed");
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyPressed, "KeyPressed");
     eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyReleased, "KeyReleased");
 
     eventManager->RegisterEvent(inputCategory, QtInputEvents::MousePressed, "MousePressed");
@@ -237,21 +238,21 @@ void Input::SceneReleaseMouseButtons()
         if ((heldMouseButtons & i) != 0)
         {
             // Just like with key release events, we send a very bare-bone release message here as well.
-		    MouseEvent mouseEvent;
-		    mouseEvent.eventType = MouseEvent::MouseReleased;
+            MouseEvent mouseEvent;
+            mouseEvent.eventType = MouseEvent::MouseReleased;
             mouseEvent.button = (MouseEvent::MouseButton)i;
             mouseEvent.x = lastMouseX;
-		    mouseEvent.y = lastMouseY;
-		    mouseEvent.z = 0;
-		    mouseEvent.relativeX = 0;
-		    mouseEvent.relativeY = 0;
+            mouseEvent.y = lastMouseY;
+            mouseEvent.z = 0;
+            mouseEvent.relativeX = 0;
+            mouseEvent.relativeY = 0;
 
-		    mouseEvent.globalX = 0;
-		    mouseEvent.globalY = 0;
+            mouseEvent.globalX = 0;
+            mouseEvent.globalY = 0;
 
-		    mouseEvent.otherButtons = 0;
+            mouseEvent.otherButtons = 0;
 
-		    eventManager->SendEvent(inputCategory, QtInputEvents::MouseReleased, &mouseEvent);
+            eventManager->SendEvent(inputCategory, QtInputEvents::MouseReleased, &mouseEvent);
         }
 }
 
@@ -301,9 +302,9 @@ void Input::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Ke
 
     if (heldKeys.find(keyCode) != heldKeys.end())
     {
-		KeyEvent keyEvent;
-		keyEvent.keyCode = keyCode;
-		keyEvent.eventType = KeyEvent::KeyReleased;
+        KeyEvent keyEvent;
+        keyEvent.keyCode = keyCode;
+        keyEvent.eventType = KeyEvent::KeyReleased;
 
         eventManager->SendEvent(inputCategory, QtInputEvents::KeyReleased, &keyEvent);
     }
@@ -394,7 +395,7 @@ void Input::TriggerMouseEvent(MouseEvent &mouse)
             eventManager->SendEvent(inputCategory, QtInputEvents::MouseMove, &mouse);
             break;
         case MouseEvent::MouseScroll:
-    		eventManager->SendEvent(inputCategory, QtInputEvents::MouseScroll, &mouse);
+            eventManager->SendEvent(inputCategory, QtInputEvents::MouseScroll, &mouse);
             break;
         case MouseEvent::MouseDoubleClicked:
             eventManager->SendEvent(inputCategory, QtInputEvents::MouseDoubleClicked, &mouse);
@@ -489,17 +490,17 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
     switch(event->type())
     {
     case QEvent::KeyPress:
-	{
+    {
         QKeyEvent *e = static_cast<QKeyEvent*>(event);
 
-		KeyEvent keyEvent;
-		keyEvent.keyCode = StripModifiersFromKey(e->key());
+        KeyEvent keyEvent;
+        keyEvent.keyCode = StripModifiersFromKey(e->key());
         keyEvent.keyPressCount = 1;
-		keyEvent.modifiers = e->modifiers();
-		keyEvent.text = e->text();
+        keyEvent.modifiers = e->modifiers();
+        keyEvent.text = e->text();
         keyEvent.sequence = QKeySequence(e->key() | e->modifiers()); ///\todo Track multi-key sequences.
-		keyEvent.eventType = KeyEvent::KeyPressed;
-//		keyEvent.otherHeldKeys = heldKeys; ///\todo
+        keyEvent.eventType = KeyEvent::KeyPressed;
+//        keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
         current_modifiers_ = e->modifiers(); // local tracking for mouse events
@@ -533,7 +534,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         TriggerKeyEvent(keyEvent);
 
         return keyEvent.handled; // If we got true here, need to suppress this event from going to Qt.
-	}
+    }
 
     case QEvent::KeyRelease:
     {
@@ -551,22 +552,22 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 
         HeldKeysMap::iterator existingKey = heldKeys.find(StripModifiersFromKey(e->key()));
 
-		// If we received a release on an unknown key we haven't received a press for, don't pass it to the scene,
+        // If we received a release on an unknown key we haven't received a press for, don't pass it to the scene,
         // since we didn't pass the press to the scene either (or we've already passed the release before, so don't 
         // pass duplicate releases).
-		if (existingKey == heldKeys.end())
-			return false;
+        if (existingKey == heldKeys.end())
+            return false;
 
-		KeyEvent keyEvent;
-		keyEvent.keyCode = StripModifiersFromKey(e->key());
-		keyEvent.keyPressCount = existingKey->second.keyPressCount;
-		keyEvent.modifiers = e->modifiers();
-		keyEvent.text = e->text();
-		keyEvent.eventType = KeyEvent::KeyReleased;
-//		keyEvent.otherHeldKeys = heldKeys; ///\todo
+        KeyEvent keyEvent;
+        keyEvent.keyCode = StripModifiersFromKey(e->key());
+        keyEvent.keyPressCount = existingKey->second.keyPressCount;
+        keyEvent.modifiers = e->modifiers();
+        keyEvent.text = e->text();
+        keyEvent.eventType = KeyEvent::KeyReleased;
+//        keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
-		heldKeys.erase(existingKey);
+        heldKeys.erase(existingKey);
         current_modifiers_ = e->modifiers(); // local tracking for mouse events
 
         // Queue up the release event for the polling API, independent of whether any Qt widget has keyboard focus.
@@ -586,7 +587,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
             return false;
 
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
-//		QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+//        QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
 /*
         // Update the flag that tracks whether the inworld scene or QGraphicsScene is grabbing mouse movement.
         if (event->type() == QEvent::MouseButtonPress)
@@ -616,7 +617,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         // in the QGraphicsView client area, so we need to remap them.
         QPoint mousePos = MapPointToMainGraphicsView(obj, e->pos());
 
-		MouseEvent mouseEvent;
+        MouseEvent mouseEvent;
         mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         if ( !doubleClickDetected)
@@ -628,21 +629,21 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         }
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
         mouseEvent.x = mousePos.x();
-		mouseEvent.y = mousePos.y();
-		mouseEvent.z = 0;
-		mouseEvent.relativeX = mouseEvent.x - lastMouseX;
-		mouseEvent.relativeY = mouseEvent.y - lastMouseY;
+        mouseEvent.y = mousePos.y();
+        mouseEvent.z = 0;
+        mouseEvent.relativeX = mouseEvent.x - lastMouseX;
+        mouseEvent.relativeY = mouseEvent.y - lastMouseY;
         mouseEvent.modifiers = current_modifiers_;
 
         lastMouseX = mouseEvent.x;
         lastMouseY = mouseEvent.y;
 
-		mouseEvent.globalX = e->globalX();
-		mouseEvent.globalY = e->globalY();
+        mouseEvent.globalX = e->globalX();
+        mouseEvent.globalY = e->globalY();
 
-		mouseEvent.otherButtons = e->buttons();
+        mouseEvent.otherButtons = e->buttons();
 
-//		mouseEvent.heldKeys = heldKeys; ///\todo
+//        mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         // If the mouse press is going to the inworld scene, clear keyboard focus from the QGraphicsScene widget (if any had it) so key events also go to inworld scene.
@@ -654,7 +655,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         return mouseEvent.handled;
     }
 
-	case QEvent::MouseMove:
+    case QEvent::MouseMove:
     {
         // If a mouse button is held down, we get the mouse drag events from the viewport widget.
         // If a mouse button is not held down, the application main window will get the events.
@@ -662,24 +663,25 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
 
-		//QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        //QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
         // If there is a graphicsItem under the mouse, don't pass the move message to the inworld scene, unless the inworld scene has captured it.
 //        if (mouseCursorVisible)
-//		    if ((itemUnderMouse && sceneMouseCapture != SceneMouseCapture) || sceneMouseCapture == QtMouseCapture)
-//			    return false;
+//            if ((itemUnderMouse && sceneMouseCapture != SceneMouseCapture) || sceneMouseCapture == QtMouseCapture)
+//                return false;
 
 //        if (mouseCursorVisible && itemUnderMouse)
 //            return false;
 
         MouseEvent mouseEvent;
-		mouseEvent.eventType = MouseEvent::MouseMove;
-		mouseEvent.button = (MouseEvent::MouseButton)e->button();
+        mouseEvent.eventType = MouseEvent::MouseMove;
+        mouseEvent.button = (MouseEvent::MouseButton)e->button();
         mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         ///\todo Set whether the previous press originated over a Qt widget or scene.
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
 
         QWidget *sender = qobject_cast<QWidget*>(obj);
         assert(sender);
+        UNREFERENCED_PARAM(sender);
 
         // The mouse coordinates we receive can come from different widgets, and we are interested only in the coordinates
         // in the QGraphicsView client area, so we need to remap them.
@@ -687,8 +689,8 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 
         if (mouseCursorVisible)
         {
-    		mouseEvent.x = mousePos.x();
-	    	mouseEvent.y = mousePos.y();
+            mouseEvent.x = mousePos.x();
+            mouseEvent.y = mousePos.y();
         }
         else
         {
@@ -697,18 +699,18 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
             mouseEvent.x = mainView->size().width()/2;
             mouseEvent.y = mainView->size().height()/2;
         }
-		mouseEvent.z = 0;
-		mouseEvent.relativeX = mousePos.x() - lastMouseX;
-		mouseEvent.relativeY = mousePos.y() - lastMouseY;
-		
-		// If there wasn't any change to the mouse relative coords in FPS mode, ignore this event.
-		if (!mouseCursorVisible && mouseEvent.relativeX == 0 && mouseEvent.relativeY == 0)
-		    return true;
-		    
-		mouseEvent.globalX = e->globalX(); // Note that these may "jitter" when mouse is in relative movement mode.
-		mouseEvent.globalY = e->globalY();
-		mouseEvent.otherButtons = e->buttons();
-//		mouseEvent.heldKeys = heldKeys; ///\todo
+        mouseEvent.z = 0;
+        mouseEvent.relativeX = mousePos.x() - lastMouseX;
+        mouseEvent.relativeY = mousePos.y() - lastMouseY;
+        
+        // If there wasn't any change to the mouse relative coords in FPS mode, ignore this event.
+        if (!mouseCursorVisible && mouseEvent.relativeX == 0 && mouseEvent.relativeY == 0)
+            return true;
+            
+        mouseEvent.globalX = e->globalX(); // Note that these may "jitter" when mouse is in relative movement mode.
+        mouseEvent.globalY = e->globalY();
+        mouseEvent.otherButtons = e->buttons();
+//        mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         // Save the absolute coordinates to be able to compute the proper relative movement values in the next
@@ -735,28 +737,28 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
             return false;
 
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
-//		QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
-//		if (itemUnderMouse)
-//			return false;
+//        QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+//        if (itemUnderMouse)
+//            return false;
 
-		MouseEvent mouseEvent;
-		mouseEvent.eventType = MouseEvent::MouseScroll;
+        MouseEvent mouseEvent;
+        mouseEvent.eventType = MouseEvent::MouseScroll;
         mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         mouseEvent.button = MouseEvent::NoButton;
-		mouseEvent.otherButtons = e->buttons();
-		mouseEvent.x = e->x();
-		mouseEvent.y = e->y();
-		mouseEvent.z = 0; // Mouse wheel does not have an absolute z position, only relative.
-		mouseEvent.relativeX = 0;
-		mouseEvent.relativeY = 0;
-		mouseEvent.relativeZ = e->delta();
+        mouseEvent.otherButtons = e->buttons();
+        mouseEvent.x = e->x();
+        mouseEvent.y = e->y();
+        mouseEvent.z = 0; // Mouse wheel does not have an absolute z position, only relative.
+        mouseEvent.relativeX = 0;
+        mouseEvent.relativeY = 0;
+        mouseEvent.relativeZ = e->delta();
         mouseEvent.globalX = e->globalX();
         mouseEvent.globalY = e->globalY();
 
-		mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
+        mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
 
-//		mouseEvent.heldKeys = heldKeys; ///\todo
+//        mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         TriggerMouseEvent(mouseEvent);
@@ -764,7 +766,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         // Always suppress the wheel events from going to the QGraphicsView, or otherwise the wheel will start to
         // scroll the main QGraphicsView UI windows vertically.
         return true;
-	}
+    }
 
     } // ~switch
 

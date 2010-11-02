@@ -250,6 +250,7 @@ namespace OgreRenderer
         {
             // This request tag is unnecessary... as the asset should be loaded immediately if it exists
             request_tag_t source_tag = asset_service->RequestAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
+            UNREFERENCED_PARAM(source_tag);
         }
         
         // See if already have in the cache with a superior (non-J2K) format

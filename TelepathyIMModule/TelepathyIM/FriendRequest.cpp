@@ -54,6 +54,7 @@ namespace TelepathyIM
     {
         QString message = ""; // we don't want to send any particular message at this point
         Tp::PendingOperation* p = tp_contact_->removePresencePublication(message);
+        UNREFERENCED_PARAM(p);
         //! todo connect signal 
         state_ = STATE_REJECTED;
     }

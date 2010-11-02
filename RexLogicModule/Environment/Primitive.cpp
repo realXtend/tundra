@@ -146,6 +146,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         RexUUID fullid = msg->ReadUUID();
         msg->SkipToNextVariable();        // CRC U32
         uint8_t pcode = msg->ReadU8();
+        UNREFERENCED_PARAM(pcode);
         bool was_created;
 
         Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid, &was_created);
@@ -764,8 +765,6 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
 
 void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freedata)
 {
-    int idx = 0;
-
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
         return;
@@ -1214,6 +1213,8 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
     {
         uint16_t param_type = ReadUInt16FromBytes(extra_params_data, idx);
         uint param_size = ReadSInt32FromBytes(extra_params_data, idx);
+        UNREFERENCED_PARAM(param_size);
+
         switch (param_type)
         {
         case 32: // light
@@ -1225,6 +1226,7 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
             Color color = ReadColorFromBytes(extra_params_data, idx);
             float radius = ReadFloatFromBytes(extra_params_data, idx);
             float cutoff = ReadFloatFromBytes(extra_params_data, idx); //this seems not be used anywhere.
+            UNREFERENCED_PARAM(cutoff);
             float falloff = ReadFloatFromBytes(extra_params_data, idx);
             
             AttachLightComponent(entity, color, radius, falloff);

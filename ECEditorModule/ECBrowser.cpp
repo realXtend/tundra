@@ -247,9 +247,9 @@ namespace ECEditor
                             return false;
 
                         std::vector<QVariant> variants = attribute->Get();
-                        if(variants.size() > index)
+                        if ((int)variants.size() > index)
                             variants[index] = asset_id;
-                        else if(variants.size() == index)
+                        else if((int)variants.size() == index)
                             variants.push_back(asset_id);
                         else
                             return false;

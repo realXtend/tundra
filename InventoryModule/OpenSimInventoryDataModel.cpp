@@ -1059,8 +1059,7 @@ void OpenSimInventoryDataModel::CreateRexInventoryFolders()
 
         // Check out if this inventory category exists. If not, create id.
         if (!GetFirstChildFolderByName(cat_name))
-            AbstractInventoryItem *newFolder = GetOrCreateNewFolder(
-                RexUUID::CreateRandom().ToQString(), *GetMyInventoryFolder(), cat_name);
+            GetOrCreateNewFolder(RexUUID::CreateRandom().ToQString(), *GetMyInventoryFolder(), cat_name);
     }
 }
 
