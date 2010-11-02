@@ -21,6 +21,7 @@ namespace ECEditor
 }
 
 struct InvokeItem;
+class IArgumentType;
 
 class QWidget;
 class QFileDialog;
