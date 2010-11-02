@@ -147,6 +147,9 @@
 #ifdef EC_Movable_ENABLED
 #include "EC_Movable.h"
 #endif
+#ifdef EC_VideoSource_ENABLED
+#include "EC_VideoSource.h"
+#endif
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -245,6 +248,9 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_Movable);
+#endif
+#ifdef EC_VideoSource_ENABLED
+    DECLARE_MODULE_EC(EC_VideoSource);
 #endif
 }
 
