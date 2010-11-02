@@ -66,6 +66,7 @@ namespace MumbleVoip
         Settings* settings_;
         QWidget* microphone_adjustment_widget_;
         QList<EC_VoiceChannel*> ec_voice_channels_;
+        QMap<EC_VoiceChannel*, QString> channel_names_;
         QSignalMapper* signal_mapper_;
         ProtocolUtilities::WorldStreamPtr world_stream_;
 
