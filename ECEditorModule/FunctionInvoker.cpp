@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   FuntionInvoker.cpp
- *  @brief  
+ *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality
+ *          with more user-friendly and script-accessible API
  */
 
 #include "StableHeaders.h"
@@ -60,7 +61,7 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &function, QVariant *re
     {
         LogDebug(std::string("The function call threw an Exception \"") + std::string(e.what()) + std::string("\"!"));
         if (errorMsg)
-            errorMsg->append("The function call threw a std::exception \"" + QString(e.what()) + "\"!");
+            errorMsg->append("The function call threw an Exception \"" + QString(e.what()) + "\"!");
     }
     catch(const std::exception &e)
     {

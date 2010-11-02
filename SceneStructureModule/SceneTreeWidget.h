@@ -181,7 +181,7 @@ private:
     QList<InvokeItem> invokeHistory;
 
 private slots:
-    /// Opens selected entities in EC editor window. An exisiting editor window is used if possible.
+    /// Opens selected entities in EC editor window. An existing editor window is used if possible.
     void Edit();
 
     /// Opens selected entities in EC editor window. New editor window is created each time.
