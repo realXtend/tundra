@@ -896,10 +896,11 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
     ii.mruOrder = mruItem ? mruItem->mruOrder + 1 : 0;
 
     for(int i = 0; i < params.size(); ++i)
-        //ii.parameters.push_back(qMakePair(QString("QString"), QVariant(params[i])));
         ii.parameters.push_back(QVariant(params[i]));
 
-    invokeHistory.push_front(ii);
+    QList<InvokeItem>::const_iterator it = qFind(invokeHistory, ii);
+    if (it == invokeHistory.end())
+        invokeHistory.push_front(ii);
 }
 
 void SceneTreeWidget::OpenFunctionDialog()
@@ -972,11 +973,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
                     objNameWithId.append('(' + c->Name() + ')');
             }
 
-            // Also start crafting InvokeItem struct while we're at it.
-            InvokeItem iItem;
-            iItem.type = InvokeItem::Function;
-            iItem.parameters = params;
-
+            // Invoke function.
             QString errorMsg;
             QVariant ret;
             FunctionInvoker invoker;
@@ -988,12 +985,18 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
                 dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
 
             // Save invoke item
+            InvokeItem ii;
+            ii.type = InvokeItem::Function;
+            ii.parameters = params;
             InvokeItem *mruItem = FindMruItem();
-            iItem.name = dialog->Function();
-            iItem.returnType = (ret.type() == QVariant::Invalid) ? QString("void") : QString(ret.typeName());
-            iItem.objectName = objName;
-            iItem.mruOrder = mruItem ? mruItem->mruOrder + 1 : 0;
-            invokeHistory.push_front(iItem);
+            ii.name = dialog->Function();
+            ii.returnType = (ret.type() == QVariant::Invalid) ? QString("void") : QString(ret.typeName());
+            ii.objectName = objName;
+            ii.mruOrder = mruItem ? mruItem->mruOrder + 1 : 0;
+
+            QList<InvokeItem>::const_iterator it = qFind(invokeHistory, ii);
+            if (it == invokeHistory.end())
+                invokeHistory.push_front(ii);
         }
 }
 

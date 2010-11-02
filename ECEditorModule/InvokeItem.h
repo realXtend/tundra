@@ -25,6 +25,15 @@ struct ECEDITOR_MODULE_API InvokeItem
     */
     explicit InvokeItem(const std::string &settingStr);
 
+    /// Equality operator. Compares items by objectName, name and parameters.
+    bool operator ==(const InvokeItem &rhs) const
+    {
+        return objectName == rhs.objectName && name == rhs.name && parameters == rhs.parameters;
+    }
+
+    /// Inequality operator. Compares items by objectName, name and parameters.
+    bool operator !=(const InvokeItem &rhs) const { return !(*this == rhs); }
+
     /// Less than operator. Compares items by the MRU order number.
     bool operator <(const InvokeItem &rhs) const { return mruOrder < rhs.mruOrder; }
 
