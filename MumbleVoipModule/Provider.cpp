@@ -203,6 +203,7 @@ namespace MumbleVoip
         }
 
         ec_voice_channels_.append(channel);
+        channel_names_[channel] = channel->getchannelname();
         if (!session_ || session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
             CreateSession();
        
@@ -234,10 +235,11 @@ namespace MumbleVoip
         {
             if (channel == obj)
             {
-                qDebug() << " --- EC_VoiceChannnel DESTROYED: " << channel->getchannelname();
+                QString channel_name = channel_names_[channel];
                 if (session_)
-                    session_->RemoveChannel(channel->getchannelname());
-                ec_voice_channels_.removeOne(channel);
+                    session_->RemoveChannel(channel_name);
+                ec_voice_channels_.removeAll(channel);
+                channel_names_.remove(channel);
                 return;
             }
         }
@@ -274,6 +276,7 @@ namespace MumbleVoip
                 server_info.channel_name = channel->getchannelname();
                 server_info.user_name = GetUsername();
 
+                channel_names_[channel] = channel->getchannelname();
                 session_->AddChannel(channel->getchannelname(), server_info);
             }
             if (!channel->getenabled())
