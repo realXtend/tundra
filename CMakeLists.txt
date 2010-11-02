@@ -31,6 +31,14 @@ macro(LinkEntityComponent sourceFolder componentName)
    endif()
 endmacro()
 
+macro(GetOpenAssetImport)
+	if (OPENASSETIMPORT)
+		use_modules(OpenAssetImport)
+		link_modules(OpenAssetImport)
+		add_definitions(-DASSIMP_ENABLED)
+	endif()
+endmacro()
+
 # Adds the given folder_name into the source files of the current project. Use this macro when your module contains .cpp and .h files in several subdirectories.
 macro(AddSourceFolder folder_name)
     file(GLOB H_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.h)

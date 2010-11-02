@@ -192,7 +192,13 @@ public slots:
 
     //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
     void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
-
+    
+    //! Translates the placeable. Modifies the transform attribute using Default changetype.
+    void Translate(const Vector3df& translation);
+    
+    //! Translates the placeable relative to orientation. Modifies the transform attribute using Default changetype.
+    void TranslateRelative(const Vector3df& translation);
+    
     /// Shows the Entity
     void Show();
 
