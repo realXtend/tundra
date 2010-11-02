@@ -125,6 +125,8 @@ namespace Library
         void AssignMaterials();
 
     private slots:
+        void HandleDragEnterEvent(QDragEnterEvent *e);
+        void HandleDragMoveEvent(QDragMoveEvent *e);
         void DropEvent(QDropEvent *drop_event);
         void EntityCreated(Scene::Entity* entity, AttributeChange::Type change);
 
