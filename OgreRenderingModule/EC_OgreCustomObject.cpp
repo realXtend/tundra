@@ -25,8 +25,7 @@ EC_OgreCustomObject::~EC_OgreCustomObject()
 {
     if (renderer_.expired())
         return;
-        
-    Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+
     DestroyEntity();
 }
 

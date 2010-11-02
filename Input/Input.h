@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_Core_Input_h
 #define incl_Core_Input_h
 
@@ -223,29 +225,29 @@ private:
     /// An internal queue where all new Qt keypress events are stored before they are advertised for callers of IsKeyPressed().
     /// This queue is used to avoid key presses being missed between Update() cycles, i.e. so that the module Updates
     /// may get called in any order.
-	std::vector<Qt::Key> newKeysPressedQueue;
+    std::vector<Qt::Key> newKeysPressedQueue;
 
     /// An internal queue where all new Qt keyrelease events are stored before they are advertised for callers of IsKeyReleased().
     /// This queue is used to avoid key releases being missed between Update() cycles, i.e. so that the module Updates
     /// may get called in any order.
-	std::vector<Qt::Key> newKeysReleasedQueue;
+    std::vector<Qt::Key> newKeysReleasedQueue;
 
     /// A bitmask of the currently held down mouse buttons.
-	unsigned long heldMouseButtons;
+    unsigned long heldMouseButtons;
     /// A bitmask for the mouse buttons pressed down this frame.
-	unsigned long pressedMouseButtons;
+    unsigned long pressedMouseButtons;
     /// A bitmask for the mouse buttons released this frame.
-	unsigned long releasedMouseButtons;
+    unsigned long releasedMouseButtons;
 
     /// Keep track of key modifiers to be sent with mouse pressed/released
     unsigned long current_modifiers_;
 
     // The following variables double-buffer the mouse button presses and releases, so that a module will not lose these
     // events depending on what order the module Updates are called.
-	unsigned long newMouseButtonsPressedQueue;
-	unsigned long newMouseButtonsReleasedQueue;
+    unsigned long newMouseButtonsPressedQueue;
+    unsigned long newMouseButtonsReleasedQueue;
 
-	Foundation::EventManagerPtr eventManager;
+    Foundation::EventManagerPtr eventManager;
 
     QGraphicsView *mainView;
     QWidget *mainWindow;

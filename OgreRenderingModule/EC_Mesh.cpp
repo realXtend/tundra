@@ -957,6 +957,7 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
     if (res->GetType() != OgreRenderer::OgreMeshResource::GetTypeStatic())
         return false;
     OgreRenderer::OgreMeshResource* meshResource = checked_static_cast<OgreRenderer::OgreMeshResource*>(res.get());
+    UNREFERENCED_PARAM(meshResource);
     //! @todo for some reason compiler will have linking error if we try to call ResourceInterface's GetId inline method
     //! remember to track the cause of this when I some extra time.
     SetMesh(meshResourceId.Get());

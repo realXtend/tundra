@@ -71,25 +71,22 @@ namespace Environment
        // Does not own
 #ifdef CAELUM
        caelumSystem_ = 0;
-#endif    
+#endif
     }
-    
-    
+
     void EC_EnvironmentLight::UpdateSun()
     {
-      
         if (renderer_.lock() != 0) 
         {
             Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
             assert(sceneMgr);
+            UNREFERENCED_PARAM(sceneMgr);
 #ifdef CAELUM 
             if ( caelumSystem_ != 0)
             {
                 Caelum::BaseSkyLight* sun = caelumSystem_->getSun();
                 if ( sun != 0)
-                {
                     sun->setLightColour(OgreRenderer::ToOgreColor(sunColorAttr.Get()));
-                }
             }
 #else
            if (sunLight_ != 0)
@@ -103,8 +100,6 @@ namespace Environment
 #endif
            
         }
-
-      
     }
 
     void EC_EnvironmentLight::RemoveSun()
@@ -177,22 +172,18 @@ namespace Environment
           }
 
 #ifdef CAELUM
-
         if (renderer_.expired())
             return;
-        
+
         if ( caelumSystem_ == 0)
             return;
-     
+
         OgreRenderer::RendererPtr renderer = renderer_.lock();
         Ogre::Camera *camera = renderer->GetCurrentCamera();
-        Ogre::Viewport *viewport = renderer->GetViewport();
         Ogre::SceneManager *sceneManager = renderer->GetSceneManager();
-        
-        
+
         float sunColorMultiplier = 1.5f;
         float MAX_SUNLIGHT_MULTIPLIER = 1.5f;
-
 
         // Set sunlight attenuation using diffuse multiplier.
         // Seems to be working ok, but feel free to fix if you find better logic and/or values.
@@ -203,7 +194,6 @@ namespace Environment
         Ogre::Light* moon = caelumSystem_->getMoon()->getMainLight();
 
         float sunDirZaxis = caelumSystem_->getSun()->getMainLight()->getDirection().z;
-        
         if (sunDirZaxis > 0)
         {
             sunColorMultiplier -= 0.005f;
@@ -216,8 +206,7 @@ namespace Environment
             if (sunColorMultiplier >= MAX_SUNLIGHT_MULTIPLIER)
                 sunColorMultiplier = MAX_SUNLIGHT_MULTIPLIER;
         }
-  
-        
+
         // Update Caelum system.
         caelumSystem_->notifyCameraChanged(camera);
         caelumSystem_->updateSubcomponents(frameTime);
@@ -226,6 +215,7 @@ namespace Environment
         
         float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
         float relDayTime = fmod(julDay, 1);
+        UNREFERENCED_PARAM(relDayTime);
         Ogre::Vector3 sunDir = caelumSystem_->getSunDirection(julDay);
         Vector3df direction(sunDir.x, sunDir.y, sunDir.z);
         
@@ -245,13 +235,10 @@ namespace Environment
         moon->setSpecularColour(0.0f, 0.0f, 0.0f);
         
 #endif
-
-
     }
- 
+
     void EC_EnvironmentLight::ChangeEnvironmentLight(IAttribute* attribute)
     {
-       
         if (  attribute == &sunColorAttr ||  
               attribute == &sunDirectionAttr ||
               attribute == &sunCastShadowsAttr )
@@ -266,10 +253,8 @@ namespace Environment
         {
             UpdateTime();
         }
-        
-        
     }
-    
+
     void EC_EnvironmentLight::UpdateTime()
     {
 #ifdef CAELUM
@@ -295,7 +280,5 @@ namespace Environment
         // Do not let Caelum clock proceed on its own, authoritative time comes from server
         caelumSystem_->getUniversalClock()->setTimeScale(0);        
 #endif
-
     }
-
 }

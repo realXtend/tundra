@@ -47,7 +47,7 @@ namespace ECEditor
                 return i;
         }
 
-        EntityListWidgetItem *new_item = new EntityListWidgetItem(name, list, entity);
+       new EntityListWidgetItem(name, list, entity);
         return list->count() - 1;
     }
 

@@ -229,6 +229,7 @@ namespace OgreRenderer
             Ogre::GpuProgramParametersSharedPtr fparams =
                 mat->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
             const Ogre::String& progName = mat->getBestTechnique()->getPass(0)->getFragmentProgramName();
+            UNREFERENCED_PARAM(progName);
             fparams->setNamedConstant("sampleOffsets", mBloomTexOffsetsHorz[0], 15);
             fparams->setNamedConstant("sampleWeights", mBloomTexWeights[0], 15);
             break;
@@ -240,6 +241,7 @@ namespace OgreRenderer
             Ogre::GpuProgramParametersSharedPtr fparams =
                 mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters();
             const Ogre::String& progName = mat->getBestTechnique()->getPass(0)->getFragmentProgramName();
+            UNREFERENCED_PARAM(progName);
             fparams->setNamedConstant("sampleOffsets", mBloomTexOffsetsVert[0], 15);
             fparams->setNamedConstant("sampleWeights", mBloomTexWeights[0], 15);
             break;
@@ -313,6 +315,7 @@ namespace OgreRenderer
             Ogre::GpuProgramParametersSharedPtr fparams =
                 mat->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
             const Ogre::String& progName = mat->getBestTechnique()->getPass(0)->getFragmentProgramName();
+            UNREFERENCED_PARAM(progName);
             fparams->setNamedConstant("sampleOffsets", mBloomTexOffsetsHorz[0], 15);
             fparams->setNamedConstant("sampleWeights", mBloomTexWeights[0], 15);
             break;
@@ -324,6 +327,7 @@ namespace OgreRenderer
             Ogre::GpuProgramParametersSharedPtr fparams =
                 mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters();
             const Ogre::String& progName = mat->getBestTechnique()->getPass(0)->getFragmentProgramName();
+            UNREFERENCED_PARAM(progName);
             fparams->setNamedConstant("sampleOffsets", mBloomTexOffsetsVert[0], 15);
             fparams->setNamedConstant("sampleWeights", mBloomTexWeights[0], 15);
             break;

@@ -327,7 +327,6 @@ namespace RexLogic
         if (!ec_camera_ || !cam_ec_placable_)
             return;
 
-        Ogre::Camera* cam = ec_camera_->GetCamera();
         Vector3df pos = cam_ec_placable_->GetPosition();
 
         Vector3df dir(pos-pivot);

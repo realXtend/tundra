@@ -105,7 +105,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     label->setPixmap(QPixmap::fromImage(img));
 
     const int headerHeight = tree_profiling_data_->headerItem()->sizeHint(0).height();
-
+    UNREFERENCED_PARAM(headerHeight);
     tree_profiling_data_->header()->resizeSection(0, 300);
     tree_profiling_data_->header()->resizeSection(1, 60);
     tree_profiling_data_->header()->resizeSection(2, 50);
@@ -1637,6 +1637,7 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
     int regionX = simStats->ReadU32();
     int regionY = simStats->ReadU32();
     u32 regionFlags = simStats->ReadU32();
+    UNREFERENCED_PARAM(regionFlags);
     int objectCapacity = simStats->ReadU32();
 
     tree_sim_stats_->clear();

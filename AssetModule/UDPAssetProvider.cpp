@@ -228,7 +228,7 @@ namespace Asset
         while(i != asset_transfers_.end())
         {
             bool erased = false;
-
+            UNREFERENCED_PARAM(erased);
             UDPAssetTransfer& transfer = i->second;
             if (!transfer.Ready())
             {
@@ -413,12 +413,13 @@ namespace Asset
         UDPAssetTransfer& transfer = i->second;
 
         u8 codec = msg->ReadU8();
+        UNREFERENCED_PARAM(codec);
         u32 size = msg->ReadU32();
         u16 packets = msg->ReadU16();
+        UNREFERENCED_PARAM(packets);
 
         transfer.SetSize(size);
 
-        //uint data_size; 
         size_t data_size;
         const u8* data = msg->ReadBuffer(&data_size); // ImageData block
         transfer.ReceiveData(0, data, data_size);
@@ -492,7 +493,9 @@ namespace Asset
         UDPAssetTransfer& transfer = i->second;
 
         s32 channel_type = msg->ReadS32();
+        UNREFERENCED_PARAM(channel_type);
         s32 target_type = msg->ReadS32();
+        UNREFERENCED_PARAM(target_type);
         s32 status = msg->ReadS32();
         s32 size = msg->ReadS32();
 
@@ -527,6 +530,7 @@ namespace Asset
         UDPAssetTransfer& transfer = i->second;
 
         s32 channel_type = msg->ReadS32();
+        UNREFERENCED_PARAM(channel_type);
         s32 packet_index = msg->ReadS32();
         s32 status = msg->ReadS32();
 

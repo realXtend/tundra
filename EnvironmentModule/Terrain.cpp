@@ -489,6 +489,7 @@ namespace Environment
 
         ProtocolUtilities::NetInMessage &msg = *data->message;
         u8 layerID = msg.ReadU8();
+        UNREFERENCED_PARAM(layerID);
         size_t sizeBytes = 0;
         const uint8_t *packedData = msg.ReadBuffer(&sizeBytes);
         if (!packedData)

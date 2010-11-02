@@ -168,7 +168,7 @@ void EC_3DCanvas::Update()
         update_internals_ = false;
     }
 
-    if (texture->getWidth() != buffer.width() || texture->getHeight() != buffer.height())
+    if ((int)texture->getWidth() != buffer.width() || (int)texture->getHeight() != buffer.height())
     {
         texture->freeInternalResources();
         texture->setWidth(buffer.width());

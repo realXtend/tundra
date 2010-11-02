@@ -182,7 +182,7 @@ namespace UiServices
                 if (myTitleBar) 
                 {
                     bool active = (myTitleBar->titleBarState & State_Active);
-
+                    UNREFERENCED_PARAM(active);
                     QRect textRect = proxy()->subControlRect(CC_TitleBar, myTitleBar, SC_TitleBarLabel, widget);
                     QFont font("facetextrabold", 10, 25, false);
                     font.setCapitalization(QFont::AllUppercase);
@@ -196,7 +196,7 @@ namespace UiServices
                     bool tooWide = (QFontMetrics(font).width(myTitleBar->text) > textRect.width());
                     QTextOption option((tooWide ? Qt::AlignLeft : Qt::AlignHCenter) | Qt::AlignVCenter);
                     option.setWrapMode(QTextOption::NoWrap);
-                    painter->setPen(QColor(232, 229, 228));                    
+                    painter->setPen(QColor(232, 229, 228));
                     painter->drawText(textRect, myTitleBar->text, option);
 
                     if ((myTitleBar->subControls & SC_TitleBarCloseButton) && (myTitleBar->titleBarFlags & Qt::WindowSystemMenuHint)) 
@@ -205,17 +205,15 @@ namespace UiServices
                         if (closeButtonRect.isValid()) {
                             bool hover = (myTitleBar->activeSubControls & SC_TitleBarCloseButton) && (myTitleBar->state & State_MouseOver);
                             bool sunken = (myTitleBar->activeSubControls & SC_TitleBarCloseButton) && (myTitleBar->state & State_Sunken);
+                            UNREFERENCED_PARAM(sunken);
 
                             QRect closeIconRect = closeButtonRect.adjusted(buttonMargin, buttonMargin, -buttonMargin, -buttonMargin);
                             QPixmap buttonImage;
                             if (hover)
-                            {
                                 buttonImage.load("./data/ui/images/styles/darkblue_closebuttonhover.png");
-                            }                                
                             else
-                            {
                                 buttonImage.load("./data/ui/images/styles/darkblue_closebutton.png");
-                            }                            
+
                             painter->save();
                             proxy()->drawItemPixmap(painter, closeIconRect, Qt::AlignCenter, buttonImage);
                             painter->restore();
@@ -226,20 +224,22 @@ namespace UiServices
                     {
                         bool hover = (myTitleBar->activeSubControls & SC_TitleBarSysMenu) && (myTitleBar->state & State_MouseOver);
                         bool sunken = (myTitleBar->activeSubControls & SC_TitleBarSysMenu) && (myTitleBar->state & State_Sunken);
+                        UNREFERENCED_PARAM(hover);
+                        UNREFERENCED_PARAM(sunken);
 
                         QRect iconRect = proxy()->subControlRect(CC_TitleBar, myTitleBar, SC_TitleBarSysMenu, widget);
                         if (!myTitleBar->icon.isNull()) 
                         {
                             myTitleBar->icon.paint(painter, QRect(0, 0, 0, 0));
-                        } 
-                        else 
+                        }
+                        else
                         {
                             myTitleBar->icon.paint(painter, QRect(0, 0, 0, 0));
                             painter->save();
                             painter->restore();
                         }
                     }
-                    painter->restore();                    
+                    painter->restore();
                 }
                 break;
             }

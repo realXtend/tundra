@@ -55,7 +55,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
     int height = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_height", 600);
     int windowX = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_left", -1);
     int windowY = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_top", -1);
-    bool maximized = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_maximized", false); 
+    bool maximized = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_maximized", false);
     bool fullscreen = owner->GetDefaultConfig().DeclareSetting("MainWindow", "fullscreen", false);
 
     std::string title = owner->GetDefaultConfig().GetSetting<std::string>("Foundation", "window_title");

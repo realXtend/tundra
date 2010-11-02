@@ -190,7 +190,7 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
     participantWindow_->move(100, 100);
     participantWindow_->setWindowFlags(Qt::Dialog);
 
-    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(participantWindow_);
+    /*QGraphicsProxyWidget *proxy = */ui->AddWidgetToScene(participantWindow_);
     ui->BringWidgetToFront(participantWindow_);
 //    proxy->show();
 

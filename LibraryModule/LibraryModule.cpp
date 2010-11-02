@@ -492,6 +492,7 @@ namespace Library
             return;
 
         uint submesh_count = 0;
+        UNREFERENCED_PARAM(submesh_count);
         QVector3D temp = pos->GetQPosition();
 
         Vector3df meshpos = mesh_file_request_->GetRayCastPos();

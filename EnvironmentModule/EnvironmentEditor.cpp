@@ -1612,6 +1612,7 @@ namespace Environment
 
         const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
         int button_number = 0;
+        UNREFERENCED_PARAM(button_number);
         if(sender)
         {
             // Make sure that the signal sender was some of those apply buttons.
@@ -2236,7 +2237,7 @@ namespace Environment
         int nub_of_neighbour_vertices = paint_area_size / 2;
 
         float middle_point_height = terrain_component->GetPoint(x_pos, y_pos);
-
+        UNREFERENCED_PARAM(middle_point_height);
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
         manual_paint_object_ = sceneMgr->createManualObject("paint_area");
         manual_paint_object_->estimateVertexCount(9*9);

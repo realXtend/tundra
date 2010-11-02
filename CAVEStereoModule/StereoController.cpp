@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "StereoController.h"
 #include "StereoWidget.h"
@@ -8,13 +10,8 @@
 #include "ExternalRenderWindow.h"
 #include "CAVEStereoModule.h"
 
-
-
-
-
 namespace CAVEStereo
 {
-
     StereoController::StereoController(OgreRenderer::Renderer* r, CAVEStereoModule* mod)
         :renderer_(r),
         module_(mod),
@@ -22,7 +19,6 @@ namespace CAVEStereo
         number_of_views_(0),
         prefix_("stereoview")
     {
-        
     }
 
     StereoController::~StereoController()
@@ -51,8 +47,7 @@ namespace CAVEStereo
             CAVEStereoModule::LogWarning(e.what());
             CAVEStereoModule::LogWarning("Failed to set Anaglyph shader constant.");
         }
-}
-
+    }
 
     void StereoController::ChangeColorLeft(qreal r, qreal g, qreal b)
     {
@@ -100,7 +95,6 @@ namespace CAVEStereo
                 stereo_views_[name] = mngr;
                 number_of_views_++;
             }
-
         }
 
         if(tech_type == "passive")
@@ -160,10 +154,6 @@ namespace CAVEStereo
         }
     }
 
-
-
-
-
     void StereoController::DisableStereo()
     {
         for(int i=0;i<stereo_views_.count();i++)
@@ -183,7 +173,4 @@ namespace CAVEStereo
         windows_to_dispose_.clear();
         stereo_views_.clear();
     }
-
-
-
 }

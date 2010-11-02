@@ -499,8 +499,6 @@ namespace MumbleLib
     void Connection::RemoveChannel(const MumbleClient::Channel& channel)
     {
         QMutexLocker locker(&mutex_channels_);
-
-        int i = 0;
         for (int i = 0; i < channels_.size(); ++i)
         {
             if (channels_.at(i)->Id() == channel.id)
@@ -542,10 +540,11 @@ namespace MumbleLib
 
         PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
         bool valid = data_stream.isValid();
-
+        UNREFERENCED_PARAM(valid);
         uint8_t first_byte = static_cast<unsigned char>(data_stream.next());
         MumbleClient::UdpMessageType::MessageType type = static_cast<MumbleClient::UdpMessageType::MessageType>( ( first_byte >> 5) & 0x07 );
         uint8_t flags = first_byte & 0x1f;
+        UNREFERENCED_PARAM(flags);
         switch (type)
         {
         case MumbleClient::UdpMessageType::UDPVoiceCELTAlpha:

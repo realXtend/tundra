@@ -5,13 +5,14 @@
 
 #include <QWidget>
 #include "ui_stereoUI.h"
+
 namespace Foundation
 {
     class Framework;
 }
+
 namespace CAVEStereo
 {
-    
     class StereoWidget: public QWidget, private Ui::StereoUI 
     {
         Q_OBJECT
@@ -32,8 +33,6 @@ namespace CAVEStereo
 
     private:
         Foundation::Framework* framework_;
-
     };
-
 }
 #endif
