@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   FunctionInvoker.h
- *  @brief  
+ *  @brief  Utility class which wraps QMetaObject::invokeMethod() functionality
+ *          with more user-friendly and script-accessible API
  */
 
 #ifndef incl_ECEditorModule_FunctionInvoker_h
@@ -12,13 +13,15 @@
 
 class IArgumentType;
 
-/// 
+/// Utility class which wraps QMetaObject::invokeMethod() functionality 
+/// with more user-friendly and script-accessible API
 class ECEDITOR_MODULE_API FunctionInvoker
 {
 public:
     /// Default constructor.
     FunctionInvoker() {}
 
+public slots:
     /// Invokes function using QMetaObject::invokeMethod().
     /** @param obj Object for which the function is invoked.
         @param function Function name, e.g. "SetName"
