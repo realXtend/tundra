@@ -41,8 +41,6 @@ void EC_InputMapper::RemoveMapping(const QKeySequence &keySeq, int eventType)
     Mappings_t::iterator it = mappings_.find(qMakePair(keySeq, (KeyEvent::EventType)eventType));
     if (it != mappings_.end())
         mappings_.erase(it);
-    else
-        LogWarning("Tried to remove nonexistent key mapping " + keySeq.toString().toStdString());
 }
 
 void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
@@ -50,8 +48,6 @@ void EC_InputMapper::RemoveMapping(const QString &keySeq, int eventType)
     Mappings_t::iterator it = mappings_.find(qMakePair(QKeySequence(keySeq), (KeyEvent::EventType)eventType));
     if (it != mappings_.end())
         mappings_.erase(it);
-    else
-        LogWarning("Tried to remove nonexistent key mapping " + keySeq.toStdString());
 }
 
 EC_InputMapper::EC_InputMapper(IModule *module):
