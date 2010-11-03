@@ -87,3 +87,48 @@ QString JavascriptEngine::LoadScript() const
     return result;
 }
 
+void JavascriptEngine::IncludeFile(const QString& path)
+{
+  
+    QFile scriptFile(path);
+     
+    bool success = scriptFile.open(QIODevice::ReadOnly);
+    if (!success)
+    {
+        JavascriptModule::LogError(("Failed to load script from file " + path + "!").toStdString());
+        return;
+    }
+   
+   
+    QString script = scriptFile.readAll();
+    scriptFile.close();
+
+    QScriptContext* context = engine_->currentContext();
+    QScriptContext* parent = context->parentContext();
+    
+    if(parent != 0 )
+    {
+        context->setActivationObject(context->parentContext()->activationObject());
+        context->setThisObject(context->parentContext()->thisObject());
+    }
+    else
+    {
+        JavascriptModule::LogError("Did not find parent contex for script");
+        return;
+    }
+
+    QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(script);
+    if(syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
+    {
+        JavascriptModule::LogError("Syntax error in " + path.toStdString() + syntaxResult.errorMessage().toStdString()
+            + " In line:" + QString::number(syntaxResult.errorLineNumber()).toStdString());
+        return;
+    }
+
+    QScriptValue result = engine_->evaluate(script);
+    
+    if (engine_->hasUncaughtException())
+        JavascriptModule::LogError(result.toString().toStdString());
+
+}
+
