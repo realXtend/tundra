@@ -39,11 +39,11 @@ public slots:
     */
     void Invoke(QObject *obj, const QString &function, const QVariantList &params, QString *errorMsg = 0);
 
-    /// Creates argument type list for function @c function of object.@c obj.
+    /// Creates argument type list for function of object.@c obj.with the signature @c signature.
     /** @param obj Object.
-        @param function Name of the function, e.g. "SetName".
+        @param signature of the function, e.g. "SetName(QString)".
     */
-    QList<IArgumentType *> CreateArgumentList(const QObject *obj, const QString &function);
+    QList<IArgumentType *> CreateArgumentList(const QObject *obj, const QString &signature);
 
 private:
     /// Returns Argument type object for spesific parameter type name.
