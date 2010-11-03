@@ -152,6 +152,8 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     }
     
     previousCollisions_ = currentCollisions;
+    
+    emit Updated(substeptime);
 }
 
 Scene::Entity* PhysicsWorld::Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup, int collisionmask)
