@@ -91,6 +91,11 @@ signals:
      */
      void RaycastResult(Scene::Entity* entity, const Vector3df& position, const Vector3df& normal, float distance);
      
+     //! Emitted after each simulation step
+     /*! \param frametime Length of simulation step
+      */
+     void Updated(float frametime);
+     
 private:
     //! Bullet collision config
     btCollisionConfiguration* collisionConfiguration_;

@@ -354,6 +354,12 @@ bool EC_AnimationController::EnableAnimation(const QString& name, bool looped, f
         i->second.num_repeats_ = (looped ? 0: 1);
         i->second.fade_period_ = fadein;
         i->second.high_priority_ = high_priority;
+        // If animation is nonlooped and has already reached end, rewind to beginning
+        if ((!looped) && (i->second.speed_factor_ > 0.0f))
+        {
+            if (animstate->getTimePosition() >= animstate->getLength())
+                animstate->setTimePosition(0.0f);
+        }
         return true;
     }
     
