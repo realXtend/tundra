@@ -27,7 +27,7 @@ class FunctionInvoker;
 struct FunctionMetaData
 {
     /// Less than operator. Needed for qSort().
-    bool operator <(const FunctionMetaData &rhs) const { return function < rhs.function; }
+    bool operator <(const FunctionMetaData &rhs) const { return signature < rhs.signature; }
 
     QString function; ///< Function name in the simplest form
     QString returnType; ///< Return type of the function.
@@ -52,10 +52,10 @@ public:
     */
 //    void AddFunction(const FunctionMetaData &f);
 
-    /// Adds list of functions to the combo box.
+    /// Sets list of functions to the combo box. Overrides existing functions.
     /** @param funcs List of functions.
     */
-    void AddFunctions(const QList<FunctionMetaData> &funcs);
+    void SetFunctions(const QList<FunctionMetaData> &funcs);
 
     /// Returns meta data structure of the currently selected function.
     FunctionMetaData CurrentFunction() const;

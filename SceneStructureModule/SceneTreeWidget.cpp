@@ -907,9 +907,15 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
     for(int i = 0; i < params.size(); ++i)
         ii.parameters.push_back(QVariant(params[i]));
 
+    // Do not save duplicates and make sure that history size stays withing max size.
     QList<InvokeItem>::const_iterator it = qFind(invokeHistory, ii);
     if (it == invokeHistory.end())
+    {
+        while(invokeHistory.size() > historyMaxItemCount - 1)
+            invokeHistory.pop_back();
+
         invokeHistory.push_front(ii);
+    }
 }
 
 void SceneTreeWidget::OpenFunctionDialog()
@@ -1003,9 +1009,15 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             ii.objectName = objName;
             ii.mruOrder = mruItem ? mruItem->mruOrder + 1 : 0;
 
+            // Do not save duplicates and make sure that history size stays withing max size.
             QList<InvokeItem>::const_iterator it = qFind(invokeHistory, ii);
             if (it == invokeHistory.end())
+            {
+                while(invokeHistory.size() > historyMaxItemCount - 1)
+                    invokeHistory.pop_back();
+
                 invokeHistory.push_front(ii);
+            }
         }
 }
 
