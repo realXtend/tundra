@@ -58,6 +58,9 @@ namespace OgreRenderer
         const StringVector& GetOriginalMaterialNames() const { return original_materials_; }
         
     private:
+        //! Set default material for the mesh that won't complain
+        void SetDefaultMaterial();
+
         //! Ogre mesh
         Ogre::MeshPtr ogre_mesh_;
         
