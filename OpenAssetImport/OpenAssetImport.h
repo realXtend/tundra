@@ -6,6 +6,7 @@
 #include <assimp.hpp>
 #include <LogStream.h>
 #include <aiScene.h>
+#include "Transform.h"
 namespace OgreRenderer { class Renderer; }
 
 namespace AssImp
@@ -14,7 +15,7 @@ namespace AssImp
     {
         QString file_;
         QString name_;
-        Matrix4 transform_;
+        Transform transform_;
     };
 
     /*! Imports an Ogre mesh from various different model formats.
@@ -38,12 +39,6 @@ namespace AssImp
         */
         void GetMeshData(const QString& file, std::vector<MeshData> &outMeshData);
 
-        //! Generates Ogre meshes from file
-        /*!
-            \param file path to file where to import meshes from
-            \param outMeshNames Out string vector of generated Ogre mesh names
-        */
-		//void Import(const QString& file, std::vector<std::string> &outMeshNames);
 
         //! Generates Ogre meshes from memory buffer
         /*!
@@ -67,7 +62,7 @@ namespace AssImp
         };
 
         void GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
-            const Matrix4 &parentTransform, std::vector<MeshData> &outMeshNames);
+            const aiMatrix4x4 &parentTransform, std::vector<MeshData> &outMeshNames);
         
         void ImportNode(const struct aiScene *scene, const struct aiNode *node, const QString& file, const QString &nodeName, 
             std::vector<std::string> &outMeshNames);

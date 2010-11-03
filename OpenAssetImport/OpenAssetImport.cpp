@@ -69,7 +69,7 @@ namespace AssImp
         {
             const struct aiNode *rootNode = scene->mRootNode;
             
-            Matrix4 transform;
+            aiMatrix4x4 transform;
             GetNodeData(scene, rootNode, file, transform, outMeshData);
         } else
         {       
@@ -77,23 +77,6 @@ namespace AssImp
             Foundation::RootLogError(importer_->GetErrorString());
         }
     }
-
-    /*void OpenAssetImport::Import(const QString& file, std::vector<std::string> &outMeshNames)
-    {
-        const aiScene *scene = importer_->ReadFile(file.toStdString(), default_flags_);
-
-        if (scene)
-        {
-            const struct aiNode *rootNode = scene->mRootNode;
-
-            ImportNode(scene, file, outMeshNames);
-        } else
-        {       
-            // report error
-            Foundation::RootLogError(importer_->GetErrorString());
-            //return QString(importer_->GetErrorString());
-        }
-    }*/
 
     void OpenAssetImport::Import(const void *data, size_t length, const QString &name, const char* hint, const QString &nodeName, std::vector<std::string> &outMeshNames)
     {
@@ -113,34 +96,26 @@ namespace AssImp
     }
 
     void OpenAssetImport::GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
-        const Matrix4 &parentTransform, std::vector<MeshData> &outMeshNames)
+        const aiMatrix4x4 &parentTransform, std::vector<MeshData> &outMeshNames)
     {
         aiMatrix4x4 aiTransform = node->mTransformation;
 
-        // aiMatrix4x4::operator[] is buggy and doesn't work correctly, so we convert by hand
-        // also convert from row-major to column-major
-        Matrix4 transform;
-        transform[0] = aiTransform.a1;
-        transform[1] = aiTransform.b1;
-        transform[2] = aiTransform.c1;
-        transform[3] = aiTransform.d1;
-        transform[4] = aiTransform.a2;
-        transform[5] = aiTransform.b2;
-        transform[6] = aiTransform.c2;
-        transform[7] = aiTransform.d2;
-        transform[8] = aiTransform.a3;
-        transform[9] = aiTransform.b3;
-        transform[10] = aiTransform.c3;
-        transform[11] = aiTransform.d3;
-        transform[12] = aiTransform.a4;
-        transform[13] = aiTransform.b4;
-        transform[14] = aiTransform.c4;
-        transform[15] = aiTransform.d4;
-        Matrix4 worldTransform = transform * parentTransform;
+        aiMatrix4x4 worldTransform =  parentTransform * aiTransform;
+        
+        aiVector3D pos;
+        aiVector3D scale;
+        Vector3df rote;
+        aiQuaternion rotq;
+        worldTransform.Decompose(scale, rotq, pos);
+        Quaternion quat(rotq.x, rotq.y, rotq.z, rotq.w);
+        
+        quat.toEuler(rote);
+        rote *= RADTODEG;
+
 
         if (node->mNumMeshes > 0)
         {
-            MeshData data = { file, QString(node->mName.data), transform };
+            MeshData data = { file, QString(node->mName.data), Transform(Vector3df(pos.x, pos.y, pos.z), rote, Vector3df(scale.x, scale.y, scale.z)) };
             outMeshNames.push_back(data);     
         }
 
@@ -168,7 +143,7 @@ namespace AssImp
             }*/
 
 
-            aiMatrix4x4 transform = node->mTransformation;
+            //aiMatrix4x4 transform = node->mTransformation;
             if (node->mNumMeshes > 0 && nodeName.compare(QString(node->mName.data)) == 0 && !Ogre::MeshManager::getSingleton().resourceExists(ogreMeshName))
             {
                 Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(ogreMeshName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
