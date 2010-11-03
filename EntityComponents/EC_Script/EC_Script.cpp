@@ -63,12 +63,14 @@ EC_Script::EC_Script(IModule *module):
 
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
-    if (attribute->GetNameString() == scriptRef.GetNameString())
+    if (attribute == &scriptRef)
+    {
         if (scriptRef.Get() != lastRef_)
         {
             emit ScriptRefChanged(scriptRef.Get());
             lastRef_ = scriptRef.Get();
         }
+    }
 }
 
 void EC_Script::RegisterActions()

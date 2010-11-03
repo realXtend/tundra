@@ -356,10 +356,6 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &ObjectCameraController::HandleNetworkStateEvent, obj_camera_controller_.get(), _1, _2));
 
-    eventcategoryid = eventMgr->QueryEventCategory("Tundra");
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &NetworkStateEventHandler::HandleTundraEvent, network_state_handler_, _1, _2));
-
     // NetworkIn events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
     event_handlers_[eventcategoryid].push_back(boost::bind(
@@ -467,14 +463,6 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::SceneManager* scene, bool 
         // Initialize viewing dir so that camera isn't upside down
         placeableptr->LookAt(Vector3df(1,0,0));
     }
-}
-
-void RexLogicModule::OnSceneCleared(Scene::SceneManager* scene)
-{
-    // Tundra scene has been cleared, so recreate camera in freelook mode
-    //! \todo will be superseded by FreelookCameraApplication
-    if (scene)
-        CreateOpenSimViewerCamera(scene, true);
 }
 
 void RexLogicModule::DeleteScene(const QString &name)

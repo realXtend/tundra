@@ -11,6 +11,7 @@
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
 #include "DoxygenDocReader.h"
+#include "FunctionInvoker.h"
 
 #include "Entity.h"
 #include "LoggingFunctions.h"
@@ -58,7 +59,8 @@ FunctionMetaData FunctionComboBox::CurrentFunction() const
 FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWidget *parent, Qt::WindowFlags f) :
     QDialog(parent, f),
     objects(objs),
-    returnValueArgument(0)
+//    returnValueArgument(0),
+    invoker(new FunctionInvoker)
 {
     // Set up the UI
     setAttribute(Qt::WA_DeleteOnClose);
@@ -125,7 +127,8 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
 
 FunctionDialog::~FunctionDialog()
 {
-    qDeleteAll(allocatedArguments);
+    qDeleteAll(currentArguments);
+    SAFE_DELETE(invoker);
 }
 
 QList<boost::weak_ptr<QObject> > FunctionDialog::Objects() const
@@ -138,14 +141,9 @@ QString FunctionDialog::Function() const
     return functionComboBox->CurrentFunction().function;
 }
 
-IArgumentType *FunctionDialog::ReturnValueArgument() const
-{
-    return returnValueArgument;
-}
-
 QList<IArgumentType *> FunctionDialog::Arguments() const
 {
-    return allocatedArguments;
+    return currentArguments;
 }
 
 void FunctionDialog::SetReturnValueText(const QString &text)
@@ -268,49 +266,13 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
 
     targetsLabel->setText(targetText);
     functionComboBox ->AddFunctions(fmds);
-}
 
-void FunctionDialog::CreateArgumentList()
-{
-    QList<IArgumentType *> args;
-    QPair<QString, QString> pair;
-    foreach(pair, functionComboBox->CurrentFunction().parameters)
+    ///\If no functions, disable exec buttons.
+    /*
+    if (functionComboBox->count() == 0)
     {
-        IArgumentType *arg = CreateArgumentType(pair.first);
-        if (arg)
-            args.append(arg);
     }
-
-    qDeleteAll(allocatedArguments);
-    allocatedArguments = args;
-}
-
-IArgumentType *FunctionDialog::CreateArgumentType(const QString &type)
-{
-    IArgumentType *arg = 0;
-
-    if (type == "void")
-        arg = new VoidArgumentType;
-    else if (type == "QString")
-        arg = new ArgumentType<QString>(type.toStdString().c_str());
-    else if (type == "QStringList")
-        arg = new ArgumentType<QStringList>(type.toStdString().c_str());
-    else if (type == "std::string")
-        arg = new ArgumentType<std::string>(type.toStdString().c_str());
-    else if (type == "bool")
-        arg = new ArgumentType<bool>(type.toStdString().c_str());
-    else if(type == "unsigned int" || type == "uint" || type == "size_t" || type == "entity_id_t")
-        arg = new ArgumentType<unsigned int>(type.toStdString().c_str());
-    else if (type == "int")
-        arg = new ArgumentType<int>(type.toStdString().c_str());
-    else if (type == "float")
-        arg = new ArgumentType<float>(type.toStdString().c_str());
-    else if (type == "double")
-        arg = new ArgumentType<double>(type.toStdString().c_str());
-    else
-        LogDebug("Unsupported argument type: " + type.toStdString());
-
-    return arg;
+    */
 }
 
 void FunctionDialog::Execute()
@@ -338,8 +300,8 @@ void FunctionDialog::UpdateEditors()
     if (objects[0].expired())
         return;
 
-    SAFE_DELETE(returnValueArgument);
-    returnValueArgument = CreateArgumentType(fmd.returnType);
+//    SAFE_DELETE(returnValueArgument);
+//    returnValueArgument = CreateArgumentType(fmd.returnType);
 
     // Create and show doxygen documentation for the function.
     QString doxyFuncName = QString(objects[0].lock()->metaObject()->className()) + "::" + fmd.function;
@@ -357,15 +319,16 @@ void FunctionDialog::UpdateEditors()
         doxygenView->hide();
     }
 
-    CreateArgumentList();
-    if (allocatedArguments.empty() || (allocatedArguments.size() != fmd.parameters.size()))
+    qDeleteAll(currentArguments);
+    currentArguments = invoker->CreateArgumentList(objects[0].lock().get(), fmd.function);
+    if (currentArguments.empty() || (currentArguments.size() != fmd.parameters.size()))
         return;
 
-    for(int idx = 0; idx < allocatedArguments.size(); ++idx)
+    for(int idx = 0; idx < currentArguments.size(); ++idx)
     {
         QLabel *label = new QLabel(fmd.parameters[idx].first + ' ' + fmd.parameters[idx].second);
         label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        QWidget *editor = allocatedArguments[idx]->CreateEditor();
+        QWidget *editor = currentArguments[idx]->CreateEditor();
 
         // Layout takes ownership of label and editor.
         editorLayout->addWidget(label, idx, 0);
