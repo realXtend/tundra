@@ -8,9 +8,12 @@
 #ifndef incl_EC_Script_IScriptInstance_h
 #define incl_EC_Script_IScriptInstance_h
 
+#include <QObject>
+
 /// Interface for different script instances, e.g. Javascript of Python.
-class IScriptInstance
+class IScriptInstance : public QObject
 {
+    Q_OBJECT
 public:
     /// Default constuctor.
     IScriptInstance() {}
