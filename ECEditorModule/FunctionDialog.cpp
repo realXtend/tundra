@@ -42,17 +42,18 @@ void FunctionComboBox::AddFunction(const FunctionMetaData &f)
 }
 */
 
-void FunctionComboBox::AddFunctions(const QList<FunctionMetaData> &funcs)
+void FunctionComboBox::SetFunctions(const QList<FunctionMetaData> &funcs)
 {
     foreach(FunctionMetaData f, funcs)
-        addItem(f.function);
+        addItem(f.signature);
 
     model()->sort(0);
 //    functions.append(funcs);
     functions = funcs;
     qSort(functions);
     for(int i = 0; i < count() && i < functions.size(); ++i)
-        setItemText(i, functions[i].fullSignature);
+        if (itemText(i) == functions[i].signature)
+            setItemText(i, functions[i].fullSignature);
 }
 
 FunctionMetaData FunctionComboBox::CurrentFunction() const
@@ -274,9 +275,9 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
     }
 
     targetsLabel->setText(targetText);
-    functionComboBox ->AddFunctions(fmds);
+    functionComboBox ->SetFunctions(fmds);
 
-    ///\If no functions, disable exec buttons.
+    // If no functions, disable exec buttons.
     /*
     if (functionComboBox->count() == 0)
     {
@@ -309,11 +310,9 @@ void FunctionDialog::UpdateEditors()
     if (objects[0].expired())
         return;
 
-//    SAFE_DELETE(returnValueArgument);
-//    returnValueArgument = CreateArgumentType(fmd.returnType);
-
     // Create and show doxygen documentation for the function.
-    QString doxyFuncName = QString(objects[0].lock()->metaObject()->className()) + "::" + fmd.function;
+    QObject *obj = objects[0].lock().get();
+    QString doxyFuncName = QString(obj->metaObject()->className()) + "::" + fmd.function;
     QUrl styleSheetPath;
     QString documentation;
     bool success = DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
@@ -329,7 +328,8 @@ void FunctionDialog::UpdateEditors()
     }
 
     qDeleteAll(currentArguments);
-    currentArguments = invoker->CreateArgumentList(objects[0].lock().get(), fmd.function);
+    currentArguments.clear();
+    currentArguments = invoker->CreateArgumentList(obj, fmd.signature);
     if (currentArguments.empty() || (currentArguments.size() != fmd.parameters.size()))
         return;
 
