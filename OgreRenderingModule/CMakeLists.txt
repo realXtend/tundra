@@ -40,6 +40,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
+use_package_assimp()
 use_modules (Core Foundation Interfaces SceneManager AssetModule RexCommon ProtocolUtilities Input Ui Asset)
 
 if (CAELUM)
@@ -52,6 +53,7 @@ endif (HYDRAX)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
+GetOpenAssetImport()
 link_package (BOOST)
 link_package (POCO)
 link_ogre()
