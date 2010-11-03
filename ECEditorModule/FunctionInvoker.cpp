@@ -121,7 +121,7 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &function, const QVaria
     }
 }
 
-QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, const QString &function)
+QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, const QString &signature)
 {
     QList<IArgumentType *> args;
 
@@ -129,9 +129,7 @@ QList<IArgumentType *> FunctionInvoker::CreateArgumentList(const QObject *obj, c
     for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
     {
         const QMetaMethod &mm = mo->method(i);
-        QString mmSig = mm.signature();
-        QString mmFunc = mmSig.mid(0, mmSig.indexOf('('));
-        if (function == mmFunc)
+        if (signature == QString(mm.signature()))
             foreach(QByteArray param, mm.parameterTypes())
             {
                 IArgumentType *arg = CreateArgumentType(QString(param));

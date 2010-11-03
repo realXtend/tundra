@@ -3,9 +3,12 @@
 #ifndef incl_TundraLogicModule_Server_h
 #define incl_TundraLogicModule_Server_h
 
+#include "Core.h"
 #include "ForwardDefines.h"
 
 #include "kNet.h"
+
+#include <QObject>
 
 struct MsgLogin;
 class MessageConnection;
@@ -24,8 +27,10 @@ namespace TundraLogic
 
 class TundraLogicModule;
 
-class Server
+class Server : public QObject
 {
+    Q_OBJECT
+    
 public:
     //! Constructor
     Server(TundraLogicModule* owner, Foundation::Framework* fw);
@@ -44,9 +49,6 @@ public:
     //! Stop server & delete server scene
     void Stop();
     
-    //! Get whether server is running
-    bool IsRunning() const;
-    
     //! Get matching userconnection from a messageconnection, or null if unknown
     KristalliProtocol::UserConnection* GetUserConnection(kNet::MessageConnection* source);
     
@@ -55,6 +57,26 @@ public:
     
     //! Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
+    
+signals:
+    //! A user has connected (and authenticated)
+    void UserConnected(int connectionId, const QString& userName);
+    
+    //! A user has disconnected
+    void UserDisconnected(int connectionId, const QString& userName);
+    
+    //! The server has been started
+    void ServerStarted();
+    
+    //! The server has been stopped
+    void ServerStopped();
+    
+public slots:
+    //! Get whether server is running
+    bool IsRunning() const;
+    
+    //! Get username for connection ID, or empty if no such connection
+    QString GetUserNameForConnectionID(int connectionID);
     
 private:
     /// Handle a Kristalli protocol message

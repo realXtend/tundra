@@ -3,7 +3,10 @@
 #ifndef incl_TundraLogicModule_Client_h
 #define incl_TundraLogicModule_Client_h
 
+#include "Core.h"
 #include "ForwardDefines.h"
+
+#include <QObject>
 
 struct MsgLogin;
 struct MsgLoginReply;
@@ -28,13 +31,15 @@ namespace TundraLogic
 
 class TundraLogicModule;
 
-class Client
+class Client : public QObject
 {
+    Q_OBJECT
+    
     enum ClientLoginState
     {
         NotConnected = 0,
         ConnectionPending,
-        Connected,
+        ConnectionEstablished,
         LoggedIn
     };
     
@@ -61,11 +66,22 @@ public:
     /// Get client message connection from KristalliProtocolModule
     kNet::MessageConnection* GetConnection();
     
-    /// Get client connection ID (from loginreply message)
-    u8 GetConnectionID() { return client_id_; }
-    
     //! Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
+    
+signals:
+    //! Connected (& logged in) to server
+    void Connected(int connectionID, const QString& username);
+    
+    //! Disconnected from server
+    void Disconnected();
+    
+public slots:
+    /// Get client connection ID (from loginreply message). Is zero if not connected
+    int GetConnectionID() { return client_id_; }
+    
+    //! See if connected & authenticated
+    bool IsConnected() const;
     
 private:
     /// Handle a Kristalli protocol message
