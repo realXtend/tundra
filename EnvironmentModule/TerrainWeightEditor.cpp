@@ -422,10 +422,6 @@ namespace Environment
             }
             ptr->settexture0(texname);
             it++;
-            Ogre::Image img;
-            img.loadDynamicImage(static_cast<Ogre::uchar*>(bufbox.data),bufbox.getWidth(), bufbox.getHeight(), bufbox.getDepth(), bufbox.format);
-            
-            img.save("lol.png");
         }
     }
 
