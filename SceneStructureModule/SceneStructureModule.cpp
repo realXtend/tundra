@@ -129,14 +129,14 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         if (assimporter.IsSupportedExtension(extension))
         {
             std::string dirname = path.branch_path().string();
-            std::vector<std::string> importedMeshNames;
-            assimporter.Import(framework_, filename, importedMeshNames);
+            std::vector<AssImp::MeshData> meshNames;
+            assimporter.GetMeshData(filename, meshNames);
 
             TundraLogic::SceneImporter sceneimporter(framework_);
-            for (size_t i=0 ; i<importedMeshNames.size() ; ++i)
+            for (size_t i=0 ; i<meshNames.size() ; ++i)
             {
-                Scene::EntityPtr entity = sceneimporter.ImportMesh(scene, importedMeshNames[i], dirname, "./data/assets",
-                    Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, false, true);
+                Scene::EntityPtr entity = sceneimporter.ImportMesh(scene, meshNames[i].file_.toStdString(), dirname, "./data/assets",
+                    meshNames[i].transform_, std::string(), AttributeChange::Default, true, meshNames[i].name_.toStdString());
                 if (entity)
                     scene->EmitEntityCreated(entity, AttributeChange::Default);
             }
