@@ -14,9 +14,11 @@ class QScriptEngine;
 
 class JavascriptEngine: public IScriptInstance
 {
+    Q_OBJECT
+
 public:
     explicit JavascriptEngine(const QString &scriptRef);
-    ~JavascriptEngine();
+    virtual ~JavascriptEngine();
 
     //! Overload from IScriptInstance
     void Reload();
@@ -36,6 +38,12 @@ public:
     //void SetPrototype(QScriptable *prototype, );
 
     QScriptEngine* GetEngine() const { return engine_; }
+
+public slots:
+    /// Loads a given script in engine. This is function which can be used to 
+    /// create a property as you could include js-files. 
+    /// @param path is relative path from bin/ to file. Example jsmodules/apitest/myscript.js
+    void IncludeFile(const QString& file);
 
 private:
     QString LoadScript() const;
