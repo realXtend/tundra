@@ -119,6 +119,7 @@ void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
         CreateBody();
     if (body_)
     {
+        Activate();
         if (position == Vector3df::ZERO)
             body_->applyCentralForce(ToBtVector3(force));
         else
@@ -131,7 +132,10 @@ void EC_RigidBody::ApplyTorque(const Vector3df& torque)
     if (!body_)
         CreateBody();
     if (body_)
+    {
+        Activate();
         body_->applyTorque(ToBtVector3(torque));
+    }
 }
 
 void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& position)
@@ -140,6 +144,7 @@ void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& posit
         CreateBody();
     if (body_)
     {
+        Activate();
         if (position == Vector3df::ZERO)
             body_->applyCentralImpulse(ToBtVector3(impulse));
         else
@@ -152,7 +157,10 @@ void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
     if (!body_)
         CreateBody();
     if (body_)
+    {
+        Activate();
         body_->applyTorqueImpulse(ToBtVector3(torqueImpulse));
+    }
 }
 
 void EC_RigidBody::Activate()
@@ -161,6 +169,14 @@ void EC_RigidBody::Activate()
         CreateBody();
     if (body_)
         body_->activate();
+}
+
+bool EC_RigidBody::IsActive()
+{
+    if (body_)
+        return body_->isActive();
+    else
+        return false;
 }
 
 void EC_RigidBody::ResetForces()
@@ -476,6 +492,74 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
         
         UpdateScale();
     }
+}
+
+void EC_RigidBody::SetRotation(const Vector3df& rotation)
+{
+    disconnected_ = true;
+    
+    EC_Placeable* placeable = placeable_.lock().get();
+    if (placeable)
+    {
+        Transform trans = placeable->transform.Get();
+        trans.rotation = rotation;
+        placeable->transform.Set(trans, AttributeChange::Default);
+        
+        if (body_)
+        {
+            Quaternion orientation(DEGTORAD * trans.rotation.x, DEGTORAD * trans.rotation.y, DEGTORAD * trans.rotation.z);
+            
+            btTransform& worldTrans = body_->getWorldTransform();
+            btTransform interpTrans = body_->getInterpolationWorldTransform();
+            worldTrans.setRotation(ToBtQuaternion(orientation));
+            interpTrans.setRotation(worldTrans.getRotation());
+            body_->setInterpolationWorldTransform(interpTrans);
+        }
+    }
+    
+    disconnected_ = false;
+}
+
+void EC_RigidBody::Rotate(const Vector3df& rotation)
+{
+    disconnected_ = true;
+    
+    EC_Placeable* placeable = placeable_.lock().get();
+    if (placeable)
+    {
+        Transform trans = placeable->transform.Get();
+        trans.rotation += rotation;
+        placeable->transform.Set(trans, AttributeChange::Default);
+        
+        if (body_)
+        {
+            Quaternion orientation(DEGTORAD * trans.rotation.x, DEGTORAD * trans.rotation.y, DEGTORAD * trans.rotation.z);
+            
+            btTransform& worldTrans = body_->getWorldTransform();
+            btTransform interpTrans = body_->getInterpolationWorldTransform();
+            worldTrans.setRotation(ToBtQuaternion(orientation));
+            interpTrans.setRotation(worldTrans.getRotation());
+            body_->setInterpolationWorldTransform(interpTrans);
+        }
+    }
+    
+    disconnected_ = false;
+}
+
+Vector3df EC_RigidBody::GetLinearVelocity()
+{
+    if (body_)
+        return ToVector3(body_->getLinearVelocity());
+    else 
+        return linearVelocity.Get();
+}
+
+Vector3df EC_RigidBody::GetAngularVelocity()
+{
+    if (body_)
+        return ToVector3(body_->getAngularVelocity()) * RADTODEG;
+    else
+        return angularVelocity.Get();
 }
 
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)

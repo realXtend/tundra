@@ -87,7 +87,14 @@ Registered by Physics::PhysicsModule.
 <li> "ApplyTorqueImpulse": apply a torque impulse to the body
         \param torqueImpulse Impulse
 <li> "Activate": force the body to activate (wake up)
+<li> "IsActive": return whether body is active
 <li> "ResetForces": reset accumulated force & torque
+<li> "SetRotation": forces just the rotation part of transform, while letting the position interpolate undisturbed
+        \param rotation New absolute rotation vector (eulers)
+<li> "Rotate": modifies just the rotation part of transform, while letting the position interpolate undisturbed
+        \param rotation Delta rotation (eulers)
+<li> "GetLinearVelocity": Returns linear velocity. Should be same as accessing the attribute.
+<li> "GetAngularVelocity": Returns angular velocity. Should be same as accessing the attribute.
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -245,8 +252,32 @@ public slots:
     //! Force the body to activate (wake up)
     void Activate();
     
+    //! Check whether body is active
+    bool IsActive();
+    
     //! Reset accumulated force & torque
     void ResetForces();
+    
+    //! Forcibly set rotation
+    /*! Use this instead of just setting the placeable's full transform to allow linear motion to continue uninterrupted (with proper inter-step interpolation)
+        \param rotation New rotation (eulers)
+     */
+    void SetRotation(const Vector3df& rotation);
+    
+    //! Rotate the body
+    /*! Use this instead of just setting the placeable's full transform to allow linear motion to continue uninterrupted (with proper inter-step interpolation)
+        \param rotation Delta rotation (eulers)
+     */
+    void Rotate(const Vector3df& rotation);
+    
+    //! Return linear velocity
+    Vector3df GetLinearVelocity();
+    
+    //! Return angular velocity
+    Vector3df GetAngularVelocity();
+    
+    //! Return physics world
+    Physics::PhysicsWorld* GetPhysicsWorld() { return world_; }
     
 private slots:
     //! Called when the parent entity has been set.

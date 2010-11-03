@@ -74,7 +74,7 @@ void InvokeItem::FromSetting(const std::string &str)
     objectName = params[idx++];
     name = params[idx++];
 
-    for(idx; idx < params.size(); idx+=2)
+    for(; idx < params.size()-1; idx+=2)
     {
         QString type = params[idx];
         QVariant value = params[idx+1];

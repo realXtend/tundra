@@ -19,6 +19,7 @@
 class QGridLayout;
 class QLabel;
 class QTextEdit;
+class QCheckBox;
 
 class IArgumentType;
 class FunctionInvoker;
@@ -26,6 +27,9 @@ class FunctionInvoker;
 /// Utility data structure for indentifying and handling of function signatures.
 struct FunctionMetaData
 {
+    /// Less than operator. Needed for qSort().
+    bool operator <(const FunctionMetaData &rhs) const { return signature < rhs.signature; }
+
     QString function; ///< Function name in the simplest form
     QString returnType; ///< Return type of the function.
     QString signature; ///< Signature of the function without return type and parameter names.
@@ -47,15 +51,18 @@ public:
     /// Adds new function to the combo box
     /** @param f Function.
     */
-    void AddFunction(const FunctionMetaData &f);
+//    void AddFunction(const FunctionMetaData &f);
 
-    /// Adds list of functions to the combo box.
+    /// Sets list of functions to the combo box. Overrides existing functions.
     /** @param funcs List of functions.
     */
-    void AddFunctions(const QList<FunctionMetaData> &funcs);
+    void SetFunctions(const QList<FunctionMetaData> &funcs);
 
     /// Returns meta data structure of the currently selected function.
     FunctionMetaData CurrentFunction() const;
+
+    /// Clears functions list and items at the combo box.
+    void Clear();
 
     /// All available functions.
     QList<FunctionMetaData> functions;
@@ -109,10 +116,6 @@ protected:
     /// QWidget override.
     void hideEvent(QHideEvent *);
 
-private:
-    /// Generates the targel label and list of available functions according to current object selection and function filter.
-    void GenerateTargetLabelAndFunctions();
-
     /// Function invoker object.
     FunctionInvoker *invoker;
 
@@ -130,6 +133,18 @@ private:
 
     /// Text edit field for showing return values of functions.
     QTextEdit *returnValueEdit;
+
+    /// "Public" function filter check box.
+    QCheckBox *publicCheckBox;
+
+    /// "Protected and private" function filter check box.
+    QCheckBox *protectedAndPrivateCheckBox;
+
+    /// "Slots" function filter check box.
+    QCheckBox *slotsCheckBox;
+
+    /// "Signals" function filter check box.
+    QCheckBox *signalsCheckBox;
 
     /// List of objects.
     QList<boost::weak_ptr<QObject> > objects;
@@ -149,6 +164,9 @@ private slots:
 
     /// Creates editor widgets for the currently selected function's parameters.
     void UpdateEditors();
+
+    /// Generates the targel label and list of available functions according to current object selection and function filter.
+    void GenerateTargetLabelAndFunctions();
 };
 
 #endif
