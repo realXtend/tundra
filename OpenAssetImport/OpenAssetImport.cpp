@@ -317,7 +317,7 @@ namespace AssImp
                     outMeshNames.push_back(meshname);
                 }
             }
-        } catch (Ogre::Exception &e)
+        } catch (Ogre::Exception &)
         {
             // error
         }

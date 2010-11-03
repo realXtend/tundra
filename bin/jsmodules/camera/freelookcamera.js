@@ -3,9 +3,9 @@
 
 var rotate_sensitivity = 0.3
 var move_sensitivity = 30.0
-var motion_z = 0
+var motion_z = 0;
 var motion_y = 0;
-var motion_x = 0
+var motion_x = 0;
 
 if (!me.HasComponent("EC_OgreCamera"))
 {
@@ -57,6 +57,15 @@ if (!me.HasComponent("EC_OgreCamera"))
 
 function Update(frametime)
 {
+    var camera = me.GetComponentRaw("EC_OgreCamera");
+    if (camera.IsActive() == false)
+    {
+        motion_x = 0;
+        motion_y = 0;
+        motion_z = 0;
+        return;
+    }
+
     var placeable = me.GetComponentRaw("EC_Placeable");
     if (motion_z != 0)
     {
@@ -112,6 +121,10 @@ function HandleStop(param)
 
 function HandleMouseLookX(param)
 {
+    var camera = me.GetComponentRaw("EC_OgreCamera");
+    if (camera.IsActive() == false)
+        return;
+
     var move = parseInt(param);
     var placeable = me.GetComponentRaw("EC_Placeable");
     var newtransform = placeable.transform;
@@ -121,6 +134,10 @@ function HandleMouseLookX(param)
 
 function HandleMouseLookY(param)
 {
+    var camera = me.GetComponentRaw("EC_OgreCamera");
+    if (camera.IsActive() == false)
+        return;
+    
     var move = parseInt(param);
     var placeable = me.GetComponentRaw("EC_Placeable");
     var newtransform = placeable.transform;
