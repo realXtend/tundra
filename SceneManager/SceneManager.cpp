@@ -263,11 +263,13 @@ namespace Scene
         emit ComponentInitialized(comp);
         }*/
  
-    void SceneManager::EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change)
+    void SceneManager::EmitEntityCreated(QObject* entity, AttributeChange::Type change)
     {
         if (change == AttributeChange::Disconnected)
             return;
-        emit EntityCreated(entity, change);
+        Scene::Entity* ent = dynamic_cast<Scene::Entity*>(entity);
+        if (ent)
+            emit EntityCreated(ent, change);
     }
 
     void SceneManager::EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change)
