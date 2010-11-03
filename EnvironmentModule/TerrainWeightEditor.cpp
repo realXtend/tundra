@@ -102,6 +102,7 @@ namespace Environment
         
         assert(canvas1 && canvas2 && canvas3 && canvas4);
 
+
         int width = image.width();
         int height = image.height();
         QImage::Format format = image.format();
@@ -280,8 +281,9 @@ namespace Environment
                 int red = qRed(image1.pixel(i,j));
                 int green = qRed(image2.pixel(i,j));
                 int blue = qRed(image3.pixel(i,j));
-                int alpha = qRed(image4.pixel(i,j));
 
+
+                int alpha = qRed(image4.pixel(i,j));
 
                 ret_image.setPixel(i,j, QColor(red,green,blue,alpha).rgba());
             }
@@ -413,6 +415,7 @@ namespace Environment
             texname += (*it)->GetName();
             texname += ptr->TypeName();
             texname += ptr->Name();
+            texname += ".png";
             Ogre::String str(texname.toStdString());
             Ogre::TextureManager::getSingleton().remove(str);
             Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().createManual(str, "General", Ogre::TEX_TYPE_2D, bufbox.getWidth(), bufbox.getHeight(),bufbox.getDepth(),0,bufbox.format,Ogre::TU_DYNAMIC_WRITE_ONLY);
@@ -422,10 +425,12 @@ namespace Environment
             }
             ptr->settexture0(texname);
             it++;
-            Ogre::Image img;
-            img.loadDynamicImage(static_cast<Ogre::uchar*>(bufbox.data),bufbox.getWidth(), bufbox.getHeight(), bufbox.getDepth(), bufbox.format);
+
+            ///For now we just save this to assets folder. Later on, this should be replicated to server/clients etc.
+            QImageWriter writer("data/assets/" + texname);
+            writer.setCompression(0);
+            writer.write(map);
             
-            img.save("lol.png");
         }
     }
 
@@ -465,8 +470,14 @@ namespace Environment
     {
 
         QString fileName = QFileDialog::getOpenFileName(this, tr("Select Image"),"" , tr("Image Files (*.png)"));
-        QPixmap image(fileName);
+        QPixmap pix(fileName, "PNG");
+        if(pix.isNull())
+            return;
 
-        DecomposeImageToCanvases(image.toImage());
+        
+        QImage img(pix.size(),QImage::Format_ARGB32);
+        QImageReader reader(fileName);
+        if(reader.read(&img))
+            DecomposeImageToCanvases(img);
     }
 }
