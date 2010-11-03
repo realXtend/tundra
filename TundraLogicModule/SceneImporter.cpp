@@ -204,7 +204,11 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
         if (!skeleton_name.empty())
             meshPtr->skeletonId.Set(QString::fromStdString(prefix + skeleton_name), AttributeChange::Disconnected);
         meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), AttributeChange::Disconnected);
-        meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), AttributeChange::Disconnected);
+
+        if (meshName.empty())
+            meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), AttributeChange::Disconnected);
+        else
+            meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(0,0,0), Vector3df(1,1,1)), AttributeChange::Disconnected);
     }
     else
         TundraLogicModule::LogError("No EC_Mesh was created!");

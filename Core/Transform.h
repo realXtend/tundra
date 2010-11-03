@@ -27,13 +27,6 @@ struct Transform
     {
     }
 
-    Transform(const Matrix4 &transform):
-        position(transform.getTranslation()),
-        rotation(transform.getRotationDegrees()),
-        scale(transform.getScale())
-    {
-    }
-
     void SetPos(float x, float y, float z)
     {
         position.x = x;
