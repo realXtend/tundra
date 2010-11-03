@@ -380,7 +380,7 @@ QPixmap EC_HoveringText::GetTextPixmap()
         painter.setBrush(backgroundColor_);
 
     // Draw background rect
-    painter.setPen(QColor(255,255,255,150));
+    painter.setPen(Qt::transparent);
     painter.drawRoundedRect(rect, 20.0, 20.0);
 
     // Draw text

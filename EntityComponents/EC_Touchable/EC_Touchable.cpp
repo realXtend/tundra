@@ -233,7 +233,13 @@ void EC_Touchable::UpdateMaterial()
         return;
     }
 
-//    hover_cursor_ = QCursor((Qt::CursorShape)(hoverCursor.Get()));
+    // Remove current cursors when attributes change
+    QCursor *current_cursor = QApplication::overrideCursor();
+    while (current_cursor)
+    {
+        QApplication::restoreOverrideCursor();
+        current_cursor = QApplication::overrideCursor();
+    }
 }
 
 ///\todo Remove this altogether. -jj. Integrate switching mouse cursors to input contexts so that 
