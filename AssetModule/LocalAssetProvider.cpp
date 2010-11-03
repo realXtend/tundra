@@ -63,8 +63,11 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     
     AssetModule::LogDebug("New local asset request: " + asset_id);
     
-    // Strip file:
+    // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
     std::string filepath = asset_dir_ + asset_id.substr(7);
+    size_t lastSlash = asset_id.substr(7).find_last_of('/');
+    if (lastSlash != std::string::npos)
+        filepath = filepath.substr(0, asset_dir_.length() + lastSlash);
     
     boost::filesystem::path file_path(filepath);
     std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);

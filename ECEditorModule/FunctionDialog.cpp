@@ -11,13 +11,14 @@
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
 #include "DoxygenDocReader.h"
+#include "FunctionInvoker.h"
 
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("FunctionDialog");
 
-#include <QWebView>
+//#include <QWebView>
 
 #include "MemoryLeakCheck.h"
 
@@ -30,18 +31,29 @@ FunctionComboBox::FunctionComboBox(QWidget *parent) : QComboBox(parent)
     setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
 }
 
+/*
 void FunctionComboBox::AddFunction(const FunctionMetaData &f)
 {
-    addItem(f.fullSignature);
+    addItem(f.function);
     functions.append(f);
+    model()->sort(0);
+    for(int i = 0; i < count(); ++i)
+    id setItemText(, );
 }
+*/
 
-void FunctionComboBox::AddFunctions(const QList<FunctionMetaData> &funcs)
+void FunctionComboBox::SetFunctions(const QList<FunctionMetaData> &funcs)
 {
     foreach(FunctionMetaData f, funcs)
-        addItem(f.fullSignature);
+        addItem(f.signature);
 
-    functions.append(funcs);
+    model()->sort(0);
+//    functions.append(funcs);
+    functions = funcs;
+    qSort(functions);
+    for(int i = 0; i < count() && i < functions.size(); ++i)
+        if (itemText(i) == functions[i].signature)
+            setItemText(i, functions[i].fullSignature);
 }
 
 FunctionMetaData FunctionComboBox::CurrentFunction() const
@@ -53,12 +65,18 @@ FunctionMetaData FunctionComboBox::CurrentFunction() const
     return FunctionMetaData();
 }
 
+void FunctionComboBox::Clear()
+{
+    functions.clear();
+    clear();
+}
+
 // FunctionDialog
 
 FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWidget *parent, Qt::WindowFlags f) :
     QDialog(parent, f),
     objects(objs),
-    returnValueArgument(0)
+    invoker(new FunctionInvoker)
 {
     // Set up the UI
     setAttribute(Qt::WA_DeleteOnClose);
@@ -89,6 +107,36 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     mainLayout->addWidget(doxygenView);
     mainLayout->addWidget(functionComboBox);
 
+    QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    mainLayout->insertSpacerItem(-1, spacer);
+
+    publicCheckBox = new QCheckBox(tr("Public"));
+    publicCheckBox->setChecked(true);
+    protectedAndPrivateCheckBox = new QCheckBox(tr("Protected and private"));
+
+    slotsCheckBox = new QCheckBox(tr("Slots"));
+    slotsCheckBox->setChecked(true);
+    signalsCheckBox = new QCheckBox(tr("Signals"));
+
+    connect(publicCheckBox, SIGNAL(toggled(bool)), SLOT(GenerateTargetLabelAndFunctions()));
+    connect(protectedAndPrivateCheckBox, SIGNAL(toggled(bool)), SLOT(GenerateTargetLabelAndFunctions()));
+    connect(slotsCheckBox, SIGNAL(toggled(bool)), SLOT(GenerateTargetLabelAndFunctions()));
+    connect(signalsCheckBox, SIGNAL(toggled(bool)), SLOT(GenerateTargetLabelAndFunctions()));
+
+    QHBoxLayout *typeLayout = new QHBoxLayout;
+    typeLayout->addWidget(publicCheckBox);
+    typeLayout->addWidget(protectedAndPrivateCheckBox);
+    QSpacerItem *typeSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    typeLayout->addSpacerItem(typeSpacer);
+    mainLayout->insertLayout(-1, typeLayout);
+
+    QHBoxLayout *accessLayout = new QHBoxLayout;
+    accessLayout->addWidget(slotsCheckBox);
+    accessLayout->addWidget(signalsCheckBox);
+    QSpacerItem *accessSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    accessLayout->addSpacerItem(accessSpacer);
+    mainLayout->insertLayout(-1, accessLayout);
+
     editorLayout = new QGridLayout;
     mainLayout->insertLayout(-1, editorLayout);
 
@@ -98,8 +146,8 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     mainLayout->addWidget(returnValueLabel);
     mainLayout->addWidget(returnValueEdit);
 
-    QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    mainLayout->insertSpacerItem(-1, spacer);
+    QSpacerItem *spacer2 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    mainLayout->insertSpacerItem(-1, spacer2);
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout;
     QSpacerItem *buttonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -125,7 +173,8 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
 
 FunctionDialog::~FunctionDialog()
 {
-    qDeleteAll(allocatedArguments);
+    qDeleteAll(currentArguments);
+    SAFE_DELETE(invoker);
 }
 
 QList<boost::weak_ptr<QObject> > FunctionDialog::Objects() const
@@ -138,14 +187,9 @@ QString FunctionDialog::Function() const
     return functionComboBox->CurrentFunction().function;
 }
 
-IArgumentType *FunctionDialog::ReturnValueArgument() const
-{
-    return returnValueArgument;
-}
-
 QList<IArgumentType *> FunctionDialog::Arguments() const
 {
-    return allocatedArguments;
+    return currentArguments;
 }
 
 void FunctionDialog::SetReturnValueText(const QString &text)
@@ -168,6 +212,68 @@ void FunctionDialog::hideEvent(QHideEvent *)
     close();
 }
 
+void FunctionDialog::Execute()
+{
+    emit finished(2);
+}
+
+void FunctionDialog::UpdateEditors()
+{
+    QPoint orgPos = pos();
+
+    // delete widgets from gridlayout
+    QLayoutItem *child;
+    while((child = editorLayout->takeAt(0)) != 0)
+    {
+        QWidget *w = child->widget();
+        SAFE_DELETE(child);
+        SAFE_DELETE(w);
+    }
+
+    FunctionMetaData fmd = functionComboBox->CurrentFunction();
+    if (fmd.function.isEmpty())
+        return;
+
+    if (objects[0].expired())
+        return;
+
+    // Create and show doxygen documentation for the function.
+    QObject *obj = objects[0].lock().get();
+    QString doxyFuncName = QString(obj->metaObject()->className()) + "::" + fmd.function;
+    QUrl styleSheetPath;
+    QString documentation;
+    bool success = DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
+    if (documentation.length() != 0)
+    {
+        doxygenView->setHtml(documentation);//, styleSheetPath);
+        doxygenView->show();
+    }
+    else
+    {
+        LogDebug("Failed to find documentation!");
+        doxygenView->hide();
+    }
+
+    qDeleteAll(currentArguments);
+    currentArguments.clear();
+    currentArguments = invoker->CreateArgumentList(obj, fmd.signature);
+    if (currentArguments.empty() || (currentArguments.size() != fmd.parameters.size()))
+        return;
+
+    for(int idx = 0; idx < currentArguments.size(); ++idx)
+    {
+        QLabel *label = new QLabel(fmd.parameters[idx].first + ' ' + fmd.parameters[idx].second);
+        label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        QWidget *editor = currentArguments[idx]->CreateEditor();
+
+        // Layout takes ownership of label and editor.
+        editorLayout->addWidget(label, idx, 0);
+        editorLayout->addWidget(editor, idx, 1);
+    }
+
+    move(orgPos);
+}
+
 void FunctionDialog::GenerateTargetLabelAndFunctions()
 {
     // Generate functions for the function combo box.
@@ -180,6 +286,25 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
         targetText.append(tr("Target: "));
     else
         targetText.append(tr("Targets: "));
+
+    // Clear previous content of function combo box
+    functionComboBox->Clear();
+
+    // Create filter from user's check box selection to decide which methods we will show.
+    QList<QMetaMethod::Access> acceptedAccessTypes;
+    if (publicCheckBox->isChecked())
+        acceptedAccessTypes << QMetaMethod::Public;
+    if (protectedAndPrivateCheckBox->isChecked())
+        acceptedAccessTypes << QMetaMethod::Protected << QMetaMethod::Private;
+
+    QList<QMetaMethod::MethodType> acceptedMethodTypes;
+    if (slotsCheckBox->isChecked())
+        acceptedMethodTypes << QMetaMethod::Slot;
+    if (signalsCheckBox->isChecked())
+        acceptedMethodTypes << QMetaMethod::Signal;
+
+    QList<QMetaMethod::Access>::const_iterator accessIter;
+    QList<QMetaMethod::MethodType>::const_iterator methodIter;
 
     int objectsTotal = objects.size();
     for(int i = 0; i < objectsTotal; ++i)
@@ -210,168 +335,73 @@ void FunctionDialog::GenerateTargetLabelAndFunctions()
         for(int i = mo->methodOffset(); i < mo->methodCount(); ++i)
         {
             const QMetaMethod &mm = mo->method(i);
-            //if ((mm.methodType() == QMetaMethod::Slot) && (mm.access() == QMetaMethod::Public))
-            // if (mm matches with current filter)
+
+            // Filter according to users selection.
+            accessIter = qFind(acceptedAccessTypes, mm.access());
+            methodIter = qFind(acceptedMethodTypes, mm.methodType());
+            if ((accessIter == acceptedAccessTypes.end()) || (methodIter == acceptedMethodTypes.end()))
+                continue;
+
+            // Craft full signature with return type and parameter names.
+            QString fullSig = mm.signature();
+            QList<QByteArray> pNames = mm.parameterNames();
+            QList<QByteArray> pTypes = mm.parameterTypes();
+            if (pTypes.size())
             {
-                // Craft full signature with return type and parameter names.
-                QString fullSig = mm.signature();
-                QList<QByteArray> pNames = mm.parameterNames();
-                QList<QByteArray> pTypes = mm.parameterTypes();
-                if (pTypes.size())
+                // Insert as many parameter names as we pNames in total; function signatures might be missing some param names.
+                int idx, searchStart = 0;
+                for(int pIdx = 0; pIdx < pNames.size(); ++pIdx)
                 {
-                    // Insert as many parameter names as we pNames in total; function signatures might be missing some param names.
-                    int idx, searchStart = 0;
-                    for(int pIdx = 0; pIdx < pNames.size(); ++pIdx)
+                    idx = fullSig.indexOf(',', searchStart);
+                    QString param = ' ' + QString(pNames[pIdx]);
+                    if (idx == -1)
                     {
-                        idx = fullSig.indexOf(',', searchStart);
-                        QString param = ' ' + QString(pNames[pIdx]);
-                        if (idx == -1)
-                        {
-                            // No more commas found. Assume that we can insert the last param name now.
-                            if (pIdx < pNames.size())
-                                fullSig.insert(fullSig.size() - 1, param);
-                            break;
-                        }
-
-                        // Insert parameter name.
-                        fullSig.insert(idx, param);
-                        searchStart = idx + param.size() + 1;
+                        // No more commas found. Assume that we can insert the last param name now.
+                        if (pIdx < pNames.size())
+                            fullSig.insert(fullSig.size() - 1, param);
+                        break;
                     }
+
+                    // Insert parameter name.
+                    fullSig.insert(idx, param);
+                    searchStart = idx + param.size() + 1;
                 }
-
-                // Prepend full signature with return type.
-                QString returnType = mm.typeName();
-                if (returnType.isEmpty())
-                    returnType = "void";
-                fullSig.prepend(returnType + ' ');
-
-                // Construct FunctionMetaData struct.
-                FunctionMetaData f;
-                int start = fullSig.indexOf(' ');
-                int end = fullSig.indexOf('(');
-                f.function = fullSig.mid(start + 1, end - start - 1);
-                f.returnType = returnType;
-                f.fullSignature = fullSig;
-                f.signature = mm.signature();
-
-                for(int k = 0; k < pTypes.size(); ++k)
-                    if (k < pNames.size())
-                        f.parameters.push_back(qMakePair(QString(pTypes[k]), QString(pNames[k])));
-                    else 
-                        // Protection agains missing parameter names in the signature: insert just an empty string.
-                        f.parameters.push_back(qMakePair(QString(pTypes[k]), QString()));
-
-                fmds.push_back(f);
             }
+
+            // Prepend full signature with return type.
+            QString returnType = mm.typeName();
+            if (returnType.isEmpty())
+                returnType = "void";
+            fullSig.prepend(returnType + ' ');
+
+            // Construct FunctionMetaData struct.
+            FunctionMetaData f;
+            int start = fullSig.indexOf(' ');
+            int end = fullSig.indexOf('(');
+            f.function = fullSig.mid(start + 1, end - start - 1);
+            f.returnType = returnType;
+            f.fullSignature = fullSig;
+            f.signature = mm.signature();
+
+            for(int k = 0; k < pTypes.size(); ++k)
+                if (k < pNames.size())
+                    f.parameters.push_back(qMakePair(QString(pTypes[k]), QString(pNames[k])));
+                else 
+                    // Protection agains missing parameter names in the signature: insert just an empty string.
+                    f.parameters.push_back(qMakePair(QString(pTypes[k]), QString()));
+
+            fmds.push_back(f);
         }
     }
 
     targetsLabel->setText(targetText);
-    functionComboBox ->AddFunctions(fmds);
-}
+    functionComboBox ->SetFunctions(fmds);
 
-void FunctionDialog::CreateArgumentList()
-{
-    QList<IArgumentType *> args;
-    QPair<QString, QString> pair;
-    foreach(pair, functionComboBox->CurrentFunction().parameters)
+    // If no functions, disable exec buttons.
+    /*
+    if (functionComboBox->count() == 0)
     {
-        IArgumentType *arg = CreateArgumentType(pair.first);
-        if (arg)
-            args.append(arg);
     }
-
-    qDeleteAll(allocatedArguments);
-    allocatedArguments = args;
-}
-
-IArgumentType *FunctionDialog::CreateArgumentType(const QString &type)
-{
-    IArgumentType *arg = 0;
-
-    if (type == "void")
-        arg = new VoidArgumentType;
-    else if (type == "QString")
-        arg = new ArgumentType<QString>(type.toStdString().c_str());
-    else if (type == "QStringList")
-        arg = new ArgumentType<QStringList>(type.toStdString().c_str());
-    else if (type == "std::string")
-        arg = new ArgumentType<std::string>(type.toStdString().c_str());
-    else if (type == "bool")
-        arg = new ArgumentType<bool>(type.toStdString().c_str());
-    else if(type == "unsigned int" || type == "uint" || type == "size_t" || type == "entity_id_t")
-        arg = new ArgumentType<unsigned int>(type.toStdString().c_str());
-    else if (type == "int")
-        arg = new ArgumentType<int>(type.toStdString().c_str());
-    else if (type == "float")
-        arg = new ArgumentType<float>(type.toStdString().c_str());
-    else if (type == "double")
-        arg = new ArgumentType<double>(type.toStdString().c_str());
-    else
-        LogDebug("Unsupported argument type: " + type.toStdString());
-
-    return arg;
-}
-
-void FunctionDialog::Execute()
-{
-    emit finished(2);
-}
-
-void FunctionDialog::UpdateEditors()
-{
-    QPoint orgPos = pos();
-
-    // delete widgets from gridlayout
-    QLayoutItem *child;
-    while((child = editorLayout->takeAt(0)) != 0)
-    {
-        QWidget *w = child->widget();
-        SAFE_DELETE(child);
-        SAFE_DELETE(w);
-    }
-
-    FunctionMetaData fmd = functionComboBox->CurrentFunction();
-    if (fmd.function.isEmpty())
-        return;
-
-    if (objects[0].expired())
-        return;
-
-    SAFE_DELETE(returnValueArgument);
-    returnValueArgument = CreateArgumentType(fmd.returnType);
-
-    // Create and show doxygen documentation for the function.
-    QString doxyFuncName = QString(objects[0].lock()->metaObject()->className()) + "::" + fmd.function;
-    QUrl styleSheetPath;
-    QString documentation;
-    bool success = DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
-    if (documentation.length() != 0)
-    {
-        doxygenView->setHtml(documentation);//, styleSheetPath);
-        doxygenView->show();
-    }
-    else
-    {
-        LogDebug("Failed to find documentation!");
-        doxygenView->hide();
-    }
-
-    CreateArgumentList();
-    if (allocatedArguments.empty() || (allocatedArguments.size() != fmd.parameters.size()))
-        return;
-
-    for(int idx = 0; idx < allocatedArguments.size(); ++idx)
-    {
-        QLabel *label = new QLabel(fmd.parameters[idx].first + ' ' + fmd.parameters[idx].second);
-        label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        QWidget *editor = allocatedArguments[idx]->CreateEditor();
-
-        // Layout takes ownership of label and editor.
-        editorLayout->addWidget(label, idx, 0);
-        editorLayout->addWidget(editor, idx, 1);
-    }
-
-    move(orgPos);
+    */
 }
 

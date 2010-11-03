@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "OpenAssetImport.h"
-#include "Renderer.h"
 
 #include <assimp.hpp>      // C++ importer interface
 #include <aiScene.h>       // Output data structure
@@ -12,14 +11,21 @@
 #include <Ogre.h>
 
 using namespace Assimp;
-using namespace Ogre;
 
 namespace AssImp
 {
     OpenAssetImport::OpenAssetImport() : 
         importer_(new Importer()), 
         logstream_(new AssImpLogStream()), 
-        loglevels_(Logger::DEBUGGING | Logger::INFO | Logger::ERR | Logger::WARN)
+        loglevels_(Logger::DEBUGGING | Logger::INFO | Logger::ERR | Logger::WARN),
+        default_flags_( aiProcess_JoinIdenticalVertices		|
+                        aiProcess_Triangulate				|
+                        aiProcess_RemoveComponent			|
+                        aiProcess_GenNormals				|	// ignored if model already has normals
+                        aiProcess_LimitBoneWeights			|
+                        aiProcess_SortByPType				|	// remove point and line primitive types
+                        aiProcess_ValidateDataStructure         // makes sure that all indices are valid, all animations and bones are linked correctly, all material references are correct...
+                      )
     {
         // set up importer
         importer_->SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, 4);	// limit bone weights to 4 vertices
@@ -47,28 +53,40 @@ namespace AssImp
         delete logstream_;
     }
 
-    bool OpenAssetImport::IsSupportedExtension(const QString& extension)
+    bool OpenAssetImport::IsSupportedExtension(const QString& filename)
     {
+        boost::filesystem::path path(filename.toStdString());
+        QString extension = QString(path.extension().c_str()).toLower();
+
         return importer_->IsExtensionSupported(extension.toStdString());
     }
 
-    void OpenAssetImport::Import(Foundation::Framework *framework, const QString& file, std::vector<std::string> &outMeshNames)
+    void OpenAssetImport::GetMeshData(const QString& file, std::vector<MeshData> &outMeshData)
     {
-        const aiScene *scene = importer_->ReadFile(
-            file.toStdString(), 
-            aiProcess_JoinIdenticalVertices		|
-            aiProcess_Triangulate				|
-            aiProcess_RemoveComponent			|
-            aiProcess_GenNormals				|	// ignored if model already has normals
-            aiProcess_LimitBoneWeights			|
-            aiProcess_SortByPType				|	// remove point and line primitive types
-            aiProcess_ValidateDataStructure         // makes sure that all indices are valid, all animations and bones are linked correctly, all material references are correct...
-            );
+        const aiScene *scene = importer_->ReadFile(file.toStdString(), default_flags_);
 
         if (scene)
         {
+            const struct aiNode *rootNode = scene->mRootNode;
             
-            ImportScene(framework, scene, file, outMeshNames);
+            aiMatrix4x4 transform;
+            GetNodeData(scene, rootNode, file, transform, outMeshData);
+        } else
+        {       
+            // report error
+            Foundation::RootLogError(importer_->GetErrorString());
+        }
+    }
+
+    void OpenAssetImport::Import(const void *data, size_t length, const QString &name, const char* hint, const QString &nodeName, std::vector<std::string> &outMeshNames)
+    {
+        const aiScene *scene = importer_->ReadFileFromMemory(data, length, default_flags_, hint);
+
+        if (scene)
+        {
+            const struct aiNode *rootNode = scene->mRootNode;
+            
+            ImportNode(scene, rootNode, name, nodeName, outMeshNames);
         } else
         {       
             // report error
@@ -77,26 +95,44 @@ namespace AssImp
         }
     }
 
-    void OpenAssetImport::ImportScene(Foundation::Framework *framework, const struct aiScene *scene, const QString& file, std::vector<std::string> &outMeshNames)
+    void OpenAssetImport::GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
+        const aiMatrix4x4 &parentTransform, std::vector<MeshData> &outMeshNames)
     {
-        const struct aiNode *rootNode = scene->mRootNode;
-        
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        
-        if (renderer)
-        {
-            ImportNode(renderer, scene, rootNode, file, 0, outMeshNames);
-        }
-	}
+        aiMatrix4x4 aiTransform = node->mTransformation;
 
-    void OpenAssetImport::ImportNode(const boost::shared_ptr<OgreRenderer::Renderer> &renderer, const aiScene *scene, 
-        const aiNode *node, const QString& file, int nodeIdx, std::vector<std::string> &outMeshNames)
+        aiMatrix4x4 worldTransform =  parentTransform * aiTransform;
+        
+        aiVector3D pos;
+        aiVector3D scale;
+        Vector3df rote;
+        aiQuaternion rotq;
+        worldTransform.Decompose(scale, rotq, pos);
+        Quaternion quat(rotq.x, rotq.y, rotq.z, rotq.w);
+        
+        quat.toEuler(rote);
+        rote *= RADTODEG;
+
+
+        if (node->mNumMeshes > 0)
+        {
+            MeshData data = { file, QString(node->mName.data), Transform(Vector3df(pos.x, pos.y, pos.z), rote, Vector3df(scale.x, scale.y, scale.z)) };
+            outMeshNames.push_back(data);     
+        }
+
+        // import children
+        for (int i=0 ; i<node->mNumChildren ; ++i)
+            GetNodeData(scene, node->mChildren[i], file, worldTransform, outMeshNames);
+    }
+
+    void OpenAssetImport::ImportNode(const aiScene *scene, const aiNode *node, const QString& file,
+        const QString &nodeName, std::vector<std::string> &outMeshNames)
     {
         try
         {
-            boost::filesystem::path path(file.toStdString());
-            std::string meshname = path.filename() + boost::lexical_cast<std::string>(nodeIdx);
+   //         boost::filesystem::path path(file.toStdString());
+   //         std::string meshname = path.filename() + boost::lexical_cast<std::string>(nodeIdx);
+            std::string ogreMeshName = file.toStdString(); //std::string("mesh___") + meshname;
+            std::string meshname = ogreMeshName;
 
             /*if (scene->mNumMaterials > 0)
             {
@@ -107,10 +143,10 @@ namespace AssImp
             }*/
 
 
-            aiMatrix4x4 transform = node->mTransformation;
-            if (node->mNumMeshes > 0)
+            //aiMatrix4x4 transform = node->mTransformation;
+            if (node->mNumMeshes > 0 && nodeName.compare(QString(node->mName.data)) == 0 && !Ogre::MeshManager::getSingleton().resourceExists(ogreMeshName))
             {
-                Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(std::string("mesh___") + meshname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+                Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(ogreMeshName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 ogreMesh->setAutoBuildEdgeLists(false);
 
                 Ogre::Vector3 vmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
@@ -120,7 +156,7 @@ namespace AssImp
                 {
                     const aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
                     
-                    SubMesh *ogreSubmesh = ogreMesh->createSubMesh();
+                    Ogre::SubMesh *ogreSubmesh = ogreMesh->createSubMesh();
                     
                     ogreSubmesh->useSharedVertices = false;
                     ogreSubmesh->vertexData = new Ogre::VertexData();
@@ -130,9 +166,9 @@ namespace AssImp
                     // Vertex declarations
                     size_t offset = 0;
                     Ogre::VertexDeclaration* decl = data->vertexDeclaration;
-                    decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
-                    offset += VertexElement::getTypeSize(VET_FLOAT3);
-                    decl->addElement(0, offset, VET_FLOAT3, VES_NORMAL);
+                    decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
+                    offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
+                    decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_NORMAL);
 
                     offset = 0;
                     for (int tn=0 ; tn<AI_MAX_NUMBER_OF_TEXTURECOORDS ; ++tn)
@@ -142,18 +178,18 @@ namespace AssImp
                             if (mesh->mNumUVComponents[tn] == 3)
                             {
                                 decl->addElement(1, offset, Ogre::VET_FLOAT3, Ogre::VES_TEXTURE_COORDINATES, tn);
-                                offset += VertexElement::getTypeSize(VET_FLOAT3);
+                                offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
                             } else
                             {
                                 decl->addElement(1, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES, tn);
-                                offset += VertexElement::getTypeSize(VET_FLOAT2);
+                                offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
                             }
                         }
                     }
                     if (mesh->HasTangentsAndBitangents())
                     {
                         decl->addElement(1, offset, Ogre::VET_FLOAT3, Ogre::VES_TANGENT);
-                        offset += VertexElement::getTypeSize(VET_FLOAT3);
+                        offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
                         decl->addElement(1, offset, Ogre::VET_FLOAT3, Ogre::VES_BINORMAL);
                     }
 
@@ -187,7 +223,8 @@ namespace AssImp
                     vbuf->unlock();
                     data->vertexBufferBinding->setBinding(0, vbuf);
                     
-
+                    if (mesh->HasTextureCoords(0))
+                    {
                     vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(
                         decl->getVertexSize(1),                     // This value is the size of a vertex in memory
                         data->vertexCount,                          // The number of vertices you'll put into this buffer
@@ -228,6 +265,7 @@ namespace AssImp
                     }
                     vbuf->unlock();
                     data->vertexBufferBinding->setBinding(1, vbuf);
+                    }
 
                     // indices
                     size_t numIndices = mesh->mNumFaces * 3;            // support only triangles, so 3 indices per face
@@ -279,18 +317,19 @@ namespace AssImp
                     outMeshNames.push_back(meshname);
                 }
             }
-        } catch (Ogre::Exception &e)
+        } catch (Ogre::Exception &)
         {
             // error
         }
 
         // import children
         for (int i=0 ; i<node->mNumChildren ; ++i)
-            ImportNode(renderer, scene, node->mChildren[i], file, ++nodeIdx, outMeshNames);
+            ImportNode(scene, node->mChildren[i], file, nodeName, outMeshNames);
     }
     
     void OpenAssetImport::AssImpLogStream::write(const char* message)
     {
+        //! \todo doesn't work, check assimp docs for reason -cmayhem
         Foundation::RootLogInfo(message);
     }
 }

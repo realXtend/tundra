@@ -10,16 +10,16 @@
 
 void mainVS(float4 pos    : POSITION,
           float3 normal : NORMAL,
-          float2 tex    : TEXCOORD0,
+          float2 tex0    : TEXCOORD0, // Diffuse texture channel.
+          float2 tex1    : TEXCOORD1, // Blend texture channel.
           
           uniform float4x4 worldViewProjMatrix,
           uniform float4x4 worldMatrix,
-		  uniform float2 scale0,
+		      uniform float2 scale0,
           uniform float2 scale1,
           uniform float2 scale2,
           uniform float2 scale3,
           uniform float2 scale4,
-
 
           //Directional light
           uniform float4 lightDir0,
@@ -57,16 +57,14 @@ void mainVS(float4 pos    : POSITION,
 {
 	oPos = mul(worldViewProjMatrix, pos);
 	
-    oTex12.xy = tex / scale1;
-    oTex12.zw = tex / scale2;
-    oTex34.xy = tex / scale3;
-    oTex34.zw = tex / scale4;
-	oTex0 = tex / scale0;
-    
-    
+    oTex12.xy = tex0 / scale1;
+    oTex12.zw = tex0 / scale2;
+    oTex34.xy = tex0 / scale3;
+    oTex34.zw = tex0 / scale4;
+	  oTex0 = tex1 / scale0;
+        
     float4 worldPos = mul(worldMatrix, pos);
 	
-
     // Calculate point light directions and distances    
     float3 lightVec1 = lightPos1.xyz - (pos.xyz * lightPos1.w);
     float dist1 = length(lightVec1);

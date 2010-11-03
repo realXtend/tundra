@@ -18,14 +18,18 @@
 
 class QGridLayout;
 class QLabel;
-class QWebView;
 class QTextEdit;
+class QCheckBox;
 
 class IArgumentType;
+class FunctionInvoker;
 
 /// Utility data structure for indentifying and handling of function signatures.
 struct FunctionMetaData
 {
+    /// Less than operator. Needed for qSort().
+    bool operator <(const FunctionMetaData &rhs) const { return signature < rhs.signature; }
+
     QString function; ///< Function name in the simplest form
     QString returnType; ///< Return type of the function.
     QString signature; ///< Signature of the function without return type and parameter names.
@@ -47,15 +51,18 @@ public:
     /// Adds new function to the combo box
     /** @param f Function.
     */
-    void AddFunction(const FunctionMetaData &f);
+//    void AddFunction(const FunctionMetaData &f);
 
-    /// Adds list of functions to the combo box.
+    /// Sets list of functions to the combo box. Overrides existing functions.
     /** @param funcs List of functions.
     */
-    void AddFunctions(const QList<FunctionMetaData> &funcs);
+    void SetFunctions(const QList<FunctionMetaData> &funcs);
 
     /// Returns meta data structure of the currently selected function.
     FunctionMetaData CurrentFunction() const;
+
+    /// Clears functions list and items at the combo box.
+    void Clear();
 
     /// All available functions.
     QList<FunctionMetaData> functions;
@@ -91,9 +98,6 @@ public:
     /// Returns name of the funtion in the most simplest form, f.ex. "setValue".
     QString Function() const;
 
-    /// Return argument type of the current functions return value.
-    IArgumentType *ReturnValueArgument() const;
-
     /// Returns list of arguments for the current function.
     /// Remember to call UpdateValueFromEditor() for each argument before using them.
     QList<IArgumentType *> Arguments() const;
@@ -112,18 +116,8 @@ protected:
     /// QWidget override.
     void hideEvent(QHideEvent *);
 
-private:
-    /// Generates the targel label and list of available functions according to current object selection and function filter.
-    void GenerateTargetLabelAndFunctions();
-
-    /// Creates list of argument types for the current function.
-    void CreateArgumentList();
-
-    /// Returns Argument type object for spesific parameter type name.
-    /** @param type Type name of the function parameter.
-        @return Argument type, or 0 if invalid type name was given.
-    */
-    IArgumentType *CreateArgumentType(const QString &type);
+    /// Function invoker object.
+    FunctionInvoker *invoker;
 
     /// Label showing the target objects.
     QLabel *targetsLabel;
@@ -131,8 +125,8 @@ private:
     /// Function combo box
     FunctionComboBox *functionComboBox;
 
-    /// Web view for doxygen documentation.
-    /*QWebView*/ QTextEdit *doxygenView;
+    /// View for doxygen documentation.
+    QTextEdit *doxygenView;
 
     /// Layout for dynamically created parameter editors.
     QGridLayout *editorLayout;
@@ -140,19 +134,28 @@ private:
     /// Text edit field for showing return values of functions.
     QTextEdit *returnValueEdit;
 
+    /// "Public" function filter check box.
+    QCheckBox *publicCheckBox;
+
+    /// "Protected and private" function filter check box.
+    QCheckBox *protectedAndPrivateCheckBox;
+
+    /// "Slots" function filter check box.
+    QCheckBox *slotsCheckBox;
+
+    /// "Signals" function filter check box.
+    QCheckBox *signalsCheckBox;
+
     /// List of objects.
     QList<boost::weak_ptr<QObject> > objects;
 
-    /// For keeping track of created argument type objects.
-    QList<IArgumentType *> allocatedArguments;
+    /// Argument types for currently active function in the combo box.
+    QList<IArgumentType *> currentArguments;
 
-    /// Return value argument.
-    IArgumentType *returnValueArgument;
-
-    /// 
+    /// Filter consists access level and type of a method 
     typedef QPair<QMetaMethod::Access, QMetaMethod::MethodType> FunctionFilter;
 
-    /// 
+    /// Filter used for controlling which functions are visible.
     FunctionFilter functionFilter;
 
 private slots:
@@ -161,6 +164,9 @@ private slots:
 
     /// Creates editor widgets for the currently selected function's parameters.
     void UpdateEditors();
+
+    /// Generates the targel label and list of available functions according to current object selection and function filter.
+    void GenerateTargetLabelAndFunctions();
 };
 
 #endif
