@@ -43,7 +43,11 @@ namespace AssImp
             aiPrimitiveType_POINT		|
             aiPrimitiveType_LINE
             );
-
+#ifdef _DEBUG
+        DefaultLogger::create("", Logger::VERBOSE); // enable debug messages
+#else
+        DefaultLogger::create();
+#endif
         Assimp::DefaultLogger::get()->attachStream(logstream_, loglevels_);
     }
 
@@ -51,6 +55,7 @@ namespace AssImp
     {
         Assimp::DefaultLogger::get()->detatchStream(logstream_, loglevels_);
         delete logstream_;
+        DefaultLogger::kill();
     }
 
     bool OpenAssetImport::IsSupportedExtension(const QString& filename)
