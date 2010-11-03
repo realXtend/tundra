@@ -26,22 +26,18 @@
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
 #include "InvokeItem.h"
+#include "FunctionInvoker.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
 #include <QDomDocument>
 #include <QDomElement>
+#include <QDebug>
 
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
-
-/// Sorts invoke history descending by MRU order number
-bool SortDescedingByMruOrder(const InvokeItem &lhs, const InvokeItem &rhs)
-{
-    return lhs.mruOrder  < rhs.mruOrder;
-}
 
 // File filter definitions for supported files.
 const QString cOgreSceneFileFilter(QApplication::translate("SceneTreeWidget", "OGRE scene (*.scene)"));
@@ -338,19 +334,31 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         Selection sel = GetSelection();
         if (sel.HasEntities() && sel.HasComponents())
             functionsAction->setDisabled(true);
-    }
 
-    if (invokeHistory.size())
-    {
-        menu->addSeparator();
-        for(int i = 0; i < numberOfInvokeItemsVisible; ++i)
-            if (i < invokeHistory.size())
-            {
-                QAction *invokeAction = new QAction(invokeHistory[i].ToString(), menu);
-                menu->addAction(invokeAction);
-                connect(invokeAction, SIGNAL(triggered()), SLOT(InvokeActionTriggered()));
-                invokeAction->setDisabled(true);
-            }
+        // Show only function and actions that for possible whole selection.
+        QSet<QString> objectNames;
+        foreach(EntityItem *eItem, sel.entities)
+            if (eItem->Entity())
+                objectNames << eItem->Entity().get()->metaObject()->className();
+        foreach(ComponentItem *cItem, sel.components)
+            if (cItem->Component())
+                objectNames << cItem->Component().get()->metaObject()->className();
+
+        // If we have more than one object name in the object name set, don't show the history.
+        if (objectNames.size() == 1 && invokeHistory.size())
+        {
+            menu->addSeparator();
+
+            int numItemsAdded = 0;
+            for(int i = 0; i < invokeHistory.size(); ++i)
+                if ((invokeHistory[i].objectName == objectNames.toList().first()) && (numItemsAdded < numberOfInvokeItemsVisible))
+                {
+                    QAction *invokeAction = new QAction(invokeHistory[i].ToString(), menu);
+                    menu->addAction(invokeAction);
+                    connect(invokeAction, SIGNAL(triggered()), SLOT(InvokeActionTriggered()));
+                    ++numItemsAdded;
+                }
+        }
     }
 }
 
@@ -427,29 +435,36 @@ void SceneTreeWidget::LoadInvokeHistory()
 
     // Load and parse invoke history from settings.
     Foundation::ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
-    
-    //for(int idx = 0; idx < invokeHistory.size(); ++idx)
-    int idx = 0;
-    std::string setting("dummy");
-    while (!setting.empty())
-    {
-        setting = cfgMgr.GetSetting<std::string>("InvokeHistory", "item" + ToString(idx));
-        if (setting.empty())
-            break;
-        InvokeItem ii;
-        ii.FromSetting(setting);
-        invokeHistory.push_back(ii);
-        ++idx;
-    }
 
-    // Set MRU order numbers.
-    for(int i = 0; i < invokeHistory.size(); ++i)
-        invokeHistory[i].mruOrder = invokeHistory.size() - i;
+    try
+    {
+        int idx = 0;
+        forever
+        {
+            std::string setting = cfgMgr.GetSetting<std::string>("InvokeHistory", "item" + ToString(idx));
+            if (setting.empty())
+                break;
+            invokeHistory.push_back(InvokeItem(setting));
+            ++idx;
+        }
+
+        // Set MRU order numbers.
+        for(int i = 0; i < invokeHistory.size(); ++i)
+            invokeHistory[i].mruOrder = invokeHistory.size() - i;
+    }
+    catch(const Exception &e)
+    {
+        LogError(std::string(e.what()));
+    }
+    catch(...)
+    {
+    }
 }
 
 void SceneTreeWidget::SaveInvokeHistory()
 {
-    qSort(invokeHistory.begin(), invokeHistory.end(), SortDescedingByMruOrder);
+    // Sort descending by MRU order.
+    qSort(invokeHistory);
 
     Foundation::ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
     for(int idx = 0; idx < invokeHistory.size(); ++idx)
@@ -464,7 +479,7 @@ InvokeItem *SceneTreeWidget::FindMruItem() const
     {
         if (mruItem == 0)
             mruItem = &ii;
-        if (ii.mruOrder > mruItem->mruOrder)
+        if (ii > *mruItem)
             mruItem = &ii;
     }
 
@@ -872,21 +887,20 @@ void SceneTreeWidget::EntityActionDialogFinished(int result)
             e.lock()->Exec(execTypes, action, params);
 
     // Save invoke item
-    InvokeItem *mruItem = FindMruItem();
-
     InvokeItem ii;
     ii.type = InvokeItem::Action;
+    ii.objectName = QString(Scene::Entity::staticMetaObject.className());
     ii.name = action;
     ii.execTypes = execTypes;
-    if (mruItem)
-        ii.mruOrder = mruItem->mruOrder + 1;
-    else
-        ii.mruOrder = 0;
+    InvokeItem *mruItem = FindMruItem();
+    ii.mruOrder = mruItem ? mruItem->mruOrder + 1 : 0;
 
     for(int i = 0; i < params.size(); ++i)
-        ii.parameters.push_back(qMakePair(QString("QString"), QVariant(params[i])));
+        ii.parameters.push_back(QVariant(params[i]));
 
-    invokeHistory.push_back(ii);
+    QList<InvokeItem>::const_iterator it = qFind(invokeHistory, ii);
+    if (it == invokeHistory.end())
+        invokeHistory.push_front(ii);
 }
 
 void SceneTreeWidget::OpenFunctionDialog()
@@ -931,16 +945,13 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     if (result == QDialog::Rejected)
         return;
 
-    // Get the list of parameters we will pass to the function we are invoking, and update the latest values to them from the editor widgets the user inputted.
-    QList<IArgumentType *> arguments = dialog->Arguments();
-    foreach(IArgumentType *arg, arguments)
-        arg->UpdateValueFromEditor();
-
-    IArgumentType* retValArg = dialog->ReturnValueArgument();
-    if (!retValArg)
+    // Get the list of parameters we will pass to the function we are invoking,
+    // and update the latest values to them from the editor widgets the user inputted.
+    QVariantList params;
+    foreach(IArgumentType *arg, dialog->Arguments())
     {
-        LogError("The return value argument type for the given function call is missing. Cannot execute " + dialog->Function().toStdString() + ".");
-        return;
+        arg->UpdateValueFromEditor();
+        params << arg->ToQVariant();
     }
 
     // Clear old return value from the dialog.
@@ -952,72 +963,40 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             QObject *obj = o.lock().get();
 
             QString objName = obj->metaObject()->className();
+            QString objNameWithId = objName;
             {
                 Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
                 IComponent *c = dynamic_cast<IComponent *>(obj);
                 if (e)
-                    objName.append('(' + QString::number((uint)e->GetId()) + ')');
+                    objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
                 else if (c)
-                    objName.append('(' + c->Name() + ')');
+                    objNameWithId.append('(' + c->Name() + ')');
             }
 
-            // Generate/get argumetns for QMetaObject::invokeMethod.
-            // Also craft InvokeItem struct while we're at it.
-            InvokeItem iItem;
-            iItem.type = InvokeItem::Function;
+            // Invoke function.
+            QString errorMsg;
+            QVariant ret;
+            FunctionInvoker invoker;
+            invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
 
-            QList<QGenericArgument> args;
-            for(int i = 0; i < arguments.size(); ++i)
-            {
-                IArgumentType *arg = arguments[i];
-                args.push_back(arg->Value());
-                iItem.parameters.push_back(qMakePair(QString(arg->Value().name()), arg->ToQVariant()));
-            }
-
-            while(args.size() < 10)
-                args.push_back(QGenericArgument());
-
-            try
-            {
-                QGenericReturnArgument retArg = retValArg->ReturnValue();
-                if (retValArg->ToString() == "void")
-                {
-                    QMetaObject::invokeMethod(obj, dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
-
-                    dialog->AppendReturnValueText(objName + ' ' + retValArg->ToString());
-                }
-                else
-                {
-                    QMetaObject::invokeMethod(obj, dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                        retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
-
-                    LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
-
-                   dialog->AppendReturnValueText(objName + ' ' + retValArg->ToString());
-                }
-            }
-            catch(const Exception &e)
-            {
-                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw an Exception \"") + e.what() + "\"!");
-            }
-            catch(const std::exception &e)
-            {
-                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw a std::exception \"") + e.what() + "\"!");
-            }
-            catch(...)
-            {
-                dialog->AppendReturnValueText(objName + ' ' + QString("The function call threw an exception of unknown type!"));
-            }
+            if (errorMsg.isEmpty())
+                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+            else
+                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
 
             // Save invoke item
-            iItem.name = dialog->Function();
+            InvokeItem ii;
+            ii.type = InvokeItem::Function;
+            ii.parameters = params;
             InvokeItem *mruItem = FindMruItem();
-            if (mruItem)
-                iItem.mruOrder = mruItem->mruOrder + 1;
-            else
-                iItem.mruOrder = 0;
-            invokeHistory.push_back(iItem);
+            ii.name = dialog->Function();
+            ii.returnType = (ret.type() == QVariant::Invalid) ? QString("void") : QString(ret.typeName());
+            ii.objectName = objName;
+            ii.mruOrder = mruItem ? mruItem->mruOrder + 1 : 0;
+
+            QList<InvokeItem>::const_iterator it = qFind(invokeHistory, ii);
+            if (it == invokeHistory.end())
+                invokeHistory.push_front(ii);
         }
 }
 
@@ -1169,5 +1148,54 @@ void SceneTreeWidget::InvokeActionTriggered()
     if (!action)
         return;
 
-    action->text();
+    Selection sel = GetSelection();
+    if (sel.IsEmpty())
+        return;
+
+    InvokeItem *invokedItem;
+    foreach(InvokeItem ii, invokeHistory)
+        if (ii.ToString() == action->text())
+        {
+            invokedItem = &ii;
+            break;
+        }
+
+    InvokeItem *mruItem = FindMruItem();
+    assert(mruItem);
+    invokedItem->mruOrder = mruItem->mruOrder + 1;
+
+    if (invokedItem->type == InvokeItem::Action)
+    {
+        foreach(EntityItem *eItem, sel.entities)
+            if (eItem->Entity())
+            {
+                QStringList params;
+                //foreach(InvokeItem::Parameter p, invokedItem->parameters)
+                foreach(QVariant p, invokedItem->parameters)
+                    //params << p.second.toString();
+                    params << p.toString();
+                eItem->Entity()->Exec(invokedItem->execTypes, invokedItem->name, params);
+            }
+    }
+    else if (invokedItem->type == InvokeItem::Function)
+    {
+        QObjectList objects;
+        foreach(EntityItem *eItem, sel.entities)
+            if (eItem->Entity())
+                objects << eItem->Entity().get();
+        foreach(ComponentItem *cItem, sel.components)
+            if (cItem->Component())
+                objects << cItem->Component().get();
+
+        QVariantList returnValues;
+        FunctionInvoker invoker;
+        foreach(QObject *obj, objects)
+        {
+            QVariant retVal;
+            invoker.Invoke(obj, invokedItem->name, &retVal, invokedItem->parameters);
+            returnValues << retVal;
+
+            LogInfo("Invoked function returned " + retVal.toString().toStdString());
+        }
+    }
 }
