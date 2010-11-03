@@ -61,7 +61,11 @@ namespace Console
         //! Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
 
+        //! Removes the Console from the list of Ogre log listeners.
+        void UnsubscribeLogListener();
+
     private:
+
         //Console event category
         event_category_id_t console_category_id_;
 
@@ -90,7 +94,7 @@ namespace Console
         LogListener();
 
     public:
-        LogListener(ConsoleManager *console) : Foundation::LogListenerInterface(), mngr_(console) {}
+        explicit LogListener(ConsoleManager *console) : Foundation::LogListenerInterface(), mngr_(console) {}
         virtual ~LogListener() {}
 
         virtual void LogMessage(const std::string &message){ if(mngr_) mngr_->Print(message); }
@@ -101,7 +105,7 @@ namespace Console
     class ConsoleChannel: public Poco::Channel
     {
     public:
-        ConsoleChannel(ConsoleManager* mngr){ mngr_ = mngr; }
+        explicit ConsoleChannel(ConsoleManager* mngr){ mngr_ = mngr; }
         void log(const Poco::Message & msg){ if (mngr_) mngr_->Print(msg.getText()); }
     private:
         ConsoleManager* mngr_;

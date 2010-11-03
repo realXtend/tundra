@@ -15,6 +15,7 @@
 #include "EntityActionDialog.h"
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
+#include "FunctionInvoker.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
@@ -27,7 +28,7 @@
 #include "Input.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("ECEditor");
+DEFINE_POCO_LOGGING_FUNCTIONS("ECEditorWindow");
 
 #include <QUiLoader>
 #include <QDomDocument>
@@ -340,55 +341,51 @@ namespace ECEditor
 
     void ECEditorWindow::FunctionDialogFinished(int result)
     {
-        FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
-        if (!dialog)
-            return;
+    FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
+    if (!dialog)
+        return;
 
-        if (result == QDialog::Rejected)
-            return;
+    if (result == QDialog::Rejected)
+        return;
 
-        QList<IArgumentType *> arguments = dialog->Arguments();
-        foreach(IArgumentType *arg, arguments)
-            arg->UpdateValueFromEditor();
+    // Get the list of parameters we will pass to the function we are invoking,
+    // and update the latest values to them from the editor widgets the user inputted.
+    QVariantList params;
+    foreach(IArgumentType *arg, dialog->Arguments())
+    {
+        arg->UpdateValueFromEditor();
+        params << arg->ToQVariant();
+    }
 
-        IArgumentType* retValArg = dialog->ReturnValueArgument();
-        if (!retValArg)
+    // Clear old return value from the dialog.
+    dialog->SetReturnValueText("");
+
+    foreach(boost::weak_ptr<QObject> o, dialog->Objects())
+        if (o.lock())
         {
-            LogError("Invalid return value argument. Cannot execute " + dialog->Function().toStdString() + ".");
-            return;
-        }
+            QObject *obj = o.lock().get();
 
-        foreach(boost::weak_ptr<QObject> obj, dialog->Objects())
-            if (obj.lock())
+            QString objName = obj->metaObject()->className();
+            QString objNameWithId = objName;
             {
-                QGenericReturnArgument retArg = retValArg->ReturnValue();
-
-                QList<QGenericArgument> args;
-                for(int i = 0; i < arguments.size(); ++i)
-                    args.push_back(arguments[i]->Value());
-
-                while(args.size() < 10)
-                    args.push_back(QGenericArgument());
-
-                if (retValArg->ToString() == "void")
-                {
-                    QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                        args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
-
-                    dialog->SetReturnValueText("");
-                }
-                else
-                {
-                    QMetaObject::invokeMethod(obj.lock().get(), dialog->Function().toStdString().c_str(), Qt::DirectConnection,
-                        retArg, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9]);
-
-                    retValArg->SetValue(retArg.data());
-
-                    LogInfo("Function call returned " + retValArg->ToString().toStdString() + ".");
-
-                    dialog->SetReturnValueText(retValArg->ToString());
-                }
+                Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
+                IComponent *c = dynamic_cast<IComponent *>(obj);
+                if (e)
+                    objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
+                else if (c)
+                    objNameWithId.append('(' + c->Name() + ')');
             }
+
+            QString errorMsg;
+            QVariant ret;
+            FunctionInvoker invoker;
+            invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
+
+            if (errorMsg.isEmpty())
+                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+            else
+                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+        }
     }
 
     void ECEditorWindow::HighlightEntities(IComponent *component)
@@ -493,7 +490,7 @@ namespace ECEditor
         QMenu *menu = new QMenu(this);
         menu->setAttribute(Qt::WA_DeleteOnClose);
         QAction *editXml = new QAction(tr("Edit XML..."), menu);
-        QAction *deleteEntity= new QAction(tr("Delete"), menu);
+        QAction *deleteEntity = new QAction(tr("Delete"), menu);
         QAction *addComponent = new QAction(tr("Add new component..."), menu);
         QAction *copyEntity = new QAction(tr("Copy"), menu);
         QAction *pasteEntity = new QAction(tr("Paste"), menu);
