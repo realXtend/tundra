@@ -328,11 +328,15 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
 {
     if (attribute == &transform)
     {
-        if (!link_scene_node_)
+        if ((!link_scene_node_) || (!scene_node_))
             return;
         
         const Transform& trans = transform.Get();
-        link_scene_node_->setPosition(trans.position.x, trans.position.y, trans.position.z);
+        if (RexTypes::IsValidPositionVector(trans.position))
+        {
+            link_scene_node_->setPosition(trans.position.x, trans.position.y, trans.position.z);
+        }
+        
         Quaternion orientation(DEGTORAD * trans.rotation.x,
                           DEGTORAD * trans.rotation.y,
                           DEGTORAD * trans.rotation.z);
@@ -347,7 +351,7 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         if (scale.z < 0.0000001f)
             scale.z = 0.0000001f;
 
-        link_scene_node_->setScale(scale.x, scale.y, scale.z);
+        scene_node_->setScale(scale.x, scale.y, scale.z);
     }
     else if (attribute == &drawDebug)
     {
@@ -393,4 +397,17 @@ void EC_Placeable::RegisterActions()
     }
 }
 
+void EC_Placeable::Translate(const Vector3df& translation)
+{
+    Transform newTrans = transform.Get();
+    newTrans.position += translation;
+    transform.Set(newTrans, AttributeChange::Default);
+}
+
+void EC_Placeable::TranslateRelative(const Vector3df& translation)
+{
+    Transform newTrans = transform.Get();
+    newTrans.position += GetOrientation() * translation;
+    transform.Set(newTrans, AttributeChange::Default);
+}
 

@@ -35,6 +35,14 @@ namespace Console
 
     ConsoleManager::~ConsoleManager()
     {
+        UnsubscribeLogListener();
+    }
+
+    void ConsoleManager::UnsubscribeLogListener()
+    {
+        if (!parent_ || !parent_->GetFramework())
+            return;
+
         Foundation::RenderServiceInterface *renderer = parent_->GetFramework()->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
             renderer->UnsubscribeLogListener(log_listener_);

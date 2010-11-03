@@ -49,8 +49,9 @@ namespace Scene
     public slots:
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
+        uint NextFreeIdLocal() { return (uint)GetNextFreeIdLocal(); }
 
-        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
+        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true) { return CreateEntity((entity_id_t)id, components, change, defaultNetworkSync).get(); }
 
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
@@ -96,7 +97,7 @@ namespace Scene
             \param change Notification/network replication mode
             \param defaultNetworkSync Whether components will have network sync. Default true
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::LocalOnly, bool defaultNetworkSync = true);
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
 
         //! Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
         /*! Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
@@ -133,13 +134,13 @@ namespace Scene
             \param id Id of the entity to remove
             \param change Origin of change regards to network replication
         */
-        void RemoveEntity(entity_id_t id, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void RemoveEntity(entity_id_t id, AttributeChange::Type change = AttributeChange::Default);
 
         //! Remove all entities
         /*! The entities may not get deleted if dangling references to a pointer to them exist.
             \param send_events whether to send events & signals of each delete
          */
-        void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::Default);
         
         //! Get the next free entity id. Can be used with CreateEntity(). 
         /* These will be for networked entities, and should be assigned only by a point of authority (server)
@@ -173,14 +174,14 @@ namespace Scene
         //! Emit notification of an attribute changing. Called by IComponent.
         /*! \param comp Component pointer
             \param attribute Attribute pointer
-            \param change Type of change (local, from network...)
+            \param change Network replication mode
          */
         void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
-            \param change Type of change (local, from network...)
+            \param change Network replication mode
          */
         void EmitComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
@@ -189,24 +190,22 @@ namespace Scene
         //! Emit a notification of a component being removed from entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
-            \param change Type of change (local, from network...)
+            \param change Network replication mode
             \note This is emitted before just before the component is removed.
          */
         void EmitComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
         //! Emit a notification of an entity having been created
-        /*! Note: local EntityCreated notifications should not be used for replicating entity creation to server, as the client 
-            should not usually decide the entityID itself.
-            \param entity Entity pointer
-            \param change Type of change (local, from network...)
+        /*! \param entity Entity pointer
+            \param change Network replication mode
          */
-        void EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change = AttributeChange::LocalOnly);
-        void EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change = AttributeChange::Default);
+        void EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change = AttributeChange::Default);
 
         //! Emit a notification of an entity being removed. 
         /*! Note: the entity pointer will be invalid shortly after!
             \param entity Entity pointer
-            \param change Type of change (local, from network...)
+            \param change Network replication mode
          */
         void EmitEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
 

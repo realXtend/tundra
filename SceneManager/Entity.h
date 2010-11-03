@@ -100,10 +100,10 @@ namespace Scene
             \param change Network replication mode, in case component has to be created
             \param syncEnabled Whether new component will have networksync enabled
         */
-        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly, bool syncEnabled = true);
-        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly, bool syncEnabled = true);
-        ComponentPtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::LocalOnly);
-        ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+        ComponentPtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
+        ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
         
         //! component container
         typedef std::vector<ComponentPtr> ComponentVector;
@@ -140,7 +140,7 @@ namespace Scene
             \param component An entity component
             \param change Network replication mode
         */
-        void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
 
         //! Remove the component from this entity.
         /*! When component is removed from the entity a Q_PROPERTY connection is destroyed from
@@ -149,7 +149,7 @@ namespace Scene
             
             \param component Pointer to the component to remove
         */
-        void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
 
         //! Returns a component with type typename and name or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
@@ -301,11 +301,11 @@ namespace Scene
         IComponent* GetComponentRaw(const QString &type_name) const { return GetComponent(type_name).get(); }
         IComponent* GetComponentRaw(const QString &type_name, const QString &name) const { return GetComponent(type_name, name).get(); }
         
-        IComponent* GetOrCreateComponentRaw(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, change).get(); }
-        IComponent* GetOrCreateComponentRaw(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, name, change).get(); }
+        IComponent* GetOrCreateComponentRaw(const QString &type_name, AttributeChange::Type change = AttributeChange::Default) { return GetOrCreateComponent(type_name, change).get(); }
+        IComponent* GetOrCreateComponentRaw(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default) { return GetOrCreateComponent(type_name, name, change).get(); }
 
-        void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name), change); }
-        void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name, name), change); }
+        void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name), change); }
+        void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name, name), change); }
 
         //! Returns list of components with type @c type_name or if @c type_name is empty return all components
         //! \param type_name type of the component
