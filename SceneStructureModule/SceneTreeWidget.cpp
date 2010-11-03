@@ -80,6 +80,14 @@ EntityItem *ComponentItem::Parent() const
     return parentItem;
 }
 
+// AssetItem
+AssetItem::AssetItem(const QString &id, const QString &type, QTreeWidgetItem *parent) :
+    QTreeWidgetItem(parent)
+{
+    this->id = id;
+    this->type = type;
+}
+
 // Selection
 
 bool Selection::IsEmpty() const
@@ -114,6 +122,7 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
     framework(fw),
     showComponents(false),
+    historyMaxItemCount(100),
     numberOfInvokeItemsVisible(5)
 {
     setEditTriggers(/*QAbstractItemView::EditKeyPressed*/QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);

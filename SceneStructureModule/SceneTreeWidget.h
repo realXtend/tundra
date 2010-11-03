@@ -75,12 +75,11 @@ class AssetItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
-    /** @param i ID.
-        @param t Type.
+    /** @param id ID.
+        @param type Type.
         @param parent Parent item.
     */
-    AssetItem(const QString &i, const QString &t, QTreeWidgetItem *parent = 0) :
-        QTreeWidgetItem(parent), id(i), type(t) {}
+    AssetItem(const QString &id, const QString &type, QTreeWidgetItem *parent = 0);
 
     QString id; ///< ID.
     QString type; ///< Type.
@@ -171,7 +170,10 @@ private:
     /// This widget's "own" EC editor.
     QPointer<ECEditor::ECEditorWindow> ecEditor;
 
-    /// Number of bisible invoke items in the context-menu.
+    /// Maximum count of invoke history items.
+    int historyMaxItemCount;
+
+    /// Number of visible invoke items in the context-menu.
     int numberOfInvokeItemsVisible;
 
     /// Keeps track of the latest opened file save/open dialog, so that we won't multiple open at the same time.
