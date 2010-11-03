@@ -203,6 +203,9 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     //Send the scene that owns the script component.
     javaScriptInstance->RegisterService(sender->GetParentEntity()->GetScene(), "scene");
 
+    javaScriptInstance->RegisterService(javaScriptInstance, "engine");
+
+
     if (sender->runOnLoad.Get())
         sender->Run();
 }

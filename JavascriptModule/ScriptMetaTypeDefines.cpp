@@ -57,6 +57,7 @@ Q_DECLARE_METATYPE(ScriptConsole*);
 Q_DECLARE_METATYPE(Command*);
 Q_DECLARE_METATYPE(DelayedSignal*);
 
+
 void ExposeQtMetaTypes(QScriptEngine *engine)
 {
     QScriptValue object = engine->scriptValueFromQMetaObject<QPushButton>();
@@ -112,6 +113,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<ISoundService::SoundState>("ISoundService::SoundState");
     qRegisterMetaType<ISoundService::SoundType>("SoundType");
     qRegisterMetaType<ISoundService::SoundType>("ISoundService::SoundType");
+
 }
 
 
