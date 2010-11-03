@@ -18,7 +18,7 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("FunctionDialog");
 
-#include <QWebView>
+//#include <QWebView>
 
 #include "MemoryLeakCheck.h"
 
@@ -31,18 +31,28 @@ FunctionComboBox::FunctionComboBox(QWidget *parent) : QComboBox(parent)
     setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
 }
 
+/*
 void FunctionComboBox::AddFunction(const FunctionMetaData &f)
 {
-    addItem(f.fullSignature);
+    addItem(f.function);
     functions.append(f);
+    model()->sort(0);
+    for(int i = 0; i < count(); ++i)
+    id setItemText(, );
 }
+*/
 
 void FunctionComboBox::AddFunctions(const QList<FunctionMetaData> &funcs)
 {
     foreach(FunctionMetaData f, funcs)
-        addItem(f.fullSignature);
+        addItem(f.function);
 
-    functions.append(funcs);
+    model()->sort(0);
+//    functions.append(funcs);
+    functions = funcs;
+    qSort(functions);
+    for(int i = 0; i < count() && i < functions.size(); ++i)
+        setItemText(i, functions[i].fullSignature);
 }
 
 FunctionMetaData FunctionComboBox::CurrentFunction() const
@@ -59,7 +69,6 @@ FunctionMetaData FunctionComboBox::CurrentFunction() const
 FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWidget *parent, Qt::WindowFlags f) :
     QDialog(parent, f),
     objects(objs),
-//    returnValueArgument(0),
     invoker(new FunctionInvoker)
 {
     // Set up the UI

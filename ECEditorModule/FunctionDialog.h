@@ -26,6 +26,9 @@ class FunctionInvoker;
 /// Utility data structure for indentifying and handling of function signatures.
 struct FunctionMetaData
 {
+    /// Less than operator. Needed for qSort().
+    bool operator <(const FunctionMetaData &rhs) const { return function < rhs.function; }
+
     QString function; ///< Function name in the simplest form
     QString returnType; ///< Return type of the function.
     QString signature; ///< Signature of the function without return type and parameter names.
@@ -47,7 +50,7 @@ public:
     /// Adds new function to the combo box
     /** @param f Function.
     */
-    void AddFunction(const FunctionMetaData &f);
+//    void AddFunction(const FunctionMetaData &f);
 
     /// Adds list of functions to the combo box.
     /** @param funcs List of functions.
