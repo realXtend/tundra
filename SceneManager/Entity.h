@@ -309,18 +309,7 @@ namespace Scene
 
         //! Returns list of components with type @c type_name or if @c type_name is empty return all components
         //! \param type_name type of the component
-        QObjectList GetComponentsRaw(const QString &type_name) const
-        {
-            QObjectList ret;
-            if (type_name.isNull())
-                for(size_t i = 0; i < components_.size() ; ++i)
-                    ret.push_back(components_[i].get());
-            else
-                for(size_t i = 0; i < components_.size() ; ++i)
-                    if (components_[i]->TypeName() == type_name)
-                        ret.push_back(components_[i].get());
-            return ret;
-        }
+        QObjectList GetComponentsRaw(const QString &type_name) const;
 
         //! Returns whether or not this entity has a component with certain type and name.
         /*! \param type_name Type of the component.
@@ -389,16 +378,23 @@ namespace Scene
         */
         void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QStringList &params);
 
+        /// This is an overloaded function. Experimental overload using QVariant. Converts the variants to strings.
+        /** @param type Execution type, i.e. where the actions is executed. @note Currently int instead of the real enum for javascript compability!
+            @param action Name of the action.
+            @param params List of parameters for the action.
+        */
+        void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params);
+
         //! Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
         /*! By definition, all components of a temporary entity are temporary as well.
          */
         void SetTemporary(bool enable);
-         
+
         //! Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
         /*! By definition, all components of a temporary entity are temporary as well.
          */
         bool IsTemporary() const { return temporary_; }
-        
+
     private:
         /// Validates that the action has receivers. If not, deletes the action and removes it from the registered actions.
         /** @param action Action to be validated.
