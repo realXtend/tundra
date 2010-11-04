@@ -45,9 +45,11 @@ typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
 class ConfigurationManager;
 typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
 
+class ModuleManager;
+typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
+
 namespace Foundation
 {
-    class ModuleManager;
     class ServiceManager;
     class EventManager;
     class Platform;
@@ -58,7 +60,6 @@ namespace Foundation
     class MainWindow;
     class Profiler;
 
-    typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
     typedef boost::shared_ptr<EventManager> EventManagerPtr;
     typedef boost::shared_ptr<Platform> PlatformPtr;
