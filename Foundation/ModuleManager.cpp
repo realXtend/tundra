@@ -75,10 +75,10 @@ void ModuleManager::DeclareStaticModule(IModule *module)
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
         std::string log_level = "information";
-        if ( framework_->GetDefaultConfig().HasKey(Framework::ConfigurationGroup(), "log_level") )
-            log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
+        if ( framework_->GetDefaultConfig().HasKey(Foundation::Foundation::Framework::ConfigurationGroup(), "log_level") )
+            log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "log_level");
         else
-            framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "log_level", log_level);
+            framework_->GetConfigManager()->SetSetting(Foundation::Framework::ConfigurationGroup(), "log_level", log_level);
 
         Poco::Logger::get(module->Name()).setLevel(log_level);
 #endif
@@ -556,10 +556,10 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
 #ifndef _DEBUG
         // Remove logging of debug messages in release mode. \todo This is not applied for modules loaded explicitly in LoadModuleByName.
         std::string log_level = "information";
-        if ( framework_->GetDefaultConfig().HasKey(Framework::ConfigurationGroup(), "log_level") )
-            log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
+        if ( framework_->GetDefaultConfig().HasKey(Foundation::Framework::ConfigurationGroup(), "log_level") )
+            log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "log_level");
         else
-            framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "log_level", log_level);
+            framework_->GetConfigManager()->SetSetting(Foundation::Framework::ConfigurationGroup(), "log_level", log_level);
 
         Poco::Logger::get(module->Name()).setLevel(log_level);
 #endif
