@@ -17,12 +17,17 @@ namespace AssImp
     OpenAssetImport::OpenAssetImport() : 
         importer_(new Importer()), 
         logstream_(new AssImpLogStream()), 
+#ifdef _DEBUG
         loglevels_(Logger::DEBUGGING | Logger::INFO | Logger::ERR | Logger::WARN),
+#else
+        loglevels_(Logger::INFO | Logger::ERR | Logger::WARN),
+#endif
         default_flags_( aiProcess_JoinIdenticalVertices		|
                         aiProcess_Triangulate				|
                         aiProcess_RemoveComponent			|
-                        aiProcess_GenNormals				|	// ignored if model already has normals
+                        aiProcess_GenSmoothNormals  		|	// ignored if model already has normals
                         aiProcess_LimitBoneWeights			|
+                        aiProcess_FlipUVs                   |   // UVs are upside down
                         aiProcess_SortByPType				|	// remove point and line primitive types
                         aiProcess_ValidateDataStructure         // makes sure that all indices are valid, all animations and bones are linked correctly, all material references are correct...
                       )
@@ -44,9 +49,9 @@ namespace AssImp
             aiPrimitiveType_LINE
             );
 #ifdef _DEBUG
-        DefaultLogger::create("", Logger::VERBOSE); // enable debug messages
+        DefaultLogger::create("", Logger::VERBOSE); // enable debug log messages
 #else
-        DefaultLogger::create();
+        DefaultLogger::create("", Logger::NORMAL); // enable normal log messages
 #endif
         Assimp::DefaultLogger::get()->attachStream(logstream_, loglevels_);
     }
@@ -75,6 +80,7 @@ namespace AssImp
             const struct aiNode *rootNode = scene->mRootNode;
             
             aiMatrix4x4 transform;
+            transform.FromEulerAnglesXYZ(90 * DEGTORAD, 0, 180 * DEGTORAD);
             GetNodeData(scene, rootNode, file, transform, outMeshData);
         } else
         {       
@@ -96,7 +102,6 @@ namespace AssImp
         {       
             // report error
             Foundation::RootLogError(importer_->GetErrorString());
-            //return QString(importer_->GetErrorString());
         }
     }
 
@@ -134,9 +139,7 @@ namespace AssImp
     {
         try
         {
-   //         boost::filesystem::path path(file.toStdString());
-   //         std::string meshname = path.filename() + boost::lexical_cast<std::string>(nodeIdx);
-            std::string ogreMeshName = file.toStdString(); //std::string("mesh___") + meshname;
+            std::string ogreMeshName = file.toStdString();
             std::string meshname = ogreMeshName;
 
             /*if (scene->mNumMaterials > 0)
@@ -322,9 +325,11 @@ namespace AssImp
                     outMeshNames.push_back(meshname);
                 }
             }
-        } catch (Ogre::Exception &)
+        } catch (Ogre::Exception &e)
         {
             // error
+            Foundation::RootLogError("Failed to create Ogre mesh. Reason: ");
+            Foundation::RootLogError(e.what());
         }
 
         // import children
@@ -334,7 +339,10 @@ namespace AssImp
     
     void OpenAssetImport::AssImpLogStream::write(const char* message)
     {
-        //! \todo doesn't work, check assimp docs for reason -cmayhem
+#ifdef _DEBUG
+        Foundation::RootLogDebug(message);
+#else
         Foundation::RootLogInfo(message);
+#endif
     }
 }
