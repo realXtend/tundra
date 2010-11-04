@@ -163,7 +163,6 @@ function ServerSetAnimationState()
 
 function ClientInitialize()
 {
-    print("Execing clientside of avatar script");
     // Check if this is our own avatar
     // Note: bad security. For now there's no checking who is allowed to invoke actions
     // on an entity, and we could theoretically control anyone's avatar
