@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "ModuleManager.h"
+#include "Framework.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("ModuleManager")
 
@@ -72,9 +73,7 @@ void ModuleManager::DeclareStaticModule(IModule *module)
         Module::Entry entry = { modulePtr, module->Name(), Module::SharedLibraryPtr() };
         modules_.push_back(entry);
 #ifndef _DEBUG
-         
         // make it so debug messages are not logged in release mode
-
         std::string log_level = "information";
         if ( framework_->GetDefaultConfig().HasKey(Framework::ConfigurationGroup(), "log_level") )
             log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
@@ -378,7 +377,6 @@ bool ModuleManager::HasModule(const std::string &name) const
     return false;
 }
 
-//! @return True if the given module library entry is present, false otherwise.
 bool ModuleManager::HasModuleEntry(const std::string &entry) const
 {
     for (size_t i = 0 ; i < modules_.size() ; ++i)
@@ -467,7 +465,6 @@ bool ModuleManager::LoadModuleByName(const std::string &lib, const std::string &
         }
 
     return false;
-    
 }
 
 bool ModuleManager::UnloadModuleByName(const std::string &module)
