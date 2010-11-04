@@ -28,6 +28,7 @@ namespace AssImp
                         aiProcess_GenSmoothNormals  		|	// ignored if model already has normals
                         aiProcess_LimitBoneWeights			|
                         aiProcess_FlipUVs                   |   // UVs are upside down
+                        aiProcess_GenUVCoords               |   // for formats with pre-defined UV mappings (sphere, cylindrical...), convert to proper UV channels
                         aiProcess_SortByPType				|	// remove point and line primitive types
                         aiProcess_ValidateDataStructure         // makes sure that all indices are valid, all animations and bones are linked correctly, all material references are correct...
                       )
@@ -140,7 +141,6 @@ namespace AssImp
         try
         {
             std::string ogreMeshName = file.toStdString();
-            std::string meshname = ogreMeshName;
 
             /*if (scene->mNumMaterials > 0)
             {
@@ -152,7 +152,7 @@ namespace AssImp
 
 
             //aiMatrix4x4 transform = node->mTransformation;
-            if (node->mNumMeshes > 0 && nodeName.compare(QString(node->mName.data)) == 0 && !Ogre::MeshManager::getSingleton().resourceExists(ogreMeshName))
+            if (node->mNumMeshes > 0 && (nodeName.isEmpty() || nodeName.compare(QString(node->mName.data)) == 0) && !Ogre::MeshManager::getSingleton().resourceExists(ogreMeshName))
             {
                 Ogre::MeshPtr ogreMesh = Ogre::MeshManager::getSingleton().createManual(ogreMeshName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 ogreMesh->setAutoBuildEdgeLists(false);
@@ -322,7 +322,7 @@ namespace AssImp
                     Ogre::Real maxvertex = std::max(abs(vmax.x), std::max(abs(vmin.x), std::max(abs(vmax.y), std::max(abs(vmin.y), std::max(vmax.z, vmin.z)))));
                     ogreMesh->_setBoundingSphereRadius(maxvertex / 2.f);
                     ogreMesh->load();
-                    outMeshNames.push_back(meshname);
+                    outMeshNames.push_back(ogreMeshName);
                 }
             }
         } catch (Ogre::Exception &e)
