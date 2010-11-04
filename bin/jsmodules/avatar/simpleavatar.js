@@ -15,8 +15,6 @@ var rotate = 0;
 var isserver = server.IsRunning();
 var own_avatar = false;
 
-print("Execing avatar script");
-
 // Create avatar on server, and camera & inputmapper on client
 if (isserver)
     ServerInitialize();
@@ -25,7 +23,6 @@ else
 
 function ServerInitialize()
 {
-    print("Execing serverside of avatar script");
     var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
     var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
 
@@ -77,24 +74,19 @@ function ServerUpdatePhysics(frametime)
     var placeable = me.GetComponentRaw("EC_Placeable");
     var rigidbody = me.GetComponentRaw("EC_RigidBody");
 
-    // Apply motion forces
-    // Todo: should apply as one and normalize so that diagonal strafing isn't faster
-    if (motion_x != 0)
+    // Apply motion force
+    // If diagonal motion, normalize
+    if ((motion_x != 0) || (motion_y != 0))
     {
+        var mag = 1.0 / Math.sqrt(motion_x * motion_x + motion_y * motion_y);
         var impulseVec = new Vector3df();
-        impulseVec.x = move_force * motion_x;
-        impulseVec = placeable.GetRelativeVector(impulseVec);
-        rigidbody.ApplyImpulse(impulseVec);
-    }
-    if (motion_y != 0)
-    {
-        var impulseVec = new Vector3df();
-        impulseVec.y = -move_force * motion_y;
+        impulseVec.x = mag * move_force * motion_x;
+        impulseVec.y = -mag * move_force * motion_y;
         impulseVec = placeable.GetRelativeVector(impulseVec);
         rigidbody.ApplyImpulse(impulseVec);
     }
 
-    // Apply damping to velocity. Only do this if the body is active, because otherwise applying forces
+    // Apply damping. Only do this if the body is active, because otherwise applying forces
     // to a resting object wakes it up
     if (rigidbody.IsActive())
     {
@@ -215,12 +207,20 @@ function ClientCreateInputMapper()
     inputmapper.executionType = 2; // Execute actions on server
     inputmapper.RegisterMapping("W", "Move(forward)", 1);
     inputmapper.RegisterMapping("S", "Move(back)", 1);
-    inputmapper.RegisterMapping("A", "Rotate(left)", 1);
-    inputmapper.RegisterMapping("D", "Rotate(right))", 1);
+    inputmapper.RegisterMapping("A", "Move(left)", 1);
+    inputmapper.RegisterMapping("D", "Move(right))", 1);
+    inputmapper.RegisterMapping("Up", "Move(forward)", 1);
+    inputmapper.RegisterMapping("Down", "Move(back)", 1);
+    inputmapper.RegisterMapping("Left", "Rotate(left)", 1);
+    inputmapper.RegisterMapping("Right", "Rotate(right))", 1);
     inputmapper.RegisterMapping("W", "Stop(forward)", 3);
     inputmapper.RegisterMapping("S", "Stop(back)", 3);
-    inputmapper.RegisterMapping("A", "StopRotate(left)", 3);
-    inputmapper.RegisterMapping("D", "StopRotate(right)", 3);
+    inputmapper.RegisterMapping("A", "Stop(left)", 3);
+    inputmapper.RegisterMapping("D", "Stop(right)", 3);
+    inputmapper.RegisterMapping("Up", "Stop(forward)", 3);
+    inputmapper.RegisterMapping("Down", "Stop(back)", 3);
+    inputmapper.RegisterMapping("Left", "StopRotate(left)", 3);
+    inputmapper.RegisterMapping("Right", "StopRotate(right))", 3);
 }
 
 function ClientCreateAvatarCamera()
@@ -274,7 +274,7 @@ function CommonUpdateAnimation(frametime)
         return;
     var animname = animcontroller.animationState;
     if (animname != "")
-        animcontroller.EnableExclusiveAnimation(animname, true, 0.5, 0.5, false);
+        animcontroller.EnableExclusiveAnimation(animname, true, 0.25, 0.25, false);
     // If walk animation is playing, adjust its speed according to the avatar rigidbody velocity
     if (animcontroller.IsAnimationActive("Walk"))
     {
