@@ -19,13 +19,10 @@ InvokeItem::InvokeItem(const std::string &settingStr)
 
 QString InvokeItem::ToString() const
 {
-    QString str;
-
-    if (type == Function)
-        str.append(returnType + ' ');
-    str.append(name);
+    QString str(name);
+    if (type == Action)
+        str.prepend('"');
     str.append('(');
-
     for(int i = 0; i < parameters.size(); ++i)
     {
         // Decorate string values with ".
@@ -39,6 +36,8 @@ QString InvokeItem::ToString() const
     }
 
     str.append(')');
+    if (type == Action)
+        str.append('"');
     return str;
 }
 
