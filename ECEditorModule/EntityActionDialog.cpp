@@ -9,17 +9,85 @@
 #include "DebugOperatorNew.h"
 
 #include "EntityActionDialog.h"
+#include "InvokeItem.h"
 
 #include "Entity.h"
 
 #include "MemoryLeakCheck.h"
 
 
-EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, QWidget *parent, Qt::WindowFlags f) :
-    QDialog(parent, f)
+EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, QWidget *p) :
+    QDialog(p, 0)
 {
     this->entities = entities;
+    Initialize();
+}
 
+EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *p) :
+    QDialog(p, 0)
+{
+    this->entities = entities;
+    Initialize();
+
+    for(int i = 0; i < actionComboBox->count(); ++i)
+        if (actionComboBox->itemText(i) == invokeItem.name)
+        {
+            actionComboBox->setCurrentIndex(i);
+            break;
+        }
+
+    localCheckBox->setChecked((invokeItem.execTypes & EntityAction::Local) != 0);
+    serverComboBox->setChecked((invokeItem.execTypes & EntityAction::Server) != 0);
+    peersComboBox->setChecked((invokeItem.execTypes & EntityAction::Peers) != 0);
+
+    QString parameterText;
+    for(int i = 0; i < invokeItem.parameters.size(); ++i)
+    {
+        parameterText.append(invokeItem.parameters[i].toString());
+        if (i < invokeItem.parameters.size() - 1)
+            parameterText.append(',');
+    }
+
+    parametersLineEdit->setText(parameterText);
+}
+
+QList<Scene::EntityWeakPtr> EntityActionDialog::Entities() const
+{
+    return entities;
+}
+
+QString EntityActionDialog::Action() const
+{
+    return actionComboBox->currentText();
+}
+
+EntityAction::ExecutionTypeField EntityActionDialog::ExecutionType() const
+{
+    EntityAction::ExecutionTypeField type = EntityAction::Invalid;
+    if (localCheckBox->isChecked())
+        type |=  EntityAction::Local;
+    if (serverComboBox->isChecked())
+        type |=  EntityAction::Server;
+    if (peersComboBox->isChecked())
+        type |=  EntityAction::Peers;
+
+    return type;
+}
+
+QStringList EntityActionDialog::Parameters() const
+{
+    QString params = parametersLineEdit->text();
+    params = params.trimmed();
+    return params.split(',');
+}
+
+void EntityActionDialog::hideEvent(QHideEvent *)
+{
+    close();
+}
+
+void EntityActionDialog::Initialize()
+{
     setAttribute(Qt::WA_DeleteOnClose);
     if (graphicsProxyWidget())
         graphicsProxyWidget()->setWindowTitle(tr("Trigger Entity Action"));
@@ -104,45 +172,6 @@ EntityActionDialog::EntityActionDialog(const QList<Scene::EntityWeakPtr> &entiti
     buttonsLayout->addWidget(execButton);
     buttonsLayout->addWidget(execAndCloseButton);
     buttonsLayout->addWidget(closeButton);
-}
-
-EntityActionDialog::~EntityActionDialog()
-{
-}
-
-QList<Scene::EntityWeakPtr> EntityActionDialog::Entities() const
-{
-    return entities;
-}
-
-QString EntityActionDialog::Action() const
-{
-    return actionComboBox->currentText();
-}
-
-EntityAction::ExecutionTypeField EntityActionDialog::ExecutionType() const
-{
-    EntityAction::ExecutionTypeField type = EntityAction::Invalid;
-    if (localCheckBox->isChecked())
-        type |=  EntityAction::Local;
-    if (serverComboBox->isChecked())
-        type |=  EntityAction::Server;
-    if (peersComboBox->isChecked())
-        type |=  EntityAction::Peers;
-
-    return type;
-}
-
-QStringList EntityActionDialog::Parameters() const
-{
-    QString params = parametersLineEdit->text();
-    params = params.trimmed();
-    return params.split(',');
-}
-
-void EntityActionDialog::hideEvent(QHideEvent *)
-{
-    close();
 }
 
 void EntityActionDialog::CheckExecuteAccepted()

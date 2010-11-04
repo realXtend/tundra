@@ -23,10 +23,12 @@ class QCheckBox;
 
 class IArgumentType;
 class FunctionInvoker;
+struct InvokeItem;
 
 /// Utility data structure for indentifying and handling of function signatures.
 struct FunctionMetaData
 {
+    typedef QPair<QString, QString> Parameter;
     /// Less than operator. Needed for qSort().
     bool operator <(const FunctionMetaData &rhs) const { return signature < rhs.signature; }
 
@@ -34,7 +36,7 @@ struct FunctionMetaData
     QString returnType; ///< Return type of the function.
     QString signature; ///< Signature of the function without return type and parameter names.
     QString fullSignature; ///< Full signature of the function including return type and parameter names.
-    QList<QPair<QString, QString> > parameters; ///< Typename-name pairs of the parameters.
+    QList<Parameter> parameters; ///< Typename-name pairs of the parameters.
 };
 
 /// Combo box containing function meta data items.
@@ -58,6 +60,8 @@ public:
     */
     void SetFunctions(const QList<FunctionMetaData> &funcs);
 
+    void SetCurrentFunction(const QString &function, const QStringList &paramTypeNames);
+
     /// Returns meta data structure of the currently selected function.
     FunctionMetaData CurrentFunction() const;
 
@@ -67,6 +71,9 @@ public:
     /// All available functions.
     QList<FunctionMetaData> functions;
 };
+
+typedef boost::weak_ptr<QObject> QObjectWeakPtr;
+typedef QList<QObjectWeakPtr> QObjectWeakPtrList;
 
 /// Dialog for invoking Qt slots (i.e. functions) of entities and components.
 /** Emits finished(0) when "Close" is clicked, finished(1) when "Close and Execute" is clicked,
@@ -80,20 +87,27 @@ class ECEDITOR_MODULE_API FunctionDialog : public QDialog
     Q_OBJECT
 
 public:
+    /// Constructs the dialog.and populates function combo box with union of all the functions of all the objects @c objs.
+    /** The dialog is destroyed when hide() or close() is called for it.
+        @param objs List of objects.
+        @param parent Parent widget.
+    */
+    FunctionDialog(const QObjectWeakPtrList &objs, QWidget *parent = 0);
+
     /// Constructs the dialog.
     /** Populates function combo box with union of all the functions of all the @objs.
         The dialog is destroyed when hide() or close() is called for it.
         @param objs List of objects.
+        @param invokeItem
         @param parent Parent widget.
-        @param f Window flags.
     */
-    FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    FunctionDialog(const QObjectWeakPtrList &objs, const InvokeItem &invokeItem, QWidget *parent = 0);
 
     /// Destructor.
     ~FunctionDialog();
 
     /// Returns list of entities for which the action is triggered.
-    QList<boost::weak_ptr<QObject> > Objects() const;
+    QObjectWeakPtrList Objects() const;
 
     /// Returns name of the funtion in the most simplest form, f.ex. "setValue".
     QString Function() const;
@@ -112,9 +126,12 @@ public:
     */
     void AppendReturnValueText(const QString &text);
 
-protected:
+private:
     /// QWidget override.
     void hideEvent(QHideEvent *);
+
+    /// Creates the widget's contents.
+    void Initialize();
 
     /// Function invoker object.
     FunctionInvoker *invoker;
@@ -147,7 +164,7 @@ protected:
     QCheckBox *signalsCheckBox;
 
     /// List of objects.
-    QList<boost::weak_ptr<QObject> > objects;
+    QObjectWeakPtrList objects;
 
     /// Argument types for currently active function in the combo box.
     QList<IArgumentType *> currentArguments;
