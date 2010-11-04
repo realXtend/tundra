@@ -105,15 +105,24 @@ struct Selection
     QList<ComponentItem *> components; ///< List of selected components.
 };
 
-///
+/// Context menu for SceneTreeWidget.
 class Menu : public QMenu
 {
     Q_OBJECT
+
 public:
+    /// Constructor.
+    /** @param parent Parent widget.
+    */
     explicit Menu(QWidget *parent = 0);
+
+    /// Is shift currently held down.
     bool shiftDown;
 private:
+    /// QWidget override. Checks if shift is pressed.
     void keyPressEvent(QKeyEvent *e);
+
+    /// QWidget override. Checks if shift is released.
     void keyReleaseEvent(QKeyEvent *e);
 };
 
@@ -195,7 +204,7 @@ private:
     /// Keeps track of recently invoked entity actions and functions.
     QList<InvokeItem> invokeHistory;
 
-    ///
+    /// Context menu.
     QPointer<Menu> contextMenu;
 
 private slots:
@@ -278,7 +287,7 @@ private slots:
     */
     void OpenFileDialogClosed(int result);
 
-    ///
+    /// Executes invoke item or opens it for editing.
     void InvokeActionTriggered();
 };
 

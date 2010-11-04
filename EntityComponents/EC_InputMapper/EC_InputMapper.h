@@ -49,6 +49,8 @@ Registered by RexLogic::RexLogicModule.
 <div>Action execution type that is used for the Entity Actions.</div>
 <li>bool: modifiersEnabled.
 <div>Whether modifiers are checked for in the key events. Default true.</div>
+<li>bool: enabled.
+<div>Whether the input mapper is active (ie. actions will be invoked.) Default true.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -114,9 +116,24 @@ public:
     Q_PROPERTY(bool modifiersEnabled READ getmodifiersEnabled WRITE setmodifiersEnabled)
     DEFINE_QPROPERTY_ATTRIBUTE(int, modifiersEnabled);
     
+    /// Is the input mapper enabled
+    Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
+    
     //Attribute<QVariantList > mappings;
 
-    typedef QMap<QPair<QKeySequence, KeyEvent::EventType>, QString> Mappings_t;
+    struct ActionInvocation
+    {
+        ActionInvocation() :
+            executionType(0)
+        {
+        }
+        
+        QString name;
+        int executionType;
+    };
+    
+    typedef QMap<QPair<QKeySequence, KeyEvent::EventType>, ActionInvocation> Mappings_t;
 
 public slots:
     /// Register new key sequence - action mapping for this input mapper.
@@ -124,16 +141,18 @@ public slots:
         @param action Name of the action. If you want to use parameters the string should look the following: 
         "More(Forward)" or "Move(Forward,100)" etc.
         @param eventType Event type (press, release), default press (1)
+        @param executionType Execution type override. If 0 (default), uses the InputMapper's executionType attribute
         @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
     */
-    void RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType = 1);
+    void RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType = 1, int executionType = 0);
 
     /** Register new key sequence - action mapping for this input mapper.
         @param keySeq Key sequence as in string. example Qt::CTRL+Qt::Key_O sequence eguals "Ctrl+O" string.
         @param action Name of the action. If you want to use parameters the string should look the following: 
+        @param executionType Execution type override. If 0 (default), uses the InputMapper's executionType attribute
         "More(Forward)" or "Move(Forward,100)" etc.
     */
-    void RegisterMapping(const QString &keySeqString, const QString &action, int eventType = 1);
+    void RegisterMapping(const QString &keySeqString, const QString &action, int eventType = 1, int executionType = 0);
 
     /// Remove a key mapping
     void RemoveMapping(const QKeySequence &keySeq, int eventType = 1);
