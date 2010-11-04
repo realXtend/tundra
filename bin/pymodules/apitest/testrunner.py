@@ -188,11 +188,10 @@ class TestCreateDestroy(TestRunner):
         except AttributeError:
             try:
                 r.logInfo(traceback.format_exc())
-                r.logInfo("Test state: failure")
                 r.logInfo("removing highlight, but it doesn't exist anymore: %d" % ent.Id)
             except:
                 r.logInfo(traceback.format_exc())
-                r.logInfo("Test state: failure")
+                r.logInfo("Entity already removed")
         else:
             ent.RemoveComponentRaw(h)
             r.logInfo("highlight removed")
@@ -202,11 +201,10 @@ class TestCreateDestroy(TestRunner):
         except AttributeError:
             try:
                 r.logInfo(traceback.format_exc())
-                r.logInfo("Test state: failure")
                 r.logInfo("removing ruler, but it doesn't exist anymore: %d" % ent.Id)
             except:
                 r.logInfo(traceback.format_exc())
-                r.logInfo("Test state: failure")
+                r.logInfo("Entity already removed")
         else:
             ent.RemoveComponentRaw(ruler)
             r.logInfo("ruler removed")
