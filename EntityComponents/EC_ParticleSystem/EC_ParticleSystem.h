@@ -82,10 +82,6 @@ public:
     Q_PROPERTY(float renderingDistance READ getrenderingDistance WRITE setrenderingDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, renderingDistance);
 
-    /*Attribute<QString> particleId_;
-    Attribute<bool> castShadows_;
-    Attribute<float> renderingDistance_;*/
-
 public slots:
     //! Create a new particle system. System name will be same as component name.
     void CreateParticleSystem(const QString &systemName);
@@ -95,6 +91,7 @@ public slots:
 
 private slots:
     void AttributeUpdated(IAttribute *attribute);
+    void EntitySetted();
 
 private:
     explicit EC_ParticleSystem(IModule *module);
