@@ -50,9 +50,8 @@ namespace Scene
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
         uint NextFreeIdLocal() { return (uint)GetNextFreeIdLocal(); }
-
-        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true) { return CreateEntity((entity_id_t)id, components, change, defaultNetworkSync).get(); }
-
+        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true) 
+            { return CreateEntity((entity_id_t)id, components, change, defaultNetworkSync).get(); }
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
         QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
@@ -61,7 +60,9 @@ namespace Scene
 
         //! Return a scene document with just the desired entity
         QByteArray GetEntityXml(Scene::Entity *entity);
-
+        
+        void EmitEntityCreated(QObject* entity, AttributeChange::Type change = AttributeChange::Default);
+        
     public:
         //! destructor
         ~SceneManager();
@@ -199,7 +200,6 @@ namespace Scene
         /*! \param entity Entity pointer
             \param change Network replication mode
          */
-        void EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change = AttributeChange::Default);
         void EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change = AttributeChange::Default);
 
         //! Emit a notification of an entity being removed. 
