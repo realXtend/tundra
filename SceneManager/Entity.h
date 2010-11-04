@@ -273,6 +273,8 @@ namespace Scene
         
         IComponent* GetOrCreateComponentRaw(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, change).get(); }
         IComponent* GetOrCreateComponentRaw(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, name, change).get(); }
+        IComponent* GetOrCreateComponentRaw(const QString &type_name, AttributeChange::Type change, bool syncEnabled) { return GetOrCreateComponent(type_name, change, syncEnabled).get(); }
+        IComponent* GetOrCreateComponentRaw(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled) { return GetOrCreateComponent(type_name, name, change, syncEnabled).get(); }
 
         void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name), change); }
         void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name, name), change); }
