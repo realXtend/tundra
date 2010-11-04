@@ -36,7 +36,7 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
         event_manager->RegisterEventSubscriber(this, 99);
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
     }
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySetted()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             this, SLOT(AttributeUpdated(IAttribute*)));
 }
@@ -101,26 +101,28 @@ void EC_ParticleSystem::DeleteParticleSystem()
         return;
     OgreRenderer::RendererPtr renderer = renderer_.lock();
 
-    EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    if(!placeable || !scene_mgr)
+    if (!scene_mgr)
         return;
 
     try
     {
-        //placeable->GetSceneNode()->detachObject(particleSystem_);
-        Ogre::SceneNode *node = placeable->GetSceneNode();
-        if(!node)
-            return;
-        node->detachObject(particleSystem_);
+        EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
+        if (placeable)
+        {
+            Ogre::SceneNode *node = placeable->GetSceneNode();
+            if (!node)
+                return;
+            node->detachObject(particleSystem_);
+        }
+        scene_mgr->destroyParticleSystem(particleSystem_);
+        particleSystem_ = 0;
     }
     catch (Ogre::Exception& e)
     {
         LogError("Could not delete particle system " + Name().toStdString() + ": " + std::string(e.what()));
     }
 
-    scene_mgr->destroyParticleSystem(particleSystem_);
-    particleSystem_ = 0;
     return;
 }
 
@@ -156,10 +158,6 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
     }
 }
 
-void EC_ParticleSystem::UpdateSignals()
-{
-}
-
 ComponentPtr EC_ParticleSystem::FindPlaceable() const
 {
     assert(framework_);
@@ -168,6 +166,18 @@ ComponentPtr EC_ParticleSystem::FindPlaceable() const
         return comp;
     comp = GetParentEntity()->GetComponent<EC_Placeable>();
     return comp;
+}
+
+void EC_ParticleSystem::EntitySetted()
+{
+    Scene::Entity *entity = qobject_cast<Scene::Entity*>(this->GetParentEntity());
+    if (!entity)
+    {
+        LogError("Failed to connect entity signals, component's parent entity is null");
+        return;
+    }
+    disconnect(this, SLOT(DeleteParticleSystem()));
+    connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(DeleteParticleSystem()));
 }
 
 request_tag_t EC_ParticleSystem::RequestResource(const std::string& id, const std::string& type)
