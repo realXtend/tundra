@@ -34,7 +34,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 #include <QDomElement>
 #include <QDebug>
 
-#include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
@@ -123,7 +122,7 @@ QList<entity_id_t> Selection::EntityIds() const
     return ids.toList();
 }
 
-/// Menu
+// Menu
 Menu::Menu(QWidget *parent) : QMenu(parent), shiftDown(false)
 {
 }
@@ -957,7 +956,7 @@ void SceneTreeWidget::OpenFunctionDialog()
     if (sel.IsEmpty())
         return;
 
-    QList<boost::weak_ptr<QObject> > objs;
+    QObjectWeakPtrList objs;
     if (sel.HasEntities())
         foreach(EntityItem *eItem, sel.entities)
         {
@@ -1000,7 +999,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     // Clear old return value from the dialog.
     dialog->SetReturnValueText("");
 
-    foreach(boost::weak_ptr<QObject> o, dialog->Objects())
+    foreach(QObjectWeakPtr o, dialog->Objects())
         if (o.lock())
         {
             QObject *obj = o.lock().get();
@@ -1022,19 +1021,26 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             FunctionInvoker invoker;
             invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
 
+            QString retValStr;
+            ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
+            /// Convert it manually here.
+            if (ret.type() == QVariant::StringList)
+                foreach(QString s, ret.toStringList())
+                    retValStr.append("\n" + s);
+
             if (errorMsg.isEmpty())
-                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+                dialog->AppendReturnValueText(objNameWithId + " " + retValStr);
             else
-                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+                dialog->AppendReturnValueText(objNameWithId + " " + errorMsg);
 
             // Save invoke item
             InvokeItem ii;
             ii.type = InvokeItem::Function;
             ii.parameters = params;
-            InvokeItem *mruItem = FindMruItem();
             ii.name = dialog->Function();
             ii.returnType = (ret.type() == QVariant::Invalid) ? QString("void") : QString(ret.typeName());
             ii.objectName = objName;
+            InvokeItem *mruItem = FindMruItem();
             ii.mruOrder = mruItem ? mruItem->mruOrder + 1 : 0;
 
             // Do not save duplicates and make sure that history size stays withing max size.
@@ -1232,47 +1238,39 @@ void SceneTreeWidget::InvokeActionTriggered()
         }
 
     // Shift+click opens existing invoke history item editable in dialog.
-    if (contextMenu && contextMenu->shiftDown)
+    bool openForEditing = contextMenu && contextMenu->shiftDown;
+    if (invokedItem->type == InvokeItem::Action)
     {
-        if (invokedItem->type == InvokeItem::Action)
+        if (openForEditing)
         {
             EntityActionDialog *d = new EntityActionDialog(entities, *invokedItem, this);
             connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogFinished(int)));
             d->show();
         }
-        else if (invokedItem->type == InvokeItem::Function)
+        else
+        {
+            foreach(Scene::EntityWeakPtr e, entities)
+                e.lock()->Exec(invokedItem->execTypes, invokedItem->name, invokedItem->parameters);
+        }
+    }
+    else if (invokedItem->type == InvokeItem::Function)
+    {
+        if (openForEditing)
         {
             FunctionDialog *d = new FunctionDialog(objectPtrs, *invokedItem, this);
             connect(d, SIGNAL(finished(int)), SLOT(FunctionDialogFinished(int)));
             d->show();
             d->move(300,300);
         }
-
-        return;
-    }
-
-    if (invokedItem->type == InvokeItem::Action)
-    {
-        foreach(Scene::EntityWeakPtr e, entities)
+        else
         {
-//                QStringList params;
-//                foreach(QVariant p, invokedItem->parameters)
-//                    params << p.toString();
-//                e->Exec(invokedItem->execTypes, invokedItem->name, params);
-            e.lock()->Exec(invokedItem->execTypes, invokedItem->name, invokedItem->parameters);
-        }
-    }
-    else if (invokedItem->type == InvokeItem::Function)
-    {
-        QVariantList returnValues;
-        FunctionInvoker invoker;
-        foreach(QObject *obj, objects)
-        {
-            QVariant retVal;
-            invoker.Invoke(obj, invokedItem->name, &retVal, invokedItem->parameters);
-            returnValues << retVal;
-
-            LogInfo("Invoked function returned " + retVal.toString().toStdString());
+            FunctionInvoker invoker;
+            foreach(QObject *obj, objects)
+            {
+                QVariant retVal;
+                invoker.Invoke(obj, invokedItem->name, &retVal, invokedItem->parameters);
+                LogInfo("Invoked function returned " + retVal.toString().toStdString());
+            }
         }
     }
 }
