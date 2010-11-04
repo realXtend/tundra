@@ -30,13 +30,15 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
     Foundation::EventManager *event_manager = framework_->GetEventManager().get();
-    if(event_manager)
+    if (event_manager)
     {
         event_manager->RegisterEventSubscriber(this, 99);
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
     }
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             this, SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(ParentEntitySet()),
+            SLOT(EntitySetted()));
 }
 
 EC_ParticleSystem::~EC_ParticleSystem()
@@ -51,7 +53,7 @@ bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, IEventData* dat
         return false;
 
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-    if(!event_data || particle_tag_ != event_data->tag_)
+    if (!event_data || particle_tag_ != event_data->tag_)
         return false;
 
     OgreRenderer::OgreParticleResource* partres = checked_static_cast<OgreRenderer::OgreParticleResource*>(event_data->resource_.get());
@@ -72,13 +74,17 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
     try
     {
         DeleteParticleSystem();
+        EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
+        if (!placeable)
+        {
+            LogError("Fail to create a new particle system, make sure that entity has EC_Placeable component created.");
+            return;
+        }
+
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), systemName.toStdString());
-        if(particleSystem_)
+        if (particleSystem_)
         {
-            EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
-            if(!placeable)
-                return;
             placeable->GetSceneNode()->attachObject(particleSystem_);
             particleSystem_->setCastShadows(castShadows.Get());
             particleSystem_->setRenderingDistance(renderingDistance.Get());
@@ -99,34 +105,36 @@ void EC_ParticleSystem::DeleteParticleSystem()
         return;
     OgreRenderer::RendererPtr renderer = renderer_.lock();
 
-    EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    if(!placeable || !scene_mgr)
+    if (!scene_mgr)
         return;
 
     try
     {
-        //placeable->GetSceneNode()->detachObject(particleSystem_);
-        Ogre::SceneNode *node = placeable->GetSceneNode();
-        if(!node)
-            return;
-        node->detachObject(particleSystem_);
+        EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
+        if (placeable)
+        {
+            Ogre::SceneNode *node = placeable->GetSceneNode();
+            if (!node)
+                return;
+            node->detachObject(particleSystem_);
+        }
+        scene_mgr->destroyParticleSystem(particleSystem_);
+        particleSystem_ = 0;
     }
     catch (Ogre::Exception& e)
     {
         LogError("Could not delete particle system " + Name().toStdString() + ": " + std::string(e.what()));
     }
 
-    scene_mgr->destroyParticleSystem(particleSystem_);
-    particleSystem_ = 0;
     return;
 }
 
 bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
-    if(category_id == resource_event_category_)
+    if (category_id == resource_event_category_)
     {
-        if(event_id == Resource::Events::RESOURCE_READY)
+        if (event_id == Resource::Events::RESOURCE_READY)
         {
             return HandleResourceEvent(event_id, data);
         }
@@ -136,29 +144,41 @@ bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t 
 
 void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 {
-    if(attribute->GetNameString() == particleId.GetNameString())
+    if (attribute->GetNameString() == particleId.GetNameString())
     {
         particle_tag_ = RequestResource(particleId.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
         if(!particle_tag_) // To visualize that resource id was wrong delete previous particle effect off.
             DeleteParticleSystem();
     }
-    else if(attribute->GetNameString() == castShadows.GetNameString())
+    else if (attribute->GetNameString() == castShadows.GetNameString())
     {
-        if(particleSystem_)
+        if (particleSystem_)
             particleSystem_->setCastShadows(castShadows.Get());
     }
-    else if(attribute->GetNameString() == renderingDistance.GetNameString())
+    else if (attribute->GetNameString() == renderingDistance.GetNameString())
     {
-        if(particleSystem_)
+        if (particleSystem_)
             particleSystem_->setRenderingDistance(renderingDistance.Get());
     }
+}
+
+void EC_ParticleSystem::EntitySetted()
+{
+    Scene::Entity *entity = qobject_cast<Scene::Entity*>(this->GetParentEntity());
+    if (!entity)
+    {
+        LogError("Failed to connect entity signals, component's parent entity is null");
+        return;
+    }
+    disconnect(this, SLOT(DeleteParticleSystem()));
+    connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(DeleteParticleSystem()));
 }
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const
 {
     assert(framework_);
     ComponentPtr comp;
-    if(!GetParentEntity())
+    if (!GetParentEntity())
         return comp;
     comp = GetParentEntity()->GetComponent<EC_Placeable>();
     return comp;
@@ -168,11 +188,11 @@ request_tag_t EC_ParticleSystem::RequestResource(const std::string& id, const st
 {
     request_tag_t tag = 0;
     Foundation::RenderServiceInterface *renderInter = framework_->GetService<Foundation::RenderServiceInterface>();
-    if(!renderInter)
+    if (!renderInter)
         return tag;
 
     tag = renderInter->RequestResource(id, type);
-    if(tag == 0)
+    if (tag == 0)
     {
         LogWarning("Failed to request resource:" + id + " : " + type);
         return 0;
