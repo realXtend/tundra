@@ -56,7 +56,7 @@ namespace Environment
         UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
         if(editor_proxy == 0)
             return;
-        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"));
+        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"),"Server Tools", "./data/ui/images/menus/edbutton_OBJED_normal.png");
         ui->RegisterUniversalWidget("Weights", editor_proxy);
 
 
@@ -422,10 +422,6 @@ namespace Environment
             }
             ptr->settexture0(texname);
             it++;
-            Ogre::Image img;
-            img.loadDynamicImage(static_cast<Ogre::uchar*>(bufbox.data),bufbox.getWidth(), bufbox.getHeight(), bufbox.getDepth(), bufbox.format);
-            
-            img.save("lol.png");
         }
     }
 
