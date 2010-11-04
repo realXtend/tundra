@@ -43,14 +43,17 @@ void TundraLogicModule::PreInitialize()
 void TundraLogicModule::Initialize()
 {
     tundraEventCategory_ = framework_->GetEventManager()->RegisterEventCategory("Tundra");
-}
-
-void TundraLogicModule::PostInitialize()
-{
+    
     syncManager_ = boost::shared_ptr<SyncManager>(new SyncManager(this, framework_));
     client_ = boost::shared_ptr<Client>(new Client(this, framework_));
     server_ = boost::shared_ptr<Server>(new Server(this, framework_));
     
+    framework_->RegisterDynamicObject("client", client_.get());
+    framework_->RegisterDynamicObject("server", server_.get());
+}
+
+void TundraLogicModule::PostInitialize()
+{
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
 
     RegisterConsoleCommand(Console::CreateCommand("startserver", 

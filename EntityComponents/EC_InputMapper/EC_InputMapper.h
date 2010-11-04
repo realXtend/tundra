@@ -135,6 +135,11 @@ public slots:
     */
     void RegisterMapping(const QString &keySeqString, const QString &action, int eventType = 1);
 
+    /// Remove a key mapping
+    void RemoveMapping(const QKeySequence &keySeq, int eventType = 1);
+    /// Remove a key mapping
+    void RemoveMapping(const QString &keySeqString, int eventType = 1);
+    
     /// Returns the input context of this input mapper.
     InputContext *GetInputContext() const { return input_.get(); }
 

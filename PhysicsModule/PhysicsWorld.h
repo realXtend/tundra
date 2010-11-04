@@ -53,6 +53,16 @@ public slots:
      */
     void SetGravity(const Vector3df& gravity);
     
+    //! Raycast to the world. Returns only a single (the closest) entity; other results like hit position/distance can be inspected by connecting to the RaycastResult signal
+    /*! \param origin World origin position
+        \param direction Direction to raycast to. Will be normalized automatically
+        \param maxdistance Length of ray
+        \param collisiongroup Collision filter group (0 = use default)
+        \param collisionmask Collision filter mask (0 = use default)
+        \return Entity (with rigidbody) that was hit, or null if no entity hit
+     */
+    Scene::Entity* Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup = 0, int collisionmask = 0);
+    
     //! Return gravity
     Vector3df GetGravity() const;
     
@@ -73,6 +83,19 @@ signals:
      */
     void PhysicsCollision(Scene::Entity* entityA, Scene::Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
+    //! Raycast result. Invoked when a raycast hits an entity
+    /*! \param Scene::Entity* entity The hit entity
+        \param position World position of ray hit
+        \param normal World normal of ray hit
+        \param distance Hit distance along ray
+     */
+     void RaycastResult(Scene::Entity* entity, const Vector3df& position, const Vector3df& normal, float distance);
+     
+     //! Emitted after each simulation step
+     /*! \param frametime Length of simulation step
+      */
+     void Updated(float frametime);
+     
 private:
     //! Bullet collision config
     btCollisionConfiguration* collisionConfiguration_;
