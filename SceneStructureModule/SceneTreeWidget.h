@@ -21,6 +21,7 @@ namespace ECEditor
 }
 
 struct InvokeItem;
+class IArgumentType;
 
 class QWidget;
 class QFileDialog;
@@ -74,12 +75,11 @@ class AssetItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
-    /** @param i ID.
-        @param t Type.
+    /** @param id ID.
+        @param type Type.
         @param parent Parent item.
     */
-    AssetItem(const QString &i, const QString &t, QTreeWidgetItem *parent = 0) :
-        QTreeWidgetItem(parent), id(i), type(t) {}
+    AssetItem(const QString &id, const QString &type, QTreeWidgetItem *parent = 0);
 
     QString id; ///< ID.
     QString type; ///< Type.
@@ -170,7 +170,10 @@ private:
     /// This widget's "own" EC editor.
     QPointer<ECEditor::ECEditorWindow> ecEditor;
 
-    /// Number of bisible invoke items in the context-menu.
+    /// Maximum count of invoke history items.
+    int historyMaxItemCount;
+
+    /// Number of visible invoke items in the context-menu.
     int numberOfInvokeItemsVisible;
 
     /// Keeps track of the latest opened file save/open dialog, so that we won't multiple open at the same time.
@@ -180,7 +183,7 @@ private:
     QList<InvokeItem> invokeHistory;
 
 private slots:
-    /// Opens selected entities in EC editor window. An exisiting editor window is used if possible.
+    /// Opens selected entities in EC editor window. An existing editor window is used if possible.
     void Edit();
 
     /// Opens selected entities in EC editor window. New editor window is created each time.

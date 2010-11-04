@@ -5,7 +5,7 @@ init_target (EC_Script)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES EC_Script.h)
+file (GLOB MOC_FILES EC_Script.h IScriptInstance.h)
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()

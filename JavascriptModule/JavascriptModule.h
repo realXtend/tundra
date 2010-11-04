@@ -70,6 +70,14 @@ public:
     Console::CommandResult ConsoleRunString(const StringVector &params);
     Console::CommandResult ConsoleRunFile(const StringVector &params);
     Console::CommandResult ConsoleReloadScripts(const StringVector &params);
+
+signals:
+    //! A script engine has been created
+    /*! The purpose of this is to allow dynamic service objects (registered with FrameWork->RegisterDynamicObject())
+        to perform further scriptengine initialization, such as registration of new datatypes. The slot
+        OnScriptEngineCreated() will be invoked on the dynamic service object, if it exists.
+     */
+    void ScriptEngineCreated(QScriptEngine* engine);
     
 public slots:
     //! New scene has been added to foundation.

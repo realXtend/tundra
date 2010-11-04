@@ -46,6 +46,11 @@ public:
     /// Returns the arguments value as a QVariant.
     virtual QVariant ToQVariant() const = 0;
 
+    /// 
+    /** @param var 
+    */
+    virtual void FromQVariant(const QVariant &var) = 0;
+
 private:
     Q_DISABLE_COPY(IArgumentType);
 };
@@ -81,6 +86,13 @@ public:
     /// IArgumentType override.
     virtual QVariant ToQVariant() const { return QVariant::fromValue<T>(value); }
 
+    /// IArgumentType override.
+    virtual void FromQVariant(const QVariant &var)
+    {
+        //assert(var.canConvert<T>());
+        value = var.value<T>();
+    }
+
 private:
     std::string typeName; ///< Type name
     T value; ///< Value.
@@ -115,7 +127,10 @@ public:
     QString ToString() const { return typeName; }
 
     /// IArgumentType override. Returns "void".
-    QVariant ToQVariant() const { return QVariant("void"); }
+    QVariant ToQVariant() const { return QVariant(); }
+
+    /// IArgumentType override. Does nothing.
+    void FromQVariant(const QVariant &var) {}
 
 private:
     QString typeName; ///< Type name
@@ -136,6 +151,7 @@ template<> QWidget *ArgumentType<std::string>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<std::string>::UpdateValueFromEditor();
 template<> QString ArgumentType<std::string>::ToString() const;
 template<> QVariant ArgumentType<std::string>::ToQVariant() const;
+template<> void ArgumentType<std::string>::FromQVariant(const QVariant &var);
 
 // Boolean
 template<> QWidget *ArgumentType<bool>::CreateEditor(QWidget *parent);
