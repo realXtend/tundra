@@ -250,7 +250,7 @@ namespace ECEditor
                 LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
                 return;
             }
-            Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+
             Scene::EntityPtr entity = scene->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
             assert(entity.get());
             if(!entity.get())
@@ -328,7 +328,7 @@ namespace ECEditor
         if (!action)
             return;
 
-        QList<boost::weak_ptr<QObject> >objs;
+        QObjectWeakPtrList objs;
         foreach(Scene::EntityPtr entity, GetSelectedEntities())
             objs << boost::dynamic_pointer_cast<QObject>(entity);
 
@@ -361,7 +361,7 @@ namespace ECEditor
     // Clear old return value from the dialog.
     dialog->SetReturnValueText("");
 
-    foreach(boost::weak_ptr<QObject> o, dialog->Objects())
+    foreach(QObjectWeakPtr o, dialog->Objects())
         if (o.lock())
         {
             QObject *obj = o.lock().get();
@@ -679,7 +679,7 @@ namespace ECEditor
             connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
             connect(browser_, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
             connect(browser_, SIGNAL(ComponentSelected(IComponent *)), SLOT(HighlightEntities(IComponent *)));
-            browser_->expandMemory_ = framework_->GetModule<ECEditorModule>()->ExpandMemory();
+            browser_->SetItemExpandMemory(framework_->GetModule<ECEditorModule>()->ExpandMemory());
         }
 
         if (entity_list_)
