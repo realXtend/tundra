@@ -447,9 +447,12 @@ namespace Scene
     void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QStringList &params)
     {
         EntityAction *act = Action(action);
+        // Commented out to allow sending actions with receiver only on the server, for example
+        /*
         if (!HasReceivers(act))
             return;
-
+        */
+        
         EntityAction::ExecutionType t = (EntityAction::ExecutionType)type;
         if ((t & EntityAction::Local) != 0)
         {

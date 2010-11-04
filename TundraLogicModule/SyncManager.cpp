@@ -305,7 +305,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     bool isServer = owner_->IsServer();
     if (isServer && (type & EntityAction::Server) != 0)
     {
-        TundraLogicModule::LogInfo("EntityAction " + action.toStdString() + " type Server on server.");
+        TundraLogicModule::LogDebug("EntityAction " + action.toStdString() + " type Server on server.");
         entity->Exec(EntityAction::Local, action, params);
     }
 
@@ -323,7 +323,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0))
     {
         // send without Local flag
-        TundraLogicModule::LogInfo("Tundra client sending EntityAction " + action.toStdString() + " type " + ToString(type));
+        TundraLogicModule::LogDebug("Tundra client sending EntityAction " + action.toStdString() + " type " + ToString(type));
         msg.executionType = (u8)(type & ~EntityAction::Local);
         owner_->GetClient()->GetConnection()->Send(msg);
     }
@@ -333,7 +333,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
         foreach(KristalliProtocol::UserConnection c, owner_->GetKristalliModule()->GetUserConnections())
         {
-            TundraLogicModule::LogInfo("peer " + action.toStdString());
+            TundraLogicModule::LogDebug("peer " + action.toStdString());
             c.connection->Send(msg);
         }
     }

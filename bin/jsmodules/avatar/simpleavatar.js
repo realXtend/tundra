@@ -1,8 +1,4 @@
-// A simple walking avatar with physics
-
-var motion_x = 0;
-var motion_y = 0;
-var rotate = 0;
+// A simple walking avatar with physics & third person camera
 
 var rotate_speed = 150.0;
 var mouse_rotate_sensitivity = 0.3;
@@ -12,62 +8,59 @@ var walk_anim_speed = 0.5;
 var avatar_camera_distance = 7.0;
 var avatar_camera_height = 1.0;
 
-// Create components
-var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
-var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
-var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
+var motion_x = 0;
+var motion_y = 0;
+var rotate = 0;
 
-// Set initial position
-//var transform = placeable.transform;
-//transform.position.x = 0;
-//transform.position.y = 0;
-//transform.position.z = 20;
-//placeable.transform = transform;
+var isserver = server.IsRunning();
+var own_avatar = false;
 
-// Set physics properties
-var sizeVec = new Vector3df();
-sizeVec.z = 2;
-sizeVec.x = 0.5;
-sizeVec.y = 0.5;
-rigidbody.mass = 10;
-rigidbody.shapeType = 3; // Capsule
-rigidbody.size = sizeVec;
-var zeroVec = new Vector3df();
-rigidbody.angularFactor = zeroVec; // Set zero angular factor so that body stays upright
+print("Execing avatar script");
 
-// Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
-// Note: for now, you need the default_avatar.xml in your bin/data/assets folder
-avatar.appearanceId = "file://default_avatar.xml"
+// Create avatar on server, and camera & inputmapper on client
+if (isserver)
+    ServerInitialize();
+else
+    ClientInitialize();
 
-// Hook to update tick and physics world update tick
-frame.Updated.connect(Update);
-rigidbody.GetPhysicsWorld().Updated.connect(UpdatePhysics);
+function ServerInitialize()
+{
+    print("Execing serverside of avatar script");
+    var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
+    var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
 
-// Connect actions
-me.Action("Move").Triggered.connect(HandleMove);
-me.Action("Stop").Triggered.connect(HandleStop);
-me.Action("Rotate").Triggered.connect(HandleRotate);
-me.Action("StopRotate").Triggered.connect(HandleStopRotate);
-me.Action("MouseLookX").Triggered.connect(HandleMouseLookX);
+    // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
+    // Note: for now, you need the default_avatar.xml in your bin/data/assets folder
+    avatar.appearanceId = "file://default_avatar.xml"
 
-// Create & hook input mapper. To be only done clientside, for the client's own avatar
-CreateInputMapper();
-CreateAvatarCamera();
+    // Set physics properties
+    var sizeVec = new Vector3df();
+    sizeVec.z = 2;
+    sizeVec.x = 0.5;
+    sizeVec.y = 0.5;
+    rigidbody.mass = 10;
+    rigidbody.shapeType = 3; // Capsule
+    rigidbody.size = sizeVec;
+    var zeroVec = new Vector3df();
+    rigidbody.angularFactor = zeroVec; // Set zero angular factor so that body stays upright
 
-function Update(frametime)
-{       
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    // Hook to physics update
+    rigidbody.GetPhysicsWorld().Updated.connect(ServerUpdatePhysics);
+    
+    // Hook to tick update for continuous rotation update
+    frame.Updated.connect(ServerUpdate);
+
+    // Connect actions
+    me.Action("Move").Triggered.connect(ServerHandleMove);
+    me.Action("Stop").Triggered.connect(ServerHandleStop);
+    me.Action("Rotate").Triggered.connect(ServerHandleRotate);
+    me.Action("StopRotate").Triggered.connect(ServerHandleStopRotate);
+    me.Action("MouseLookX").Triggered.connect(ServerHandleMouseLookX);
+}
+
+function ServerUpdate(frametime)
+{
     var rigidbody = me.GetComponentRaw("EC_RigidBody");
-
-    // Tie enabled state of inputmapper to the enabled state of avatar camera
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    var inputmapper = me.GetComponentRaw("EC_InputMapper");
-    if ((avatarcameraentity != null) && (inputmapper != null))
-    {
-        var active = avatarcameraentity.GetComponentRaw("EC_OgreCamera").IsActive();
-        if (inputmapper.enabled != active)
-            inputmapper.enabled = active;
-    }
 
     if (rotate != 0)
     {
@@ -76,13 +69,11 @@ function Update(frametime)
         rigidbody.Rotate(rotateVec);
     }
     
-    UpdateAnimation(frametime);
-    UpdateAvatarCamera(frametime);
+    CommonUpdateAnimation(frametime);
 }
 
-function UpdatePhysics(frametime)
+function ServerUpdatePhysics(frametime)
 {
-    // This should be a serverside function
     var placeable = me.GetComponentRaw("EC_Placeable");
     var rigidbody = me.GetComponentRaw("EC_RigidBody");
 
@@ -115,7 +106,7 @@ function UpdatePhysics(frametime)
     }
 }
 
-function HandleMove(param)
+function ServerHandleMove(param)
 {
     if (param == "forward")
         motion_x = 1;
@@ -126,10 +117,10 @@ function HandleMove(param)
     if (param == "left")
         motion_y = -1;
         
-    SetAnimationState();
+    ServerSetAnimationState();
 }
 
-function HandleStop(param)
+function ServerHandleStop(param)
 {
     if ((param == "forward") && (motion_x == 1))
         motion_x = 0;
@@ -140,10 +131,10 @@ function HandleStop(param)
     if ((param == "left") && (motion_y == -1))
         motion_y = 0;
 
-    SetAnimationState();
+    ServerSetAnimationState();
 }
 
-function HandleRotate(param)
+function ServerHandleRotate(param)
 {
     if (param == "left")
         rotate = -1;
@@ -151,7 +142,7 @@ function HandleRotate(param)
         rotate = 1;
 }
 
-function HandleStopRotate(param)
+function ServerHandleStopRotate(param)
 {
     if ((param == "left") && (rotate == -1))
         rotate = 0;
@@ -159,11 +150,8 @@ function HandleStopRotate(param)
         rotate = 0;
 }
 
-function HandleMouseLookX(param)
+function ServerHandleMouseLookX(param)
 {
-    if (avatar_camera_active == false)
-        return;
-
     var move = parseInt(param);
     var rigidbody = me.GetComponentRaw("EC_RigidBody");
     var rotateVec = new Vector3df();
@@ -171,9 +159,8 @@ function HandleMouseLookX(param)
     rigidbody.Rotate(rotateVec);
 }
 
-function SetAnimationState()
+function ServerSetAnimationState()
 {
-    // This should be a serverside function
     var animname = "Stand";
     if ((motion_x != 0) || (motion_y != 0))
         animname = "Walk";
@@ -182,32 +169,50 @@ function SetAnimationState()
         animcontroller.animationState = animname;
 }
 
-function UpdateAnimation(frametime)
+function ClientInitialize()
 {
-    // This should be a client only- function
-    var animcontroller = me.GetComponentRaw("EC_AnimationController");
-    var rigidbody = me.GetComponentRaw("EC_RigidBody");
-    if ((animcontroller == null) || (rigidbody == null))
-        return;
-    var animname = animcontroller.animationState;
-    if (animname != "")
-        animcontroller.EnableExclusiveAnimation(animname, true, 0.5, 0.5, false);
-    // If walk animation is playing, adjust its speed according to the avatar rigidbody velocity
-    if (animcontroller.IsAnimationActive("Walk"))
+    print("Execing clientside of avatar script");
+    // Check if this is our own avatar
+    // Note: bad security. For now there's no checking who is allowed to invoke actions
+    // on an entity, and we could theoretically control anyone's avatar
+    if (me.GetName() == "Avatar" + client.GetConnectionID())
     {
-        // Note: on client the rigidbody does not exist, so the velocity is only a replicated attribute
-        var velocity = rigidbody.linearVelocity;
-        var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * walk_anim_speed;
-        animcontroller.SetAnimationSpeed("Walk", walkspeed);
+        own_avatar = true;
+        ClientCreateInputMapper();
+        ClientCreateAvatarCamera();
     }
+
+    // Hook to tick update to update visual effects (both own and others' avatars)
+    frame.Updated.connect(ClientUpdate);
 }
 
-function CreateInputMapper()
+function ClientUpdate(frametime)
 {
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
+    // Tie enabled state of inputmapper to the enabled state of avatar camera
+    if (own_avatar)
+    {
+        var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        var inputmapper = me.GetComponentRaw("EC_InputMapper");
+        if ((avatarcameraentity != null) && (inputmapper != null))
+        {
+            var active = avatarcameraentity.GetComponentRaw("EC_OgreCamera").IsActive();
+            if (inputmapper.enabled != active)
+                inputmapper.enabled = active;
+        }
+        ClientUpdateAvatarCamera(frametime);
+    }
+
+    CommonUpdateAnimation(frametime);
+}
+
+function ClientCreateInputMapper()
+{
+    // Create a nonsynced inputmapper
+    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = true;
     inputmapper.modifiersEnabled = false;
+    inputmapper.executionType = 2; // Execute actions on server
     inputmapper.RegisterMapping("W", "Move(forward)", 1);
     inputmapper.RegisterMapping("S", "Move(back)", 1);
     inputmapper.RegisterMapping("A", "Rotate(left)", 1);
@@ -218,12 +223,12 @@ function CreateInputMapper()
     inputmapper.RegisterMapping("D", "StopRotate(right)", 3);
 }
 
-function CreateAvatarCamera()
+function ClientCreateAvatarCamera()
 {
     if (scene.GetEntityByNameRaw("AvatarCamera") != null)
         return;
 
-    var cameraentity = scene.CreateEntityRaw(scene.NextFreeIdLocal(), ["EC_Script"]);
+    var cameraentity = scene.CreateEntityRaw(scene.NextFreeIdLocal());
     cameraentity.SetName("AvatarCamera");
     cameraentity.SetTemporary(true);
     
@@ -234,10 +239,10 @@ function CreateAvatarCamera()
     camera.SetActive();
 
     // Set initial position
-    UpdateAvatarCamera();
+    ClientUpdateAvatarCamera();
 }
 
-function UpdateAvatarCamera()
+function ClientUpdateAvatarCamera()
 {
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (cameraentity == null)
@@ -259,4 +264,23 @@ function UpdateAvatarCamera()
     cameratransform.rot.z = avatartransform.rot.z - 90;
 
     cameraplaceable.transform = cameratransform;
+}
+
+function CommonUpdateAnimation(frametime)
+{
+    var animcontroller = me.GetComponentRaw("EC_AnimationController");
+    var rigidbody = me.GetComponentRaw("EC_RigidBody");
+    if ((animcontroller == null) || (rigidbody == null))
+        return;
+    var animname = animcontroller.animationState;
+    if (animname != "")
+        animcontroller.EnableExclusiveAnimation(animname, true, 0.5, 0.5, false);
+    // If walk animation is playing, adjust its speed according to the avatar rigidbody velocity
+    if (animcontroller.IsAnimationActive("Walk"))
+    {
+        // Note: on client the rigidbody does not exist, so the velocity is only a replicated attribute
+        var velocity = rigidbody.linearVelocity;
+        var walkspeed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * walk_anim_speed;
+        animcontroller.SetAnimationSpeed("Walk", walkspeed);
+    }
 }
