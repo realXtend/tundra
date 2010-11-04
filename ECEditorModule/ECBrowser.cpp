@@ -688,8 +688,8 @@ namespace ECEditor
         for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
             oldList.insert(treeWidget_->topLevelItem(i));
 
-        // Disconnect itemExpanded() and itemCollapsed() signal before we create new items to the treewidget
-        // so that we don't spam TreeWidgetItemExpandMemory's 
+        // Disconnect itemExpanded() and itemCollapsed() signal before we create new items to the tree widget
+        // so that we don't spam TreeWidgetItemExpandMemory's data as QtPropertyBrowser expands all items automatically.
         if (expandMemory_.lock())
         {
             disconnect(treeWidget_, SIGNAL(itemExpanded(QTreeWidgetItem *)), expandMemory_.lock().get(), SLOT(HandleItemExpanded(QTreeWidgetItem *)));
@@ -730,8 +730,7 @@ namespace ECEditor
 
         // Connect itemExpanded() and itemCollapsed() signals back so that TreeWidgetItemExpandMemory
         // is kept up to date when user expands and collapses items.
-        assert(treeWidget_);
-        if (treeWidget_ && expandMemory_.lock())
+        if (expandMemory_.lock())
         {
             connect(treeWidget_, SIGNAL(itemExpanded(QTreeWidgetItem *)), expandMemory_.lock().get(),
                 SLOT(HandleItemExpanded(QTreeWidgetItem *)), Qt::UniqueConnection);

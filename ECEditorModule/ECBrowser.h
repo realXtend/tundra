@@ -65,6 +65,11 @@ namespace ECEditor
         //! Return list of entities that has added to browser widget. Return empty list if no entities have been added.
         QList<Scene::EntityPtr> GetEntities() const;
 
+        /// Sets used item expand memory. Expand memory is used to load and save the expanded items in the tree widget.
+        /** @param expandMem Tree widget item expand memory.
+        */
+        void SetItemExpandMemory(boost::shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
+
     public slots:
         //! Reset browser state to where it was after the browser initialization. Override method from the QtTreePropertyBrowser.
         void clear();
@@ -150,8 +155,6 @@ namespace ECEditor
         void OnDeleteAction();
 
     private:
-        friend class ECEditorWindow;
-
         //! Try to find the right component group for spesific component type. if found return it's position on the list as in iterator format.
         //! If any component group wasn't found return .end() iterator value.
         /*! @param comp component that we want to find in some of the component group.
