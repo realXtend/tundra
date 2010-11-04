@@ -11,7 +11,6 @@ var damping_force = 3.0;
 var walk_anim_speed = 0.5;
 var avatar_camera_distance = 7.0;
 var avatar_camera_height = 1.0;
-var avatar_camera_active = true;
 
 // Create components
 var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
@@ -44,13 +43,12 @@ avatar.appearanceId = "file://default_avatar.xml"
 frame.Updated.connect(Update);
 rigidbody.GetPhysicsWorld().Updated.connect(UpdatePhysics);
 
-// Connect actions (handled serverside)
+// Connect actions
 me.Action("Move").Triggered.connect(HandleMove);
 me.Action("Stop").Triggered.connect(HandleStop);
 me.Action("Rotate").Triggered.connect(HandleRotate);
 me.Action("StopRotate").Triggered.connect(HandleStopRotate);
 me.Action("MouseLookX").Triggered.connect(HandleMouseLookX);
-me.Action("ToggleCamera").Triggered.connect(HandleToggleCamera);
 
 // Create & hook input mapper. To be only done clientside, for the client's own avatar
 CreateInputMapper();
@@ -60,6 +58,16 @@ function Update(frametime)
 {       
     var placeable = me.GetComponentRaw("EC_Placeable");
     var rigidbody = me.GetComponentRaw("EC_RigidBody");
+
+    // Tie enabled state of inputmapper to the enabled state of avatar camera
+    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var inputmapper = me.GetComponentRaw("EC_InputMapper");
+    if ((avatarcameraentity != null) && (inputmapper != null))
+    {
+        var active = avatarcameraentity.GetComponentRaw("EC_OgreCamera").IsActive();
+        if (inputmapper.enabled != active)
+            inputmapper.enabled = active;
+    }
 
     if (rotate != 0)
     {
@@ -163,32 +171,6 @@ function HandleMouseLookX(param)
     rigidbody.Rotate(rotateVec);
 }
 
-function HandleToggleCamera()
-{
-    // For camera switching to work, must have both the freelookcamera & avatarcamera in the scene
-    var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    if ((freelookcameraentity == null) || (avatarcameraentity == null))
-        return;
-    avatar_camera_active = !avatar_camera_active;
-
-    var inputmapper = me.GetComponentRaw("EC_InputMapper");
-    if (avatar_camera_active == false)
-    {
-        // Remove the movement controls from inputmapper
-        DisableMoveControls(inputmapper);
-        // Match the freelook camera's transform with the avatar camera
-        freelookcameraentity.GetComponentRaw("EC_Placeable").transform = avatarcameraentity.GetComponentRaw("EC_Placeable").transform
-        freelookcameraentity.GetComponentRaw("EC_OgreCamera").SetActive();
-    }
-    else
-    {
-        // Re-enable movement controls
-        EnableMoveControls(inputmapper);
-        avatarcameraentity.GetComponentRaw("EC_OgreCamera").SetActive();
-    }
-}
-
 function SetAnimationState()
 {
     // This should be a serverside function
@@ -226,13 +208,6 @@ function CreateInputMapper()
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = true;
     inputmapper.modifiersEnabled = false;
-    inputmapper.RegisterMapping("Tab", "ToggleCamera", 1);
-
-    EnableMoveControls(inputmapper);
-}
-
-function EnableMoveControls(inputmapper)
-{
     inputmapper.RegisterMapping("W", "Move(forward)", 1);
     inputmapper.RegisterMapping("S", "Move(back)", 1);
     inputmapper.RegisterMapping("A", "Rotate(left)", 1);
@@ -241,19 +216,6 @@ function EnableMoveControls(inputmapper)
     inputmapper.RegisterMapping("S", "Stop(back)", 3);
     inputmapper.RegisterMapping("A", "StopRotate(left)", 3);
     inputmapper.RegisterMapping("D", "StopRotate(right)", 3);
-
-}
-
-function DisableMoveControls(inputmapper)
-{
-    inputmapper.RemoveMapping("W", 1);
-    inputmapper.RemoveMapping("S", 1);
-    inputmapper.RemoveMapping("A", 1);
-    inputmapper.RemoveMapping("D", 1);
-    inputmapper.RemoveMapping("W", 3);
-    inputmapper.RemoveMapping("S", 3);
-    inputmapper.RemoveMapping("A", 3);
-    inputmapper.RemoveMapping("D", 3);
 }
 
 function CreateAvatarCamera()
