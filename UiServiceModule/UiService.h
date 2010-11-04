@@ -15,29 +15,26 @@
 class QGraphicsView;
 class QRectF;
 
-/*
- *  Light-weight UI service. Implements UiServiceInterface and provides 
- *  means of embedding Qt widgets to the same scene/canvas as the 3D in-world
- *  view. Uses only one UI scene for everything.
- */
-class UiService : public Foundation::UiServiceInterface
+/// Light-weight UI service. Implements UiServiceInterface and provides means of  embedding Qt
+/// widgets to the same scene/canvas as the 3D in-world view. Uses only one UI scene for everything.
+class UiService : public UiServiceInterface
 {
     Q_OBJECT
 
 public:
-    /** Constuctor.
-     *  @param view The main graphics view.
-     */
+    /// Constuctor.
+    /** @param view The main graphics view.
+    */
     explicit UiService(QGraphicsView *view);
 
     /// Destructor.
     ~UiService();
 
 public slots:
-    /** UiServiceInterface override.
-     *  @note If you want to add full screen widget that is resized automatically to fit the screen
-     *  when scene rectangle changes, remember to set Qt::FullScreen window state for the widget.
-     */
+    /// UiServiceInterface override.
+    /** @note If you want to add full screen widget that is resized automatically to fit the screen
+        when scene rectangle changes, remember to set Qt::FullScreen window state for the widget.
+    */
     UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
     /// UiServiceInterface override.
@@ -76,25 +73,29 @@ public slots:
     /// UiServiceInterface override.
     void BringWidgetToFront(QGraphicsProxyWidget *widget) const;
 
-    /// UiServiceInterface override.
-    /// Does nothing.
+    /// UiServiceInterface override. Does nothing.
     bool AddSettingsWidget(QWidget *widget, const QString &name) const { return false; }
 
-    /// UiServiceInterface override.
-    /// Returns the only UI scene we have.
+    /// UiServiceInterface override. Returns the only UI scene we have.
     QGraphicsScene *GetScene(const QString &name) const { return scene_; }
 
-    /// UiServiceInterface override.
-    /// Does nothing.
+    /// UiServiceInterface override. Does nothing.
     void RegisterScene(const QString &name, QGraphicsScene *scene) { }
 
-    /// UiServiceInterface override.
-    /// Does nothing.
+    /// UiServiceInterface override. Does nothing.
     bool UnregisterScene(const QString &name) { return false; }
 
-    /// UiServiceInterface override.
-    /// Does nothing.
+    /// UiServiceInterface override. Does nothing.
     bool SwitchToScene(const QString &name) { return false; }
+
+    /// UiServiceInterface override. Does nothing.
+    void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget) {}
+
+    /// UiServiceInterface override. Does nothing.
+    void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) {}
+
+    /// UiServiceInterface override. Does nothing.
+    QWidget *LoadFromFile(const QString &file_path, bool add_to_scene = true, QWidget *parent = 0) { return 0; }
 
 private:
     /// Main graphics view.

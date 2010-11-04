@@ -12,7 +12,7 @@
 #include "LoginWidget.h"
 
 #include "UiServiceInterface.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "LoginServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
@@ -47,7 +47,7 @@ QMap<QString, QString> GetLoginInfo() const
 std::string LoginScreenModule::type_name_static_ = "LoginScreen";
 
 LoginScreenModule::LoginScreenModule() :
-    ModuleInterface(type_name_static_),
+    IModule(type_name_static_),
     window_(0),
     framework_category_(0),
     network_category_(0),
@@ -69,11 +69,11 @@ void LoginScreenModule::Initialize()
 
 void LoginScreenModule::PostInitialize()
 {
-    input_ = framework_->Input().RegisterInputContext("LoginScreenInput", 101);
+    input_ = framework_->GetInput()->RegisterInputContext("LoginScreenInput", 101);
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (ui)
     {
         window_ = new LoginWidget(QMap<QString, QString>());
@@ -112,7 +112,7 @@ void LoginScreenModule::Update(f64 frametime)
 }
 
 // virtual
-bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     if (category_id == framework_category_ && event_id == Foundation::NETWORKING_REGISTERED)
     {
@@ -121,7 +121,7 @@ bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t 
     else if(category_id == network_category_)
     {
         using namespace ProtocolUtilities::Events;
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         switch(event_id)
         {
         case EVENT_SERVER_CONNECTED:
@@ -152,10 +152,10 @@ void LoginScreenModule::HandleKeyEvent(KeyEvent *key)
     if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
         return;
 
-    const QKeySequence &toggleMenu = framework_->Input().KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
+    const QKeySequence &toggleMenu = framework_->GetInput()->KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
     if (key->keyCode == toggleMenu)
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (connected_ && ui)
             if (!window_->isVisible())
                 ui->ShowWidget(window_);
@@ -175,6 +175,6 @@ void SetProfiler(Foundation::Profiler *profiler)
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(LoginScreenModule)
 POCO_END_MANIFEST
