@@ -7,88 +7,82 @@
 
 #include <map>
 
-namespace Foundation
+//! Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
+/*! See \ref SceneModelPage "Scenes, entities and components" for details about the viewer's scene model.
+
+    \defgroup Scene_group Scene Model Client Interface
+*/
+
+//! Manages components. Also works as a component factory.
+/*! \ingroup Foundation_group
+    \ingroup Scene_group
+*/
+class ComponentManager
 {
-    //! Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
-    /*! See \ref SceneModelPage "Scenes, entities and components" for details about the viewer's scene model.
-    
-        \defgroup Scene_group Scene Model Client Interface
+public:
+    typedef std::list<ComponentWeakPtr> ComponentList;
+    typedef std::map<std::string, ComponentList> ComponentTypeMap;
+    typedef ComponentList::iterator iterator;
+    typedef ComponentList::const_iterator const_iterator;
+    typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
+
+    //! default constructor
+    ComponentManager(Foundation::Framework *framework);
+
+    //! destructor
+    ~ComponentManager() { }
+
+    //! register factory for the component
+    void RegisterFactory(const QString &component, const ComponentFactoryPtr &factory);
+
+    //! Unregister the component. Removes the factory.
+    void UnregisterFactory(const QString &component);
+
+    //! Returns true if component can be created (a factory for the component has registered itself)
+    /*! \param type_name name of the component type
+        \return true if component can be created, false otherwise
     */
+    bool CanCreate(const QString &type_name);
 
-    //! Manages components. Also works as a component factory.
-    /*! \ingroup Foundation_group
-        \ingroup Scene_group
+    //! Create a new component
+    /*! Precondition: CanCreate(componentName)
+        \param type_name type of the component to create
     */
-    class ComponentManager
-    {
-    public:
-        typedef std::list<ComponentWeakPtr> ComponentList;
-        typedef std::map<std::string, ComponentList> ComponentTypeMap;
-        typedef ComponentList::iterator iterator;
-        typedef ComponentList::const_iterator const_iterator;
-        typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
+    ComponentPtr CreateComponent(const QString &type_name);
 
-        //! default constructor
-        ComponentManager(Framework *framework);
+    //! Create a new component
+    /*!
+        Precondition: CanCreate(componentName)
 
-        //! destructor
-        ~ComponentManager() { }
+        \param type_name type of the component to create
+        \param name name of the component to create
+    */
+    ComponentPtr CreateComponent(const QString &type_name, const QString &name);
 
-        //! register factory for the component
-        void RegisterFactory(const QString &component, const ComponentFactoryPtr &factory);
+    //! Create clone of the specified component
+    ComponentPtr CloneComponent(const ComponentPtr &component);
 
-        //! Unregister the component. Removes the factory.
-        void UnregisterFactory(const QString &component);
+    //! Create new attribute for spesific component.
+    IAttribute *CreateAttribute(IComponent *owner, const std::string &typeName, const std::string &name);
 
-        //! Returns true if component can be created (a factory for the component has registered itself)
-        /*!
-            \param type_name name of the component type
-            \return true if component can be created, false otherwise
-        */
-        bool CanCreate(const QString &type_name);
+    //! Returns list of supported attribute types.
+    QStringList GetAttributeTypes() const;
 
-        //! Create a new component
-        /*!
-            Precondition: CanCreate(componentName)
+    //! Get all component factories
+    const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
 
-            \param type_name type of the component to create
-        */
-        ComponentPtr CreateComponent(const QString &type_name);
+    //! Returns string list of available component type names.
+    QStringList GetAvailableComponentTypeNames() const;
 
-        //! Create a new component
-        /*!
-            Precondition: CanCreate(componentName)
+private:
+    //! Map of component factories
+    ComponentFactoryMap factories_;
 
-            \param type_name type of the component to create
-            \param name name of the component to create
-        */
-        ComponentPtr CreateComponent(const QString &type_name, const QString &name);
+    //! List of supported attribute types.
+    QStringList attributeTypes_;
 
-        //! Create clone of the specified component
-        ComponentPtr CloneComponent(const ComponentPtr &component);
-
-        //! Create new attribute for spesific component.
-        IAttribute *CreateAttribute(IComponent *owner, const std::string &typeName, const std::string &name);
-
-        //! Returns list of supported attribute types.
-        StringVector GetAttributeTypes() const;
-
-        //! Get all component factories
-        const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
-
-        //! Returns string list of available component type names.
-        QStringList GetAvailableComponentTypeNames() const;
-
-    private:
-        //! Map of component factories
-        ComponentFactoryMap factories_;
-
-        //! List of supported attribute types.
-        StringVector attributeTypes_;
-
-        //! Framework
-        Framework *framework_;
-    };
-}
+    //! Framework
+    Foundation::Framework *framework_;
+};
 
 #endif

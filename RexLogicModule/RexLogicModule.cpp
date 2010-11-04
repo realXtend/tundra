@@ -426,7 +426,7 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene)
     }
 
     // Create camera entity into the scene
-    Foundation::ComponentManagerPtr compMgr = framework_->GetComponentManager();
+    ComponentManagerPtr compMgr = framework_->GetComponentManager();
     ComponentPtr placeable = compMgr->CreateComponent(EC_Placeable::TypeNameStatic());
     ComponentPtr camera = compMgr->CreateComponent(EC_OgreCamera::TypeNameStatic());
     assert(placeable && camera);
