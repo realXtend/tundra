@@ -41,9 +41,16 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 // File filter definitions for supported files.
 const QString cOgreSceneFileFilter(QApplication::translate("SceneTreeWidget", "OGRE scene (*.scene)"));
 const QString cOgreMeshFileFilter(QApplication::translate("SceneTreeWidget", "OGRE mesh (*.mesh)"));
+#ifdef ASSIMP_ENABLED
+const QString cMeshFileFilter(QApplication::translate("SceneTreeWidget", "Mesh (*.xml *.3d *.b3d *.dae *.bvh *.3ds *.ase *.obj *.ply *.dxf *.nff *.smd *.vta *.mdl *.md2 *.md3 *.mdc *.md5mesh *.x *.q3o *.q3s *.raw *.ac *.stl *.irrmesh *.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)"));
+#endif
 const QString cNaaliXmlFileFilter(QApplication::translate("SceneTreeWidget", "Naali scene XML(*.xml)"));
 const QString cNaaliBinaryFileFilter(QApplication::translate("SceneTreeWidget", "Naali Binary Format (*.nbf)"));
+#ifdef ASSIMP_ENABLED
+const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf *.xml *.dae *.bvh *.3ds *.ase *.obj *.ply *.dxf *.nff *.smd *.vta *.mdl *.md2 *.md3 *.mdc *.md5mesh *.x *.q3o *.q3s *.raw *.ac *.stl *.irrmesh *.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)"));
+#else
 const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf)"));
+#endif
 const QString cAllTypesFileFilter(QApplication::translate("SceneTreeWidget", "All types (*.*)"));
 
 // EntityItem
@@ -854,8 +861,11 @@ void SceneTreeWidget::Import()
     if (fileDialog)
         fileDialog->close();
     fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
-        cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + 
-        cNaaliBinaryFileFilter + ";;" + cAllTypesFileFilter,
+        cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + 
+#ifdef ASSIMP_ENABLED
+        cMeshFileFilter + ";;" + 
+#endif
+        cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" + cAllTypesFileFilter,
         tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
