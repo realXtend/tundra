@@ -18,6 +18,8 @@ class QLineEdit;
 class QComboBox;
 class QCheckBox;
 
+struct InvokeItem;
+
 /// Dialog for invoking entity actions.
 /** Emits finished(0) when "Close" is clicked, finished(1) when "Close and Execute" is cliked,
     and finished(2), when "Execute" is cliked.
@@ -27,15 +29,19 @@ class ECEDITOR_MODULE_API EntityActionDialog : public QDialog
     Q_OBJECT
 
 public:
-    /// Constructs the dialog.
-    /** Populates action combo box with union of all the actions of all the @c entities.
-        The dialog is destroyed when hide() or close() is called for it.
+    /// Constructs the dialog and populates action combo box with union of all the actions of all the @c entities.
+    /** The dialog is destroyed when hide() or close() is called for it.
         @param entities Entities for which action is performed.
         @param parent Parent widget.
-        @param f Window flags.
     */
-    EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    ~EntityActionDialog();
+    EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, QWidget *parent = 0);
+
+    /// Constructs the dialog and populates action combo box with union of all the actions of all the @c entities.
+    /** The dialog is destroyed when hide() or close() is called for it.
+        @param entities Entities for which action is performed.
+        @param parent Parent widget.
+    */
+    EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *parent = 0);
 
 public slots:
     /// Returns list of entities for which the action is triggered.
@@ -55,6 +61,9 @@ protected:
     void hideEvent(QHideEvent *);
 
 private:
+    /// Creates the widget's contents.
+    void Initialize();
+
     /// Action name combo box.
     QComboBox *actionComboBox;
 

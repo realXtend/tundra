@@ -393,7 +393,6 @@ void EC_Placeable::RegisterActions()
         entity->ConnectAction("ShowEntity", this, SLOT(Show()));
         entity->ConnectAction("HideEntity", this, SLOT(Hide()));
         entity->ConnectAction("ToggleEntity", this, SLOT(ToggleVisibility()));
-
     }
 }
 
@@ -409,5 +408,10 @@ void EC_Placeable::TranslateRelative(const Vector3df& translation)
     Transform newTrans = transform.Get();
     newTrans.position += GetOrientation() * translation;
     transform.Set(newTrans, AttributeChange::Default);
+}
+
+Vector3df EC_Placeable::GetRelativeVector(const Vector3df& vec)
+{
+    return GetOrientation() * vec;
 }
 
