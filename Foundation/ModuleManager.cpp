@@ -75,7 +75,7 @@ void ModuleManager::DeclareStaticModule(IModule *module)
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
         std::string log_level = "information";
-        if (framework_->GetDefaultConfig().HasKey(Foundation::Framework::ConfigurationGroup(), "log_level") )
+        if (framework_->GetDefaultConfig().HasKey(Foundation::Framework::ConfigurationGroup(), "log_level"))
             log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "log_level");
         else
             framework_->GetConfigManager()->SetSetting(Foundation::Framework::ConfigurationGroup(), "log_level", log_level);
