@@ -216,6 +216,7 @@ namespace CommUI
         if (!channel_selection_)
         {
             channel_selection_ = new QComboBox();
+            channel_selection_->setSizeAdjustPolicy( QComboBox::AdjustToContents );
             this->layout()->addWidget(channel_selection_);
         }
         
