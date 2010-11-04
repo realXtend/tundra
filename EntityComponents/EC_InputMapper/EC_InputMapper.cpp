@@ -22,17 +22,25 @@ EC_InputMapper::~EC_InputMapper()
     input_.reset();
 }
 
-void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType)
+void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &action, int eventType, int executionType)
 {
-    mappings_[qMakePair(keySeq, (KeyEvent::EventType)eventType)] = action;
+    ActionInvocation invocation;
+    invocation.name = action;
+    invocation.executionType = executionType;
+    
+    mappings_[qMakePair(keySeq, (KeyEvent::EventType)eventType)] = invocation;
 }
 
-void EC_InputMapper::RegisterMapping(const QString &keySeq, const QString &action, int eventType)
+void EC_InputMapper::RegisterMapping(const QString &keySeq, const QString &action, int eventType, int executionType)
 {
+    ActionInvocation invocation;
+    invocation.name = action;
+    invocation.executionType = executionType;
+    
     QKeySequence key(keySeq);
     if(!key.isEmpty())
     {
-        mappings_[qMakePair(key, (KeyEvent::EventType)eventType)] = action;
+        mappings_[qMakePair(key, (KeyEvent::EventType)eventType)] = invocation;
     }
 }
 
@@ -58,7 +66,8 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
     mappings(this, "Mappings"),
     executionType(this, "Action execution type", 1),
-    modifiersEnabled(this, "Key modifiers enable", true)
+    modifiersEnabled(this, "Key modifiers enable", true),
+    enabled(this, "Enable actions", true)
 {
     static AttributeMetadata executionAttrData;
     static bool metadataInitialized = false;
@@ -109,6 +118,8 @@ void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Ty
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
 {
+    if (!enabled.Get())
+        return;
     
     Mappings_t::iterator it;
     if (modifiersEnabled.Get())
@@ -125,7 +136,13 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         return;
     }
 
-    QString &action = it.value();
+    ActionInvocation& invocation = it.value();
+    QString &action = invocation.name;
+    int execType = invocation.executionType;
+    // If zero executiontype, use default
+    if (!execType)
+        execType = executionType.Get();
+    
 //    LogDebug("Invoking action " + action.toStdString() + " for entity " + ToString(entity->GetId()));
 
     // If the action has parameters, parse them from the action string.
@@ -137,17 +154,20 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringList parameters = parsedAction.split(',');
-        entity->Exec((EntityAction::ExecutionType)executionType.Get(), act, parameters);
+        entity->Exec((EntityAction::ExecutionType)execType, act, parameters);
     }
     else
-        entity->Exec((EntityAction::ExecutionType)executionType.Get(), action);
+        entity->Exec((EntityAction::ExecutionType)execType, action);
 }
 
 void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
 {
+    if (!enabled.Get())
+        return;
+    
     if (!GetParentEntity())
         return;
-
+    
     //! \todo this hardcoding of look button logic (similar to RexMovementInput) is not nice!
     if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->GetInput()->IsMouseCursorVisible()))
     {
