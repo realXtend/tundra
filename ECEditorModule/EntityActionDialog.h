@@ -22,7 +22,7 @@ struct InvokeItem;
 
 /// Dialog for invoking entity actions.
 /** Emits finished(0) when "Close" is clicked, finished(1) when "Close and Execute" is cliked,
-    and finished(2), when "Execute" is cliked.
+    and finished(2), when "Execute" is cliked. The dialog is destroyed when hide() or close() is called for it.
 */
 class ECEDITOR_MODULE_API EntityActionDialog : public QDialog
 {
@@ -30,15 +30,14 @@ class ECEDITOR_MODULE_API EntityActionDialog : public QDialog
 
 public:
     /// Constructs the dialog and populates action combo box with union of all the actions of all the @c entities.
-    /** The dialog is destroyed when hide() or close() is called for it.
-        @param entities Entities for which action is performed.
+    /** @param entities Entities for which action is performed.
         @param parent Parent widget.
     */
     EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, QWidget *parent = 0);
 
-    /// Constructs the dialog and populates action combo box with union of all the actions of all the @c entities.
-    /** The dialog is destroyed when hide() or close() is called for it.
-        @param entities Entities for which action is performed.
+    /// Constructs the dialog and uses information of @c invokeItem to fill the currently active function and parameter editors.
+    /** @param entities Entities for which action is performed.
+        @param invokeItem Invoke history item 
         @param parent Parent widget.
     */
     EntityActionDialog(const QList<Scene::EntityWeakPtr> &entities, const InvokeItem &invokeItem, QWidget *parent = 0);
