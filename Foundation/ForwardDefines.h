@@ -39,26 +39,27 @@ class IComponent;
 typedef boost::shared_ptr<IComponent> ComponentPtr;
 typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
 
+class ComponentManager;
+typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
+
+class ConfigurationManager;
+typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
+
 namespace Foundation
 {
     class ModuleManager;
-    class ComponentManager;
     class ServiceManager;
-    class ConfigurationManager;
     class EventManager;
     class Platform;
     class Application;
-    class ConfigurationManager;
     class ThreadTaskManager;
-    class Profiler;
     class Framework;
     class KeyBindings;
     class MainWindow;
+    class Profiler;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
-    typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
     typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
-    typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
     typedef boost::shared_ptr<EventManager> EventManagerPtr;
     typedef boost::shared_ptr<Platform> PlatformPtr;
     typedef boost::shared_ptr<Application> ApplicationPtr;

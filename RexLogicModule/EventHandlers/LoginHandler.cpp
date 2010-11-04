@@ -233,7 +233,7 @@ namespace RexLogic
     {
         assert(credentials_.GetType() != ProtocolUtilities::AT_Unknown);
 
-        Foundation::ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
+        ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
         if (credentials_.GetType() ==ProtocolUtilities::AT_OpenSim)
         {
             mgr->DeclareSetting<std::string>("Login", "server", server_entry_point_url_.authority().toStdString());
@@ -241,7 +241,7 @@ namespace RexLogic
         }
         else if (credentials_.GetType() == ProtocolUtilities::AT_RealXtend)
         {
-            Foundation::ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
+            ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
             mgr->DeclareSetting<std::string>("Login", "rex_server", server_entry_point_url_.authority().toStdString());
             mgr->DeclareSetting<std::string>("Login", "auth_server", credentials_.GetAuthenticationUrl().host().toStdString());
             mgr->DeclareSetting<std::string>("Login", "auth_name", credentials_.GetIdentity().toStdString());

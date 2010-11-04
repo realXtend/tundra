@@ -598,14 +598,10 @@ namespace ECEditor
             return;
 
         bool ok = false;
-        QStringList attributeList;
-        StringVector attributeTypes = framework_->GetComponentManager()->GetAttributeTypes();
-        for(uint i = 0; i < attributeTypes.size(); i++)
-            attributeList.push_back(QString::fromStdString(attributeTypes[i]));
-
         //! @todo replace this code with a one that will use Dialog::open method and listens a signal
         //! that will tell us when dialog is closed. Should be more safe way to get this done.
-        QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"), attributeList, 0, false, &ok);
+        QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
+            framework_->GetComponentManager()->GetAttributeTypes(), 0, false, &ok);
         if (!ok)
             return;
         QString name = QInputDialog::getText(this, tr("Give attribute name"), tr("Name:"), QLineEdit::Normal, QString(), &ok);
