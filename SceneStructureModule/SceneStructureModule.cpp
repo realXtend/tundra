@@ -136,9 +136,12 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             for (size_t i=0 ; i<meshNames.size() ; ++i)
             {
                 Scene::EntityPtr entity = sceneimporter.ImportMesh(scene, meshNames[i].file_.toStdString(), dirname, "./data/assets",
-                    meshNames[i].transform_, std::string(), AttributeChange::Default, true, meshNames[i].name_.toStdString());
+                    meshNames[i].transform_, std::string(), AttributeChange::Default, true, false, meshNames[i].name_.toStdString());
                 if (entity)
+                {
                     scene->EmitEntityCreated(entity, AttributeChange::Default);
+                    ret.append(entity.get());
+                }
             }
         } else
 #endif
