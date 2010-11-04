@@ -1011,10 +1011,17 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             FunctionInvoker invoker;
             invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
 
+            QString retValStr;
+            ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
+            /// Convert it manually here.
+            if (ret.type() == QVariant::StringList)
+                foreach(QString s, ret.toStringList())
+                    retValStr.append("\n" + s);
+
             if (errorMsg.isEmpty())
-                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+                dialog->AppendReturnValueText(objNameWithId + " " + retValStr);
             else
-                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+                dialog->AppendReturnValueText(objNameWithId + " " + errorMsg);
 
             // Save invoke item
             InvokeItem ii;
