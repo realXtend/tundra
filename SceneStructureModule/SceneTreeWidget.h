@@ -14,6 +14,7 @@
 
 #include <QTreeWidget>
 #include <QPointer>
+#include <QMenu>
 
 namespace ECEditor
 {
@@ -104,6 +105,18 @@ struct Selection
     QList<ComponentItem *> components; ///< List of selected components.
 };
 
+///
+class Menu : public QMenu
+{
+    Q_OBJECT
+public:
+    explicit Menu(QWidget *parent = 0);
+    bool shiftDown;
+private:
+    void keyPressEvent(QKeyEvent *e);
+    void keyReleaseEvent(QKeyEvent *e);
+};
+
 /// Tree widget showing the scene structure.
 class SceneTreeWidget : public QTreeWidget
 {
@@ -181,6 +194,9 @@ private:
 
     /// Keeps track of recently invoked entity actions and functions.
     QList<InvokeItem> invokeHistory;
+
+    ///
+    QPointer<Menu> contextMenu;
 
 private slots:
     /// Opens selected entities in EC editor window. An existing editor window is used if possible.
