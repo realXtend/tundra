@@ -56,7 +56,7 @@ namespace Environment
         UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
         if(editor_proxy == 0)
             return;
-        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"));
+        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"),"Server Tools", "./data/ui/images/menus/edbutton_OBJED_normal.png");
         ui->RegisterUniversalWidget("Weights", editor_proxy);
 
 
