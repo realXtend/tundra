@@ -10,7 +10,7 @@
 
 #include "IScriptInstance.h"
 
-class QScriptEngine;
+#include <QtScript>
 
 class JavascriptEngine: public IScriptInstance
 {
@@ -45,6 +45,9 @@ public slots:
     /// @param path is relative path from bin/ to file. Example jsmodules/apitest/myscript.js
     void IncludeFile(const QString& file);
 
+private slots:
+    void OnSignalHandlerException(const QScriptValue& exception);
+    
 private:
     QString LoadScript() const;
 
