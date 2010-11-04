@@ -237,7 +237,20 @@ namespace Scene
 
         return ComponentPtr();
     }
-    
+
+    QObjectList Entity::GetComponentsRaw(const QString &type_name) const
+    {
+        QObjectList ret;
+        if (type_name.isNull())
+            for(size_t i = 0; i < components_.size() ; ++i)
+                ret.push_back(components_[i].get());
+        else
+            for(size_t i = 0; i < components_.size() ; ++i)
+                if (components_[i]->TypeName() == type_name)
+                    ret.push_back(components_[i].get());
+        return ret;
+    }
+
     bool Entity::HasComponent(const QString &type_name) const
     {
         for(size_t i=0 ; i<components_.size() ; ++i)
@@ -453,6 +466,14 @@ namespace Scene
         }
 
         GetScene()->EmitActionTriggered(this, action, params, t);
+    }
+
+    void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params)
+    {
+        QStringList stringParams;
+        foreach(QVariant var, params)
+            stringParams << var.toString();
+        Exec(type, action, stringParams);
     }
 
     bool Entity::HasReceivers(EntityAction *action)
