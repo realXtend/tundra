@@ -9,6 +9,9 @@
 #include <QObject>
 #include <QPointer>
 
+class TreeWidgetItemExpandMemory;
+typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
+
 namespace ECEditor
 {
     class ECEditorWindow;
@@ -59,6 +62,12 @@ namespace ECEditor
         //! Logging functions.
         MODULE_LOGGING_FUNCTIONS
 
+        /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
+        /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
+            collapsed items similar.
+        */
+        ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
+
     public slots:
         void AddEditorWindowToUI();
 
@@ -82,9 +91,6 @@ namespace ECEditor
         //! Static name of the module
         static std::string name_static_;
 
-        //! Event manager pointer.
-        Foundation::EventManagerPtr event_manager_;
-
         //! Id for Scene event category
         event_category_id_t scene_event_category_;
 
@@ -99,6 +105,9 @@ namespace ECEditor
 
         /// Input context.
         boost::shared_ptr<InputContext> inputContext;
+
+        /// Tree widget item expand memory keeps track of which items in EC editor are expanded.
+        ExpandMemoryPtr expandMemory;
 
     private slots:
         /// Handles KeyPressed() signal from input context.
