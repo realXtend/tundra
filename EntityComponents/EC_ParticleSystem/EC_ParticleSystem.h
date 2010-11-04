@@ -94,8 +94,8 @@ public slots:
     void DeleteParticleSystem();
 
 private slots:
-    void UpdateSignals();
     void AttributeUpdated(IAttribute *attribute);
+    void EntitySetted();
 
 private:
     explicit EC_ParticleSystem(IModule *module);

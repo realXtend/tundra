@@ -63,6 +63,7 @@ namespace Scene
         
         void EmitEntityCreated(QObject* entity, AttributeChange::Type change = AttributeChange::Default);
         
+        void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
     public:
         //! destructor
         ~SceneManager();

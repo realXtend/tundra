@@ -1,0 +1,12 @@
+This test scene implements avatars. It uses two script files: jsmodules/avatar/avatarapplication.js, which hooks
+to connects/disconnects of users and creates/deletes avatars for them, as well as handles the client's camera switching
+(ctrl+tab), and jsmodules/avatar/simpleavatar.js, which implements movement & animation of a single avatar.
+
+To test, copy default_avatar.xml, fish.mesh & WoodPallet.mesh to your tundra bin/data/assets directory, and avatar.xml
+to your bin directory.
+
+Then, run the server and load the scene on it:
+loadscene(avatar.xml)
+
+Next, start one or more clients and connect to the server. Each client should get an avatar that can be controlled
+with WASD + arrows + mouse. Only third person camera is currently implemented.

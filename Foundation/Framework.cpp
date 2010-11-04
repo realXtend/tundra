@@ -339,6 +339,10 @@ namespace Foundation
                 event_manager_->ProcessDelayedEvents(frametime);
             }
 
+            // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
+            // information after for example network updates, that have been performed by the modules.
+            frame->Update(frametime);
+            
             // if we have a renderer service, render now
             boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
             if (renderer.expired() == false)
@@ -347,7 +351,6 @@ namespace Foundation
                 renderer.lock()->Render();
             }
 
-            frame->Update(frametime);
             input->Update(frametime);
         }
 
