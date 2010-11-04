@@ -16,6 +16,7 @@
 #include "FunctionDialog.h"
 #include "ArgumentType.h"
 #include "FunctionInvoker.h"
+#include "ECEditorModule.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
@@ -678,6 +679,7 @@ namespace ECEditor
             connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
             connect(browser_, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
             connect(browser_, SIGNAL(ComponentSelected(IComponent *)), SLOT(HighlightEntities(IComponent *)));
+            browser_->expandMemory_ = framework_->GetModule<ECEditorModule>()->ExpandMemory();
         }
 
         if (entity_list_)

@@ -21,8 +21,11 @@ class QTreeWidget;
 class QMenu;
 class QMimeData;
 
+class TreeWidgetItemExpandMemory;
+
 namespace ECEditor
 {
+    class ECEditorWindow;
     class ECComponentEditor;
     typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
     typedef std::list<ComponentGroup*> ComponentGroupList;
@@ -130,7 +133,8 @@ namespace ECEditor
         //! ComponentGroup and create/add component to another componentgroup.
         void DynamicComponentChanged();
 
-        //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
+        //! Component's name has been changed and we need to remove component from it's previous
+        //! ComponentGroup and create/add component to another componentgroup.
         /*! @param newName component's new name.
          */
         void ComponentNameChanged(const QString &newName);
@@ -146,8 +150,7 @@ namespace ECEditor
         void OnDeleteAction();
 
     private:
-        //! Initialize browser widget and create all connections for different QObjects.
-        void InitBrowser();
+        friend class ECEditorWindow;
 
         //! Try to find the right component group for spesific component type. if found return it's position on the list as in iterator format.
         //! If any component group wasn't found return .end() iterator value.
@@ -193,6 +196,7 @@ namespace ECEditor
         QMenu *menu_;
         QTreeWidget *treeWidget_;
         Foundation::Framework *framework_;
+        boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
     };
 }
 
