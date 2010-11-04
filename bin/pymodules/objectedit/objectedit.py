@@ -243,7 +243,10 @@ class ObjectEdit(Component):
             for ent in self.sels:
                 self.remove_highlight(ent)
                 self.removeSoundRuler(ent)
-                self.worldstream.SendObjectDeselectPacket(ent.Id)
+                try:
+                    self.worldstream.SendObjectDeselectPacket(ent.Id)
+                except ValueError:
+                    r.logInfo("objectedit.deselect_all: entity doesn't exist anymore")
             self.sels = []
            
             self.hideManipulator()
@@ -292,13 +295,16 @@ class ObjectEdit(Component):
             sr.UpdateSoundRuler()
 
     def removeSoundRuler(self, ent):
-        if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
-            try:
-                sr = ent.soundruler
-            except AttributeError:
-                r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.Id)
-            else:
-                ent.RemoveComponentRaw(sr)
+        try:
+            if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
+                try:
+                    sr = ent.soundruler
+                except AttributeError:
+                    r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.Id)
+                else:
+                    ent.RemoveComponentRaw(sr)
+        except AttributeError:
+            r.logInfo("objectedit.removeSoundRuler: entity already removed. Prim doesn't exist anymore")
 
     def changeManipulator(self, id):
         newmanipu = self.manipulators[id]

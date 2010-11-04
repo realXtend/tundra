@@ -14,7 +14,6 @@
 
 #include <QDialog>
 #include <QComboBox>
-#include <QMetaMethod>
 
 class QGridLayout;
 class QLabel;
@@ -24,19 +23,19 @@ class QCheckBox;
 class IArgumentType;
 class FunctionInvoker;
 struct InvokeItem;
+struct FunctionMetaData;
 
 /// Utility data structure for indentifying and handling of function signatures.
 struct FunctionMetaData
 {
-    typedef QPair<QString, QString> Parameter;
     /// Less than operator. Needed for qSort().
     bool operator <(const FunctionMetaData &rhs) const { return signature < rhs.signature; }
-
     QString function; ///< Function name in the simplest form
     QString returnType; ///< Return type of the function.
     QString signature; ///< Signature of the function without return type and parameter names.
     QString fullSignature; ///< Full signature of the function including return type and parameter names.
-    QList<Parameter> parameters; ///< Typename-name pairs of the parameters.
+    typedef QPair<QString, QString> Parameter; /// <Type name - name pair
+    QList<Parameter> parameters; ///< Parameters of the function.
 };
 
 /// Combo box containing function meta data items.
@@ -60,6 +59,10 @@ public:
     */
     void SetFunctions(const QList<FunctionMetaData> &funcs);
 
+    /// Set currently active.
+    /** @param function Function name.
+        @param paramTypeNames List of parameter type names.
+    */
     void SetCurrentFunction(const QString &function, const QStringList &paramTypeNames);
 
     /// Returns meta data structure of the currently selected function.
@@ -77,10 +80,9 @@ typedef QList<QObjectWeakPtr> QObjectWeakPtrList;
 
 /// Dialog for invoking Qt slots (i.e. functions) of entities and components.
 /** Emits finished(0) when "Close" is clicked, finished(1) when "Close and Execute" is clicked,
-    and finished(2), when "Execute" is cliked.
+    and finished(2), when "Execute" is cliked. The dialog is destroyed when hide() or close() is called for it.
 
-    Use Objects(), Function(), ReturnValueArgument() and Arguments() functions to retrieve
-    necesary information for invoking Qt slots.
+    Use Objects(), Function() and Arguments() functions to retrieve necesary information for invoking Qt slots.
 */
 class ECEDITOR_MODULE_API FunctionDialog : public QDialog
 {
@@ -88,17 +90,14 @@ class ECEDITOR_MODULE_API FunctionDialog : public QDialog
 
 public:
     /// Constructs the dialog.and populates function combo box with union of all the functions of all the objects @c objs.
-    /** The dialog is destroyed when hide() or close() is called for it.
-        @param objs List of objects.
+    /** @param objs List of objects.
         @param parent Parent widget.
     */
     FunctionDialog(const QObjectWeakPtrList &objs, QWidget *parent = 0);
 
-    /// Constructs the dialog.
-    /** Populates function combo box with union of all the functions of all the @objs.
-        The dialog is destroyed when hide() or close() is called for it.
-        @param objs List of objects.
-        @param invokeItem
+    /// Constructs the dialog and uses information of @c invokeItem to fill the currently active function and parameter editors.
+    /** @param objs List of objects.
+        @param invokeItem Invoke history item 
         @param parent Parent widget.
     */
     FunctionDialog(const QObjectWeakPtrList &objs, const InvokeItem &invokeItem, QWidget *parent = 0);
@@ -168,12 +167,6 @@ private:
 
     /// Argument types for currently active function in the combo box.
     QList<IArgumentType *> currentArguments;
-
-    /// Filter consists access level and type of a method 
-    typedef QPair<QMetaMethod::Access, QMetaMethod::MethodType> FunctionFilter;
-
-    /// Filter used for controlling which functions are visible.
-    FunctionFilter functionFilter;
 
 private slots:
     /// Emits finished(2).
