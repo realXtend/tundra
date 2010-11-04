@@ -139,14 +139,15 @@ void mainPS(float4 pos    : POSITION,
 	  float4 shadowTex2 : TEXCOORD6,
 #endif
 #endif
-          uniform sampler2D map1 : register(s0), //Detail0
-          uniform sampler2D map2 : register(s1), //Detail1
-          uniform sampler2D map3 : register(s2), //Detail2
-          uniform sampler2D map4 : register(s3), //Detail3
-          uniform sampler2D shadowMap0 : register(s4),
+		  uniform sampler2D map0 : register(s0), //extra tex, not used atm
+          uniform sampler2D map1 : register(s1), //Detail0
+          uniform sampler2D map2 : register(s2), //Detail1
+          uniform sampler2D map3 : register(s3), //Detail2
+          uniform sampler2D map4 : register(s4), //Detail3
+          uniform sampler2D shadowMap0 : register(s5),
 #ifdef PSSM_SHADOWS
-	  uniform sampler2D shadowMap1 : register(s5),
-	  uniform sampler2D shadowMap2 : register(s6),
+	  uniform sampler2D shadowMap1 : register(s6),
+	  uniform sampler2D shadowMap2 : register(s7),
 #endif
           out float4 col: COLOR)
 {

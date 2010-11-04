@@ -31,7 +31,8 @@ Client::Client(TundraLogicModule* owner, Foundation::Framework* fw) :
     owner_(owner),
     framework_(fw),
     loginstate_(NotConnected),
-    reconnect_(false)
+    reconnect_(false),
+    client_id_(0)
 {
     tundraEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
@@ -80,10 +81,17 @@ void Client::Logout(bool fail)
         
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
         framework_->RemoveScene("TundraClient");
+        
+        emit Disconnected();
     }
     
     if (fail)
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_LOGIN_FAILED, 0);
+}
+
+bool Client::IsConnected() const
+{
+    return loginstate_ == LoggedIn;
 }
 
 void Client::CheckLogin()
@@ -95,7 +103,7 @@ void Client::CheckLogin()
     case ConnectionPending:
         if ((connection) && (connection->GetConnectionState() == kNet::ConnectionOK))
         {
-            loginstate_ = Connected;
+            loginstate_ = ConnectionEstablished;
             MsgLogin msg;
             msg.userName = StringToBuffer(username_);
             msg.password = StringToBuffer(password_);
@@ -183,6 +191,8 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             Events::TundraConnectedEventData event_data;
             event_data.user_id_ = msg.userID;
             framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
+            
+            emit Connected(msg.userID, QString::fromStdString(username_));
         }
         reconnect_ = true;
     }

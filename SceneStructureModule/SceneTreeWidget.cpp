@@ -116,6 +116,25 @@ QList<entity_id_t> Selection::EntityIds() const
     return ids.toList();
 }
 
+/// Menu
+Menu::Menu(QWidget *parent) : QMenu(parent), shiftDown(false)
+{
+}
+
+void Menu::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Shift)
+        shiftDown = true;
+    QWidget::keyPressEvent(e);
+}
+
+void Menu::keyReleaseEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Shift)
+        shiftDown = false;
+    QMenu::keyReleaseEvent(e);
+}
+
 // SceneTreeWidget
 
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
@@ -179,13 +198,12 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     mousePressEvent(&mouseEvent);
 
     // Create context menu and show it.
-    QMenu *menu = new QMenu(this);
-//    menu->setFixedWidth(200);
-    menu->setAttribute(Qt::WA_DeleteOnClose);
+    SAFE_DELETE(contextMenu);
+    contextMenu = new Menu(this);
 
-    AddAvailableActions(menu);
+    AddAvailableActions(contextMenu);
 
-    menu->popup(e->globalPos());
+    contextMenu->popup(e->globalPos());
 }
 
 void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
@@ -1185,29 +1203,57 @@ void SceneTreeWidget::InvokeActionTriggered()
     assert(mruItem);
     invokedItem->mruOrder = mruItem->mruOrder + 1;
 
+    // Gather target objects.
+    QList<Scene::EntityWeakPtr> entities;
+    QObjectList objects;
+    QObjectWeakPtrList objectPtrs;
+    foreach(EntityItem *eItem, sel.entities)
+        if (eItem->Entity())
+        {
+            entities << eItem->Entity();
+            objects << eItem->Entity().get();
+            objectPtrs << boost::dynamic_pointer_cast<QObject>(eItem->Entity());
+        }
+    foreach(ComponentItem *cItem, sel.components)
+        if (cItem->Component())
+        {
+            objects << cItem->Component().get();
+            objectPtrs << boost::dynamic_pointer_cast<QObject>(cItem->Component());
+        }
+
+    // Shift+click opens existing invoke history item editable in dialog.
+    if (contextMenu && contextMenu->shiftDown)
+    {
+        if (invokedItem->type == InvokeItem::Action)
+        {
+            EntityActionDialog *d = new EntityActionDialog(entities, *invokedItem, this);
+            connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogFinished(int)));
+            d->show();
+        }
+        else if (invokedItem->type == InvokeItem::Function)
+        {
+            FunctionDialog *d = new FunctionDialog(objectPtrs, *invokedItem, this);
+            connect(d, SIGNAL(finished(int)), SLOT(FunctionDialogFinished(int)));
+            d->show();
+            d->move(300,300);
+        }
+
+        return;
+    }
+
     if (invokedItem->type == InvokeItem::Action)
     {
-        foreach(EntityItem *eItem, sel.entities)
-            if (eItem->Entity())
-            {
-                QStringList params;
-                //foreach(InvokeItem::Parameter p, invokedItem->parameters)
-                foreach(QVariant p, invokedItem->parameters)
-                    //params << p.second.toString();
-                    params << p.toString();
-                eItem->Entity()->Exec(invokedItem->execTypes, invokedItem->name, params);
-            }
+        foreach(Scene::EntityWeakPtr e, entities)
+        {
+//                QStringList params;
+//                foreach(QVariant p, invokedItem->parameters)
+//                    params << p.toString();
+//                e->Exec(invokedItem->execTypes, invokedItem->name, params);
+            e.lock()->Exec(invokedItem->execTypes, invokedItem->name, invokedItem->parameters);
+        }
     }
     else if (invokedItem->type == InvokeItem::Function)
     {
-        QObjectList objects;
-        foreach(EntityItem *eItem, sel.entities)
-            if (eItem->Entity())
-                objects << eItem->Entity().get();
-        foreach(ComponentItem *cItem, sel.components)
-            if (cItem->Component())
-                objects << cItem->Component().get();
-
         QVariantList returnValues;
         FunctionInvoker invoker;
         foreach(QObject *obj, objects)

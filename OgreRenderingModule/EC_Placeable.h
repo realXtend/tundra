@@ -36,6 +36,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <ul>
 <li>"Translate": Translates the placeable. Modifies the transform attribute using Default changetype.
 <li>"TranslateRelative": Translates the placeable relative to orientation. Modifies the transform attribute using Default changetype.
+<li>"GetRelativeVector": Transforms a vector by the placeable's orientation.
 <li>"Show": Shows the Entity
 <li>"Hide": Hides the Entity
 <li>"ToggleVisibility": Toggles visibility
@@ -206,6 +207,9 @@ public slots:
     
     //! Translates the placeable relative to orientation. Modifies the transform attribute using Default changetype.
     void TranslateRelative(const Vector3df& translation);
+    
+    //! Transforms a vector by the placeable's orientation
+    Vector3df GetRelativeVector(const Vector3df& vec);
     
     /// Shows the Entity
     void Show();

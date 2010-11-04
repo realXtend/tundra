@@ -67,10 +67,12 @@ bool Server::Start(unsigned short port)
             world->SetGravity(Vector3df(0.0f,0.0f,-9.81f));
         }
         
-        //! \todo Hack - find better way and remove! Allow environment and fly camera also on server by sending a fake connect event
+        //! \todo Hack - find better way and remove! Allow environment also on server by sending a fake connect event
         Events::TundraConnectedEventData event_data;
         event_data.user_id_ = 0;
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
+        
+        emit ServerStarted();
     }
     
     return true;
@@ -82,7 +84,26 @@ void Server::Stop()
     {
         owner_->GetKristalliModule()->StopServer();
         framework_->RemoveScene("TundraServer");
+        
+        emit ServerStopped();
     }
+}
+
+bool Server::IsRunning() const
+{
+    return owner_->IsServer();
+}
+
+QString Server::GetUserNameForConnectionID(int connectionID)
+{
+    KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
+    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    {
+        if (iter->userID == connectionID)
+            return QString::fromStdString(iter->userName);
+    }
+    
+    return QString();
 }
 
 KristalliProtocol::UserConnectionList& Server::GetUserConnections()
@@ -184,6 +205,8 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     
     // Tell syncmanager of the new user
     owner_->GetSyncManager()->NewUserConnected(user);
+    
+    emit UserConnected(user->userID, QString::fromStdString(user->userName));
 }
 
 void Server::HandleUserDisconnected(KristalliProtocol::UserConnection* user)
@@ -198,6 +221,8 @@ void Server::HandleUserDisconnected(KristalliProtocol::UserConnection* user)
         if (iter->userID != user->userID)
             iter->connection->Send(left);
     }
+    
+    emit UserDisconnected(user->userID, QString::fromStdString(user->userName));
 }
 
 }

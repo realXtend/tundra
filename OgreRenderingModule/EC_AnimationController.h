@@ -22,7 +22,21 @@ Needs to be told of an OgreMesh component to be usable
 
 Registered by OgreRenderer::OgreRenderingModule.
 
-<b>No Attributes</b>.
+<b>Attributes</b>:
+<ul>
+<li>QString: animationState
+<div>A freedata string that logic script(s) can use to sync animation state over network. Not interpreted by the AnimationController itself.</div>
+<li>int: contextPriority.
+<div>This input mapper's input context priority.</div> 
+<li>bool: takeKeyboardEventsOverQt.
+<div>Does the mapper receive keyboard input events even when a Qt widget has focus.</div> 
+<li>bool: takeMouseEventsOverQt.
+<div>Does the mapper receive mouse input events even when a Qt widget has focus.</div>
+<li>int: executionType.
+<div>Action execution type that is used for the Entity Actions.</div>
+<li>bool: modifiersEnabled.
+<div>Whether modifiers are checked for in the key events. Default true.</div>
+</ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
