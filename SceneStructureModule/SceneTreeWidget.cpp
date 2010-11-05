@@ -665,7 +665,7 @@ void SceneTreeWidget::NewEntity()
     // Show a dialog so that user can choose if he wants to create local or synchronized entity.
     QStringList types(QStringList() << tr("Synchronized") << tr("Local"));
     bool ok;
-    QString type = QInputDialog::getItem(this, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
+    QString type = QInputDialog::getItem(NULL, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
     if (!ok || type.isEmpty())
         return;
 
