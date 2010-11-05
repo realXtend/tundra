@@ -31,6 +31,20 @@ QList<Scene::EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
     return entities_.keys();
 }
 
+QStringList EC_VolumeTrigger::GetEntityNamesInside() const
+{
+    QStringList entitynames;
+    QList<Scene::EntityWeakPtr> entities = entities_.keys();
+    foreach (Scene::EntityWeakPtr entityw, entities)
+    {
+        Scene::EntityPtr entity = entityw.lock();
+        if (entity)
+            entitynames.append(entity->GetName());
+    }
+
+    return entitynames;
+}
+
 
 void EC_VolumeTrigger::AttributeUpdated(IAttribute* attribute)
 {    
@@ -74,11 +88,12 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.begin();
     while (i != entities_.end())
     {
-        //! \todo Handle entities that get removed from the scene, they should also emit EntityLeave but currently don't
+        //! \todo Handle entities that get removed from the scene, they should also emit EntityLeave but currently don't. -cmayhem
         if (!i.value())
         {
             bool active = true;
             Scene::EntityPtr entity = i.key().lock();
+            // inactive rigid bodies don't generate collisions, so before emitting EntityLeave -event, make sure the body is active.
             if (entity)
             {
                 boost::shared_ptr<EC_RigidBody> rigidbody = entity->GetComponent<EC_RigidBody>();
@@ -106,12 +121,6 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
 
 void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
 {
-    /*Scene::EntityPtr entity = otherEntity->GetSharedPtr();
-    if (newCollision && entities_.find(entity) == entities_.end())
-    {
-        emit EntityEnter(otherEntity, position);
-    }*/
-
     Scene::EntityPtr entity = otherEntity->GetSharedPtr();
 
     if (newCollision)

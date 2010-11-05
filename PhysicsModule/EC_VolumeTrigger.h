@@ -81,6 +81,12 @@ public slots:
      */
     QList<Scene::EntityWeakPtr> GetEntitiesInside() const;
 
+    //! Returns a list of entities by name which currently reside inside the volume.
+    /*! \return list of entity names
+     */
+    QStringList GetEntityNamesInside() const;
+
+
 private slots:
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
