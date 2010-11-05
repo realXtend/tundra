@@ -40,9 +40,6 @@ EC_3DGizmo::~EC_3DGizmo()
 void EC_3DGizmo::SetGizmo(QString gizmo)
 {
 }
-void EC_3DGizmo::SetGizmo(QString gizmo)
-{
-}
 
 void EC_3DGizmo::SetDatum(QVector3D& vec3)
 {
