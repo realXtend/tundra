@@ -41,15 +41,15 @@ void EC_3DGizmo::SetGizmo(QString gizmo)
 {
 }
 
-void EC_3DGizmo::SetDatum(QVector3D& vec3)
+void EC_3DGizmo::SetDatum(QVector3D &vec3)
 {
 }
 
-void EC_3DGizmo::SetDatum(QQuaternion& quad)
+void EC_3DGizmo::SetDatum(QQuaternion &quad)
 {
 }
 
-void EC_3DGizmo::SetDatum(QVector2D& vec2)
+void EC_3DGizmo::SetDatum(QVector2D &vec2)
 {
 }
 
