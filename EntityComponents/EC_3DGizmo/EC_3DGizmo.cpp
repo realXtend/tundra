@@ -37,7 +37,30 @@ EC_3DGizmo::~EC_3DGizmo()
 {
 }
 
+void EC_3DGizmo::SetGizmo(QString gizmo)
+{
+}
+void EC_3DGizmo::SetGizmo(QString gizmo)
+{
+}
+
+void EC_3DGizmo::SetDatum(QVector3D& vec3)
+{
+}
+
+void EC_3DGizmo::SetDatum(QQuaternion& quad)
+{
+}
+
+void EC_3DGizmo::SetDatum(QVector2D& vec2)
+{
+}
+
+void EC_3DGizmo::SetDatum(float scalar)
+{
+}
+
 void EC_3DGizmo::Update3DGizmo()
 {
-	std::cout << "3dgizmo update" << std::endl;
+    std::cout << "3dgizmo update" << std::endl;
 }
