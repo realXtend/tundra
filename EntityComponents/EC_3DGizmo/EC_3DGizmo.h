@@ -12,6 +12,10 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 
+#include <QVector2D>
+#include <QVector3D>
+#include <QQuaternion>
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -22,8 +26,6 @@ namespace Ogre
     class SceneNode;
     class ManualObject;
 }
-
-
 
 class EC_OpenSimPrim;
 
@@ -40,7 +42,12 @@ public:
     ~EC_3DGizmo();
     
 public slots:
-	void Update3DGizmo();
+    void Update3DGizmo();
+    void SetGizmo(QString gizmo);
+    void SetDatum(float scalar);
+    void SetDatum(QVector2D& vec2);
+    void SetDatum(QVector3D& vec3);
+    void SetDatum(QQuaternion& quad);
     
 private:
     /// Constuctor.
