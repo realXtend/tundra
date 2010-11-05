@@ -6,6 +6,7 @@
 #include "EC_Placeable.h"
 #include "EC_RigidBody.h"
 #include "EC_Terrain.h"
+#include "EC_VolumeTrigger.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "CollisionShapeUtils.h"
@@ -75,6 +76,7 @@ PhysicsModule::~PhysicsModule()
 void PhysicsModule::Load()
 {
     DECLARE_MODULE_EC(EC_RigidBody);
+    DECLARE_MODULE_EC(EC_VolumeTrigger);
 }
 
 void PhysicsModule::Initialize()
