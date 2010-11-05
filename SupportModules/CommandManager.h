@@ -14,7 +14,8 @@ class IModule;
 namespace Console
 {
     class ConsoleModule;
-
+    class Native;
+    
     //! Handles console commands
     /*! see ConsoleCommandServiceInterface for more information
 
@@ -97,6 +98,9 @@ namespace Console
 
         //! console
         ConsoleServiceInterface *console_;
+        
+        //! native input for headless mode
+        Native* nativeinput_;
     };
 }
 

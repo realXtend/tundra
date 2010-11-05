@@ -23,6 +23,7 @@ namespace Ogre
     class RaySceneQuery;
     class Viewport;
     class RenderTexture;
+    class DefaultHardwareBufferManager;
 }
 
 namespace OgreRenderer

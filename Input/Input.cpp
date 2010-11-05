@@ -78,6 +78,9 @@ framework(framework_)
     // In the event filter, we take care that we only take each event from the widget we intended to take it from,
     // avoiding duplicates.
 
+    if (framework_->IsHeadless())
+        return;
+    
     mainView = framework_->Ui()->GraphicsView();
     assert(mainView);
     assert(mainView->viewport());
@@ -111,6 +114,9 @@ Input::~Input()
 
 void Input::SetMouseCursorVisible(bool visible)
 {
+    if (framework->IsHeadless())
+        return;
+        
     if (mouseCursorVisible == visible)
         return;
 

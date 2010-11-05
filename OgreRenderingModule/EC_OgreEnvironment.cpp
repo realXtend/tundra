@@ -75,6 +75,7 @@ EC_OgreEnvironment::EC_OgreEnvironment(IModule *module) :
     override_flags_(None)
 {
 #ifdef CAELUM
+    caelumSystem_ = 0;
     InitCaelum();
     useCaelum_ = true;
 #else
@@ -94,7 +95,8 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
     if (renderer_.expired())
         return;
     RendererPtr renderer = renderer_.lock();
-        
+    if (!renderer->GetViewport())
+        return; // headless
     SetBackgoundColor(Color(0, 0, 0));
     DisableFog();
 
@@ -286,6 +288,8 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
 {
     if (renderer_.expired())
         return;
+    if (!caelumSystem_)
+        return; // Headless
     RendererPtr renderer = renderer_.lock();
     Ogre::Camera *camera = renderer->GetCurrentCamera();
     Ogre::Viewport *viewport = renderer->GetViewport();
@@ -492,7 +496,9 @@ void EC_OgreEnvironment::InitCaelum()
     if (renderer_.expired())
         return;
     RendererPtr renderer = renderer_.lock();   
-
+    if (!renderer->GetViewport())
+        return; // Headless mode
+    
     caelumComponents_ = CaelumSystem::CAELUM_COMPONENTS_NONE;
     caelumComponents_ = caelumComponents_ |
         CaelumSystem::CAELUM_COMPONENT_SKY_DOME |
