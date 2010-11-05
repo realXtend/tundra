@@ -44,7 +44,8 @@ namespace Foundation
 
     void ServiceManager::UnregisterService(const ServiceWeakPtr &service)
     {
-        assert(service.expired() == false);
+        if (service.expired())
+            return;
 
         ServicePtr upped_service = service.lock();
 

@@ -27,13 +27,19 @@ namespace Console
     UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view) :
         framework_(framework),
         ui_view_(ui_view),
-        console_ui_(new Ui::ConsoleWidget()),
-        console_widget_(new QWidget()),
+        console_ui_(0),
+        console_widget_(0),
         proxy_widget_(0),
         visible_(false),
         opacity_(0.8),
         hooked_to_scenes_(false)
     {
+        if (!ui_view_)
+            return; // Headless
+            
+        console_ui_ = new Ui::ConsoleWidget();
+        console_widget_ = new QWidget();
+        
         // Init internals
         console_ui_->setupUi(console_widget_);
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
@@ -68,6 +74,8 @@ namespace Console
 
     void UiConsoleManager::HandleInput()
     {
+        if (!console_ui_)
+            return; // Headless
         QString text = console_ui_->ConsoleInputArea->text();
         Console::ConsoleEventData event_data(text.toStdString());
         framework_->GetEventManager()->SendEvent(console_category_id_, Console::Events::EVENT_CONSOLE_COMMAND_ISSUED, &event_data);
@@ -76,11 +84,15 @@ namespace Console
 
     void UiConsoleManager::QueuePrintRequest(const QString &text)
     {
+        if (!console_ui_)
+            return; // Headless
         emit PrintOrderReceived(text);
     }
 
     void UiConsoleManager::PrintToConsole(const QString &text)
     {
+        if (!console_ui_)
+            return; // Headless
         QString html = Qt::escape(text);
         StyleString(html);
         console_ui_->ConsoleTextArea->appendHtml(html);

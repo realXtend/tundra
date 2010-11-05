@@ -59,8 +59,14 @@ void SuppressedPaintWidget::paintEvent(QPaintEvent *event)
 
 
 NaaliUi::NaaliUi(Foundation::Framework *owner_)
-:owner(owner_)
+:owner(owner_),
+mainWindow(0),
+graphicsView(0),
+graphicsScene(0)
 {
+    if (owner->IsHeadless())
+        return;
+    
     mainWindow = new NaaliMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
 //    mainWindow->setUpdatesEnabled(false);

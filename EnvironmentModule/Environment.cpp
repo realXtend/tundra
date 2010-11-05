@@ -330,6 +330,8 @@ void Environment::Update(f64 frametime)
      if (!env)
         return;
     Caelum::CaelumSystem* caelumSystem = env->GetCaelum();
+    if (!caelumSystem)
+        return;
 #endif
 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -340,6 +342,8 @@ void Environment::Update(f64 frametime)
     
     Ogre::Camera *camera = renderer.get()->GetCurrentCamera();
     Ogre::Viewport *viewport = renderer.get()->GetViewport();
+    if (!viewport)
+        return;
     Ogre::SceneManager *sceneManager = renderer.get()->GetSceneManager();
     float cameraFarClip = renderer.get()->GetViewDistance();
     

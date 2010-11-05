@@ -102,6 +102,8 @@ namespace Console
             }
             case Console::Events::EVENT_CONSOLE_PRINT_LINE:
             {
+                if (!ui_console_manager_)
+                    return false; // Headless
                 ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
                 ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
                 break;

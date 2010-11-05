@@ -15,7 +15,7 @@
 #include "NaaliGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
-
+#include "OgreDefaultHardwareBufferManager.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "ConfigurationManager.h"
@@ -132,6 +132,7 @@ namespace OgreRenderer
         initialized_(false),
         framework_(framework),
         scenemanager_(0),
+        buffermanager_(0),
         default_camera_(0),
         camera_(0),
         viewport_(0),
@@ -269,44 +270,51 @@ namespace OgreRenderer
 
         // Set the found rendering system
         root_->setRenderSystem(rendersystem);
+
         // Initialise but dont create rendering window yet
         root_->initialise(false);
 
-        try
+        if (!framework_->IsHeadless())
         {
-            int width = framework_->Ui()->GraphicsView()->viewport()->size().width();
-            int height = framework_->Ui()->GraphicsView()->viewport()->size().height();
-            int window_left = 0;
-            int window_top = 0;
-            renderWindow = new NaaliRenderWindow();
-            bool fullscreen = false;
-
-            renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
-            connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
-            renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
-
-            if(fullscreen)
+            try
             {
-                framework_->Ui()->MainWindow()->showFullScreen();
+                int width = framework_->Ui()->GraphicsView()->viewport()->size().width();
+                int height = framework_->Ui()->GraphicsView()->viewport()->size().height();
+                int window_left = 0;
+                int window_top = 0;
+                renderWindow = new NaaliRenderWindow();
+                bool fullscreen = false;
+
+                renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
+                connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
+                renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
+
+                if(fullscreen)
+                {
+                    framework_->Ui()->MainWindow()->showFullScreen();
+                }
+                else
+                    framework_->Ui()->MainWindow()->show();
             }
-            else
-                framework_->Ui()->MainWindow()->show();
-        }
-        catch (Ogre::Exception &/*e*/)
-        {
-            OgreRenderingModule::LogError("Could not create ogre rendering window!");
-            throw;
+            catch (Ogre::Exception &/*e*/)
+            {
+                OgreRenderingModule::LogError("Could not create ogre rendering window!");
+                throw;
+            }
+            OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
+            SetupResources();
         }
 
-        OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
-        SetupResources();
         SetupScene();
         initialized_ = true;
     }
 
     bool Renderer::IsFullScreen() const
     {
-        return framework_->Ui()->MainWindow()->isFullScreen();
+        if (!framework_->IsHeadless())
+            return framework_->Ui()->MainWindow()->isFullScreen();
+        else
+            return false;
     }
 
     void Renderer::PostInitialize()
@@ -316,10 +324,13 @@ namespace OgreRenderer
 
     void Renderer::SetFullScreen(bool value)
     {
-        if(value)
-            framework_->Ui()->MainWindow()->showFullScreen();
-        else
-            framework_->Ui()->MainWindow()->showNormal();
+        if (!framework_->IsHeadless())
+        {
+            if(value)
+                framework_->Ui()->MainWindow()->showFullScreen();
+            else
+                framework_->Ui()->MainWindow()->showNormal();
+        }
     }
 
     void Renderer::SetShadowQuality(ShadowQuality newquality)
@@ -416,6 +427,9 @@ namespace OgreRenderer
     void Renderer::SetupScene()
     {
         scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
+        if (framework_->IsHeadless())
+            return;
+        
         default_camera_ = scenemanager_->createCamera("DefaultCamera");
         viewport_ = renderWindow->OgreRenderWindow()->addViewport(default_camera_);
 
@@ -481,6 +495,9 @@ namespace OgreRenderer
 
     void Renderer::DoFullUIRedraw()
     {
+        if (framework_->IsHeadless())
+            return;
+            
         PROFILE(Renderer_Render_QtBlit);
 
         NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
@@ -510,6 +527,9 @@ namespace OgreRenderer
     {
         using namespace std;
 
+        if (framework_->IsHeadless())
+            return;
+        
         if (!initialized_) 
             return;
 
@@ -885,6 +905,8 @@ namespace OgreRenderer
         result.entity_ = 0; 
         if (!initialized_)
             return result;
+        if (!renderWindow)
+            return result; // Headless
 
         float screenx = x / (float)renderWindow->OgreRenderWindow()->getWidth();
         float screeny = y / (float)renderWindow->OgreRenderWindow()->getHeight();
