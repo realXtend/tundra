@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_3DGizmo.h
- *  @brief  EC_3DGizmo enables visual sound properties effect for scene entity.
- *  @note   The entity must have EC_Placeable and EC_OpenSimPrim 
+ *  @brief  EC_3DGizmo enables manipulators for values
  *  @author Nathan Letwory | http://www.letworyinteractive.com
  */
 
