@@ -150,6 +150,9 @@
 #ifdef EC_VideoSource_ENABLED
 #include "EC_VideoSource.h"
 #endif
+#ifdef EC_3DGizmo_ENABLED
+#include "EC_3DGizmo.h"
+#endif
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -251,6 +254,9 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_VideoSource_ENABLED
     DECLARE_MODULE_EC(EC_VideoSource);
+#endif
+#ifdef EC_3DGizmo_ENABLED
+    DECLARE_MODULE_EC(EC_3DGizmo);
 #endif
 }
 
