@@ -54,6 +54,8 @@ public signals:
     void datumUpdated(QVector2D &vec2);
     void datumUpdated(QVector3D &vec3);
     void datumUpdated(QQuaternion &quad);
+    void dragStarted();
+    void dragCompleted();
     
 private:
     /// Constuctor.
