@@ -85,62 +85,16 @@ public:
     /// Destructor.
     ~EC_3DGizmo();
     
-    //! Sound radius
-    Attribute<float> radiusAttr_;
-    
-    //! Sound volume
-    Attribute<float> volumeAttr_;
-    
-    //! Segments to use for radius circle
-    Attribute<float> segmentsAttr_;
-
 public slots:
-    /// Shows the highlighting effect.
-    void Show();
-
-    /// Hides the highlighting effect.
-    void Hide();
+	void Update3DGizmo();
     
-    /// Set volume to show
-    void SetVolume(float volume) { volumeAttr_.Set(volume, AttributeChange::LocalOnly); }
-    
-    /// Set radius to show
-    void SetRadius(float radius) { radiusAttr_.Set(radius, AttributeChange::LocalOnly); }
-
-    /// Returns if the ruler component is visible or not.
-    /// @true If the rule component is visible, false if it's hidden or not initialized properly.
-    bool IsVisible() const;
-    
-    //! Callback for OnChanged from ECEditor
-    void Update3DGizmo();
-
 private:
     /// Constuctor.
     /// @param module Owner module.
     explicit EC_3DGizmo(IModule *module);
 
-    /// Creates the clone entity used for highlighting from the original.
-    void Create();
-    
-    void Setup3DGizmo();
-
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
-
-    /// Ogre entity clone created for highlighting.
-    Ogre::ManualObject *rulerObject;
-
-    /// Ogre scene node where this EC is attached.
-    Ogre::SceneNode *sceneNode_;
-    
-    /// Ogre scene node to attach EC to when we want global space axis vis
-    Ogre::SceneNode *globalSceneNode;
-    
-    // Name for this ruler
-    std::string rulerName;
-    
-    // Name for container node
-    std::string nodeName;
 };
 
 #endif
