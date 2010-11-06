@@ -31,6 +31,9 @@ public:
     /// @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
     IAssetTransfer *RequestAsset(QString assetRef, QString assetType = "");
 
+    /// Same as RequestAsset(QString assetRef, QString assetType), but provided for convenience with AssetReference type.
+    IAssetTransfer *RequestAsset(const AssetReference &ref);
+
     /// Returns the given asset if it exists, or null otherwise.
     IAsset *GetAsset(QString assetRef);
 

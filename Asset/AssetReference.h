@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_AssetReference_h
-#define incl_Interfaces_AssetReference_h
+#ifndef incl_Asset_AssetReference_h
+#define incl_Asset_AssetReference_h
 
 #include <QString>
 #include <QMetaType>
