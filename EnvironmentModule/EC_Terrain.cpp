@@ -408,8 +408,8 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
 
 Vector3df EC_Terrain::GetInterpolatedNormal(float x, float y) const
 {
-    x = max(0, min(VerticesWidth()-1, x));
-    y = max(0, min(VerticesHeight()-1, y));
+    x = max(0.f, min((float)VerticesWidth()-1.f, x));
+    y = max(0.f, min((float)VerticesHeight()-1.f, y));
 
     int xFloor = (int)floor(x);
     int xCeil = (int)ceil(x);
