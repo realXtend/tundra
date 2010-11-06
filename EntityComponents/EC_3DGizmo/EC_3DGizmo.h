@@ -49,7 +49,7 @@ public slots:
     void SetDatum(QVector3D &vec3);
     void SetDatum(QQuaternion &quad);
 
-public signals:
+signals:
     void datumUpdated(float scalar);
     void datumUpdated(QVector2D &vec2);
     void datumUpdated(QVector3D &vec3);
