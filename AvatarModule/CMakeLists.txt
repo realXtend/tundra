@@ -29,25 +29,17 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_package (BOOST)
-use_package (QT4)
-use_package (POCO)
-use_package (OGRE)
-use_package (CURL)    # NEEDED BY ProtocolUtilities
-use_package (XMLRPC)  # NEEDED BY ProtocolUtilities
 use_modules (AvatarModule Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
 			 AssetModule OgreRenderingModule Input Asset)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Linking
-link_package (BOOST)
-link_package (QT4)
-link_package (POCO)
+link_package(BOOST)
+link_package(QT4)
+link_package(POCO)
 link_ogre()
-link_package (CURL)   # NEEDED BY ProtocolUtilities
-link_package (XMLRPC) # NEEDED BY ProtocolUtilities
-link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
+link_modules(Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
 			  AssetModule OgreRenderingModule Input Asset)
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)

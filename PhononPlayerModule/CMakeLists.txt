@@ -19,17 +19,10 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-use_package (BOOST)
-use_package (POCO)
-use_package (QT4)
-
 use_modules ( Core Foundation Interfaces RexCommon )
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_package (BOOST)
-link_package (POCO)
-link_package (QT4)
 link_modules (Core Foundation Interfaces RexCommon )
 
 SetupCompileFlagsWithPCH()

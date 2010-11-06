@@ -15,17 +15,11 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_package (BOOST)
-use_package (POCO)
-use_package (QT4)
 use_modules (Core Foundation Interfaces SceneManager ProtocolUtilities RexCommon EntityComponents/EC_OpenSimPrim
     OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
-link_package (BOOST)
-link_package (POCO)
-link_package (QT4)
 link_modules (Core Foundation Interfaces SceneManager ProtocolUtilities RexCommon EC_OpenSimPrim
     OgreRenderingModule)
 

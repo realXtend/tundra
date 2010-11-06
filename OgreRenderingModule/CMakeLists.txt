@@ -36,10 +36,6 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 
 #add_definitions (-DUSE_NVIDIA_PERFHUD)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (OGRE)
-use_package (QT4)
 use_package_assimp()
 use_modules (Core Foundation Interfaces SceneManager AssetModule RexCommon ProtocolUtilities Input Ui Asset)
 
@@ -54,10 +50,7 @@ endif (HYDRAX)
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 GetOpenAssetImport()
-link_package (BOOST)
-link_package (POCO)
 link_ogre()
-link_package (QT4)
 link_modules (Core Foundation Interfaces SceneManager RexCommon Ui Asset)
 
 if (CAELUM)
