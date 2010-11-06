@@ -18,12 +18,6 @@ use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilitie
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_package(BOOST)
-link_package(POCO)
-link_package(CURL)
-link_package(XMLRPC)
-link_package(QT4)
-
 link_modules(Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OgreRenderingModule Asset)
 
 SetupCompileFlagsWithPCH()

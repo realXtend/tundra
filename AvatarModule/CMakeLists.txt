@@ -35,9 +35,6 @@ use_modules (AvatarModule Core Foundation Interfaces SceneManager RexCommon Supp
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Linking
-link_package(BOOST)
-link_package(QT4)
-link_package(POCO)
 link_ogre()
 link_modules(Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
 			  AssetModule OgreRenderingModule Input Asset)
