@@ -178,6 +178,7 @@ class DotSceneManager:
         #rotate CenterVecs and set new positions, + rotate each node
         switch={'x': Quat(1,1,0,0), 'y': Quat(1,0,1,0), 'z': Quat(1,0,0,1), '-x': Quat(1,-1,0,0), '-y': Quat(1,0,-1,0), '-z': Quat(1,0,0,-1)}
         q = switch[axis]
+        q.normalize()
         
         # print "rotations:"
         

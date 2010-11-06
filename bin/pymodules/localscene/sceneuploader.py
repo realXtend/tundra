@@ -13,12 +13,13 @@ from poster.streaminghttp import register_openers
 import urllib2
 import time
 import shutil
+import math
+
 from xml.dom.minidom import getDOMImplementation
 import sceneactionsxml
 
 import constants
 from constants import MESH_MODEL_FOLDER, MATERIAL_FOLDER, TEXTURE_FOLDER, TEMP_UPLOAD_FOLDER
-
 
 
 # MESH_MODEL_FOLDER = "media/models"
@@ -372,7 +373,12 @@ class SceneSaver:
                 rotation = newdoc.createElement('rotation')
                 # XXX counter the 'fix' done in loading the scene
                 # loader.py in def create_naali_meshentity()
-                ort = oNode.naali_ent.placeable.Orientation * QQuaternion(1, 0, 0, 1) * QQuaternion(1, 0, 0, 1)
+                #ort = oNode.naali_ent.placeable.Orientation * QQuaternion(1, 0, 0, -1) * QQuaternion(1, 0, 0, -1)
+                #ort = oNode.naali_ent.placeable.Orientation * QQuaternion(math.sqrt(0.5),0,0,math.sqrt(0.5)) * QQuaternion(math.sqrt(0.5),0,0,math.sqrt(0.5))
+                rotate90z = QQuaternion(1,0,0,-1)
+                rotate90z.normalize()
+                ort = oNode.naali_ent.placeable.Orientation * rotate90z * rotate90z
+                
                 rotation.setAttribute("qx", str(ort.x()))
                 rotation.setAttribute("qy", str(ort.y()))
                 rotation.setAttribute("qz", str(ort.z()))
