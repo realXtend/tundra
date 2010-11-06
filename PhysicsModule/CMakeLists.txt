@@ -17,10 +17,6 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 add_definitions (-DPHYSICS_MODULE_EXPORTS)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (OGRE)
-use_package (QT4)
 use_package_bullet()
 use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon)
 
@@ -28,9 +24,6 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon)
 link_ogre()
-link_package (BOOST)
-link_package (POCO)
-link_package (QT4)
 link_package_bullet()
 
 # Copy XML files from source directory to target directory

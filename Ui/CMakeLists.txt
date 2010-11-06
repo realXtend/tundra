@@ -11,10 +11,6 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_package (BOOST)
-use_package (POCO)
-#use_package (OGRE)
-use_package (QT4)
 use_modules (Core Foundation RexCommon Interfaces)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
@@ -25,7 +21,6 @@ add_definitions (-DUI_API_EXPORTS)
 
 link_package (BOOST)
 link_package (POCO)
-#link_ogre()
 link_package (QT4)
 link_modules (Core Foundation)
 
