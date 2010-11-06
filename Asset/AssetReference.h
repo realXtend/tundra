@@ -6,28 +6,26 @@
 #include <QString>
 #include <QMetaType>
 
-/// Reference to an asset
+/// Represents a reference to an asset. This structure can be used as a parameter type to an EC attribute.
 struct AssetReference
 {
-    /// Default constructor.
     AssetReference() {}
 
-    /// Constructs asset refence with spesific ID and type.
-    /** @param i ID of the reference
-        @param t Type of the asset reference.
-    */
-    AssetReference(const QString &i, const QString &t) : id(i), type(t) {}
+    /// Constructs an asset reference pointing to the given asset.
+    /** @param ref_ The URL of the asset to point to, e.g. "file://myasset.mesh", or "http://www.website.com/texture.png".
+        @param type_ The type of the asset that is being pointed to. If the file name suffix of the URL uniquely identifies the asset type,
+            this field may be left blank. */
+    AssetReference(const QString &ref_, const QString &type_)
+    :ref(ref_), type(type_) {}
 
-    /// Returns true if other asset reference is equal to this asset reference.
-    bool operator == (const AssetReference &rhs) const { return ((this->id == rhs.id) && (this->type == rhs.type)); }
+    bool operator == (const AssetReference &rhs) const { return (this->ref == rhs.ref && this->type == rhs.type); }
 
-    /// Returns true if other asset reference is inequal to this asset reference.
     bool operator != (const AssetReference &rhs) const { return !(*this == rhs); }
 
-    /// Asset ID
-    QString id;
+    /// Specifies the URL of the asset that is being pointed to.
+    QString ref;
 
-    /// Asset type
+    /// Specifies the data type of the asset, like "Mesh", "Texture", or "Script". If the URL specifies the type, this field may be left blank.
     QString type;
 };
 

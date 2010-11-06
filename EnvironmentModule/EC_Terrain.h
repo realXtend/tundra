@@ -8,6 +8,7 @@
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Transform.h"
+#include "AssetReference.h"
 
 namespace Ogre
 {
@@ -298,26 +299,26 @@ public:
     Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
     DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
 
-    Q_PROPERTY(QString material READ getmaterial WRITE setmaterial);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, material);
+    Q_PROPERTY(AssetReference material READ getmaterial WRITE setmaterial);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, material);
 
-    Q_PROPERTY(QString texture0 READ gettexture0 WRITE settexture0);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture0);
+    Q_PROPERTY(AssetReference texture0 READ gettexture0 WRITE settexture0);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture0);
 
-    Q_PROPERTY(QString texture1 READ gettexture1 WRITE settexture1);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture1);
+    Q_PROPERTY(AssetReference texture1 READ gettexture1 WRITE settexture1);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture1);
 
-    Q_PROPERTY(QString texture2 READ gettexture2 WRITE settexture2);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture2);
+    Q_PROPERTY(AssetReference texture2 READ gettexture2 WRITE settexture2);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture2);
 
-    Q_PROPERTY(QString texture3 READ gettexture3 WRITE settexture3);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture3);
+    Q_PROPERTY(AssetReference texture3 READ gettexture3 WRITE settexture3);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture3);
 
-    Q_PROPERTY(QString texture4 READ gettexture4 WRITE settexture4);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture4);
+    Q_PROPERTY(AssetReference texture4 READ gettexture4 WRITE settexture4);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture4);
 
-    Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, heightMap);
+    Q_PROPERTY(AssetReference heightMap READ getheightMap WRITE setheightMap);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, heightMap);
 
     /// Returns the minimum and maximum extents of terrain heights.
     void GetTerrainHeightRange(float &minHeight, float &maxHeight) const;
