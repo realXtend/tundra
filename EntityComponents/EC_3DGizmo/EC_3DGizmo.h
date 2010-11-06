@@ -47,8 +47,11 @@ public:
         Vector3,
         Quaternion
     };
+
     
 public slots:
+	virtual bool IsTemporary() const { return true; }
+
     void Update3DGizmo();
     void SetGizmo(QString gizmo);
     void SetDatum(float scalar);
