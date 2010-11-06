@@ -57,12 +57,12 @@ EC_Terrain::EC_Terrain(IModule* module) :
     MakePatchFlat(0, 0, 0.f);
     uScale.Set(0.13f, AttributeChange::Disconnected);
     vScale.Set(0.13f, AttributeChange::Disconnected);
-    texture0.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    texture1.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    texture2.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    texture3.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    texture4.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    material.Set("Rex/TerrainPCF", AttributeChange::Disconnected);
+    texture0.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    texture1.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    texture2.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    texture3.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    texture4.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    material.Set(AssetReference("ogre://Rex/TerrainPCF", "OgreMaterial"), AttributeChange::Disconnected);
 //    heightMap.Set("media/samples/terrain.ntf", AttributeChange::Disconnected);
 }
 
@@ -184,18 +184,21 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     else if (changedAttribute == material.GetNameString())
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(material.Get());
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(material.Get().ref);
         connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()));
     }
-    else if (changedAttribute == texture0.GetNameString()) SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
-    else if (changedAttribute == texture1.GetNameString()) SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
-    else if (changedAttribute == texture2.GetNameString()) SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
-    else if (changedAttribute == texture3.GetNameString()) SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
-    else if (changedAttribute == texture4.GetNameString()) SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
+    else if (changedAttribute == texture0.GetNameString())
+    {
+        SetTerrainMaterialTexture(0, texture0.Get().ref.toStdString().c_str());
+    }
+    else if (changedAttribute == texture1.GetNameString()) SetTerrainMaterialTexture(1, texture1.Get().ref.toStdString().c_str());
+    else if (changedAttribute == texture2.GetNameString()) SetTerrainMaterialTexture(2, texture2.Get().ref.toStdString().c_str());
+    else if (changedAttribute == texture3.GetNameString()) SetTerrainMaterialTexture(3, texture3.Get().ref.toStdString().c_str());
+    else if (changedAttribute == texture4.GetNameString()) SetTerrainMaterialTexture(4, texture4.Get().ref.toStdString().c_str());
     else if (changedAttribute == heightMap.GetNameString())
     {
-        if (currentHeightmapAssetSource.trimmed() != heightMap.Get().trimmed())
-            LoadFromFile(heightMap.Get().toStdString().c_str());
+        if (currentHeightmapAssetSource.trimmed() != heightMap.Get().ref.trimmed())
+            LoadFromFile(heightMap.Get().ref.toStdString().c_str());
     }
     else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
     {
@@ -233,11 +236,11 @@ void EC_Terrain::MaterialAssetLoaded()
 
     // The material of the terrain has changed. Since we specify the textures of that material as attributes,
     // we need to re-apply the textures from the attributes to the new material we set.
-    SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
+    SetTerrainMaterialTexture(0, texture0.Get().ref.toStdString().c_str());
+    SetTerrainMaterialTexture(1, texture1.Get().ref.toStdString().c_str());
+    SetTerrainMaterialTexture(2, texture2.Get().ref.toStdString().c_str());
+    SetTerrainMaterialTexture(3, texture3.Get().ref.toStdString().c_str());
+    SetTerrainMaterialTexture(4, texture4.Get().ref.toStdString().c_str());
 }
 
 /// Releases all GPU resources used for the given patch.
@@ -629,7 +632,7 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
             SetPointHeight(x, y, height);
         }
 
-    heightMap.Set("", AttributeChange::Disconnected);
+    heightMap.Set(AssetReference("",""), AttributeChange::Disconnected);
 
     xPatches.Changed(AttributeChange::LocalOnly);
     yPatches.Changed(AttributeChange::LocalOnly);
@@ -934,7 +937,7 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     // Adjust offset so that we always have the lowest point of the terrain at height 0.
     RemapHeightValues(0.f, maxHeight - minHeight);
 
-    heightMap.Set("", AttributeChange::Disconnected);
+    heightMap.Set(AssetReference("",""), AttributeChange::Disconnected);
 
     xPatches.Changed(AttributeChange::LocalOnly);
     yPatches.Changed(AttributeChange::LocalOnly);

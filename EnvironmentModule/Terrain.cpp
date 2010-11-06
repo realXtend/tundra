@@ -432,11 +432,11 @@ namespace Environment
                 }
                 switch(i)
                 {
-                case 0: terrainComponent->texture0.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
-                case 1: terrainComponent->texture1.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
-                case 2: terrainComponent->texture2.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
-                case 3: terrainComponent->texture3.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
-                case 4: terrainComponent->texture4.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
+                case 0: terrainComponent->texture0.Set(AssetReference(tex->id_.c_str(), "OgreTexture"), AttributeChange::LocalOnly); break;
+                case 1: terrainComponent->texture1.Set(AssetReference(tex->id_.c_str(), "OgreTexture"), AttributeChange::LocalOnly); break;
+                case 2: terrainComponent->texture2.Set(AssetReference(tex->id_.c_str(), "OgreTexture"), AttributeChange::LocalOnly); break;
+                case 3: terrainComponent->texture3.Set(AssetReference(tex->id_.c_str(), "OgreTexture"), AttributeChange::LocalOnly); break;
+                case 4: terrainComponent->texture4.Set(AssetReference(tex->id_.c_str(), "OgreTexture"), AttributeChange::LocalOnly); break;
                 }
 
 //                SetTerrainMaterialTexture(index, tex->id_.c_str());
@@ -469,7 +469,7 @@ namespace Environment
             terrainComponent->xPatches.Set(16, AttributeChange::LocalOnly);
             terrainComponent->yPatches.Set(16, AttributeChange::LocalOnly);
         }
-        terrainComponent->material.Set("Rex/TerrainPCF", AttributeChange::LocalOnly);
+        terrainComponent->material.Set(AssetReference("ogre://Rex/TerrainPCF", "OgreMaterial"), AttributeChange::LocalOnly);
 
 //        terrainComponent->OnMaterialChanged();
     }
