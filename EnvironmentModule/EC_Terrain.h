@@ -248,6 +248,9 @@ public slots:
     /// @return True if loading succeeded.
     bool LoadFromFile(QString filename);
 
+    /// Loads the terrain height map data from the given in-memory .ntf file buffer.
+    bool LoadFromDataInMemory(const char *data, size_t numBytes);
+
     /// Loads the terrain from the given image file. Adjusts the xPatches and yPatches properties to that of the image file, 
     /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this  
     /// function will get the terrain contents desynchronized between the local system and network. The file is loaded using Ogre, so
@@ -334,6 +337,8 @@ private slots:
     void AttributeUpdated(IAttribute *attribute);
 
     void MaterialAssetLoaded();
+    void TextureAssetLoaded();
+    void TerrainAssetLoaded();
 
 private:
     explicit EC_Terrain(IModule* module);

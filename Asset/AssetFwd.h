@@ -8,6 +8,7 @@
 class IAsset;
 class IAssetTransfer;
 class IAssetProvider;
+struct AssetReference;
 
 class IEventData;
 

@@ -58,6 +58,8 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
     // Find an asset provider that can take in the request for the desired assetRef.
     IAssetTransfer *transfer = new IAssetTransfer(); ///\todo Don't new here, but have the asset provider new it.
+    transfer->source = AssetReference(assetRef, assetType);
+    // (the above leaks, but not fixing before the above todo is properly implemented -jj.)
 
     // Get the asset service. \todo This will be removed. There will be no asset service. -jj.
     AssetServiceInterface *asset_service = framework->GetService<AssetServiceInterface>();
@@ -88,6 +90,11 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
     return transfer;
 }
 
+IAssetTransfer *AssetAPI::RequestAsset(const AssetReference &ref)
+{
+    return RequestAsset(ref.ref, ref.type);
+}
+
 bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     if (category_id == framework->GetEventManager()->QueryEventCategory("Asset"))
@@ -99,6 +106,7 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
             if (iter != currentTransfers.end())
             {
                 IAssetTransfer *transfer = iter->second;
+                transfer->assetPtr = assetReady->asset_;
                 assert(transfer);
                 transfer->EmitAssetDownloaded();
             }
