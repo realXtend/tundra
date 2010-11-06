@@ -323,11 +323,6 @@ public:
     void GetTerrainHeightRange(float &minHeight, float &maxHeight) const;
 
 signals:
-    // The following signals are emitted from different events, so the parameter can not be used.
-    void TextureChanged(QString /*newTexture*/);
-
-    void MaterialChanged(QString newMaterial);
-
     void TerrainRegenerated();
     
 private slots:
@@ -337,11 +332,7 @@ private slots:
     //! Emitted when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
 
-public slots:
-
-    void OnMaterialChanged();
-
-    void OnTextureChanged();
+    void MaterialAssetLoaded();
 
 private:
     explicit EC_Terrain(IModule* module);
@@ -356,9 +347,13 @@ private:
 
     int patchWidth;
     int patchHeight;
+
     /// Specifies the asset source from which the height map is currently loaded from. Used to shadow the heightMap attribute so that if
     /// the same value is received from the network, reloading the terrain can be avoided.
     QString currentHeightmapAssetSource;
+
+    /// Specifies the Ogre material name of the material that is currently being used to display the terrain.
+    QString currentMaterial;
 
     /// Stores the actual height patches.
     std::vector<Patch> patches;
