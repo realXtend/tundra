@@ -29,6 +29,8 @@ EC_3DGizmo::EC_3DGizmo(IModule *module) :
     IComponent(module->GetFramework())
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+
+	_type = EC_3DGizmo::NotSet;
     
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(Update3DGizmo()));
 }
@@ -43,18 +45,22 @@ void EC_3DGizmo::SetGizmo(QString gizmo)
 
 void EC_3DGizmo::SetDatum(QVector3D &vec3)
 {
+	_type = EC_3DGizmo::Vector3;
 }
 
 void EC_3DGizmo::SetDatum(QQuaternion &quad)
 {
+	_type = EC_3DGizmo::Quaternion;
 }
 
 void EC_3DGizmo::SetDatum(QVector2D &vec2)
 {
+	_type = EC_3DGizmo::Vector2;
 }
 
 void EC_3DGizmo::SetDatum(float scalar)
 {
+	_type = EC_3DGizmo::Scalar;
 }
 
 void EC_3DGizmo::Update3DGizmo()

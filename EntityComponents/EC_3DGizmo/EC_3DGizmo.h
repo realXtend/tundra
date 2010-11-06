@@ -31,15 +31,22 @@ class EC_OpenSimPrim;
 
 class EC_3DGizmo : public IComponent
 {
-
-
     Q_OBJECT
+    Q_ENUMS(DatumType)
     DECLARE_EC(EC_3DGizmo);
-    
 
 public:
     /// Destructor.
     ~EC_3DGizmo();
+
+    enum DatumType
+    {
+        NotSet,
+        Scalar,
+        Vector2,
+        Vector3,
+        Quaternion
+    };
     
 public slots:
     void Update3DGizmo();
@@ -64,6 +71,13 @@ private:
 
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
+
+    DatumType _type;
+
+    QVector2D _vec2;
+    QVector3D _vec3;
+    QQuaternion _quat;
+    float _scalar;
 };
 
 #endif
