@@ -58,12 +58,15 @@ public slots:
     void SetDatum(QVector2D &vec2);
     void SetDatum(QVector3D &vec3);
     void SetDatum(QQuaternion &quad);
+	void StartDrag();
+	void Drag(int x, int y, QVector3D &changevec);
+	void EndDrag();
 
 signals:
     void datumUpdated(float scalar);
     void datumUpdated(QVector2D &vec2);
     void datumUpdated(QVector3D &vec3);
-    void datumUpdated(QQuaternion &quad);
+    void datumUpdated(QQuaternion &quat);
     void dragStarted();
     void dragCompleted();
     
