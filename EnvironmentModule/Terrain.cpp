@@ -471,7 +471,7 @@ namespace Environment
         }
         terrainComponent->material.Set("Rex/TerrainPCF", AttributeChange::LocalOnly);
 
-        terrainComponent->OnMaterialChanged();
+//        terrainComponent->OnMaterialChanged();
     }
 
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs

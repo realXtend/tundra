@@ -10,9 +10,12 @@
 #include "SceneManager.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
 
 #include <Ogre.h>
 #include "OgreMaterialUtils.h"
+#include "OgreMaterialResource.h"
 #include "OgreConversionUtils.h"
 
 #include <utility>
@@ -74,9 +77,6 @@ void EC_Terrain::UpdateSignals()
 
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             this, SLOT(AttributeUpdated(IAttribute*)));
-
-    connect(this, SIGNAL(MaterialChanged(QString)), this, SLOT(OnMaterialChanged()));
-    connect(this, SIGNAL(TextureChanged(QString)), this, SLOT(OnTextureChanged()));
 /*
     // Manually signal the resource-requiring attributes to have been changed. This guarantees that if we are using
     // the default values from ctor, these resources will be loaded in.
@@ -88,23 +88,6 @@ void EC_Terrain::UpdateSignals()
     material.Changed(AttributeChange::LocalOnly);
     heightMap.Changed(AttributeChange::LocalOnly);
 */
-}
-
-void EC_Terrain::OnMaterialChanged()
-{
-    for(int y = 0; y < patchHeight; ++y)
-        for(int x = 0; x < patchWidth; ++x)
-            UpdateTerrainPatchMaterial(x, y);
-}
-
-void EC_Terrain::OnTextureChanged()
-{
-    PROFILE(EC_Terrain_OnTextureChanged);
-    SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
 }
 
 void EC_Terrain::MakePatchFlat(int x, int y, float heightValue)
@@ -200,17 +183,9 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     }
     else if (changedAttribute == material.GetNameString())
     {
-        SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
-        SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
-        SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
-        SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
-        SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
-
-        for(int y = 0; y < patchHeight; ++y)
-            for(int x = 0; x < patchWidth; ++x)
-                UpdateTerrainPatchMaterial(x, y);
-
-        ///\todo Delete the old unused material.
+        // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(material.Get());
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()));
     }
     else if (changedAttribute == texture0.GetNameString()) SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
     else if (changedAttribute == texture1.GetNameString()) SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
@@ -220,7 +195,7 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     else if (changedAttribute == heightMap.GetNameString())
     {
         if (currentHeightmapAssetSource.trimmed() != heightMap.Get().trimmed())
-        LoadFromFile(heightMap.Get().toStdString().c_str());
+            LoadFromFile(heightMap.Get().toStdString().c_str());
     }
     else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
     {
@@ -230,6 +205,39 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     }
 
     ///\todo Delete the old unused textures.
+}
+
+void EC_Terrain::MaterialAssetLoaded()
+{
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
+    assert(transfer);
+    if (!transfer)
+        return;
+
+    OgreRenderer::OgreMaterialResource *ogreMaterial = dynamic_cast<OgreRenderer::OgreMaterialResource *>(transfer->resourcePtr.get());
+    assert(ogreMaterial);
+    if (!ogreMaterial)
+        return;
+
+    Ogre::MaterialPtr material = ogreMaterial->GetMaterial();
+    
+    ///\todo We can't free here, since something else might be using the material.
+//    Ogre::MaterialManager::getSingleton().remove(currentMaterial.toStdString()); // Free up the old material.
+
+    currentMaterial = material->getName().c_str();
+
+    // Also, we need to update each geometry patch to use the new material.
+    for(int y = 0; y < patchHeight; ++y)
+        for(int x = 0; x < patchWidth; ++x)
+            UpdateTerrainPatchMaterial(x, y);
+
+    // The material of the terrain has changed. Since we specify the textures of that material as attributes,
+    // we need to re-apply the textures from the attributes to the new material we set.
+    SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
+    SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
+    SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
+    SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
+    SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
 }
 
 /// Releases all GPU resources used for the given patch.
@@ -973,7 +981,7 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
 //    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
 //    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(textureName).get());
 
-    Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(material.Get().toStdString().c_str());
+    Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get())
     {
 //        EnvironmentModule::LogWarning("Ogre material " + material.Get().toStdString() + " not found!");
@@ -1001,7 +1009,7 @@ void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
     {
         Ogre::SubEntity *sub = patch.entity->getSubEntity(i);
         if (sub)
-            sub->setMaterialName(material.Get().toStdString().c_str());
+            sub->setMaterialName(currentMaterial.toStdString().c_str());
     }
 }
 
@@ -1042,7 +1050,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     }
     assert(node);
 
-    Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(material.Get().toStdString().c_str());
+    Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get()) // If we could not find the material we were supposed to use, just use the default system terrain material.
         terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial("Rex/TerrainPCF");
 
