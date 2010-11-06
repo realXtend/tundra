@@ -15,11 +15,12 @@ public:
     virtual ~IAssetTransfer() {}
 
     /// Points to the actual asset if it has been loaded in.
-    IAsset *asset;
+    boost::shared_ptr<IAsset> asset;
 
     /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
     /// transition period to new Asset API. Will be removed. -jj
     Foundation::AssetPtr assetPtr;
+    Foundation::ResourcePtr resourcePtr;
 
     void EmitAssetDownloaded();
 

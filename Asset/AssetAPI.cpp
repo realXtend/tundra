@@ -5,8 +5,10 @@
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 #include "AssetServiceInterface.h"
+#include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
 #include "EventManager.h"
+#include "ResourceInterface.h"
 #include "../AssetModule/AssetEvents.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
@@ -33,6 +35,25 @@ void IAssetTransfer::EmitAssetLoaded()
     emit Loaded();
 }
 
+namespace
+{
+    std::string GetResourceTypeFromResourceName(std::string name)
+    {
+        if (name.find(".mesh") != std::string::npos)
+            return "OgreMesh";
+        if (name.find(".skeleton") != std::string::npos)
+            return "OgreSkeleton";
+        if (name.find(".material") != std::string::npos)
+            return "OgreMaterial";
+        if (name.find(".jpg") != std::string::npos || name.find(".png") != std::string::npos || name.find(".tga") != std::string::npos
+            || name.find(".bmp") != std::string::npos || name.find(".dds") != std::string::npos)
+            return "OgreTexture";
+
+        return "";
+        // Note: There's a separate OgreImageTextureResource which isn't handled above.
+    }
+}
+
 IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
     // Find an asset provider that can take in the request for the desired assetRef.
@@ -46,7 +67,21 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return false;
     }
 
-    request_tag_t tag = asset_service->RequestAsset(assetRef.toStdString(), assetType.toStdString());
+    Foundation::RenderServiceInterface *renderer = framework->GetService<Foundation::RenderServiceInterface>();
+    if (!renderer)
+    {
+        LogError("Renderer service doesn't exist.");
+        return false;
+    }
+
+    request_tag_t tag;
+
+    // Depending on the asset type, we must request the asset from the Renderer or from the asset service.
+
+    if (GetResourceTypeFromResourceName(assetRef.toStdString()) != "")
+        tag = renderer->RequestResource(assetRef.toStdString(), GetResourceTypeFromResourceName(assetRef.toStdString()));
+    else
+        tag = asset_service->RequestAsset(assetRef.toStdString(), assetType.toStdString());
 
     currentTransfers[tag] = transfer;
 
@@ -69,5 +104,22 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
             }
         }
     }
+
+    if (category_id == framework->GetEventManager()->QueryEventCategory("Resource"))
+    {
+        if (event_id == Resource::Events::RESOURCE_READY)
+        {
+            Resource::Events::ResourceReady *resourceReady = checked_static_cast<Resource::Events::ResourceReady*>(data);
+            std::map<request_tag_t, IAssetTransfer*>::iterator iter = currentTransfers.find(resourceReady->tag_);
+            if (iter != currentTransfers.end())
+            {
+                IAssetTransfer *transfer = iter->second;
+                transfer->resourcePtr = resourceReady->resource_;
+                assert(transfer);
+                transfer->EmitAssetLoaded();
+            }
+        }
+    }
+
     return false;
 }
