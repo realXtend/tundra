@@ -56,6 +56,24 @@ void EC_3DGizmo::EndDrag()
 
 void EC_3DGizmo::Drag(int x, int y, QVector3D &changevec)
 {
+	switch(_type) {
+		case EC_3DGizmo::Scalar:
+			_scalar += 0.1f;
+			emit dragged(_scalar);
+			break;
+		case EC_3DGizmo::Vector2:
+			_vec2 *= 1.1f;
+			emit dragged(_vec2);
+			break;
+		case EC_3DGizmo::Vector3:
+			_vec3 *= 1.1f;
+			emit dragged(_vec3);
+			break;
+		case EC_3DGizmo::Quaternion:
+			_quat *= 1.1f;
+			emit dragged(_quat);
+			break;
+	}
 }
 
 void EC_3DGizmo::SetDatum(QVector3D &vec3)

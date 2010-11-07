@@ -63,10 +63,10 @@ public slots:
 	void EndDrag();
 
 signals:
-    void datumUpdated(float scalar);
-    void datumUpdated(QVector2D &vec2);
-    void datumUpdated(QVector3D &vec3);
-    void datumUpdated(QQuaternion &quat);
+    void dragged(float scalar);
+    void dragged(QVector2D &vec2);
+    void dragged(QVector3D &vec3);
+    void dragged(QQuaternion &quat);
     void dragStarted();
     void dragCompleted();
     
