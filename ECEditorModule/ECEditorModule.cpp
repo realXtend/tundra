@@ -148,7 +148,7 @@ namespace ECEditor
 
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
     {
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (!ui)
             return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
@@ -224,7 +224,7 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
     {
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (entities.empty() || !ui)
             return;
 
@@ -247,7 +247,7 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
     {
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (components.empty() || !ui)
             return;
 

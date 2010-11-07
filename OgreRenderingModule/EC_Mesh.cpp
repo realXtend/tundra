@@ -43,7 +43,7 @@ EC_Mesh::EC_Mesh(IModule* module) :
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     adjustment_node_ = scene_mgr->createSceneNode();
     
-    Foundation::EventManager *event_manager = framework_->GetEventManager().get();
+    EventManager *event_manager = framework_->GetEventManager().get();
     if(event_manager)
     {
         event_manager->RegisterEventSubscriber(this, 99);

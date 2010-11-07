@@ -104,7 +104,7 @@ namespace Avatar
             AvatarModule::LogDebug("Inventory based avatar address received for avatar entity " + ToString<int>(entity->GetId()) + ": " +
                 appearance_address);
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
             if (!asset_service)
             {
                 AvatarModule::LogError("Could not get asset service");
@@ -122,7 +122,7 @@ namespace Avatar
         {
             AvatarModule::LogDebug("Fetching webdav appearance from " + appearance_address);
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
             if (asset_service)
             {
                 asset_service->RemoveAssetFromCache(appearance_address);
@@ -388,7 +388,7 @@ namespace Avatar
         
         Scene::Events::EntityEventData event_data;
         event_data.entity = entity;
-        Foundation::EventManagerPtr event_manager = avatar_module_->GetFramework()->GetEventManager();
+        EventManagerPtr event_manager = avatar_module_->GetFramework()->GetEventManager();
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
     }
     
@@ -806,7 +806,7 @@ namespace Avatar
             // Lets clear the cache as the id == url doesnt chance so
             // we can be sure the asset is fetched again from the web
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
             if (asset_service)
             {
                 AvatarAssetMap::const_iterator iter = assets.begin();
@@ -844,7 +844,7 @@ namespace Avatar
                 
         // Request needed avatar resources
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
         {
             AvatarModule::LogError("Renderer does not exist");
@@ -1209,7 +1209,7 @@ namespace Avatar
     void AvatarAppearance::FixupResource(AvatarAsset& asset, const AvatarAssetMap& asset_map, const std::string& resource_type)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
         {
             AvatarModule::LogError("Renderer does not exist");
@@ -1230,7 +1230,7 @@ namespace Avatar
     void AvatarAppearance::FixupMaterial(AvatarMaterial& mat, const AvatarAssetMap& asset_map)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
             return;
             
@@ -1360,7 +1360,7 @@ namespace Avatar
          
         // If there are assets, stuff them all
         inv_export_state_ = Assets;
-        Foundation::EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
+        EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         
         ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
@@ -1426,7 +1426,7 @@ namespace Avatar
         std::string avatarfilename = "Avatar.xml";
                 
         // Upload appearance as inventory asset. 
-        Foundation::EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
+        EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
@@ -1462,7 +1462,7 @@ namespace Avatar
          
         // If there are assets, stuff them all
         inv_export_state_ = Assets;
-        Foundation::EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
+        EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         
         ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
@@ -1514,7 +1514,7 @@ namespace Avatar
         std::string avatarfilename = "Avatar" + time.toString(" yyyy.MM.dd hh:mm:ss").toStdString() + ".xml";
                 
         // Upload appearance as inventory asset. 
-        Foundation::EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
+        EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
@@ -1647,7 +1647,7 @@ namespace Avatar
     bool AvatarAppearance::GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material, bool inventorymode)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
         {
             AvatarModule::LogError("Renderer does not exist");
@@ -1832,7 +1832,7 @@ namespace Avatar
                 return true;        
         
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
             if (!asset_service)
             {
                 AvatarModule::LogError("Could not get asset service");
@@ -2059,7 +2059,7 @@ namespace Avatar
     void AvatarAppearance::AddTempResourceDirectory(const std::string& dirname)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
         {
             AvatarModule::LogError("Renderer does not exist");
@@ -2121,7 +2121,7 @@ namespace Avatar
         else
         {
             boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
-                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (!renderer)
             {
                 AvatarModule::LogError("Renderer does not exist");
@@ -2148,7 +2148,7 @@ namespace Avatar
         
         Scene::Events::EntityEventData event_data;
         event_data.entity = entity;
-        Foundation::EventManagerPtr event_manager = avatar_module_->GetFramework()->GetEventManager();
+        EventManagerPtr event_manager = avatar_module_->GetFramework()->GetEventManager();
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
                 
         return true;

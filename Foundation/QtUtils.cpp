@@ -14,36 +14,36 @@
 #include <QCloseEvent>
 #include <QGraphicsProxyWidget>
 
-namespace Foundation
+namespace QtUtils
 {
 
 class CustomFileDialog : public QFileDialog
 {
-    public:
-        CustomFileDialog(QWidget* parent, const QString& caption, const QString& dir, const QString& filter) :
-            QFileDialog(parent, caption, dir, filter)
+public:
+    CustomFileDialog(QWidget* parent, const QString& caption, const QString& dir, const QString& filter) :
+        QFileDialog(parent, caption, dir, filter)
+    {
+    }
+
+protected:
+    virtual void hideEvent(QHideEvent* e)
+    {
+        if (e->type() == QEvent::Hide)
         {
+            emit finished(0);
+            deleteLater();
         }
-    
-    protected:
-        virtual void hideEvent(QHideEvent* e)
+    }
+    virtual void closeEvent(QCloseEvent* e)
+    {
+        if (e->type() == QEvent::Hide)
         {
-            if (e->type() == QEvent::Hide)
-            {
-                emit finished(0);
-                deleteLater();
-            }
+            emit finished(0);
         }
-        virtual void closeEvent(QCloseEvent* e)
-        {
-            if (e->type() == QEvent::Hide)
-            {
-                emit finished(0);
-            }
-        }
+    }
 };
 
-QFileDialog* QtUtils::OpenFileDialogNonModal(
+QFileDialog* OpenFileDialogNonModal(
     const QString& filter,
     const QString& caption,
     const QString& dir,
@@ -63,7 +63,7 @@ QFileDialog* QtUtils::OpenFileDialogNonModal(
     return dialog;
 }
 
-QFileDialog *QtUtils::SaveFileDialogNonModal(
+QFileDialog *SaveFileDialogNonModal(
     const QString& filter,
     const QString& caption,
     const QString& dir,
@@ -85,7 +85,7 @@ QFileDialog *QtUtils::SaveFileDialogNonModal(
     return dialog;
 }
 
-std::string QtUtils::GetOpenFileName(
+std::string GetOpenFileName(
     const std::string &filter,
     const std::string &caption,
     const std::string &dir)
@@ -100,7 +100,7 @@ std::string QtUtils::GetOpenFileName(
     return filename.toStdString();
 }
 
-std::string QtUtils::GetSaveFileName(
+std::string GetSaveFileName(
     const std::string &filter,
     const std::string &caption,
     const std::string &dir)
@@ -115,7 +115,7 @@ std::string QtUtils::GetSaveFileName(
     return filename.toStdString();
 }
 
-StringList QtUtils::GetOpenFileNames(
+StringList GetOpenFileNames(
     const std::string &filter,
     const std::string &caption,
     const std::string &dir)
@@ -135,7 +135,7 @@ StringList QtUtils::GetOpenFileNames(
     return filelist;
 }
 
-StringList QtUtils::GetOpenRexFileNames(const std::string &dir)
+StringList GetOpenRexFileNames(const std::string &dir)
 {
     QString qfilter(
         "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;"
@@ -160,7 +160,7 @@ StringList QtUtils::GetOpenRexFileNames(const std::string &dir)
     return filelist;
 }
 
-QStringList QtUtils::GetOpenRexFilenames(const std::string &dir)
+QStringList GetOpenRexFilenames(const std::string &dir)
 {
     QString qfilter(
         "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;"
@@ -178,7 +178,7 @@ QStringList QtUtils::GetOpenRexFilenames(const std::string &dir)
     return QFileDialog::getOpenFileNames(parent, qcaption, qdir, qfilter);
 }
 
-std::string QtUtils::GetCurrentPath()
+std::string GetCurrentPath()
 {
     return QDir::currentPath().toStdString();
 }

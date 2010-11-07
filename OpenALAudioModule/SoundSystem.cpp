@@ -392,7 +392,7 @@ namespace OpenALAudio
     request_tag_t SoundSystem::RequestSoundResource(const QString& assetid)
     {
         // Loading of sound from assetdata, assumed to be vorbis compressed stream
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
         {
             request_tag_t tag = asset_service->RequestAsset(assetid.toStdString(), RexTypes::ASSETTYPENAME_SOUNDVORBIS);
@@ -464,7 +464,7 @@ namespace OpenALAudio
         else
         {
             // Loading of sound from assetdata, assumed to be vorbis compressed stream
-            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
             if (asset_service)
             {
                 SoundPtr new_sound(new Sound(name));
@@ -572,7 +572,7 @@ namespace OpenALAudio
                 Foundation::ResourcePtr res_ptr(res);
                 
                 Resource::Events::ResourceReady event_data(result->name_, res_ptr, tag);
-                Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
+                EventManagerPtr event_mgr = framework_->GetEventManager();
                 event_mgr->SendEvent(event_mgr->QueryEventCategory("Resource"), Resource::Events::RESOURCE_READY, &event_data);
             }
             else

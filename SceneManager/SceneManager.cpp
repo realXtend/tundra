@@ -48,7 +48,7 @@ namespace Scene
         {
             if(entities_.find(id) != entities_.end())
             {
-                Foundation::RootLogError("Can't create entity with given id because it's already used: " + ToString(id));
+                RootLogError("Can't create entity with given id because it's already used: " + ToString(id));
                 return Scene::EntityPtr();
             }
             else

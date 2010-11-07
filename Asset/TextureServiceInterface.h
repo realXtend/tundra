@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_TextureServiceInterface_h
 #define incl_Interfaces_TextureServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 
 namespace Foundation
 {    
@@ -16,7 +16,7 @@ namespace Foundation
         (Foundation::TextureInterface).
         Implemented by the \ref TextureDecoderModule.
     */
-    class TextureServiceInterface : public ServiceInterface
+    class TextureServiceInterface : public IService
     {
     public:
         TextureServiceInterface() {}

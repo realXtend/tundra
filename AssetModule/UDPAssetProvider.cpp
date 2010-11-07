@@ -30,7 +30,7 @@ namespace Asset
     {
         asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "udp_timeout", DEFAULT_ASSET_TIMEOUT);
 
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
 
         event_category_ = event_manager->QueryEventCategory("Asset");
     }
@@ -580,7 +580,7 @@ namespace Asset
 
     void UDPAssetProvider::SendAssetProgress(UDPAssetTransfer& transfer)
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         Events::AssetProgress event_data(transfer.GetAssetId(), GetTypeNameFromAssetType(transfer.GetAssetType()),
             transfer.GetSize(), transfer.GetReceived(), transfer.GetReceivedContinuous());
         event_manager->SendEvent(event_category_, Events::ASSET_PROGRESS, &event_data);
@@ -588,7 +588,7 @@ namespace Asset
 
     void UDPAssetProvider::SendAssetCanceled(UDPAssetTransfer& transfer)
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         Events::AssetCanceled event_data(transfer.GetAssetId(), GetTypeNameFromAssetType(transfer.GetAssetType()));
         event_manager->SendEvent(event_category_, Events::ASSET_CANCELED, &event_data);
     }
@@ -614,10 +614,10 @@ namespace Asset
 
     void UDPAssetProvider::StoreAsset(UDPAssetTransfer& transfer)
     {
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-            service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
         {
             const std::string& asset_id = transfer.GetAssetId();
@@ -630,7 +630,7 @@ namespace Asset
             asset_service->StoreAsset(new_asset);
 
             // Send asset ready event for each request tag
-            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+            EventManagerPtr event_manager = framework_->GetEventManager();
             const RequestTagVector& tags = transfer.GetTags();
             for(uint i = 0; i < tags.size(); ++i)
             {

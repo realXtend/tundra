@@ -147,7 +147,7 @@ namespace Environment
     /// patch if the associated Ogre resources already exist.
     void Terrain::GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch)
     {
-        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
             return;
 
@@ -291,7 +291,7 @@ namespace Environment
 
     void Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
     {
-        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (renderer)
         {
             Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
@@ -407,7 +407,7 @@ namespace Environment
 */
     void Terrain::RequestTerrainTextures()
     {
-        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (renderer)
             for(int i = 0; i < num_terrain_textures; ++i)
                 terrain_texture_requests_[i] = renderer->RequestResource(terrain_textures_[i], OgreRenderer::OgreTextureResource::GetTypeStatic());

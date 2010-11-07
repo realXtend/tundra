@@ -82,7 +82,7 @@ namespace Library
             QGraphicsView *ui_view = framework_->Ui()->GraphicsView();
             library_widget_ = new LibraryWidget(ui_view);
 
-            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();                
+            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();                
             UiProxyWidget *lib_proxy = ui->AddWidgetToScene(library_widget_);
             ui->RegisterUniversalWidget("Library", lib_proxy);
 
@@ -337,8 +337,8 @@ namespace Library
             {
                 // Call python directly (dont want to add dependency to optional module in pythonscript module)
                 // Change coords to string format for calling py
-                Foundation::ServiceManagerPtr manager = this->framework_->GetServiceManager();
-                boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = manager->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
+                ServiceManagerPtr manager = this->framework_->GetServiceManager();
+                boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = manager->GetService<Foundation::ScriptServiceInterface>(Service::ST_PythonScripting).lock();
                 if (pyservice)
                     pyservice->RunString(QString("import localscene; lc = localscene.getLocalScene(); lc.onUploadSceneFile('" + url.toString() + "', %1, %2, %3);").arg(
                         raycast_pos_.x, raycast_pos_.y, raycast_pos_.z));
@@ -416,7 +416,7 @@ namespace Library
             }
             else if (url.toString().endsWith(".material"))
             {
-                boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
                 if (renderer)
                 {
                     request_tag_t tag = renderer->RequestResource(url.toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
@@ -435,7 +435,7 @@ namespace Library
 
     Foundation::RaycastResult LibraryModule::RayCast(QDropEvent *drop_event)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
         {
             LogDebug("Could not get rendering service, could not raycast");
@@ -534,7 +534,7 @@ Console::CommandResult LibraryModule::ShowWindow(const StringVector &params)
         QGraphicsView *ui_view = framework_->Ui()->GraphicsView();
         library_widget_ = new LibraryWidget(ui_view);
 
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();                
+        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();                
         ui->AddWidgetToScene(library_widget_);
 
         connect(ui_view, SIGNAL(DropEvent(QDropEvent *) ), SLOT(DropEvent(QDropEvent *) ));

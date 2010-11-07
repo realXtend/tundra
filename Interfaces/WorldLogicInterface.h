@@ -8,7 +8,7 @@
 #ifndef incl_Interfaces_WorldLogicInterface_h
 #define incl_Interfaces_WorldLogicInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include "ForwardDefines.h"
 
 #include <QObject>
@@ -17,7 +17,7 @@ class QString;
 
 namespace Foundation
 {
-    class WorldLogicInterface : public QObject, public ServiceInterface
+    class WorldLogicInterface : public QObject, public IService
     {
         Q_OBJECT
 

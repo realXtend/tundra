@@ -2207,7 +2207,7 @@ namespace Environment
 
     void EnvironmentEditor::CreatePaintAreaMesh(int x_pos, int y_pos, const Color &color, float gradient_size)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
             return;
 
@@ -2311,7 +2311,7 @@ namespace Environment
     void EnvironmentEditor::RaycastScreenPosToTerrainPos(int clientX, int clientY, int &mapX, int &mapY)
     {
         // do raycast into the world when user is dragging the mouse while hes holding left button down.
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
             return;
 
@@ -2347,7 +2347,7 @@ namespace Environment
 
     void EnvironmentEditor::ReleasePaintMeshOnScene()
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
             return;
 
@@ -2369,13 +2369,13 @@ namespace Environment
     {
         if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
 
-        Foundation::ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
+        ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
         if(service_manager)
         {
-            if(service_manager->IsRegistered(Foundation::Service::ST_Texture))
+            if(service_manager->IsRegistered(Service::ST_Texture))
             {
                 boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
-                    service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
+                    service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();
                 if(!texture_service)
                     return 0;
 

@@ -27,7 +27,7 @@ EC_3DCanvas::EC_3DCanvas(IModule *module) :
     texture_name_("")
 {
     boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->
-        GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (renderer)
     {
         // Create material

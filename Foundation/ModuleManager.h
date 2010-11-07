@@ -106,7 +106,7 @@ public:
         assert (module.empty() == false);
         exclude_list_.insert(module);
 
-        Foundation::RootLogDebug("Added module " + module + " to exclude list");
+        RootLogDebug("Added module " + module + " to exclude list");
     }
 
     //! Returns true if the specified module is excluded from being loaded

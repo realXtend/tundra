@@ -553,7 +553,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(IEventData *data)
         emit DownloadCompleted(assetReady->asset_id_.c_str());
 
         // Send InventoryItemDownloaded event.
-        Foundation::EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
+        EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
         event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
 
         AbstractInventoryItem *item = GetChildById(i.value());
@@ -794,7 +794,7 @@ UploadResult OpenSimInventoryDataModel::UploadBuffer(
 
     // Send event, if applicable.
     // Note: sent as delayed, to be thread-safe
-    Foundation::EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
+    EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
     event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
 
     boost::shared_ptr<InventoryItemEventData> asset_data(new InventoryItemEventData(IIT_Asset));

@@ -34,7 +34,7 @@ namespace TextureDecoder
         ReadConfig();
 
         // Connet to ui signals
-        Foundation::UiSettingServicePtr ui_settings_service = framework_->GetServiceManager()->GetService<Foundation::UiSettingsServiceInterface>(Foundation::Service::ST_UiSettings).lock();
+        Foundation::UiSettingServicePtr ui_settings_service = framework_->GetServiceManager()->GetService<Foundation::UiSettingsServiceInterface>(Service::ST_UiSettings).lock();
         if (ui_settings_service.get())
         {
             QObject *cache_widget = ui_settings_service->GetCacheSettingsWidget();
@@ -80,7 +80,7 @@ namespace TextureDecoder
             current_cache_size_ += decoded_texture.size();
 
             // Remove unneeded encoded asset cache entry for this texture
-            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
             if (asset_service)
                 asset_service->RemoveAssetFromCache(texture->GetId());
 

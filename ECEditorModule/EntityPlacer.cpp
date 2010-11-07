@@ -101,7 +101,7 @@ void EntityPlacer::MouseMove(MouseEvent *mouse)
 bool EntityPlacer::DoRayCast(int x, int y, Vector3df &result)
 {
     // do raycast into the world when user is dragging the mouse while hes holding left button down.
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return false;
 

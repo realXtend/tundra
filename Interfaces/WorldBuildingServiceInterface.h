@@ -3,12 +3,12 @@
 #ifndef incl_Interfaces_WorldBuildingServiceInterface_h
 #define incl_Interfaces_WorldBuildingServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include <QObject>
 
 namespace Foundation
 {   
-    class WorldBuildingServiceInterface : public QObject, public Foundation::ServiceInterface
+    class WorldBuildingServiceInterface : public QObject, public IService
     {
 
     Q_OBJECT

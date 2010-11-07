@@ -39,7 +39,7 @@ namespace MumbleVoip
 
         if (framework_ &&  framework_->GetServiceManager())
         {
-            boost::shared_ptr<Communications::ServiceInterface> communication_service = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            boost::shared_ptr<Communications::ServiceInterface> communication_service = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Service::ST_Communications).lock();
             if (communication_service.get())
                 communication_service->Register(*this);
         }

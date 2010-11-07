@@ -87,7 +87,7 @@ void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
     }
 
     boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        <OgreRenderer::Renderer>(Service::ST_Renderer);
     boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
 
     switch (type_ )

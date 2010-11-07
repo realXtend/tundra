@@ -254,7 +254,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
             //RexLogicModule::LogInfo("MediaURL changed: " + prim->MediaUrl);
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity;
-            Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+            EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
             event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_MEDIAURL_SET, &event_data);
         }
 
@@ -783,7 +783,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
     {
         DeserializeECsFromFreeData(entity, temp_doc);
         Scene::Events::SceneEventData event_data(entity->GetId());
-        Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+        EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_ECS_RECEIVED, &event_data);
     }
 }
@@ -899,7 +899,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         if ((!RexTypes::IsNull(mesh_name)) && (mesh.GetMeshName() != mesh_name))
         {
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (renderer)
             {
                 request_tag_t tag = renderer->RequestResource(mesh_name, OgreRenderer::OgreMeshResource::GetTypeStatic());
@@ -915,7 +915,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         if ((!RexTypes::IsNull(skeleton_name)) && (mesh.GetSkeletonName() != skeleton_name))
         {
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (renderer)
             {
                 request_tag_t tag = renderer->RequestResource(skeleton_name, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
@@ -975,7 +975,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity;
-            Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+            EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
             event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
         }
     }
@@ -998,7 +998,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         if (particle.GetParticleSystemName(0).find(script_name) == std::string::npos)
         {
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (renderer)
             {
                 request_tag_t tag = renderer->RequestResource(script_name, OgreRenderer::OgreParticleResource::GetTypeStatic());
@@ -1028,7 +1028,7 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
     
     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-        GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
 
@@ -1094,7 +1094,7 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
         return;
         
     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-        GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
         
@@ -1375,7 +1375,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     if (!RexTypes::IsNull(prim->AnimationPackageID))
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         skel_res = renderer->GetResource(prim->AnimationPackageID, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
     }                
     
@@ -1415,7 +1415,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
 
     Scene::Events::EntityEventData event_data;
     event_data.entity = entity;
-    Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+    EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
     event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
 }
 
@@ -1430,7 +1430,7 @@ void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePt
     
     // The skeleton itself is not useful without the mesh. But if we have the mesh too, set it now
     boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
-        GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();   
+        GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();   
     Foundation::ResourcePtr mesh_res = renderer->GetResource(prim->MeshID, OgreRenderer::OgreMeshResource::GetTypeStatic());
     if (mesh_res)
         HandleMeshReady(entityid, mesh_res);
@@ -1490,7 +1490,7 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
                 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
-                Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+                EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
                 event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
             }
             ++i;
@@ -1525,7 +1525,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
-                Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+                EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
                 event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
             }
         }
@@ -1562,7 +1562,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
                         
                         Scene::Events::EntityEventData event_data;
                         event_data.entity = entity;
-                        Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+                        EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
                         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
                                     
                         //std::stringstream ss;
@@ -1798,7 +1798,7 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
 void Primitive::HandleAmbientSound(entity_id_t entityid)
 {
     boost::shared_ptr<ISoundService> soundsystem =
-        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Service::ST_Sound).lock();
     if (!soundsystem)
         return;
         
@@ -1883,7 +1883,7 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
         return false;
 
     boost::shared_ptr<ISoundService> soundsystem =
-        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Service::ST_Sound).lock();
     if (!soundsystem)
         return false;
 
@@ -1922,7 +1922,7 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     if (!entity)
         return false;   
 
-    boost::shared_ptr<ISoundService> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+    boost::shared_ptr<ISoundService> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Service::ST_Sound).lock();
     if (!soundsystem)
         return false;
 

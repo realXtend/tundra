@@ -193,7 +193,7 @@ namespace OgreRenderer
 
     void Renderer::InitializeEvents()
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
         event_manager->RegisterEvent(renderercategory_id_, Events::POST_RENDER, "PostRender");
         event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_CLOSED, "WindowClosed");

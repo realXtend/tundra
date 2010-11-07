@@ -10,7 +10,7 @@
 #ifndef incl_Interfaces_UiServiceInterface_h
 #define incl_Interfaces_UiServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 
 #include <QObject>
 
@@ -28,7 +28,7 @@ namespace CoreUi
 /// Interface for Naali's user interface ulitizing Qt's QWidgets.
 /** If you want to see your QWidgets external to the main application just call show() for them.
 */
-class UiServiceInterface : public QObject, public Foundation::ServiceInterface
+class UiServiceInterface : public QObject, public IService
 {
     Q_OBJECT
 

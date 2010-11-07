@@ -89,7 +89,7 @@ namespace OgreRenderer
         assert (!renderer_->IsInitialized());
         renderer_->Initialize();
 
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
+        framework_->GetServiceManager()->RegisterService(Service::ST_Renderer, renderer_);
 
         framework_->RegisterDynamicObject("renderer", renderer_.get());
     }
@@ -97,7 +97,7 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::PostInitialize()
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
 
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
         resource_event_category_ = event_manager->QueryEventCategory("Resource");

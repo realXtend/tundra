@@ -54,7 +54,7 @@ void EC_Billboard::Show(const std::string &imageName, int timeToShow)
         return;
 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        <OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
 

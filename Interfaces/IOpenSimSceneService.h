@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_IOpenSimSceneService_h
 #define incl_Interfaces_IOpenSimSceneService_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include "Vector3D.h"
 
 #include <QObject>
@@ -18,7 +18,7 @@ namespace Scene
 }
 
 /// Service to import and export Naali scene xml to a opensim server or a local file
-class IOpenSimSceneService : public QObject, public Foundation::ServiceInterface 
+class IOpenSimSceneService : public QObject, public IService 
 {
 
 Q_OBJECT

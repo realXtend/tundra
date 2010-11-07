@@ -296,11 +296,11 @@ void RexLogicModule::Initialize()
     // Register ourselves as world logic service.
     boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
     boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
-    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldLogic, service);
+    framework_->GetServiceManager()->RegisterService(Service::ST_WorldLogic, service);
 
     // Register login service.
     login_service_ = boost::shared_ptr<LoginHandler>(new LoginHandler(this));
-    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Login, login_service_);
+    framework_->GetServiceManager()->RegisterService(Service::ST_Login, login_service_);
 
     // For getting ether shots upon exit, desconstuctor LogoutAndDeleteWorld() call is too late
     connect(framework_->GetNaaliApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
@@ -309,7 +309,7 @@ void RexLogicModule::Initialize()
 // virtual
 void RexLogicModule::PostInitialize()
 {
-    Foundation::EventManagerPtr eventMgr = framework_->GetEventManager();
+    EventManagerPtr eventMgr = framework_->GetEventManager();
     eventMgr->RegisterEventSubscriber(this, 104);
 
     // Input events.
@@ -1169,7 +1169,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
 
 OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
 {
-    return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    return framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
 }
 
 Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)

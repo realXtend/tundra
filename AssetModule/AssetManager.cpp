@@ -15,7 +15,7 @@ namespace Asset
     AssetManager::AssetManager(Foundation::Framework* framework) : 
         framework_(framework)
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
 
         event_category_ = event_manager->RegisterEventCategory("Asset");
         event_manager->RegisterEvent(event_category_, Events::ASSET_READY, "AssetReady");
