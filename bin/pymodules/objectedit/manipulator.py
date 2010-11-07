@@ -124,13 +124,14 @@ class Manipulator:
             self.moveTo(ents)
             self.manipulator.placeable.Scale = self.MANIPULATORSCALE
             try:
-                r = self.manipulator.ruler
+                ruler = self.manipulator.ruler
             except:
                 print "no ruler yet O.o"
             else:
-                r.SetType(self.MANIPULATOR_RULER_TYPE)
-                r.SetVisible(True)
-                r.UpdateRuler()
+                ruler.SetType(self.MANIPULATOR_RULER_TYPE)
+                ruler.SetVisible(True)
+                #r.logInfo("showing ruler showManipulator")
+                ruler.UpdateRuler()
             if self.controller.useLocalTransform:
                 # first according object, then manipulator orientation - otherwise they go wrong order
                 self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
