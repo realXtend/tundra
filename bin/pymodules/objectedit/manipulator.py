@@ -98,8 +98,10 @@ class Manipulator:
         if self.manipulator is None and self.usesManipulator:
             ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
             ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
+            ruler.SetVisible(False)
+            #r.logInfo("hide ruler createManipulator")
             ruler.SetType(self.MANIPULATOR_RULER_TYPE)
-            ruler.SetVisible(True)
+            ruler.UpdateRuler()
             return ent 
 
     def stopManipulating(self):
@@ -161,6 +163,7 @@ class Manipulator:
                     self.manipulator.placeable.Scale = QVector3D(0.0, 0.0, 0.0) #ugly hack
                     self.manipulator.placeable.Position = QVector3D(0.0, 0.0, 0.0)#another ugly hack
                     self.manipulator.ruler.SetVisible(False)
+                    #r.logInfo("hiding ruler hideManipulator")
                     self.manipulator.ruler.UpdateRuler()
                 
                 self.grabbed_axis = None
@@ -198,6 +201,8 @@ class Manipulator:
                 if self.grabbed_axis != None:
                     self.manipulator.ruler.SetAxis(self.grabbed_axis)
                     self.manipulator.ruler.SetVisible(True)
+                    #r.logInfo("show ruler initManipulation")
+                    self.manipulator.ruler.UpdateRuler()
                     if ents[0]:
                         placeable = ents[0].placeable
                         self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
@@ -205,6 +210,8 @@ class Manipulator:
                 else:
                     remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
                     self.manipulator.ruler.SetVisible(False)
+                    #r.logInfo("hide ruler initManipulation")
+                    self.manipulator.ruler.UpdateRuler()
 
     def setManipulatorScale(self, ents):
         if ents is None or len(ents) == 0: 
