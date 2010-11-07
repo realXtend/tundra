@@ -50,7 +50,7 @@ public:
 
     
 public slots:
-	virtual bool IsTemporary() const { return true; }
+    virtual bool IsTemporary() const { return true; }
 
     void Update3DGizmo();
     void SetGizmo(QString gizmo);
@@ -58,9 +58,9 @@ public slots:
     void SetDatum(QVector2D &vec2);
     void SetDatum(QVector3D &vec3);
     void SetDatum(QQuaternion &quad);
-	void StartDrag();
-	void Drag(int x, int y, QVector3D &changevec);
-	void EndDrag();
+    void StartDrag();
+    void Drag(int x, int y, QVector3D &changevec);
+    void EndDrag();
 
 signals:
     void dragged(float scalar);

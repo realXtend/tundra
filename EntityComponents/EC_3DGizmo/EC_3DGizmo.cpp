@@ -30,7 +30,7 @@ EC_3DGizmo::EC_3DGizmo(IModule *module) :
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 
-	_type = EC_3DGizmo::NotSet;
+    _type = EC_3DGizmo::NotSet;
     
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(Update3DGizmo()));
 
@@ -46,58 +46,58 @@ void EC_3DGizmo::SetGizmo(QString gizmo)
 
 void EC_3DGizmo::StartDrag()
 {
-	emit dragStarted();
+    emit dragStarted();
 }
 
 void EC_3DGizmo::EndDrag()
 {
-	emit dragCompleted();
+    emit dragCompleted();
 }
 
 void EC_3DGizmo::Drag(int x, int y, QVector3D &changevec)
 {
-	switch(_type) {
-		case EC_3DGizmo::Scalar:
-			_scalar += 0.1f;
-			emit dragged(_scalar);
-			break;
-		case EC_3DGizmo::Vector2:
-			_vec2 *= 1.1f;
-			emit dragged(_vec2);
-			break;
-		case EC_3DGizmo::Vector3:
-			_vec3 *= 1.1f;
-			emit dragged(_vec3);
-			break;
-		case EC_3DGizmo::Quaternion:
-			_quat *= 1.1f;
-			emit dragged(_quat);
-			break;
-	}
+    switch(_type) {
+        case EC_3DGizmo::Scalar:
+            _scalar += 0.1f;
+            emit dragged(_scalar);
+            break;
+        case EC_3DGizmo::Vector2:
+            _vec2 *= 1.1f;
+            emit dragged(_vec2);
+            break;
+        case EC_3DGizmo::Vector3:
+            _vec3 *= 1.1f;
+            emit dragged(_vec3);
+            break;
+        case EC_3DGizmo::Quaternion:
+            _quat *= 1.1f;
+            emit dragged(_quat);
+            break;
+    }
 }
 
 void EC_3DGizmo::SetDatum(QVector3D &vec3)
 {
-	_type = EC_3DGizmo::Vector3;
-	_vec3 = vec3;
+    _type = EC_3DGizmo::Vector3;
+    _vec3 = vec3;
 }
 
 void EC_3DGizmo::SetDatum(QQuaternion &quat)
 {
-	_type = EC_3DGizmo::Quaternion;
-	_quat = quat;
+    _type = EC_3DGizmo::Quaternion;
+    _quat = quat;
 }
 
 void EC_3DGizmo::SetDatum(QVector2D &vec2)
 {
-	_type = EC_3DGizmo::Vector2;
-	_vec2 = vec2;
+    _type = EC_3DGizmo::Vector2;
+    _vec2 = vec2;
 }
 
 void EC_3DGizmo::SetDatum(float scalar)
 {
-	_type = EC_3DGizmo::Scalar;
-	_scalar = scalar;
+    _type = EC_3DGizmo::Scalar;
+    _scalar = scalar;
 }
 
 void EC_3DGizmo::Update3DGizmo()
