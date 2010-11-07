@@ -88,7 +88,7 @@ namespace HttpUtilities
         CURL* curl = curl_easy_init();
         if (!curl)
         {
-            Foundation::RootLogError("Null curl handle");
+            RootLogError("Null curl handle");
             return;
         }
         

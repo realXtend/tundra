@@ -71,7 +71,7 @@ private:
     boost::weak_ptr<UiServiceInterface> uiService_;
 
     /// Event manager pointer.
-    Foundation::EventManagerPtr eventManager_;
+    EventManagerPtr eventManager_;
 
     /// Inventory event category.
     event_category_id_t frameworkEventCategory_;

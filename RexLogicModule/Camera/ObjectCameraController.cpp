@@ -220,8 +220,8 @@ namespace RexLogic
     {
         if (object_selected_ && left_mousebutton_pressed_)
         {
-            float width = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock()->GetWindowWidth();
-            float height = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock()->GetWindowHeight();
+            float width = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock()->GetWindowWidth();
+            float height = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock()->GetWindowHeight();
 
             RotateObject(2*PI*mouse->relativeX/width, 2*PI*mouse->relativeY/height);
         }

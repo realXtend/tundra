@@ -27,7 +27,7 @@ namespace TextureDecoder
         framework_(framework),
         cache_(new TextureCache(framework))
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
 
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
 
@@ -91,8 +91,8 @@ namespace TextureDecoder
     
     void TextureService::Update(f64 frametime)
     {
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
-        if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+        if (!service_manager->IsRegistered(Service::ST_Asset))
         {
             // No asset service, clear asset request status of requests & do nothing
             TextureRequestMap::iterator i = requests_.begin();
@@ -104,8 +104,8 @@ namespace TextureDecoder
             return;
         }
 
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         if (!asset_service || !event_manager)
             return;
 
@@ -201,7 +201,7 @@ namespace TextureDecoder
 
                 // Send resource ready event for each request tag in the request
                 const RequestTagVector& tags = i->second.GetTags();
-                Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+                EventManagerPtr event_manager = framework_->GetEventManager();
                 for (uint j = 0; j < tags.size(); ++j)
                 {
                     Resource::Events::ResourceReady event_data(i->second.GetId(), result->texture_, tags[j]);

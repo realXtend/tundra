@@ -29,7 +29,7 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
 {
     renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
-    Foundation::EventManager *event_manager = framework_->GetEventManager().get();
+    EventManager *event_manager = framework_->GetEventManager().get();
     if (event_manager)
     {
         event_manager->RegisterEventSubscriber(this, 99);

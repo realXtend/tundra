@@ -23,7 +23,7 @@ LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework, const s
     framework_(framework),
     asset_dir_(asset_dir)
 {
-    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+    EventManagerPtr event_manager = framework_->GetEventManager();
     event_category_ = event_manager->QueryEventCategory("Asset");
     
     if (!asset_dir_.empty())
@@ -55,9 +55,9 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     if (!IsValidId(asset_id, asset_type))
         return false;
     
-    Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->GetServiceManager();
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-        service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
     if (!asset_service)
         return false;
     

@@ -87,7 +87,7 @@ void ModuleManager::DeclareStaticModule(IModule *module)
     }
     else
     {
-        Foundation::RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
+        RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
     }
 }
 
@@ -114,9 +114,9 @@ void ModuleManager::SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modu
         }
         if (j >= modules.size())
         {
-            Foundation::RootLogCritical(std::string("Could not find a module to load next! Candidates: "));
+            RootLogCritical(std::string("Could not find a module to load next! Candidates: "));
             for(size_t k = i; k < modules.size(); ++k)
-                Foundation::RootLogCritical(modules[i].moduleNames.front());
+                RootLogCritical(modules[i].moduleNames.front());
 
             j = i; // Load an arbitrary module next.
         }
@@ -132,7 +132,7 @@ void ModuleManager::SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modu
     for(size_t i = 0; i < modules.size(); ++i)
         for(size_t j = i+1; j < modules.size(); ++j)
             if (modules[j].Precedes(modules[i]))
-                Foundation::RootLogCritical(std::string("A cyclic dependency found in module dependencies! Could not satisfy dependency ") + 
+                RootLogCritical(std::string("A cyclic dependency found in module dependencies! Could not satisfy dependency ") + 
                     modules[j].ToString() + " < " + modules[i].ToString() + ". Continuing nevertheless.");
 }
 
@@ -153,7 +153,7 @@ void ModuleManager::CheckDependencies(const std::vector<ModuleLoadDescription> &
         {
             const ModuleLoadDescription *dependee = FindModuleLoadDescriptionWithEntry(modules, modules[i].dependencies[j]);
             if (!dependee)
-                Foundation::RootLogCritical(std::string("Could not satisfy dependency ") + 
+                RootLogCritical(std::string("Could not satisfy dependency ") + 
                     modules[i].ToString() + " -> " + modules[i].dependencies[j] + ". Trying to load without.");
         }
 }
@@ -198,7 +198,7 @@ void ModuleManager::LoadAvailableModules()
         }
         catch (std::exception &e) // may not be fatal, depending on which module failed
         {
-            Foundation::RootLogError(std::string("Trying to load module ") + iter->ToString() + " threw an exception: " + e.what());
+            RootLogError(std::string("Trying to load module ") + iter->ToString() + " threw an exception: " + e.what());
         }
 }
 
@@ -236,11 +236,11 @@ void ModuleManager::ParseModuleXMLFile(const fs::path &path, std::vector<ModuleL
     boost::algorithm::to_lower(ext);
     if (ext != ".xml")
     {
-        Foundation::RootLogWarning("Tried to parse a module XML file with path " + path.string() + ". Extension " + ext + " is not allowed. Should have .xml!");
+        RootLogWarning("Tried to parse a module XML file with path " + path.string() + ". Extension " + ext + " is not allowed. Should have .xml!");
         return;
     }
 
-    Foundation::RootLogDebug("Parsing module file " + path.file_string());
+    RootLogDebug("Parsing module file " + path.file_string());
     fs::path modulePath(path);
     modulePath.replace_extension("");
 
@@ -264,7 +264,7 @@ void ModuleManager::ParseModuleXMLFile(const fs::path &path, std::vector<ModuleL
     }
     catch(const std::exception &e)
     {
-        Foundation::RootLogWarning(std::string("Exception thrown when parsing a module XML file: ") + e.what());
+        RootLogWarning(std::string("Exception thrown when parsing a module XML file: ") + e.what());
         return;
     }
 
@@ -281,7 +281,7 @@ void ModuleManager::ParseModuleXMLFile(const fs::path &path, std::vector<ModuleL
     // In this case, try to guess the module name from the name of the XML file.
     if (entries.empty())
     {
-        Foundation::RootLogWarning(std::string("Shared library XML file ") + path.string() + " did not contain any module entries!"
+        RootLogWarning(std::string("Shared library XML file ") + path.string() + " did not contain any module entries!"
             "Guessing the shared library contains a module with the same name as the module filename.");
         entries.push_back(modulePath.filename());
     }
@@ -515,8 +515,8 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
         }
         catch (Poco::Exception &e)
         {
-            Foundation::RootLogError(e.displayText());
-            Foundation::RootLogError("Failed to load dynamic library: " + path);
+            RootLogError(e.displayText());
+            RootLogError("Failed to load dynamic library: " + path);
             return;
         }
 
@@ -525,17 +525,17 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
     {
         if (HasModuleEntry(*it))
         {
-            Foundation::RootLogDebug(">> " + *it + " already loaded.");
+            RootLogDebug(">> " + *it + " already loaded.");
             continue;
         }
 
         if (IsExcluded(*it))
         {
-            Foundation::RootLogDebug(">> " + *it + " excluded and not loaded.");
+            RootLogDebug(">> " + *it + " excluded and not loaded.");
             continue;
         }
 
-        Foundation::RootLogDebug(">> Loading module " + *it + ".");
+        RootLogDebug(">> Loading module " + *it + ".");
 
         if (library->cl_.findClass(*it) == 0)
             throw Exception("Entry class not found from module");
@@ -547,7 +547,7 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
 
         if (IsExcluded(module->Name()))
         {
-            Foundation::RootLogInfo("   > Module " + module->Name() + " is excluded and not loaded.");
+            RootLogInfo("   > Module " + module->Name() + " is excluded and not loaded.");
             continue;
         }
 
@@ -589,7 +589,7 @@ void ModuleManager::PreInitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
-    Foundation::RootLogDebug("Preinitializing module " + module->Name());
+    RootLogDebug("Preinitializing module " + module->Name());
     module->PreInitializeInternal();
 
     // Do not log preinit success here to avoid extraneous logging.
@@ -599,7 +599,7 @@ void ModuleManager::InitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
-    Foundation::RootLogDebug("Initializing module " + module->Name());
+    RootLogDebug("Initializing module " + module->Name());
     module->InitializeInternal();
 
     // Send a log message in the log channel of the module we just initialized.
@@ -610,7 +610,7 @@ void ModuleManager::PostInitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
-    Foundation::RootLogDebug("Postinitializing module " + module->Name());
+    RootLogDebug("Postinitializing module " + module->Name());
     module->PostInitializeInternal();
 
     // Do not log postinit success here to avoid extraneous logging.
@@ -619,7 +619,7 @@ void ModuleManager::PostInitializeModule(IModule *module)
 void ModuleManager::UninitializeModule(IModule *module)
 {
     assert(module);
-    Foundation::RootLogDebug("Uninitializing module " + module->Name() + ".");
+    RootLogDebug("Uninitializing module " + module->Name() + ".");
     module->UninitializeInternal();
 
     // Send a log message in the log channel of the module we just uninitialized.
@@ -633,7 +633,7 @@ void ModuleManager::UnloadModule(Module::Entry &entry)
     std::string moduleName = entry.module_->Name();
     std::string moduleNameStatic = entry.module_->Name();
 
-    Foundation::RootLogDebug("Unloading module " + moduleName + ".");
+    RootLogDebug("Unloading module " + moduleName + ".");
 
     entry.module_->UnloadInternal();
     entry.module_.reset(); // Triggers the deletion of the IModule object. (either causes operator delete or Poco's module free to be called)

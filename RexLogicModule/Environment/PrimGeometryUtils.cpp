@@ -95,7 +95,7 @@ namespace RexLogic
         // be converted to a mesh anyway)
         if (!prim_manual_object)
         {
-            OgreRenderer::RendererPtr renderer = framework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            OgreRenderer::RendererPtr renderer = framework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (!renderer)
                 return 0;
             Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
@@ -112,7 +112,7 @@ namespace RexLogic
             // If cannot find the override material, use default
             // We will probably get resource ready event later for the material & redo this prim
             boost::shared_ptr<OgreRenderer::Renderer> renderer = framework->GetServiceManager()->
-                GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (!renderer->GetResource(mat_override, OgreRenderer::OgreMaterialResource::GetTypeStatic()))
             {
                 mat_override = "LitTextured";

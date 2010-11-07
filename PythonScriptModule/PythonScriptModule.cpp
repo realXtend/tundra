@@ -178,8 +178,8 @@ namespace PythonScript
         /* TODO: add other categories and expose the hierarchy as py submodules or something,
         add registrating those (it's not (currently) mandatory),
         to the modules themselves, e.g. InputModule (currently the OIS thing but that is to change) */
-        const Foundation::EventManager::EventMap &evmap = em_->GetEventMap();
-        Foundation::EventManager::EventMap::const_iterator cat_iter = evmap.find(inputeventcategoryid);
+        const EventManager::EventMap &evmap = em_->GetEventMap();
+        EventManager::EventMap::const_iterator cat_iter = evmap.find(inputeventcategoryid);
         if (cat_iter != evmap.end())
         {
             std::map<event_id_t, std::string> evs = cat_iter->second;
@@ -195,7 +195,7 @@ namespace PythonScript
         else
             LogInfo("No registered events in the input category.");
 
-        /*for (Foundation::EventManager::EventMap::const_iterator iter = evmap[inputeventcategoryid].begin();
+        /*for (EventManager::EventMap::const_iterator iter = evmap[inputeventcategoryid].begin();
             iter != evmap[inputeventcategoryid].end(); ++iter)
         {
             std::stringstream ss;
@@ -204,8 +204,8 @@ namespace PythonScript
         }*/
         
         /* TODO perhaps should expose all categories, so any module would get it's events exposed automagically 
-        const Foundation::EventManager::EventCategoryMap &categories = em.GetEventCategoryMap();
-        for(Foundation::EventManager::EventCategoryMap::const_iterator iter = categories.begin();
+        const EventManager::EventCategoryMap &categories = em.GetEventCategoryMap();
+        for(EventManager::EventCategoryMap::const_iterator iter = categories.begin();
             iter != categories.end(); ++iter)
         
             std::stringstream ss;
@@ -536,7 +536,7 @@ namespace PythonScript
 
         /* Mouse input special handling. InputModuleOIS has sending these as events commented out,
            This polling is copy-pasted from the InputHandler in RexLogicModule */
-        //boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Foundation::Service::ST_Input).lock();
+        //boost::shared_ptr<Input::InputServiceInterface> input = framework_->GetService<Input::InputServiceInterface>(Service::ST_Input).lock();
 
         //XXX not ported to UImodule / OIS replacement yet
    //     boost::shared_ptr<Input::InputModuleOIS> input = framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
@@ -1314,7 +1314,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
     newyaw = (float) y;
     newpitch = (float) p;
 
-    //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic)
     {
@@ -1764,7 +1764,7 @@ namespace PythonScript
 
         engine_->Initialize();
 
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_PythonScripting, engine_);
+        framework_->GetServiceManager()->RegisterService(Service::ST_PythonScripting, engine_);
 
         assert(!pythonScriptModuleInstance_);
         pythonScriptModuleInstance_ = this;

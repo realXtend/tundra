@@ -261,7 +261,7 @@ namespace Asset
                 AssetModule::LogDebug("HTTP asset " + tranfer_info.id.toStdString() + " completed");
 
                 // Store asset, but don't store textures, they have their own cache action after decoding
-                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
                 if (asset_service) 
                     asset_service->StoreAsset(asset_ptr);
 
@@ -311,7 +311,7 @@ namespace Asset
                 AssetModule::LogDebug("HTTP asset " + transfer_data.id.toStdString() + " completed with metadata");
 
                 // Store asset
-                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
                 if (asset_service)
                     asset_service->StoreAsset(ready_asset_ptr);
 

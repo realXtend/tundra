@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_RenderServiceInterface_h
 #define incl_Interfaces_RenderServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include "ResourceInterface.h"
 #include "LogListenerInterface.h"
 #include "CoreModuleApi.h"
@@ -43,7 +43,7 @@ namespace Foundation
         Manages the rendering window, handles scene rendering, and manages renderer related resources.
         Implemented by the \ref OgreRenderingModule.
     */
-    class MODULE_API RenderServiceInterface : public ServiceInterface
+    class MODULE_API RenderServiceInterface : public IService
     {
     public:
         /// Default constructor

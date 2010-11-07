@@ -40,8 +40,8 @@ namespace Console
     // virtual
     void ConsoleModule::Initialize()
     {
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_);
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand,
+        framework_->GetServiceManager()->RegisterService(Service::ST_Console, manager_);
+        framework_->GetServiceManager()->RegisterService(Service::ST_ConsoleCommand,
             checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
     }
 

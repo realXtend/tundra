@@ -104,7 +104,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, IEve
            - this version blocks the Naali mainloop which not always nice (when running as a server)
         QWidget* mainwindow = 0;
         boost::shared_ptr<OgreRenderer::Renderer> renderer =
-            owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (renderer)
             mainwindow = owner_->GetFramework()->GetMainWindow();
         QMessageBox msgBox(QMessageBox::Warning, QApplication::translate("RexLogic", "Kicked Out"), 

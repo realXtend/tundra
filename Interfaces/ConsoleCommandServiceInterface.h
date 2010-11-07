@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_ConsoleCommandServiceInterface_h
 #define incl_Interfaces_ConsoleCommandServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include "CoreStringUtils.h"
 #include "ConsoleCommand.h"
 
@@ -179,7 +179,7 @@ void MyClass::Update()
         \ingroup Services_group
         \ingroup DebugConsole_group
     */
-    class ConsoleCommandServiceInterface : public QObject, public Foundation::ServiceInterface
+    class ConsoleCommandServiceInterface : public QObject, public IService
     {
         Q_OBJECT
 

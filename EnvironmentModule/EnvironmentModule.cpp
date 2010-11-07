@@ -114,7 +114,7 @@ namespace Environment
         }
 
         environment_editor_ = new EnvironmentEditor(this);
-        Foundation::WorldBuildingServicePtr wb_service = GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Foundation::Service::ST_WorldBuilding).lock();
+        Foundation::WorldBuildingServicePtr wb_service = GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Service::ST_WorldBuilding).lock();
         if (wb_service)
         {
             QObject::connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));

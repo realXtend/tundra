@@ -247,7 +247,7 @@ private:
     unsigned long newMouseButtonsPressedQueue;
     unsigned long newMouseButtonsReleasedQueue;
 
-    Foundation::EventManagerPtr eventManager;
+    EventManagerPtr eventManager;
 
     QGraphicsView *mainView;
     QWidget *mainWindow;

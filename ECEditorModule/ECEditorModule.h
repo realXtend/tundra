@@ -81,7 +81,7 @@ namespace ECEditor
         static std::string name_static_;
 
         //! Event manager pointer.
-        Foundation::EventManagerPtr event_manager_;
+        EventManagerPtr event_manager_;
 
         //! Id for Framework event category
         event_category_id_t framework_event_category_;

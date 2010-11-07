@@ -71,7 +71,7 @@ namespace RexLogic
         void Provider::RegisterToCommunicationsService()
         {
             boost::shared_ptr<Communications::ServiceInterface> comm =
-                framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+                framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Service::ST_Communications).lock();
             if (comm)
                 comm->Register(*this);
         }

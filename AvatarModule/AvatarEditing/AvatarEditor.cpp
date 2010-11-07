@@ -38,7 +38,7 @@ namespace Avatar
 
         last_directory_ = avatar_module_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "last_avatar_editor_dir", std::string());
         if (last_directory_.empty())
-            last_directory_ = Foundation::QtUtils::GetCurrentPath();
+            last_directory_ = QtUtils::GetCurrentPath();
     }
 
     AvatarEditor::~AvatarEditor()
@@ -583,7 +583,7 @@ namespace Avatar
 
     std::string AvatarEditor::GetOpenFileName(const std::string& filter, const std::string& prompt)
     {
-        std::string filename = Foundation::QtUtils::GetOpenFileName(filter, prompt, last_directory_);
+        std::string filename = QtUtils::GetOpenFileName(filter, prompt, last_directory_);
         if (!filename.empty())
         {
             boost::filesystem::path path(filename);
@@ -595,7 +595,7 @@ namespace Avatar
     
     std::string AvatarEditor::GetSaveFileName(const std::string& filter, const std::string& prompt)
     {
-        std::string filename = Foundation::QtUtils::GetSaveFileName(filter, prompt, last_directory_);
+        std::string filename = QtUtils::GetSaveFileName(filter, prompt, last_directory_);
         if (!filename.empty())
         {
             boost::filesystem::path path(filename);

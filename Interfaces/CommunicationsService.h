@@ -3,16 +3,13 @@
 #ifndef incl_Interfaces_CommunicationsService_h
 #define incl_Interfaces_CommunicationsService_h
 
-#include "ServiceInterface.h"
-// todo: Make these forward declarations if possible
+#include "IService.h"
+#include "Vector3D.h"
+
 #include <QObject>
-#include <Vector3D.h>
 #include <QList>
-#include <QByteArray>
 #include <QString>
 #include <QDateTime>
-//class QString;
-//class QDateTime;
 
 namespace Communications
 {
@@ -311,7 +308,7 @@ namespace Communications
     //! The services are considired to be available until viewer shutdown. (???)
     //!
     //! \todo Define how to signal about service becomes unavailable.
-    class ServiceInterface : public QObject, public Foundation::ServiceInterface 
+    class ServiceInterface : public QObject, public IService 
     {
         Q_OBJECT
     public:

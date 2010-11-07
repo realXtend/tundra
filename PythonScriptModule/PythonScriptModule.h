@@ -160,7 +160,7 @@ namespace PythonScript
         //   for the modulemanager 
         
         // EventManager to member variable to be accessed from SubscribeNetworkEvents()
-        Foundation::EventManagerPtr em_;
+        EventManagerPtr em_;
 
         /// The default input context for python code to access. This context operates below
         /// the Qt windowing priority.

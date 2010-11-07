@@ -60,7 +60,7 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     hovering_timer_ = new QTimer(this);
     hovering_timer_->setSingleShot(true);
 
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 
     visibility_animation_timeline_->setFrameRange(0,100);
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);

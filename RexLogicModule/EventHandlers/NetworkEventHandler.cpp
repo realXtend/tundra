@@ -372,7 +372,7 @@ bool NetworkEventHandler::HandleOSNE_PreloadSound(NetworkEventInboundData* data)
 
         // Preload the sound asset into cache, the sound service will get it from there when actually needed.
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-            owner_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            owner_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
             asset_service->RequestAsset(asset_id, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
 
@@ -471,7 +471,7 @@ bool NetworkEventHandler::HandleOSNE_LoadURL(NetworkEventInboundData *data)
     std::string url = msg.ReadString(); // URL
 
     boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice =
-        owner_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
+        owner_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Service::ST_PythonScripting).lock();
     if (pyservice)
         pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + QString::fromStdString(url) + "');");
 
@@ -649,7 +649,7 @@ bool NetworkEventHandler::HandleOSNE_KickUser(NetworkEventInboundData *data)
     if (agent_id == owner_->GetServerConnection()->GetInfo().agentID &&
         session_id == owner_->GetServerConnection()->GetInfo().sessionID)
     {
-        Foundation::EventManagerPtr eventmgr = owner_->GetFramework()->GetEventManager();
+        EventManagerPtr eventmgr = owner_->GetFramework()->GetEventManager();
         eventmgr->SendDelayedEvent(eventmgr->QueryEventCategory("NetworkState"), Events::EVENT_USER_KICKED_OUT, EventDataPtr());
     }
 

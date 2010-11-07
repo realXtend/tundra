@@ -560,12 +560,12 @@ namespace MumbleVoip
         if (!framework_)
             return boost::shared_ptr<ISoundService>();
 
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
         if (!service_manager.get())
             return boost::shared_ptr<ISoundService>();
 
-        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
 
         if (!sound_service.get())
             return boost::shared_ptr<ISoundService>();
