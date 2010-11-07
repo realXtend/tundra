@@ -28,7 +28,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DGizmo")
 EC_3DGizmo::EC_3DGizmo(IModule *module) :
     IComponent(module->GetFramework())
 {
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
     _type = EC_3DGizmo::NotSet;
     

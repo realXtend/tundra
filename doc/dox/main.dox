@@ -78,7 +78,7 @@ The \ref ModuleArchitecture "Module" API gives access to all the modules registe
 
 Classes:
 <ul>
-<li>Foundation::ModuleManager
+<li>ModuleManager
 <li>IModule
 </ul>  
 </td>
@@ -95,7 +95,7 @@ Information:
 Classes:
 <ul>
 <li>IEventData
-<li>Foundation::EventManager
+<li>EventManager
 </ul>
    
 </td>
@@ -111,7 +111,7 @@ More information:
 - \ref ConfigDefaultValues "Using default values."
 
 Classes:
-- Foundation::ConfigurationManager.
+- ConfigurationManager.
    
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
@@ -174,7 +174,7 @@ Classes:
 <ul>
 <li>IAttribute
 <li>AttributeMetadata
-<li>Foundation::ComponentManager
+<li>ComponentManager
 <li>IComponent
 <li>Scene::SceneManager
 <li>Scene::Entity
@@ -262,7 +262,7 @@ Topics:
 - \ref FrameAPI_Delayed "Delayed one-time execution".
 - \ref FrameAPI_Periodic "Periodic execution".
 
-The Frame API is accessed through the class \ref Foundation::Frame "Frame". 
+The Frame API is accessed through the class \ref Frame "Frame". 
 
 <!--    
 </td>
