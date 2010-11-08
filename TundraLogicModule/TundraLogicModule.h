@@ -99,6 +99,9 @@ private:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
+    /// Load the startup scene
+    void LoadStartupScene();
+    
     /// Sync manager
     boost::shared_ptr<SyncManager> syncManager_;
     /// Client
@@ -110,12 +113,17 @@ private:
     event_category_id_t kristalliEventCategory_;
     /// Tundra event category
     event_category_id_t tundraEventCategory_;
+    /// Framework event category
+    event_category_id_t frameworkEventCategory_;
     
     /// KristalliProtocolModule pointer
     boost::shared_ptr<KristalliProtocol::KristalliProtocolModule> kristalliModule_;
     
     //! Type name of the module.
     static std::string type_name_static_;
+    
+    //! Scene to load at startup, specified from commandline
+    std::string startup_scene_;
 };
 
 }
