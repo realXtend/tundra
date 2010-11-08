@@ -179,7 +179,7 @@ namespace ECEditor
 
         if (ids.size())
         {
-            component_dialog_ = new AddComponentDialog(framework_, ids, this);
+            component_dialog_ = new AddComponentDialog(framework_, ids, NULL);
             component_dialog_->SetComponentList(framework_->GetComponentManager()->GetAvailableComponentTypeNames());
             connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
             component_dialog_->show();

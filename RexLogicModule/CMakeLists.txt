@@ -38,13 +38,7 @@ if (UISERVICE_TEST)
     add_definitions (-DUISERVICE_TEST)
 endif ()
 
-use_package (BOOST)
-use_package (POCO)
-use_package (OGRE)
-use_package (QT4)
-use_package (CURL)
 use_package (OPENJPEG)
-use_package (XMLRPC)
 
 use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule AvatarModule RexCommon
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Input Asset)
@@ -84,12 +78,7 @@ if (NOT UISERVICE_TEST)
 endif ()
 
 link_ogre()
-link_package (BOOST)
-link_package (POCO)
-link_package (QT4)
-link_package (CURL)
 link_package (OPENJPEG)
-link_package (XMLRPC)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

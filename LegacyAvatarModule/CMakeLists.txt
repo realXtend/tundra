@@ -7,8 +7,6 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
-use_package (BOOST)
-use_package (POCO)
 use_modules (Core Foundation Interfaces SceneManager )
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
@@ -16,8 +14,6 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${UI_FILES} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
 link_modules (Core Foundation Interfaces SceneManager )
-link_package (BOOST)
-link_package (POCO)
 
 SetupCompileFlags()
 CopyModuleXMLFile()

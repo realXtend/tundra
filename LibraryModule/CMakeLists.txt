@@ -34,24 +34,11 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
 add_definitions (-DLIBRARY_MODULE_EXPORTS)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (QT4)
-use_package (CURL)
-use_package (XMLRPC)
-use_package (OGRE)
 use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities UiModule EntityComponents/EC_OpenSimPrim EntityComponents/EC_NetworkPosition)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities UiModule EC_OpenSimPrim EC_NetworkPosition)
-
-link_package (BOOST)
-link_package (POCO)
-link_package (OGRE)
-link_package (QT4)
-link_package (CURL)
-link_package (XMLRPC)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)
