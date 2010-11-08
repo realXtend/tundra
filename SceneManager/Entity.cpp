@@ -492,6 +492,13 @@ namespace Scene
 
         return true;
     }
+
+    void Entity::EmitEntityRemoved(AttributeChange::Type change)
+    {
+        if (change == AttributeChange::Disconnected)
+            return;
+        emit EntityRemoved(this, change);
+    }
     
     void Entity::SetTemporary(bool enable)
     {
