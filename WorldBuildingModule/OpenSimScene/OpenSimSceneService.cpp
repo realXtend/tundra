@@ -15,8 +15,6 @@
 #include "OgreSceneNode.h"
 #include "OgreEntity.h"
 
-#include <QFile>
-
 namespace WorldBuilding
 {
     OpenSimSceneService::OpenSimSceneService(QObject *parent, Foundation::Framework *framework) :
@@ -26,12 +24,15 @@ namespace WorldBuilding
         scene_widget_(new OpenSimSceneWidget()),
         capability_name_("UploadNaaliScene")
     {
+        scene_exporter_ = new SceneExporter(this, framework_, scene_parser_);
         ResetWorldStream();
 
         connect(network_manager_, SIGNAL(finished(QNetworkReply*)), SLOT(SceneUploadResponse(QNetworkReply*)));
         connect(scene_widget_, SIGNAL(PublishFromFile(const QString&, bool)), SLOT(PublishToServer(const QString &, bool)));
         connect(scene_widget_, SIGNAL(ExportToFile(const QString&, QList<Scene::Entity *>)), SLOT(StoreEntities(const QString &, QList<Scene::Entity *>)));
         connect(scene_widget_, SIGNAL(destroyed()), this, SLOT(AbandonSceneWidget()));
+
+        connect(scene_widget_, SIGNAL(ExportSceneRequest()), scene_exporter_, SLOT(ShowBackupTool()));
     }
 
     OpenSimSceneService::~OpenSimSceneService()
@@ -63,6 +64,8 @@ namespace WorldBuilding
         }
         else
             WorldBuildingModule::LogWarning("OpenSimSceneService: Failed to add OpenSim Scene Tool to scene and menu");
+
+        scene_exporter_->PostInitialize();
     }
 
     void OpenSimSceneService::MouseLeftPressed(MouseEvent *mouse_event)
@@ -176,6 +179,11 @@ namespace WorldBuilding
         scene_parser_->ExportToFile(save_filename, entities);
     }
 
+    void OpenSimSceneService::StoreSceneAndAssets(QDir store_location, const QString &asset_base_url)
+    {
+        scene_exporter_->StoreSceneAndAssets(store_location, asset_base_url);
+    }
+
     QByteArray OpenSimSceneService::ExportEntities(QList<Scene::Entity *> entities)
     {
         return scene_parser_->ExportToByteArray(entities);
@@ -208,7 +216,7 @@ namespace WorldBuilding
         // Get a pos in front of avatar
         Ogre::Vector3 av_pos = av_placeable->GetLinkSceneNode()->_getDerivedPosition();
         return_pos = Vector3df(av_pos.x, av_pos.y, av_pos.z);
-        return_pos += (av_placeable->GetOrientation() * Vector3df(3.0f, 0.0f, 3.0f));
+        return_pos += (av_placeable->GetOrientation() * Vector3df(3.0f, 0.0f, 2.0f));
         return return_pos;
     }
 
