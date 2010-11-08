@@ -41,6 +41,10 @@ Registered by Physics::PhysicsModule.
 Does not emit any actions.
 
 <b>Depends on the component RigitBody.</b>.
+
+\todo If you add an entity to the 'interesting entities list', no signals may get send for that entity,
+      and it may not show up in any list of entities contained in this volume trigger.
+
 </table>
 */
 

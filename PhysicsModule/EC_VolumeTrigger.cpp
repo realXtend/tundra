@@ -146,7 +146,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (entity)
                 {
                     emit EntityLeave(entity.get());
-                    //LogInfo("leave");
+                    LogInfo("leave");
                     disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
                 }
                 continue;
@@ -161,6 +161,26 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
 
 void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
 {
+    assert (otherEntity && "Physics collision with no entity.");
+
+    QVariantList interestingEntities = entities.Get();
+    bool found = interestingEntities.isEmpty();
+    if (!found)
+    {
+        QString otherEntityName = otherEntity->GetName();
+        foreach (QVariant name, interestingEntities)
+        {
+            if (name.toString().compare(otherEntityName) == 0)
+            {
+                found = true;
+                break;
+            }
+        }
+    }
+    
+    if (!found)
+        return;
+
     Scene::EntityPtr entity = otherEntity->GetSharedPtr();
 
     if (newCollision)
@@ -170,7 +190,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
         {
             emit EntityEnter(otherEntity);
             connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-            //LogInfo("enter");
+            LogInfo("enter");
         }
 
         entities_.insert(entity, true);
