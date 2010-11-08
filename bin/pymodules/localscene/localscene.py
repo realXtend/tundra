@@ -177,6 +177,13 @@ class LocalScene(Component):
         if(self.dsManager!=None):
             self.dsManager.setScale(self.xscale, self.yscale, self.zscale)
 
+    def rotateX(self, rotX):
+        self.dsManager.rotateX(rotX)
+    def rotateY(self, rotY):
+        self.dsManager.rotateY(rotY)
+    def rotateZ(self, rotZ):
+        self.dsManager.rotateZ(rotZ)
+            
     def checkBoxZYToggled(self, enabled):
         self.flipZY = enabled
         if(self.dsManager!=None):
