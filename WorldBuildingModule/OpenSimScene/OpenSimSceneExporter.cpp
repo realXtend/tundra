@@ -228,7 +228,6 @@ namespace WorldBuilding
             {
                 WorldBuildingModule::LogDebug("SceneExport: Processing textures and materials");
                 LogHeadline("Processing", "textures and materials");
-                CleanLocalDir(store_location);
                 CleanLocalDir(store_location_textures);
                 Log("-- Parsing material scripts to resolve texture references");
                 
@@ -658,7 +657,7 @@ namespace WorldBuilding
             if (dir.remove(file_info.fileName()))
                 deleted++;
         }
-        Log(QString("Cleaned directory: %1 removed %1 files").arg(dir.absolutePath(), QString::number(deleted)));
+        Log(QString("Cleaned directory: %1 removed %2 files").arg(dir.absolutePath(), QString::number(deleted)));
     }
 
     QString SceneExporter::GetCacheFilename(const QString &asset_id, const QString &type)
