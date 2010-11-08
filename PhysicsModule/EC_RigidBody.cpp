@@ -24,6 +24,10 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
 using namespace Physics;
 using namespace RexTypes;
 
+static const float cForceThreshold = 0.0005f;
+static const float cImpulseThreshold = 0.0005f;
+static const float cTorqueThreshold = 0.0005f;
+
 EC_RigidBody::EC_RigidBody(IModule* module) :
     IComponent(module->GetFramework()),
     body_(0),
@@ -115,6 +119,10 @@ void EC_RigidBody::SetAngularVelocity(const Vector3df& velocity)
 
 void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
 {
+    // If force is very small, do not wake up the body and apply
+    if (force.getLength() < cForceThreshold)
+        return;
+    
     if (!body_)
         CreateBody();
     if (body_)
@@ -129,6 +137,10 @@ void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
 
 void EC_RigidBody::ApplyTorque(const Vector3df& torque)
 {
+    // If torque is very small, do not wake up the body and apply
+    if (torque.getLength() < cTorqueThreshold)
+        return;
+        
     if (!body_)
         CreateBody();
     if (body_)
@@ -140,6 +152,10 @@ void EC_RigidBody::ApplyTorque(const Vector3df& torque)
 
 void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& position)
 {
+    // If impulse is very small, do not wake up the body and apply
+    if (impulse.getLength() < cImpulseThreshold)
+        return;
+    
     if (!body_)
         CreateBody();
     if (body_)
@@ -154,6 +170,10 @@ void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& posit
 
 void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
 {
+    // If impulse is very small, do not wake up the body and apply
+    if (torqueImpulse.getLength() < cTorqueThreshold)
+        return;
+        
     if (!body_)
         CreateBody();
     if (body_)

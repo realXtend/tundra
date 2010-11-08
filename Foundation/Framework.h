@@ -264,6 +264,9 @@ namespace Foundation
         /// Returns the old UiServiceInterface impl, which is not merged to the core UI object yet
         UiServiceInterface *UiService();
 
+        /// Returns if Naali is headless
+        bool IsHeadless() const { return headless_; }
+        
         /// Returns the Naali core API Input object.
         Input *GetInput() const;
 
@@ -374,6 +377,9 @@ namespace Foundation
 
         //! true if framework is properly initialized, false otherwise.
         bool initialized_;
+        
+        //! headless mode
+        bool headless_;
 
         //! Sends log prints for multiple channels.
         Poco::SplitterChannel *splitterchannel;

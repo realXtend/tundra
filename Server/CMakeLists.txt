@@ -8,12 +8,11 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
+# Never compile server in consoleless mode
+set (WINDOWS_APP 0)
+
 # Preprocessor defines on MSVC
 if (MSVC)
-   if (WINDOWS_APP)
-       add_definitions (-DWINDOWS_APP)
-   endif (WINDOWS_APP)
-
    set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELEASE _DMEMDUMP)
    set_property (DIRECTORY PROPERTY COMPILE_DEFINITIONS_RELWITHDEBINFO _DMEMDUMP)
 
@@ -30,16 +29,10 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (CURL)
 use_modules (Core Foundation Interfaces HttpUtilities SupportModules TestModule SceneManager)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES})
 
-link_package (BOOST)
-link_package (POCO)
-link_package (CURL)
 link_modules (Core Foundation Interfaces HttpUtilities SceneManager)
 
 final_target ()

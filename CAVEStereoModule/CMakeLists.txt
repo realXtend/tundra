@@ -22,23 +22,12 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DCAVESTEREO_MODULE_EXPORTS)
 
-use_package (BOOST)
-use_package (QT4)
-use_package (POCO)
-use_package (CURL)
-use_package (XMLRPC)
-use_package (OGRE)
 use_modules (UiModule Core Foundation Interfaces RexCommon SupportModules
     OgreRenderingModule )
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 link_modules (Core Foundation Interfaces RexCommon SupportModules OgreRenderingModule)
-link_package (BOOST)
-link_package (QT4)
-link_package (POCO)
-link_package (XMLRPC)
-link_package (CURL)
 link_ogre()
 
 SetupCompileFlagsWithPCH()

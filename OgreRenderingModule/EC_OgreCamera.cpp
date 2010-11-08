@@ -19,6 +19,9 @@ EC_OgreCamera::EC_OgreCamera(IModule* module) :
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     Ogre::Viewport* viewport = renderer->GetViewport();
+    if (!viewport)
+        return; // Headless mode
+        
     camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName());
     
     // Set default values for the camera

@@ -25,12 +25,6 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 add_definitions (-DWORLD_BUILDING_MODULE_EXPORTS)
 
 # Includes
-use_package (BOOST)
-use_package (QT4)
-use_package (POCO)
-use_package (OGRE)
-use_package (CURL)    # NEEDED BY ProtocolUtilities
-use_package (XMLRPC)  # NEEDED BY ProtocolUtilities
 use_package (QT_PROPERTY_BROWSER)
 use_modules (WorldBuildingModule Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities OgreRenderingModule InventoryModule Input
              EntityComponents/EC_OpenSimPrim EntityComponents/EC_DynamicComponent EntityComponents/EC_Highlight)
@@ -38,12 +32,7 @@ use_modules (WorldBuildingModule Core Foundation Interfaces SceneManager RexComm
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Linking
-link_package (BOOST)
-link_package (QT4)
-link_package (POCO)
 link_ogre()
-link_package (CURL)   # NEEDED BY ProtocolUtilities
-link_package (XMLRPC) # NEEDED BY ProtocolUtilities
 link_package (QT_PROPERTY_BROWSER)
 link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities OgreRenderingModule InventoryModule Input
               EC_OpenSimPrim EC_DynamicComponent EC_Highlight)

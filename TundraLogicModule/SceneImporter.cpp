@@ -58,7 +58,7 @@ SceneImporter::~SceneImporter()
 
 Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
                                            const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change,
-                                           bool localassets, const std::string &meshName)
+                                           bool localassets, bool inspect, const std::string &meshName)
 {
     if (!scene)
     {
@@ -69,8 +69,6 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     std::string prefix;
     if (localassets)
         prefix = "file://";
-    //else if (meshLoaded)
-    //    prefix = "mesh://";
     
     // Create output asset path if does not exist
     if (boost::filesystem::exists(out_asset_dir) == false)
@@ -103,7 +101,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     
     std::vector<std::string> material_names;
     std::string skeleton_name;
-    if (meshName.empty())
+    if (inspect)
     {
         if (!ParseMeshForMaterialsAndSkeleton(meshname, material_names, skeleton_name))
             return Scene::EntityPtr();
@@ -119,7 +117,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     std::vector<std::string> material_files;
-    if (meshName.empty())
+    if (inspect)
     {
         fs::directory_iterator iter(in_asset_dir);
         fs::directory_iterator end_iter;
@@ -205,7 +203,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
             meshPtr->skeletonId.Set(QString::fromStdString(prefix + skeleton_name), AttributeChange::Disconnected);
         meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), AttributeChange::Disconnected);
 
-        if (meshName.empty())
+        if (inspect)
             meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), AttributeChange::Disconnected);
         else
             meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(0,0,0), Vector3df(1,1,1)), AttributeChange::Disconnected);

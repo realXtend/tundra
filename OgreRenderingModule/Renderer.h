@@ -277,6 +277,9 @@ namespace OgreRenderer
         //! Scene manager
         Ogre::SceneManager* scenemanager_;
 
+        //! Default hardware buffer manager for headless mode
+        Ogre::DefaultHardwareBufferManager* buffermanager_;
+        
         //! Default camera, used when no other camera exists
         Ogre::Camera* default_camera_;
 
@@ -329,7 +332,7 @@ namespace OgreRenderer
 
         //! handler for post-processing effects
         CompositionHandler *c_handler_;
-
+        
         //! last width/height
         int last_height_;
         int last_width_;

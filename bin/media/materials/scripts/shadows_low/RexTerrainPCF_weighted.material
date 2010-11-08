@@ -62,7 +62,7 @@ material Rex/TerrainPCF_weighted
 			{
 			}
 
-			vertex_program_ref Rex/TerrainPCFVS
+			vertex_program_ref Rex/TerrainPCFVS_weighted
 			{
 				//For weighted texunit
 				param_named scale0 float2 20.0 20.0

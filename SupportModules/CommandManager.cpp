@@ -5,6 +5,7 @@
 #include "CommandManager.h"
 #include "ConsoleModule.h"
 #include "Framework.h"
+#include "Native.h"
 
 #include <boost/tokenizer.hpp>
 
@@ -21,7 +22,8 @@ namespace Console
     CommandManager::CommandManager(IModule *parent, ConsoleServiceInterface *console) :
         Console::ConsoleCommandServiceInterface(),
         parent_ (checked_static_cast< ConsoleModule* >(parent)),
-        console_(console)
+        console_(console),
+        nativeinput_(0)
     {
         RegisterCommand(Console::CreateCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::ConsoleHelp)));
         RegisterCommand(Console::CreateCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::ConsoleExit)));
@@ -29,10 +31,14 @@ namespace Console
 #ifdef _DEBUG
         RegisterCommand(Console::CreateCommand("Test", "Echoes parameters supplied with this command", Console::Bind(this, &CommandManager::ConsoleTest)));
 #endif
+        if (parent_->GetFramework()->IsHeadless())
+            nativeinput_ = new Native(this, parent_->GetFramework());
     }
 
     CommandManager::~CommandManager()
     {
+        delete nativeinput_;
+        nativeinput_ = 0;
     }
 
     void CommandManager::Update()
