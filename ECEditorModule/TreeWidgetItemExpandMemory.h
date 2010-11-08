@@ -67,12 +67,12 @@ public slots:
     /// Creates identifier text for @c item and adds it to set of indentifier texts.
     /** @param item Expanded tree widget item.
     */
-    void HandleItemExpanded(const QTreeWidgetItem *item);
+    void HandleItemExpanded(QTreeWidgetItem *item);
 
     /// Creates identifier text for @c item and removes it from set of indentifier texts.
     /** @param item Collapsed tree widget item.
     */
-    void HandleItemCollapsed(const QTreeWidgetItem *item);
+    void HandleItemCollapsed(QTreeWidgetItem *item);
 
 private:
     /// Returns information about expanded items as one string suitable for saving to config file.
