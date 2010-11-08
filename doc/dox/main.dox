@@ -407,7 +407,7 @@ Additionally, there exists the following modules.
 <tr>
 <td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
 <h3>LoginScreenModule</h3>
-Implements a server login screen with simple, almost non-functional end-user UI. 
+Implements a server login screen with a very simple end-user UI. 
  </td>
 </tr>
 </table>
@@ -415,9 +415,8 @@ Implements a server login screen with simple, almost non-functional end-user UI.
 <table style="margin: 20px;">
 <tr>
 <td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
-<h3>NoteCardModule</h3>
-Utilizes ECA synchronization mechanism and implements a free-form note card data storage on an entity.
-<p>Exposes the component NoteCard. 
+<h3>UiServiceModule</h3>
+Very simple light-weight UI module with no high-level functionality (menus etc. ) at all. Used with LoginScreenModule.
 </td>
 </tr>
 </table>
