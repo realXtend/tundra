@@ -72,8 +72,8 @@ public:
     
     //bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
 signals:
-    void EntityEnter(Scene::Entity* entity, const Vector3df& position);
-    void EntityLeave(Scene::Entity* entity, const Vector3df& position);
+    void EntityEnter(Scene::Entity* entity/*, const Vector3df& position*/);
+    void EntityLeave(Scene::Entity* entity/*, const Vector3df& position*/);
 
 public slots:
     //! Get a list of entities currently residing inside the volume.
@@ -101,6 +101,9 @@ private slots:
 
     //! Called when physics collisions occurs.
     void OnPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
+
+    //! Called when entity inside this volume is removed from the scene
+    void OnEntityRemoved(Scene::Entity* entity);
 
 private:
     //! constructor

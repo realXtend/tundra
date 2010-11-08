@@ -25,7 +25,9 @@ EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
 
 EC_VolumeTrigger::~EC_VolumeTrigger()
 {
+
 }
+
 QList<Scene::EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
 {
     return entities_.keys();
@@ -106,8 +108,9 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 
                 if (entity)
                 {
-                    emit EntityLeave(entity.get(), Vector3df());
-                   // LogInfo("leave");
+                    emit EntityLeave(entity.get());
+                    //LogInfo("leave");
+                    disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
                 }
                 continue;
             }
@@ -128,13 +131,27 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
         // make sure the entity isn't already inside the volume
         if (entities_.find(entity) == entities_.end())
         {
-            emit EntityEnter(otherEntity, position);
-           // LogInfo("enter");
+            emit EntityEnter(otherEntity);
+            connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+            //LogInfo("enter");
         }
 
         entities_.insert(entity, true);
     } else
     {
         entities_.insert(entity, true);
+    }
+}
+
+void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
+{
+    Scene::EntityWeakPtr ptr = entity->GetSharedPtr();
+    QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.find(ptr);
+    if (i != entities_.end())
+    {
+        entities_.erase(i);
+
+        emit EntityLeave(entity);
+        //LogInfo("leave");
     }
 }
