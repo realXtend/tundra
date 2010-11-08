@@ -2,6 +2,10 @@
 
 import loader
 from math import sqrt
+from math import cos
+from math import sin
+from math import pi
+
 
 import PythonQt.QtGui
 Vec = PythonQt.QtGui.QVector3D
@@ -30,6 +34,12 @@ class DotSceneManager:
         self.startcenterX = 0
         self.startcenterY = 0
         self.startcenterZ = 0
+        
+        # rotatin vars
+        self.currentRadX = 0
+        self.currentRadY = 0
+        self.currentRadZ = 0
+        self.currentRadW = 0
         self.localScene = None
         
         
@@ -206,9 +216,10 @@ class DotSceneManager:
         switch={'x': Quat(1,1,0,0), 'y': Quat(1,0,1,0), 'z': Quat(1,0,0,1), '-x': Quat(1,-1,0,0), '-y': Quat(1,0,-1,0), '-z': Quat(1,0,0,-1)}
         q = switch[axis]
         q.normalize()
+        self.rotateSceneWithQuaternion(q)
         
+    def rotateSceneWithQuaternion(self, q):
         # print "rotations:"
-        
         if(self.nodes.__len__()>1): # only do rotations for locations if node amount > 1        
             for oNode, CVec in self.nodeCenterVectors.iteritems():
                 CRot=q.rotatedVector(CVec)
@@ -254,6 +265,68 @@ class DotSceneManager:
         e = on.naali_ent
         o = on.orientation
         p=e.placeable
+        if(q.x()!=0):
+            print "-x"
+            x=q.x()
+            q.setX(-x)
+        if(q.y()!=0):
+            print "-y"
+            y=q.y()
+            q.setY(-y)
+
         on.orientation = on.orientation * q
         p.Orientation = on.orientation
         pass
+
+    def rotateX(self, angleX):
+        self.setCenterPointAndCenterVectors()
+        angleRadX = (angleX/180)*pi
+        rotationX = angleRadX - self.currentRadX
+        self.currentRadX=self.currentRadX+rotationX
+        w=cos(rotationX/2.0)
+        x=sin(rotationX/2.0)
+        y=0
+        z=0
+        q = Quat(w,x,y,z)
+        q.normalize()
+        print q.x()
+        self.rotateSceneWithQuaternion(q)
+        pass
+    
+    def rotateY(self, angleY):
+        self.setCenterPointAndCenterVectors()
+        angleRadY = (angleY/180)*pi
+        rotationY = angleRadY - self.currentRadY
+        self.currentRadY=self.currentRadY+rotationY
+        w=cos(rotationY/2.0)
+        x=0
+        y=sin(rotationY/2.0)
+        z=0
+        q = Quat(w,x,y,z)
+        q.normalize()
+        print q.y()
+        self.rotateSceneWithQuaternion(q)
+        pass
+        
+    def rotateZ(self, angleZ):
+        """ Test method """
+        self.setCenterPointAndCenterVectors()
+        # we need to translate degrees to quaternion
+        # q = cos(angle/2) + i ( x * sin(angle/2)) + j (y * sin(angle/2)) + k ( z * sin(angle/2))
+        angleRadZ = (angleZ/180)*pi
+        rotationZ = angleRadZ - self.currentRadZ
+        self.currentRadZ=self.currentRadZ+rotationZ
+       
+        w=cos(rotationZ/2.0)
+        #x=sin(angleRadZ/2)
+        x=0
+        #y=sin(angleRadZ/2)
+        y=0
+        z=sin(rotationZ/2.0)
+        
+        q = Quat(w,x,y,z)
+        q.normalize()
+        print q.z()
+        self.rotateSceneWithQuaternion(q)
+        pass
+        

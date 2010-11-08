@@ -287,7 +287,7 @@ p, li { white-space: pre-wrap; }
         <item>
          <widget class="QLabel" name="label_9">
           <property name="text">
-           <string>Rotate (not implemented):</string>
+           <string>Rotate (Z axis implemented):</string>
           </property>
          </widget>
         </item>
@@ -307,7 +307,14 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+           <widget class="QDoubleSpinBox" name="rotateX">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_13">
@@ -320,7 +327,14 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+           <widget class="QDoubleSpinBox" name="rotateY">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_11">
@@ -333,7 +347,11 @@ p, li { white-space: pre-wrap; }
            </widget>
           </item>
           <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_3"/>
+           <widget class="QDoubleSpinBox" name="rotateZ">
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
