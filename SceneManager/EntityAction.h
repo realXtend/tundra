@@ -78,7 +78,8 @@ private:
         @param param3 3rd parameter for the action, if applicable.
         @param params Rest of the parameters, if applicable.
     */
-    void Trigger(const QString &param1 = "", const QString &param2 = "", const QString &param3 = "", const QStringList &params = QStringList());
+    void Trigger(const QString &param1 = QString(), const QString &param2 = QString(),
+        const QString &param3 = QString(), const QStringList &params = QStringList());
 
     /// Name of the action.
     QString name_;
