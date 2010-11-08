@@ -115,6 +115,10 @@ namespace Foundation
             
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
+            // Force install directory as the current working directory. Todo: we may not want to do this in all cases,
+            // but there is a huge load of places that depend on being able to refer to the install dir with .
+            boost::filesystem::current_path(platform_->GetInstallDirectory());
+            
             // Now set proper path for config (one that also non-privileged users can write to)
             {
                 const char *CONFIG_PATH = "/configuration";
