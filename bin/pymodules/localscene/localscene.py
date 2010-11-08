@@ -97,9 +97,15 @@ class LocalScene(Component):
             if(filename!=None):
                 if(filename!=""):
                     self.dotScene, self.dsManager = loader.load_dotscene(filename)
+                    self.dsManager.localScene=self
+                    self.dsManager.startcenterX = self.dsManager.xshift
+                    self.dsManager.startcenterY = self.dsManager.yshift
+                    self.dsManager.startcenterZ = self.dsManager.zshift
+                    
                     self.dsManager.setHighlight(self.highlight)
                     #self.dsManager.setFlipZY(self.flipZY, self.xshift, self.yshift, self.zshift, self.xscale, self.yscale, self.zscale)
                     self.dsManager.setFlipZY(self.flipZY)
+                    
         else:
             self.queue.put(('local scene', 'you already have scene loaded'))
             pass
