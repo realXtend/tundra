@@ -6,6 +6,7 @@
 #include "Entity.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
+#include <OgreAxisAlignedBox.h>
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_VolumeTrigger");
@@ -45,6 +46,42 @@ QStringList EC_VolumeTrigger::GetEntityNamesInside() const
     }
 
     return entitynames;
+}
+
+float EC_VolumeTrigger::GetEntityInsidePercent(Scene::Entity *entity) const
+{
+    if (entity)
+    {
+        boost::shared_ptr<EC_RigidBody> otherRigidbody = entity->GetComponent<EC_RigidBody>();
+
+        boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+        if (rigidbody && otherRigidbody)
+        {
+            Vector3df thisBoxMin, thisBoxMax;
+            rigidbody->GetAabbox(thisBoxMin, thisBoxMax);
+
+            Vector3df otherBoxMin, otherBoxMax;
+            otherRigidbody->GetAabbox(otherBoxMin, otherBoxMax);
+
+            Ogre::AxisAlignedBox thisBox(thisBoxMin.x, thisBoxMin.y, thisBoxMin.z, thisBoxMax.x, thisBoxMax.y, thisBoxMax.z);
+            Ogre::AxisAlignedBox otherBox(otherBoxMin.x, otherBoxMin.y, otherBoxMin.z, otherBoxMax.x, otherBoxMax.y, otherBoxMax.z);
+
+            return (thisBox.intersection(otherBox).volume() / otherBox.volume());
+        }
+    }
+    return 0.f;
+}
+
+f32 EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
+{
+    QList<Scene::EntityWeakPtr> entities = entities_.keys();
+    foreach(Scene::EntityWeakPtr wentity, entities)
+    {
+        Scene::EntityPtr entity = wentity.lock();
+        if (entity && entity->GetName().compare(name) == 0)
+            return GetEntityInsidePercent(entity.get());
+    }
+    return 0.f;
 }
 
 

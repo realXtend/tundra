@@ -582,6 +582,14 @@ Vector3df EC_RigidBody::GetAngularVelocity()
         return angularVelocity.Get();
 }
 
+void EC_RigidBody::GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax)
+{
+    btVector3 aabbMin, aabbMax;
+    body_->getAabb(aabbMin, aabbMax);
+    outAabbMin.set(aabbMin.x(), aabbMin.y(), aabbMin.z());
+    outAabbMax.set(aabbMax.x(), aabbMax.y(), aabbMax.z());
+}
+
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 {
     Environment::EC_Terrain* terrain = terrain_.lock().get();

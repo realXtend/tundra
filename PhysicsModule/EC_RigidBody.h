@@ -278,6 +278,12 @@ public slots:
     
     //! Return physics world
     Physics::PhysicsWorld* GetPhysicsWorld() { return world_; }
+
+    //! Constructs axis-aligned bounding box from bullet collision shape
+    /*! \param outMin The minimum corner of the box
+        \param outMax The maximum corner of the box
+    */
+    void GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax);
     
 private slots:
     //! Called when the parent entity has been set.
