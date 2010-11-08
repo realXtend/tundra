@@ -43,10 +43,6 @@ namespace Foundation
         return(std::wstring(L"."));
     }
 
-    std::wstring PlatformNix::GetUserDocumentsDirectoryW()
-    {
-        return GetApplicationDataDirectoryW();
-    }
     
     std::string PlatformNix::GetUserDocumentsDirectory()
     {
