@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   TreeWidgetItemExpandMemory.cpp
- *  @brief  
+ *  @brief  Utility class for keeping track of expanded items at a tree widget.
  */
 
 #include "StableHeaders.h"
