@@ -403,7 +403,7 @@ namespace Scene
         if (name)
             return name->name.Get();
         else
-            return "";
+            return QString();
     }
 
     void Entity::SetDescription(const QString &desc)
@@ -419,13 +419,14 @@ namespace Scene
         if (name)
             return name->description.Get();
         else
-            return "";
+            return QString();
     }
 
     EntityAction *Entity::Action(const QString &name)
     {
-        if (actions_.contains(name))
-            return actions_[name];
+        foreach(EntityAction *action, actions_)
+            if (action->Name().compare(name, Qt::CaseInsensitive))
+                return action;
 
         EntityAction *action = new EntityAction(name);
         actions_.insert(name, action);
