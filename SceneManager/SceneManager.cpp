@@ -284,6 +284,7 @@ namespace Scene
         if (change == AttributeChange::Disconnected)
             return;
         emit EntityRemoved(entity, change);
+        entity->EmitEntityRemoved(change);
     }
 
     void SceneManager::EmitActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
