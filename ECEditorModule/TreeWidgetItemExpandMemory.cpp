@@ -68,7 +68,7 @@ void TreeWidgetItemExpandMemory::Save()
     cfgMgr.SetSetting<std::string>("TreeWidgetItemExpandMemory", groupName, ToString());
 }
 
-void TreeWidgetItemExpandMemory::HandleItemExpanded(const QTreeWidgetItem *item)
+void TreeWidgetItemExpandMemory::HandleItemExpanded(QTreeWidgetItem *item)
 {
     QString idText = GetIndentifierText(item);
     int idx = idText.lastIndexOf('.');
@@ -76,7 +76,7 @@ void TreeWidgetItemExpandMemory::HandleItemExpanded(const QTreeWidgetItem *item)
         items.insert(idText);
 }
 
-void TreeWidgetItemExpandMemory::HandleItemCollapsed(const QTreeWidgetItem *item)
+void TreeWidgetItemExpandMemory::HandleItemCollapsed(QTreeWidgetItem *item)
 {
     QString idText = GetIndentifierText(item);
     int idx = idText.lastIndexOf('.');
