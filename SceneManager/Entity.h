@@ -291,6 +291,9 @@ namespace Scene
          */ 
         void ComponentRemoved(IComponent* component, AttributeChange::Type change);
 
+        //! Signal when this entity is deleted
+        void EntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
+
     public slots:
         void SerializeToXML(QDomDocument& doc, QDomElement& base_element) const;
 //        void DeserializeFromXML(QDomElement& element, AttributeChange::Type change);
@@ -400,6 +403,9 @@ namespace Scene
         /** @param action Action to be validated.
         */
         bool HasReceivers(EntityAction *action);
+
+        //! Emit a entity deletion signal. Called from SceneManager
+        void EmitEntityRemoved(AttributeChange::Type change);
 
         //! a list of all components
         ComponentVector components_;
