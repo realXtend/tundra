@@ -172,7 +172,11 @@ public slots:
     /// Returns the point on the terrain in world space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in world space) for.
     Vector3df GetPointOnMap(const Vector3df &point) const;    
-    
+
+    /// Returns the point on the terrain in local space that lies on top of the given world space coordinate.
+    /// @param point The point in world space to get the corresponding map point (in local space) for.
+    Vector3df GetPointOnMapLocal(const Vector3df &point) const;    
+
     /// Returns the signed distance (in world space) of the given point to the corresponding map point on the terrain.
     /// @param point The point in world space to test.
     /// @return The signed distance to the terrain. If the given point is above the terrain, the distance test returns a positive number.
@@ -187,6 +191,10 @@ public slots:
     /// @param x In the range [0, EC_Terrain::PatchWidth * EC_Terrain::cPatchSize-1.0f ].
     /// @param y In the range [0, EC_Terrain::PatchHeight * EC_Terrain::cPatchSize-1.0f ].
     float GetInterpolatedHeightValue(float x, float y) const;
+
+    /// Returns the triangle normal of the given triangle on the map, given the local space 2D map coordinates for the point.
+    /// The normal is returned in *world* space.
+    Vector3df GetInterpolatedNormal(float x, float y) const;
 
     /// Removes all stored terrain patches and the associated Ogre scene nodes.
     void Destroy();

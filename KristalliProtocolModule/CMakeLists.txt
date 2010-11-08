@@ -19,20 +19,12 @@ add_definitions (-DKRISTALLIPROTOCOL_MODULE_EXPORTS)
 add_definitions (-D_WINSOCKAPI_)
 add_definitions (-DNAALI_CLIENT)
 
-use_package (BOOST)
-#use_package (QT4)
-use_package (POCO)
 use_modules (RexCommon Core Foundation Interfaces)
-use_package_knet()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 #build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_package (BOOST)
-#link_package (QT4)
-link_package (POCO)
 link_modules (RexCommon Core Foundation Interfaces)
-link_package_knet()
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

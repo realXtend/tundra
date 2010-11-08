@@ -14,17 +14,10 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-use_package (BOOST)
-use_package (POCO)
-use_package (QT4)
-use_package (OGRE)
 use_modules (Foundation Core Interfaces SceneManager Ui Input Asset)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
-link_package (BOOST)
-link_package (POCO)
-link_package (QT4)
 link_modules (Core Interfaces SceneManager Ui Input Asset)
 
 SetupCompileFlagsWithPCH()

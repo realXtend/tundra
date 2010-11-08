@@ -96,7 +96,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         if (ret.empty())
             LogError("Import failed");
         else
-            LogInfo("Import succesful. " + ToString(ret.size()) + " entities created.");
+            LogInfo("Import successful. " + ToString(ret.size()) + " entities created.");
     }
     else if (filename.endsWith(".mesh", Qt::CaseInsensitive))
     {

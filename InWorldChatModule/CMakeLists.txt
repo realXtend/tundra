@@ -19,12 +19,6 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 add_definitions (-DINWORLDCHAT_MODULE_EXPORTS)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (QT4)
-use_package (CURL)
-use_package (XMLRPC)
-use_package (OGRE)
 use_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities
     EntityComponents/EC_ChatBubble EntityComponents/EC_Billboard EntityComponents/EC_OpenSimPresence
     EntityComponents/EC_OpenSimPrim)
@@ -33,12 +27,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS
 
 link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities
     EC_ChatBubble EC_Billboard EC_OpenSimPresence EC_OpenSimPrim)
-link_package (BOOST)
-link_package (POCO)
 link_ogre()
-link_package (QT4)
-link_package (CURL)
-link_package (XMLRPC)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

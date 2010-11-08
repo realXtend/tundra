@@ -17,19 +17,12 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} ${UI_FILES
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
-use_package (BOOST)
-use_package (POCO)
-use_package (OGRE)
-use_package (QT4)
 use_modules (Core Foundation Interfaces RexCommon Input)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 link_modules (Core Foundation Interfaces RexCommon Input)
 link_ogre()
-link_package (BOOST)
-link_package (POCO)
-link_package (QT4)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

@@ -78,6 +78,7 @@ namespace Foundation
         argc_(argc),
         argv_(argv),
         initialized_(false),
+        headless_(false),
         log_formatter_(0),
         splitterchannel(0),
         naaliApplication(0),
@@ -95,6 +96,9 @@ namespace Foundation
         }
         else
         {
+            if (cm_options_.count("headless"))
+                headless_ = true;
+            
 #ifdef PROFILING
             ProfilerSection::SetProfiler(&profiler_);
 #endif
@@ -273,7 +277,7 @@ namespace Foundation
         namespace po = boost::program_options;
         //po::options_description desc;
         cm_descriptions_.add_options()
-            //("headless", "run viewer in headless mode without any windows or rendering") //! \todo disabled since doesn't work with Qt -cm
+            ("headless", "run in headless mode without any windows or rendering")
             ("help", "produce help message")
             ("user", po::value<std::string>(), "OpenSim login name")
             ("passwd", po::value<std::string>(), "OpenSim login password")

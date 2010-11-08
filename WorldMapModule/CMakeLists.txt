@@ -21,23 +21,12 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
 add_definitions (-DWORLDMAP_MODULE_EXPORTS)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (QT4)
-use_package (CURL)
-use_package (XMLRPC)
-use_package (OGRE)
 use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities UiModule AssetModule EntityComponents/EC_OpenSimPresence)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities UiModule AssetModule EC_OpenSimPresence)
-link_package (BOOST)
-link_package (POCO)
 link_ogre()
-link_package (QT4)
-link_package (CURL)
-link_package (XMLRPC)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

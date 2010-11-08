@@ -26,6 +26,8 @@ void UiServiceModule::PreInitialize()
 
 void UiServiceModule::Initialize()
 {
+    if (GetFramework()->IsHeadless())
+        return;
     // Register UI service.
     assert(GetFramework()->Ui()->GraphicsView());
     service_ = boost::shared_ptr<UiService>(new UiService(GetFramework()->Ui()->GraphicsView()));
@@ -39,7 +41,8 @@ void UiServiceModule::PostInitialize()
 
 void UiServiceModule::Uninitialize()
 {
-    framework_->GetServiceManager()->UnregisterService(service_);
+    if (service_)
+        framework_->GetServiceManager()->UnregisterService(service_);
     service_.reset();
 }
 
