@@ -99,10 +99,13 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.xpos = self.gui.findChild("QDoubleSpinBox", "xpos")
         self.ypos = self.gui.findChild("QDoubleSpinBox", "ypos")
         self.zpos = self.gui.findChild("QDoubleSpinBox", "zpos")
+        self.step1 = self.gui.findChild("QDoubleSpinBox", "step1")
+        #self.step1 = self.gui.findChild("QSpinBox", "step1")
 
         self.xscale = self.gui.findChild("QDoubleSpinBox", "xscale")
         self.yscale = self.gui.findChild("QDoubleSpinBox", "yscale")
         self.zscale = self.gui.findChild("QDoubleSpinBox", "zscale")
+        
 
         self.btnLoad = self.gui.findChild("QPushButton", "pushButtonLoad")
         self.btnUnload = self.gui.findChild("QPushButton", "pushButtonUnload")
@@ -112,6 +115,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.chkBoxFlipZY = self.gui.findChild("QCheckBox", "checkBoxFlipZY")
         self.checkBoxHighlight = self.gui.findChild("QCheckBox", "checkBoxHighlight")
         self.checkBoxLockScale = self.gui.findChild("QCheckBox", "checkBoxLockScale")
+        self.checkBoxToCenter = self.gui.findChild("QCheckBox", "checkBoxToCenter")
 
         # server end scene editing
         self.btnLoadServerSceneList = self.gui.findChild("QPushButton", "pushButtonLoadServerSceneList")
@@ -141,6 +145,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.xpos.connect("valueChanged(double)", self.spinBoxXPosValueChanged)
         self.ypos.connect("valueChanged(double)", self.spinBoxYPosValueChanged)
         self.zpos.connect("valueChanged(double)", self.spinBoxZPosValueChanged)
+        self.step1.connect("valueChanged(double)", self.spinBoxPosStepPosValueChanged)
 
         self.xscale.connect("valueChanged(double)", self.spinBoxXScaleValueChanged)
         self.yscale.connect("valueChanged(double)", self.spinBoxYScaleValueChanged)
@@ -167,7 +172,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
 
         self.progressBar.setFormat("Upload progress: inactive %p%")
 
-        self.sizeLock = False
+        self.sizeLock = True
         self.filename = ""
         self.serverScenes = {} # key container
         self.serverSceneNames = {}
@@ -238,7 +243,15 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.controller.setypos(double)
     def spinBoxZPosValueChanged(self, double):
         self.controller.setzpos(double)
-
+    def spinBoxPosStepPosValueChanged(self, double):
+        #switch={0:0.10, 1:1.00, 2:5.00}
+        #val = int(double)
+        #step=switch[val]
+        self.xpos.singleStep=double
+        self.ypos.singleStep=double
+        self.zpos.singleStep=double
+        
+        
     def spinBoxXScaleValueChanged(self, double):
         if(self.sizeLock):
             self.controller.setxscale(double)

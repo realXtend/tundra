@@ -559,19 +559,46 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
     WriteFloatToBytes(prim->DrawDistance.Get(), &buffer[0], idx);
     WriteFloatToBytes(prim->LOD.Get(), &buffer[0], idx);   
     
-    // UUIDs
-    // Note: if the EC contains asset urls that can not be encoded as UUIDs, we still have to send
-    // invalid (null) UUIDs to retain binary compatibility with the rexprimdatablob
-    
-    if (IsUrlBased(prim->MeshID) || IsUrlBased(prim->CollisionMeshID) || IsUrlBased(prim->ParticleScriptID) || IsUrlBased(prim->AnimationPackageID))
+    // Mesh UUID
+    RexUUID assign_uuid;
+    if (IsUrlBased(prim->MeshID))
+    {
         send_asset_urls = true;
-        
-    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->MeshID), &buffer[0], idx);
-    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->CollisionMeshID), &buffer[0], idx);
-    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->ParticleScriptID), &buffer[0], idx);
+        assign_uuid = RexUUID();
+    }
+    else
+        assign_uuid = UuidForRexObjectUpdatePacket(prim->MeshID);
+    WriteUUIDToBytes(assign_uuid, &buffer[0], idx);
+    
+    // Collision UUID
+    if (IsUrlBased(prim->CollisionMeshID))
+    {
+        send_asset_urls = true;
+        assign_uuid = RexUUID();
+    }
+    else
+        assign_uuid = UuidForRexObjectUpdatePacket(prim->CollisionMeshID);
+    WriteUUIDToBytes(assign_uuid, &buffer[0], idx);
 
-    // Animation
-    WriteUUIDToBytes(UuidForRexObjectUpdatePacket(prim->AnimationPackageID), &buffer[0], idx);
+    // Particle UUID
+    if (IsUrlBased(prim->ParticleScriptID))
+    {
+        send_asset_urls = true;
+        assign_uuid = RexUUID();
+    }
+    else
+        assign_uuid = UuidForRexObjectUpdatePacket(prim->ParticleScriptID);
+    WriteUUIDToBytes(assign_uuid, &buffer[0], idx);
+
+    // Animation UUID, name and rate
+    if (IsUrlBased(prim->AnimationPackageID))
+    {
+        send_asset_urls = true;
+        assign_uuid = RexUUID();
+    }
+    else
+        assign_uuid = UuidForRexObjectUpdatePacket(prim->AnimationPackageID);
+    WriteUUIDToBytes(assign_uuid, &buffer[0], idx);
     WriteNullTerminatedStringToBytes(prim->AnimationName, &buffer[0], idx);
     WriteFloatToBytes(prim->AnimationRate, &buffer[0], idx);
 

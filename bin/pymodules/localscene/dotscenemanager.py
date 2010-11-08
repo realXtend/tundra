@@ -18,18 +18,39 @@ class DotSceneManager:
         self.initialized=False
         self.centerPoint = None
         self.nodeCenterVectors={} # node:vector pairs
+        # now these vars store the current center point for scene
         self.xshift = 127
         self.yshift = 127
         self.zshift = 25
+        # start shift
+        self.startshiftX = 127
+        self.startshiftY = 127
+        self.startshiftZ = 25
+        # center at begining for calculating diffs
+        self.startcenterX = 0
+        self.startcenterY = 0
+        self.startcenterZ = 0
+        self.localScene = None
+        
         
     def setPosition(self, x, y ,z):
         """ set new position diff for nodes """
-        self.xshift = x
-        self.yshift = y
-        self.zshift = z
+        xdiff = x - self.startshiftX
+        ydiff = y - self.startshiftY
+        zdiff = z - self.startshiftZ
+        # result = self.startcenterX + xdiff
+        # print "x %f"%x #127
+        # print "xdiff %f"%xdiff #0
+        # print "self.startshiftX %f"%self.startshiftX #127
+        # print "self.startcenterX %f"%self.startcenterX #254
+        # print "result: %f"%result
+        self.xshift = self.startcenterX + xdiff
+        self.yshift = self.startcenterY + ydiff
+        self.zshift = self.startcenterZ + zdiff
         for k, oNode in self.nodes.iteritems():
             ## print "set position for", k
-            self.setOgreNodePosition(oNode, x, y ,z)
+            # self.setOgreNodePosition(oNode, x, y ,z)
+            self.setOgreNodePosition(oNode, self.xshift, self.yshift ,self.zshift)
         
     def setScale(self, x, y, z):
         """ set x, y, z scale fro objects """
@@ -47,7 +68,13 @@ class DotSceneManager:
         onx = on.position.x()
         ony = on.position.y()
         onz = on.position.z()
+        
+        # print "setOgreNodePosition ---------------"
+        # print x,y,z
+        # print onx, ony, onz
+    
         p.Position = Vec(x + onx, y + ony, z + onz)
+        #p.Position = Vec(x + onx + self.xshift, y + ony + self.yshift, z + onz + + self.zshift)
         # print p.Position
         # if(self.flipZY):
             # p.Position = Vec(x + onx, z + onz, y + ony)
