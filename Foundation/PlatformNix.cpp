@@ -40,7 +40,7 @@ namespace Foundation
     std::wstring PlatformNix::GetInstallDirectoryW()
     {
         // Todo: implement
-        return(std::wstring("."));
+        return(std::wstring(L"."));
     }
 
     std::wstring PlatformNix::GetUserDocumentsDirectoryW()
