@@ -216,17 +216,41 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
 {
     if (e->mimeData()->hasUrls())
-        e->accept();
+    {
+        foreach (QUrl url, e->mimeData()->urls())
+        {
+            QString filename = url.path();
+#ifdef _WINDOWS
+            // We have '/' as the first char on windows and the filename
+            // is not identified as a file properly. But on other platforms the '/' is valid/required.
+            filename = filename.mid(1);
+#endif
+            if (SceneStructureModule::IsSupportedFileType(filename))
+                e->accept();
+        }
+    }
     else
-        e->ignore();
+        QWidget::dragEnterEvent(e);
 }
 
 void SceneTreeWidget::dragMoveEvent(QDragMoveEvent *e)
 {
     if (e->mimeData()->hasUrls())
-        e->accept();
+    {
+        foreach (QUrl url, e->mimeData()->urls())
+        {
+            QString filename = url.path();
+#ifdef _WINDOWS
+            // We have '/' as the first char on windows and the filename
+            // is not identified as a file properly. But on other platforms the '/' is valid/required.
+            filename = filename.mid(1);
+#endif
+            if (SceneStructureModule::IsSupportedFileType(filename))
+                e->accept();
+        }
+    }
     else
-        e->ignore();
+        QWidget::dragMoveEvent(e);
 }
 
 void SceneTreeWidget::dropEvent(QDropEvent *e)
@@ -246,8 +270,9 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
             // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            if (sceneStruct)
-                sceneStruct->InstantiateContent(filename, Vector3df(), false, true);
+            if (SceneStructureModule::IsSupportedFileType(filename))
+                if (sceneStruct)
+                    sceneStruct->InstantiateContent(filename, Vector3df(), false, true);
         }
 
         e->acceptProposedAction();
