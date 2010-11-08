@@ -26,6 +26,11 @@ namespace WorldBuilding
         framework_(framework),
         export_component_name_("RexPrimExportData")
     {
+        mesh_ref_set = 0;
+        animation_ref_set = 0;
+        material_ref_set = 0;
+        particle_ref_set = 0;
+        sound_ref_set = 0;
     }
 
     SceneParser::~SceneParser()
@@ -50,8 +55,112 @@ namespace WorldBuilding
         foreach(Scene::Entity *entity, entities)
             AddExportData(entity);
         return_array = ExportXml("", entities);
-        RemoveExportData(entities);
+        
         return return_array;
+    }
+
+    QByteArray SceneParser::ExportSceneXml()
+    {
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        if (!scene)
+            return QByteArray();
+
+        QDomDocument scene_doc("Scene");
+        QDomElement scene_elem = scene_doc.createElement("scene");
+
+        QList<Scene::Entity*> entities;
+        Scene::SceneManager::iterator iter = scene->begin();
+        Scene::SceneManager::iterator end = scene->end();
+
+        QStringList non_wanted;
+        non_wanted << "EC_Terrain" << "EC_WaterPlane" << "EC_EnvironmentLight";
+        
+        uint comp_count = 0;
+        while (iter != end)
+        {
+            Scene::Entity *entity = iter->second.get();
+            if (entity)
+            {
+                // Components or inspection
+                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                if (components.empty())
+                {
+                    WorldBuildingModule::LogInfo("> Skipping entity: no components");
+                    ++iter;
+                    continue;
+                }
+
+                // Public voice channel
+                if (entity->HasComponent("EC_VoiceChannel") && components.size() == 1)
+                {
+                    WorldBuildingModule::LogInfo("> Skipping entity: Public voip channel");
+                    ++iter;
+                    continue;
+                }
+
+                // Non-wanted entities
+                foreach(QString dont_want, non_wanted)
+                {
+                    if (entity->HasComponent(dont_want))
+                    {
+                        WorldBuildingModule::LogInfo("> Skipping entity: Has unwanted components for export");
+                        ++iter;
+                        continue;
+                    }
+                }
+
+                if (AddExportData(entity))
+                    entities.append(entity);
+                else
+                {
+                    WorldBuildingModule::LogInfo("> Skipping entity: No prim/mesh/placeable component(s)");
+                    ++iter;
+                    continue;
+                }
+
+                int writable_comps = 0;
+                for(uint i = 0; i < components.size(); ++i)
+                {
+                    // Exclude serializable components that would cause dublicated data to server opensim server database, modrex in particular
+                    if (components[i]->TypeName() == "EC_Mesh" || components[i]->TypeName() == "EC_Placeable" ||
+                        components[i]->TypeName() == "EC_AnimationController")                        
+                        continue;
+                    if (components[i]->IsSerializable())
+                        writable_comps++;
+                }
+                if (writable_comps == 0)
+                {
+                    WorldBuildingModule::LogInfo("> Skipping entity: No serializable component");
+                    ++iter;
+                    continue;
+                }
+
+                QDomElement entity_elem = scene_doc.createElement("entity");
+                QString id_str = QString::number(entity->GetId());
+                entity_elem.setAttribute("id", id_str);
+                
+
+                for(uint i = 0; i < components.size(); ++i)
+                {
+                    // Exclude serializable components that would cause dublicated data to server opensim server database, modrex in particular
+                    if (components[i]->TypeName() == "EC_Mesh" || components[i]->TypeName() == "EC_Placeable" ||
+                        components[i]->TypeName() == "EC_AnimationController")                        
+                        continue;
+                    if (components[i]->IsSerializable())
+                    {
+                        components[i]->SerializeTo(scene_doc, entity_elem);
+                        comp_count++;
+                    }
+                }
+                scene_elem.appendChild(entity_elem);
+            }
+            ++iter;
+        }
+        WorldBuildingModule::LogInfo(QString("Completed exporting %1 entities with %2 components").arg( QString::number(entities.count()), QString::number(comp_count)).toStdString().c_str());
+
+        scene_doc.appendChild(scene_elem);
+        RemoveExportData(entities);
+        return scene_doc.toByteArray();;
     }
 
     QByteArray SceneParser::ExportXml(const QString &filename, const QList<Scene::Entity *> entity_list)
@@ -248,15 +357,12 @@ namespace WorldBuilding
         }
     }
 
-    void SceneParser::AddExportData(Scene::Entity *entity)
+    bool SceneParser::AddExportData(Scene::Entity *entity)
     {
         EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
         if (!entity || !placeable || !prim)
-        {
-            WorldBuildingModule::LogWarning("Entity/Placeable/Prim was null, aborting adding export data.");
-            return;
-        }
+            return false;
 
         // Create export data component
         AttributeChange::Type ct = AttributeChange::Disconnected;
@@ -265,7 +371,7 @@ namespace WorldBuilding
         if (!export_data)
         {
             WorldBuildingModule::LogError("Could not create export data dynamic component, aborting adding export data.");
-            return;
+            return false;
         }
 
         // Once more...
@@ -279,9 +385,9 @@ namespace WorldBuilding
 
         // Add attributes
         QStringList attributes; 
-        attributes << "Position" << "Scale" << "Orientation" << "Parent" << "MeshRef" << "SkeletonRef" << "Materials" << "MaterialTypes" << "ParticleRef"
+        attributes << "Position" << "Scale" << "Orientation" << "Parent" << "MeshRef" << "CollisionMeshRef" << "SkeletonRef" << "Materials" << "MaterialTypes" << "ParticleRef"
                    << "DrawType" << "DrawDistance" << "ScaleToPrim" << "CastShadows" << "LightCreatesShadows" << "SoundID" 
-                   << "SoundVolume" << "SoundRadius" << "LOD" << "Visible" << "AnimationName" << "AnimationRate";        
+                   << "SoundVolume" << "SoundRadius" << "LOD" << "Visible" << "AnimationName" << "AnimationRate" << "ServerScriptClass";        
         foreach(QString attr_name, attributes)
         {
             if (export_data->GetAttribute(attr_name).isNull())
@@ -304,10 +410,42 @@ namespace WorldBuilding
         }
         export_data->SetAttribute("Parent", parent, ct);
 
-        // Asset refs
-        export_data->SetAttribute("MeshRef", prim->getMeshID(), ct);
-        export_data->SetAttribute("SkeletonRef", prim->getAnimationPackageID(), ct);
-        export_data->SetAttribute("ParticleRef", prim->getParticleScriptID(), ct);
+        // Mesh
+        QString zero_uuid = "00000000-0000-0000-0000-000000000000";
+        if (prim->getMeshID() != zero_uuid)
+        {
+            export_data->SetAttribute("MeshRef", prim->getMeshID(), ct);
+            if (mesh_ref_set)
+                mesh_ref_set->insert(prim->getMeshID());
+        }
+        else
+            export_data->SetAttribute("MeshRef", "", ct);
+
+        // Collision mesh
+        if (prim->getCollisionMeshID() != zero_uuid)
+            export_data->SetAttribute("CollisionMeshRef", prim->getCollisionMeshID(), ct);
+        else
+            export_data->SetAttribute("CollisionMeshRef", "", ct);
+
+        // Animation
+        if (prim->getAnimationPackageID() != zero_uuid)
+        {
+            export_data->SetAttribute("SkeletonRef", prim->getAnimationPackageID(), ct);
+            if (animation_ref_set)
+                animation_ref_set->insert(prim->getAnimationPackageID());
+        }
+        else
+            export_data->SetAttribute("SkeletonRef", "", ct);
+
+        // Particle script
+        if (prim->getParticleScriptID() != zero_uuid)
+        {
+            export_data->SetAttribute("ParticleRef", prim->getParticleScriptID(), ct);
+            if (particle_ref_set)
+                particle_ref_set->insert(prim->getParticleScriptID());
+        }
+        else
+            export_data->SetAttribute("ParticleRef", "", ct);
 
         // Drawing
         export_data->SetAttribute("DrawType", prim->getDrawType(), ct);
@@ -319,13 +457,23 @@ namespace WorldBuilding
         export_data->SetAttribute("Visible", prim->getIsVisible(), ct);
 
         // Sound
-        export_data->SetAttribute("SoundID", prim->getSoundID(), ct);
+        if (prim->getSoundID() != zero_uuid)
+        {
+            export_data->SetAttribute("SoundID", prim->getSoundID(), ct);
+            if (sound_ref_set)
+                sound_ref_set->insert(prim->getSoundID());
+        }
+        else
+            export_data->SetAttribute("SoundID", "", ct);
         export_data->SetAttribute("SoundVolume", prim->getSoundVolume(), ct);
         export_data->SetAttribute("SoundRadius", prim->getSoundRadius(), ct);
         
         // Animation        
         export_data->SetAttribute("AnimationName", prim->getAnimationName(), ct);
         export_data->SetAttribute("AnimationRate", prim->getAnimationRate(), ct);
+
+        // Script
+        export_data->SetAttribute("ServerScriptClass", prim->getServerScriptClass(), ct);
 
         // Materials
         QStringList materials;
@@ -334,8 +482,19 @@ namespace WorldBuilding
         MaterialMap::const_iterator iter = mats.begin();
         while (iter != mats.end())
         {
-            materials.append(QString(iter->second.asset_id.c_str()));
-            material_types.append(QString::number(iter->second.Type));
+            QString mat_ref(iter->second.asset_id.c_str());
+            if (mat_ref != zero_uuid)
+            {
+                uint mat_type = iter->second.Type;
+                // Many worlds seem to give 4 here, i assume parsing error somewhere down the line
+                // and will make it a material id
+                if (mat_type == 4) 
+                    mat_type = 45;
+                materials.append(mat_ref);
+                material_types.append(QString::number(mat_type));
+                if (material_ref_set)
+                    material_ref_set->insert(mat_ref, mat_type);
+            }
             ++iter;
         }
         if (materials.count() == 0)
@@ -348,6 +507,8 @@ namespace WorldBuilding
             export_data->SetAttribute("Materials", materials.join(";"), ct);
             export_data->SetAttribute("MaterialTypes", material_types.join(";"), ct);
         }
+
+        return true;
     }
 
     void SceneParser::RemoveExportData(QList<Scene::Entity *> entities)

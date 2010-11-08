@@ -6,7 +6,9 @@
 
 #include "EC_Highlight.h"
 
+
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMessageBox>
 
 namespace WorldBuilding
@@ -29,6 +31,7 @@ namespace WorldBuilding
         connect(button_export, SIGNAL(clicked()), SLOT(PublishFile()));
         connect(button_create_scene, SIGNAL(clicked()), SLOT(ExportSelected()));
         connect(button_browse_scene, SIGNAL(clicked()), SLOT(SelectScene()));
+        connect(button_export_scene, SIGNAL(clicked()), SLOT(ExportScene()));
         connect(this, SIGNAL(Visible(bool)), SLOT(VisibilityChange(bool)));
 
         selected_entities_.clear();
@@ -195,6 +198,11 @@ namespace WorldBuilding
         if (filename.isEmpty())
             return;
         emit ExportToFile(filename, selected_entities_);
+    }
+
+    void OpenSimSceneWidget::ExportScene()
+    {
+        emit ExportSceneRequest();
     }
 
     void OpenSimSceneWidget::PublishFile()

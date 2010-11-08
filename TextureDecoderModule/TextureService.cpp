@@ -83,6 +83,14 @@ namespace TextureDecoder
         return tag;
     }
 
+    TextureResource *TextureService::GetFromCache(const std::string &texture_id)
+    {
+        if (cache_)
+            return cache_->GetTexture(texture_id);
+        else
+            return 0;
+    }
+
     void TextureService::DeleteFromCache(const std::string &texture_id)
     {
         if (cache_)
