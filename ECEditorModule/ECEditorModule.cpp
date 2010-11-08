@@ -6,6 +6,7 @@
 #include "ECEditorModule.h"
 #include "ECEditorWindow.h"
 #include "EcXmlEditorWidget.h"
+#include "TreeWidgetItemExpandMemory.h"
 
 #include "EventManager.h"
 #include "SceneEvents.h"
@@ -45,6 +46,7 @@ namespace ECEditor
     void ECEditorModule::Initialize()
     {
         event_manager_ = framework_->GetEventManager();
+        expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_->GetDefaultConfig()));
     }
 
     void ECEditorModule::PostInitialize()

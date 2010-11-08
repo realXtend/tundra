@@ -21,6 +21,8 @@ class QTreeWidget;
 class QMenu;
 class QMimeData;
 
+class TreeWidgetItemExpandMemory;
+
 namespace ECEditor
 {
     class ECComponentEditor;
@@ -61,6 +63,11 @@ namespace ECEditor
 
         //! Return list of entities that has added to browser widget. Return empty list if no entities have been added.
         QList<Scene::EntityPtr> GetEntities() const;
+
+        /// Sets used item expand memory. Expand memory is used to load and save the expanded items in the tree widget.
+        /** @param expandMem Tree widget item expand memory.
+        */
+        void SetItemExpandMemory(boost::shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
 
     public slots:
         //! Reset browser state to where it was after the browser initialization. Override method from the QtTreePropertyBrowser.
@@ -195,6 +202,7 @@ namespace ECEditor
         QMenu *menu_;
         QTreeWidget *treeWidget_;
         Foundation::Framework *framework_;
+        boost::weak_ptr<TreeWidgetItemExpandMemory> expandMemory_;
     };
 }
 

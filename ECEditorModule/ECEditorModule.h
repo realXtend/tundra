@@ -9,6 +9,9 @@
 #include <QObject>
 #include <QPointer>
 
+class TreeWidgetItemExpandMemory;
+typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
+
 namespace ECEditor
 {
     class ECEditorWindow;
@@ -57,6 +60,12 @@ namespace ECEditor
         //! Logging functions.
         MODULE_LOGGING_FUNCTIONS
 
+        /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
+        /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
+            collapsed items similar.
+        */
+        ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
+
     public slots:
         void AddEditorWindowToUI();
 
@@ -100,6 +109,9 @@ namespace ECEditor
 
         //! EC XML editor window
         QPointer<EcXmlEditorWidget> xmlEditor_;
+
+        /// Tree widget item expand memory keeps track of which items in EC editor are expanded.
+        ExpandMemoryPtr expandMemory;
     };
 }
 
