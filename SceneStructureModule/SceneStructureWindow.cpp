@@ -262,7 +262,8 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             if (comp->TypeName() == EC_Name::TypeNameStatic())
             {
                 eItem->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
-                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), SLOT(UpdateEntityName(IAttribute *)));
+                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+                    SLOT(UpdateEntityName(IAttribute *)), Qt::UniqueConnection);
             }
 
 //#ifdef EC_DynamicComponent_ENABLED
@@ -271,7 +272,8 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             {
                 connect(comp, SIGNAL(AttributeAdded(IAttribute *)), SLOT(AddAssetReference(IAttribute *)));
                 connect(comp, SIGNAL(AttributeAboutToBeRemoved(IAttribute *)), SLOT(RemoveAssetReference(IAttribute *)));
-                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), SLOT(UpdateAssetReference(IAttribute *)));
+                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+                    SLOT(UpdateAssetReference(IAttribute *)), Qt::UniqueConnection);
             }
 //#endif
             // Add possible asset references.
@@ -312,7 +314,7 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
     if (!assetRef)
         return;
 
-    AssetItem *aItem = new AssetItem(assetRef->Get().type, assetRef->Get().id, parentItem);
+    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().type, assetRef->Get().id, parentItem);
     aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().id).arg(assetRef->Get().type));
     aItem->setHidden(!showAssets);
     parentItem->addChild(aItem);
@@ -447,14 +449,14 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
         }
     }
 
-    assetRef->GetName();
-
+    // Find asset item with the matching parent.
     AssetItem *aItem = 0;
     QTreeWidgetItemIterator it(treeWidget);
     while(*it)
     {
         AssetItem *a = dynamic_cast<AssetItem *>(*it);
-        if (a && (a->parent() == parentItem))
+        /// \todo Should check that the parent matches also?
+        if (a && (a->name == assetRef->GetName())) //(a->parent() == parentItem))
         {
             aItem = a;
             break;
