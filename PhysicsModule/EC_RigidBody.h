@@ -284,6 +284,8 @@ public slots:
         \param outMax The maximum corner of the box
     */
     void GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax);
+
+    btRigidBody* GetRigidBody() { return body_; }
     
 private slots:
     //! Called when the parent entity has been set.

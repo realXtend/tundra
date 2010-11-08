@@ -3,10 +3,13 @@
 #include "StableHeaders.h"
 #include "EC_VolumeTrigger.h"
 #include "EC_RigidBody.h"
+#include "EC_Placeable.h"
 #include "Entity.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
+#include "PhysicsUtils.h"
 #include <OgreAxisAlignedBox.h>
+#include "btBulletDynamicsCommon.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_VolumeTrigger");
@@ -127,7 +130,6 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.begin();
     while (i != entities_.end())
     {
-        //! \todo Handle entities that get removed from the scene, they should also emit EntityLeave but currently don't. -cmayhem
         if (!i.value())
         {
             bool active = true;
@@ -183,19 +185,61 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
 
     Scene::EntityPtr entity = otherEntity->GetSharedPtr();
 
-    if (newCollision)
+    if (byPivot.Get())
     {
-        // make sure the entity isn't already inside the volume
-        if (entities_.find(entity) == entities_.end())
+        //if (entities_.find(entity) == entities_.end())
         {
-            emit EntityEnter(otherEntity);
-            connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-            LogInfo("enter");
-        }
+            boost::shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
+            boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+            if (placeable && rigidbody)
+            {
+                const Transform& trans = placeable->transform.Get();
+                const Vector3df& pivot = trans.position;
 
-        entities_.insert(entity, true);
+                btTransform rayFromTrans, rayFromTrans2, rayToTrans;
+                btVector3 rayFrom(pivot.x, pivot.y, pivot.z - 1e7);
+                btVector3 rayFrom2(pivot.x, pivot.y, pivot.z + 1e7);
+                btVector3 rayTo(pivot.x, pivot.y, pivot.z);
+
+	            rayFromTrans.setIdentity();
+	            rayFromTrans.setOrigin(rayFrom);
+                rayFromTrans2.setIdentity();
+	            rayFromTrans2.setOrigin(rayFrom2);
+	            rayToTrans.setIdentity();
+	            rayToTrans.setOrigin(rayTo);
+
+                btCollisionWorld::AllHitsRayResultCallback resultCallback(rayFrom, rayTo);
+                btCollisionWorld::AllHitsRayResultCallback resultCallback2(rayFrom2, rayTo);
+
+                btCollisionWorld::rayTestSingle(rayFromTrans, rayToTrans, rigidbody->GetRigidBody(), 
+                    rigidbody->GetRigidBody()->getCollisionShape(), rigidbody->GetRigidBody()->getWorldTransform(), resultCallback);
+                btCollisionWorld::rayTestSingle(rayFromTrans2, rayToTrans, rigidbody->GetRigidBody(), 
+                    rigidbody->GetRigidBody()->getCollisionShape(), rigidbody->GetRigidBody()->getWorldTransform(), resultCallback2);
+                if (resultCallback.m_collisionObjects.size() > 0 && resultCallback2.m_collisionObjects.size() > 0)
+                {
+                    if (entities_.find(entity) == entities_.end())
+                    {
+                        emit EntityEnter(otherEntity);
+                        connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                        LogInfo("enter");
+                    }
+
+                    entities_.insert(entity, true);
+                }
+            }
+        }
     } else
     {
+        if (newCollision)
+        {
+            // make sure the entity isn't already inside the volume
+            if (entities_.find(entity) == entities_.end())
+            {
+                emit EntityEnter(otherEntity);
+                connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                LogInfo("enter");
+            }
+        }
         entities_.insert(entity, true);
     }
 }
