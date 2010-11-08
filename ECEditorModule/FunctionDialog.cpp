@@ -12,6 +12,7 @@
 #include "ArgumentType.h"
 #include "DoxygenDocReader.h"
 #include "FunctionInvoker.h"
+#include "InvokeItem.h"
 
 #include "Entity.h"
 #include "LoggingFunctions.h"
@@ -53,7 +54,40 @@ void FunctionComboBox::SetFunctions(const QList<FunctionMetaData> &funcs)
     qSort(functions);
     for(int i = 0; i < count() && i < functions.size(); ++i)
         if (itemText(i) == functions[i].signature)
+        {
             setItemText(i, functions[i].fullSignature);
+            //QFont font = QApplication::font();
+            //font.setBold(true);
+            //setItemData(i, font, Qt::FontRole);
+        }
+}
+
+void FunctionComboBox::SetCurrentFunction(const QString &function, const QStringList &paramTypeNames)
+{
+    FunctionMetaData matchingFmd;
+    foreach(FunctionMetaData f, functions)
+        if (f.function == function && f.parameters.size() == paramTypeNames.size())
+        {
+            int matchingTypes = 0;
+            int idx = 0;
+            foreach(FunctionMetaData::Parameter p, f.parameters)
+            {
+                if (p.first == paramTypeNames[idx])
+                    ++matchingTypes;
+                ++idx;
+            }
+
+            if (matchingTypes == f.parameters.size())
+            {
+                matchingFmd = f;
+                break;
+            }
+        }
+
+    if (!matchingFmd.fullSignature.isEmpty())
+        for(int i = 0; i < count() && i < functions.size(); ++i)
+            if (itemText(i) == matchingFmd.fullSignature)
+                setCurrentIndex(i);
 }
 
 FunctionMetaData FunctionComboBox::CurrentFunction() const
@@ -73,12 +107,79 @@ void FunctionComboBox::Clear()
 
 // FunctionDialog
 
-FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWidget *parent, Qt::WindowFlags f) :
-    QDialog(parent, f),
+FunctionDialog::FunctionDialog(const QObjectWeakPtrList &objs, QWidget *parent) :
+    QDialog(parent, 0),
     objects(objs),
     invoker(new FunctionInvoker)
 {
-    // Set up the UI
+    Initialize();
+}
+
+FunctionDialog::FunctionDialog(const QObjectWeakPtrList &objs, const InvokeItem &invokeItem, QWidget *parent) :
+    QDialog(parent, 0),
+    objects(objs),
+    invoker(new FunctionInvoker)
+{
+    Initialize();
+
+    QStringList paramTypeNames;
+    foreach(QVariant var, invokeItem.parameters)
+        paramTypeNames << QString(var.typeName());
+
+    functionComboBox->SetCurrentFunction(invokeItem.name, paramTypeNames);
+
+    UpdateEditors();
+
+    for(int i = 0; i < invokeItem.parameters.size() && i < currentArguments.size(); ++i)
+    {
+        currentArguments[i]->FromQVariant(invokeItem.parameters[i]);
+        currentArguments[i]->UpdateValueToEditor();
+    }
+}
+
+FunctionDialog::~FunctionDialog()
+{
+    qDeleteAll(currentArguments);
+    SAFE_DELETE(invoker);
+}
+
+QObjectWeakPtrList FunctionDialog::Objects() const
+{
+    return objects;
+}
+
+QString FunctionDialog::Function() const
+{
+    return functionComboBox->CurrentFunction().function;
+}
+
+QList<IArgumentType *> FunctionDialog::Arguments() const
+{
+    return currentArguments;
+}
+
+void FunctionDialog::SetReturnValueText(const QString &text)
+{
+    returnValueEdit->setText(text);
+}
+
+void FunctionDialog::AppendReturnValueText(const QString &text)
+{
+    QString newText = returnValueEdit->toPlainText();
+    if (!newText.isEmpty())
+        newText.append('\n');
+    newText.append(text);
+
+    returnValueEdit->setText(newText);
+}
+
+void FunctionDialog::hideEvent(QHideEvent *)
+{
+    close();
+}
+
+void FunctionDialog::Initialize()
+{
     setAttribute(Qt::WA_DeleteOnClose);
     resize(500, 200);
 
@@ -169,47 +270,6 @@ FunctionDialog::FunctionDialog(const QList<boost::weak_ptr<QObject> > &objs, QWi
     GenerateTargetLabelAndFunctions();
 
     UpdateEditors();
-}
-
-FunctionDialog::~FunctionDialog()
-{
-    qDeleteAll(currentArguments);
-    SAFE_DELETE(invoker);
-}
-
-QList<boost::weak_ptr<QObject> > FunctionDialog::Objects() const
-{
-    return objects;
-}
-
-QString FunctionDialog::Function() const
-{
-    return functionComboBox->CurrentFunction().function;
-}
-
-QList<IArgumentType *> FunctionDialog::Arguments() const
-{
-    return currentArguments;
-}
-
-void FunctionDialog::SetReturnValueText(const QString &text)
-{
-    returnValueEdit->setText(text);
-}
-
-void FunctionDialog::AppendReturnValueText(const QString &text)
-{
-    QString newText = returnValueEdit->toPlainText();
-    if (!newText.isEmpty())
-        newText.append('\n');
-    newText.append(text);
-
-    returnValueEdit->setText(newText);
-}
-
-void FunctionDialog::hideEvent(QHideEvent *)
-{
-    close();
 }
 
 void FunctionDialog::Execute()

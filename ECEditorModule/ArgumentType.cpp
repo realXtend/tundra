@@ -31,6 +31,13 @@ template<> void ArgumentType<QString>::UpdateValueFromEditor()
         value = e->text();
 }
 
+template<> void ArgumentType<QString>::UpdateValueToEditor()
+{
+    QLineEdit *e = dynamic_cast<QLineEdit *>(editor);
+    if (e)
+        e->setText(value);
+}
+
 template<> QString ArgumentType<QString>::ToString() const
 {
     return value;
@@ -50,9 +57,21 @@ template<> void ArgumentType<QStringList>::UpdateValueFromEditor()
         value = e->toPlainText().split("\n", QString::SkipEmptyParts);
 }
 
+template<> void ArgumentType<QStringList>::UpdateValueToEditor()
+{
+    QTextEdit *e = dynamic_cast<QTextEdit *>(editor);
+    if (e)
+    {
+        QString val;
+        foreach(QString s, value)
+            val.append(s + '\n');
+        e->setPlainText(val);
+    }
+}
+
 template<> QString ArgumentType<QStringList>::ToString() const
 {
-    QString str; 
+    QString str;
     foreach(QString item, value)
         str += item + "\n";
 
@@ -71,6 +90,13 @@ template<> void ArgumentType<std::string>::UpdateValueFromEditor()
     QLineEdit *e = dynamic_cast<QLineEdit *>(editor);
     if (e)
         value = e->text().toStdString();
+}
+
+template<> void ArgumentType<std::string>::UpdateValueToEditor()
+{
+    QLineEdit *e = dynamic_cast<QLineEdit *>(editor);
+    if (e)
+        e->setText(value.c_str());
 }
 
 template<> QString ArgumentType<std::string>::ToString() const
@@ -102,6 +128,13 @@ template<> void ArgumentType<bool>::UpdateValueFromEditor()
         value = e->isChecked();
 }
 
+template<> void ArgumentType<bool>::UpdateValueToEditor()
+{
+    QCheckBox *e = dynamic_cast<QCheckBox *>(editor);
+    if (e)
+        e->setChecked(value);
+}
+
 template<> QString ArgumentType<bool>::ToString() const
 {
     return QString::number((int)value);
@@ -121,6 +154,13 @@ template<> void ArgumentType<unsigned int>::UpdateValueFromEditor()
         value = e->value();
 }
 
+template<> void ArgumentType<unsigned int>::UpdateValueToEditor()
+{
+    QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
+    if (e)
+        e->setValue(value);
+}
+
 template<> QString ArgumentType<unsigned int>::ToString() const
 {
     return QString::number((unsigned int)value);
@@ -135,6 +175,13 @@ template<> QWidget *ArgumentType<int>::CreateEditor(QWidget *parent)
 }
 
 template<> void ArgumentType<int>::UpdateValueFromEditor()
+{
+    QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
+    if (e)
+        e->setValue(value);
+}
+
+template<> void ArgumentType<int>::UpdateValueToEditor()
 {
     QSpinBox *e = dynamic_cast<QSpinBox *>(editor);
     if (e)
@@ -161,6 +208,13 @@ template<> void ArgumentType<float>::UpdateValueFromEditor()
         value = e->value();
 }
 
+template<> void ArgumentType<float>::UpdateValueToEditor()
+{
+    QDoubleSpinBox *e = dynamic_cast<QDoubleSpinBox *>(editor);
+    if (e)
+        e->setValue(value);
+}
+
 template<> QString ArgumentType<float>::ToString() const
 {
     return QString::number((float)value);
@@ -179,6 +233,13 @@ template<> void ArgumentType<double>::UpdateValueFromEditor()
     QDoubleSpinBox *e = dynamic_cast<QDoubleSpinBox *>(editor);
     if (e)
         value = e->value();
+}
+
+template<> void ArgumentType<double>::UpdateValueToEditor()
+{
+    QDoubleSpinBox *e = dynamic_cast<QDoubleSpinBox *>(editor);
+    if (e)
+        e->setValue(value);
 }
 
 template<> QString ArgumentType<double>::ToString() const

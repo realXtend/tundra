@@ -325,24 +325,44 @@ void EC_Terrain::SetPointHeight(int x, int y, float height)
     GetPatch(x / cPatchSize, y / cPatchSize).heightData[(y % cPatchSize) * cPatchSize + (x % cPatchSize)] = height;
 }
 
+namespace
+{
+    Ogre::Matrix4 GetWorldTransform(Ogre::SceneNode *node)
+    {
+        Ogre::Quaternion rot = node->_getDerivedOrientation();
+        Ogre::Vector3 trans = node->_getDerivedPosition();
+        Ogre::Vector3 scale = node->_getDerivedScale();
+
+        Ogre::Matrix4 worldTM;
+        worldTM.makeTransform(trans, scale, rot);
+
+        // In Ogre 1.7.1 we could simply use the following line, but since we're also supporting Ogre 1.6.4 for now, the above
+        // lines are used instead, which work in both.
+        // Ogre::Matrix4 worldTM = rootNode->_getFullTransform(); // local->world. 
+
+        return worldTM;
+    }
+}
+
 Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const 
 {
-    Ogre::Quaternion rot = rootNode->_getDerivedOrientation();
-    Ogre::Vector3 trans = rootNode->_getDerivedPosition();
-    Ogre::Vector3 scale = rootNode->_getDerivedScale();
-
-    Ogre::Matrix4 worldTM;
-    worldTM.makeTransform(trans, scale, rot);
-
-    // In Ogre 1.7.1 we could simply use the following line, but since we're also supporting Ogre 1.6.4 for now, the above
-    // lines are used instead, which work in both.
-//    Ogre::Matrix4 worldTM = rootNode->_getFullTransform(); // local->world. 
+    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
     Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
     local.z = GetInterpolatedHeightValue(local.x, local.y);
     Ogre::Vector4 world = worldTM * local;
     return Vector3df(world.x, world.y, world.z);
+}
+
+Vector3df EC_Terrain::GetPointOnMapLocal(const Vector3df &point) const
+{
+    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
+
+    Ogre::Matrix4 inv = worldTM.inverse(); // world->local
+    Ogre::Vector4 local = inv * Ogre::Vector4(point.x, point.y, point.z, 1.f);
+    local.z = GetInterpolatedHeightValue(local.x, local.y);
+    return Vector3df(local.x, local.y, local.z);
 }
 
 float EC_Terrain::GetDistanceToTerrain(const Vector3df &point) const
@@ -384,6 +404,53 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
     float h2 = GetPoint(xCeil, yFloor);
     float h3 = GetPoint(xFloor, yCeil);
     return h1 * (1.f - xFrac - yFrac) + h2 * xFrac + h3 * yFrac;
+}
+
+Vector3df EC_Terrain::GetInterpolatedNormal(float x, float y) const
+{
+    x = max(0.f, min((float)VerticesWidth()-1.f, x));
+    y = max(0.f, min((float)VerticesHeight()-1.f, y));
+
+    int xFloor = (int)floor(x);
+    int xCeil = (int)ceil(x);
+    int yFloor = (int)floor(y);
+    int yCeil = (int)ceil(y);
+
+    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize);
+    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize);
+    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize);
+    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize);
+
+    float xFrac = fmod(x, 1.f);
+    float yFrac = fmod(y, 1.f);
+    Vector3df h1;
+
+    Vector3df h2 = Vector3df((float)xCeil, (float)yFloor, GetPoint(xCeil, yFloor));
+    Vector3df h3 = Vector3df((float)xFloor, (float)yCeil, GetPoint(xFloor, yCeil));
+
+    if (xFrac + yFrac >= 1.f)
+    {
+        //if xFrac >= yFrac
+        h1 = Vector3df((float)xCeil, (float)yCeil, GetPoint(xCeil, yCeil));
+        xFrac = 1.f - xFrac;
+        yFrac = 1.f - yFrac;
+    }
+    else
+    {
+        h1 = Vector3df((float)xFloor, (float)yFloor, GetPoint(xFloor, yFloor));
+        swap(h2, h3);
+    }
+
+    // h1 to h3 are the three terrain height points in local coordinate space.
+    Vector3df normal = (h3-h2).crossProduct(h3-h1);
+    Ogre::Vector4 oNormal = Ogre::Vector4(normal.x, normal.y, normal.z, 0.f);
+
+    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
+    oNormal = worldTM * oNormal;
+    normal = Vector3df(oNormal.x, oNormal.y, oNormal.z);
+    normal.normalize();
+
+    return normal;
 }
 
 Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside)

@@ -29,13 +29,6 @@ if (HYDRAX)
 	add_definitions (-DHYDRAX)
 endif (HYDRAX)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (CURL)
-use_package (XMLRPC)
-use_package (OGRE)
-use_package (QT4)
-
 if (CAELUM)
     use_package (CAELUM)
 endif (CAELUM)
@@ -44,12 +37,7 @@ use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModu
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
 link_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim Asset)
 
-link_package (BOOST)
-link_package (POCO)
-link_package (CURL)
-link_package (XMLRPC)
 link_ogre()
-link_package (QT4)
 
 if (CAELUM)
     link_package (CAELUM)

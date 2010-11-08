@@ -60,16 +60,21 @@ namespace OgreRenderer
             AssImp::OpenAssetImport import;
             std::string filepath = id_;
             size_t lastSlash = id_.find_last_of('/');
-            if (lastSlash != std::string::npos)
+
+            QString nodename;
+            if (lastSlash != std::string::npos && lastSlash > 6)
+            {
                 filepath = id_.substr(0, lastSlash);
+                nodename = QString(id_.substr(lastSlash + 1).c_str());
+            }
             
-            if (lastSlash != std::string::npos && import.IsSupportedExtension(QString(filepath.c_str())))
+            if (import.IsSupportedExtension(QString(filepath.c_str())))
             {
                 boost::filesystem::path path(filepath);
                 QString extension = QString(path.extension().c_str()).toLower();
 
                 std::vector<std::string> importedMeshes;
-                import.Import((void*)source->GetData(), source->GetSize(), QString(SanitateAssetIdForOgre(id_).c_str()), extension.toLatin1(), QString(id_.substr(lastSlash + 1).c_str()), importedMeshes);
+                import.Import((void*)source->GetData(), source->GetSize(), QString(SanitateAssetIdForOgre(id_).c_str()), extension.toLatin1(), nodename, importedMeshes);
             } else
             {
 #endif

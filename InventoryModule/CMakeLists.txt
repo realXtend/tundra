@@ -28,13 +28,7 @@ if (UISERVICE_TEST)
     add_definitions (-DUISERVICE_TEST)
 endif ()
 
-use_package (BOOST)
-use_package (POCO)
-use_package (CURL)
-use_package (XMLRPC)
 use_package (OPENJPEG)
-use_package (OGRE)
-use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
 
@@ -46,13 +40,8 @@ endif ()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_package (BOOST)
-link_package (POCO)
-link_package (CURL)
-link_package (XMLRPC)
 link_package (OPENJPEG)
 link_ogre()
-link_package (QT4)
 link_package (PYTHON_QT)
 
 link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities)

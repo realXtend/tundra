@@ -17,6 +17,7 @@ JavascriptEngine::JavascriptEngine(const QString &scriptRef):
     scriptRef_(scriptRef)
 {
     engine_ = new QScriptEngine;
+    connect(engine_, SIGNAL(signalHandlerException(const QScriptValue &)), this, SLOT(OnSignalHandlerException(const QScriptValue &)));
 
     ExposeQtMetaTypes(engine_);
     ExposeNaaliCoreTypes(engine_);
@@ -130,5 +131,10 @@ void JavascriptEngine::IncludeFile(const QString& path)
     if (engine_->hasUncaughtException())
         JavascriptModule::LogError(result.toString().toStdString());
 
+}
+
+void JavascriptEngine::OnSignalHandlerException(const QScriptValue& exception)
+{
+    JavascriptModule::LogError(exception.toString().toStdString());
 }
 

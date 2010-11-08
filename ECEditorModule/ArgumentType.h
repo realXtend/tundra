@@ -29,8 +29,11 @@ public:
     /// Reads value from the dedicated editor widget created by CreateEditor().
     virtual void UpdateValueFromEditor() = 0;
 
+    /// Sets value to the editor, if editor exists.
+    virtual void UpdateValueToEditor() = 0;
+
     /// Sets new value.
-    /** @param val Value.
+    /** @param val New value.
     */
     virtual void SetValue(void *val) = 0;
 
@@ -46,8 +49,8 @@ public:
     /// Returns the arguments value as a QVariant.
     virtual QVariant ToQVariant() const = 0;
 
-    /// 
-    /** @param var 
+    /// Sets value from QVariant.
+    /** @param var New value as QVariant.
     */
     virtual void FromQVariant(const QVariant &var) = 0;
 
@@ -70,6 +73,9 @@ public:
 
     /// IArgumentType override.
     virtual void UpdateValueFromEditor() {}
+
+    /// IArgumentType override.
+    virtual void UpdateValueToEditor() {}
 
     /// IArgumentType override.
     void SetValue(void *val) { value = *reinterpret_cast<T*>(val); }
@@ -115,6 +121,9 @@ public:
     void UpdateValueFromEditor() {}
 
     /// IArgumentType override. Does nothing.
+    void UpdateValueToEditor() {}
+
+    /// IArgumentType override. Does nothing.
     void SetValue(void *val) {}
 
     /// IArgumentType override. Returns empty QGenericArgument.
@@ -139,16 +148,19 @@ private:
 // QString
 template<> QWidget *ArgumentType<QString>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<QString>::UpdateValueFromEditor();
+template<> void ArgumentType<QString>::UpdateValueToEditor();
 template<> QString ArgumentType<QString>::ToString() const;
 
 // QStringList
 template<> QWidget *ArgumentType<QStringList>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<QStringList>::UpdateValueFromEditor();
+template<> void ArgumentType<QStringList>::UpdateValueToEditor();
 template<> QString ArgumentType<QStringList>::ToString() const;
 
 // std::string
 template<> QWidget *ArgumentType<std::string>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<std::string>::UpdateValueFromEditor();
+template<> void ArgumentType<std::string>::UpdateValueToEditor();
 template<> QString ArgumentType<std::string>::ToString() const;
 template<> QVariant ArgumentType<std::string>::ToQVariant() const;
 template<> void ArgumentType<std::string>::FromQVariant(const QVariant &var);
@@ -156,26 +168,31 @@ template<> void ArgumentType<std::string>::FromQVariant(const QVariant &var);
 // Boolean
 template<> QWidget *ArgumentType<bool>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<bool>::UpdateValueFromEditor();
+template<> void ArgumentType<bool>::UpdateValueToEditor();
 template<> QString ArgumentType<bool>::ToString() const;
 
 // Unsigned integer
 template<> QWidget *ArgumentType<unsigned int>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<unsigned int>::UpdateValueFromEditor();
+template<> void ArgumentType<unsigned int>::UpdateValueToEditor();
 template<> QString ArgumentType<unsigned int>::ToString() const;
 
 // Integer
 template<> QWidget *ArgumentType<int>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<int>::UpdateValueFromEditor();
+template<> void ArgumentType<int>::UpdateValueToEditor();
 template<> QString ArgumentType<int>::ToString() const;
 
 // Float
 template<> QWidget *ArgumentType<float>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<float>::UpdateValueFromEditor();
+template<> void ArgumentType<float>::UpdateValueToEditor();
 template<> QString ArgumentType<float>::ToString() const;
 
 // Double
 template<> QWidget *ArgumentType<double>::CreateEditor(QWidget *parent);
 template<> void ArgumentType<double>::UpdateValueFromEditor();
+template<> void ArgumentType<double>::UpdateValueToEditor();
 template<> QString ArgumentType<double>::ToString() const;
 
 #endif

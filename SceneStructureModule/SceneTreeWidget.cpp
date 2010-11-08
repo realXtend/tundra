@@ -34,7 +34,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 #include <QDomElement>
 #include <QDebug>
 
-#include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
@@ -42,9 +41,16 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 // File filter definitions for supported files.
 const QString cOgreSceneFileFilter(QApplication::translate("SceneTreeWidget", "OGRE scene (*.scene)"));
 const QString cOgreMeshFileFilter(QApplication::translate("SceneTreeWidget", "OGRE mesh (*.mesh)"));
+#ifdef ASSIMP_ENABLED
+const QString cMeshFileFilter(QApplication::translate("SceneTreeWidget", "Mesh (*.xml *.3d *.b3d *.dae *.bvh *.3ds *.ase *.obj *.ply *.dxf *.nff *.smd *.vta *.mdl *.md2 *.md3 *.mdc *.md5mesh *.x *.q3o *.q3s *.raw *.ac *.stl *.irrmesh *.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)"));
+#endif
 const QString cNaaliXmlFileFilter(QApplication::translate("SceneTreeWidget", "Naali scene XML(*.xml)"));
 const QString cNaaliBinaryFileFilter(QApplication::translate("SceneTreeWidget", "Naali Binary Format (*.nbf)"));
+#ifdef ASSIMP_ENABLED
+const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf *.xml *.dae *.bvh *.3ds *.ase *.obj *.ply *.dxf *.nff *.smd *.vta *.mdl *.md2 *.md3 *.mdc *.md5mesh *.x *.q3o *.q3s *.raw *.ac *.stl *.irrmesh *.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)"));
+#else
 const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf)"));
+#endif
 const QString cAllTypesFileFilter(QApplication::translate("SceneTreeWidget", "All types (*.*)"));
 
 // EntityItem
@@ -116,6 +122,25 @@ QList<entity_id_t> Selection::EntityIds() const
     return ids.toList();
 }
 
+// Menu
+Menu::Menu(QWidget *parent) : QMenu(parent), shiftDown(false)
+{
+}
+
+void Menu::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Shift)
+        shiftDown = true;
+    QWidget::keyPressEvent(e);
+}
+
+void Menu::keyReleaseEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_Shift)
+        shiftDown = false;
+    QMenu::keyReleaseEvent(e);
+}
+
 // SceneTreeWidget
 
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
@@ -179,13 +204,12 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     mousePressEvent(&mouseEvent);
 
     // Create context menu and show it.
-    QMenu *menu = new QMenu(this);
-//    menu->setFixedWidth(200);
-    menu->setAttribute(Qt::WA_DeleteOnClose);
+    SAFE_DELETE(contextMenu);
+    contextMenu = new Menu(this);
 
-    AddAvailableActions(menu);
+    AddAvailableActions(contextMenu);
 
-    menu->popup(e->globalPos());
+    contextMenu->popup(e->globalPos());
 }
 
 void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
@@ -641,7 +665,7 @@ void SceneTreeWidget::NewEntity()
     // Show a dialog so that user can choose if he wants to create local or synchronized entity.
     QStringList types(QStringList() << tr("Synchronized") << tr("Local"));
     bool ok;
-    QString type = QInputDialog::getItem(this, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
+    QString type = QInputDialog::getItem(NULL, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
     if (!ok || type.isEmpty())
         return;
 
@@ -837,8 +861,11 @@ void SceneTreeWidget::Import()
     if (fileDialog)
         fileDialog->close();
     fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
-        cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + 
-        cNaaliBinaryFileFilter + ";;" + cAllTypesFileFilter,
+        cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + 
+#ifdef ASSIMP_ENABLED
+        cMeshFileFilter + ";;" + 
+#endif
+        cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" + cAllTypesFileFilter,
         tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
@@ -929,7 +956,7 @@ void SceneTreeWidget::OpenFunctionDialog()
     if (sel.IsEmpty())
         return;
 
-    QList<boost::weak_ptr<QObject> > objs;
+    QObjectWeakPtrList objs;
     if (sel.HasEntities())
         foreach(EntityItem *eItem, sel.entities)
         {
@@ -972,7 +999,7 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
     // Clear old return value from the dialog.
     dialog->SetReturnValueText("");
 
-    foreach(boost::weak_ptr<QObject> o, dialog->Objects())
+    foreach(QObjectWeakPtr o, dialog->Objects())
         if (o.lock())
         {
             QObject *obj = o.lock().get();
@@ -994,19 +1021,26 @@ void SceneTreeWidget::FunctionDialogFinished(int result)
             FunctionInvoker invoker;
             invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
 
+            QString retValStr;
+            ///\todo For some reason QVariant::toString() cannot convert QStringList to QString properly.
+            /// Convert it manually here.
+            if (ret.type() == QVariant::StringList)
+                foreach(QString s, ret.toStringList())
+                    retValStr.append("\n" + s);
+
             if (errorMsg.isEmpty())
-                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+                dialog->AppendReturnValueText(objNameWithId + " " + retValStr);
             else
-                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+                dialog->AppendReturnValueText(objNameWithId + " " + errorMsg);
 
             // Save invoke item
             InvokeItem ii;
             ii.type = InvokeItem::Function;
             ii.parameters = params;
-            InvokeItem *mruItem = FindMruItem();
             ii.name = dialog->Function();
             ii.returnType = (ret.type() == QVariant::Invalid) ? QString("void") : QString(ret.typeName());
             ii.objectName = objName;
+            InvokeItem *mruItem = FindMruItem();
             ii.mruOrder = mruItem ? mruItem->mruOrder + 1 : 0;
 
             // Do not save duplicates and make sure that history size stays withing max size.
@@ -1185,38 +1219,58 @@ void SceneTreeWidget::InvokeActionTriggered()
     assert(mruItem);
     invokedItem->mruOrder = mruItem->mruOrder + 1;
 
+    // Gather target objects.
+    QList<Scene::EntityWeakPtr> entities;
+    QObjectList objects;
+    QObjectWeakPtrList objectPtrs;
+    foreach(EntityItem *eItem, sel.entities)
+        if (eItem->Entity())
+        {
+            entities << eItem->Entity();
+            objects << eItem->Entity().get();
+            objectPtrs << boost::dynamic_pointer_cast<QObject>(eItem->Entity());
+        }
+    foreach(ComponentItem *cItem, sel.components)
+        if (cItem->Component())
+        {
+            objects << cItem->Component().get();
+            objectPtrs << boost::dynamic_pointer_cast<QObject>(cItem->Component());
+        }
+
+    // Shift+click opens existing invoke history item editable in dialog.
+    bool openForEditing = contextMenu && contextMenu->shiftDown;
     if (invokedItem->type == InvokeItem::Action)
     {
-        foreach(EntityItem *eItem, sel.entities)
-            if (eItem->Entity())
-            {
-                QStringList params;
-                //foreach(InvokeItem::Parameter p, invokedItem->parameters)
-                foreach(QVariant p, invokedItem->parameters)
-                    //params << p.second.toString();
-                    params << p.toString();
-                eItem->Entity()->Exec(invokedItem->execTypes, invokedItem->name, params);
-            }
+        if (openForEditing)
+        {
+            EntityActionDialog *d = new EntityActionDialog(entities, *invokedItem, this);
+            connect(d, SIGNAL(finished(int)), this, SLOT(EntityActionDialogFinished(int)));
+            d->show();
+        }
+        else
+        {
+            foreach(Scene::EntityWeakPtr e, entities)
+                e.lock()->Exec(invokedItem->execTypes, invokedItem->name, invokedItem->parameters);
+        }
     }
     else if (invokedItem->type == InvokeItem::Function)
     {
-        QObjectList objects;
-        foreach(EntityItem *eItem, sel.entities)
-            if (eItem->Entity())
-                objects << eItem->Entity().get();
-        foreach(ComponentItem *cItem, sel.components)
-            if (cItem->Component())
-                objects << cItem->Component().get();
-
-        QVariantList returnValues;
-        FunctionInvoker invoker;
-        foreach(QObject *obj, objects)
+        if (openForEditing)
         {
-            QVariant retVal;
-            invoker.Invoke(obj, invokedItem->name, &retVal, invokedItem->parameters);
-            returnValues << retVal;
-
-            LogInfo("Invoked function returned " + retVal.toString().toStdString());
+            FunctionDialog *d = new FunctionDialog(objectPtrs, *invokedItem, this);
+            connect(d, SIGNAL(finished(int)), SLOT(FunctionDialogFinished(int)));
+            d->show();
+            d->move(300,300);
+        }
+        else
+        {
+            FunctionInvoker invoker;
+            foreach(QObject *obj, objects)
+            {
+                QVariant retVal;
+                invoker.Invoke(obj, invokedItem->name, &retVal, invokedItem->parameters);
+                LogInfo("Invoked function returned " + retVal.toString().toStdString());
+            }
         }
     }
 }

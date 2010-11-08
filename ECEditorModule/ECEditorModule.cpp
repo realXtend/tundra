@@ -7,6 +7,7 @@
 #include "ECEditorWindow.h"
 #include "EcXmlEditorWidget.h"
 #include "DoxygenDocReader.h"
+#include "TreeWidgetItemExpandMemory.h"
 
 #include "EventManager.h"
 #include "SceneEvents.h"
@@ -46,7 +47,7 @@ namespace ECEditor
 
     void ECEditorModule::Initialize()
     {
-        event_manager_ = framework_->GetEventManager();
+        expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_->GetDefaultConfig()));
     }
 
     void ECEditorModule::PostInitialize()
@@ -72,8 +73,8 @@ namespace ECEditor
             " 0 = The symbol to fetch the documentation for.",
             Console::Bind(this, &ECEditorModule::ShowDocumentation)));
 
-        scene_event_category_ = event_manager_->QueryEventCategory("Scene");
-        network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
+        scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+        network_state_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 
         AddEditorWindowToUI();
 
@@ -84,7 +85,6 @@ namespace ECEditor
 
     void ECEditorModule::Uninitialize()
     {
-        event_manager_.reset();
         SAFE_DELETE_LATER(editor_window_);
         SAFE_DELETE_LATER(xmlEditor_);
     }

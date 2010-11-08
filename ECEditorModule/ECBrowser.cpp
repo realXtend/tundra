@@ -2,16 +2,20 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "ECBrowser.h"
-#include "IComponent.h"
 #include "ECComponentEditor.h"
+#include "TreeWidgetItemExpandMemory.h"
+
+#include "IComponent.h"
 #include "SceneManager.h"
-#include "ECEditorModule.h"
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
-#include "ECEditorModule.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
+#include "ConfigurationManager.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
 
 #include <QtBrowserItem>
 #include <QLayout>
@@ -20,20 +24,36 @@
 #include <QDomDocument>
 #include <QMimeData>
 
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
-
 #include "MemoryLeakCheck.h"
 
 namespace ECEditor
 {
-    ECBrowser::ECBrowser(Foundation::Framework *framework, QWidget *parent): 
+    ECBrowser::ECBrowser(Foundation::Framework *framework, QWidget *parent):
         QtTreePropertyBrowser(parent),
         menu_(0),
         treeWidget_(0),
         framework_(framework)
     {
-        InitBrowser();
+        setMouseTracking(true);
+        setAcceptDrops(true);
+        setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(ShowComponentContextMenu(const QPoint &)));
+        treeWidget_ = findChild<QTreeWidget *>();
+        if(treeWidget_)
+        {
+            treeWidget_->setSortingEnabled(true);
+            treeWidget_->setFocusPolicy(Qt::StrongFocus);
+            treeWidget_->setAcceptDrops(true);
+            treeWidget_->setDragDropMode(QAbstractItemView::DropOnly);
+            connect(treeWidget_, SIGNAL(itemSelectionChanged()), SLOT(SelectionChanged()));
+        }
+
+        QShortcut* delete_shortcut = new QShortcut(QKeySequence::Delete, this);
+        QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+        QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
+        connect(delete_shortcut, SIGNAL(activated()), SLOT(OnDeleteAction()), Qt::UniqueConnection);
+        connect(copy_shortcut, SIGNAL(activated()), SLOT(CopyComponent()), Qt::UniqueConnection);
+        connect(paste_shortcut, SIGNAL(activated()), SLOT(PasteComponent()), Qt::UniqueConnection);
     }
 
     ECBrowser::~ECBrowser()
@@ -54,8 +74,10 @@ namespace ECEditor
             return;
         entities_.push_back(Scene::EntityPtr(entity));
 
-        connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
-        connect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+        connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)),
+            SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+        connect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
+            SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
     }
 
     void ECBrowser::RemoveEntity(Scene::EntityPtr entity)
@@ -68,8 +90,10 @@ namespace ECEditor
             {
                 Scene::EntityPtr ent_ptr = iter->lock();
 
-                disconnect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
-                disconnect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+                disconnect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this,
+                    SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
+                disconnect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this,
+                    SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
 
                 Scene::Entity::ComponentVector components = ent_ptr->GetComponentVector();
                 for(uint i = 0; i < components.size(); i++)
@@ -91,11 +115,8 @@ namespace ECEditor
 
     void ECBrowser::clear()
     {
-        while(!componentGroups_.empty())
-        {
-            SAFE_DELETE(componentGroups_.back());
-            componentGroups_.pop_back();
-        }
+        qDeleteAll(componentGroups_);
+        componentGroups_.clear();
         entities_.clear();
         QtTreePropertyBrowser::clear();
     }
@@ -104,7 +125,7 @@ namespace ECEditor
     {
         PROFILE(ECBrowser_UpdateBrowser);
 
-        // Sorting tend to be heavy operation so we disable it until we have made all changes to a ui.
+        // Sorting tends to be a heavy operation so we disable it until we have made all changes to a ui.
         if(treeWidget_)
             treeWidget_->setSortingEnabled(false);
 
@@ -288,29 +309,6 @@ namespace ECEditor
         return true;
     }
 
-    void ECBrowser::InitBrowser()
-    {
-        setMouseTracking(true);
-        setAcceptDrops(true);
-        setContextMenuPolicy(Qt::CustomContextMenu);
-        QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(ShowComponentContextMenu(const QPoint &)));
-        treeWidget_ = findChild<QTreeWidget *>();
-        if(treeWidget_)
-        {
-            treeWidget_->setSortingEnabled(true);
-            treeWidget_->setFocusPolicy(Qt::StrongFocus);
-            treeWidget_->setAcceptDrops(true);
-            treeWidget_->setDragDropMode(QAbstractItemView::DropOnly);
-            connect(treeWidget_, SIGNAL(itemSelectionChanged()), SLOT(SelectionChanged()));
-        }
-        QShortcut* delete_shortcut = new QShortcut(QKeySequence::Delete, this);
-        QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
-        QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
-        connect(delete_shortcut, SIGNAL(activated()), this, SLOT(OnDeleteAction()), Qt::UniqueConnection);
-        connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyComponent()), Qt::UniqueConnection);
-        connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteComponent()), Qt::UniqueConnection);
-    }
-
     void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
     {
         //! @todo Click position should be converted to treeWidget's space, so that editor will select the right
@@ -378,8 +376,8 @@ namespace ECEditor
             QAction *pasteComponent = new QAction(tr("Paste"), menu_);
             menu_->addAction(addComponent);
             menu_->addAction(pasteComponent);
-            QObject::connect(addComponent, SIGNAL(triggered()), this, SIGNAL(CreateNewComponent()), Qt::UniqueConnection);
-            QObject::connect(pasteComponent, SIGNAL(triggered()), this, SLOT(PasteComponent()), Qt::UniqueConnection);
+            connect(addComponent, SIGNAL(triggered()), this, SIGNAL(CreateNewComponent()), Qt::UniqueConnection);
+            connect(pasteComponent, SIGNAL(triggered()), this, SLOT(PasteComponent()), Qt::UniqueConnection);
         }
         menu_->popup(mapToGlobal(pos));
     }
@@ -601,7 +599,7 @@ namespace ECEditor
 
         //! @todo replace this code with a one that will use Dialog::open method and listens a signal
         //! that will tell us when dialog is closed. Should be more safe way to get this done.
-        QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"), attributeList, 0, false, &ok);
+        QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Type name:"), attributeList, 0, false, &ok);
         if (!ok)
             return;
         QString name = QInputDialog::getText(this, tr("Give attribute name"), tr("Name:"), QLineEdit::Normal, QString(), &ok);
@@ -689,21 +687,36 @@ namespace ECEditor
         // Find a new QTreeWidgetItem from the browser and save the information to ComponentGroup object.
         for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
             oldList.insert(treeWidget_->topLevelItem(i));
+
+        // Disconnect itemExpanded() and itemCollapsed() signal before we create new items to the tree widget
+        // so that we don't spam TreeWidgetItemExpandMemory's data as QtPropertyBrowser expands all items automatically.
+        if (expandMemory_.lock())
+        {
+            disconnect(treeWidget_, SIGNAL(itemExpanded(QTreeWidgetItem *)), expandMemory_.lock().get(), SLOT(HandleItemExpanded(QTreeWidgetItem *)));
+            disconnect(treeWidget_, SIGNAL(itemCollapsed(QTreeWidgetItem *)), expandMemory_.lock().get(), SLOT(HandleItemCollapsed(QTreeWidgetItem *)));
+        }
+
         ECComponentEditor *componentEditor = new ECComponentEditor(comp, this);
         for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
             newList.insert(treeWidget_->topLevelItem(i));
+
         QSet<QTreeWidgetItem*> changeList = newList - oldList;
         QTreeWidgetItem *newItem = 0;
         if(changeList.size() == 1)
+        {
             newItem = (*changeList.begin());
+            // Apply possible item expansions for the new item.
+            if (expandMemory_.lock())
+                expandMemory_.lock()->ExpandItem(treeWidget_, newItem);
+        }
         else
         {
-            ECEditorModule::LogError("Failed to add a new component to ECEditor, for some reason the QTreeWidgetItem was not created."
-                                     " Make sure that ECComponentEditor was intialized properly.");
+            LogError("Failed to add a new component to ECEditor, for some reason the QTreeWidgetItem was not created."
+                " Make sure that ECComponentEditor was intialized properly.");
             return;
         }
 
-        bool dynamic = comp->TypeName() == "EC_DynamicComponent";
+        bool dynamic = comp->TypeName() == EC_DynamicComponent::TypeNameStatic();
         if(dynamic)
         {
             EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
@@ -711,14 +724,18 @@ namespace ECEditor
             connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
             connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)), Qt::UniqueConnection);
         }
+
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
         componentGroups_.push_back(compGroup);
 
-        if(treeWidget_)
+        // Connect itemExpanded() and itemCollapsed() signals back so that TreeWidgetItemExpandMemory
+        // is kept up to date when user expands and collapses items.
+        if (expandMemory_.lock())
         {
-            treeWidget_->expandItem(newItem);
-            for(uint i = 0; i < newItem->childCount(); i++)
-                treeWidget_->collapseItem(newItem->child(i));
+            connect(treeWidget_, SIGNAL(itemExpanded(QTreeWidgetItem *)), expandMemory_.lock().get(),
+                SLOT(HandleItemExpanded(QTreeWidgetItem *)), Qt::UniqueConnection);
+            connect(treeWidget_, SIGNAL(itemCollapsed(QTreeWidgetItem *)), expandMemory_.lock().get(),
+                SLOT(HandleItemCollapsed(QTreeWidgetItem *)), Qt::UniqueConnection);
         }
     }
 

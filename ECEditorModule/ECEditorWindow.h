@@ -176,7 +176,7 @@ namespace ECEditor
         /// Listenes when new entities are added to the world scene.
         /// @todo Remove this when possible.
         void SceneAdded(const QString &name);
-        
+
         //When user have pressed ok or cancel button in component dialog this mehtod is called.
         void ComponentDialogFinished(int result);
 

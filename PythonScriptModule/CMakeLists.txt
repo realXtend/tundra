@@ -22,14 +22,8 @@ if(PYTHON_FORCE_RELEASE_VERSION)
     add_definitions(-DPYTHON_FORCE_RELEASE_VERSION) 
 endif(PYTHON_FORCE_RELEASE_VERSION)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
-use_package (OGRE)
-use_package (CURL)
-use_package (XMLRPC)
 
 use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_DynamicComponent EntityComponents/EC_Ruler EntityComponents/EC_Touchable
@@ -43,14 +37,9 @@ link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DI
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule EC_Touchable
     ProtocolUtilities EC_DynamicComponent EC_Ruler EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui)
 
-link_package (BOOST)
-link_package (POCO)
-link_package (QT4)
 link_package (PYTHON)
 link_package (PYTHON_QT)
 link_ogre()
-link_package (CURL)
-link_package (XMLRPC)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

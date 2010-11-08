@@ -17,23 +17,11 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions(-DSCENEPERSISTENCE_MODULE_EXPORTS) 
 
-use_package(BOOST)
-use_package(POCO)
-use_package(OGRE)
-use_package(QT4)
-use_package(CURL)
-use_package(XMLRPC)
-
 use_modules(Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities)
 
 build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_package(OGRE)
-link_package(BOOST)
-link_package(POCO)
-link_package(QT4)
-link_package(CURL)
-link_package(XMLRPC)
+link_ogre()
 
 link_modules(Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities)
 

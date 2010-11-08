@@ -98,14 +98,11 @@ namespace ECEditor
         AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
         {
-            ECAttributeEditorBase *attributeEditor = 0;
-            attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_,
-                                                                       this, 
-                                                                       component, 
-                                                                       QString::fromStdString(attributes[i]->GetNameString()),
-                                                                       QString::fromStdString(attributes[i]->TypenameToString()));
-            if(!attributeEditor)
+            ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this,
+                component, QString(attributes[i]->GetNameString().c_str()), QString(attributes[i]->TypenameToString().c_str()));
+            if (!attributeEditor)
                 continue;
+
             attributeEditors_[attributes[i]->GetName()] = attributeEditor;
             attributeEditor->UpdateEditorUI();
             groupProperty_->setToolTip("Component type is " + component->TypeName());
@@ -156,7 +153,8 @@ namespace ECEditor
                 iter->second->AddComponent(component);
             iter++;
         }
-        QObject::connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
+        QObject::connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
         UpdateGroupPropertyText();
     }
 
@@ -182,7 +180,8 @@ namespace ECEditor
                         attributeIter->second->RemoveComponent(component);//RemoveAttribute(attribute);
                     attributeIter++;
                 }
-                disconnect(componentPtr.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
+                disconnect(componentPtr.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+                    this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
                 components_.erase(iter);
                 break;
             }

@@ -78,6 +78,7 @@ namespace Foundation
         argc_(argc),
         argv_(argv),
         initialized_(false),
+        headless_(false),
         log_formatter_(0),
         splitterchannel(0),
         naaliApplication(0),
@@ -95,6 +96,9 @@ namespace Foundation
         }
         else
         {
+            if (cm_options_.count("headless"))
+                headless_ = true;
+            
 #ifdef PROFILING
             ProfilerSection::SetProfiler(&profiler_);
 #endif
@@ -273,7 +277,7 @@ namespace Foundation
         namespace po = boost::program_options;
         //po::options_description desc;
         cm_descriptions_.add_options()
-            //("headless", "run viewer in headless mode without any windows or rendering") //! \todo disabled since doesn't work with Qt -cm
+            ("headless", "run in headless mode without any windows or rendering")
             ("help", "produce help message")
             ("user", po::value<std::string>(), "OpenSim login name")
             ("passwd", po::value<std::string>(), "OpenSim login password")
@@ -339,6 +343,10 @@ namespace Foundation
                 event_manager_->ProcessDelayedEvents(frametime);
             }
 
+            // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
+            // information after for example network updates, that have been performed by the modules.
+            frame->Update(frametime);
+            
             // if we have a renderer service, render now
             boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
             if (renderer.expired() == false)
@@ -347,7 +355,6 @@ namespace Foundation
                 renderer.lock()->Render();
             }
 
-            frame->Update(frametime);
             input->Update(frametime);
         }
 

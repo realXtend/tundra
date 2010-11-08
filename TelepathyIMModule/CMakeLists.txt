@@ -37,12 +37,7 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DTELEPATHY_IM_MODULE_EXPORTS)
 
-use_package (BOOST)
-use_package (POCO)
-use_package (QT4)
 use_package (GLIB)
-use_package (CURL)
-use_package (XMLRPC)
 use_package (DBUS)
 use_package (DBUS_GLIB)
 use_package (TELEPATHY_QT4)
@@ -55,9 +50,6 @@ use_modules (TelepathyIMModule Core Foundation SceneManager Interfaces RexCommon
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_package (BOOST)
-link_package (POCO)
-link_package (QT4)
 link_package (TELEPATHY_FARSIGHT)
 link_package (TELEPATHY_GLIB)
 link_package (TELEPATHY_QT4)
