@@ -9,10 +9,10 @@
 #include "DebugOperatorNew.h"
 
 #include "ECEditorWindow.h"
-
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
 #include "AddComponentDialog.h"
+#include "ECEditorModule.h"
 
 #include "UiProxyWidget.h"
 #include "UiServiceInterface.h"
@@ -601,10 +601,10 @@ namespace ECEditor
         if(browser_)
         {
             // signals from attribute browser to editor window.
-            QObject::connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), this, SLOT(ShowXmlEditorForComponent(const std::string &)));
-            QObject::connect(browser_, SIGNAL(CreateNewComponent()), this, SLOT(CreateComponent()));
-            QObject::connect(browser_, SIGNAL(ComponentSelected(IComponent *)), 
-                             this, SLOT(HighlightEntities(IComponent *)));
+            connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
+            connect(browser_, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
+            connect(browser_, SIGNAL(ComponentSelected(IComponent *)), SLOT(HighlightEntities(IComponent *)));
+            browser_->SetItemExpandMemory(framework_->GetModule<ECEditorModule>()->ExpandMemory());
         }
 
         if (entity_list_)

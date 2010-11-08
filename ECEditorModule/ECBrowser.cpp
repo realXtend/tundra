@@ -2,16 +2,20 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "ECBrowser.h"
-#include "IComponent.h"
 #include "ECComponentEditor.h"
+#include "TreeWidgetItemExpandMemory.h"
+
+#include "IComponent.h"
 #include "SceneManager.h"
-#include "ECEditorModule.h"
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
 #include "ECEditorModule.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
 
 #include <QtBrowserItem>
 #include <QLayout>
@@ -19,9 +23,6 @@
 #include <QMenu>
 #include <QDomDocument>
 #include <QMimeData>
-
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
 
 #include "MemoryLeakCheck.h"
 
@@ -689,21 +690,36 @@ namespace ECEditor
         // Find a new QTreeWidgetItem from the browser and save the information to ComponentGroup object.
         for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
             oldList.insert(treeWidget_->topLevelItem(i));
+
+        // Disconnect itemExpanded() and itemCollapsed() signal before we create new items to the treewidget
+        // so that we don't spam TreeWidgetItemExpandMemory's 
+        if (expandMemory_.lock())
+        {
+            disconnect(treeWidget_, SIGNAL(itemExpanded(QTreeWidgetItem *)), expandMemory_.lock().get(), SLOT(HandleItemExpanded(QTreeWidgetItem *)));
+            disconnect(treeWidget_, SIGNAL(itemCollapsed(QTreeWidgetItem *)), expandMemory_.lock().get(), SLOT(HandleItemCollapsed(QTreeWidgetItem *)));
+        }
+
         ECComponentEditor *componentEditor = new ECComponentEditor(comp, this);
         for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
             newList.insert(treeWidget_->topLevelItem(i));
+
         QSet<QTreeWidgetItem*> changeList = newList - oldList;
         QTreeWidgetItem *newItem = 0;
         if(changeList.size() == 1)
+        {
             newItem = (*changeList.begin());
+            // Apply possible item expansions for the new item.
+            if (expandMemory_.lock())
+                expandMemory_.lock()->ExpandItem(treeWidget_, newItem);
+        }
         else
         {
-            ECEditorModule::LogError("Failed to add a new component to ECEditor, for some reason the QTreeWidgetItem was not created."
-                                     " Make sure that ECComponentEditor was intialized properly.");
+            LogError("Failed to add a new component to ECEditor, for some reason the QTreeWidgetItem was not created."
+                " Make sure that ECComponentEditor was intialized properly.");
             return;
         }
 
-        bool dynamic = comp->TypeName() == "EC_DynamicComponent";
+        bool dynamic = comp->TypeName() == EC_DynamicComponent::TypeNameStatic();
         if(dynamic)
         {
             EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
@@ -711,15 +727,19 @@ namespace ECEditor
             connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()), Qt::UniqueConnection);
             connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)), Qt::UniqueConnection);
         }
+
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
         if(compGroup)
             componentGroups_.push_back(compGroup);
 
-        if(treeWidget_)
+        // Connect itemExpanded() and itemCollapsed() signals back so that TreeWidgetItemExpandMemory
+        // is kept up to date when user expands and collapses items.
+        if (expandMemory_.lock())
         {
-            treeWidget_->expandItem(newItem);
-            for(uint i = 0; i < newItem->childCount(); i++)
-                treeWidget_->collapseItem(newItem->child(i));
+            connect(treeWidget_, SIGNAL(itemExpanded(QTreeWidgetItem *)), expandMemory_.lock().get(),
+                SLOT(HandleItemExpanded(QTreeWidgetItem *)), Qt::UniqueConnection);
+            connect(treeWidget_, SIGNAL(itemCollapsed(QTreeWidgetItem *)), expandMemory_.lock().get(),
+                SLOT(HandleItemCollapsed(QTreeWidgetItem *)), Qt::UniqueConnection);
         }
     }
 
