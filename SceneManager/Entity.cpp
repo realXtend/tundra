@@ -425,7 +425,7 @@ namespace Scene
     EntityAction *Entity::Action(const QString &name)
     {
         foreach(EntityAction *action, actions_)
-            if (action->Name().compare(name, Qt::CaseInsensitive))
+            if (action->Name().compare(name, Qt::CaseInsensitive) == 0)
                 return action;
 
         EntityAction *action = new EntityAction(name);
