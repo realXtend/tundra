@@ -86,6 +86,21 @@ public slots:
      */
     QStringList GetEntityNamesInside() const;
 
+    //! Returns an approximate percent of how much of the entity is inside this volume, [0,1]
+    /*! If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
+        \note Uses axis aligned bounding boxes for calculations, so it is not accurate.
+        \param entity entity
+        \return approximated percent of how much of the entity is inside this volume
+    */
+    float GetEntityInsidePercent(Scene::Entity *entity) const;
+
+    //! Returns an approximate percent of how much of the entity is inside this volume, [0,1]
+    /*! If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
+        \note Uses axis aligned bounding boxes for calculations, so it is not accurate.
+        \param name entity name
+        \return approximated percent of how much of the entity is inside this volume
+    */
+    float GetEntityInsidePercentByName(const QString &name) const;
 
 private slots:
     //! Called when some of the attributes has been changed.
