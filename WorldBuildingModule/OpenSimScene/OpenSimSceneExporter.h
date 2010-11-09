@@ -40,7 +40,9 @@ namespace WorldBuilding
         void InternalDestroyed(QObject *object);
 
         QHash<QString, QString> ProcessAssetsRefs(QDir store_location, const QString &asset_base_url, const QString &subfolder, const QString &asset_type, QSet<QString> *ref_set);
-        bool ReplaceMaterialTextureRefs(const QDir &store_location_textures,  const QString &asset_base_url, const QString &material_file_path);
+        int ReplaceMaterialTextureRefs(const QDir &store_location_textures,  const QString &asset_base_url, const QString &material_file_path);
+        int ReplaceParticleMaterialRefs(const QDir store_location_particles, const QString &asset_base_url, const QString &particle_file_path);
+        QString TryStoreTexture(const QString &original_ref, const QDir &store_location, const QString &base_url);
         QString GetCacheFilename(const QString &asset_id, const QString &type);
         void CleanLocalDir(QDir dir);
 

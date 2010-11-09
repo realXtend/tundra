@@ -105,6 +105,11 @@ namespace WorldBuilding
         backup_sounds_ = ui_.soundsCheckBox->isChecked();
 
         QString input_location = ui_.lineedit_store_location->text();
+        if (input_location.isEmpty())
+        {
+            QMessageBox::information(backup_widget_, "Invalid directory", "Given store directory is a empty string.");
+            return;
+        }
         QDir store_dir(input_location);
         if (!store_dir.exists())
         {
@@ -195,16 +200,6 @@ namespace WorldBuilding
         else
             Log("-- Skipping animation export");
 
-        // Particle processing
-        if (backup_particles_)
-        {
-            asset_type = "ParticleScript";
-            subfolder = "scripts";
-            old_to_new_references.unite(ProcessAssetsRefs(store_location, asset_base_url, subfolder, asset_type, particle_ref_set));
-        }
-        else
-            Log("-- Skipping particle script export");
-
         // Sound
         if (backup_sounds_)
         {
@@ -229,6 +224,7 @@ namespace WorldBuilding
                 WorldBuildingModule::LogDebug("SceneExport: Processing textures and materials");
                 LogHeadline("Processing", "textures and materials");
                 CleanLocalDir(store_location_textures);
+                CleanLocalDir(store_location);
                 Log("-- Parsing material scripts to resolve texture references");
                 
                 int found_tex = 0;
@@ -249,59 +245,15 @@ namespace WorldBuilding
                         // Texture
                         if (mat_type == 0) 
                         {
-                            TextureDecoder::TextureResource *texture = texture_service->GetFromCache(mat_ref.toStdString());
-                            if (texture)
+                            QString replace_url = TryStoreTexture(mat_ref, store_location_textures, asset_base_url);
+                            if (!replace_url.isEmpty() && replace_url != "DYNAMIC_TEXTURE_CREATION_FAILED")
                             {
-                                QImage::Format qt_format;
-                                int ogre_format = texture->GetFormat();
-                                switch (ogre_format)
-                                {
-                                    case 6:
-                                        qt_format = QImage::Format_RGB16;
-                                        break;
-                                    case 26:
-                                        qt_format = QImage::Format_RGB32;
-                                        break;
-                                    case 12:
-                                        qt_format = QImage::Format_ARGB32;
-                                        break;
-                                    default:
-                                        qt_format = QImage::Format_Invalid;
-                                        break;
-                                }
-
-                                if (qt_format == QImage::Format_Invalid)
-                                {
-                                    WorldBuildingModule::LogDebug(">> Could not resolve texture format: " + QString::number(ogre_format).toStdString() + ", skipping texture");
-                                    failed_tex++;
-                                    continue;
-                                }
-
-                                QImage image(texture->GetData(), texture->GetWidth(), texture->GetHeight(), qt_format);
-                                if (image.isNull())
-                                {
-                                    WorldBuildingModule::LogDebug(">> Failed to create image from raw texture data, skipping texture");
-                                    failed_tex++;
-                                    continue;
-                                }
-        
-                                QString file_only = QString(texture->GetId().c_str()).split("/").last();
-                                file_only = file_only.split(".").first();
-                                if (file_only.isEmpty())
-                                    file_only = "Texture-" + QString::number(found_tex+1);
-                                file_only.append(".png");
-            
-                                QString tex_filename = store_location_textures.absoluteFilePath(file_only);
-                                if (!image.save(tex_filename, "PNG"))
-                                {
-                                    WorldBuildingModule::LogDebug(">> Failed to store texture as png, skipping texture");
-                                    failed_tex++;
-                                    continue;
-                                }
-                                old_to_new_references[mat_ref] = asset_base_url + "/textures/" + file_only;
+                                old_to_new_references[mat_ref] = replace_url;
                                 found_tex++;
                             }
-                            else
+                            else if (replace_url == "DYNAMIC_TEXTURE_CREATION_FAILED")
+                                failed_tex++;
+                            else if (replace_url.isEmpty())
                                 not_found_tex++;
                         }
                         // Material script
@@ -323,8 +275,8 @@ namespace WorldBuilding
                                     found_mat++;
             
                                     // Replace all texture refs inside material scipts
-                                    if (ReplaceMaterialTextureRefs(store_location_textures, asset_base_url, new_filename))
-                                        replaced_material_texture_refs++;
+                                    int replaced = ReplaceMaterialTextureRefs(store_location_textures, asset_base_url, new_filename);
+                                    replaced_material_texture_refs += replaced;
                                 }
                                 else
                                 {
@@ -389,6 +341,7 @@ namespace WorldBuilding
                 }
                 else
                     WorldBuildingModule::LogError(">> Texture service not accessible, aborting processing");
+                store_location.cdUp();
             }
             else
                 WorldBuildingModule::LogError(">> Failed to create textures and scripts folders, aborting processing");
@@ -397,6 +350,15 @@ namespace WorldBuilding
         else
             Log("-- Skipping texture and material script export");
 
+        // Particle processing
+        if (backup_particles_)
+        {
+            asset_type = "ParticleScript";
+            subfolder = "scripts";
+            old_to_new_references.unite(ProcessAssetsRefs(store_location, asset_base_url, subfolder, asset_type, particle_ref_set));
+        }
+        else
+            Log("-- Skipping particle script export");
 
         // Replace old references references
         QString new_ref;
@@ -456,13 +418,16 @@ namespace WorldBuilding
         if (store_location.cd(subfolder))
         {
             WorldBuildingModule::LogDebug("SceneExport: Processing " + subfolder.toStdString());
-            LogHeadline("Processing", subfolder);
-            CleanLocalDir(store_location);
+            LogHeadline("Processing ", subfolder + " / " + asset_type);
+
+            if (asset_type != "ParticleScript")
+                CleanLocalDir(store_location);
 
             // Copy from cache to target dir
             int copied = 0;
             int not_found = 0;
             int failed = 0;
+            int replaced = -1;
 
             foreach(QString ref, *ref_set)
             {
@@ -487,6 +452,15 @@ namespace WorldBuilding
                     {
                         ref_to_file[ref] = asset_base_url + "/" + subfolder + "/" + file_only;
                         copied++;
+
+                        if (asset_type == "ParticleScript")
+                        {
+                            if (replaced == -1)
+                                replaced = 0;
+
+                            int replaced_count = ReplaceParticleMaterialRefs(store_location, asset_base_url, new_filename);
+                            replaced += replaced_count;
+                        }
                     }
                     else
                     {
@@ -519,6 +493,10 @@ namespace WorldBuilding
                 WorldBuildingModule::LogDebug(">> There was no " + subfolder.toStdString() + " in this scene");
                 Log(QString(">> There was no %1 in the scene").arg(subfolder));
             }
+            if (replaced >= 0)
+            {
+                LogHeadline(">> Replaced material references:", QString::number(replaced));
+            }
             
             // Remove the dir if its empty
             if (copied == 0)
@@ -536,107 +514,65 @@ namespace WorldBuilding
         return ref_to_file;
     }
 
-    bool SceneExporter::ReplaceMaterialTextureRefs(const QDir &store_location_textures, const QString &asset_base_url, const QString &material_file_path)
+    int SceneExporter::ReplaceMaterialTextureRefs(const QDir &store_location_textures, const QString &asset_base_url, const QString &material_file_path)
     {
-        bool rewrite = false;
-        Foundation::TextureServiceInterface *texture_service = framework_->GetService<Foundation::TextureServiceInterface>();
-        if (!texture_service)
-            return rewrite;
+        QString KEYWORD = "texture ";
 
+        QHash<QString, QString> old_to_new_ref;
         QFile material_file(material_file_path);
         if (material_file.open(QIODevice::ReadWrite|QIODevice::Text))
         {
             QByteArray content = material_file.readAll();
+            content.replace('\t', " ");
+            content = content.trimmed();
+
             QString replace_url = "";
             QString texture_ref = "";
 
-            int i_start = content.indexOf("texture ");
-            if (i_start != -1)
+            int i_start = content.indexOf(KEYWORD);
+            while (i_start != -1)
             {
-                i_start += QString("texture ").length();
-                int i_end = content.indexOf('\n', i_start);
+                i_start += QString(KEYWORD).length();
+                int i_end_space = content.indexOf(" ", i_start);
+                int i_end_endl = content.indexOf('\n', i_start);
+
+                // If either was not found
+                if (i_end_space == -1 && i_end_endl == -1)
+                {
+                    i_start = content.indexOf(KEYWORD, i_start);
+                    continue;
+                }
+
+                // Make the ' ' or '\n' the end index, which one is lower
+                int i_end = i_end_endl;
+                if (i_end_space > 0)
+                    if (i_end_space < i_end)
+                        i_end = i_end_space;
                 if (i_end != -1)
                 {
                     int ref_len = i_end - i_start;
                     QByteArray texture_ref_b = content.mid(i_start, ref_len);
                     texture_ref = QString(texture_ref_b);
 
-                    TextureDecoder::TextureResource *texture = texture_service->GetFromCache(texture_ref.toStdString());
-                    if (texture)
-                    {
-                        // This will do <UUID>.png or whatever the original ref was in the script
-                        QString file_only = QString(texture_ref);
-                        file_only.append(".png");
-
-                        // New filename in our export location and the url to replace in the material script
-                        QString tex_filename = store_location_textures.absoluteFilePath(file_only);
-                        replace_url = asset_base_url + "/textures/" + file_only;
-
-                        // Read texture resource data
-                        QImage::Format qt_format;
-                        int ogre_format = texture->GetFormat();
-                        int comps = texture->GetComponents();
-
-                        // Try to resolce qt format with ogre format
-                        switch (ogre_format)
-                        {
-                            case 6:
-                                qt_format = QImage::Format_RGB16;
-                                break;
-                            case 26:
-                                qt_format = QImage::Format_RGB32;
-                                break;
-                            case 12:
-                                qt_format = QImage::Format_ARGB32;
-                                break;
-                            default:
-                                qt_format = QImage::Format_Invalid;
-                                break;
-                        }
-
-                        // -1 means jpeg2000, lets use ogre to get the correct pixelformat
-                        // as qt does not provide ABGR directly
-                        if (ogre_format == -1)
-                        {
-                            Ogre::Image image;
-                            Ogre::PixelFormat ogre_image_format;
-                            if (comps == 4)
-                                ogre_image_format = Ogre::PF_A8B8G8R8;
-                            else if (comps == 3)
-                                ogre_image_format = Ogre::PF_B8G8R8;
-                            else
-                                WorldBuildingModule::LogDebug(">> Failed to store material texture with ogre, unhandled comps ");
-                            image.loadDynamicImage(texture->GetData(), texture->GetWidth(), texture->GetHeight(), ogre_image_format);
-                            image.save(tex_filename.toStdString());                           
-                            qt_format = QImage::Format_Invalid;
-                            rewrite = true;
-                        }
-
-                        // If qt format can be used, lets make a qimage out of the data
-                        if (qt_format != QImage::Format_Invalid)
-                        {
-                            QImage image(texture->GetData(), texture->GetWidth(), texture->GetHeight(), qt_format);
-                            if (!image.isNull())
-                            {
-                                if (image.save(tex_filename, "PNG"))
-                                    rewrite = true;
-                                else
-                                    WorldBuildingModule::LogDebug(">> Failed to store texture as png, skipping texture");
-
-                            }
-                            else
-                                WorldBuildingModule::LogDebug(">> Failed to create image from raw texture data, skipping texture");
-                        }
-                        else
-                            WorldBuildingModule::LogDebug(">> Could not resolve texture format: " + QString::number(ogre_format).toStdString() + ", skipping texture");
-                    }
+                    // Try to get the texture from texture cache and store it to our texture location with qt or ogre
+                    // depending on the pixel format and components
+                    replace_url = TryStoreTexture(texture_ref, store_location_textures, asset_base_url);
+                    if (!replace_url.isEmpty() && replace_url != "DYNAMIC_TEXTURE_CREATION_FAILED")
+                        old_to_new_ref[texture_ref] = replace_url;
                 }
+
+                // Look for the next texture
+                i_start = content.indexOf(KEYWORD, i_start);
             }
 
             // If the texture could be replicated to our export location, replace the old refs with our new url ref
-            if (rewrite && !texture_ref.isEmpty() && !replace_url.isEmpty())
+            if (old_to_new_ref.count() > 0)
             {
-                content.replace(QByteArray(texture_ref.toStdString().c_str()), QByteArray(replace_url.toStdString().c_str()));
+                foreach(QString old_ref, old_to_new_ref.keys())
+                {
+                    QByteArray new_ref(old_to_new_ref[old_ref].toStdString().c_str());
+                    content.replace(QByteArray(old_ref.toStdString().c_str()), new_ref);
+                }
                 material_file.resize(0);
                 material_file.write(content);
             }
@@ -645,7 +581,199 @@ namespace WorldBuilding
         else
             WorldBuildingModule::LogDebug("SceneExport: Could not open copied material script");
 
-        return rewrite;
+        return old_to_new_ref.count();
+    }
+
+    int SceneExporter::ReplaceParticleMaterialRefs(const QDir store_location_particles, const QString &asset_base_url, const QString &particle_file_path)
+    {
+        bool overwrite = false;
+        int replaced = 0;
+        QString old_ref;
+        QString new_ref;
+
+        QDir texture_location(store_location_particles);
+        texture_location.cdUp();
+        texture_location.cd("textures");
+
+        QFile particle_file(particle_file_path);
+        if (particle_file.open(QIODevice::ReadWrite|QIODevice::Text))
+        {
+            QByteArray content = particle_file.readAll();
+            content.replace('\t', " ");
+            content = content.trimmed();
+
+            QString replace_url = "";
+            QString texture_ref = "";
+
+            int i_start = content.indexOf("material ");
+            if (i_start != -1)
+            {
+                i_start += QString("material ").length();
+                int i_end_space = content.indexOf(" ", i_start);
+                int i_end_endl = content.indexOf('\n', i_start);
+
+                // If either was not found
+                if (i_end_space == -1 && i_end_endl == -1)
+                    return 0;
+
+                // Make the ' ' or '\n' the end index, which one is lower
+                int i_end = i_end_endl;
+                if (i_end_space > 0)
+                    if (i_end_space < i_end)
+                        i_end = i_end_space;
+                if (i_end != -1)
+                {
+                    int ref_len = i_end - i_start;
+                    QByteArray material_ref_b = content.mid(i_start, ref_len);
+                    old_ref = QString(material_ref_b);
+                    
+
+                    QString cache_file = GetCacheFilename(old_ref, "MaterialScript");
+                    QString file_only = cache_file.split("/").last().toLower();
+                    file_only.replace(".materialscript", ".material");
+
+
+                    // 1. Check from our store location if this material script was already
+                    //    moved and its textures replaced inside. This is the ideal case
+                    if (store_location_particles.exists(file_only))
+                    {
+                        new_ref = asset_base_url + "/scripts/" + file_only;
+                        overwrite = true;
+                    }
+                    // 2. Check the cache if this material is in there. If found
+                    //    we have to replace the textures and move it to our scripts location
+                    else
+                    {
+                        if (QFile::exists(cache_file))
+                        {
+                            QString new_material_path = store_location_particles.absoluteFilePath(file_only);
+                            if (QFile::copy(cache_file, new_material_path))
+                            {
+                                new_ref = asset_base_url + "/scripts/" + file_only;
+                                overwrite = true;
+
+                                ReplaceMaterialTextureRefs(texture_location, asset_base_url, new_material_path);
+                            }
+                        }
+                        // 3. Check if this "material" is really a texture. There is a mechanish in naali and the legacy
+                        //    viewer to accept textures here too. It will generate a fullbringht material with that texture dynamically.
+                        else
+                        {
+                            QString replace_url = TryStoreTexture(old_ref, texture_location, asset_base_url);
+                            if (!replace_url.isEmpty() && replace_url != "DYNAMIC_TEXTURE_CREATION_FAILED")
+                            {
+                                new_ref = replace_url;
+                                overwrite = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (overwrite)
+            {
+                content.replace(QByteArray(old_ref.toStdString().c_str()), QByteArray(new_ref.toStdString().c_str()));
+                particle_file.resize(0);
+                particle_file.write(content);
+                replaced++;
+            }
+            particle_file.close();
+        }
+
+        return replaced;
+    }
+
+    QString SceneExporter::TryStoreTexture(const QString &original_ref, const QDir &store_location, const QString &base_url)
+    {
+        QString new_ref = "DYNAMIC_TEXTURE_CREATION_FAILED"; // a bit of a hack, yeah
+        Foundation::TextureServiceInterface *texture_service = framework_->GetService<Foundation::TextureServiceInterface>();
+        if (!texture_service)
+            return new_ref;
+
+        TextureDecoder::TextureResource *texture = texture_service->GetFromCache(original_ref.toStdString());
+        if (texture)
+        {
+            // This will get the original name of a web texture <name>.png
+            // and for UUIDs/other single word id's it will fallback to <UUID>.png
+            QString file_only = QString(texture->GetId().c_str()).split("/").last();
+            file_only = file_only.split(".").first();
+            if (file_only.isEmpty())
+                file_only = QString(texture->GetId().c_str()).split(".").first();
+            file_only.append(".png");
+
+            // New filename in our export location and the url to replace in the material script
+            QString tex_filename = store_location.absoluteFilePath(file_only);
+            QString replace_url = base_url + "/textures/" + file_only;
+
+            // Read texture resource data
+            int ogre_format = texture->GetFormat();
+            int comps = texture->GetComponents();
+
+            // -1 means jpeg2000, lets use ogre to get the correct pixelformat
+            // as qt does not provide ABGR directly
+            if (ogre_format == -1)
+            {
+                Ogre::Image image;
+                Ogre::PixelFormat ogre_image_format;
+                if (comps == 1)
+                    ogre_image_format = Ogre::PF_L8;
+                else if (comps == 2)
+                    ogre_image_format = Ogre::PF_BYTE_LA;
+                else if (comps == 3)
+                    ogre_image_format = Ogre::PF_B8G8R8;
+                else if (comps == 4)
+                    ogre_image_format = Ogre::PF_A8B8G8R8;
+                else
+                {
+                    WorldBuildingModule::LogDebug(">> Failed to store material texture with ogre, unhandled comps: " + QString::number(comps).toStdString());
+                    return new_ref;
+                }                
+                image.loadDynamicImage(texture->GetData(), texture->GetWidth(), texture->GetHeight(), ogre_image_format);
+                image.save(tex_filename.toStdString());                           
+                new_ref = replace_url;
+            }
+            else
+            {
+                // Try to resolce qt format with ogre format
+                QImage::Format qt_format;
+                switch (ogre_format)
+                {
+                    case 6:
+                        qt_format = QImage::Format_RGB16;
+                        break;
+                    case 26:
+                        qt_format = QImage::Format_RGB32;
+                        break;
+                    case 12:
+                        qt_format = QImage::Format_ARGB32;
+                        break;
+                    default:
+                        qt_format = QImage::Format_Invalid;
+                        break;
+                }
+
+                // If qt format can be used, lets make a qimage out of the data
+                if (qt_format != QImage::Format_Invalid)
+                {
+                    QImage image(texture->GetData(), texture->GetWidth(), texture->GetHeight(), qt_format);
+                    if (!image.isNull())
+                    {
+                        if (image.save(tex_filename, "PNG"))
+                            new_ref = replace_url;
+                        else
+                            WorldBuildingModule::LogDebug(">> Qt failed to store texture as png, skipping texture");
+                    }
+                    else
+                        WorldBuildingModule::LogDebug(">> Failed to create image from raw texture data, skipping texture");
+                }
+                else
+                    WorldBuildingModule::LogDebug(">> Could not resolve texture format: " + QString::number(ogre_format).toStdString() + ", skipping texture");
+            }
+        }
+        else
+            return ""; // empty means was not in cache aka "not found"
+
+        return new_ref;
     }
 
     void SceneExporter::CleanLocalDir(QDir dir)
