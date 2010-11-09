@@ -45,8 +45,8 @@ void SceneInteract::Raycast()
     if (renderer_.expired())
         return;
 
-    Foundation::RaycastResult result = renderer_.lock()->Raycast(lastX_, lastY_);
-    if (!result.entity_ || itemUnderMouse_)
+    RaycastResult* result = renderer_.lock()->Raycast(lastX_, lastY_);
+    if (!result->entity_ || itemUnderMouse_)
     {
         if (!lastHitEntity_.expired())
             lastHitEntity_.lock()->Exec("MouseHoverOut");
@@ -55,7 +55,7 @@ void SceneInteract::Raycast()
     }
 
     Scene::EntityPtr lastEntity = lastHitEntity_.lock();
-    Scene::EntityPtr entity = result.entity_->GetSharedPtr();
+    Scene::EntityPtr entity = result->entity_->GetSharedPtr();
     if (entity != lastEntity)
     {
         if (lastEntity)

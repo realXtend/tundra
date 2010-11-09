@@ -18,6 +18,7 @@
 #include "SceneManager.h"
 #include "ISoundService.h"
 #include "InputContext.h"
+#include "RenderServiceInterface.h"
 
 #include "EntityAction.h"
 
@@ -52,6 +53,9 @@ Q_DECLARE_METATYPE(Frame*);
 Q_DECLARE_METATYPE(ScriptConsole*);
 Q_DECLARE_METATYPE(Command*);
 Q_DECLARE_METATYPE(DelayedSignal*);
+
+//! Naali renderer defines
+Q_DECLARE_METATYPE(RaycastResult*);
 
 void ExposeQtMetaTypes(QScriptEngine *engine)
 {
@@ -101,6 +105,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<ISoundService::SoundState>("ISoundService::SoundState");
     qRegisterMetaType<ISoundService::SoundType>("SoundType");
     qRegisterMetaType<ISoundService::SoundType>("ISoundService::SoundType");
+
+    // Renderer metatypes
+    qScriptRegisterQObjectMetaType<RaycastResult*>(engine);
 }
 
 

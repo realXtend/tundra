@@ -76,13 +76,13 @@ namespace WorldBuilding
         Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
         {
-            Foundation::RaycastResult result = renderer->Raycast(mouse_event->x, mouse_event->y);
-            if (!result.entity_)
+            RaycastResult* result = renderer->Raycast(mouse_event->x, mouse_event->y);
+            if (!result->entity_)
                 return;
             // If adding fails it means its already in the list, then we remove it
-            const QString ent_id = QString::number(result.entity_->GetId());
-            if (!scene_widget_->AddEntityToList(ent_id, result.entity_))
-                scene_widget_->RemoveEntityFromList(ent_id, result.entity_);
+            const QString ent_id = QString::number(result->entity_->GetId());
+            if (!scene_widget_->AddEntityToList(ent_id, result->entity_))
+                scene_widget_->RemoveEntityFromList(ent_id, result->entity_);
         }
     }
 

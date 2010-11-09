@@ -870,12 +870,13 @@ namespace OgreRenderer
         return t;
     }
 
-    Foundation::RaycastResult Renderer::Raycast(int x, int y)
+    RaycastResult* Renderer::Raycast(int x, int y)
     {
-        Foundation::RaycastResult result;
+        static RaycastResult result;
+        
         result.entity_ = 0; 
         if (!initialized_)
-            return result;
+            return &result;
 
         float screenx = x / (float)renderWindow->OgreRenderWindow()->getWidth();
         float screeny = y / (float)renderWindow->OgreRenderWindow()->getHeight();
@@ -1034,13 +1035,13 @@ namespace OgreRenderer
             }
         }
 
-        return result;
+        return &result;
     }
 
   /* was the first non-qt version
-    Foundation::RaycastResult Renderer::FrustumQuery(int left, int top, int right, int bottom)
+    RaycastResult Renderer::FrustumQuery(int left, int top, int right, int bottom)
     {
-        Foundation::RaycastResult result;
+        RaycastResult result;
         result.entity_ = 0; 
         if (!initialized_)
             return result;

@@ -80,6 +80,16 @@ namespace OgreRenderer
         //for local dotscene loading to be able to load from the dir where the export is
         void AddResourceDirectory(const QString &directory);
 
+        //! Do raycast into the world from viewport coordinates.
+        /*! The coordinates are a position in the render window, not scaled to [0,1].
+            \todo Returns raw pointer to entity. Returning smart pointer may take some thinking/design. Maybe just return entity id?
+
+            \param x Horizontal position for the origin of the ray
+            \param y Vertical position for the origin of the ray
+            \return Raycast result structure
+        */
+        virtual RaycastResult* Raycast(int x, int y);
+        
     public:
         //! Constructor
         /*! \param framework Framework pointer.
@@ -95,16 +105,6 @@ namespace OgreRenderer
 
         //! Destructor
         virtual ~Renderer();
-
-        //! Do raycast into the world from viewport coordinates.
-        /*! The coordinates are a position in the render window, not scaled to [0,1].
-            \todo Returns raw pointer to entity. Returning smart pointer may take some thinking/design. Maybe just return entity id?
-
-            \param x Horizontal position for the origin of the ray
-            \param y Vertical position for the origin of the ray
-            \return Raycast result structure
-        */
-        virtual Foundation::RaycastResult Raycast(int x, int y);
         
         //! Subscribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
