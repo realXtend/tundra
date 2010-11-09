@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef EC_SKYBOX_H_
-#define EC_SKYBOX_H_
+#ifndef incl_EnvironmentModule_EC_SkyBox_h
+#define incl_EnvironmentModule_EC_SkyBox_h
 
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -9,14 +9,15 @@
 #include "CoreTypes.h"
 #include "RexTypes.h"
 #include "Quaternion.h"
+#include "AssetReference.h"
+#include "OgreModuleFwd.h"
 
 #include <QVariant>
 
-
+namespace Environment
+{
 /// Makes the entity a SkyBox
-
 /**
-
 <table class="header">
 <tr>
 <td>
@@ -34,6 +35,8 @@ before these features can be used.
 
 <b>Attributes</b>:
 <ul>
+<li> AssetReference: materialRef.
+<div> Sky material reference.</div>
 <li> QString : materialAttr.
 <div> The name of the material the box will use </div>
 <li> QVariantList : textureAttr.
@@ -46,87 +49,70 @@ before these features can be used.
 <div> If true, the box is drawn before all other geometry in the scene. </div>
 
 </ul>
- 
 </table>
-
 */
-
-namespace OgreRenderer
-{
-    class Renderer;
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-}
-
-
-namespace Environment
-{
     class EC_SkyBox : public IComponent
     {
         Q_OBJECT
         DECLARE_EC(EC_SkyBox);
     
-        public:
-            virtual ~EC_SkyBox();
+    public:
+        virtual ~EC_SkyBox();
 
-            virtual bool IsSerializable() const { return true; }
-            
-            /// Name of sky material 
-            DEFINE_QPROPERTY_ATTRIBUTE(QString, materialAttr);
-            Q_PROPERTY(QString  materialAttr READ getmaterialAttr WRITE setmaterialAttr); 
-            
-            /// Defines sky material texture
-            DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, textureAttr);
-            Q_PROPERTY(QVariantList textureAttr READ gettextureAttr WRITE settextureAttr); 
-            
-            DEFINE_QPROPERTY_ATTRIBUTE(float, distanceAttr);
-            Q_PROPERTY(float distanceAttr READ getdistanceAttr WRITE setdistanceAttr); 
-            
-            DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientationAttr);
-            Q_PROPERTY(Quaternion orientationAttr READ getorientationAttr WRITE setorientationAttr); 
-            
-             /// Defines that is sky drawn first
-            DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirstAttr);
-            Q_PROPERTY(bool drawFirstAttr READ getdrawFirstAttr WRITE setdrawFirstAttr); 
-           
-        public slots: 
-            
-             /// Called If some of the attributes has been changed.
-            void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
-            void DisableSky();
-        private:
-            
+        virtual bool IsSerializable() const { return true; }
 
-           /** 
-            * Constuctor.
-            * @param module Module where component belongs.
-            **/
-            explicit EC_SkyBox(IModule *module);
+        /// Sky material reference
+        DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
+        Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
+
+        /// Name of sky material 
+        DEFINE_QPROPERTY_ATTRIBUTE(QString, materialAttr);
+        Q_PROPERTY(QString  materialAttr READ getmaterialAttr WRITE setmaterialAttr); 
+
+        /// Defines sky material texture
+        DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, textureAttr);
+        Q_PROPERTY(QVariantList textureAttr READ gettextureAttr WRITE settextureAttr); 
+
+        DEFINE_QPROPERTY_ATTRIBUTE(float, distanceAttr);
+        Q_PROPERTY(float distanceAttr READ getdistanceAttr WRITE setdistanceAttr); 
         
-           /**
-            * Helper function which is used to update sky plane state. 
-            *
-            */
-            void ChangeSkyBox(IAttribute* attribute);
+        DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientationAttr);
+        Q_PROPERTY(Quaternion orientationAttr READ getorientationAttr WRITE setorientationAttr); 
+        
+         /// Defines that is sky drawn first
+        DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirstAttr);
+        Q_PROPERTY(bool drawFirstAttr READ getdrawFirstAttr WRITE setdrawFirstAttr); 
+       
+    public slots: 
+        
+         /// Called If some of the attributes has been changed.
+        void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+        void DisableSky();
+    private:
+       /** 
+        * Constuctor.
+        * @param module Module where component belongs.
+        **/
+        explicit EC_SkyBox(IModule *module);
+    
+       /**
+        * Helper function which is used to update sky plane state. 
+        *
+        */
+        void ChangeSkyBox(IAttribute* attribute);
 
-            void CreateSky();
-           
-            
-            void SetTextures();
-         
-            QString lastMaterial_;
-            float lastDistance_;
-            bool lastDrawFirst_;
-            Quaternion lastOrientation_;
-            QVariantList lastTextures_;
+        void CreateSky();
+        void SetTextures();
 
-            /// Renderer
-            OgreRenderer::RendererWeakPtr renderer_;
+        QString lastMaterial_;
+        float lastDistance_;
+        bool lastDrawFirst_;
+        Quaternion lastOrientation_;
+        QVariantList lastTextures_;
 
+        /// Renderer
+        OgreRenderer::RendererWeakPtr renderer_;
     };
-
-
-
 }
 
-#endif // EC_SKYBOX_H_
+#endif

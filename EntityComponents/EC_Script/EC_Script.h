@@ -5,6 +5,7 @@
 
 #include "IComponent.h"
 #include "Declare_EC.h"
+#include "AssetReference.h"
 
 class IScriptInstance;
 
@@ -19,6 +20,8 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
 <b>Attributes</b>:
 <ul>
+<li>AssetReference: scriptRef
+<div>Reference the the script asset.</div> 
 <li>QString: scriptRef
 <div></div> 
 <li>QString: type
@@ -39,7 +42,7 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
 Does not emit any actions.
 
-<b>Doesn't depend on any entity Component</b>.
+<b>Doesn't depend on any other entity-component</b>.
 </table>
 */
 class EC_Script: public IComponent
@@ -51,17 +54,21 @@ public:
     /// Destructor.
     ~EC_Script();
 
+        //! Script asset reference
+    Q_PROPERTY(AssetReference scriptRef2 READ getscriptRef2 WRITE setscriptRef2);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, scriptRef2);
+
     /// IComponent override. This component is serializable.
     virtual bool IsSerializable() const { return true; }
 
     /// Type of the script as string (js/py)
     Q_PROPERTY(QString type READ gettype WRITE settype);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, type);
-    
+
     /// Is the script run as soon as the script reference is set/loaded.
     Q_PROPERTY(bool runOnLoad READ getrunOnLoad WRITE setrunOnLoad);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, runOnLoad);
-    
+
     /// Reference to a script file.
     Q_PROPERTY(QString scriptRef READ getscriptRef WRITE setscriptRef);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, scriptRef);

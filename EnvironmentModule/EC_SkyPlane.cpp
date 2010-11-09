@@ -4,25 +4,22 @@
 #include "DebugOperatorNew.h"
 #include "OgreConversionUtils.h"
 #include "EC_SkyPlane.h"
-
 #include "Renderer.h"
 #include "SceneManager.h"
-
-#include <Ogre.h>
-
-
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyPlane")
 
+#include <Ogre.h>
 
 #include "MemoryLeakCheck.h"
-
 
 namespace Environment
 {
      EC_SkyPlane::EC_SkyPlane(IModule *module)
         : IComponent(module->GetFramework()),
+        materialRef(this, "Material ref"),
         materialAttr(this, "Material" , "Rex/SkyPlane"),
+        textureRef(this, "Texture ref"),
         textureAttr(this, "Texture", "clouds.jpg"),
         tilingAttr(this, "Tiling", 150.f),
         scaleAttr(this, "Scale", 300.f),

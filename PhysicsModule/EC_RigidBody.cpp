@@ -30,15 +30,9 @@ static const float cTorqueThreshold = 0.0005f;
 
 EC_RigidBody::EC_RigidBody(IModule* module) :
     IComponent(module->GetFramework()),
-    body_(0),
-    world_(0),
-    shape_(0),
-    heightField_(0),
-    disconnected_(false),
-    owner_(checked_static_cast<PhysicsModule*>(module)),
-    mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
     size(this, "Size", Vector3df(1,1,1)),
+    collisionMeshRef(this, "Collision mesh ref"),
     collisionMeshId(this, "Collision mesh ref", ""),
     friction(this, "Friction", 0.5f),
     restitution(this, "Restitution", 0.0f),
@@ -50,6 +44,13 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     angularVelocity(this, "Angular velocity", Vector3df(0,0,0)),
     phantom(this, "Phantom", false),
     drawDebug(this, "Draw Debug", true),
+    body_(0),
+    world_(0),
+    shape_(0),
+    heightField_(0),
+    disconnected_(false),
+    owner_(checked_static_cast<PhysicsModule*>(module)),
+    mass(this, "Mass", 0.0f),
     cachedShapeType_(-1),
     collision_mesh_tag_(0)
 {

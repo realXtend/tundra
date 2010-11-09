@@ -27,7 +27,9 @@ EC_Mesh::EC_Mesh(IModule* module) :
     IComponent(module->GetFramework()),
     // Note: we put the opensim haxor adjust right here in the defaults, instead of hardcoding it in code.
     nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(90,0,180),Vector3df(1,1,1))),
+    meshRef(this, "Mesh ref"),
     meshResourceId(this, "Mesh ref", ""),
+    skeletonRef(this, "Skeleton ref"),
     skeletonId(this, "Skeleton ref", ""),
     meshMaterial(this, "Mesh materials"),
     drawDistance(this, "Draw distance", 0.0f),

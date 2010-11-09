@@ -6,6 +6,7 @@
 #include "Core.h"
 #include "IComponent.h"
 #include "LinearMath/btMotionState.h"
+#include "AssetReference.h"
 #include "Declare_EC.h"
 
 #include <QVector>
@@ -46,6 +47,8 @@ Registered by Physics::PhysicsModule.
 <div>Shape type. Can be box, sphere, cylinder, capsule, trimesh, or heightfield (not yet supported)</div>
 <li>Vector3df: size
 <div>Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.</div>
+<li>QString: collisionMeshRef
+<div>Asset ref of the collision mesh. Only effective if shapetype is TriMesh.</div>
 <li>QString: collisionMeshId
 <div>Asset ref of the collision mesh. Only effective if shapetype is TriMesh.</div>
 <li>float: friction
@@ -140,7 +143,11 @@ public:
     //! Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.
     Q_PROPERTY(Vector3df size READ getsize WRITE setsize)
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, size);
-    
+
+    //! Collision mesh asset reference.
+    Q_PROPERTY(AssetReference collisionMeshRef READ getcollisionMeshRef WRITE setcollisionMeshRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, collisionMeshRef);
+
     //! Collision mesh asset ID
     Q_PROPERTY(QString collisionMeshId READ getcollisionMeshId WRITE setcollisionMeshId);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, collisionMeshId);

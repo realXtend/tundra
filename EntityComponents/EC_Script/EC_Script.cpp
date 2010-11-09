@@ -51,6 +51,7 @@ void EC_Script::Stop(const QString &name)
 
 EC_Script::EC_Script(IModule *module):
     IComponent(module->GetFramework()),
+    scriptRef2(this, "Script ref"),
     type(this, "Type"),
     runOnLoad(this, "Run on load", false),
     scriptRef(this, "Script ref"),
