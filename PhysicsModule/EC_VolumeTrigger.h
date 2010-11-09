@@ -42,6 +42,7 @@ Does not emit any actions.
 
 <b>Depends on the component RigitBody.</b>.
 
+\note If you use 'byPivot' -option, the pivot point shouldn't be outside the mesh because physics collisions are used for efficiency even in this case.
 \todo If you add an entity to the 'interesting entities list', no signals may get send for that entity,
       and it may not show up in any list of entities contained in this volume trigger.
 
@@ -105,6 +106,9 @@ public slots:
         \return approximated percent of how much of the entity is inside this volume
     */
     float GetEntityInsidePercentByName(const QString &name) const;
+
+    //! Returns true if specified entity can be found in the 'interesting entities' list
+    bool IsInterestingEntity(const QString &entityName) const;
 
 private slots:
     //! Called when some of the attributes has been changed.
