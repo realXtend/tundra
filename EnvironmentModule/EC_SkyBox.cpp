@@ -6,22 +6,19 @@
 #include "EC_SkyBox.h"
 #include "Renderer.h"
 #include "SceneManager.h"
-#include <OgreMaterialUtils.h>
-
-#include <Ogre.h>
-
-
+#include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyBox")
 
+#include <Ogre.h>
 
 #include "MemoryLeakCheck.h"
-
 
 namespace Environment
 {
      EC_SkyBox::EC_SkyBox(IModule *module)
         : IComponent(module->GetFramework()),
+        materialRef(this, "Material"),
         materialAttr(this, "Material" , "Rex/skybox"),
         textureAttr(this, "Texture"),
         orientationAttr(this, "Orientation", Quaternion(f32(M_PI/2.0), Vector3df(1.0,0.0,0.0))),

@@ -17,13 +17,14 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
 
 EC_Sound::EC_Sound(IModule *module):
     IComponent(module->GetFramework()),
-    sound_id_(0),
+    soundRef(this, "Sound ref"),
     soundId(this, "Sound ref"),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
     loopSound(this, "Loop sound", false),
     triggerSound(this, "Trigger sound", false),
-    soundGain(this, "Sound gain", 1.0f)
+    soundGain(this, "Sound gain", 1.0f),
+    sound_id_(0)
 {
     static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain.SetMetadata(&metaData);

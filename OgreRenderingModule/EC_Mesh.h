@@ -9,16 +9,10 @@
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Transform.h"
+#include "AssetReference.h"
 #include "Declare_EC.h"
 
 #include <QVariant>
-
-namespace Ogre
-{
-    class Mesh;
-    class SceneNode;
-    class Skeleton;
-};
 
 //! Ogre mesh entity component
 /**
@@ -149,8 +143,16 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
     //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automaticly).
+    Q_PROPERTY(AssetReference meshRef READ getmeshRef WRITE setmeshRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, meshRef);
+
+    //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automaticly).
     Q_PROPERTY(QString meshResourceId READ getmeshResourceId WRITE setmeshResourceId);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, meshResourceId);
+
+    //! Skeleton asset reference.
+    Q_PROPERTY(AssetReference skeletonRef READ getskeletonRef WRITE setskeletonRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, skeletonRef);
 
     //! Skeleton asset id, will handle request resource automaticly.
     Q_PROPERTY(QString skeletonId READ getskeletonId WRITE setskeletonId);

@@ -22,11 +22,12 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
 
 EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     IComponent(module->GetFramework()),
-    particleSystem_(0),
-    particle_tag_(0),
+    particleRef(this, "Particle ref"),
     particleId(this, "Particle id"),
     castShadows(this, "Cast shadows", false),
-    renderingDistance(this, "Rendering distance", 0.0f)
+    renderingDistance(this, "Rendering distance", 0.0f),
+    particleSystem_(0),
+    particle_tag_(0)
 {
     renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 

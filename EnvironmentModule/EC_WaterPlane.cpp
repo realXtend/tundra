@@ -24,12 +24,10 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 
 #include "MemoryLeakCheck.h"
 
-
 namespace Environment
 {
-   
-    EC_WaterPlane::EC_WaterPlane(IModule *module)
-        : IComponent(module->GetFramework()),
+    EC_WaterPlane::EC_WaterPlane(IModule *module) :
+        IComponent(module->GetFramework()),
         xSizeAttr(this, "x-size", 5000),
         ySizeAttr(this, "y-size", 5000),
         depthAttr(this, "Depth", 20),
@@ -40,6 +38,7 @@ namespace Environment
         xSegmentsAttr(this, "Segments in x", 10),
         ySegmentsAttr(this, "Segments in y", 10),
         materialNameAttr(this, "Material", QString("Ocean")),
+        materialRef(this, "Material ref"),
        //textureNameAttr(this, "Texture", QString("DefaultOceanSkyCube.dds")),
         fogColorAttr(this, "Fog color", Color(0.2f,0.4f,0.35f,1.0f)),
         fogStartAttr(this, "Fog start dist.", 100.f),
@@ -113,15 +112,11 @@ namespace Environment
         }
     }
 
-
     void EC_WaterPlane::SetParent()
     {
         // Parent entity has set.
-               
         // Has parent a placeable?
-        
         EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
-        
         if ( placeable != 0)
         {
             // Are we currently attached?
@@ -131,13 +126,12 @@ namespace Environment
                 DetachEntity();
                 AttachEntity();
             }
-                
-          
         }
 
-        QObject::connect(parent_entity_,SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(ComponentAdded(IComponent*, AttributeChange::Type)));
-        QObject::connect(parent_entity_,SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)));
-
+        connect(parent_entity_,SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)),
+            SLOT(ComponentAdded(IComponent*, AttributeChange::Type)));
+        connect(parent_entity_,SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
+            SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)));
     }
 
     void EC_WaterPlane::ComponentAdded(IComponent* component, AttributeChange::Type type)
@@ -221,7 +215,6 @@ namespace Environment
         //Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
       
         return point.z - pointOnPlane.z;
-
     }
 
     bool EC_WaterPlane::IsTopOrBelowWaterPlane(const Vector3df& point) const
@@ -242,8 +235,6 @@ namespace Environment
             return true;
 
         return false;
-        
-
     }
 
     bool EC_WaterPlane::IsPointInsideWaterCube(const Vector3df& point) const
@@ -261,92 +252,77 @@ namespace Environment
       }
 
       return false; 
-
     }
-
-
 
     bool EC_WaterPlane::IsCameraInsideWaterCube()
     {
       // Check that is camera inside of defined waterplane. 
-   
       if ( entity_ == 0)
         return false;
 
       Ogre::Camera *camera = renderer_.lock()->GetCurrentCamera();
       Ogre::Vector3 posCamera = camera->getDerivedPosition();
-     
-        
+
       if ( IsTopOrBelowWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z)))
       {
             float depth = depthAttr.Get();
             float d = GetDistanceToWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z));
             if ( d < 0 && depth >= fabs(d) )
                 return true;
-
       }
 
       return false;
-
     }
-    
+
     void EC_WaterPlane::CreateWaterPlane()
     {
-        // Create waterplane    
-
+        // Create waterplane 
         if (renderer_.lock() != 0) 
         {
             Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
             assert(sceneMgr);
-           
+
             if (node_ != 0)
             {
-
                 int xSize = xSizeAttr.Get();
                 int ySize = ySizeAttr.Get();
                 float uTile =  scaleUfactorAttr.Get() * xSize; /// Default x-size 5000 --> uTile 1.0
                 float vTile =  scaleVfactorAttr.Get() * ySize;
                 
-                Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(name_.toStdString().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
-                    Ogre::Plane(Ogre::Vector3::UNIT_Z, 0),xSize, ySize, xSegmentsAttr.Get(), ySegmentsAttr.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
+                Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(name_.toStdString().c_str(),
+                    Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Z, 0),
+                    xSize, ySize, xSegmentsAttr.Get(), ySegmentsAttr.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
                 
                 entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName(), name_.toStdString().c_str());
                 entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
                 entity_->setCastShadows(false);
                 // Tries to attach entity, if there is not EC_Placeable availible, it will not attach object
                 AttachEntity();
-               
             }
         }
-
-      
     }
 
     void EC_WaterPlane::RemoveWaterPlane()
     {
         // Remove waterplane
-        
         if (renderer_.expired() || !entity_)
             return;
-        
+
         OgreRenderer::RendererPtr renderer = renderer_.lock();
 
         DetachEntity();
-        
+
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         scene_mgr->destroyEntity(entity_);
         entity_ = 0;
         
         Ogre::MeshManager::getSingleton().remove(name_.toStdString().c_str());
-
-
     }
 
     Ogre::ColourValue EC_WaterPlane::GetFogColorAsOgreValue() const
     {
         Color col = fogColorAttr.Get();
         return Ogre::ColourValue(col.r, col.g, col.b, col.a);
-
     }
 
     void EC_WaterPlane::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
@@ -356,9 +332,7 @@ namespace Environment
 
     void EC_WaterPlane::SetPosition()
     {
-        
         Vector3df vec = positionAttr.Get();
-                
         //node_->setPosition(vec.x, vec.y, vec.z);
 
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
@@ -373,19 +347,14 @@ namespace Environment
         Ogre::Vector3 pos(vec.x, vec.y, vec.z);
         if ( !RexTypes::IsValidPositionVector(vec) )
             return;
-        
-
         //node_->_setDerivedPosition(pos);
         node_->setPosition(pos);
 #endif
-
     }
 
     void EC_WaterPlane::SetOrientation()
     {
-       
-
-         // Set orientation
+        // Set orientation
         Quaternion rot = rotationAttr.Get();
 
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
@@ -486,7 +455,6 @@ namespace Environment
         
     }
 
-
     ComponentPtr EC_WaterPlane::FindPlaceable() const
     {
         assert(framework_);
@@ -495,10 +463,8 @@ namespace Environment
             return comp;
         comp = GetParentEntity()->GetComponent<EC_Placeable>();
         return comp;
-
     }
 
-   
     void EC_WaterPlane::AttachEntity()
     {
         if ( attached_ || entity_ == 0)
@@ -524,18 +490,15 @@ namespace Environment
             attachedToRoot_ = true;
 
         }
-        
-        attached_ = true;
 
-     
+        attached_ = true;
     }
-      
+
     void EC_WaterPlane::DetachEntity()
     {
 
         if ( !attached_ || entity_ == 0 )
             return;
-
 
         EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         
@@ -559,8 +522,5 @@ namespace Environment
         }
 
         attached_ = false;
-
-       
     }
-
 }
