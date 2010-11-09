@@ -113,6 +113,16 @@ namespace Foundation
             \param store_to_disk Whether to store to disk cache. Default true, but makes no sense for local assets
          */
         virtual void StoreAsset(AssetPtr asset, bool store_to_disk = true) = 0;
+        
+        //! Add a localassetprovider directory
+        /*! \todo Will be removed when the concept of assetstorages exists
+         */
+        virtual void AddLocalAssetDirectory(const std::string& dir, bool recursive) = 0;
+        
+        //! Remove a localassetprovider directory
+        /*! \todo Will be removed when the concept of assetstorages exists
+         */
+        virtual void RemoveLocalAssetDirectory(const std::string& dir) = 0;
     };
 }
 

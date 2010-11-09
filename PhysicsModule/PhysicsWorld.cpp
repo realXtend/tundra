@@ -156,9 +156,11 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     emit Updated(substeptime);
 }
 
-Scene::Entity* PhysicsWorld::Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup, int collisionmask)
+PhysicsRaycastResult* PhysicsWorld::Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup, int collisionmask)
 {
     PROFILE(PhysicsWorld_Raycast);
+    
+    static PhysicsRaycastResult result;
     
     Vector3df normalizedDir = direction;
     normalizedDir.normalize();
@@ -172,28 +174,24 @@ Scene::Entity* PhysicsWorld::Raycast(const Vector3df& origin, const Vector3df& d
     
     world_->rayTest(rayCallback.m_rayFromWorld, rayCallback.m_rayToWorld, rayCallback);
     
+    result.entity_ = 0;
+    result.distance_ = 0;
+    
     if (rayCallback.hasHit())
     {
-        Vector3df position = ToVector3(rayCallback.m_hitPointWorld);
-        Vector3df normal = ToVector3(rayCallback.m_hitNormalWorld);
-        float distance = (position - origin).getLength();
+        result.pos_ = ToVector3(rayCallback.m_hitPointWorld);
+        result.normal_ = ToVector3(rayCallback.m_hitNormalWorld);
+        result.distance_ = (result.pos_ - origin).getLength();
         if (rayCallback.m_collisionObject)
         {
             EC_RigidBody* body = static_cast<EC_RigidBody*>(rayCallback.m_collisionObject->getUserPointer());
-            Scene::Entity* entity = 0;
             if (body)
-                entity = body->GetParentEntity();
-            if (entity)
-            {
-                emit RaycastResult(entity, position, normal, distance);
-                return entity;
-            }
+                result.entity_ = body->GetParentEntity();
         }
     }
     
-    return 0;
+    return &result;
 }
-
 
 }
 

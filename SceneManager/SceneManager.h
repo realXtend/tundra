@@ -63,7 +63,7 @@ namespace Scene
         //! Return a scene document with just the desired entity
         QByteArray GetEntityXml(Scene::Entity *entity);
         
-        void EmitEntityCreated(QObject* entity, AttributeChange::Type change = AttributeChange::Default);
+        void EmitEntityCreated(Scene::Entity *entity, AttributeChange::Type change = AttributeChange::Default);
         
         void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
     public:
@@ -265,7 +265,7 @@ namespace Scene
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Entity *>CreateContentFromXml(const QDomDocument &xml, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool replaceOnConflict, AttributeChange::Type change);
 
         //! Creates scene content from binary file.
         /*! \param filename File name.
@@ -273,7 +273,7 @@ namespace Scene
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Entity *>CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Entity *> CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
 
         //! This is an overloaded function.
         /*! \param data Data buffer.
@@ -282,7 +282,7 @@ namespace Scene
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Entity *>CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
 
     signals:
         //! Signal when an attribute of a component has changed
@@ -320,15 +320,17 @@ namespace Scene
             \param action Name of action that was triggered.
             \param params Parameters of the action.
             \param type Execution type.
+
+            \note Use case-insensitive comparison for checking name of the @c action !
         */
         void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
-        
+
         //! Emitted when being destroyed
         void Removed(Scene::SceneManager* scene);
-        
+
         //! Signal when the whole scene is cleared
         void SceneCleared(Scene::SceneManager* scene);
-        
+
     private:
         Q_DISABLE_COPY(SceneManager);
 
