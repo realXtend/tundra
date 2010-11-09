@@ -110,6 +110,10 @@ public:
     
 public slots:
     //! Get a physics world for a scene. This version meant for scripts
+    /*! Note: the parameter is a QObject*, because typically the scriptengine's dynamic property scene is used to query for physicsobject.
+        But it seems to lose its knowledge of actually being a Scene::SceneManager*, and returns null. This version will dynamic cast
+        to Scene::SceneManager*
+     */ 
     Physics::PhysicsWorld* GetPhysicsWorld(QObject* scene);
     
     //! Enable/disable physics simulation

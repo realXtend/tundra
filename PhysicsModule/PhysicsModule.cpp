@@ -28,6 +28,7 @@
 
 Q_DECLARE_METATYPE(Physics::PhysicsModule*);
 Q_DECLARE_METATYPE(Physics::PhysicsWorld*);
+Q_DECLARE_METATYPE(PhysicsRaycastResult*);
 
 // The following functions help register a custom QObject-derived class to a QScriptEngine.
 // See http://lists.trolltech.com/qt-interest/2007-12/thread00158-0.html .
@@ -269,6 +270,7 @@ void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
 {
     qScriptRegisterQObjectMetaType<Physics::PhysicsModule*>(engine);
     qScriptRegisterQObjectMetaType<Physics::PhysicsWorld*>(engine);
+    qScriptRegisterQObjectMetaType<PhysicsRaycastResult*>(engine);
 }
 
 void PhysicsModule::UpdateDebugGeometry()
