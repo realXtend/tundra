@@ -39,7 +39,7 @@
 #include "RexTypes.h"
 
 #include "ScriptServiceInterface.h" // call py directly
-
+#include <QImageReader>
 
 namespace Library
 {
@@ -56,6 +56,11 @@ namespace Library
         entity_(0),
         time_from_last_update_ms_(0)
     {
+        supported_drop_formats_ << ".scene" << ".mesh" << ".material" << ".xml";
+        
+        QList<QByteArray> qt_support = QImageReader::supportedImageFormats();
+        foreach (QByteArray arr, qt_support)
+            supported_drop_formats_ << QString(".%1").arg(QString(arr));
     }
 
     LibraryModule::~LibraryModule()
@@ -234,7 +239,6 @@ namespace Library
 
     bool LibraryModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
-
         if (event_id != Resource::Events::RESOURCE_READY)
             return false;
         
@@ -251,7 +255,6 @@ namespace Library
 
         if (res->resource_->GetType() == "OgreMaterial")
         {
-                          
             OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(res->resource_.get());
             if (!mat_res)
                 return false;
@@ -260,7 +263,6 @@ namespace Library
             {
                 mesh_file_request_->AddMaterialId(QString(mat_res->GetId().c_str()));
             }   
-
         }
 
         return false;
@@ -269,13 +271,33 @@ namespace Library
     void LibraryModule::HandleDragEnterEvent(QDragEnterEvent *e)
     {
         if (e->mimeData()->hasUrls())
-            e->accept();
+        {
+            QList<QUrl> urls = e->mimeData()->urls();
+            QString first_url = urls.first().toString();
+            if (!first_url.isEmpty())
+            {
+                QString extension = ".";
+                extension.append(first_url.split(".").last());
+                if (supported_drop_formats_.contains(extension))
+                    e->accept();
+            }
+        }
     }
 
     void LibraryModule::HandleDragMoveEvent(QDragMoveEvent *e)
     {
         if (e->mimeData()->hasUrls())
-            e->accept();
+        {
+            QList<QUrl> urls = e->mimeData()->urls();
+            QString first_url = urls.first().toString();
+            if (!first_url.isEmpty())
+            {
+                QString extension = ".";
+                extension.append(first_url.split(".").last());
+                if (supported_drop_formats_.contains(extension))
+                    e->accept();
+            }
+        }
     }
 
     void LibraryModule::DropEvent(QDropEvent *drop_event)
