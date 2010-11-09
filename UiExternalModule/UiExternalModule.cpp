@@ -115,8 +115,8 @@ namespace UiExternalServices
 
 
 		//TRY TO SAVE STATE OF THE QMAINWINDOW AND RESTORE IT..
-		/*QByteArray state = QString(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").c_str()).toAscii();//.toByteArray();
-		qWin_->restoreState(state);*/
+		QByteArray state = QString(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").c_str()).toAscii();//.toByteArray();
+		qWin_->restoreState(state);
 
 
 		//qWin_->restoreState(QByteArray(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").data()));
@@ -126,15 +126,15 @@ namespace UiExternalServices
 
     void UiExternalModule::Uninitialize()
     {
-		/*TRY TO SAVE STATE OF THE QMAINWINDOW AND RESTORE IT..
+		//TRY TO SAVE STATE OF THE QMAINWINDOW AND RESTORE IT..
 		QByteArray test1 = QByteArray("loquesea");
-		QByteArray test2 = QByteArray(qWin_->saveState());
+		QString test2 = QString(conf.data());
 		
 		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test1", QString(test1).toStdString());
-		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test2", QString(test2).toStdString());
+		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test2", QString(conf).toStdString());
 
 		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test", std::string("./data/assetcache"));
-		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "config", QString(QByteArray(qWin_->saveState())).toStdString());*/
+		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "config", QString(QByteArray(qWin_->saveState())).toStdString());
 		
         framework_->GetServiceManager()->UnregisterService(ui_external_scene_service_);
         ui_external_scene_service_.reset();
@@ -155,6 +155,7 @@ namespace UiExternalServices
 	{
 		//Create Static Toolbar
 		staticToolBar_ = new StaticToolBar("Control Bar",qWin_,framework_);
+		staticToolBar_->setObjectName("Control Bar");
 		toolbar_manager_->AddExternalToolbar(staticToolBar_, "Control Bar");
 
 		UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
