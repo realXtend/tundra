@@ -180,7 +180,10 @@ private:
     //! Rigid body component that is needed for collision signals
     boost::weak_ptr<EC_RigidBody> rigidbody_;
 
-    //! Set of entities inside this volume
+    //! Map of entities inside this volume. 
+    /*! The value is used in physics update to see if the entity is still inside
+        this volume or if it left the volume during last physics update.
+    */
     QMap<Scene::EntityWeakPtr, bool> entities_;
 
     //! Owner module of this component
