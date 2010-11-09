@@ -18,6 +18,26 @@ class IAssetProvider
 //class HttpAssetProvider : public IAssetProvider;
 //class KNetAssetProvider : public IAssetProvider;
 
+/*
+class IAssetStorage : public QObject
+{
+    Q_OBJECT
+public:
+
+    /// Returns all assets saved in this asset storage.
+    std::vector<IAsset*> GetAllAssets() const;
+
+    /// Starts a new asset upload to this storage. If the given asset exists already in the storage, it is replaced.
+    /// @param url The desired name for the asset.
+    /// @return A pointer to the newly created transfer.
+    QPointer<IAssetTransfer> UploadAsset(const char *data, size_t numBytes, QString url);
+
+    /// Returns the address of this storage.
+    QString BaseURL() const;
+};
+
+*/
+
 class AssetAPI : public QObject
 {
     Q_OBJECT
@@ -34,8 +54,17 @@ public:
     /// Same as RequestAsset(QString assetRef, QString assetType), but provided for convenience with AssetReference type.
     IAssetTransfer *RequestAsset(const AssetReference &ref);
 
-    /// Returns the given asset if it exists, or null otherwise.
+    /// Returns the given asset by full URL ref if it exists, or null otherwise.
     IAsset *GetAsset(QString assetRef);
+
+    /// Queries if any existing Asset Storage contains an asset with the given name, and returns it.
+//    IAsset *GetAssetByName(QString assetRef);
+
+    /// Returns all assets known to the asset system.
+//    std::vector<IAsset*> GetAllAssets() const;
+
+    /// Returns the known asset storage instances in the system.
+//    std::vector<IAssetStorage*> GetAssetStorages() const;
 
     /// Creates a new empty asset of the given type and with the given name.
     IAsset *CreateAsset(QString assetType, QString assetRef);

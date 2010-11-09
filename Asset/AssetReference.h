@@ -7,7 +7,7 @@
 #include <QMetaType>
 
 /// Represents a reference to an asset. This structure can be used as a parameter type to an EC attribute.
-struct AssetReference
+struct AssetReference// : public QObject
 {
     AssetReference() {}
 
@@ -27,6 +27,10 @@ struct AssetReference
 
     /// Specifies the data type of the asset, like "Mesh", "Texture", or "Script". If the URL specifies the type, this field may be left blank.
     QString type;
+
+//signals:
+
+//    void Loaded();
 };
 
 Q_DECLARE_METATYPE(AssetReference)
