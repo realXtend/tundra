@@ -45,7 +45,8 @@ public slots:
     virtual bool IsTemporary() const { return true; }
 
     void Update3DGizmo();
-    void SetEditableAttributes(QList<IAttribute*> attributes);
+	void AddEditableAttribute(IComponent* component, QString &attribute_name);
+    void ClearEditableAttributes();
     
 private:
     /// Constuctor.

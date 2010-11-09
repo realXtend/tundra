@@ -157,10 +157,12 @@ public slots:
      */
     bool IsTemporary() const;
     
-    /// Returns the list of all Attributes in this component for reflection purposes.
-    const QList<IAttribute *>& GetAttributes() const { return attributes_; }
-    
+    IAttribute *GetAttribute(int i) { if(i >= 0 && i < attributes_.size()) return attributes_.at(i); else return 0; }
+
 public:
+
+    /// Returns the list of all Attributes in this component for reflection purposes.
+    const AttributeVector& GetAttributes() const { return attributes_; }
 
     /// Finds and returns an attribute of type 'Attribute<T>' and given name.
     /// @param T The Attribute type to look for.
