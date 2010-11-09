@@ -3,9 +3,13 @@
 #include "StableHeaders.h"
 #include "EC_VolumeTrigger.h"
 #include "EC_RigidBody.h"
+#include "EC_Placeable.h"
 #include "Entity.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
+#include "PhysicsUtils.h"
+#include <OgreAxisAlignedBox.h>
+#include "btBulletDynamicsCommon.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_VolumeTrigger");
@@ -47,9 +51,76 @@ QStringList EC_VolumeTrigger::GetEntityNamesInside() const
     return entitynames;
 }
 
+float EC_VolumeTrigger::GetEntityInsidePercent(Scene::Entity *entity) const
+{
+    if (entity)
+    {
+        boost::shared_ptr<EC_RigidBody> otherRigidbody = entity->GetComponent<EC_RigidBody>();
+
+        boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+        if (rigidbody && otherRigidbody)
+        {
+            Vector3df thisBoxMin, thisBoxMax;
+            rigidbody->GetAabbox(thisBoxMin, thisBoxMax);
+
+            Vector3df otherBoxMin, otherBoxMax;
+            otherRigidbody->GetAabbox(otherBoxMin, otherBoxMax);
+
+            Ogre::AxisAlignedBox thisBox(thisBoxMin.x, thisBoxMin.y, thisBoxMin.z, thisBoxMax.x, thisBoxMax.y, thisBoxMax.z);
+            Ogre::AxisAlignedBox otherBox(otherBoxMin.x, otherBoxMin.y, otherBoxMin.z, otherBoxMax.x, otherBoxMax.y, otherBoxMax.z);
+
+            return (thisBox.intersection(otherBox).volume() / otherBox.volume());
+        } else
+            LogWarning("EC_VolumeTrigger: no EC_RigidBody for entity or volume.");
+    }
+    return 0.f;
+}
+
+f32 EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
+{
+    QList<Scene::EntityWeakPtr> entities = entities_.keys();
+    foreach(Scene::EntityWeakPtr wentity, entities)
+    {
+        Scene::EntityPtr entity = wentity.lock();
+        if (entity && entity->GetName().compare(name) == 0)
+            return GetEntityInsidePercent(entity.get());
+    }
+    return 0.f;
+}
+
+bool EC_VolumeTrigger::IsInterestingEntity(const QString &entityName) const
+{
+    QVariantList interestingEntities = entities.Get();
+    foreach (QVariant name, interestingEntities)
+    {
+        if (name.toString().compare(entityName) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool EC_VolumeTrigger::IsPivotInside(Scene::Entity *entity) const
+{
+    boost::shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
+    boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+    if (placeable && rigidbody)
+    {
+        const Transform& trans = placeable->transform.Get();
+        const Vector3df& pivot = trans.position;
+
+        return ( RayTestSingle(Vector3df(pivot.x, pivot.y, pivot.z - 1e7), pivot, rigidbody->GetRigidBody()) &&
+                 RayTestSingle(Vector3df(pivot.x, pivot.y, pivot.z + 1e7), pivot, rigidbody->GetRigidBody()) );
+    }
+    LogWarning("EC_VolumeTrigger::IsPivotInside(): entity has no EC_Placeable or volume has no EC_RigidBody.");
+    return false;
+}
 
 void EC_VolumeTrigger::AttributeUpdated(IAttribute* attribute)
-{    
+{
+    //! \todo Attribute updates not handled yet, there are a bit too many problems of what signals to send after the update -cm
+
     //if (attribute == &mass)
     //    ReadBody();
 }
@@ -90,7 +161,6 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.begin();
     while (i != entities_.end())
     {
-        //! \todo Handle entities that get removed from the scene, they should also emit EntityLeave but currently don't. -cmayhem
         if (!i.value())
         {
             bool active = true;
@@ -109,8 +179,8 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (entity)
                 {
                     emit EntityLeave(entity.get());
-                    //LogInfo("leave");
                     disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                    LogDebug("Entity " + entity->GetName().toStdString() + " left volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
                 }
                 continue;
             }
@@ -124,21 +194,38 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
 
 void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision)
 {
+    assert (otherEntity && "Physics collision with no entity.");
+
+    if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->GetName()))
+        return;
+
     Scene::EntityPtr entity = otherEntity->GetSharedPtr();
 
-    if (newCollision)
+    if (byPivot.Get())
     {
-        // make sure the entity isn't already inside the volume
-        if (entities_.find(entity) == entities_.end())
+        if (IsPivotInside(entity.get()))
         {
-            emit EntityEnter(otherEntity);
-            connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-            //LogInfo("enter");
-        }
+            if (entities_.find(entity) == entities_.end())
+            {
+                emit EntityEnter(otherEntity);
+                connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                LogDebug("Entity " + entity->GetName().toStdString() + " entered volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
+            }
 
-        entities_.insert(entity, true);
+            entities_.insert(entity, true);
+        }
     } else
     {
+        if (newCollision)
+        {
+            // make sure the entity isn't already inside the volume
+            if (entities_.find(entity) == entities_.end())
+            {
+                emit EntityEnter(otherEntity);
+                connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                LogDebug("Entity " + entity->GetName().toStdString() + " entered volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
+            }
+        }
         entities_.insert(entity, true);
     }
 }
@@ -152,6 +239,7 @@ void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
         entities_.erase(i);
 
         emit EntityLeave(entity);
-        //LogInfo("leave");
+        LogDebug("Entity " + entity->GetName().toStdString() + " left volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
     }
 }
+

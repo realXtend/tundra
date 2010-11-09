@@ -24,6 +24,58 @@ namespace Foundation
         MessageBoxW(0, text.c_str(), title.c_str(), MB_OK | MB_ICONERROR | MB_TASKMODAL);
     }
 
+    std::string PlatformWin::GetInstallDirectory()
+    {
+        char cpath[MAX_PATH];
+        GetCurrentDirectoryA(MAX_PATH, cpath);
+        // When running from a debugger, the current directory may in fact be the install directory.
+        // Check for the presence of a "modules" directory (not the best way, but should do)
+        std::string path(cpath);
+        if (boost::filesystem::exists(path + "\\modules"))
+            return path;
+        
+        // Otherwise get the module's filename, and extract path from it
+        GetModuleFileNameA(0, cpath, MAX_PATH);
+        int length = strlen(cpath);
+        for (int i = length - 1; i >= 0; --i)
+        {
+            if (cpath[i] == '\\')
+            {
+                cpath[i + 1] = 0;
+                break;
+            }
+        }
+        
+        path = std::string(cpath);
+        return path;
+    }
+    
+    std::wstring PlatformWin::GetInstallDirectoryW()
+    {
+        wchar_t cpath[MAX_PATH];
+        GetCurrentDirectoryW(MAX_PATH, cpath);
+        // When running from a debugger, the current directory may in fact be the install directory.
+        // Check for the presence of a "modules" directory (not the best way, but should do)
+        std::wstring path(cpath);
+        if (boost::filesystem::exists(path + L"\\modules"))
+            return path;
+        
+        // Otherwise get the module's filename, and extract path from it
+        GetModuleFileNameW(0, cpath, MAX_PATH);
+        int length = wcslen(cpath);
+        for (int i = length - 1; i >= 0; --i)
+        {
+            if (cpath[i] == L'\\')
+            {
+                cpath[i + 1] = 0;
+                break;
+            }
+        }
+        
+        path = std::wstring(cpath);
+        return path;
+    }
+    
     std::string PlatformWin::GetApplicationDataDirectory()
     {
         LPITEMIDLIST pidl;
