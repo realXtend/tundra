@@ -110,6 +110,9 @@ public slots:
     //! Returns true if specified entity can be found in the 'interesting entities' list
     bool IsInterestingEntity(const QString &entityName) const;
 
+    //! Returns true if the pivot point of the specified entity is inside this volume trigger
+    bool IsPivotInside(Scene::Entity *entity) const;
+
 private slots:
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
