@@ -1,0 +1,18 @@
+material Splash
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend add
+			depth_write off
+			fog_override true none
+
+			texture_unit
+			{
+				texture file://flaretrail.png
+			}
+		}
+	}
+}

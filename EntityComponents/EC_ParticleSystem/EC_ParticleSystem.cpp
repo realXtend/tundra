@@ -170,7 +170,7 @@ ComponentPtr EC_ParticleSystem::FindPlaceable() const
 
 void EC_ParticleSystem::EntitySetted()
 {
-    Scene::Entity *entity = qobject_cast<Scene::Entity*>(this->GetParentEntity());
+    Scene::Entity *entity = this->GetParentEntity();
     if (!entity)
     {
         LogError("Failed to connect entity signals, component's parent entity is null");

@@ -28,7 +28,7 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="-15.4799,2.4726,23.5935,-179.997,0.120216,84.6729,5,5,5" name="Transform"/>
+   <attribute value="-15.5369,2.51442,23.5938,-179.972,0.0727096,85.0533,5,5,5" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_RigidBody" sync="1">
@@ -44,8 +44,8 @@
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="-0.00540096872 0.0169792697 0.0174291506" name="Linear velocity"/>
-   <attribute value="-0.0926151723 0.142467543 0.050728891" name="Angular velocity"/>
+   <attribute value="-0.0261166766 -0.00289794058 0.0296465755" name="Linear velocity"/>
+   <attribute value="0.391793102 0.294787049 -0.370006114" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="3">
@@ -63,7 +63,7 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="31.4222,-41.1696,23.5441,-42.5977,84.6343,71.7894,5,5,5" name="Transform"/>
+   <attribute value="31.4181,-41.3432,23.5339,-44.6918,84.8622,69.8718,5,5,5" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_RigidBody" sync="1">
@@ -79,8 +79,8 @@
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.0514175855 -0.118741542 0.0657300055" name="Linear velocity"/>
-   <attribute value="-0.704599917 3.26215792 -0.798031509" name="Angular velocity"/>
+   <attribute value="-0.0111126564 -0.0249039959 -0.0551644936" name="Linear velocity"/>
+   <attribute value="0.293334901 -2.66501403 -0.740768075" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="4">
@@ -98,7 +98,7 @@
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="29.0461,94.4449,3.58294,-23.3797,7.08641,65.877,5,5,5" name="Transform"/>
+   <attribute value="29.0228,94.4439,3.59269,-23.2506,7.26399,66.4112,5,5,5" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
   </component>
   <component type="EC_RigidBody" sync="1">
@@ -114,43 +114,8 @@
    <attribute value="1 1 1" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.130822539 -0.204293206 0.331599593" name="Linear velocity"/>
-   <attribute value="2.87982011 -1.72553623 4.43322992" name="Angular velocity"/>
-  </component>
- </entity>
- <entity id="5">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="boxA" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="-32.2489,-50.4317,20.6685,3.66133,-3.19889,12.5484,5,5,5" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-  </component>
-  <component type="EC_RigidBody" sync="1">
-   <attribute value="3" name="Mass"/>
-   <attribute value="0" name="Shape type"/>
-   <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
-   <attribute value="0.5" name="Friction"/>
-   <attribute value="0" name="Restitution"/>
-   <attribute value="0" name="Linear damping"/>
-   <attribute value="0" name="Angular damping"/>
-   <attribute value="1 1 1" name="Linear factor"/>
-   <attribute value="1 1 1" name="Angular factor"/>
-   <attribute value="false" name="Phantom"/>
-   <attribute value="false" name="Draw Debug"/>
-   <attribute value="-0.119680345 -0.0275701657 -0.00624507666" name="Linear velocity"/>
-   <attribute value="-0.907764554 -1.23065269 0.821325839" name="Angular velocity"/>
+   <attribute value="0.00367546175 -0.0195750557 -0.0323557705" name="Linear velocity"/>
+   <attribute value="1.00234342 -0.209225014 -0.650213718" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="180">
@@ -190,5 +155,4 @@
    <attribute value="0 0 0" name="Angular velocity"/>
   </component>
  </entity>
- <entity id="-2147483646"/>
 </scene>
