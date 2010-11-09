@@ -8,6 +8,7 @@
 class IAsset;
 class IAssetTransfer;
 class IAssetProvider;
+struct AssetReference;
 
 class IEventData;
 
@@ -18,6 +19,9 @@ namespace Foundation
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
     
+    class ResourceInterface;
+    typedef boost::shared_ptr<ResourceInterface> ResourcePtr;
+
     class AssetProviderInterface;
     typedef boost::shared_ptr<AssetProviderInterface> AssetProviderPtr;    
 }

@@ -22,9 +22,13 @@ EC_Sound::EC_Sound(IModule *module):
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
     loopSound(this, "Loop sound", false),
+<<<<<<< HEAD
     triggerSound(this, "Trigger sound", false),
     soundGain(this, "Sound gain", 1.0f),
     sound_id_(0)
+=======
+    soundGain(this, "Sound gain", 1.0f)
+>>>>>>> 483539692d562a25851f8a6a68d3435799146403
 {
     static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain.SetMetadata(&metaData);
@@ -47,12 +51,7 @@ void EC_Sound::AttributeUpdated(IAttribute *attribute)
         if(soundService && soundService->GetSoundName(sound_id_) != soundId.Get())
             StopSound();
     }
-    else if(attribute->GetNameString() == triggerSound.GetNameString())
-    {
-        // Play sound if sound asset id has been setted and if sound has been triggered or looped.
-        if(triggerSound.Get() == true && (!soundId.Get().isNull() || loopSound.Get()))
-            PlaySound();
-    }
+
     UpdateSoundSettings();
 }
 
@@ -69,7 +68,7 @@ void EC_Sound::RegisterActions()
 
 void EC_Sound::PlaySound()
 {
-    triggerSound.Set(false, AttributeChange::LocalOnly);
+
     ComponentChanged(AttributeChange::LocalOnly);
 
     ISoundService *soundService = framework_->Audio();

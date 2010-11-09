@@ -1,0 +1,404 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="2">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-15.1062,-0.497458,13,-179.968,-0.00473336,-11.6616,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000747531536 0.000416025519 0.000690996647" name="Linear velocity"/>
+   <attribute value="-0.0187581368 -0.0430374593 -0.00806938484" name="Angular velocity"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="20" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Loop sound"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\scenes\WaterPlane\waterplane.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="180">
+  <component type="EC_Name" sync="1">
+   <attribute value="terrain" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Terrain" sync="1">
+   <attribute value="-128,-128,-1,0,0,0,1,1,2" name="Transform"/>
+   <attribute value="16" name="Grid Width"/>
+   <attribute value="16" name="Grid Height"/>
+   <attribute value="0.129999995" name="Tex. U scale"/>
+   <attribute value="0.129999995" name="Tex. V scale"/>
+   <attribute value="" name="Material"/>
+   <attribute value="" name="Texture 0"/>
+   <attribute value="" name="Texture 1"/>
+   <attribute value="" name="Texture 2"/>
+   <attribute value="" name="Texture 3"/>
+   <attribute value="" name="Texture 4"/>
+   <attribute value=".\scenes\WaterPlane\example_assets\island.ntf" name="Heightmap"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="5" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+ </entity>
+ <entity id="1">
+  <component type="EC_WaterPlane" sync="1" name="Water">
+   <attribute value="5000" name="x-size"/>
+   <attribute value="5000" name="y-size"/>
+   <attribute value="20" name="Depth"/>
+   <attribute value="0 0 7" name="Position"/>
+   <attribute value="1 0 0 0" name="Rotation"/>
+   <attribute value="0.000199999995" name="U factor"/>
+   <attribute value="0.000199999995" name="V factor"/>
+   <attribute value="10" name="Segments in x"/>
+   <attribute value="10" name="Segments in y"/>
+   <attribute value="Ocean" name="Material"/>
+   <attribute value="0.200000003 0.400000006 0.349999994 1" name="Fog color"/>
+   <attribute value="100" name="Fog start dist."/>
+   <attribute value="2000" name="Fog end dist."/>
+   <attribute value="3" name="Fog mode"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Water" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+ <entity id="3">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-30,10,40,-179.968,-0.00473336,-11.6616,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000747531536 0.000416025519 0.000690996647" name="Linear velocity"/>
+   <attribute value="-0.0187581368 -0.0430374593 -0.00806938484" name="Angular velocity"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="20" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Loop sound"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\scenes\WaterPlane\waterplane.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="4">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-21.11,-32.5,54,-179.968,-0.00473336,-11.6616,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000747531536 0.000416025519 0.000690996647" name="Linear velocity"/>
+   <attribute value="-0.0187581368 -0.0430374593 -0.00806938484" name="Angular velocity"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="20" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Loop sound"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\scenes\WaterPlane\waterplane.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="5">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="20,20,60,-179.968,-0.00473336,-11.6616,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000747531536 0.000416025519 0.000690996647" name="Linear velocity"/>
+   <attribute value="-0.0187581368 -0.0430374593 -0.00806938484" name="Angular velocity"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="file://Crash.ogg" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="20" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Loop sound"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\scenes\WaterPlane\waterplane.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="6">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-40,30,60,-179.968,-0.00473336,-11.6616,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000747531536 0.000416025519 0.000690996647" name="Linear velocity"/>
+   <attribute value="-0.0187581368 -0.0430374593 -0.00806938484" name="Angular velocity"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="20" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Loop sound"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\scenes\WaterPlane\waterplane.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="7">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="40,-30,70,-179.968,-0.00473336,-11.6616,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000747531536 0.000416025519 0.000690996647" name="Linear velocity"/>
+   <attribute value="-0.0187581368 -0.0430374593 -0.00806938484" name="Angular velocity"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="20" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Loop sound"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\scenes\WaterPlane\waterplane.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="8">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="CollisionBox" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-28,72.5,27,-179.968,-0.00473336,-11.6616,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="1" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0.000747531536 0.000416025519 0.000690996647" name="Linear velocity"/>
+   <attribute value="-0.0187581368 -0.0430374593 -0.00806938484" name="Angular velocity"/>
+  </component>
+  <component type="EC_Sound" sync="1" name="Collision">
+   <attribute value="" name="Sound ref"/>
+   <attribute value="0" name="Sound radius inner"/>
+   <attribute value="20" name="Sound radius outer"/>
+   <attribute value="1" name="Sound gain"/>
+   <attribute value="false" name="Loop sound"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\scenes\WaterPlane\waterplane.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="9">
+  <component type="EC_Name" sync="1">
+   <attribute value="ScriptControl" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\scenes\WaterPlane\ScriptControl.js" name="Script ref"/>
+  </component>
+ </entity>
+</scene>

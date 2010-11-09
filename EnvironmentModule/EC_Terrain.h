@@ -8,6 +8,7 @@
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Transform.h"
+#include "AssetReference.h"
 
 namespace Ogre
 {
@@ -247,6 +248,9 @@ public slots:
     /// @return True if loading succeeded.
     bool LoadFromFile(QString filename);
 
+    /// Loads the terrain height map data from the given in-memory .ntf file buffer.
+    bool LoadFromDataInMemory(const char *data, size_t numBytes);
+
     /// Loads the terrain from the given image file. Adjusts the xPatches and yPatches properties to that of the image file, 
     /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this  
     /// function will get the terrain contents desynchronized between the local system and network. The file is loaded using Ogre, so
@@ -298,36 +302,31 @@ public:
     Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
     DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
 
-    Q_PROPERTY(QString material READ getmaterial WRITE setmaterial);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, material);
+    Q_PROPERTY(AssetReference material READ getmaterial WRITE setmaterial);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, material);
 
-    Q_PROPERTY(QString texture0 READ gettexture0 WRITE settexture0);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture0);
+    Q_PROPERTY(AssetReference texture0 READ gettexture0 WRITE settexture0);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture0);
 
-    Q_PROPERTY(QString texture1 READ gettexture1 WRITE settexture1);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture1);
+    Q_PROPERTY(AssetReference texture1 READ gettexture1 WRITE settexture1);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture1);
 
-    Q_PROPERTY(QString texture2 READ gettexture2 WRITE settexture2);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture2);
+    Q_PROPERTY(AssetReference texture2 READ gettexture2 WRITE settexture2);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture2);
 
-    Q_PROPERTY(QString texture3 READ gettexture3 WRITE settexture3);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture3);
+    Q_PROPERTY(AssetReference texture3 READ gettexture3 WRITE settexture3);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture3);
 
-    Q_PROPERTY(QString texture4 READ gettexture4 WRITE settexture4);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, texture4);
+    Q_PROPERTY(AssetReference texture4 READ gettexture4 WRITE settexture4);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, texture4);
 
-    Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, heightMap);
+    Q_PROPERTY(AssetReference heightMap READ getheightMap WRITE setheightMap);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, heightMap);
 
     /// Returns the minimum and maximum extents of terrain heights.
     void GetTerrainHeightRange(float &minHeight, float &maxHeight) const;
 
 signals:
-    // The following signals are emitted from different events, so the parameter can not be used.
-    void TextureChanged(QString /*newTexture*/);
-
-    void MaterialChanged(QString newMaterial);
-
     void TerrainRegenerated();
     
 private slots:
@@ -337,11 +336,9 @@ private slots:
     //! Emitted when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
 
-public slots:
-
-    void OnMaterialChanged();
-
-    void OnTextureChanged();
+    void MaterialAssetLoaded();
+    void TextureAssetLoaded();
+    void TerrainAssetLoaded();
 
 private:
     explicit EC_Terrain(IModule* module);
@@ -356,9 +353,13 @@ private:
 
     int patchWidth;
     int patchHeight;
+
     /// Specifies the asset source from which the height map is currently loaded from. Used to shadow the heightMap attribute so that if
     /// the same value is received from the network, reloading the terrain can be avoided.
     QString currentHeightmapAssetSource;
+
+    /// Specifies the Ogre material name of the material that is currently being used to display the terrain.
+    QString currentMaterial;
 
     /// Stores the actual height patches.
     std::vector<Patch> patches;
