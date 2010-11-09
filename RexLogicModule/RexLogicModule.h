@@ -206,7 +206,7 @@ namespace RexLogic
             \param entity this is the entity that was hit with normal raycast. 
             \return returns true if infoicon was hit, false otherwise
         */
-        bool CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result);
+        bool CheckInfoIconIntersection(int x, int y, RaycastResult *result);
 
         //! Launch estateownermessage event
         void EmitIncomingEstateOwnerMessageEvent(QVariantList params);

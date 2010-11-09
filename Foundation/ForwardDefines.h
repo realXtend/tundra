@@ -67,8 +67,9 @@ namespace Foundation
     class RenderServiceInterface;
     typedef boost::shared_ptr<RenderServiceInterface> RendererPtr;
     typedef boost::weak_ptr<RenderServiceInterface> RendererWeakPtr;
-    struct RaycastResult;
 }
+
+class RaycastResult;
 
 class IAttribute;
 typedef std::vector<IAttribute*> AttributeVector;

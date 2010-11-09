@@ -61,8 +61,8 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, IEventData* data)
         Foundation::RenderServiceInterface *renderer = owner_->GetFramework()->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
         {
-            Foundation::RaycastResult result = renderer->Raycast(movement->x_.abs_, movement->y_.abs_);
-            owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_, &result);
+            RaycastResult* result = renderer->Raycast(movement->x_.abs_, movement->y_.abs_);
+            owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_, result);
         }
         break;
     }
