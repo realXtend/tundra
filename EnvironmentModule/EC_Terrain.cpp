@@ -88,6 +88,14 @@ void EC_Terrain::UpdateSignals()
     texture4.Changed(AttributeChange::LocalOnly);
     material.Changed(AttributeChange::LocalOnly);
     heightMap.Changed(AttributeChange::LocalOnly);
+
+*/
+/*
+    if (scene.viewEnabled)
+    {
+    material.RegisterForAutomaticAssetUpdates(framework->Asset(), ParentEntity());
+    connect(material, SIGNAL(Loaded()), this, SLOT(MaterialUpdated()), Qt::UniqueConnection);
+    }
 */
 }
 
@@ -186,37 +194,37 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(material.Get());
-        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()));
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture0.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        connect(transfer, SIGNAL(Loaded()), this, SLOT(TextureAssetLoaded()));
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(TextureAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture1.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()));
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture2.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()));
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture3.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()));
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture4.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()));
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == heightMap.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref, "Terrain"));
-        connect(transfer, SIGNAL(Downloaded()), this, SLOT(TerrainAssetLoaded()));
+        connect(transfer, SIGNAL(Downloaded()), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
     {
