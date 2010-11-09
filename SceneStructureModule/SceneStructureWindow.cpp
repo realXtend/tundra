@@ -314,8 +314,8 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
     if (!assetRef)
         return;
 
-    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().type, assetRef->Get().id, parentItem);
-    aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().id).arg(assetRef->Get().type));
+    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().type, assetRef->Get().ref, parentItem);
+    aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().ref).arg(assetRef->Get().type));
     aItem->setHidden(!showAssets);
     parentItem->addChild(aItem);
 }
