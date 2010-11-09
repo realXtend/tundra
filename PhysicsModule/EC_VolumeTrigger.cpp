@@ -87,9 +87,23 @@ f32 EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
     return 0.f;
 }
 
+bool EC_VolumeTrigger::IsInterestingEntity(const QString &entityName) const
+{
+    QVariantList interestingEntities = entities.Get();
+    foreach (QVariant name, interestingEntities)
+    {
+        if (name.toString().compare(entityName) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 void EC_VolumeTrigger::AttributeUpdated(IAttribute* attribute)
-{    
+{
+    //! \todo Attribute updates not handled yet, there are a bit too many problems of what signals to send after the update -cm
+
     //if (attribute == &mass)
     //    ReadBody();
 }
@@ -148,7 +162,6 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (entity)
                 {
                     emit EntityLeave(entity.get());
-                    LogInfo("leave");
                     disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
                 }
                 continue;
@@ -165,67 +178,30 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
 {
     assert (otherEntity && "Physics collision with no entity.");
 
-    QVariantList interestingEntities = entities.Get();
-    bool found = interestingEntities.isEmpty();
-    if (!found)
-    {
-        QString otherEntityName = otherEntity->GetName();
-        foreach (QVariant name, interestingEntities)
-        {
-            if (name.toString().compare(otherEntityName) == 0)
-            {
-                found = true;
-                break;
-            }
-        }
-    }
-    
-    if (!found)
+    if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->GetName()))
         return;
 
     Scene::EntityPtr entity = otherEntity->GetSharedPtr();
 
     if (byPivot.Get())
     {
-        //if (entities_.find(entity) == entities_.end())
+        boost::shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
+        boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+        if (placeable && rigidbody)
         {
-            boost::shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
-            boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
-            if (placeable && rigidbody)
+            const Transform& trans = placeable->transform.Get();
+            const Vector3df& pivot = trans.position;
+
+            if (RayTestSingle(Vector3df(pivot.x, pivot.y, pivot.z - 1e7), pivot, rigidbody->GetRigidBody()) &&
+                RayTestSingle(Vector3df(pivot.x, pivot.y, pivot.z + 1e7), pivot, rigidbody->GetRigidBody()))
             {
-                const Transform& trans = placeable->transform.Get();
-                const Vector3df& pivot = trans.position;
-
-                btTransform rayFromTrans, rayFromTrans2, rayToTrans;
-                btVector3 rayFrom(pivot.x, pivot.y, pivot.z - 1e7);
-                btVector3 rayFrom2(pivot.x, pivot.y, pivot.z + 1e7);
-                btVector3 rayTo(pivot.x, pivot.y, pivot.z);
-
-	            rayFromTrans.setIdentity();
-	            rayFromTrans.setOrigin(rayFrom);
-                rayFromTrans2.setIdentity();
-	            rayFromTrans2.setOrigin(rayFrom2);
-	            rayToTrans.setIdentity();
-	            rayToTrans.setOrigin(rayTo);
-
-                btCollisionWorld::AllHitsRayResultCallback resultCallback(rayFrom, rayTo);
-                btCollisionWorld::AllHitsRayResultCallback resultCallback2(rayFrom2, rayTo);
-
-                btCollisionWorld::rayTestSingle(rayFromTrans, rayToTrans, rigidbody->GetRigidBody(), 
-                    rigidbody->GetRigidBody()->getCollisionShape(), rigidbody->GetRigidBody()->getWorldTransform(), resultCallback);
-                btCollisionWorld::rayTestSingle(rayFromTrans2, rayToTrans, rigidbody->GetRigidBody(), 
-                    rigidbody->GetRigidBody()->getCollisionShape(), rigidbody->GetRigidBody()->getWorldTransform(), resultCallback2);
-                if (resultCallback.m_collisionObjects.size() > 0 && resultCallback2.m_collisionObjects.size() > 0)
+                if (entities_.find(entity) == entities_.end())
                 {
-                    if (entities_.find(entity) == entities_.end())
-                    {
-                        emit EntityEnter(otherEntity);
-                        connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-                        LogInfo("enter");
-                    }
-
-                    entities_.insert(entity, true);
+                    emit EntityEnter(otherEntity);
+                    connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
                 }
+
+                entities_.insert(entity, true);
             }
         }
     } else
@@ -237,7 +213,6 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
             {
                 emit EntityEnter(otherEntity);
                 connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-                LogInfo("enter");
             }
         }
         entities_.insert(entity, true);
@@ -253,6 +228,6 @@ void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
         entities_.erase(i);
 
         emit EntityLeave(entity);
-        //LogInfo("leave");
     }
 }
+
