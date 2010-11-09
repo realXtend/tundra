@@ -328,8 +328,8 @@ namespace Library
         QStringList urlList = urlString.split(";");
 
         // Do a raycast to drop position, 
-        Foundation::RaycastResult cast_result = RayCast(drop_event);
-        raycast_pos_ = cast_result.pos_;
+        RaycastResult* cast_result = RayCast(drop_event);
+        raycast_pos_ = cast_result->pos_;
 
         // Get drop pos in front of avatar if raycast did not hit any object
         IOpenSimSceneService *scene_service = framework_->GetService<IOpenSimSceneService>();
@@ -371,11 +371,11 @@ namespace Library
             }
             else if (urlString.endsWith(".material"))
             {
-                if (cast_result.entity_)
+                if (cast_result->entity_)
                 {
-                    EC_Mesh *mesh = cast_result.entity_->GetComponent<EC_Mesh>().get();
-                    EC_OpenSimPrim *prim = cast_result.entity_->GetComponent<EC_OpenSimPrim>().get();
-                    uint submesh = cast_result.submesh_;
+                    EC_Mesh *mesh = cast_result->entity_->GetComponent<EC_Mesh>().get();
+                    EC_OpenSimPrim *prim = cast_result->entity_->GetComponent<EC_OpenSimPrim>().get();
+                    uint submesh = cast_result->submesh_;
                     if (mesh && prim)
                     {
                         MaterialMap materials = prim->Materials;
@@ -395,11 +395,11 @@ namespace Library
             }
             else if (urlString.endsWith(".png") || urlString.endsWith(".jpg") || urlString.endsWith(".jpeg"))
             {
-                if (cast_result.entity_)
+                if (cast_result->entity_)
                 {
-                    EC_Mesh *mesh = cast_result.entity_->GetComponent<EC_Mesh>().get();
-                    EC_OpenSimPrim *prim = cast_result.entity_->GetComponent<EC_OpenSimPrim>().get();
-                    uint submesh = cast_result.submesh_;
+                    EC_Mesh *mesh = cast_result->entity_->GetComponent<EC_Mesh>().get();
+                    EC_OpenSimPrim *prim = cast_result->entity_->GetComponent<EC_OpenSimPrim>().get();
+                    uint submesh = cast_result->submesh_;
                     if (mesh && prim)
                     {
                         MaterialMap materials = prim->Materials;
@@ -455,21 +455,21 @@ namespace Library
         }
     }
 
-    Foundation::RaycastResult LibraryModule::RayCast(QDropEvent *drop_event)
+    RaycastResult* LibraryModule::RayCast(QDropEvent *drop_event)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
         {
             LogDebug("Could not get rendering service, could not raycast");
-            Foundation::RaycastResult fail_result;
+            static RaycastResult fail_result;
             fail_result.entity_ = 0;
             fail_result.pos_ = Vector3df::ZERO;
-            return fail_result;
+            return &fail_result;
         }
 
-        Foundation::RaycastResult cast_result = renderer->Raycast(drop_event->pos().x(), drop_event->pos().y());
-        if (!cast_result.entity_)
-            cast_result.pos_ = Vector3df::ZERO;
+        RaycastResult* cast_result = renderer->Raycast(drop_event->pos().x(), drop_event->pos().y());
+        if (!cast_result->entity_)
+            cast_result->pos_ = Vector3df::ZERO;
         return cast_result;
     }
 
