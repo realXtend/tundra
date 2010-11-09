@@ -7,6 +7,7 @@
 
 #include "ConfigurationManager.h"
 #include "CoreException.h"
+#include "Platform.h"
 
 #include <algorithm>
 #include <sstream>
@@ -51,7 +52,7 @@ namespace Foundation
 
     ModuleManager::ModuleManager(Framework *framework) :
         framework_(framework),
-        DEFAULT_MODULES_PATH(framework->GetDefaultConfig().DeclareSetting<std::string>("ModuleManager", "Default_Modules_Path", "./modules"))
+        DEFAULT_MODULES_PATH("./modules")
     {
     }
 

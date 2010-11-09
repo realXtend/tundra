@@ -115,6 +115,10 @@ namespace Foundation
             
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
+            // Force install directory as the current working directory. Todo: we may not want to do this in all cases,
+            // but there is a huge load of places that depend on being able to refer to the install dir with .
+            boost::filesystem::current_path(platform_->GetInstallDirectory());
+            
             // Now set proper path for config (one that also non-privileged users can write to)
             {
                 const char *CONFIG_PATH = "/configuration";
@@ -284,8 +288,9 @@ namespace Foundation
             ("server", po::value<std::string>(), "world server and port")
             ("auth_server", po::value<std::string>(), "realXtend authentication server address and port")
             ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
-            ("login", "automatically login to server using provided credentials");
-
+            ("login", "automatically login to server using provided credentials")
+            ("run", po::value<std::string>(), "Run script on startup")
+            ("file", po::value<std::string>(), "Load scene on startup");
         try
         {
             po::store (po::command_line_parser(argc_, argv_).options(cm_descriptions_).allow_unregistered().run(), cm_options_);
