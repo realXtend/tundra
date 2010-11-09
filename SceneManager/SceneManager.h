@@ -56,6 +56,8 @@ namespace Scene
         QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
         QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
 
+        void DeleteEntityById(uint id, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity((entity_id_t)id, change); }
+
         Scene::Entity* GetEntityByNameRaw(const QString& name) const;
 
         //! Return a scene document with just the desired entity
