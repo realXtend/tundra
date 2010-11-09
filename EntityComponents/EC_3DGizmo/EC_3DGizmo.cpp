@@ -31,6 +31,8 @@ EC_3DGizmo::EC_3DGizmo(IModule *module) :
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
     
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(Update3DGizmo()));
+    
+    attributes_ = QList<IAttribute *>();
 
 }
 
@@ -38,15 +40,21 @@ EC_3DGizmo::~EC_3DGizmo()
 {
 }
 
-void EC_3DGizmo::SetEditableAttributes(QList<IAttribute*> attributes)
+void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString &attribute_name)
 {
-	attributes_ = attributes;
+	IAttribute* attribute = component->GetAttribute(attribute_name);
+	attributes_ << attribute;
 	
 	for( int i = 0; i < attributes_.size(); i++)
 	{
-		IAttribute *attribute = attributes.at(i);
-		std::cout << attribute->GetNameString() << std::endl;
+		IAttribute *attr = attributes_.at(i);
+		std::cout << attr->GetNameString() << std::endl;
 	}
+}
+
+void EC_3DGizmo::ClearEditableAttributes()
+{
+	attributes_.clear();
 }
 
 void EC_3DGizmo::Update3DGizmo()
