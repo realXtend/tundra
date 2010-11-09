@@ -2315,9 +2315,9 @@ namespace Environment
             return;
 
         ///\todo Here, perform a raycast that only takes into account the terrain geometry, and not other objects. 
-        Foundation::RaycastResult result = renderer->Raycast(clientX, clientY);
+        RaycastResult* result = renderer->Raycast(clientX, clientY);
 
-        Scene::Entity *entity = result.entity_;
+        Scene::Entity *entity = result->entity_;
         if (!entity) // The user did not click on terrain.
         {
             HidePaintMeshOnScene();
@@ -2326,8 +2326,8 @@ namespace Environment
 
         /// The raycast result point 3D coordinates projected to the (x,y)-plane directly correspond to the 2D map.
         ///\todo The above is not quite true. Fix to get better precision.
-        mapX = (int)(result.pos_.x + 0.5f);
-        mapY = (int)(result.pos_.y + 0.5f);
+        mapX = (int)(result->pos_.x + 0.5f);
+        mapY = (int)(result->pos_.y + 0.5f);
     }
 
     void EnvironmentEditor::Update3DPaintNotificationMeshPosition(int mapX, int mapY)

@@ -61,7 +61,7 @@ namespace Scene
         //! Return a scene document with just the desired entity
         QByteArray GetEntityXml(Scene::Entity *entity);
         
-        void EmitEntityCreated(QObject* entity, AttributeChange::Type change = AttributeChange::Default);
+        void EmitEntityCreated(Scene::Entity *entity, AttributeChange::Type change = AttributeChange::Default);
         
         void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
     public:

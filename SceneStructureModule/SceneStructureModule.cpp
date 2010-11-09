@@ -290,8 +290,8 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             return;
 
         Vector3df worldPos;
-        Foundation::RaycastResult res = renderer->Raycast(e->pos().x(), e->pos().y());
-        if (!res.entity_)
+        RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
+        if (!res->entity_)
         {
             // No entity hit, use camera's position with hard-coded offset.
             const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
@@ -318,7 +318,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
                 }
         }
         else
-            worldPos = res.pos_;
+            worldPos = res->pos_;
 
         foreach (QUrl url, e->mimeData()->urls())
         {

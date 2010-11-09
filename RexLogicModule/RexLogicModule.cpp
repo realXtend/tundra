@@ -1062,7 +1062,7 @@ InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
     return in_world_chat_provider_;
 }
 
-bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result)
+bool RexLogicModule::CheckInfoIconIntersection(int x, int y, RaycastResult *result)
 {
 #ifdef EC_HoveringWidget_ENABLED
     bool ret_val = false;
