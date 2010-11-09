@@ -124,6 +124,8 @@ namespace Library
 
         void AssignMaterials();
 
+        QStringList supported_drop_formats_;
+
     private slots:
         void HandleDragEnterEvent(QDragEnterEvent *e);
         void HandleDragMoveEvent(QDragMoveEvent *e);
