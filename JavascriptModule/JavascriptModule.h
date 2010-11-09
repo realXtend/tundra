@@ -112,6 +112,12 @@ private:
     
     /// Engines for executing startup (possibly persistent) scripts
     std::vector<JavascriptEngine*> startupScripts_;
+    
+    /// Additional startupscript defined from command line
+    std::string commandLineStartupScript_;
+    
+    /// Framework event category
+    event_category_id_t frameworkEventCategory_;
 };
 
 //api stuff
