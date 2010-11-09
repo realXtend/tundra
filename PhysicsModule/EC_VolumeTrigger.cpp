@@ -70,7 +70,8 @@ float EC_VolumeTrigger::GetEntityInsidePercent(Scene::Entity *entity) const
             Ogre::AxisAlignedBox otherBox(otherBoxMin.x, otherBoxMin.y, otherBoxMin.z, otherBoxMax.x, otherBoxMax.y, otherBoxMax.z);
 
             return (thisBox.intersection(otherBox).volume() / otherBox.volume());
-        }
+        } else
+            LogWarning("EC_VolumeTrigger: no EC_RigidBody for entity or volume.");
     }
     return 0.f;
 }
@@ -97,6 +98,22 @@ bool EC_VolumeTrigger::IsInterestingEntity(const QString &entityName) const
             return true;
         }
     }
+    return false;
+}
+
+bool EC_VolumeTrigger::IsPivotInside(Scene::Entity *entity) const
+{
+    boost::shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
+    boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
+    if (placeable && rigidbody)
+    {
+        const Transform& trans = placeable->transform.Get();
+        const Vector3df& pivot = trans.position;
+
+        return ( RayTestSingle(Vector3df(pivot.x, pivot.y, pivot.z - 1e7), pivot, rigidbody->GetRigidBody()) &&
+                 RayTestSingle(Vector3df(pivot.x, pivot.y, pivot.z + 1e7), pivot, rigidbody->GetRigidBody()) );
+    }
+    LogWarning("EC_VolumeTrigger::IsPivotInside(): entity has no EC_Placeable or volume has no EC_RigidBody.");
     return false;
 }
 
@@ -186,25 +203,16 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
 
     if (byPivot.Get())
     {
-        boost::shared_ptr<EC_Placeable> placeable = entity->GetComponent<EC_Placeable>();
-        boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
-        if (placeable && rigidbody)
+        if (IsPivotInside(entity.get()))
         {
-            const Transform& trans = placeable->transform.Get();
-            const Vector3df& pivot = trans.position;
-
-            if (RayTestSingle(Vector3df(pivot.x, pivot.y, pivot.z - 1e7), pivot, rigidbody->GetRigidBody()) &&
-                RayTestSingle(Vector3df(pivot.x, pivot.y, pivot.z + 1e7), pivot, rigidbody->GetRigidBody()))
+            if (entities_.find(entity) == entities_.end())
             {
-                if (entities_.find(entity) == entities_.end())
-                {
-                    emit EntityEnter(otherEntity);
-                    connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-                    LogDebug("Entity " + entity->GetName().toStdString() + " entered volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
-                }
-
-                entities_.insert(entity, true);
+                emit EntityEnter(otherEntity);
+                connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
+                LogDebug("Entity " + entity->GetName().toStdString() + " entered volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
             }
+
+            entities_.insert(entity, true);
         }
     } else
     {
