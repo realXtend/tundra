@@ -85,7 +85,7 @@ namespace WorldBuilding
                 const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
                 if (components.empty())
                 {
-                    WorldBuildingModule::LogInfo("> Skipping entity: no components");
+                    WorldBuildingModule::LogDebug("> Skipping entity: no components");
                     ++iter;
                     continue;
                 }
@@ -93,7 +93,7 @@ namespace WorldBuilding
                 // Public voice channel
                 if (entity->HasComponent("EC_VoiceChannel") && components.size() == 1)
                 {
-                    WorldBuildingModule::LogInfo("> Skipping entity: Public voip channel");
+                    WorldBuildingModule::LogDebug("> Skipping entity: Public voip channel");
                     ++iter;
                     continue;
                 }
@@ -103,7 +103,7 @@ namespace WorldBuilding
                 {
                     if (entity->HasComponent(dont_want))
                     {
-                        WorldBuildingModule::LogInfo("> Skipping entity: Has unwanted components for export");
+                        WorldBuildingModule::LogDebug("> Skipping entity: Has unwanted components for export");
                         ++iter;
                         continue;
                     }
@@ -113,7 +113,7 @@ namespace WorldBuilding
                     entities.append(entity);
                 else
                 {
-                    WorldBuildingModule::LogInfo("> Skipping entity: No prim/mesh/placeable component(s)");
+                    WorldBuildingModule::LogDebug("> Skipping entity: No prim/mesh/placeable component(s)");
                     ++iter;
                     continue;
                 }
@@ -130,7 +130,7 @@ namespace WorldBuilding
                 }
                 if (writable_comps == 0)
                 {
-                    WorldBuildingModule::LogInfo("> Skipping entity: No serializable component");
+                    WorldBuildingModule::LogDebug("> Skipping entity: No serializable component");
                     ++iter;
                     continue;
                 }
@@ -156,7 +156,7 @@ namespace WorldBuilding
             }
             ++iter;
         }
-        WorldBuildingModule::LogInfo(QString("Completed exporting %1 entities with %2 components").arg( QString::number(entities.count()), QString::number(comp_count)).toStdString().c_str());
+        WorldBuildingModule::LogInfo(QString("Completed exporting scene: %1 entities with %2 components").arg( QString::number(entities.count()), QString::number(comp_count)).toStdString().c_str());
 
         scene_doc.appendChild(scene_elem);
         RemoveExportData(entities);
