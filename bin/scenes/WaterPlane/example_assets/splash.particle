@@ -1,0 +1,61 @@
+
+splash
+{
+	quota	5000
+	material	file://Splash.material mat
+	particle_width	4
+	particle_height	5
+	cull_each	false
+	renderer	billboard
+	sorted	false
+	local_space	false
+	iteration_interval	0
+	nonvisible_update_timeout	0
+	billboard_type	point
+	billboard_origin	center
+	billboard_rotation_type	texcoord
+	common_up_vector	0 1 0
+	point_rendering	false
+	accurate_facing	false
+
+	emitter Cylinder
+	{
+		angle	90
+		colour	0 0 1 1
+		colour_range_start	0 0 1 1
+		colour_range_end	0 0.501961 1 1
+		direction	0 1 0
+		emission_rate	30000
+		position	0 0 0
+		velocity	10
+		velocity_min	10
+		velocity_max	35
+		time_to_live	1
+		time_to_live_min	1
+		time_to_live_max	2
+		duration	0.01
+		duration_min	0.01
+		duration_max	0.02
+		repeat_delay	3
+		repeat_delay_min	3
+		repeat_delay_max	3
+		width	3
+		height	3
+		depth	1
+	}
+
+	affector LinearForce
+	{
+		force_vector	0 -30 0
+		force_application	add
+	}
+
+	affector ColourFader
+	{
+		red	-0.8
+		green	-0.8
+		blue	-0.8
+		alpha	0
+	}
+}
+

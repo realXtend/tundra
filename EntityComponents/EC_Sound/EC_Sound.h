@@ -39,8 +39,6 @@ Registered by RexLogic::RexLogicModule.
 <div>Sound gain value should be between 0.0-1.0</div> 
 <li>bool: loopSound
 <div>Do we want to loop the sound until the stop sound is called.</div> 
-<li>bool: triggerSound
-<div>Set this attribute true when you want to trigger the sound.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
