@@ -32,6 +32,12 @@ namespace Foundation
             std::wcerr << title << " " << text;
         }
 
+        //! Returns current Naali install directory. May be different than the current working directory.
+        std::string GetInstallDirectory();
+        
+        //! Returns current Naali install directory (wide string) May be different than the current working directory.
+        std::wstring GetInstallDirectoryW();
+        
         //! Returns user specific application data directory.
         /*! Returns non-unicode path. May throw Expection if folder is not found.
         */

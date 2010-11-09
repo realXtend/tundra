@@ -76,12 +76,14 @@ class AssetItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
-    /** @param id ID.
+    /** @param name Name of the asset reference attribute.
+        @param id ID.
         @param type Type.
         @param parent Parent item.
     */
-    AssetItem(const QString &id, const QString &type, QTreeWidgetItem *parent = 0);
+    AssetItem(const QString &name, const QString &id, const QString &type, QTreeWidgetItem *parent = 0);
 
+    QString name; ///< Name of the attribute.
     QString id; ///< ID.
     QString type; ///< Type.
 };
@@ -89,7 +91,7 @@ public:
 /// Represents selection of selected scene tree widget items.
 struct Selection
 {
-    ///< Returns true if no entity or component items selected.
+    /// Returns true if no entity or component items selected.
     bool IsEmpty() const;
 
     /// Returns true if selection contains entities;

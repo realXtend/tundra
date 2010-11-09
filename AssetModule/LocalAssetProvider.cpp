@@ -19,19 +19,11 @@
 namespace Asset
 {
 
-LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework, const std::string& asset_dir) :
-    framework_(framework),
-    asset_dir_(asset_dir)
+LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework) :
+    framework_(framework)
 {
     Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
     event_category_ = event_manager->QueryEventCategory("Asset");
-    
-    if (!asset_dir_.empty())
-    {
-        char lastchar = asset_dir_[asset_dir_.length() - 1];
-        if ((lastchar != '/') && (lastchar != '\\'))
-            asset_dir_ += '/';
-    }
 }
 
 LocalAssetProvider::~LocalAssetProvider()
@@ -64,12 +56,19 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     AssetModule::LogDebug("New local asset request: " + asset_id);
     
     // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
-    std::string filepath = asset_dir_ + asset_id.substr(7);
-    size_t lastSlash = asset_id.substr(7).find_last_of('/');
+    std::string filename = asset_id.substr(7);
+    size_t lastSlash = filename.find_last_of('/');
     if (lastSlash != std::string::npos)
-        filepath = filepath.substr(0, asset_dir_.length() + lastSlash);
+        filename = filename.substr(0, lastSlash);
     
-    boost::filesystem::path file_path(filepath);
+    std::string assetpath = GetPathForAsset(filename);
+    if (assetpath.empty())
+    {
+        AssetModule::LogInfo("Failed to load local asset " + filename);
+        return true;
+    }
+    
+    boost::filesystem::path file_path(assetpath + "/" + filename);
     std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
     if (filestr.good())
     {
@@ -99,8 +98,43 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
             filestr.close();
     }
     
-    AssetModule::LogInfo("Failed to load local asset " + asset_id.substr(7));
+    AssetModule::LogInfo("Failed to load local asset " + filename);
     return true;
+}
+
+std::string LocalAssetProvider::GetPathForAsset(const std::string& assetname)
+{
+    // Check first all subdirs without recursion, because recursion is potentially slow
+    for (uint i = 0; i < directories_.size(); ++i)
+    {
+        if (boost::filesystem::exists(directories_[i].dir_ + "/" + assetname))
+            return directories_[i].dir_;
+    }
+    
+    // Now check recursively if not yet found
+    for (uint i = 0; i < directories_.size(); ++i)
+    {
+        if (directories_[i].recursive_)
+        {
+            try
+            {
+                boost::filesystem::recursive_directory_iterator iter(directories_[i].dir_);
+                boost::filesystem::recursive_directory_iterator end_iter;
+                for(; iter != end_iter; ++iter )
+                    if (!fs::is_regular_file(iter->status()))
+                {
+                    // Check the subdir
+                    if (boost::filesystem::exists(iter->path().string() + "/" + assetname))
+                        return iter->path().string();
+                }
+            }
+            catch (...)
+            {
+            }
+        }
+    }
+    
+    return std::string();
 }
 
 bool LocalAssetProvider::InProgress(const std::string& asset_id)
@@ -122,6 +156,32 @@ bool LocalAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& siz
 
 void LocalAssetProvider::Update(f64 frametime)
 {
+}
+
+void LocalAssetProvider::AddDirectory(const std::string& dir, bool recursive)
+{
+    if (dir.empty())
+        return;
+    
+    // Remove in case it exists already
+    RemoveDirectory(dir);
+    
+    AssetDirectory newdir;
+    newdir.dir_ = dir;
+    newdir.recursive_ = recursive;
+    directories_.push_back(newdir);
+}
+
+void LocalAssetProvider::RemoveDirectory(const std::string& dir)
+{
+    for (uint i = 0; i < directories_.size(); ++i)
+    {
+        if (directories_[i].dir_ == dir)
+        {
+            directories_.erase(directories_.begin() + i);
+            break;
+        }
+    }
 }
 
 }
