@@ -215,7 +215,7 @@ namespace Scene
 
     AttributeVector Entity::GetAttributes(const std::string &name) const
     {
-        std::vector<IAttribute *> ret;
+        QList<IAttribute *> ret;
         for(size_t i = 0; i < components_.size() ; ++i)
         {
             IAttribute *attr = components_[i]->GetAttribute(QString(name.c_str()));

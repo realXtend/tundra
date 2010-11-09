@@ -157,9 +157,10 @@ public slots:
      */
     bool IsTemporary() const;
     
-public:
     /// Returns the list of all Attributes in this component for reflection purposes.
-    const AttributeVector& GetAttributes() const { return attributes_; }
+    const QList<IAttribute *>& GetAttributes() const { return attributes_; }
+    
+public:
 
     /// Finds and returns an attribute of type 'Attribute<T>' and given name.
     /// @param T The Attribute type to look for.
@@ -169,8 +170,8 @@ public:
     template<typename T> Attribute<T> *GetAttribute(const std::string &name) const
     {
         for(size_t i = 0; i < attributes_.size(); ++i)
-            if (attributes_[i]->GetNameString() == name)
-                return dynamic_cast<Attribute<T> *>(&attributes_[i]);
+            if (attributes_.at(i)->GetNameString() == name)
+                return dynamic_cast<Attribute<T> *>(&attributes_.at(i));
         return 0;
     }
 
