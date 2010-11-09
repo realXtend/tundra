@@ -23,6 +23,8 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QGraphicsScene>
+#include <QCryptographicHash>
 
 namespace WorldBuilding
 {
