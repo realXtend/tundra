@@ -10,8 +10,10 @@
 #define incl_EC_3DGizmo_EC_3DGizmo_h
 
 #include "IComponent.h"
+#include "IAttribute.h"
 #include "Declare_EC.h"
 
+#include <QList>
 #include <QVector2D>
 #include <QVector3D>
 #include <QQuaternion>
@@ -38,37 +40,12 @@ class EC_3DGizmo : public IComponent
 public:
     /// Destructor.
     ~EC_3DGizmo();
-
-    enum DatumType
-    {
-        NotSet,
-        Scalar,
-        Vector2,
-        Vector3,
-        Quaternion
-    };
-
     
 public slots:
     virtual bool IsTemporary() const { return true; }
 
     void Update3DGizmo();
-    void SetGizmo(QString gizmo);
-    void SetDatum(float scalar);
-    void SetDatum(QVector2D &vec2);
-    void SetDatum(QVector3D &vec3);
-    void SetDatum(QQuaternion &quad);
-    void StartDrag();
-    void Drag(int x, int y, QVector3D &changevec);
-    void EndDrag();
-
-signals:
-    void dragged(float scalar);
-    void dragged(QVector2D &vec2);
-    void dragged(QVector3D &vec3);
-    void dragged(QQuaternion &quat);
-    void dragStarted();
-    void dragCompleted();
+    void SetEditableAttributes(QList<IAttribute*> attributes);
     
 private:
     /// Constuctor.
@@ -77,13 +54,8 @@ private:
 
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
-
-    DatumType _type;
-
-    QVector2D _vec2;
-    QVector3D _vec3;
-    QQuaternion _quat;
-    float _scalar;
+    
+    QList<IAttribute *> attributes_;
 };
 
 #endif
