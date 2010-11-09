@@ -26,6 +26,7 @@ namespace UiExternalServices
 	QWidget* ExternalPanelManager::AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags)
     {
         QDockWidget *wid = new QDockWidget(title, qWin_, flags);
+		wid->setObjectName(title);
 		wid->setWidget(widget);
         if (!AddQDockWidget(wid))
         {

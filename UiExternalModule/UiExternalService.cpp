@@ -64,4 +64,27 @@ namespace UiExternalServices
 	bool UiExternalService::IsEditModeEnable(){
 		return owner_->GetExternalPanelManager()->IsEditModeEnable();
 	}
+
+	bool UiExternalService::AddExternalToolbar(QToolBar *toolbar, const QString &name){
+		return owner_->GetExternalToolBarManager()->AddExternalToolbar(toolbar, name);	
+	}
+
+	bool UiExternalService::RemoveExternalToolbar(QString name){
+		return owner_->GetExternalToolBarManager()->RemoveExternalToolbar(name);
+	}
+	bool UiExternalService::ShowExternalToolbar(QString name){
+		return owner_->GetExternalToolBarManager()->ShowExternalToolbar(name);
+	}
+	bool UiExternalService::HideExternalToolbar(QString name){
+		return owner_->GetExternalToolBarManager()->HideExternalToolbar(name);
+	}
+	bool UiExternalService::EnableExternalToolbar(QString name){
+		return owner_->GetExternalToolBarManager()->EnableExternalToolbar(name);
+	}
+	bool UiExternalService::DisableExternalToolbar(QString name){
+		return owner_->GetExternalToolBarManager()->DisableExternalToolbar(name);
+	}
+	QToolBar* UiExternalService::GetExternalToolbar(QString name){
+		return owner_->GetExternalToolBarManager()->GetExternalToolbar(name);
+	}
 }

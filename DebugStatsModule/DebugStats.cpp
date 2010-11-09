@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -147,7 +148,10 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
     connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
-    ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+	//$ BEGIN_MOD $
+    //ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+	ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Panels"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+	//$ END_MOD $
 }
 
 void DebugStatsModule::StartProfiling(bool visible)

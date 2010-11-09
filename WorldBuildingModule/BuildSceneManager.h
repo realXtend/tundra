@@ -108,6 +108,10 @@ namespace WorldBuilding
 
         void ToggleLights();
 
+		//$ BEGIN_MOD $
+		void ChangeAndCreateObject();
+		//$ END_MOD $
+
     private:
         Foundation::Framework *framework_;
         QString scene_name_;

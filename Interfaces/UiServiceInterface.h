@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -12,6 +13,9 @@
 #include "ServiceInterface.h"
 
 #include <QObject>
+//$ BEGIN_MOD $
+#include <QToolBar>
+//$ END_MOD $
 
 class QWidget;
 class QGraphicsProxyWidget; 
@@ -47,7 +51,7 @@ public slots:
      *          For further information, see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
      *  @return Proxy widget of the added widget.
      */
-    virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = true, bool outside = false, Qt::WindowFlags flags = Qt::Dialog) = 0;
+    virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = true, bool outside = true, Qt::WindowFlags flags = Qt::Dialog) = 0;
 
     /** Adds user-created UiProxyWidget to the scene.
      *  @param widget Proxy widget.
@@ -169,6 +173,17 @@ public slots:
      */
     virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
 //$ BEGIN_MOD $
+
+	/*! \brief	Insert the given action in the Menu of the main window
+         *  \param  action Action
+         *  \param  name Name of the Action
+		 *	\param	menu name of the Menu to put the action inside it
+		 *	\param	icon Icon of the action
+         *         
+         *  \return true if everything is ok (action addded)
+         */
+	virtual bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0) = 0;
+
     /*! Toggle the selected widget in/out of scene
      *	\param widgetToChange name of the widget to change
 	 *
@@ -188,7 +203,57 @@ public slots:
 	 *	\note For now, this method is only used for Console Widget
      */
 	virtual void TransferWidgetOut(QString widgetToChange, bool out) = 0;
+
+	//TOOLBARS
+
+		/*! Adds a QToolBar given with the name to the main window 
+         *  \param toolbar Pointer to the toolbar
+		 *	\param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool AddExternalToolbar(QToolBar *toolbar, const QString &name) = 0;
+
+		/*! Removes a QToolBar given with the name from the main window 
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool RemoveExternalToolbar(QString name) = 0;
+
+		/*! Shows a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool ShowExternalToolbar(QString name) = 0;
+
+		/*! Hide a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool HideExternalToolbar(QString name) = 0;
+
+		/*! Enable a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool EnableExternalToolbar(QString name) = 0;
+
+		/*! Disable a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool DisableExternalToolbar(QString name) = 0;
+
+		/*! Returns a QToolBar with the name given
+		 *	
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+		 *	
+		 *	\Note: if the Toolbar doesn't exist, it is created first
+         */
+		virtual QToolBar* GetExternalToolbar(QString name) = 0;
+
 //$ END_MOD $
+
     /** Load widget from .ui file and as default add it to a scene. This method is for scripters.
      *  @param file_path ui file location.
      *  @param parent Pointer to parent widget.

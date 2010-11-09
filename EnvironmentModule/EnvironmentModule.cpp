@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *  @file   EnvironmentModule.cpp
@@ -73,7 +74,7 @@ namespace Environment
     {
         event_manager_ = framework_->GetEventManager();
         
-        // Depends on rexlogic etc. handling messages first to create the scene, so lower priority
+        // Depends on rexlogic etc. handling messages first to create the scene, so lower priority 
         event_manager_->RegisterEventSubscriber(this, 99);
 
         resource_event_category_ = event_manager_->QueryEventCategory("Resource");
@@ -86,15 +87,19 @@ namespace Environment
         {
             // Initialize post-process dialog.
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
+			postprocess_dialog_->setWindowTitle("Post-processing");
 
             // Add to scene.
             UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
             if (!ui)
                 return;
 
-            ui->AddWidgetToScene(postprocess_dialog_);
-            ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
-                "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+            ui->AddWidgetToScene(postprocess_dialog_, false, true);
+			//$ BEGIN_MOD $
+			//ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+			ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("Panels"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+			//$ END_MOD $
+           
         }
 
         environment_editor_ = new EnvironmentEditor(this);

@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -243,19 +244,22 @@ namespace Environment
             return;
         }
 
-        editor_widget_ = loader.load(&file, this);
+        editor_widget_ = loader.load(&file, this); 
         if (editor_widget_ == 0)
             return;
 
         QVBoxLayout *layout = new QVBoxLayout(this);
-        layout->addWidget(editor_widget_);
+        layout->addWidget(editor_widget_); 
         layout->setContentsMargins(0, 0, 0, 0);
         setLayout(layout);
 
         setWindowTitle(tr("Environment Editor"));
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
-        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
+		//$ BEGIN_MOD $
+        //ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
+		ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("Panels"), "./data/ui/images/menus/edbutton_ENVED_normal");
+		//$ END_MOD $
         ui->RegisterUniversalWidget("Environment", editor_proxy);
 
         // Tab window signals

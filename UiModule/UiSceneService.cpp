@@ -43,9 +43,11 @@ namespace UiServices
 //$ BEGIN_MOD $
     UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool moveable , bool outside, Qt::WindowFlags flags)
     {
-
 		uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		QWidget* qdock= new QDockWidget(widget->windowTitle());
+		qdock->setObjectName(widget->windowTitle());
+		qdock->setWindowTitle(widget->windowTitle());		
+		widget->setObjectName(widget->windowTitle());
 		UiProxyWidget *proxy;
 		//If is outside and external service available, put it in a dockwidget
 		if(uiExternal && outside){	
@@ -68,12 +70,26 @@ namespace UiServices
 
     bool UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
     {
-		//Not moveable!!
-		widget->widget()->setWindowTitle(widget->windowTitle());
+		//DEFAULT OUTSIDE = TRUE & MOVEABLE = TRUE
+		uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		QWidget* qdock= new QDockWidget(widget->windowTitle());
+		qdock->setObjectName(widget->windowTitle());
+		qdock->setWindowTitle(widget->windowTitle());
+		widget->setObjectName(widget->windowTitle());
 		QWidget* wid = widget->widget();
-		owner_->GetInworldSceneController()->AddProxyWidget(widget);
+
+		//If is outside and external service available, put it in a dockwidget
+		if(uiExternal){	
+			widget->setWidget(0);
+			qdock = uiExternal->AddExternalPanel(wid,widget->windowTitle());
+		}else{
+			owner_->GetInworldSceneController()->AddProxyWidget(widget);
+		}
+		//Save the pair
 		proxy_dock_list[widget->windowTitle()]=proxyDock(widget,dynamic_cast<QDockWidget*>(qdock));
+		//If moveable, register it as moveable
+		moveable_widgets_->append(wid->windowTitle());
+
 		return true;
     }
 
@@ -104,14 +120,14 @@ namespace UiServices
 		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
 		if(qdock->widget() && uiExternal)
 			if (moveable_widgets_->contains(widget->windowTitle()) && uiExternal)
-				uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels", true);
+				uiExternal->AddExternalMenuPanel(qdock,entry,menu, true);
 			else
-				uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels", false); 
+				uiExternal->AddExternalMenuPanel(qdock,entry,menu, false); 
 		else
 			owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
 			//If it's inside and is moveable, we put also the menu outside..
 			if (moveable_widgets_->contains(widget->windowTitle()) && uiExternal)
-				uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels", true);
+				uiExternal->AddExternalMenuPanel(qdock,entry,menu, true);
     }
 
     void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
@@ -125,12 +141,12 @@ namespace UiServices
 			//If it's inside and is moveable, we put also the menu outside..
 			if (moveable_widgets_->contains(widget->windowTitle()) && uiExternal){
 				QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-				uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels", true);
+				uiExternal->AddExternalMenuPanel(qdock,entry,menu, true);
 			}
 		}
 		else{
-			QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels", moveable_widgets_->contains(widget->windowTitle()));
+			QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second; 
+			uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
 		}
     }
 
@@ -289,6 +305,14 @@ namespace UiServices
         }
     }
 //$ BEGIN_MOD $
+	bool UiSceneService::AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon){
+		uiExternal = owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+		if (uiExternal)
+			return uiExternal->AddExternalMenuAction(action,name,menu,icon);
+		else
+			return false;
+	}
+
 	bool UiSceneService::TransferWidgetInOut(QString widgetToChange)
 	{
 		//To change the widget, it has to exist and it has to be registered as moveable
@@ -321,11 +345,12 @@ namespace UiServices
 			}else{
 				proxy->hide();
 				widget=proxy->widget();
-				widget->adjustSize();
+				//widget->adjustSize();
 				owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy);
 				owner_->GetInworldSceneController()->RemoveWidgetFromMenu(proxy);
 				proxy->setWidget(0);
 				qdock->setWidget(widget);
+				qdock->setMinimumSize(widget->minimumSize());
 				//Add Panel..
 				if (uiExternal->AddExternalPanel(qdock)){
 					uiExternal->ShowWidget(widget);
@@ -406,5 +431,56 @@ namespace UiServices
 			}
 		}
 	}
+
+	bool UiSceneService::AddExternalToolbar(QToolBar *toolbar, const QString &name){
+		if (uiExternal)
+			return uiExternal->AddExternalToolbar(toolbar, name);
+		else
+			return false;
+    }
+
+	bool UiSceneService::RemoveExternalToolbar(QString name){
+		uiExternal = owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+		if (uiExternal)
+			return uiExternal->RemoveExternalToolbar(name);
+		else
+			return false;
+    }
+
+	bool UiSceneService::ShowExternalToolbar(QString name){
+		if (uiExternal)
+			return uiExternal->ShowExternalToolbar(name);
+		else
+			return false;
+    }
+
+	bool UiSceneService::HideExternalToolbar(QString name){
+		if (uiExternal)
+			return uiExternal->HideExternalToolbar(name);
+		else
+			return false;
+    }
+
+	bool UiSceneService::EnableExternalToolbar(QString name){
+		if (uiExternal)
+			return uiExternal->EnableExternalToolbar(name);
+		else
+			return false;
+    }
+
+	bool UiSceneService::DisableExternalToolbar(QString name){
+		if (uiExternal)
+			return uiExternal->DisableExternalToolbar(name);
+		else
+			return false;
+    }
+
+	QToolBar* UiSceneService::GetExternalToolbar(QString name){
+		if (uiExternal)
+			return uiExternal->GetExternalToolbar(name);
+		else
+			return false;
+    }
+
 //$ END_MOD $
 }

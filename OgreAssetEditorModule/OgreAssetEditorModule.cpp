@@ -67,6 +67,7 @@ void OgreAssetEditorModule::PostInitialize()
 
 //$ BEGIN_MOD $   
     materialWizard_ = new MaterialWizard(0,framework_);
+	materialWizard_->setWindowTitle("Material");
 //$ END_MOD $  
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
@@ -75,7 +76,7 @@ void OgreAssetEditorModule::PostInitialize()
     if (!uiService_.expired())
     {
         UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
-        uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material Wizard"), tr("World Tools"),
+        uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material"), tr("Create"),
             "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }

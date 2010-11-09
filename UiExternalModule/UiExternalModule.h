@@ -9,6 +9,7 @@
 #include "UiExternalModuleApi.h"
 #include "ExternalPanelManager.h"
 #include "ExternalMenuManager.h"
+#include "ExternalToolBarManager.h"
 #include "UiExternalService.h"
 #include "ModuleLoggingFunctions.h"
 #include "UiExternalServiceInterface.h"
@@ -34,6 +35,7 @@ namespace UiExternalServices
 	class ExternalPanelManager;
 	class ExternalMenuManager;
 	class UiExternalService;
+	class ExternalToolBarManager;
 
 	typedef boost::shared_ptr<UiExternalService> UiExternalServicePtr;
     
@@ -65,6 +67,7 @@ namespace UiExternalServices
 		//!Get Managers of the module
 		ExternalMenuManager* GetExternalMenuManager() { return menu_manager_; };
 		ExternalPanelManager* GetExternalPanelManager() { return panel_manager_; };
+		ExternalToolBarManager* GetExternalToolBarManager() {return toolbar_manager_;};
 
 		//! Logging
         MODULE_LOGGING_FUNCTIONS;
@@ -76,6 +79,8 @@ namespace UiExternalServices
 		//!Slots used to implement static menus
 		void SwitchToEtherScene();
 		void ExitApp();
+		void Test();
+		void SaveState();
 
     private:
 		//! Method to configure static content of the MainWindow
@@ -86,12 +91,17 @@ namespace UiExternalServices
 		//! Managers of the Module
 		ExternalMenuManager* menu_manager_;
 		ExternalPanelManager* panel_manager_;
+		ExternalToolBarManager* toolbar_manager_;
 		//! Type name of this module.
         static std::string type_name_static_;
 		//! Static toolbar
 		StaticToolBar* staticToolBar_;
 		//! Category event to handle
 		event_category_id_t scene_event_category_;
+
+		//test 
+		QByteArray conf;
+		
     };
 }
 

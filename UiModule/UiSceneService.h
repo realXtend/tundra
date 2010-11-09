@@ -47,7 +47,7 @@ namespace UiServices
 
     public slots:
         /// UiServiceInterface override.
-        UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = true, bool outside = false, Qt::WindowFlags flags = Qt::Dialog);
+        UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = true, bool outside = true, Qt::WindowFlags flags = Qt::Dialog);
 
         /// UiServiceInterface override.
         bool AddWidgetToScene(UiProxyWidget *widget);
@@ -109,12 +109,39 @@ namespace UiServices
         /// UiServiceInterface override.
         QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
 //$ BEGIN_MOD $
+		/// UiServiceInterface override.
+		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0);
+		/// UiServiceInterface override.
 		bool TransferWidgetInOut(QString widgetToChange);
 		/// UiServiceInterface override.
         void BringWidgetToFront(QString widget);
 		/// UiServiceInterface override.
 		void TransferWidgetOut(QString widgetToChange, bool out);
+
+		//TOOLBARS
+
+		/// UiServiceInterface override.
+		bool AddExternalToolbar(QToolBar *toolbar, const QString &name);
+
+		/// UiServiceInterface override.
+		bool RemoveExternalToolbar(QString name);
+
+		/// UiServiceInterface override.
+		bool ShowExternalToolbar(QString name);
+
+		/// UiServiceInterface override.
+		bool HideExternalToolbar(QString name);
+
+		/// UiServiceInterface override.
+		bool EnableExternalToolbar(QString name);
+
+		/// UiServiceInterface override.
+		bool DisableExternalToolbar(QString name);
+
+		/// UiServiceInterface override.
+		QToolBar* GetExternalToolbar(QString name);
 //$ END_MOD $
+
     private slots:
 		/// UiServiceInterface override.
         void TranferWidgets();

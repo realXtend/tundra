@@ -117,6 +117,54 @@ namespace UiExternalServices
          */
 		QDockWidget* GetExternalMenuPanel(QString &widget);
 
+		//TOOLBARS
+
+		/*! Adds a QToolBar given with the name to the main window 
+         *  \param toolbar Pointer to the toolbar
+		 *	\param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		bool AddExternalToolbar(QToolBar *toolbar, const QString &name);
+
+		/*! Removes a QToolBar given with the name from the main window 
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		bool RemoveExternalToolbar(QString name);
+
+		/*! Shows a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		bool ShowExternalToolbar(QString name);
+
+		/*! Hide a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		bool HideExternalToolbar(QString name);
+
+		/*! Enable a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		bool EnableExternalToolbar(QString name);
+
+		/*! Disable a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		bool DisableExternalToolbar(QString name);
+
+		/*! Returns a QToolBar with the name given
+		 *	
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+		 *	
+		 *	\Note: if the Toolbar doesn't exist, it is created first
+         */
+		QToolBar* GetExternalToolbar(QString name);
+
     private:
         //! Owner UI module.
         UiExternalModule *owner_;

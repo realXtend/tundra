@@ -1,3 +1,4 @@
+//$ HEADER_NEW_FILE $ 
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -19,10 +20,16 @@ namespace CoreUi
         setWidget(internal_widget_);
 
         connect(avatarToggle, SIGNAL(clicked()), SLOT(AvatarToggle()));
-        connect(inventoryToggle, SIGNAL(clicked()), SLOT(InventoryToggle()));
+		//$ BEGIN_MOD $
+		//Deleted from ui to check behaviour
+        //connect(inventoryToggle, SIGNAL(clicked()), SLOT(InventoryToggle()));
+		//$ END_MOD $
+
 
         CheckStyle(false, "avatarToggle");
-        CheckStyle(false, "inventoryToggle");
+		//$ BEGIN_MOD $
+        //CheckStyle(false, "inventoryToggle");
+		//$ END_MOD $
     }
 
     void PersonalWidget::SetAvatarWidget(UiProxyWidget *avatar_widget)
@@ -109,13 +116,16 @@ namespace CoreUi
         }
         else if (type == "inventoryToggle")
         {
+			//$ BEGIN_MOD $
+			/*Deleted from ui to check behaviour
             button = inventoryToggle;
             if (!pressed_down)
                 image_normal += "uibutton_INV_normal.png";
             else
                 image_normal += "uibutton_INV_click.png";
             image_hover += "uibutton_INV_hover.png"; 
-            image_pressed += "uibutton_INV_click.png";
+            image_pressed += "uibutton_INV_click.png";*/
+			//$ END_MOD $
         }
         else
             return;

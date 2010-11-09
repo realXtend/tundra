@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $ 
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -81,7 +82,11 @@ namespace CoreUi
     void ControlPanelManager::CreateBasicControls()
     {
         QList<UiServices::ControlButtonType> buttons;
-        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION We want to disable Quit and Ether options $
+        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit ;/*ENNE << UiServices::Build << UiServices::Ether;*/
+		//buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
+		//$ END_MOD $
 
         ControlPanelButton *button = 0;
         ControlPanelButton *previous_button = 0;

@@ -46,7 +46,8 @@ namespace Console
             proxy_widget_->setZValue(100);
             ui->RegisterUniversalWidget("Console", proxy_widget_);
 //$ BEGIN_MOD $
-			ui->TransferWidgetOut("ConsoleWidget",false);
+			//ui->TransferWidgetOut("ConsoleWidget",false);
+			ui->AddWidgetToMenu(console_widget_, "Console", tr("Panels"));
 //$ END_MOD $  
         }
 

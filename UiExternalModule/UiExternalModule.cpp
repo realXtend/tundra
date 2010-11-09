@@ -24,6 +24,8 @@
 #include <QApplication>
 #include <QFontDatabase>
 #include <QDir>
+#include <QByteArray>
+//#include "qcstring.h"
 
 
 namespace UiExternalServices
@@ -34,7 +36,8 @@ namespace UiExternalServices
         IModule(type_name_static_),
 		qWin_(0),
 		menu_manager_(0),
-		panel_manager_(0)
+		panel_manager_(0),
+		toolbar_manager_(0)
     {
     }
 
@@ -55,9 +58,12 @@ namespace UiExternalServices
         qWin_ = dynamic_cast<QMainWindow*>(GetFramework()->GetMainWindow()->parentWidget());
         if (qWin_)
         {
-		   //Create MenuManager and PanelManager
+			qWin_->setObjectName("Naali MainWindow");
+
+		   //Create MenuManager and PanelManager and ToolBarManager
 		   menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
 		   panel_manager_ = new ExternalPanelManager(qWin_);
+		   toolbar_manager_ = new ExternalToolBarManager(qWin_);
 		   
 			// Register UI service
      	    ui_external_scene_service_ = UiExternalServicePtr(new UiExternalService(this));
@@ -77,11 +83,59 @@ namespace UiExternalServices
     }
 
     void UiExternalModule::PostInitialize()
-    {		
+    {
+		/*conf = qWin_->saveState();
+		if (conf.isNull() || conf.isEmpty())
+			LogWarning("Could not save settings to restore!!!"); */
+
+		//TODO: REMOVE THE FOLLOWING ACTIONS AND CREATE WHEN THE FUNCTIONALITY IS DONE..
+		//Create->Scene
+		QAction *action = new QAction("Scene:TODO", qWin_); 
+		menu_manager_->AddExternalMenuAction(action, "Scene:TODO", "Create");
+		//Create->Region
+		QAction *action2 = new QAction("Region:TODO", qWin_);
+		menu_manager_->AddExternalMenuAction(action2, "Region:TODO", "Create");
+		//Panels->Area
+		QAction *action3 = new QAction("Area:TODO", qWin_);
+		menu_manager_->AddExternalMenuAction(action3, "Area:TODO", "Panels");
+		//Panels->Assets
+		QAction *action4 = new QAction("Assets:TODO", qWin_);
+		menu_manager_->AddExternalMenuAction(action4, "Assets:TODO", "Panels");
+
+		//test settings!
+		QAction *action5 = new QAction("Restore_test", qWin_);
+		menu_manager_->AddExternalMenuAction(action5, "Restore_test", "Test");
+		if (!connect(action5, SIGNAL(triggered()), SLOT(Test())))
+			LogWarning("Could not connect with Framework to Exit!!!!"); 
+
+		QAction *action6 = new QAction("Save_test", qWin_);
+		menu_manager_->AddExternalMenuAction(action6, "Save_test", "Test");
+		if (!connect(action6, SIGNAL(triggered()), SLOT(SaveState())))
+			LogWarning("Could not connect with Framework to Exit!!!!"); 
+
+
+		//TRY TO SAVE STATE OF THE QMAINWINDOW AND RESTORE IT..
+		/*QByteArray state = QString(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").c_str()).toAscii();//.toByteArray();
+		qWin_->restoreState(state);*/
+
+
+		//qWin_->restoreState(QByteArray(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").data()));
+		
+		
     }
 
     void UiExternalModule::Uninitialize()
     {
+		/*TRY TO SAVE STATE OF THE QMAINWINDOW AND RESTORE IT..
+		QByteArray test1 = QByteArray("loquesea");
+		QByteArray test2 = QByteArray(qWin_->saveState());
+		
+		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test1", QString(test1).toStdString());
+		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test2", QString(test2).toStdString());
+
+		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test", std::string("./data/assetcache"));
+		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "config", QString(QByteArray(qWin_->saveState())).toStdString());*/
+		
         framework_->GetServiceManager()->UnregisterService(ui_external_scene_service_);
         ui_external_scene_service_.reset();
     }
@@ -101,30 +155,18 @@ namespace UiExternalServices
 	{
 		//Create Static Toolbar
 		staticToolBar_ = new StaticToolBar("Control Bar",qWin_,framework_);
-		qWin_->addToolBar(staticToolBar_);
-
-		//Get login handler and connect signals
-        Foundation::LoginServiceInterface *handler = framework_->GetService<Foundation::LoginServiceInterface>();
-		if (handler)
-		{
-			//connect(handler, SIGNAL(LoginFailed(const QString &)), panel_manager_, SLOT(DisableDockWidgets()));
-			//connect(handler, SIGNAL(LoginSuccessful()), panel_manager_, SLOT(EnableDockWidgets()));
-			connect(handler, SIGNAL(LoginFailed(const QString &)), menu_manager_, SLOT(DisableMenus()));
-			connect(handler, SIGNAL(LoginSuccessful()), menu_manager_, SLOT(EnableMenus()));
-			connect(handler, SIGNAL(LoginFailed(const QString &)), staticToolBar_, SLOT(Disabled()));
-			connect(handler, SIGNAL(LoginSuccessful()), staticToolBar_, SLOT(Enabled()));
-        }
+		toolbar_manager_->AddExternalToolbar(staticToolBar_, "Control Bar");
 
 		UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
 		if (ui_service){
 			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), panel_manager_, SLOT(SceneChanged(const QString&, const QString&)));
-			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), staticToolBar_, SLOT(SceneChanged(const QString&, const QString&)));
+			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), toolbar_manager_, SLOT(SceneChanged(const QString&, const QString&)));
 			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), menu_manager_, SLOT(SceneChanged(const QString&, const QString&)));
 		}
 		
 		//File -> Enter World
 		QAction *action = new QAction("Ether", qWin_);
-		menu_manager_->AddExternalMenuAction(action, "Enter World", "File");
+		menu_manager_->AddExternalMenuAction(action, "Ether", "File");
 		QString *enter = new QString("Ether");
 		if (!connect(action, SIGNAL(triggered()), SLOT(SwitchToEtherScene())))
 			LogWarning("Could not connect with Ether scene to go back!!!!");    
@@ -133,7 +175,7 @@ namespace UiExternalServices
 		QAction *action2 = new QAction("Exit", qWin_);
 		menu_manager_->AddExternalMenuAction(action2, "Exit", "File");
 		if (!connect(action2, SIGNAL(triggered()), SLOT(ExitApp())))
-			LogWarning("Could not connect with Framework to Exit!!!!");  		
+			LogWarning("Could not connect with Framework to Exit!!!!");  
         
 	}
 
@@ -145,6 +187,16 @@ namespace UiExternalServices
 
 	void UiExternalModule::ExitApp(){
 		framework_->Exit();	
+	}
+
+	void UiExternalModule::Test(){
+		qWin_->restoreState(conf);
+	}
+
+	void UiExternalModule::SaveState(){
+		conf = qWin_->saveState();
+		//if (conf.isNull() || conf.isEmpty())
+		//	LogWarning("Could not save settings to restore!!!"); 
 	}
 }
 

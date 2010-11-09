@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QDockWidget>
+#include <QToolBar>
 
 
 namespace Foundation
@@ -120,6 +121,54 @@ namespace Foundation
 		 *  \return QDockWidget
          */
 		virtual QDockWidget* GetExternalMenuPanel(QString &widget) = 0;
+
+		//TOOLBARS
+
+		/*! Adds a QToolBar given with the name to the main window 
+         *  \param toolbar Pointer to the toolbar
+		 *	\param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool AddExternalToolbar(QToolBar *toolbar, const QString &name) = 0;
+
+		/*! Removes a QToolBar given with the name from the main window 
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool RemoveExternalToolbar(QString name) = 0;
+
+		/*! Shows a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool ShowExternalToolbar(QString name) = 0;
+
+		/*! Hide a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool HideExternalToolbar(QString name) = 0;
+
+		/*! Enable a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool EnableExternalToolbar(QString name) = 0;
+
+		/*! Disable a QToolBar given by name
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+         */
+		virtual bool DisableExternalToolbar(QString name) = 0;
+
+		/*! Returns a QToolBar with the name given
+		 *	
+         *  \param name  Name of the Toolbar.
+		 *  \return true if everything right
+		 *	
+		 *	\Note: if the Toolbar doesn't exist, it is created first
+         */
+		virtual QToolBar* GetExternalToolbar(QString name) = 0;
     };
 }
 

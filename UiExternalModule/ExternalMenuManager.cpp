@@ -60,7 +60,7 @@ namespace UiExternalServices
 	bool ExternalMenuManager::AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, bool moveable)
     {       
 		//Check if is not already
-		if (controller_panels_.contains(QString(menu+"+"+name)))
+		if (controller_panels_.contains(QString(menu+"+"+widget->windowTitle())))
 			return false;
 		
 		//First of all, we create the Menu with 2options, internal and external
@@ -87,10 +87,10 @@ namespace UiExternalServices
             category_menu_[menu]->addMenu(newmenu);
         }
 		
-		QString *aux = new QString(menu+"+"+name);
+		QString *aux = new QString(menu+"+"+widget->windowTitle());
         controller_panels_[*aux] = widget;
-		controller_actions_[QString(menu+"+"+name+"in")]= action1;
-		controller_actions_[QString(menu+"+"+name+"out")]= action2;
+		controller_actions_[QString(menu+"+"+widget->windowTitle()+"in")]= action1;
+		controller_actions_[QString(menu+"+"+widget->windowTitle()+"out")]= action2;
 		connect(action1, SIGNAL(triggered()), SLOT(ActionNodeClickedInside()));
 		connect(action2, SIGNAL(triggered()), SLOT(ActionNodeClickedOutside()));
 		return true;
@@ -164,14 +164,22 @@ namespace UiExternalServices
 
 	void ExternalMenuManager::EnableMenus(){
 		//Enable 
-		QMenu * aux = category_menu_.value("Panels");
-		aux->setEnabled(true);
+		QMutableMapIterator<QString, QMenu*> i(category_menu_);
+		while (i.hasNext()) {
+			i.next();
+			if (i.key() != "File")
+				i.value()->setEnabled(true);
+		}
 	}
 
 	void ExternalMenuManager::DisableMenus(){
 		//Disable 
-		QMenu * aux = category_menu_.value("Panels");
-		aux->setEnabled(false);
+		QMutableMapIterator<QString, QMenu*> i(category_menu_);
+		while (i.hasNext()) {
+			i.next();
+			if (i.key() != "File")
+				i.value()->setEnabled(false);
+		}
 	}
 
 	void ExternalMenuManager::SceneChanged(const QString &old_name, const QString &new_name)

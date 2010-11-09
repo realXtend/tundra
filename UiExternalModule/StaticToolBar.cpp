@@ -127,22 +127,6 @@ namespace UiExternalServices
 		}
 	}
 
-	void StaticToolBar::Enabled(){
-		setVisible(true);
-	}
-
-	void StaticToolBar::Disabled(){
-		setVisible(false);
-	}
-
-	void StaticToolBar::SceneChanged(const QString &old_name, const QString &new_name)
-    {
-		currentScene=new_name;
-        if (currentScene == "Ether")
-			Disabled();     
-		else
-			Enabled();
-    }
 
 	void StaticToolBar::CreateMenu()
 	{

@@ -137,9 +137,16 @@ namespace ECEditor
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
+		//$ BEGIN_MOD $
+		//editor_window_->setWindowTitle(tr("EC Editor"));
+		//$ END_MOD $
 
         UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
-        ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+		//$ BEGIN_MOD $
+		//ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+		ui->AddWidgetToMenu(editor_window_, tr("EC Editor"), tr("Panels"), "./data/ui/images/menus/edbutton_OBJED_normal.png");
+		//$ END_MOD $
+        
         ui->RegisterUniversalWidget("Components", editor_proxy);
 
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));

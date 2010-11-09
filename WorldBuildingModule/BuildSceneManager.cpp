@@ -1,3 +1,4 @@
+//HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -19,6 +20,9 @@
 #include <QDebug>
 
 #include "MemoryLeakCheck.h"
+//$ BEGIN_MOD $
+#include "UiExternalServiceInterface.h"
+//$ END_MOD $
 
 namespace WorldBuilding
 {
@@ -43,7 +47,28 @@ namespace WorldBuilding
         connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));
 
         InitScene();
-        ObjectSelected(false);        
+        ObjectSelected(false); 
+
+		//$ BEGIN_MOD $
+		//Create Action to Create an object & switch to build scene 
+
+		//Check if UiExternalIsAvailable 
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		if (ui){
+			//Create Action, insert into menu Create->Avatar
+			QAction *action = new QAction("Object",this);
+			if (ui->AddExternalMenuAction(action, "Object", tr("Create"))){
+				//We change scene
+				connect(action, SIGNAL(triggered()), SLOT(ChangeAndCreateObject()));
+			}
+			//Create also an action to switch to Scene in Menu->Panels
+			QAction *action2 = new QAction("Modify Object",this);
+			if (ui->AddExternalMenuAction(action2, "Modify Object", tr("Panels"))){
+				//We change scene
+				connect(action2, SIGNAL(triggered()), SLOT(ToggleBuildScene()));
+			}
+		}
+		//$ END_MOD $
     }
 
     BuildSceneManager::~BuildSceneManager()
@@ -678,4 +703,14 @@ namespace WorldBuilding
             toolbar_->button_lights->setText("Custom Lights");
         toolbar_->slider_lights->setVisible(override_server_time_);
     }
+
+	//$ BEGIN_MOD $
+	void BuildSceneManager::ChangeAndCreateObject(){
+		//Change to Build Scene if we are not still there
+		if (!IsBuildingActive())
+			ShowBuildScene();
+		//Create new object
+		NewObjectClicked();	
+	}
+	//$ END_MOD $
 }

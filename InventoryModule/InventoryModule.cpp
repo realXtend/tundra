@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -340,7 +341,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
     }
 
     // Framework
-    if (category_id == frameworkEventCategory_)
+    if (category_id == frameworkEventCategory_) 
     {
         switch(event_id)
         {
@@ -475,12 +476,18 @@ void InventoryModule::CreateInventoryWindow()
     if (!ui)
         return;
 
-    SAFE_DELETE(inventoryWindow_);
+    SAFE_DELETE(inventoryWindow_); 
     inventoryWindow_ = new InventoryWindow;
+	//$ BEGIN_MOD $
+	//inventoryWindow_->setWindowTitle("Inventory");
+	//$ END_MOD $
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
-    ui->AddWidgetToMenu(inventoryWindow_);
+    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, false, true);
+	//$ BEGIN_MOD $	
+	ui->AddWidgetToMenu(inventoryWindow_, "Store", "Create");
+    //ui->AddWidgetToMenu(inventoryWindow_);
+	//$ END_MOD $
     ui->RegisterUniversalWidget("Inventory", inv_proxy);
 
 #ifndef UISERVICE_TEST
