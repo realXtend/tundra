@@ -184,7 +184,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
-            Scene::ScenePtr scene = framework_->CreateScene("TundraClient");
+            Scene::ScenePtr scene = framework_->CreateScene("TundraClient", true);
             framework_->SetDefaultWorldScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
             

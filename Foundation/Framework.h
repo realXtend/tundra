@@ -147,9 +147,10 @@ namespace Foundation
         //! Creates new empty scene.
         /*! 
             \param name name of the new scene
+            \param viewenabled Whether the scene is view enabled
             \return The new scene, or empty pointer if scene with the specified name already exists.
         */
-        Scene::ScenePtr CreateScene(const QString &name);
+        Scene::ScenePtr CreateScene(const QString &name, bool viewenabled);
 
         //! Removes a scene with the specified name.
         /*! The scene may not get deleted since there may be dangling references to it.
