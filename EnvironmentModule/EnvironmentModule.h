@@ -13,12 +13,10 @@
 #include "WorldStream.h"
 
 #ifdef CAELUM
-    namespace Caelum
-    {
-        class CaelumSystem;
-    }
-
-
+namespace Caelum
+{
+    class CaelumSystem;
+}
 #endif
 
 namespace Environment

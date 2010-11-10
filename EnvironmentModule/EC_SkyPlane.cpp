@@ -15,12 +15,11 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyPlane")
 
 namespace Environment
 {
+    /// \todo Use Asset API for fetching sky resources.
      EC_SkyPlane::EC_SkyPlane(IModule *module)
         : IComponent(module->GetFramework()),
-        materialRef(this, "Material ref"),
-        materialAttr(this, "Material" , "Rex/SkyPlane"),
-        textureRef(this, "Texture ref"),
-        textureAttr(this, "Texture", "clouds.jpg"),
+        materialRef(this, "Material ref", AssetReference("RexSkyPlane")), ///< \todo Add "orge://" when AssetAPI can handle it.
+        textureRef(this, "Texture ref", AssetReference("clouds.jpg")), ///< \todo Add "orge://" when AssetAPI can handle it.
         tilingAttr(this, "Tiling", 150.f),
         scaleAttr(this, "Scale", 300.f),
         bowAttr(this, "Bow", 1.5f),
@@ -38,7 +37,7 @@ namespace Environment
          //DisableSky();
          CreateSky();
 
-         lastMaterial_ = materialAttr.Get();
+         lastMaterial_ = materialRef.Get().ref;
          lastTiling_ = tilingAttr.Get();
          lastScale_ = scaleAttr.Get();
          lastBow_ = bowAttr.Get();
@@ -68,7 +67,7 @@ namespace Environment
             plane.d = distanceAttr.Get();
             plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Z;
             
-            QString currentMaterial = materialAttr.Get();
+            QString currentMaterial = materialRef.Get().ref;
             float scale = scaleAttr.Get();
             float tiling = tilingAttr.Get();
             bool drawFirst = drawFirstAttr.Get();
@@ -100,7 +99,7 @@ namespace Environment
     {
         std::string name = attribute->GetNameString();
         
-        if ( ( name == materialAttr.GetNameString() && materialAttr.Get() != lastMaterial_ ) 
+        if ( ( name == materialRef.GetNameString() && materialRef.Get().ref != lastMaterial_ ) 
              || ( name ==  tilingAttr.GetNameString() && tilingAttr.Get() != lastTiling_ )
              || ( name ==  scaleAttr.GetNameString() && scaleAttr.Get() != lastScale_ )
              || ( name ==  bowAttr.GetNameString() && bowAttr.Get() != lastBow_ )
@@ -113,7 +112,7 @@ namespace Environment
             DisableSky();
             CreateSky();
             
-            lastMaterial_ = materialAttr.Get();
+            lastMaterial_ = materialRef.Get().ref;
             lastTiling_ = tilingAttr.Get();
             lastScale_ = scaleAttr.Get();
             lastBow_ = bowAttr.Get();
@@ -123,7 +122,7 @@ namespace Environment
             lastDrawFirst_ = drawFirstAttr.Get();
 
         } 
-        else if ( name == textureAttr.GetNameString() )
+        else if ( name == textureRef.GetNameString() )
         {
             SetTexture();
         }
@@ -133,8 +132,8 @@ namespace Environment
 
     void EC_SkyPlane::SetTexture()
     {
-        QString currentMaterial = materialAttr.Get();
-        QString textureName = textureAttr.Get();
+        QString currentMaterial = materialRef.Get().ref;
+        QString textureName = textureRef.Get().ref;
         
         Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
         

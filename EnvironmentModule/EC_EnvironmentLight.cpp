@@ -4,14 +4,15 @@
 
 #include "DebugOperatorNew.h"
 #include "EC_EnvironmentLight.h"
+#include "EnvironmentModule.h"
+
 #include "EC_Placeable.h"
 #include "IAttribute.h"
-
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
-#include <OgreMaterialUtils.h>
+#include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_EnvironmentLight")
 
@@ -20,14 +21,14 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_EnvironmentLight")
 #include <OgreColourValue.h>
 #include <OgreConversionUtils.h>
 
-#include "EnvironmentModule.h"
+#ifdef CAELUM
+#include <Caelum.h>
+#endif
 
 #include "MemoryLeakCheck.h"
 
-
 namespace Environment
 {
-
     EC_EnvironmentLight::EC_EnvironmentLight(IModule *module)
         : IComponent(module->GetFramework()),
        sunColorAttr(this, "Sun color", Color(0.639f,0.639f,0.639f)),
@@ -43,38 +44,31 @@ namespace Environment
        ,caelumSystem_(0)
 #endif
     {
-       
-
         renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>();
-#ifdef CAELUM        
+#ifdef CAELUM
        caelumSystem_ =  framework_->GetModule<EnvironmentModule >()->GetCaelum();
 #endif 
-        QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+        connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
 
-
-         UpdateSun();
-         UpdateAmbientLight();
-
-      
+        UpdateSun();
+        UpdateAmbientLight();
     }
     
     EC_EnvironmentLight::~EC_EnvironmentLight()
     {
+        if (renderer_.expired())
+            return;
         
-       if (renderer_.expired())
-        return;
-        
-       OgreRenderer::RendererPtr renderer = renderer_.lock();
+        OgreRenderer::RendererPtr renderer = renderer_.lock();
        
-       RemoveSun();
-       // Does not own
+        RemoveSun();
 #ifdef CAELUM
-       caelumSystem_ = 0;
-#endif    
+        // Does not own
+        caelumSystem_ = 0;
+#endif
     }
-    
-    
+
     void EC_EnvironmentLight::UpdateSun()
     {
       
