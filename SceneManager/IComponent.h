@@ -160,6 +160,11 @@ public slots:
      */
     bool IsTemporary() const;
     
+    //! Returns whether the component is in a view-enabled scene, or not.
+    /*! If the information is not available (component is not yet in a scene, will guess "true
+     */
+    bool ViewEnabled() const;
+    
 public:
     /// Returns the list of all Attributes in this component for reflection purposes.
     const AttributeVector& GetAttributes() const { return attributes_; }

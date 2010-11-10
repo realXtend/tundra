@@ -1118,6 +1118,8 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     if (!renderer)
         return;
+    if (!ViewEnabled())
+        return;
 
     Ogre::SceneNode *node = patch.node;
     bool firstTimeFill = (node == 0);

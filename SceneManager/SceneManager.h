@@ -28,7 +28,8 @@ namespace Scene
     {
         Q_OBJECT
         Q_PROPERTY (QString Name READ Name)
-
+        Q_PROPERTY (bool viewenabled READ ViewEnabled)
+        
         friend class Foundation::Framework;
 
     private:
@@ -36,7 +37,7 @@ namespace Scene
         SceneManager();
 
         //! constructor that takes a name and framework
-        SceneManager(const QString &name, Foundation::Framework *framework);
+        SceneManager(const QString &name, Foundation::Framework *framework, bool viewenabled);
 
         //! Current global id for networked entities
         uint gid_;
@@ -66,6 +67,10 @@ namespace Scene
         void EmitEntityCreated(Scene::Entity *entity, AttributeChange::Type change = AttributeChange::Default);
         
         void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
+        
+        //! Is scene view enabled (ie. rendering-related components actually create stuff)
+        bool ViewEnabled() const { return viewenabled_; }
+        
     public:
         //! destructor
         ~SceneManager();
@@ -342,6 +347,9 @@ namespace Scene
 
         //! Name of the scene
         QString name_;
+        
+        //! View enabled-flag
+        bool viewenabled_;
     };
 }
 

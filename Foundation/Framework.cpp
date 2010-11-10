@@ -427,12 +427,12 @@ namespace Foundation
         return naaliApplication;
     }
 
-    Scene::ScenePtr Framework::CreateScene(const QString &name)
+    Scene::ScenePtr Framework::CreateScene(const QString &name, bool viewenabled)
     {
         if (HasScene(name))
             return Scene::ScenePtr();
 
-        Scene::ScenePtr new_scene = Scene::ScenePtr(new Scene::SceneManager(name, this));
+        Scene::ScenePtr new_scene = Scene::ScenePtr(new Scene::SceneManager(name, this, viewenabled));
         scenes_[name] = new_scene;
 
         Scene::Events::SceneEventData event_data(name.toStdString());
