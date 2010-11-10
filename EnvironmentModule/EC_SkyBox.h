@@ -37,10 +37,8 @@ before these features can be used.
 <ul>
 <li> AssetReference: materialRef.
 <div> Sky material reference.</div>
-<li> QString : materialAttr.
-<div> The name of the material the box will use </div>
 <li> QVariantList : textureAttr.
-<div>  List of </div>
+<div>Sky texture references.</div>
 <li> Quaternion : orientationAttr
 <div> Optional parameter to specify the orientation of the box. </div>
 <li> float : distanceAttr.
@@ -65,20 +63,18 @@ before these features can be used.
         DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
         Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
 
-        /// Name of sky material 
-        DEFINE_QPROPERTY_ATTRIBUTE(QString, materialAttr);
-        Q_PROPERTY(QString  materialAttr READ getmaterialAttr WRITE setmaterialAttr); 
-
-        /// Defines sky material texture
+        /// Sky texture references.
         DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, textureAttr);
         Q_PROPERTY(QVariantList textureAttr READ gettextureAttr WRITE settextureAttr); 
 
+        /// Distance in world coordinates from the camera to each plane of the box.
         DEFINE_QPROPERTY_ATTRIBUTE(float, distanceAttr);
         Q_PROPERTY(float distanceAttr READ getdistanceAttr WRITE setdistanceAttr); 
-        
+
+        /// Optional parameter to specify the orientation of the box.
         DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientationAttr);
         Q_PROPERTY(Quaternion orientationAttr READ getorientationAttr WRITE setorientationAttr); 
-        
+
          /// Defines that is sky drawn first
         DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirstAttr);
         Q_PROPERTY(bool drawFirstAttr READ getdrawFirstAttr WRITE setdrawFirstAttr); 

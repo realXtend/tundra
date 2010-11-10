@@ -16,10 +16,10 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyBox")
 
 namespace Environment
 {
+    /// \todo Use Asset API for fetching sky resources.
      EC_SkyBox::EC_SkyBox(IModule *module)
         : IComponent(module->GetFramework()),
-        materialRef(this, "Material"),
-        materialAttr(this, "Material" , "Rex/skybox"),
+        materialRef(this, "Material", AssetReference("RexSkyBox")), ///< \todo Add "orge://" when AssetAPI can handle it.
         textureAttr(this, "Texture"),
         orientationAttr(this, "Orientation", Quaternion(f32(M_PI/2.0), Vector3df(1.0,0.0,0.0))),
         distanceAttr(this, "Distance",50.0),
@@ -34,7 +34,7 @@ namespace Environment
          renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
          StringVector names;
-         Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialAttr.Get().toStdString().c_str());
+         Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
        
          if ( materialPtr.get() != 0)
          {    
@@ -72,7 +72,7 @@ namespace Environment
         // DisableSky();
          CreateSky();
 
-         lastMaterial_ = materialAttr.Get();
+         lastMaterial_ = materialRef.Get().ref;
          lastOrientation_ = orientationAttr.Get();
          lastDistance_ = distanceAttr.Get();
          lastDrawFirst_ = drawFirstAttr.Get();
@@ -93,11 +93,17 @@ namespace Environment
         OgreRenderer::RendererPtr renderer = renderer_.lock();  
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         
-        QString currentMaterial = materialAttr.Get();
+        QString currentMaterial = materialRef.Get().ref;
 
         Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
+        if (materialPtr.isNull())
+        {
+            LogError("Could not get SkyBox material : " + currentMaterial.toStdString());
+            return;
+        }
+
         materialPtr->setReceiveShadows(false);
-        
+
         try
         {
             //RexTypes::Vector3 v = angleAxisAttr.Get();
@@ -125,7 +131,7 @@ namespace Environment
     {
         std::string name = attribute->GetNameString();
         
-        if ( ( name == materialAttr.GetNameString() && materialAttr.Get() != lastMaterial_ ) 
+        if ( ( name == materialRef.GetNameString() && materialRef.Get().ref != lastMaterial_ ) 
              || ( name ==  distanceAttr.GetNameString() && distanceAttr.Get() != lastDistance_ )
              || ( name == drawFirstAttr.GetNameString() && drawFirstAttr.Get() != lastDrawFirst_ )
              )
@@ -133,7 +139,7 @@ namespace Environment
             DisableSky();
             CreateSky();
             
-            lastMaterial_ = materialAttr.Get();
+            lastMaterial_ = materialRef.Get().ref;
             lastDistance_ = distanceAttr.Get();
             lastDrawFirst_ = drawFirstAttr.Get();
 
@@ -155,32 +161,18 @@ namespace Environment
         texture_names.reserve(6);
 
         for ( int i = 0; i < lst.size() && i <= 6; ++i)
-        {
             texture_names.push_back(lst[i].toString().toStdString());
-        }
 
-        
-        Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialAttr.Get().toStdString().c_str());
-        
+        Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
         if (!materialPtr.isNull() && texture_names.size() == 6)
-        {
-                materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setCubicTextureName(&texture_names[0], false);
-                //skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureScale(1, -1);
-              
-               
-        }
-        else if ( !materialPtr.isNull() )
-        {
-             
-            for ( int i = 0; i < texture_names.size(); ++i)
-            {
+            materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setCubicTextureName(&texture_names[0], false);
+            //skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureScale(1, -1);
+        else if(!materialPtr.isNull() )
+            for(int i = 0; i < texture_names.size(); ++i)
                 materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setFrameTextureName(Ogre::String(texture_names[i].c_str()), i);
-            }
-        }
-         
-        DisableSky();            
+
+        DisableSky();
         CreateSky();
-    
     }
 
 

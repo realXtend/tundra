@@ -304,16 +304,11 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
                          EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
                          if ( sky != 0)
                          {
-                             QString texture = sky->textureAttr.Get();
+                             QString texture = sky->textureRef.Get().ref;
                              QString strDownloaded(tex->id_.c_str());
-                             if ( texture != strDownloaded )
-                             {
-                                 sky->textureAttr.Set(strDownloaded, AttributeChange::Default);
-                               
-                             }
-
+                             if (texture != strDownloaded )
+                                 sky->textureRef.Set(AssetReference(strDownloaded), AttributeChange::Default);
                          }
-                         
                          break;
                      }
                  case SKYTYPE_DOME:
@@ -321,22 +316,15 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
                          EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
                          if ( sky != 0)
                          {
-                             QString texture = sky->textureAttr.Get();
+                             QString texture = sky->textureRef.Get().ref;
                              QString strDownloaded(tex->id_.c_str());
-                             if ( texture != strDownloaded )
-                             {
-                                 sky->textureAttr.Set(strDownloaded, AttributeChange::Default);
-                                
-                             }
-
+                             if (texture != strDownloaded)
+                                 sky->textureRef.Set(AssetReference(strDownloaded), AttributeChange::Default);
                          }
-
                          break;
                      }
                  default:
                      break;
-
-
             }
 
             lstRequestTags_.removeAt(i);

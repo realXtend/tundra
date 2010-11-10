@@ -34,12 +34,8 @@ before these features can be used.
 <ul>
 <li> AssetReference: materialRef.
 <div> Sky material reference.</div>
-<li> QString : materialAttr.
 <li> AssetReference: textureRef.
 <div> Sky texture reference.</div>
-<div> Defines sky material </div>
-<li> QString : textureAttr.
-<div> Sky texture which is used in given material </div>
 <li> float : tilingAttr.
 <div> How many times to tile the texture(s) across the plane. </div>
 <li> float : scaleAttr.
@@ -75,17 +71,9 @@ allowing the sky to appear below camera level.
         DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
         Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
 
-        /// Name of sky material 
-        DEFINE_QPROPERTY_ATTRIBUTE(QString, materialAttr);
-        Q_PROPERTY(QString materialAttr READ getmaterialAttr WRITE setmaterialAttr);
-
         /// Sky texture reference.
         DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, textureRef);
         Q_PROPERTY(AssetReference textureRef READ gettextureRef WRITE settextureRef);
-
-        /// Defines sky material texture
-        DEFINE_QPROPERTY_ATTRIBUTE(QString, textureAttr);
-        Q_PROPERTY(QString textureAttr READ gettextureAttr WRITE settextureAttr);
 
         /// How many times to tile the texture(s) across the plane.
         DEFINE_QPROPERTY_ATTRIBUTE(float, tilingAttr);

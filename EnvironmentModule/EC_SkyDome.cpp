@@ -17,12 +17,11 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyDome")
 
 namespace Environment
 {
-     EC_SkyDome::EC_SkyDome(IModule *module)
-        : IComponent(module->GetFramework()),
-        materialRef(this, "Material ref"),
-        materialAttr(this, "Material", "Rex/SkyPlane"),
-        textureRef(this, "Texture ref"),
-        textureAttr(this, "Texture", "clouds.jpg"),
+    /// \todo Use Asset API for fetching sky resources.
+     EC_SkyDome::EC_SkyDome(IModule *module) :
+        IComponent(module->GetFramework()),
+        materialRef(this, "Material ref", AssetReference("RexSkyPlane")), ///< \todo Add "orge://" when AssetAPI can handle it.
+        textureRef(this, "Texture ref", AssetReference("clouds.jpg")), ///< \todo Add "orge://" when AssetAPI can handle it.
         distanceAttr(this, "Distance", 50.f),
         curvatureAttr(this, "Curvature", 10.f),
         tilingAttr(this, "Tiling", 8.f),
@@ -32,16 +31,15 @@ namespace Environment
         ySegmentsKeepAttr(this, "Y-segments keep", -1),
         drawFirstAttr(this, "Draw first", true)
      {
-        
-         QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+         connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
          
          renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
          CreateSky();
 
-         lastMaterial_ = materialAttr.Get();
-         lastTexture_ = textureAttr.Get();
+         lastMaterial_ = materialRef.Get().ref;
+         lastTexture_ = textureRef.Get().ref;
          lastTiling_ = tilingAttr.Get();
          lastDistance_ = distanceAttr.Get();
          lastCurvature_ = curvatureAttr.Get();
@@ -67,7 +65,7 @@ namespace Environment
         try
         {
        
-            QString currentMaterial = materialAttr.Get();
+            QString currentMaterial = materialRef.Get().ref;
           
             float tiling = tilingAttr.Get();
             bool drawFirst = drawFirstAttr.Get();
@@ -104,7 +102,7 @@ namespace Environment
     {
         std::string name = attribute->GetNameString();
         
-        if ( ( name == materialAttr.GetNameString() && materialAttr.Get() != lastMaterial_ ) 
+        if ( ( name == materialRef.GetNameString() && materialRef.Get().ref != lastMaterial_ ) 
              || ( name ==  tilingAttr.GetNameString() && tilingAttr.Get() != lastTiling_ )
              || ( name ==  curvatureAttr.GetNameString() && curvatureAttr.Get() != lastCurvature_ )
              || ( name ==  distanceAttr.GetNameString() && distanceAttr.Get() != lastDistance_ )
@@ -118,8 +116,8 @@ namespace Environment
             DisableSky();
             CreateSky();
             
-            lastMaterial_ = materialAttr.Get();
-            lastTexture_ = textureAttr.Get();
+            lastMaterial_ = materialRef.Get().ref;
+            lastTexture_ = textureRef.Get().ref;
             lastTiling_ = tilingAttr.Get();
             lastDistance_ = distanceAttr.Get();
             lastCurvature_ = curvatureAttr.Get();
@@ -130,7 +128,7 @@ namespace Environment
             lastySegmentsKeep_ = ySegmentsKeepAttr.Get();
 
         } 
-        else if ( name == textureAttr.GetNameString() )
+        else if ( name == textureRef.GetNameString() )
         {
             SetTexture();
         }
@@ -140,8 +138,8 @@ namespace Environment
 
     void EC_SkyDome::SetTexture()
     {
-        QString currentMaterial = materialAttr.Get();
-        QString textureName = textureAttr.Get();
+        QString currentMaterial = materialRef.Get().ref;
+        QString textureName = textureRef.Get().ref;
         
         Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
         
