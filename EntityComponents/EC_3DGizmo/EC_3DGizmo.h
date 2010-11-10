@@ -13,6 +13,8 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 
+#include "Vector3D.h"
+
 #include <QList>
 #include <QVector2D>
 #include <QVector3D>
@@ -44,8 +46,8 @@ public:
 public slots:
     virtual bool IsTemporary() const { return true; }
 
-    void Manipulate();
-	void AddEditableAttribute(IComponent* component, QString &attribute_name);
+    void Manipulate(float movedx, float movedy, Vector3df changevec);
+	void AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop = QString()); 
     void ClearEditableAttributes();
     
 private:
@@ -57,6 +59,7 @@ private:
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
     
     QList<IAttribute *> attributes_;
+    QStringList subproperties_;
 };
 
 #endif
