@@ -12,6 +12,7 @@
 #include <QTranslator>
 #include <QLocale>
 #include <QIcon>
+#include <QWebSettings>
 
 #include "MemoryLeakCheck.h"
 
@@ -50,6 +51,8 @@ namespace Foundation
         std::string default_language = framework_->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(),
             "language", std::string("data/translations/naali_en"));
         ChangeLanguage(QString::fromStdString(default_language));
+
+        QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enablig flash
     }
 
     NaaliApplication::~NaaliApplication()
