@@ -741,7 +741,7 @@ namespace PythonScript
         if (script->type.Get() != "py")
             return;
 
-        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get(), script->GetParentEntity());
+        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get().ref, script->GetParentEntity());
         script->SetScriptInstance(pyInstance);
         if (script->runOnLoad.Get())
             script->Run();

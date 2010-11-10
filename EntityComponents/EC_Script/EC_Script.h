@@ -22,10 +22,10 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 <ul>
 <li>AssetReference: scriptRef
 <div>Reference the the script asset.</div> 
-<li>QString: scriptRef
-<div></div> 
 <li>QString: type
-<div></div> 
+<div>Type of the script as string (js/py).</div> 
+<li>bool: runOnLoad
+<div>Is the script run as soon as the script reference is set/loaded.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -54,10 +54,6 @@ public:
     /// Destructor.
     ~EC_Script();
 
-        //! Script asset reference
-    Q_PROPERTY(AssetReference scriptRef2 READ getscriptRef2 WRITE setscriptRef2);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, scriptRef2);
-
     /// IComponent override. This component is serializable.
     virtual bool IsSerializable() const { return true; }
 
@@ -69,9 +65,13 @@ public:
     Q_PROPERTY(bool runOnLoad READ getrunOnLoad WRITE setrunOnLoad);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, runOnLoad);
 
+    //! Script asset reference
+    Q_PROPERTY(AssetReference scriptRef READ getscriptRef WRITE setscriptRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, scriptRef);
+
     /// Reference to a script file.
-    Q_PROPERTY(QString scriptRef READ getscriptRef WRITE setscriptRef);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, scriptRef);
+//    Q_PROPERTY(QString scriptRef READ getscriptRef WRITE setscriptRef);
+//    DEFINE_QPROPERTY_ATTRIBUTE(QString, scriptRef);
 
     /// Sets new script instance.
     /** Unloads and deletes possible already existing script instance.

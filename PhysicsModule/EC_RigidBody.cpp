@@ -14,9 +14,11 @@
 #include "Renderer.h"
 #include "OgreMeshResource.h"
 #include "ServiceManager.h"
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
 
-#include "btBulletDynamicsCommon.h"
-#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
+#include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
@@ -30,10 +32,10 @@ static const float cTorqueThreshold = 0.0005f;
 
 EC_RigidBody::EC_RigidBody(IModule* module) :
     IComponent(module->GetFramework()),
+    mass(this, "Mass", 0.0f),
     shapeType(this, "Shape type", (int)Shape_Box),
     size(this, "Size", Vector3df(1,1,1)),
     collisionMeshRef(this, "Collision mesh ref"),
-    collisionMeshId(this, "Collision mesh ref", ""),
     friction(this, "Friction", 0.5f),
     restitution(this, "Restitution", 0.0f),
     linearDamping(this, "Linear damping", 0.0f),
@@ -50,9 +52,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     heightField_(0),
     disconnected_(false),
     owner_(checked_static_cast<PhysicsModule*>(module)),
-    mass(this, "Mass", 0.0f),
-    cachedShapeType_(-1),
-    collision_mesh_tag_(0)
+    cachedShapeType_(-1)
 {
     static AttributeMetadata metadata;
     static bool metadataInitialized = false;
@@ -71,21 +71,8 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
 
     // Note: we cannot create the body yet because we are not in an entity/scene yet (and thus don't know what physics world we belong to)
     // We will create the body when the scene is known.
-    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-        this, SLOT(AttributeUpdated(IAttribute*)));
-    
-    Foundation::EventManager *event_manager = framework_->GetEventManager().get();
-    if(event_manager)
-    {
-        //event_manager->RegisterEventSubscriber(this, 99);
-        resource_event_category_ = event_manager->QueryEventCategory("Resource");
-        event_manager->RegisterEventSubscriber(this, resource_event_category_, Resource::Events::RESOURCE_READY);
-    }
-    else
-    {
-        LogWarning("Event manager was not valid.");
-    }
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_RigidBody::~EC_RigidBody()
@@ -104,7 +91,7 @@ bool EC_RigidBody::SetShapeFromVisibleMesh()
         return false;
     mass.Set(0.0f, AttributeChange::Default);
     shapeType.Set(Shape_TriMesh, AttributeChange::Default);
-    collisionMeshId.Set(mesh->meshResourceId.Get(), AttributeChange::Default);
+    collisionMeshRef.Set(mesh->meshRef.Get().ref, AttributeChange::Default);
     return true;
 }
 
@@ -413,6 +400,37 @@ void EC_RigidBody::OnTerrainRegenerated()
         CreateCollisionShape();
 }
 
+void EC_RigidBody::OnCollisionMeshAssetLoaded()
+{
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
+    assert(transfer);
+    if (!transfer)
+        return;
+
+    OgreRenderer::OgreMeshResource *resource = dynamic_cast<OgreRenderer::OgreMeshResource *>(transfer->resourcePtr.get());
+    assert(resource);
+    if (!resource)
+        return;
+
+    Ogre::Mesh* mesh = resource->GetMesh().getPointer();
+    if (mesh)
+    {
+        if (shapeType.Get() == Shape_TriMesh)
+        {
+            triangleMesh_ = owner_->GetTriangleMeshFromOgreMesh(mesh);
+            CreateCollisionShape();
+        }
+        if (shapeType.Get() == Shape_ConvexHull)
+        {
+            convexHullSet_ = owner_->GetConvexHullSetFromOgreMesh(mesh);
+            CreateCollisionShape();
+        }
+
+        cachedShapeType_ = shapeType.Get();
+        cachedSize_ = size.Get();
+    }
+}
+
 void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
 {
     if (disconnected_)
@@ -461,7 +479,7 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
     }
     
     // Request mesh if its id changes
-    if ((attribute == &collisionMeshId) && ((shapeType.Get() == Shape_TriMesh) || (shapeType.Get() == Shape_ConvexHull)))
+    if ((attribute == &collisionMeshRef) && ((shapeType.Get() == Shape_TriMesh) || (shapeType.Get() == Shape_ConvexHull)))
         RequestMesh();
     
     if (attribute == &phantom)
@@ -603,50 +621,13 @@ void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 
 void EC_RigidBody::RequestMesh()
 {
-    std::string id = collisionMeshId.Get().toStdString();
-    if (!id.empty())
+    if (!collisionMeshRef.Get().ref.isEmpty())
     {
         // Do not create shape right now, but request the mesh resource
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (renderer)
-            collision_mesh_tag_ = renderer->RequestResource(id, OgreRenderer::OgreMeshResource::GetTypeStatic());
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(collisionMeshRef.Get().ref);
+        if (transfer)
+            connect(transfer, SIGNAL(Loaded()), SLOT(OnCollisionMeshAssetLoaded()), Qt::UniqueConnection);
     }
-}
-
-bool EC_RigidBody::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
-{
-    if(category_id == resource_event_category_)
-    {
-        if(event_id == Resource::Events::RESOURCE_READY)
-        {
-            Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-            if (event_data->tag_ == collision_mesh_tag_)
-            {
-                OgreRenderer::OgreMeshResource* res = checked_static_cast<OgreRenderer::OgreMeshResource*>(event_data->resource_.get());
-                if (res)
-                {
-                    Ogre::Mesh* mesh = res->GetMesh().getPointer();
-                    if (mesh)
-                    {
-                        if (shapeType.Get() == Shape_TriMesh)
-                        {
-                            triangleMesh_ = owner_->GetTriangleMeshFromOgreMesh(mesh);
-                            CreateCollisionShape();
-                        }
-                        if (shapeType.Get() == Shape_ConvexHull)
-                        {
-                            convexHullSet_ = owner_->GetConvexHullSetFromOgreMesh(mesh);
-                            CreateCollisionShape();
-                        }
-                        cachedShapeType_ = shapeType.Get();
-                        cachedSize_ = size.Get();
-                    }
-                }
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 void EC_RigidBody::UpdateScale()
@@ -661,9 +642,10 @@ void EC_RigidBody::UpdateScale()
         sizeVec.z = 0;
     
     // If placeable exists, set local scaling from its scale
-    /*! \todo Evil hack: we currently have an adjustment node for Ogre->OpenSim coordinate space conversion, but Ogre scaling of child nodes disregards the rotation,
-     * so have to swap y/z axes here to have meaningful controls. Hopefully removed in the future.
-     */
+    /*! \todo Evil hack: we currently have an adjustment node for Ogre->OpenSim coordinate space conversion,
+        but Ogre scaling of child nodes disregards the rotation,
+        so have to swap y/z axes here to have meaningful controls. Hopefully removed in the future.
+    */
     EC_Placeable* placeable = placeable_.lock().get();
     if ((placeable) && (shape_))
     {

@@ -33,7 +33,7 @@ void EC_Script::Run()
 
 void EC_Script::Run(const QString &name)
 {
-    if (name == scriptRef.Get() && scriptInstance_)
+    if (name == scriptRef.Get().ref && scriptInstance_)
         scriptInstance_->Run();
 }
 
@@ -45,16 +45,16 @@ void EC_Script::Stop()
 
 void EC_Script::Stop(const QString &name)
 {
-    if (name == scriptRef.Get() && scriptInstance_)
+    if (name == scriptRef.Get().ref && scriptInstance_)
         scriptInstance_->Stop();
 }
 
 EC_Script::EC_Script(IModule *module):
     IComponent(module->GetFramework()),
-    scriptRef2(this, "Script ref"),
+    scriptRef(this, "Script ref"),
     type(this, "Type"),
     runOnLoad(this, "Run on load", false),
-    scriptRef(this, "Script ref"),
+//    scriptRef(this, "Script ref"),
     scriptInstance_(0)
 {
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
@@ -66,10 +66,10 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
 {
     if (attribute == &scriptRef)
     {
-        if (scriptRef.Get() != lastRef_)
+        if (scriptRef.Get().ref != lastRef_)
         {
-            emit ScriptRefChanged(scriptRef.Get());
-            lastRef_ = scriptRef.Get();
+            emit ScriptRefChanged(scriptRef.Get().ref);
+            lastRef_ = scriptRef.Get().ref;
         }
     }
 }

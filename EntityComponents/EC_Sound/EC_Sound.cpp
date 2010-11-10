@@ -18,24 +18,18 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
 EC_Sound::EC_Sound(IModule *module):
     IComponent(module->GetFramework()),
     soundRef(this, "Sound ref"),
-    soundId(this, "Sound ref"),
+//    soundId(this, "Sound ref"),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
     loopSound(this, "Loop sound", false),
-<<<<<<< HEAD
-    triggerSound(this, "Trigger sound", false),
     soundGain(this, "Sound gain", 1.0f),
     sound_id_(0)
-=======
-    soundGain(this, "Sound gain", 1.0f)
->>>>>>> 483539692d562a25851f8a6a68d3435799146403
 {
     static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain.SetMetadata(&metaData);
 
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            this, SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_Sound::~EC_Sound()
@@ -45,10 +39,11 @@ EC_Sound::~EC_Sound()
 
 void EC_Sound::AttributeUpdated(IAttribute *attribute)
 {
-    if(attribute->GetNameString() == soundId.GetNameString())
+//    if(attribute->GetNameString() == soundId.GetNameString())
+    if(attribute->GetNameString() == soundRef.GetNameString())
     {
         ISoundService *soundService = framework_->GetService<ISoundService>();
-        if(soundService && soundService->GetSoundName(sound_id_) != soundId.Get())
+        if (soundService && soundService->GetSoundName(sound_id_) != soundRef.Get().ref)//soundId.Get())
             StopSound();
     }
 
@@ -85,14 +80,14 @@ void EC_Sound::PlaySound()
     EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
     if(placeable)
     {
-        sound_id_ = soundService->PlaySound3D(soundId.Get(), ISoundService::Triggered, false, placeable->GetPosition());
+        sound_id_ = soundService->PlaySound3D(soundRef.Get().ref/*soundId.Get()*/, ISoundService::Triggered, false, placeable->GetPosition());
         soundService->SetGain(sound_id_, soundGain.Get());
         soundService->SetLooped(sound_id_, loopSound.Get());
         soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
     else // If entity isn't holding placeable component treat sound as ambient sound.
     {
-        sound_id_ = soundService->PlaySound(soundId.Get(), ISoundService::Ambient);
+        sound_id_ = soundService->PlaySound(soundRef.Get().ref/*soundId.Get()*/, ISoundService::Ambient);
         soundService->SetGain(sound_id_, soundGain.Get());
     }
 }

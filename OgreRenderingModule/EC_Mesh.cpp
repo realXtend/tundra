@@ -13,6 +13,9 @@
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreSkeletonResource.h"
+#include "IAssetTransfer.h"
+#include "AssetAPI.h"
+
 #include <Ogre.h>
 #include <OgreTagPoint.h>
 
@@ -28,9 +31,7 @@ EC_Mesh::EC_Mesh(IModule* module) :
     // Note: we put the opensim haxor adjust right here in the defaults, instead of hardcoding it in code.
     nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(90,0,180),Vector3df(1,1,1))),
     meshRef(this, "Mesh ref"),
-    meshResourceId(this, "Mesh ref", ""),
     skeletonRef(this, "Skeleton ref"),
-    skeletonId(this, "Skeleton ref", ""),
     meshMaterial(this, "Mesh materials"),
     drawDistance(this, "Draw distance", 0.0f),
     castShadows(this, "Cast shadows", false),
@@ -41,26 +42,13 @@ EC_Mesh::EC_Mesh(IModule* module) :
 {
     static AttributeMetadata drawDistanceData("", "0", "10000");
     drawDistance.SetMetadata(&drawDistanceData);
-    
+
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     adjustment_node_ = scene_mgr->createSceneNode();
-    
-    Foundation::EventManager *event_manager = framework_->GetEventManager().get();
-    if (event_manager)
-    {
-        //event_manager->RegisterEventSubscriber(this, 99);
-        resource_event_category_ = event_manager->QueryEventCategory("Resource");
-        event_manager->RegisterEventSubscriber(this, resource_event_category_, Resource::Events::RESOURCE_READY);
-    }
-    else
-    {
-        LogWarning("Event manager was not valid.");
-    }
-    
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-        this, SLOT(AttributeUpdated(IAttribute*)));
+
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_Mesh::~EC_Mesh()
@@ -68,9 +56,9 @@ EC_Mesh::~EC_Mesh()
     if (renderer_.expired())
         return;
     RendererPtr renderer = renderer_.lock();
-        
+
     RemoveMesh();
-    
+
     if (adjustment_node_)
     {
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
@@ -193,7 +181,7 @@ Quaternion EC_Mesh::GetAttachmentOrientation(uint index) const
         
     const Ogre::Quaternion& orientation = attachment_nodes_[index]->getOrientation();
     return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
-}     
+}
 
 Vector3df EC_Mesh::GetAttachmentScale(uint index) const
 {
@@ -367,13 +355,12 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     return true;
 }
 
-
 void EC_Mesh::RemoveMesh()
 {
     if (renderer_.expired())
         return;
-    RendererPtr renderer = renderer_.lock();   
-        
+    RendererPtr renderer = renderer_.lock();
+
     if (entity_)
     {
         RemoveAllAttachments();
@@ -404,8 +391,8 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
 {
     if (renderer_.expired())
         return false;
-    RendererPtr renderer = renderer_.lock();   
-        
+    RendererPtr renderer = renderer_.lock();
+
     if (!entity_)
     {
         OgreRenderingModule::LogError("No mesh entity created yet, can not create attachments");
@@ -470,7 +457,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         // Set UserAny also on subentities
         for (uint i = 0; i < attachment_entities_[index]->getNumSubEntities(); ++i)
             attachment_entities_[index]->getSubEntity(i)->setUserAny(entity_->getUserAny());
-                
+
         Ogre::Bone* attach_bone = 0;
         if (!attach_point.empty())
         {
@@ -734,12 +721,11 @@ void EC_Mesh::DetachEntity()
 {
     if ((!attached_) || (!entity_) || (!placeable_))
         return;
-        
+
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::SceneNode* node = placeable->GetSceneNode();
     adjustment_node_->detachObject(entity_);
     node->removeChild(adjustment_node_);
-            
     attached_ = false;
 }
 
@@ -747,12 +733,11 @@ void EC_Mesh::AttachEntity()
 {
     if ((attached_) || (!entity_) || (!placeable_))
         return;
-        
+
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::SceneNode* node = placeable->GetSceneNode();
     node->addChild(adjustment_node_);
     adjustment_node_->attachObject(entity_);
-            
     attached_ = true;
 }
 
@@ -814,21 +799,15 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
     
     return mesh.get();
 }
-    
+
 void EC_Mesh::UpdateSignals()
 {
     Scene::Entity* parent = GetParentEntity();
     if (parent)
     {
         // Connect to ComponentRemoved signal of the parent entity, so we can check if the mesh gets removed
-        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
     }
-}
-
-void EC_Mesh::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
-{
-    if (component == placeable_.get())
-        SetPlaceable(ComponentPtr());
 }
 
 void EC_Mesh::AttributeUpdated(IAttribute *attribute)
@@ -876,194 +855,154 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         }
     }
-    
-    // Resource request code
-    request_tag_t tag = 0;
-    if (attribute == &meshResourceId)
+    else if (attribute == &meshRef)
     {
-        //Ensure that mesh is requested only when it's has actualy changed.
+        //Ensure that mesh is requested only when it's has actually changed.
         if(entity_)
-            if(QString::fromStdString(entity_->getMesh()->getName()) == meshResourceId.Get())
+            if(QString::fromStdString(entity_->getMesh()->getName()) == meshRef.Get().ref/*meshResourceId.Get()*/)
                 return;
 
-        tag = RequestResource(meshResourceId.Get().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
-        if(tag)
-            resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMeshResource::GetTypeStatic())] = 
-                boost::bind(&EC_Mesh::HandleMeshResourceEvent, this, _1, _2);
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
+        if (transfer)
+            connect(transfer, SIGNAL(Loaded()), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
         else
             RemoveMesh();
     }
     else if (attribute == &meshMaterial)
     {
-        // We wont request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
+        // We won't request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
         if(!HasMaterialsChanged())
             return;
+
         QVariantList materials = meshMaterial.Get();
-        materialRequestTags_.resize(materials.size(), 0);
+        materialRequests.clear();
         for(uint i = 0; i < materials.size(); i++)
         {
-            // We insert material tag in two locations cause we need to beaware of what is the material's index.
-            tag = RequestResource(materials[i].toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
-            if(tag)
+            IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(materials[i].toString());
+            if (transfer)
             {
-                resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
-                    boost::bind(&EC_Mesh::HandleMaterialResourceEvent, this, _1, _2);
-                materialRequestTags_[i] = tag;
+                connect(transfer, SIGNAL(Loaded()), SLOT(OnMaterialAssetLoaded()), Qt::UniqueConnection);
+                materialRequests[i] = materials[i].toString();
             }
         }
     }
-    else if(attribute == &skeletonId)
+    else if((attribute == &skeletonRef) && (!skeletonRef.Get().ref.isEmpty()))
     {
-        if(!skeletonId.Get().isEmpty())
-        {
-            // If same name skeleton already set no point to do it again.
-            if(entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonId.Get().toStdString())
-                return;
+        // If same name skeleton already set no point to do it again.
+        if (entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonRef.Get().ref/*skeletonId.Get()*/.toStdString())
+            return;
 
-            std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
-            tag = RequestResource(skeletonId.Get().toStdString(), resouceType);
-            if(tag)
-                resRequestTags_[ResourceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
-        }
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
+        if (transfer)
+            connect(transfer, SIGNAL(Loaded()), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
     }
 }
 
-bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
+void EC_Mesh::OnComponentRemoved(IComponent* component, AttributeChange::Type change)
 {
-    if(category_id == resource_event_category_)
-    {
-        if(event_id == Resource::Events::RESOURCE_READY)
-        {
-            return HandleResourceEvent(event_id, data);
-        }
-    }
-    return false;
+    if (component == placeable_.get())
+        SetPlaceable(ComponentPtr());
 }
 
-request_tag_t EC_Mesh::RequestResource(const std::string& id, const std::string& type)
+void EC_Mesh::OnMeshAssetLoaded()
 {
-    request_tag_t tag = 0;
-    if(renderer_.expired())
-        return tag;
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
+    assert(transfer);
+    if (!transfer)
+        return;
 
-    tag = renderer_.lock()->RequestResource(id, type);
-    if(tag == 0)
-    {
-        LogWarning("Failed to request resource:" + id + " : " + type);
-        return 0;
-    }
+    OgreMeshResource *resource = dynamic_cast<OgreMeshResource *>(transfer->resourcePtr.get());
+    assert(resource);
+    if (!resource)
+        return;
 
-    return tag;
-}
-
-bool EC_Mesh::HandleResourceEvent(event_id_t event_id, IEventData* data)
-{
-    if (event_id != Resource::Events::RESOURCE_READY)
-        return false;
-
-    Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-
-    ResourceKeyPair event_key(event_data->tag_, event_data->resource_->GetType());
-    MeshResourceHandlerMap::iterator iter2 = resRequestTags_.find(event_key);
-    if(iter2 != resRequestTags_.end())
-    {
-        iter2->second(event_id, data);
-        resRequestTags_.erase(iter2);
-        return true;
-    }
-    return false;
-}
-
-bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
-{
-    Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-    Foundation::ResourcePtr res = event_data->resource_;
-
-    if (!res)
-        return false;
-    if (res->GetType() != OgreRenderer::OgreMeshResource::GetTypeStatic())
-        return false;
-    OgreRenderer::OgreMeshResource* meshResource = checked_static_cast<OgreRenderer::OgreMeshResource*>(res.get());
-    //! @todo for some reason compiler will have linking error if we try to call ResourceInterface's GetId inline method
-    //! remember to track the cause of this when I some extra time.
-    SetMesh(meshResourceId.Get());
+    SetMesh(meshRef.Get().ref);
 
     // Hack to request materials & skeleton now
     AttributeUpdated(&meshMaterial);
-    AttributeUpdated(&skeletonId);
-    return true;
+    AttributeUpdated(&skeletonRef);
 }
 
-bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data)
+void EC_Mesh::OnSkeletonAssetLoaded()
 {
-    Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-    Foundation::ResourcePtr res = event_data->resource_;
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
+    assert(transfer);
+    if (!transfer)
+        return;
 
-    OgreRenderer::OgreSkeletonResource *skeletonRes = dynamic_cast<OgreRenderer::OgreSkeletonResource*>(res.get());
-    if(skeletonRes)
+    OgreSkeletonResource *resource = dynamic_cast<OgreSkeletonResource *>(transfer->resourcePtr.get());
+    assert(resource);
+    if (!resource)
     {
-        Ogre::SkeletonPtr skeleton = skeletonRes->GetSkeleton();
-        if(skeleton.isNull())
-            return false;
-        
-        if(!entity_)
-        {
-            LogDebug("Could not set skeleton yet because entity is not yet created");
-            return false;
-        }
-        
-        try
-        {
-            // If old skeleton is same as a new one no need to replace it.
-            if(entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeleton->getName())
-                return true;
-            
-            entity_->getMesh()->_notifySkeleton(skeleton);
-            
-            LogDebug("Set skeleton " + skeleton->getName() + " to mesh " + entity_->getName());
-            emit OnSkeletonChanged(QString::fromStdString(skeleton->getName()));
-        }
-        catch (...)
-        {
-            LogError("Exception while setting skeleton to mesh" + entity_->getName());
-        }
-        
-        // Now we have to recreate the entity to get proper animations etc.
-        SetMesh(entity_->getMesh()->getName(), false);
-    }
-    else
         LogWarning("Fail to handle skeleton resource ready event cause skeletonRes was null.");
-    return true;
+        return;
+    }
+
+    Ogre::SkeletonPtr skeleton = resource->GetSkeleton();
+    if(skeleton.isNull())
+        return;
+
+    if(!entity_)
+    {
+        LogDebug("Could not set skeleton yet because entity is not yet created");
+        return;
+    }
+
+    try
+    {
+        // If old skeleton is same as a new one no need to replace it.
+        if (entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeleton->getName())
+            return;
+        
+        entity_->getMesh()->_notifySkeleton(skeleton);
+        
+        LogDebug("Set skeleton " + skeleton->getName() + " to mesh " + entity_->getName());
+        emit OnSkeletonChanged(QString::fromStdString(skeleton->getName()));
+    }
+    catch (...)
+    {
+        LogError("Exception while setting skeleton to mesh" + entity_->getName());
+    }
+
+    // Now we have to recreate the entity to get proper animations etc.
+    SetMesh(entity_->getMesh()->getName(), false);
 }
 
-bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
+void EC_Mesh::OnMaterialAssetLoaded()
 {
-    Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-    Foundation::ResourcePtr res = event_data->resource_;
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
+    assert(transfer);
+    if (!transfer)
+        return;
+
+    OgreMaterialResource *resource = dynamic_cast<OgreMaterialResource *>(transfer->resourcePtr.get());
+    assert(resource);
+    if (!resource)
+        return;
 
     //! a bit hackish way to get materials in right order.
     bool found = false;
     uint index = 0;
-    for(; index < materialRequestTags_.size(); index++)
+    QMap<int, QString>::iterator it = materialRequests.begin();
+    for(; it != materialRequests.end(); ++it)
     {
-        if(materialRequestTags_[index] == event_data->tag_)
+        if(*it == QString(resource->GetId().c_str()))
         {
             found = true;
             break;
         }
-    }
-    if(found)
-    {
-        //HandleMaterialReady(index, res);
-        if (!res || index > meshMaterial.Get().size()) 
-            return false;
-        OgreRenderer::OgreMaterialResource* materialResource = checked_static_cast<OgreRenderer::OgreMaterialResource*>(res.get());
-        QString material_name = QString::fromStdString(materialResource->GetMaterial()->getName());
-        SetMaterial(index, material_name);
-        materialRequestTags_[index] = 0;
+        
+        ++index;
     }
 
-    return true;
+    if(found)
+    {
+        if (index > meshMaterial.Get().size()) 
+            return;
+
+        materialRequests.erase(it);
+        SetMaterial(index, QString(resource->GetMaterial()->getName().c_str()));
+    }
 }
 
 bool EC_Mesh::HasMaterialsChanged() const
