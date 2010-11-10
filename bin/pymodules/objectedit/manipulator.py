@@ -261,7 +261,7 @@ class Manipulator:
             changevec = rightvec - upvec
 
             # group rotation
-            if(self.NAME=="RotationManipulator" and len(ents)>1 and self.grabbed_axis == self.AXIS_BLUE):
+            if self.NAME=="RotationManipulator" and len(ents)>1 and self.grabbed_axis == self.AXIS_BLUE:
                 self.setCenterPointAndCenterVectors(ents)
                 self._manipulate2(ents, amountx, amounty, changevec, self.entCenterVectors, self.centerPoint)
             else:            
@@ -269,12 +269,12 @@ class Manipulator:
                     self._manipulate(ent, amountx, amounty, changevec)
                     self.controller.soundRuler(ent)
 
-            if not self.manipulator is None:
-                if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
-                    placeable = ents[0].placeable
-                    self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+                if not self.manipulator is None:
+                    if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
+                        placeable = ents[0].placeable
+                        self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
 
-            self.manipulator.ruler.UpdateRuler()
+                self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
                 self.moveTo(ents)
@@ -504,6 +504,7 @@ class RotationManipulator(Manipulator):
             #angle = 90 # just do 90 degrees rotations
             #angle = 15 # just do 15 degrees rotations
             angle = 5 # just do 5 degrees rotations
+            
             if amountx < 0 and amounty < 0:
                 dir = -1
             elif amountx < 0 and amounty >= 0:
@@ -523,11 +524,11 @@ class RotationManipulator(Manipulator):
             if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
                 axis = QVector3D(1,0,0)
                 # disable this for now
-                return 
+                # return 
             elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
                 axis = QVector3D(0,1,0)
                 # disable this for now
-                return
+                # return
             elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
                 axis = QVector3D(0,0,1)
 
@@ -535,7 +536,7 @@ class RotationManipulator(Manipulator):
             q.normalize()
 
             self._rotateEntsWithQuaternion(q, ents, amountx, amounty, changevec, centervecs, centerpoint)
-            self._rotateEachEntWithQuaternion(q, ents)
+            self._rotateEachEntWithQuaternion(q, ents, angle)
         pass
         
     def _rotateEntsWithQuaternion(self, q, ents, amountx, amounty, changevec, centervecs, centerpoint):
@@ -553,19 +554,34 @@ class RotationManipulator(Manipulator):
             newPos = self.vectorAdd(centerpoint, newVec)
             if hasattr(ent, "placeable"):
                 ent.placeable.Position = newPos
+                ent.network.Position = newPos
             else:
                 print "entity missing placeable"
                 # print type(ent)
         pass
 
-    """ This part has some bug, objects rotated in some specific ways, start spinning
-        when rotating whole scene, apparently its not enough to just multiply
-        orientation with quaternion """
-    def _rotateEachEntWithQuaternion(self, q, ents):
+    """ This part still has some issues, z-group rotation now working perfectly,
+        x and y group rotations still go bonkers, y-rotation stops when limit -1.0 or 1.0 rads
+        is reached, and x-rotation is totally wrong
+        also this method functionality probably overlaps with above single object specific rotation, 
+        anyway keeping it separate untill multirotate works correctly """
+    def _rotateEachEntWithQuaternion(self, q, ents, angle):
         for ent in ents:
             ort = ent.placeable.Orientation
-            ort * q
+            euler = mu.quat_to_euler(ort)
+            if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
+                #print euler[0] 
+                #print math.radians(angle)
+                euler[0] += math.radians(angle)
+            elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
+                #print euler[1] 
+                #print math.radians(angle)
+                euler[1] += math.radians(angle)
+            elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
+                #print euler[2] 
+                #print math.radians(angle)
+                euler[2] += math.radians(angle)
+            ort = mu.euler_to_quat(euler)
             ent.placeable.Orientation = ort
-            #ent.network.Orientation = ort
+            ent.network.Orientation = ort
         pass
-        
