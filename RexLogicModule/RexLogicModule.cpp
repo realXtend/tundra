@@ -393,7 +393,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
         return scene;
     }
 
-    Scene::ScenePtr scene = framework_->CreateScene(name);
+    Scene::ScenePtr scene = framework_->CreateScene(name, true);
     framework_->SetDefaultWorldScene(scene);
 
     // Connect ComponentAdded&Removed signals.

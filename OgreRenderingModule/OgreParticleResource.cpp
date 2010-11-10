@@ -109,34 +109,32 @@ namespace OgreRenderer
                                     }
                                 }
                             }
-                            // Check for image/material definition
+                            // Check for material definition
                             else if (line_vec[0] == "material")
                             {             
                                 if (line_vec.size() >= 2)
                                 {
+                                    // Tundra: we only support material refs in particle scripts
                                     std::string mat_name = line_vec[1];
-                                    // Material script mode
-                                    if ((line_vec.size() >= 3) && ((line_vec[2].substr(0,6) == "script") || (line_vec[2].substr(0,3) == "mat")))
-                                    {
-                                        references_.push_back(Foundation::ResourceReference(mat_name, OgreMaterialResource::GetTypeStatic()));
-                                        line = "material " + SanitateAssetIdForOgre(mat_name);
-                                    }
-                                    // Texture mode
-                                    else 
-                                    {
-                                        std::string variation;
-                                        if (line_vec.size() >= 3)
-                                            variation = line_vec[2];
-                                        
-                                        if (!IsMaterialSuffixValid(variation))
-                                            variation = "";
-                                            
-                                        references_.push_back(Foundation::ResourceReference(mat_name, OgreTextureResource::GetTypeStatic()));
-                                        line = "material " + SanitateAssetIdForOgre(mat_name);
-                                        
-                                        // Create the legacy material we expect in advance
-                                        GetOrCreateLegacyMaterial(mat_name, variation);
-                                    }
+                                    references_.push_back(Foundation::ResourceReference(mat_name, OgreMaterialResource::GetTypeStatic()));
+                                    line = "material " + SanitateAssetIdForOgre(mat_name);
+                                    
+                                    //// Texture mode: deprecated, not supported. Update your particle scripts.
+                                    //else 
+                                    //{
+                                    //    std::string variation;
+                                    //    if (line_vec.size() >= 3)
+                                    //        variation = line_vec[2];
+                                    //    
+                                    //    if (!IsMaterialSuffixValid(variation))
+                                    //        variation = "";
+                                    //        
+                                    //    references_.push_back(Foundation::ResourceReference(mat_name, OgreTextureResource::GetTypeStatic()));
+                                    //    line = "material " + SanitateAssetIdForOgre(mat_name);
+                                    //    
+                                    //    // Create the legacy material we expect in advance
+                                    //    GetOrCreateLegacyMaterial(mat_name, variation);
+                                    //}
                                 }
                             }
                         }

@@ -10,8 +10,6 @@
 #include "OgreParticleResource.h"
 #include "OgreConversionUtils.h"
 #include "SceneManager.h"
-#include "RexUUID.h"
-#include "EventManager.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"
@@ -25,17 +23,12 @@ using namespace OgreRenderer;
 
 EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     IComponent(module->GetFramework()),
-        particleRef(this, "Particle ref", AssetReference(QString(), OgreParticleResource::GetTypeStatic().c_str())),
-//    particleId(this, "Particle id"),
+    particleRef(this, "Particle ref"),
     castShadows(this, "Cast shadows", false),
     renderingDistance(this, "Rendering distance", 0.0f),
-    particleSystem_(0)//,
-//    particle_tag_(0)
+    particleSystem_(0)
 {
     renderer_ = GetFramework()->GetServiceManager()->GetService<Renderer>();
-//    framework_->GetEventManager()->RegisterEventSubscriber(this, 99);
-//    resource_event_category_ = framework_->GetEventManager()->QueryEventCategory("Resource");
-
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
 }
@@ -45,29 +38,10 @@ EC_ParticleSystem::~EC_ParticleSystem()
     DeleteParticleSystem();
 }
 
-/*
-bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, IEventData* data)
-{
-    // Making sure that event type is RESOURCE_READY before we start to dynamic cast.
-    if (event_id != Resource::Events::RESOURCE_READY)
-        return false;
-
-    Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-    if(!event_data || particle_tag_ != event_data->tag_)
-        return false;
-
-    OgreParticleResource* partres = checked_static_cast<OgreParticleResource*>(event_data->resource_.get());
-    if (!partres)
-        return true;
-
-    if (partres->GetNumTemplates())
-        CreateParticleSystem(QString::fromStdString(partres->GetTemplateName(0)));
-    return true;
-}
-*/
-
 void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 {
+    if (!ViewEnabled())
+        return;
     if (renderer_.expired())
         return;
     RendererPtr renderer = renderer_.lock();
@@ -127,28 +101,9 @@ void EC_ParticleSystem::DeleteParticleSystem()
     return;
 }
 
-/*bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    if(category_id == resource_event_category_)
-    {
-        if(event_id == Resource::Events::RESOURCE_READY)
-        {
-            return HandleResourceEvent(event_id, data);
-        }
-    }
-    return false;
-}*/
-
 void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 {
-    /*
-    if(attribute->GetNameString() == particleId.GetNameString())
-    {
-        particle_tag_ = RequestResource(particleId.Get().toStdString(), OgreParticleResource::GetTypeStatic());
-        if(!particle_tag_) // To visualize that resource id was wrong delete previous particle effect off.
-            DeleteParticleSystem();
-    }
-    else */if(attribute->GetNameString() == castShadows.GetNameString())
+    if(attribute->GetNameString() == castShadows.GetNameString())
     {
         if (particleSystem_)
             particleSystem_->setCastShadows(castShadows.Get());
@@ -160,6 +115,9 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
     }
     else if (attribute->GetNameString() == particleRef.GetNameString())
     {
+        if (!ViewEnabled())
+            return;
+
         // Request the new particle system resource. Once it has loaded, ParticleSystemAssetLoaded() will be called.
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
         connect(transfer, SIGNAL(Loaded()), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
@@ -201,21 +159,3 @@ void EC_ParticleSystem::EntitySet()
     disconnect(this, SLOT(DeleteParticleSystem()));
     connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(DeleteParticleSystem()));
 }
-/*
-request_tag_t EC_ParticleSystem::RequestResource(const std::string& id, const std::string& type)
-{
-    request_tag_t tag = 0;
-    Foundation::RenderServiceInterface *renderInter = framework_->GetService<Foundation::RenderServiceInterface>();
-    if(!renderInter)
-        return tag;
-
-    tag = renderInter->RequestResource(id, type);
-    if(tag == 0)
-    {
-        LogWarning("Failed to request resource:" + id + " : " + type);
-        return 0;
-    }
-
-    return tag;
-}
-*/

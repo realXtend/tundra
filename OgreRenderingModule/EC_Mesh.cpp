@@ -5,10 +5,8 @@
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "Entity.h"
-#include "EventManager.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "RexTypes.h"
 #include "OgreConversionUtils.h"
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
@@ -71,7 +69,7 @@ void EC_Mesh::SetPlaceable(ComponentPtr placeable)
 {
     if (!dynamic_cast<EC_Placeable*>(placeable.get()))
     {
-        OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
+        LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
         return;
     }
     
@@ -199,6 +197,9 @@ void EC_Mesh::SetDrawDistance(float draw_distance)
 
 bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
 {
+    if (!ViewEnabled())
+        return false;
+    
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
@@ -228,7 +229,7 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
         entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
         if (!entity_)
         {
-            OgreRenderingModule::LogError("Could not set mesh " + mesh_name);
+            LogError("Could not set mesh " + mesh_name);
             return false;
         }
         
@@ -270,7 +271,7 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     }
     catch (Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set mesh " + mesh_name + ": " + std::string(e.what()));
+        LogError("Could not set mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
     }
     
@@ -288,6 +289,8 @@ bool EC_Mesh::SetMesh(const QString& mesh_name)
 
 bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
 {
+    if (!ViewEnabled())
+        return false;
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
@@ -295,7 +298,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(SanitateAssetIdForOgre(skeleton_name));
     if (skel.isNull())
     {
-        OgreRenderingModule::LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": not found");
+        LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": not found");
         return false;
     }
     
@@ -310,11 +313,11 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     try
     {
         mesh->_notifySkeleton(skel);
-        OgreRenderingModule::LogDebug("Set skeleton " + skeleton_name + " to mesh " + mesh_name);
+        LogDebug("Set skeleton " + skeleton_name + " to mesh " + mesh_name);
     }
     catch (Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": " + std::string(e.what()));
+        LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
     }
     
@@ -323,7 +326,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
         if (!entity_)
         {
-            OgreRenderingModule::LogError("Could not set mesh " + mesh_name);
+            LogError("Could not set mesh " + mesh_name);
             return false;
         }
         
@@ -344,7 +347,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     }
     catch (Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set mesh " + mesh_name + ": " + std::string(e.what()));
+        LogError("Could not set mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
     }
     
@@ -380,7 +383,7 @@ void EC_Mesh::RemoveMesh()
         }
         catch (Ogre::Exception& e)
         {
-            OgreRenderingModule::LogWarning("Could not remove cloned mesh:" + std::string(e.what()));
+            LogWarning("Could not remove cloned mesh:" + std::string(e.what()));
         }
         
         cloned_mesh_name_ = std::string();
@@ -389,13 +392,15 @@ void EC_Mesh::RemoveMesh()
 
 bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
 {
+    if (!ViewEnabled())
+        return false;
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
 
     if (!entity_)
     {
-        OgreRenderingModule::LogError("No mesh entity created yet, can not create attachments");
+        LogError("No mesh entity created yet, can not create attachments");
         return false;
     }
     
@@ -428,7 +433,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         Ogre::SkeletonPtr entity_skel = entity_->getMesh()->getSkeleton();
         if (entity_skel.isNull())
         {
-            OgreRenderingModule::LogError("Cannot share skeleton for attachment, not found");
+            LogError("Cannot share skeleton for attachment, not found");
             return false;
         }
         try
@@ -437,7 +442,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         }
         catch (Ogre::Exception e)
         {
-            OgreRenderingModule::LogError("Could not set shared skeleton for attachment");
+            LogError("Could not set shared skeleton for attachment");
             return false;
         }
     }
@@ -447,7 +452,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         attachment_entities_[index] = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
         if (!attachment_entities_[index])
         {
-            OgreRenderingModule::LogError("Could not set attachment mesh " + mesh_name);
+            LogError("Could not set attachment mesh " + mesh_name);
             return false;
         }
 
@@ -485,7 +490,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
     }
     catch (Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set attachment mesh " + mesh_name + ": " + std::string(e.what()));
+        LogError("Could not set attachment mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
     }
     return true;
@@ -549,7 +554,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
     
     if (index >= entity_->getNumSubEntities())
     {
-        OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
+        LogError("Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
         return false;
     }
     
@@ -559,7 +564,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
     }
     catch (Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set material " + material_name + ": " + std::string(e.what()));
+        LogError("Could not set material " + material_name + ": " + std::string(e.what()));
         return false;
     }
     
@@ -581,13 +586,13 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
 {
     if (index >= attachment_entities_.size() || attachment_entities_[index] == 0)
     {
-        OgreRenderingModule::LogError("Could not set material " + material_name + " on attachment: no mesh");
+        LogError("Could not set material " + material_name + " on attachment: no mesh");
         return false;
     }
     
     if (submesh_index >= attachment_entities_[index]->getNumSubEntities())
     {
-        OgreRenderingModule::LogError("Could not set material " + material_name + " on attachment: illegal submesh index " + ToString<uint>(submesh_index));
+        LogError("Could not set material " + material_name + " on attachment: illegal submesh index " + ToString<uint>(submesh_index));
         return false;
     }
     
@@ -597,7 +602,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
     }
     catch (Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set material " + material_name + " on attachment: " + std::string(e.what()));
+        LogError("Could not set material " + material_name + " on attachment: " + std::string(e.what()));
         return false;
     }
     
@@ -743,6 +748,8 @@ void EC_Mesh::AttachEntity()
 
 Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
 {
+    if (!ViewEnabled())
+        return 0;
     if (renderer_.expired())
         return 0;
     RendererPtr renderer = renderer_.lock();   
@@ -760,7 +767,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
         }
         catch (Ogre::Exception& e)
         {
-            OgreRenderingModule::LogError("Could not load mesh " + mesh_name + ": " + std::string(e.what()));
+            LogError("Could not load mesh " + mesh_name + ": " + std::string(e.what()));
             return 0;
         }
     }
@@ -768,7 +775,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
     // If mesh is still null, must abort
     if (mesh.isNull())
     {
-        OgreRenderingModule::LogError("Mesh " + mesh_name + " does not exist");
+        LogError("Mesh " + mesh_name + " does not exist");
         return 0;
     }
     
@@ -782,7 +789,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
         }
         catch (Ogre::Exception& e)
         {
-            OgreRenderingModule::LogError("Could not clone mesh " + mesh_name + ":" + std::string(e.what()));
+            LogError("Could not clone mesh " + mesh_name + ":" + std::string(e.what()));
             return 0;
         }
     }
@@ -792,7 +799,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
         Ogre::SkeletonPtr skeleton = Ogre::SkeletonManager::getSingleton().getByName(mesh->getSkeletonName());
         if (skeleton.isNull() || skeleton->getNumBones() == 0)
         {
-            OgreRenderingModule::LogDebug("Mesh " + mesh_name + " has a skeleton with 0 bones. Disabling the skeleton.");
+            LogDebug("Mesh " + mesh_name + " has a skeleton with 0 bones. Disabling the skeleton.");
             mesh->setSkeletonName("");
         }
     }

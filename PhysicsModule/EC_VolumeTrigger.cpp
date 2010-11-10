@@ -37,6 +37,23 @@ QList<Scene::EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
     return entities_.keys();
 }
 
+int EC_VolumeTrigger::GetNumEntitiesInside() const
+{
+    return entities_.size();
+}
+
+Scene::Entity* EC_VolumeTrigger::GetEntityInside(int idx) const
+{
+    QList<Scene::EntityWeakPtr> entities = entities_.keys();
+    if (idx >=0 && idx < entities.size())
+    {
+        Scene::EntityPtr entity = entities.at(idx).lock();
+        if (entity)
+            return entity.get();
+    }
+    return 0;
+}
+
 QStringList EC_VolumeTrigger::GetEntityNamesInside() const
 {
     QStringList entitynames;
@@ -88,12 +105,15 @@ f32 EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
     return 0.f;
 }
 
-bool EC_VolumeTrigger::IsInterestingEntity(const QString &entityName) const
+bool EC_VolumeTrigger::IsInterestingEntity(const QString &name) const
 {
     QVariantList interestingEntities = entities.Get();
-    foreach (QVariant name, interestingEntities)
+    if (interestingEntities.isEmpty())
+        return true;
+
+    foreach (QVariant intname, interestingEntities)
     {
-        if (name.toString().compare(entityName) == 0)
+        if (intname.toString().compare(name) == 0)
         {
             return true;
         }

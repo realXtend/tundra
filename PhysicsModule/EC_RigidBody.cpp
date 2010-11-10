@@ -9,9 +9,6 @@
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
-#include "EventManager.h"
-#include "RexTypes.h"
-#include "Renderer.h"
 #include "OgreMeshResource.h"
 #include "ServiceManager.h"
 #include "AssetAPI.h"
@@ -24,7 +21,6 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
 
 using namespace Physics;
-using namespace RexTypes;
 
 static const float cForceThreshold = 0.0005f;
 static const float cImpulseThreshold = 0.0005f;
