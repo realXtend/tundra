@@ -42,33 +42,53 @@ EC_3DGizmo::~EC_3DGizmo()
 
 void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop)
 {
-	IAttribute* attribute = component->GetAttribute(attribute_name);
-	attributes_ << attribute;
-	subproperties_ << subprop;
-	
-	for( int i = 0; i < attributes_.size(); i++)
-	{
-		IAttribute *attr = attributes_.at(i);
-		std::cout << attr->GetNameString() << std::endl;
-	}
+    IAttribute* attribute = component->GetAttribute(attribute_name);
+    attributes_ << attribute;
+    subproperties_ << subprop;
+    
+    for( int i = 0; i < attributes_.size(); i++)
+    {
+        IAttribute *attr = attributes_.at(i);
+        std::cout << attr->GetNameString() << std::endl;
+    }
+}
+
+void EC_3DGizmo::RemoveEditableAttribute(IComponent* component, QString &attribute_name)
+{
+    int remove_idx = -1;
+    IAttribute* attribute = component->GetAttribute(attribute_name);
+    
+    for(int i = 0; i < attributes_.size(); i++)
+    {
+        IAttribute *attr = attributes_.at(i);
+        if(attr == attribute) {
+            remove_idx = i;
+            break;
+        }
+    }
+    
+    if(remove_idx!=-1) {
+        attributes_.removeAt(remove_idx);
+        subproperties_.removeAt(remove_idx);
+    }
 }
 
 void EC_3DGizmo::ClearEditableAttributes()
 {
-	attributes_.clear();
-	subproperties_.clear();
+    attributes_.clear();
+    subproperties_.clear();
 }
 
 void EC_3DGizmo::Manipulate(float movedx, float movedy, Vector3df changevec)
 {
     std::cout << "3dgizmo update" << std::endl;
     for(int i = 0; i < attributes_.size(); i++) {
-		IAttribute * attr = attributes_.at(i);
-		AttributeMetadata *meta = attr->GetMetadata();
-		std::cout << attr->GetNameString() << ":" << subproperties_.at(i).toStdString() << std::endl;
-		if(meta) {
-			std::cout << "meta:" << meta->description.toStdString() << std::endl;
-		}
-	}
+        IAttribute * attr = attributes_.at(i);
+        AttributeMetadata *meta = attr->GetMetadata();
+        std::cout << attr->GetNameString() << ":" << subproperties_.at(i).toStdString() << std::endl;
+        if(meta) {
+            std::cout << "meta:" << meta->description.toStdString() << std::endl;
+        }
+    }
     std::cout << " ... ok" << std::endl;
 }
