@@ -29,10 +29,10 @@ Registered by OgreRenderer::OgreRenderingModule.
 <ul>
 <li>Transform: nodePosition
 <div>Transformation attribute is used to do some position, rotation and scale adjustments.</div>
-<li>QString: meshResourceId
-<div>Mesh resource ref is a asset id for a mesh resource that user wants to apply to scene.</div>
-<li>QString: skeletonId
-<div>Skeleton asset ref is a string that should contain skeleton asset id.</div>
+<li>AssetReference: meshRef
+<div>Mesh asset reference (handles resource request automatically).</div>
+<li>AssetReference: skeletonRef
+<div>Skeleton asset reference (handles resource request automatically).</div>
 <li>QVariantList: meshMaterial
 <div>Mesh material ref is a string list that can contain x number of materials and each material is applied to.</div> 
 <li>float: drawDistance
@@ -134,8 +134,8 @@ Does not emit any actions.
 class OGRE_MODULE_API EC_Mesh : public IComponent
 {
     Q_OBJECT
-    
     DECLARE_EC(EC_Mesh);
+
 public:
     //! Transformation attribute is used to do some position, rotation and scale adjustments.
     //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
@@ -146,17 +146,9 @@ public:
     Q_PROPERTY(AssetReference meshRef READ getmeshRef WRITE setmeshRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, meshRef);
 
-    //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automaticly).
-    Q_PROPERTY(QString meshResourceId READ getmeshResourceId WRITE setmeshResourceId);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, meshResourceId);
-
-    //! Skeleton asset reference.
+    //! Skeleton asset reference (handles resource request automatically).
     Q_PROPERTY(AssetReference skeletonRef READ getskeletonRef WRITE setskeletonRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, skeletonRef);
-
-    //! Skeleton asset id, will handle request resource automaticly.
-    Q_PROPERTY(QString skeletonId READ getskeletonId WRITE setskeletonId);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, skeletonId);
 
     //! Mesh material id list that can contain x number of materials, material requests are handled automaticly.
     //! @todo replace std::vector to QVariantList.
@@ -176,10 +168,8 @@ public:
         as mesh attributes are being transmitted through RexPrimData instead.
      */
     virtual bool IsSerializable() const { return true; }
-    
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
-    
     virtual ~EC_Mesh();
+
 public slots:
     //! automatically find the placeable and set it
     void AutoSetPlaceable();
@@ -230,7 +220,7 @@ public slots:
     /*! \param orientation new orientation
      */
     void SetAdjustOrientation(const Quaternion& orientation);
-            
+
     //! sets adjustment scale
     /*! \param position new scale
      */
@@ -373,10 +363,19 @@ private slots:
 
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
-    
+
     //! Called when component has been removed from the parent entity. Checks if the component removed was the placeable, and autodissociates it.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
-    
+
+    /// Called when mesh asset has been downloaded.
+    void OnMeshAssetLoaded();
+
+    /// Called when skeleton asset has been downloaded.
+    void OnSkeletonAssetLoaded();
+
+    /// Called when material asset has been downloaded.
+    void OnMaterialAssetLoaded();
+
 private:
     //! constructor
     /*! \param module renderer module
@@ -395,12 +394,7 @@ private:
     
     //! detaches entity from placeable
     void DetachEntity();
-    
-    bool HandleResourceEvent(event_id_t event_id, IEventData* data);
-    bool HandleMeshResourceEvent(event_id_t event_id, IEventData* data);
-    bool HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data);
-    bool HandleMaterialResourceEvent(event_id_t event_id, IEventData* data);
-    request_tag_t RequestResource(const std::string& id, const std::string& type);
+
     bool HasMaterialsChanged() const;
     
     //! placeable component 
@@ -425,16 +419,9 @@ private:
     
     //! mesh entity attached to placeable -flag
     bool attached_;
-    
-    typedef std::vector<request_tag_t> AssetRequestArray;
-    AssetRequestArray materialRequestTags_;
 
-    event_category_id_t resource_event_category_;
-
-    typedef std::pair<request_tag_t, std::string> ResourceKeyPair;
-    typedef boost::function<bool(event_id_t,IEventData*)> MeshEventHandlerFunction;
-    typedef std::map<ResourceKeyPair, MeshEventHandlerFunction> MeshResourceHandlerMap;
-    MeshResourceHandlerMap resRequestTags_;
+    /// Pending material asset downloads.
+    QMap<int, QString> materialRequests;
 };
 
 #endif

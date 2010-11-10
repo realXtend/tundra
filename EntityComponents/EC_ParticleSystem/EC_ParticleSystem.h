@@ -59,17 +59,16 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
-    bool HandleResourceEvent(event_id_t event_id, IEventData* data);
-
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
+//    bool HandleResourceEvent(event_id_t event_id, IEventData* data);
+//    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     //! Particle asset reference
     Q_PROPERTY(AssetReference particleRef READ getparticleRef WRITE setparticleRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, particleRef);
 
     //! Particle resource asset id.
-    Q_PROPERTY(QString particleId READ getparticleId WRITE setparticleId);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, particleId);
+//    Q_PROPERTY(QString particleId READ getparticleId WRITE setparticleId);
+//    DEFINE_QPROPERTY_ATTRIBUTE(QString, particleId);
 
     //! Does particles cast shadows (mostly useless).
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
@@ -88,18 +87,19 @@ public slots:
 
 private slots:
     void AttributeUpdated(IAttribute *attribute);
-    void EntitySetted();
+    void ParticleSystemAssetLoaded();
+    void EntitySet();
 
 private:
     explicit EC_ParticleSystem(IModule *module);
     ComponentPtr FindPlaceable() const;
-    request_tag_t RequestResource(const std::string& id, const std::string& type);
+//    request_tag_t RequestResource(const std::string& id, const std::string& type);
 
-    boost::weak_ptr<OgreRenderer::Renderer> renderer_;
+    OgreRenderer::RendererWeakPtr renderer_;
     Ogre::ParticleSystem* particleSystem_;
     Ogre::SceneNode* node_;
-    request_tag_t particle_tag_;
-    event_category_id_t resource_event_category_;
+//    request_tag_t particle_tag_;
+//    event_category_id_t resource_event_category_;
 };
 
 #endif

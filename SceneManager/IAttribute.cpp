@@ -103,7 +103,7 @@ template<> std::string Attribute<Color>::ToString() const
 
 template<> std::string Attribute<AssetReference>::ToString() const
 {
-    return Get().type.toStdString() + "," + Get().ref.toStdString();
+    return Get().ref.toStdString();
 }
 
 template<> std::string Attribute<QVariant>::ToString() const
@@ -324,14 +324,7 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Attrib
 
 template<> void Attribute<AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    // We store type first, then ",", then asset id
-    std::string::size_type pos = str.find(',');
-    if (pos == std::string::npos)
-        return;
-    std::string type = str.substr(0, pos);
-    std::string id = str.substr(pos + 1);
-
-    Set(AssetReference(id.c_str(), type.c_str()), change);
+    Set(AssetReference(str.c_str()), change);
 }
 
 template<> void Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
@@ -618,7 +611,6 @@ template<> void Attribute<Color>::ToBinary(kNet::DataSerializer& dest) const
 
 template<> void Attribute<AssetReference>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.AddString(value_.type.toStdString());
     dest.AddString(value_.ref.toStdString());
 }
 
@@ -714,7 +706,6 @@ template<> void Attribute<Quaternion>::FromBinary(kNet::DataDeserializer& source
 template<> void Attribute<AssetReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     AssetReference value;
-    value.type = source.ReadString().c_str();
     value.ref = source.ReadString().c_str();
     Set(value, change);
 }
@@ -824,7 +815,6 @@ template<> bool Attribute<Quaternion>::CompareBinary(kNet::DataDeserializer& sou
 template<> bool Attribute<AssetReference>::CompareBinary(kNet::DataDeserializer& source) const
 {
     AssetReference value;
-    value.type = source.ReadString().c_str();
     value.ref = source.ReadString().c_str();
     return value_ != value;
 }

@@ -314,8 +314,10 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
     if (!assetRef)
         return;
 
-    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().type, assetRef->Get().ref, parentItem);
-    aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().ref).arg(assetRef->Get().type));
+//    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().type, assetRef->Get().ref, parentItem);
+    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().ref, parentItem);
+//    aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().ref).arg(assetRef->Get().type));
+    aItem->setText(0, QString("%1: %2").arg(assetRef->GetName()).arg(assetRef->Get().ref));
     aItem->setHidden(!showAssets);
     parentItem->addChild(aItem);
 }
@@ -467,7 +469,8 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
 
     assert(aItem);
     if (aItem)
-        aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().ref).arg(assetRef->Get().type));
+        aItem->setText(0, QString("%1: %2").arg(assetRef->GetName()).arg(assetRef->Get().ref));
+//        aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().ref).arg(assetRef->Get().type));
 }
 
 void SceneStructureWindow::UpdateEntityName(IAttribute *attr)

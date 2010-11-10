@@ -75,8 +75,8 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, soundRef);
 
     /// Sound asset reference that is used to request a sound from sound service.
-    Q_PROPERTY(QString soundId READ getsoundId WRITE setsoundId);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, soundId);
+//    Q_PROPERTY(QString soundId READ getsoundId WRITE setsoundId);
+//    DEFINE_QPROPERTY_ATTRIBUTE(QString, soundId);
 
     /// Sound inner radius tell the distance where sound gain value is in it's maximum.
     Q_PROPERTY(float soundInnerRadius READ getsoundInnerRadius WRITE setsoundInnerRadius);
@@ -93,10 +93,6 @@ public:
     /// Do we want to loop the sound until the stop sound is called.
     Q_PROPERTY(bool loopSound READ getloopSound WRITE setloopSound);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, loopSound);
-
-    /// Set this attribute true when you want to trigger the sound.
-    Q_PROPERTY(bool triggerSound READ gettriggerSound WRITE settriggerSound);
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, triggerSound);
 
 public slots:
     /// Starts playing the sound.
