@@ -104,6 +104,9 @@ namespace OgreRenderer
         if (!material.get())
         {
             Ogre::MaterialPtr baseMaterial = mm.getByName(SanitateAssetIdForOgre(baseMaterialName));
+            if (baseMaterial.isNull())
+                return Ogre::MaterialPtr();
+            
             material = baseMaterial->clone(SanitateAssetIdForOgre(materialName));
         }
 
@@ -121,6 +124,8 @@ namespace OgreRenderer
         if (!material.get())
         {
             Ogre::MaterialPtr baseMaterial = mm.getByName(SanitateAssetIdForOgre(baseMaterialName));
+            if (baseMaterial.isNull())
+                return Ogre::MaterialPtr();
             material = baseMaterial->clone(SanitateAssetIdForOgre(materialName));
         }
 
