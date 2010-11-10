@@ -40,10 +40,11 @@ EC_3DGizmo::~EC_3DGizmo()
 {
 }
 
-void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString &attribute_name)
+void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop)
 {
 	IAttribute* attribute = component->GetAttribute(attribute_name);
 	attributes_ << attribute;
+	subproperties_ << subprop;
 	
 	for( int i = 0; i < attributes_.size(); i++)
 	{
@@ -55,15 +56,16 @@ void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString &attribute_
 void EC_3DGizmo::ClearEditableAttributes()
 {
 	attributes_.clear();
+	subproperties_.clear();
 }
 
-void EC_3DGizmo::Manipulate()
+void EC_3DGizmo::Manipulate(float movedx, float movedy, Vector3df changevec)
 {
     std::cout << "3dgizmo update" << std::endl;
     for(int i = 0; i < attributes_.size(); i++) {
 		IAttribute * attr = attributes_.at(i);
 		AttributeMetadata *meta = attr->GetMetadata();
-		std::cout << attr->GetNameString() << std::endl;
+		std::cout << attr->GetNameString() << ":" << subproperties_.at(i).toStdString() << std::endl;
 		if(meta) {
 			std::cout << "meta:" << meta->description.toStdString() << std::endl;
 		}
