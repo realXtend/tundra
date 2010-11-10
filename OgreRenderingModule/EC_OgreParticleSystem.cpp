@@ -57,6 +57,8 @@ void EC_OgreParticleSystem::SetPlaceable(ComponentPtr placeable)
 
 bool EC_OgreParticleSystem::AddParticleSystem(const std::string& system_name)
 {
+    if (!ViewEnabled())
+        return false;
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();   
