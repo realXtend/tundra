@@ -189,7 +189,7 @@ else
 
 	//ui for points
 	// Load ui file and attach it to proxywidget.
-	var widget = ui.LoadFromFile(".\\jsmodules\\apitest\\CrabGame\\gamestats.ui", false);	
+	var widget = uiservice.LoadFromFile(".\\jsmodules\\apitest\\CrabGame\\gamestats.ui", false);	
 	var lcdPoints = widget.findChild("lcdNumber");
 	lcdPoints.value = 0.0;
 	var lblPlayer1 = widget.findChild("lblPlayer1");
@@ -199,7 +199,7 @@ else
 	var lcdOpponent = widget.findChild("lcdNumber_2");
 	lcdOpponent.value = 0.0;
 	var proxy = new UiProxyWidget(widget);
-	ui.AddWidgetToScene(proxy);
+	uiservice.AddWidgetToScene(proxy);
 	proxy.x = 600;
 	proxy.y = 50;
 	proxy.visible = false;
