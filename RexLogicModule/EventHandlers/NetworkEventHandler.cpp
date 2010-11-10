@@ -205,6 +205,10 @@ bool NetworkEventHandler::HandleOSNE_GenericMessage(NetworkEventInboundData* dat
         return owner_->GetAvatarHandler()->HandleRexGM_RexAppearance(data);
     else if (methodname == "RexAnim")
         return owner_->GetAvatarHandler()->HandleRexGM_RexAnim(data);
+    else if (methodname == "ECSync")
+        return owner_->GetPrimitiveHandler()->HandleECGM_ECData(data);
+    else if (methodname == "ECRemove")
+        return owner_->GetPrimitiveHandler()->HandleECGM_ECRemove(data);
     else
         return false;
 }
