@@ -47,7 +47,8 @@ public slots:
     virtual bool IsTemporary() const { return true; }
 
     void Manipulate(float movedx, float movedy, Vector3df changevec);
-	void AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop = QString()); 
+    void AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop = QString()); 
+    void RemoveEditableAttribute(IComponent* component, QString &attribute_name);
     void ClearEditableAttributes();
     
 private:
