@@ -44,7 +44,7 @@ public:
 public slots:
     virtual bool IsTemporary() const { return true; }
 
-    void Update3DGizmo();
+    void Manipulate();
 	void AddEditableAttribute(IComponent* component, QString &attribute_name);
     void ClearEditableAttributes();
     

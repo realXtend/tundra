@@ -57,7 +57,16 @@ void EC_3DGizmo::ClearEditableAttributes()
 	attributes_.clear();
 }
 
-void EC_3DGizmo::Update3DGizmo()
+void EC_3DGizmo::Manipulate()
 {
     std::cout << "3dgizmo update" << std::endl;
+    for(int i = 0; i < attributes_.size(); i++) {
+		IAttribute * attr = attributes_.at(i);
+		AttributeMetadata *meta = attr->GetMetadata();
+		std::cout << attr->GetNameString() << std::endl;
+		if(meta) {
+			std::cout << "meta:" << meta->description.toStdString() << std::endl;
+		}
+	}
+    std::cout << " ... ok" << std::endl;
 }
