@@ -46,7 +46,7 @@ public:
 public slots:
     virtual bool IsTemporary() const { return true; }
 
-    void Manipulate(float movedx, float movedy, Vector3df changevec);
+    void Manipulate(QVariant datum);
     void AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop = QString()); 
     void RemoveEditableAttribute(IComponent* component, QString &attribute_name);
     void ClearEditableAttributes();
@@ -59,6 +59,7 @@ private:
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
     
+    QString attribute_;
     QList<IAttribute *> attributes_;
     QStringList subproperties_;
 };
