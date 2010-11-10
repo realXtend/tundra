@@ -6,6 +6,7 @@
 #include <QObject>
 
 #include "AssetFwd.h"
+#include "AssetReference.h"
 
 class IAssetTransfer : public QObject
 {
@@ -15,11 +16,15 @@ public:
     virtual ~IAssetTransfer() {}
 
     /// Points to the actual asset if it has been loaded in.
-    IAsset *asset;
+    boost::shared_ptr<IAsset> asset;
+
+    /// Specifies the source where this asset was loaded from.
+    AssetReference source;
 
     /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
     /// transition period to new Asset API. Will be removed. -jj
     Foundation::AssetPtr assetPtr;
+    Foundation::ResourcePtr resourcePtr;
 
     void EmitAssetDownloaded();
 

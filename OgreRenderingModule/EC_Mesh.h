@@ -349,6 +349,12 @@ public slots:
     //! Returns adjustment scene node (used for scaling/offset/orientation modifications)
     Ogre::SceneNode* GetAdjustmentSceneNode() const { return adjustment_node_; }
 
+    /// Returns the parent component of this component in the scene transform hierarchy.
+//    virtual IComponent *GetParentComponent();
+
+    /// 
+//    float3x4 IComponent::GetWorldTransform();
+
 signals:
     //! Signal is emitted when mesh has successfully loaded and applied to entity.
     void OnMeshChanged();
