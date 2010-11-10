@@ -77,6 +77,9 @@ class Manipulator:
         self.highlightedSubMesh = None
         self.axisSubmesh = None
 
+        self.entCenterVectors={}
+        self.centerPoint = None
+
     def compareIds(self, id):
         if self.usesManipulator:
             if self.manipulator.Id == id:
@@ -256,16 +259,22 @@ class Manipulator:
             rightvec *= amountx
             upvec *= amounty
             changevec = rightvec - upvec
-            
-            for ent in ents:
-                self._manipulate(ent, amountx, amounty, changevec)
-                self.controller.soundRuler(ent)
+
+            # group rotation
+            if(self.NAME=="RotationManipulator" and len(ents)>1 and self.grabbed_axis == self.AXIS_BLUE):
+                self.setCenterPointAndCenterVectors(ents)
+                self._manipulate2(ents, amountx, amounty, changevec, self.entCenterVectors, self.centerPoint)
+            else:            
+                for ent in ents:
+                    self._manipulate(ent, amountx, amounty, changevec)
+                    self.controller.soundRuler(ent)
+
             if not self.manipulator is None:
                 if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
                     placeable = ents[0].placeable
                     self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
 
-                self.manipulator.ruler.UpdateRuler()
+            self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
                 self.moveTo(ents)
@@ -298,6 +307,41 @@ class Manipulator:
                 self.manipulator.mesh.SetMaterial(self.highlightedSubMesh, name)
             self.highlightedSubMesh = None
             remove_custom_cursors()
+            
+    def setCenterPointAndCenterVectors(self, ents):
+        self.centerPoint = self.getPivotPos(ents)
+        for ent in ents:
+            pos = ent.placeable.Position
+            diff = self.vectorDifference(pos, self.centerPoint)
+            self.entCenterVectors[ent]=diff 
+        # print "center vectors"
+        # for e, vec in self.entCenterVectors.iteritems():
+            # print vec
+        
+    def vectorDifference(self, v1, v2):
+        x = v1.x()-v2.x()
+        y = v1.y()-v2.y()
+        z = v1.z()-v2.z()
+        return QVector3D(x, y, z)
+
+    def calibrateVec(self, r, v):
+        if(self.vectorLen(r)!=0):
+            factor = self.vectorLen(v)/self.vectorLen(r)
+            rx = factor* r.x()
+            ry = factor* r.y()
+            rz = factor* r.z()
+            return QVector3D(rx, ry, rz)
+        else: # if original vector is zero length, the rotated one must be too, just return r
+            return r
+
+    def vectorLen(self, v):
+        return math.sqrt(v.x()**2 + v.y()**2 + v.z()**2)
+
+    def vectorAdd(self, v1, v2):
+        x = v1.x()+v2.x()
+        y = v1.y()+v2.y()
+        z = v1.z()+v2.z()
+        return QVector3D(x, y, z)
         
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
@@ -432,7 +476,6 @@ class RotationManipulator(Manipulator):
                 ort = ort * QQuaternion.fromAxisAndAngle(axis, mov)
             else:
                 euler = mu.quat_to_euler(ort)
-
                 if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
                     euler[0] -= math.radians(mov)
                 elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
@@ -444,4 +487,85 @@ class RotationManipulator(Manipulator):
 
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
+    
+    """ Rotate locations around center point """
+    def _manipulate2(self, ents, amountx, amounty, changevec, centervecs, centerpoint):
+        # calculate quaternion for rotation
+        # get axis
+        # print "amountx %s"%amountx
+        # print "amounty %s"%amounty
+        # print "changevec %s"%changevec
+        
+        if self.grabbed and self.grabbed_axis is not None:
+            local = self.controller.useLocalTransform
+            mov = changevec.length() * 30
 
+            axis = None
+            #angle = 90 # just do 90 degrees rotations
+            #angle = 15 # just do 15 degrees rotations
+            angle = 5 # just do 5 degrees rotations
+            if amountx < 0 and amounty < 0:
+                dir = -1
+            elif amountx < 0 and amounty >= 0:
+                dir = 1
+                if self.grabbed_axis == self.AXIS_BLUE:
+                    dir *= -1
+            elif amountx >= 0 and amounty < 0:
+                dir = -1
+            elif amountx >= 0 and amounty >= 0:
+                dir = 1
+
+            mov *= dir
+            angle *= dir
+            q = None
+            
+            euler = None
+            if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
+                axis = QVector3D(1,0,0)
+                # disable this for now
+                return 
+            elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
+                axis = QVector3D(0,1,0)
+                # disable this for now
+                return
+            elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
+                axis = QVector3D(0,0,1)
+
+            q = QQuaternion.fromAxisAndAngle(axis, angle)
+            q.normalize()
+
+            self._rotateEntsWithQuaternion(q, ents, amountx, amounty, changevec, centervecs, centerpoint)
+            self._rotateEachEntWithQuaternion(q, ents)
+        pass
+        
+    def _rotateEntsWithQuaternion(self, q, ents, amountx, amounty, changevec, centervecs, centerpoint):
+        for ent, qvec in centervecs.iteritems():
+            # rotate center vectors and calculate new points to ents
+            # print "qvec %s"%str(qvec)
+            crot=q.rotatedVector(qvec) # rotated center vector
+            # print "crot %s"%str(crot)
+            calibVec = self.calibrateVec(crot, qvec) # just incase
+            centervecs[ent]=calibVec # store new rotated vector
+            
+        for ent, newVec in centervecs.iteritems():
+            # print "centerpoint %s"%centerpoint
+            # print "newVec %s"%newVec
+            newPos = self.vectorAdd(centerpoint, newVec)
+            if hasattr(ent, "placeable"):
+                ent.placeable.Position = newPos
+            else:
+                print "entity missing placeable"
+                # print type(ent)
+        pass
+
+    """ This part has some bug, objects rotated in some specific ways, start spinning
+        when rotating whole scene, apparently its not enough to just multiply
+        orientation with quaternion """
+    def _rotateEachEntWithQuaternion(self, q, ents):
+        for ent in ents:
+            ort = ent.placeable.Orientation
+            ort * q
+            ent.placeable.Orientation = ort
+            #ent.network.Orientation = ort
+        pass
+        
