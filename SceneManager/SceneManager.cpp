@@ -32,16 +32,22 @@ namespace Scene
     SceneManager::SceneManager() :
         framework_(0),
         gid_(1),
-        gid_local_(LocalEntity + 1)
+        gid_local_(LocalEntity + 1),
+        viewenabled_(true)
     {
     }
     
-    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework) :
+    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework, bool viewenabled) :
         name_(name),
         framework_(framework),
         gid_(1),
         gid_local_(LocalEntity + 1)
     {
+        // In headless mode only view disabled-scenes can be created
+        if (framework->IsHeadless())
+            viewenabled_ = false;
+        else
+            viewenabled_ = viewenabled;
     }
 
     SceneManager::~SceneManager()

@@ -55,7 +55,7 @@ bool Server::Start(unsigned short port)
             TundraLogicModule::LogError("Failed to start server in port " + ToString<int>(port));
             return false;
         }
-        Scene::ScenePtr scene = framework_->CreateScene("TundraServer");
+        Scene::ScenePtr scene = framework_->CreateScene("TundraServer", true);
         framework_->SetDefaultWorldScene(scene);
         owner_->GetSyncManager()->RegisterToScene(scene);
         
