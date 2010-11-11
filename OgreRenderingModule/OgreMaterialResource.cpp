@@ -191,6 +191,8 @@ namespace OgreRenderer
             
             return false;
         }
+        
+        internal_name_ = sanitatedname;
         return true;
     }
 

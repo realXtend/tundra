@@ -126,6 +126,7 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
                 IAssetTransfer *transfer = iter->second;
                 transfer->resourcePtr = resourceReady->resource_;
                 assert(transfer);
+                transfer->internalResourceName = QString::fromStdString(resourceReady->resource_->GetInternalName());
                 transfer->EmitAssetLoaded();
             }
         }
