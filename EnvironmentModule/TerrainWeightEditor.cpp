@@ -396,8 +396,6 @@ namespace Environment
         if(!GetSceneManager())
             return;
 
-        
-
         QImage map  = CreateImageFromCanvases();
         
         if(map.format() != QImage::Format_ARGB32)
@@ -423,7 +421,7 @@ namespace Environment
             {
                 tex->getBuffer()->blitFromMemory(bufbox);
             }
-            ptr->settexture0(texname);
+            ptr->texture0.Set(AssetReference(texname, "OgreTexture"), AttributeChange::Disconnected);
             it++;
 
             ///For now we just save this to assets folder. Later on, this should be replicated to server/clients etc.
@@ -456,11 +454,11 @@ namespace Environment
             boost::shared_ptr<EC_Terrain> ptr = (*it)->GetComponent<EC_Terrain>();
             if(val)
             {
-                ptr->setmaterial("Rex/TerrainPCF_weighted");
+                ptr->material.Set(AssetReference("Rex/TerrainPCF_weighted", "OgreMaterial"), AttributeChange::Disconnected);
             }
             else
             {
-                ptr->setmaterial("Rex/TerrainPCF");
+                ptr->material.Set(AssetReference("Rex/TerrainPCF", "OgreMaterial"), AttributeChange::Disconnected);
             }
             it++;
         }

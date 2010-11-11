@@ -19,6 +19,26 @@ class btDispatcher;
 class btDynamicsWorld;
 class btCollisionObject;
 
+class PhysicsRaycastResult : public QObject
+{
+    Q_OBJECT
+    
+public:
+    Q_PROPERTY(Scene::Entity* entity READ getentity);
+    Scene::Entity* getentity() const { return entity_; }
+    Q_PROPERTY(Vector3df pos READ getpos);
+    Vector3df getpos() const { return pos_; }
+    Q_PROPERTY(Vector3df normal READ getnormal);
+    Vector3df getnormal() const { return normal_; }
+    Q_PROPERTY(float distance READ getdistance);
+    float getdistance() const { return distance_; }
+    
+    Scene::Entity* entity_;
+    Vector3df pos_;
+    Vector3df normal_;
+    float distance_;
+};
+
 namespace Physics
 {
 
@@ -53,15 +73,15 @@ public slots:
      */
     void SetGravity(const Vector3df& gravity);
     
-    //! Raycast to the world. Returns only a single (the closest) entity; other results like hit position/distance can be inspected by connecting to the RaycastResult signal
+    //! Raycast to the world. Returns only a single (the closest) result.
     /*! \param origin World origin position
         \param direction Direction to raycast to. Will be normalized automatically
         \param maxdistance Length of ray
         \param collisiongroup Collision filter group (0 = use default)
         \param collisionmask Collision filter mask (0 = use default)
-        \return Entity (with rigidbody) that was hit, or null if no entity hit
+        \return result PhysicsRaycastResult structure
      */
-    Scene::Entity* Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup = 0, int collisionmask = 0);
+    PhysicsRaycastResult* Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup = 0, int collisionmask = 0);
     
     //! Return gravity
     Vector3df GetGravity() const;
@@ -82,14 +102,6 @@ signals:
         \param newCollision True if same collision did not happen on the previous frame. If collision has multiple contact points, newCollision can only be true for the first of them.
      */
     void PhysicsCollision(Scene::Entity* entityA, Scene::Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
-    
-    //! Raycast result. Invoked when a raycast hits an entity
-    /*! \param Scene::Entity* entity The hit entity
-        \param position World position of ray hit
-        \param normal World normal of ray hit
-        \param distance Hit distance along ray
-     */
-     void RaycastResult(Scene::Entity* entity, const Vector3df& position, const Vector3df& normal, float distance);
      
      //! Emitted after each simulation step
      /*! \param frametime Length of simulation step

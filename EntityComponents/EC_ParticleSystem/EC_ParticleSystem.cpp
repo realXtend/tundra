@@ -67,6 +67,8 @@ bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, IEventData* dat
 
 void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 {
+    if (!ViewEnabled())
+        return;
     if (renderer_.expired())
         return;
     OgreRenderer::RendererPtr renderer = renderer_.lock();
@@ -142,6 +144,9 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 {
     if(attribute->GetNameString() == particleId.GetNameString())
     {
+        if (!ViewEnabled())
+            return;
+        
         particle_tag_ = RequestResource(particleId.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
         if(!particle_tag_) // To visualize that resource id was wrong delete previous particle effect off.
             DeleteParticleSystem();
@@ -170,7 +175,7 @@ ComponentPtr EC_ParticleSystem::FindPlaceable() const
 
 void EC_ParticleSystem::EntitySetted()
 {
-    Scene::Entity *entity = qobject_cast<Scene::Entity*>(this->GetParentEntity());
+    Scene::Entity *entity = this->GetParentEntity();
     if (!entity)
     {
         LogError("Failed to connect entity signals, component's parent entity is null");

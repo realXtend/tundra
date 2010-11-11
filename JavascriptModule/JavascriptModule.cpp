@@ -14,6 +14,7 @@
 
 #include "EC_Script.h"
 #include "EC_DynamicComponent.h"
+#include "EventManager.h"
 #include "SceneManager.h"
 #include "Input.h"
 #include "UiServiceInterface.h"
@@ -74,6 +75,8 @@ void JavascriptModule::Initialize()
     JavascriptModule::RunScript("jsmodules/lib/json2.js");
 
     RunString("print('Hello from qtscript');");
+
+    frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 }
 
 void JavascriptModule::PostInitialize()
@@ -108,6 +111,21 @@ void JavascriptModule::Update(f64 frametime)
 
 bool JavascriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
+    if (category_id == frameworkEventCategory_)
+    {
+        if (event_id == Foundation::PROGRAM_OPTIONS)
+        {
+            Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
+            if (po_event->options.count("run"))
+            {
+                commandLineStartupScript_ = po_event->options["run"].as<std::string>();
+                JavascriptEngine* javaScriptInstance = new JavascriptEngine(QString::fromStdString(commandLineStartupScript_));
+                PrepareScriptEngine(javaScriptInstance);
+                startupScripts_.push_back(javaScriptInstance);
+                javaScriptInstance->Run();
+            }
+        }
+    }
     return false;
 }
 
@@ -228,7 +246,7 @@ void JavascriptModule::LoadStartupScripts()
     
     std::string path = "./jsmodules/startup";
     std::vector<std::string> scripts;
-    
+
     try
     {
         boost::filesystem::directory_iterator i(path);

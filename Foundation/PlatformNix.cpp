@@ -31,6 +31,19 @@ namespace Foundation
         return (ToWString(path));
     }
 
+    std::string PlatformNix::GetInstallDirectory()
+    {
+        // Todo: implement
+        return(std::string("."));
+    }
+
+    std::wstring PlatformNix::GetInstallDirectoryW()
+    {
+        // Todo: implement
+        return(std::wstring(L"."));
+    }
+
+    
     std::string PlatformNix::GetUserDocumentsDirectory()
     {
         return GetApplicationDataDirectory();

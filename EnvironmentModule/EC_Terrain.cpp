@@ -10,9 +10,13 @@
 #include "SceneManager.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
 
 #include <Ogre.h>
 #include "OgreMaterialUtils.h"
+#include "OgreMaterialResource.h"
+#include "OgreTextureResource.h"
 #include "OgreConversionUtils.h"
 
 #include <utility>
@@ -54,12 +58,12 @@ EC_Terrain::EC_Terrain(IModule* module) :
     MakePatchFlat(0, 0, 0.f);
     uScale.Set(0.13f, AttributeChange::Disconnected);
     vScale.Set(0.13f, AttributeChange::Disconnected);
-    texture0.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    texture1.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    texture2.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    texture3.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    texture4.Set("terr_dirt-grass.jpg", AttributeChange::Disconnected);
-    material.Set("Rex/TerrainPCF", AttributeChange::Disconnected);
+    texture0.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    texture1.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    texture2.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    texture3.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    texture4.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
+    material.Set(AssetReference("ogre://Rex/TerrainPCF", "OgreMaterial"), AttributeChange::Disconnected);
 //    heightMap.Set("media/samples/terrain.ntf", AttributeChange::Disconnected);
 }
 
@@ -74,9 +78,6 @@ void EC_Terrain::UpdateSignals()
 
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             this, SLOT(AttributeUpdated(IAttribute*)));
-
-    connect(this, SIGNAL(MaterialChanged(QString)), this, SLOT(OnMaterialChanged()));
-    connect(this, SIGNAL(TextureChanged(QString)), this, SLOT(OnTextureChanged()));
 /*
     // Manually signal the resource-requiring attributes to have been changed. This guarantees that if we are using
     // the default values from ctor, these resources will be loaded in.
@@ -87,24 +88,15 @@ void EC_Terrain::UpdateSignals()
     texture4.Changed(AttributeChange::LocalOnly);
     material.Changed(AttributeChange::LocalOnly);
     heightMap.Changed(AttributeChange::LocalOnly);
+
 */
-}
-
-void EC_Terrain::OnMaterialChanged()
-{
-    for(int y = 0; y < patchHeight; ++y)
-        for(int x = 0; x < patchWidth; ++x)
-            UpdateTerrainPatchMaterial(x, y);
-}
-
-void EC_Terrain::OnTextureChanged()
-{
-    PROFILE(EC_Terrain_OnTextureChanged);
-    SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
-    SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
+/*
+    if (scene.viewEnabled)
+    {
+    material.RegisterForAutomaticAssetUpdates(framework->Asset(), ParentEntity());
+    connect(material, SIGNAL(Loaded()), this, SLOT(MaterialUpdated()), Qt::UniqueConnection);
+    }
+*/
 }
 
 void EC_Terrain::MakePatchFlat(int x, int y, float heightValue)
@@ -200,27 +192,39 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     }
     else if (changedAttribute == material.GetNameString())
     {
-        SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
-        SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
-        SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
-        SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
-        SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
-
-        for(int y = 0; y < patchHeight; ++y)
-            for(int x = 0; x < patchWidth; ++x)
-                UpdateTerrainPatchMaterial(x, y);
-
-        ///\todo Delete the old unused material.
+        // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(material.Get());
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
     }
-    else if (changedAttribute == texture0.GetNameString()) SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
-    else if (changedAttribute == texture1.GetNameString()) SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
-    else if (changedAttribute == texture2.GetNameString()) SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
-    else if (changedAttribute == texture3.GetNameString()) SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
-    else if (changedAttribute == texture4.GetNameString()) SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
+    else if (changedAttribute == texture0.GetNameString())
+    {
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(TextureAssetLoaded()), Qt::UniqueConnection);
+    }
+    else if (changedAttribute == texture1.GetNameString())
+    {
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+    }
+    else if (changedAttribute == texture2.GetNameString())
+    {
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+    }
+    else if (changedAttribute == texture3.GetNameString())
+    {
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+    }
+    else if (changedAttribute == texture4.GetNameString())
+    {
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+    }
     else if (changedAttribute == heightMap.GetNameString())
     {
-        if (currentHeightmapAssetSource.trimmed() != heightMap.Get().trimmed())
-        LoadFromFile(heightMap.Get().toStdString().c_str());
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref, "Terrain"));
+        connect(transfer, SIGNAL(Downloaded()), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
     {
@@ -230,6 +234,71 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     }
 
     ///\todo Delete the old unused textures.
+}
+
+void EC_Terrain::MaterialAssetLoaded()
+{
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
+    assert(transfer);
+    if (!transfer)
+        return;
+
+    OgreRenderer::OgreMaterialResource *ogreMaterial = dynamic_cast<OgreRenderer::OgreMaterialResource *>(transfer->resourcePtr.get());
+    assert(ogreMaterial);
+    if (!ogreMaterial)
+        return;
+
+    Ogre::MaterialPtr material = ogreMaterial->GetMaterial();
+    
+    ///\todo We can't free here, since something else might be using the material.
+//    Ogre::MaterialManager::getSingleton().remove(currentMaterial.toStdString()); // Free up the old material.
+
+    currentMaterial = material->getName().c_str();
+
+    // Also, we need to update each geometry patch to use the new material.
+    for(int y = 0; y < patchHeight; ++y)
+        for(int x = 0; x < patchWidth; ++x)
+            UpdateTerrainPatchMaterial(x, y);
+/*
+    // The material of the terrain has changed. Since we specify the textures of that material as attributes,
+    // we need to re-apply the textures from the attributes to the new material we set.
+    SetTerrainMaterialTexture(0, texture0.Get().ref.toStdString().c_str());
+    SetTerrainMaterialTexture(1, texture1.Get().ref.toStdString().c_str());
+    SetTerrainMaterialTexture(2, texture2.Get().ref.toStdString().c_str());
+    SetTerrainMaterialTexture(3, texture3.Get().ref.toStdString().c_str());
+    SetTerrainMaterialTexture(4, texture4.Get().ref.toStdString().c_str());
+*/
+}
+
+void EC_Terrain::TextureAssetLoaded()
+{
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
+    assert(transfer);
+    if (!transfer)
+        return;
+
+    OgreRenderer::OgreTextureResource *ogreTexture = dynamic_cast<OgreRenderer::OgreTextureResource *>(transfer->resourcePtr.get());
+    assert(ogreTexture);
+    if (!ogreTexture)
+        return;
+
+    Ogre::TexturePtr texture = ogreTexture->GetTexture();
+    
+    if (transfer->source == texture0.Get()) SetTerrainMaterialTexture(0, texture->getName().c_str());
+    else if (transfer->source == texture1.Get()) SetTerrainMaterialTexture(1, texture->getName().c_str());
+    else if (transfer->source == texture2.Get()) SetTerrainMaterialTexture(2, texture->getName().c_str());
+    else if (transfer->source == texture3.Get()) SetTerrainMaterialTexture(3, texture->getName().c_str());
+    else if (transfer->source == texture4.Get()) SetTerrainMaterialTexture(4, texture->getName().c_str());
+}
+
+void EC_Terrain::TerrainAssetLoaded()
+{
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
+    assert(transfer);
+    if (!transfer || !transfer->assetPtr)
+        return;
+
+    LoadFromDataInMemory((const char*)transfer->assetPtr->GetData(), transfer->assetPtr->GetSize());    
 }
 
 /// Releases all GPU resources used for the given patch.
@@ -614,69 +683,6 @@ bool EC_Terrain::SaveToFile(QString filename)
     return true;
 }
 
-bool EC_Terrain::LoadFromFile(QString filename)
-{
-    filename = filename.trimmed();
-
-    FILE *handle = fopen(filename.toStdString().c_str(), "rb");
-    if (!handle)
-    {
-        ///\todo Log out error!
-        return false;
-    }
-    u32 xPatches = 0;
-    u32 yPatches = 0;
-    fread(&xPatches, sizeof(u32), 1, handle); ///< \todo Check read error.
-    fread(&yPatches, sizeof(u32), 1, handle); ///< \todo Check read error.
-
-    // Load all the data from the file to an intermediate buffer first, so that we can first see
-    // if the file is not broken, and reject it without losing the old terrain.
-    std::vector<Patch> newPatches(xPatches*yPatches);
-
-    // Initialize the new height data structure.
-    for(int y = 0; y < yPatches; ++y)
-        for(int x = 0; x < xPatches; ++x)
-        {
-            newPatches[y*xPatches+x].x = x;
-            newPatches[y*xPatches+x].y = y;
-        }
-
-    assert(sizeof(float) == 4);
-
-    // Load the new data.
-    for(size_t i = 0; i < newPatches.size(); ++i)
-    {
-        newPatches[i].heightData.resize(cPatchSize*cPatchSize);
-        newPatches[i].patch_geometry_dirty = true;
-        fread(&newPatches[i].heightData[0], sizeof(float), cPatchSize*cPatchSize, handle); ///< \todo Check read error.
-    }
-
-    fclose(handle);
-
-    // The terrain asset loaded ok. We are good to set that terrain as the active terrain.
-
-    Destroy();
-
-    currentHeightmapAssetSource = filename;
-    patches = newPatches;
-    patchWidth = xPatches;
-    patchHeight = yPatches;
-
-    // Re-do all the geometry on the GPU.
-    RegenerateDirtyTerrainPatches();
-
-    // Set the new number of patches this terrain has. These changes only need to be done locally, since the other
-    // peers have loaded the terrain from the same file, and they will also locally do this change. This change is also
-    // performed in "batched" mode, i.e. first the values are set, and only after that the signals are emitted manually.
-    this->xPatches.Set(patchWidth, AttributeChange::Disconnected);
-    this->yPatches.Set(patchHeight, AttributeChange::Disconnected);
-
-    this->xPatches.Changed(AttributeChange::LocalOnly);
-    this->yPatches.Changed(AttributeChange::LocalOnly);
-
-    return true;
-}
-
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
 {
     FILE *handle = fopen(filename, "rb");
@@ -698,6 +704,86 @@ bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
     fclose(handle);
 
     return numRead == numBytes;
+}
+
+u32 ReadU32(const char *dataPtr, size_t numBytes, int &offset)
+{
+    if (offset + 4 > numBytes)
+        throw Exception("Not enough bytes to deserialize!");
+    u32 data = *(u32*)(dataPtr + offset); ///\note Requires unaligned load support from the CPU and assumes data storage endianness to be the same for loader and saver.
+    offset += 4;
+    return data;
+}
+
+bool EC_Terrain::LoadFromFile(QString filename)
+{
+    filename = filename.trimmed();
+
+    std::vector<u8> file;
+    LoadFileToVector(filename.toStdString().c_str(), file);
+
+    if (file.size() > 0)
+    {
+        bool success = LoadFromDataInMemory((const char *)&file[0], file.size());
+        if (success)
+            currentHeightmapAssetSource = filename;
+        return success;
+    }
+    return false;
+}
+
+bool EC_Terrain::LoadFromDataInMemory(const char *data, size_t numBytes)
+{
+    int offset = 0;
+    u32 xPatches = ReadU32(data, numBytes, offset);
+    u32 yPatches = ReadU32(data, numBytes, offset);
+
+    // Load all the data from the file to an intermediate buffer first, so that we can first see
+    // if the file is not broken, and reject it without losing the old terrain.
+    std::vector<Patch> newPatches(xPatches*yPatches);
+
+    // Initialize the new height data structure.
+    for(int y = 0; y < yPatches; ++y)
+        for(int x = 0; x < xPatches; ++x)
+        {
+            newPatches[y*xPatches+x].x = x;
+            newPatches[y*xPatches+x].y = y;
+        }
+
+    assert(sizeof(float) == 4);
+
+    // Load the new data.
+    for(size_t i = 0; i < newPatches.size(); ++i)
+    {
+        newPatches[i].heightData.resize(cPatchSize*cPatchSize);
+        newPatches[i].patch_geometry_dirty = true;
+        if (offset+cPatchSize*cPatchSize*sizeof(float) > numBytes)
+            throw Exception("Not enough bytes to deserialize!");
+
+        memcpy(&newPatches[i].heightData[0], data + offset, cPatchSize*cPatchSize*sizeof(float));
+        offset += cPatchSize*cPatchSize*sizeof(float);
+    }
+
+    // The terrain asset loaded ok. We are good to set that terrain as the active terrain.
+    Destroy();
+
+    patches = newPatches;
+    patchWidth = xPatches;
+    patchHeight = yPatches;
+
+    // Re-do all the geometry on the GPU.
+    RegenerateDirtyTerrainPatches();
+
+    // Set the new number of patches this terrain has. These changes only need to be done locally, since the other
+    // peers have loaded the terrain from the same file, and they will also locally do this change. This change is also
+    // performed in "batched" mode, i.e. first the values are set, and only after that the signals are emitted manually.
+    this->xPatches.Set(patchWidth, AttributeChange::Disconnected);
+    this->yPatches.Set(patchHeight, AttributeChange::Disconnected);
+
+    this->xPatches.Changed(AttributeChange::LocalOnly);
+    this->yPatches.Changed(AttributeChange::LocalOnly);
+
+    return true;
 }
 
 bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
@@ -729,7 +815,7 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
             SetPointHeight(x, y, height);
         }
 
-    heightMap.Set("", AttributeChange::Disconnected);
+    heightMap.Set(AssetReference("",""), AttributeChange::Disconnected);
 
     xPatches.Changed(AttributeChange::LocalOnly);
     yPatches.Changed(AttributeChange::LocalOnly);
@@ -1034,7 +1120,7 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     // Adjust offset so that we always have the lowest point of the terrain at height 0.
     RemapHeightValues(0.f, maxHeight - minHeight);
 
-    heightMap.Set("", AttributeChange::Disconnected);
+    heightMap.Set(AssetReference("",""), AttributeChange::Disconnected);
 
     xPatches.Changed(AttributeChange::LocalOnly);
     yPatches.Changed(AttributeChange::LocalOnly);
@@ -1081,7 +1167,7 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
 //    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
 //    Ogre::Texture *tex = dynamic_cast<Ogre::Texture *>(manager.getByName(textureName).get());
 
-    Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(material.Get().toStdString().c_str());
+    Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get())
     {
 //        EnvironmentModule::LogWarning("Ogre material " + material.Get().toStdString() + " not found!");
@@ -1109,7 +1195,7 @@ void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
     {
         Ogre::SubEntity *sub = patch.entity->getSubEntity(i);
         if (sub)
-            sub->setMaterialName(material.Get().toStdString().c_str());
+            sub->setMaterialName(currentMaterial.toStdString().c_str());
     }
 }
 
@@ -1140,6 +1226,8 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     if (!renderer)
         return;
+    if (!ViewEnabled())
+        return;
 
     Ogre::SceneNode *node = patch.node;
     bool firstTimeFill = (node == 0);
@@ -1150,7 +1238,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     }
     assert(node);
 
-    Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(material.Get().toStdString().c_str());
+    Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get()) // If we could not find the material we were supposed to use, just use the default system terrain material.
         terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial("Rex/TerrainPCF");
 

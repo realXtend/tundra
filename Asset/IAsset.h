@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "AssetFwd.h"
+#include "AssetReference.h"
 
 class IAsset : public QObject
 {
@@ -15,17 +16,31 @@ class IAsset : public QObject
 public:
     virtual ~IAsset() {}
 
+//    QString Type() const;
+
+//    QString Name() const;
+
+//    void LoadFromFile(QString filename);
+
     /// Stores this asset to disk to the given file.
     void SaveToFile(QString filename);
 
+    /// Goes through the contents of this asset and computes a hash that identifies the data.
+//    Hash ComputeContentHash() const;
+
     /// Returns all the assets this asset refers to (but not the references those assets refer to).
-    std::vector<IAsset*> FindReferences() const;
+    std::vector<AssetReference> FindReferences() const;
 
     /// Returns all the assets this asset refers to, and the assets those assets refer to, and so on.
-    std::vector<IAsset*> FindReferencesDeep() const;
+    std::vector<AssetReference> FindReferencesRecursive() const;
 
     /// Stores the raw asset bytes for this asset.
-    std::vector<char> rawAssetData;
+//    std::vector<char> rawAssetData;
+
+    /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
+    /// transition period to new Asset API. Will be removed. -jj
+    Foundation::AssetPtr assetPtr;
+    Foundation::ResourcePtr resourcePtr;
 
 private:
     /// Specifies the provider this asset was downloaded from.

@@ -50,7 +50,9 @@ namespace Asset
 
         // Add localassethandler, with a hardcoded dir for now
         // Note: this directory is a different concept than the "pre-warmed assetcache"
-        local_asset_provider_ = Foundation::AssetProviderPtr(new LocalAssetProvider(framework_, "./data/assets"));
+        LocalAssetProvider* local = new LocalAssetProvider(framework_);
+        local->AddDirectory("./data/assets", true);
+        local_asset_provider_ = Foundation::AssetProviderPtr(local);
         manager_->RegisterAssetProvider(local_asset_provider_);
 
         // Add Ogre MeshManager asset provider

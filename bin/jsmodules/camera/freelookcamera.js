@@ -137,7 +137,7 @@ function HandleMouseLookY(param)
     var camera = me.GetComponentRaw("EC_OgreCamera");
     if (camera.IsActive() == false)
         return;
-    
+
     var move = parseInt(param);
     var placeable = me.GetComponentRaw("EC_Placeable");
     var newtransform = placeable.transform;

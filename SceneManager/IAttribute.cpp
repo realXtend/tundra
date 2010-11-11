@@ -103,7 +103,7 @@ template<> std::string Attribute<Color>::ToString() const
 
 template<> std::string Attribute<AssetReference>::ToString() const
 {
-    return Get().type.toStdString() + "," + Get().id.toStdString();
+    return Get().type.toStdString() + "," + Get().ref.toStdString();
 }
 
 template<> std::string Attribute<QVariant>::ToString() const
@@ -619,7 +619,7 @@ template<> void Attribute<Color>::ToBinary(kNet::DataSerializer& dest) const
 template<> void Attribute<AssetReference>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.AddString(value_.type.toStdString());
-    dest.AddString(value_.id.toStdString());
+    dest.AddString(value_.ref.toStdString());
 }
 
 template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
@@ -715,7 +715,7 @@ template<> void Attribute<AssetReference>::FromBinary(kNet::DataDeserializer& so
 {
     AssetReference value;
     value.type = source.ReadString().c_str();
-    value.id = source.ReadString().c_str();
+    value.ref = source.ReadString().c_str();
     Set(value, change);
 }
 
@@ -825,7 +825,7 @@ template<> bool Attribute<AssetReference>::CompareBinary(kNet::DataDeserializer&
 {
     AssetReference value;
     value.type = source.ReadString().c_str();
-    value.id = source.ReadString().c_str();
+    value.ref = source.ReadString().c_str();
     return value_ != value;
 }
 

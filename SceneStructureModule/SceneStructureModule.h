@@ -50,6 +50,11 @@ public slots:
     */
     void CentralizeEntitiesTo(const Vector3df &pos, const QList<Scene::Entity *> &entities);
 
+    /// Returns true of the file extension of @c filename is supported file type for importing.
+    /** @param filename File name.
+    */
+    static bool IsSupportedFileType(const QString &filename);
+
 private:
     /// Scene structure window.
     SceneStructureWindow *sceneWindow;

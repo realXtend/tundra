@@ -17,12 +17,17 @@ namespace Asset
      */
     class LocalAssetProvider : public Foundation::AssetProviderInterface
     {
-    public:  
+        struct AssetDirectory
+        {
+            std::string dir_;
+            bool recursive_;
+        };
+        
+    public:
         //! Constructor
         /*! \param framework Framework
-            \param base_dir Directory for assets
          */
-        LocalAssetProvider(Foundation::Framework* framework, const std::string& asset_dir);
+        LocalAssetProvider(Foundation::Framework* framework);
         
         //! Destructor
         virtual ~LocalAssetProvider();
@@ -73,15 +78,27 @@ namespace Asset
          */
         virtual void Update(f64 frametime);
         
+        //! Add a directory for local assets
+        /*! \param dir Directory, either relative to install dir (./something) or full path
+            \param recursive Whether to search the subdirs recursively
+         */
+        void AddDirectory(const std::string& dir, bool recursive);
+        
+        //! Remove a directory for local assets
+        void RemoveDirectory(const std::string& dir);
+        
     private:
+        //! Get a path for asset, using all the search directories
+        std::string GetPathForAsset(const std::string& assetname);
+        
         //! Asset event category
         event_category_id_t event_category_;
         
         //! Framework
         Foundation::Framework* framework_;
         
-        //! Asset base directory
-        std::string asset_dir_;
+        //! Asset directories to search, may be recursive or not
+        std::vector<AssetDirectory> directories_;
     };
 }
 

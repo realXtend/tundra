@@ -280,3 +280,14 @@ bool IComponent::IsTemporary() const
         return true;
     return temporary_;
 }
+
+bool IComponent::ViewEnabled() const
+{
+    if (!parent_entity_)
+        return true;
+    Scene::SceneManager* scene = parent_entity_->GetScene();
+    if (scene)
+        return scene->ViewEnabled();
+    else
+        return true;
+}

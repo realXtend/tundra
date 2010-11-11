@@ -209,6 +209,9 @@ void EC_Mesh::SetDrawDistance(float draw_distance)
 
 bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
 {
+    if (!ViewEnabled())
+        return false;
+    
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
@@ -298,6 +301,8 @@ bool EC_Mesh::SetMesh(const QString& mesh_name)
 
 bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
 {
+    if (!ViewEnabled())
+        return false;
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
@@ -400,6 +405,8 @@ void EC_Mesh::RemoveMesh()
 
 bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
 {
+    if (!ViewEnabled())
+        return false;
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();   
@@ -756,6 +763,8 @@ void EC_Mesh::AttachEntity()
 
 Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
 {
+    if (!ViewEnabled())
+        return 0;
     if (renderer_.expired())
         return 0;
     RendererPtr renderer = renderer_.lock();   
