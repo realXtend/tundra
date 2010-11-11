@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   TreeWidgetItemExpandMemory.cpp
- *  @brief  
+ *  @brief  Utility class for keeping track of expanded items at a tree widget.
  */
 
 #include "StableHeaders.h"
@@ -68,7 +68,7 @@ void TreeWidgetItemExpandMemory::Save()
     cfgMgr.SetSetting<std::string>("TreeWidgetItemExpandMemory", groupName, ToString());
 }
 
-void TreeWidgetItemExpandMemory::HandleItemExpanded(const QTreeWidgetItem *item)
+void TreeWidgetItemExpandMemory::HandleItemExpanded(QTreeWidgetItem *item)
 {
     QString idText = GetIndentifierText(item);
     int idx = idText.lastIndexOf('.');
@@ -76,7 +76,7 @@ void TreeWidgetItemExpandMemory::HandleItemExpanded(const QTreeWidgetItem *item)
         items.insert(idText);
 }
 
-void TreeWidgetItemExpandMemory::HandleItemCollapsed(const QTreeWidgetItem *item)
+void TreeWidgetItemExpandMemory::HandleItemCollapsed(QTreeWidgetItem *item)
 {
     QString idText = GetIndentifierText(item);
     int idx = idText.lastIndexOf('.');

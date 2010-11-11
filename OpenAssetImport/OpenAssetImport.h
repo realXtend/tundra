@@ -9,6 +9,7 @@
 #include "Transform.h"
 namespace OgreRenderer { class Renderer; }
 
+//! Open Asset Import, a wrapper for Open Asset Import library that is used for loading model formats other than Ogre .mesh.
 namespace AssImp
 {
     struct MeshData
@@ -33,15 +34,23 @@ namespace AssImp
         bool IsSupportedExtension(const QString& filename);
 
         //! Imports mesh data from a file.
-        /*!
+        /*! Import mesh names and transformations contained in the model file. This
+            information can be used to create entities, components ands asset refs.
+            Use Import() to create the actual mesh data.
+
+            \note Does not handle scene hierarchy, all transformations are converted
+                  to world space.
+
             \param file path to file where to import meshes from
             \param outMeshData Out string vector of mesh names
         */
         void GetMeshData(const QString& file, std::vector<MeshData> &outMeshData);
 
 
-        //! Generates Ogre meshes from memory buffer
-        /*!
+        //! Generates Ogre meshes from memory buffer.
+        /*! The meshes are generated directly to Ogre::MeshManager and names of the meshes are
+            returned. Use GetMeshData() to get hierarchy and transformation data from a model file.
+
             \param data memory buffer where to import meshes from
             \param length memory buffer length
             \param name file format hint for the importer, looks for extension within the name

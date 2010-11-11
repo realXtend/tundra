@@ -393,7 +393,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
         return scene;
     }
 
-    Scene::ScenePtr scene = framework_->CreateScene(name);
+    Scene::ScenePtr scene = framework_->CreateScene(name, true);
     framework_->SetDefaultWorldScene(scene);
 
     // Connect ComponentAdded&Removed signals.
@@ -1062,7 +1062,7 @@ InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
     return in_world_chat_provider_;
 }
 
-bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result)
+bool RexLogicModule::CheckInfoIconIntersection(int x, int y, RaycastResult *result)
 {
 #ifdef EC_HoveringWidget_ENABLED
     bool ret_val = false;

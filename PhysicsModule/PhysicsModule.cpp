@@ -6,6 +6,7 @@
 #include "EC_Placeable.h"
 #include "EC_RigidBody.h"
 #include "EC_Terrain.h"
+#include "EC_VolumeTrigger.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "CollisionShapeUtils.h"
@@ -27,6 +28,7 @@
 
 Q_DECLARE_METATYPE(Physics::PhysicsModule*);
 Q_DECLARE_METATYPE(Physics::PhysicsWorld*);
+Q_DECLARE_METATYPE(PhysicsRaycastResult*);
 
 // The following functions help register a custom QObject-derived class to a QScriptEngine.
 // See http://lists.trolltech.com/qt-interest/2007-12/thread00158-0.html .
@@ -75,6 +77,7 @@ PhysicsModule::~PhysicsModule()
 void PhysicsModule::Load()
 {
     DECLARE_MODULE_EC(EC_RigidBody);
+    DECLARE_MODULE_EC(EC_VolumeTrigger);
 }
 
 void PhysicsModule::Initialize()
@@ -267,6 +270,7 @@ void PhysicsModule::OnScriptEngineCreated(QScriptEngine* engine)
 {
     qScriptRegisterQObjectMetaType<Physics::PhysicsModule*>(engine);
     qScriptRegisterQObjectMetaType<Physics::PhysicsWorld*>(engine);
+    qScriptRegisterQObjectMetaType<PhysicsRaycastResult*>(engine);
 }
 
 void PhysicsModule::UpdateDebugGeometry()

@@ -16,6 +16,7 @@
 #include "RexNetworkUtils.h"
 #include "TundraEvents.h"
 #include "SceneImporter.h"
+#include "AssetServiceInterface.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -55,7 +56,8 @@ void TundraLogicModule::Initialize()
 void TundraLogicModule::PostInitialize()
 {
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
-
+    frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+    
     RegisterConsoleCommand(Console::CreateCommand("startserver", 
         "Starts a server. Usage: startserver(port)",
         Console::Bind(this, &TundraLogicModule::ConsoleStartServer)));
@@ -108,13 +110,18 @@ void TundraLogicModule::Update(f64 frametime)
         static bool check_default_server_start = true;
         if (check_default_server_start)
         {
-            //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
+            //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule or UIModule, assume we are running a "dedicated" server, and start the server automatically on default port
             ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
-            if (!loginModule.lock().get())
+            ModuleWeakPtr uiModule = framework_->GetModuleManager()->GetModule("UI");
+            if ((!loginModule.lock().get()) && (!uiModule.lock().get()))
             {
                 LogInfo("Started server by default");
                 server_->Start(cDefaultPort);
             }
+            // Load startup scene here
+            if (!startup_scene_.empty())
+                LoadStartupScene();
+            
             check_default_server_start = false;
         }
         
@@ -129,6 +136,30 @@ void TundraLogicModule::Update(f64 frametime)
     }
     
     RESETPROFILER;
+}
+
+void TundraLogicModule::LoadStartupScene()
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
+    boost::filesystem::path scenepath(startup_scene_);
+    std::string dirname = scenepath.branch_path().string();
+    if (!dirname.empty())
+    {
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
+            framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        if (asset_service)
+            asset_service->AddLocalAssetDirectory(dirname, true);
+    }
+    
+    bool useBinary = startup_scene_.find(".nbf") != std::string::npos;
+    if (!useBinary)
+        scene->LoadSceneXML(startup_scene_, true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
+    else
+        scene->LoadSceneBinary(startup_scene_, true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
 }
 
 Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)
@@ -333,6 +364,16 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
             server_->HandleKristalliEvent(event_id, data);
         if (syncManager_)
             syncManager_->HandleKristalliEvent(event_id, data);
+    }
+    
+    if (category_id == frameworkEventCategory_)
+    {
+        if (event_id == Foundation::PROGRAM_OPTIONS)
+        {
+            Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
+            if (po_event->options.count("file"))
+                startup_scene_ = po_event->options["file"].as<std::string>();
+        }
     }
     
     return false;

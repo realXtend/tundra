@@ -187,7 +187,28 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
             p->transform.Set(t, AttributeChange::Default);
         }
     }
+}
 
+bool SceneStructureModule::IsSupportedFileType(const QString &filename)
+{
+    if ((filename.toLower().indexOf(".mesh") != -1) ||
+        (filename.toLower().indexOf(".scene") != -1) ||
+        (filename.toLower().indexOf(".xml") != -1) ||
+        (filename.toLower().indexOf(".nbf") != -1))
+    {
+        return true;
+    }
+    else
+    {
+#ifdef ASSIMP_ENABLED
+        boost::filesystem::path path(filename.toStdString());
+        AssImp::OpenAssetImport assimporter;
+        QString extension = QString(path.extension().c_str()).toLower();
+        if (assimporter.IsSupportedExtension(extension))
+            return true;
+#endif
+        return false;
+    }
 }
 
 void SceneStructureModule::ShowSceneStructureWindow()
@@ -225,13 +246,37 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
 {
     if (e->mimeData()->hasUrls())
-        e->accept();
+    {
+        foreach (QUrl url, e->mimeData()->urls())
+        {
+            QString filename = url.path();
+#ifdef _WINDOWS
+            // We have '/' as the first char on windows and the filename
+            // is not identified as a file properly. But on other platforms the '/' is valid/required.
+            filename = filename.mid(1);
+#endif
+            if (IsSupportedFileType(filename))
+                e->accept();
+        }
+    }
 }
 
 void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
 {
     if (e->mimeData()->hasUrls())
-        e->accept();
+    {
+        foreach (QUrl url, e->mimeData()->urls())
+        {
+            QString filename = url.path();
+#ifdef _WINDOWS
+            // We have '/' as the first char on windows and the filename
+            // is not identified as a file properly. But on other platforms the '/' is valid/required.
+            filename = filename.mid(1);
+#endif
+            if (IsSupportedFileType(filename))
+                e->accept();
+        }
+    }
 }
 
 void SceneStructureModule::HandleDropEvent(QDropEvent *e)
@@ -245,8 +290,8 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             return;
 
         Vector3df worldPos;
-        Foundation::RaycastResult res = renderer->Raycast(e->pos().x(), e->pos().y());
-        if (!res.entity_)
+        RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
+        if (!res->entity_)
         {
             // No entity hit, use camera's position with hard-coded offset.
             const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
@@ -273,7 +318,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
                 }
         }
         else
-            worldPos = res.pos_;
+            worldPos = res->pos_;
 
         foreach (QUrl url, e->mimeData()->urls())
         {

@@ -894,7 +894,7 @@ namespace ECEditor
                     return;
                 }
 
-                stringManager->setValue(children[0], attribute->Get().id);
+                stringManager->setValue(children[0], attribute->Get().ref);
                 stringManager->setValue(children[1], attribute->Get().type);
             }
         }

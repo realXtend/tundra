@@ -28,6 +28,12 @@ namespace Foundation
         //! Displays a message to the user. Should be used when there is no usable window for displaying messages to the user.
         static void Message(const std::wstring& title, const std::wstring& text);
 
+        //! Returns current Naali install directory. May be different than the current working directory.
+        std::string GetInstallDirectory();
+        
+        //! Returns current Naali install directory (widechar) May be different than the current working directory.
+        std::wstring GetInstallDirectoryW();
+        
         //! Returns user specific application data directory.
         /*! Returns non-unicode path. May throw an expection if folder is not found.
             
