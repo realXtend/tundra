@@ -58,7 +58,7 @@ function ServerUpdatePhysics(frametime)
 			impulseVec.z = mag * 0.7;
 			rb.ApplyImpulse(impulseVec);
 			rb.angularDamping = 0.25;
-			rb.linearDamping = 0.3;
+			rb.linearDamping = 0.25;
 		}
 	}
 }
