@@ -45,8 +45,8 @@ public:
     //void SetPrototype(QScriptable *prototype, );
     QScriptEngine* GetEngine() const { return engine_; }
 
-    /// Sets owner component.
-    /** @owner Owner (EC_Script) component.
+    /// Sets owner (EC_Script) component.
+    /** @param owner Owner component.
     */
     void SetOwnerComponent(ComponentPtr owner) { owner_ = owner; }
 
