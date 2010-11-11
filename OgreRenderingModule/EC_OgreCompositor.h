@@ -22,7 +22,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <b>Attributes</b>:
 <ul>
 <li>QString: compositorref
-<div><Name of the compositor (Ogre resource name)</div>
+<div>Name of the compositor (Ogre resource name), f.ex. "HDR"</div>
 <li>int: priority
 <div>Priority for the compositor. Lower values mean the compositor is rendered earlier. Use -1 to auto order. If there are more
 than one compositor in the scene with the same priority, the order of the compositors is arbitrary.</div>
