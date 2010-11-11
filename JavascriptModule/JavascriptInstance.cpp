@@ -23,9 +23,10 @@ DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 JavascriptInstance::JavascriptInstance(const QString &scriptRef, JavascriptModule *module):
     engine_(0),
     scriptRef_(scriptRef),
-    module_(module)
+    module_(module),
+    evaluated(false)
 {
-    CreateEngine();
+//    CreateEngine();
 }
 
 JavascriptInstance::~JavascriptInstance()
@@ -50,27 +51,25 @@ void JavascriptInstance::Load()
 
 void JavascriptInstance::Unload()
 {
-    if (!engine_)
-        return; // Already stopped/deleted/unloaded.
-
     DeleteEngine();
 }
 
 void JavascriptInstance::Run()
 {
-    ///\todo Do we want to load script here automatically or should user call Load() explicitily before calling Run()?
-    Load();
+    if (evaluated)
+    {
+        Unload();
+        Load();
+    }
+
     if (!program_.isEmpty())
     {
         QScriptValue result = engine_->evaluate(program_, scriptRef_);
         if (engine_->hasUncaughtException())
             LogError(result.toString().toStdString());
-    }
-}
 
-void JavascriptInstance::Stop()
-{
-    DeleteEngine();
+        evaluated = true;
+    }
 }
 
 void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &name)
@@ -152,6 +151,7 @@ void JavascriptInstance::CreateEngine()
 
     EC_Script *ec = dynamic_cast<EC_Script *>(owner_.lock().get());
     module_->PrepareScriptInstance(this, ec);
+    evaluated = false;
 }
 
 void JavascriptInstance::DeleteEngine()
