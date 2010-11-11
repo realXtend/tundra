@@ -88,20 +88,61 @@ namespace OgreRenderer
 
     void CompositionHandler::RemoveCompositorFromViewport(const std::string &compositor, Ogre::Viewport *vp)
     {
-        c_manager_->setCompositorEnabled(vp, compositor, false);
-        c_manager_->removeCompositor(vp, compositor);
+        if (c_manager_!=0 && vp != 0)
+        {
+            c_manager_->setCompositorEnabled(vp, compositor, false);
+            c_manager_->removeCompositor(vp, compositor);
+
+            priorities_.erase(compositor);
+        }
+    }
+
+    bool CompositionHandler::AddCompositorForViewportPriority(const std::string &compositor, int priority)
+    {
+        priorities_.insert(std::make_pair(compositor, priority));
+
+        // No need to optimize this probably, as it is fast enough for the rare occassion this gets called
+        // for the probably low number of compositors. -cm
+
+        // Push compositors into priority ordered vector
+        std::vector<Compositor> priorityOrdered;
+        std::map<std::string, int>::const_iterator it = priorities_.begin();
+        for ( ; it != priorities_.end() ; ++it)
+        {
+            Compositor compositor = { it->first, it->second };
+            priorityOrdered.push_back( compositor );
+        }
+        std::sort(priorityOrdered.begin(), priorityOrdered.end());
+
+        // Get position for the compositor in compositor chain, based on the priority
+        int position = -1;
+        for (int i=0 ; i<priorityOrdered.size() ; ++i)
+        {
+            if (compositor == priorityOrdered[i].name)
+            {
+                position = i;
+                break;
+            }
+        }
+
+        return AddCompositor(compositor, viewport_, position);
     }
 
     bool CompositionHandler::AddCompositorForViewport(const std::string &compositor, Ogre::Viewport *vp, int position)
     {
+        //HDR must be first compositor in the chain
+        if (compositor == "HDR" || compositor == "Strong HDR")
+            position = 0;
+
+        return AddCompositor(compositor, vp, position);
+    }
+
+    bool CompositionHandler::AddCompositor(const std::string &compositor, Ogre::Viewport *vp, int position)
+    {
         bool succesfull = false;
 
-        if (c_manager_!=0)
+        if (c_manager_!=0 && vp != 0)
         {
-            //HDR must be first compositor in the chain
-            if (compositor == "HDR" || compositor == "Strong HDR")
-                position = 0;
-
             Ogre::CompositorInstance* comp = c_manager_->addCompositor(vp, compositor, position);
             if(comp != 0)
             {
