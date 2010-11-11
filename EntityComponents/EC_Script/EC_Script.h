@@ -35,7 +35,9 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li> "RunScript": Runs the script. Usage: RunScript [filename]
+<li> "StopScript": Stops the script execution. Usage: StopScript [filename]
+<li> "ReloadScript": Reloads the script. Runs the script if runOnLoad is true. Usage: ReloadScript [filename]
 </ul>
 </td>
 </tr>
@@ -69,10 +71,6 @@ public:
     Q_PROPERTY(AssetReference scriptRef READ getscriptRef WRITE setscriptRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, scriptRef);
 
-    /// Reference to a script file.
-//    Q_PROPERTY(QString scriptRef READ getscriptRef WRITE setscriptRef);
-//    DEFINE_QPROPERTY_ATTRIBUTE(QString, scriptRef);
-
     /// Sets new script instance.
     /** Unloads and deletes possible already existing script instance.
         @param instance Script instance.
@@ -85,20 +83,19 @@ public:
 
 public slots:
     /// Runs the script instance.
-    void Run();
-
-    /// This is an overloaded function.
-    /** @param name Name of the script. The script is ran only if the script name matches.
+    /** @param name Name of the script, optional. The script is ran only if the script name matches.
     */
-    void Run(const QString &name);
+    void Run(const QString &name = QString());
 
     /// Stops the script instance.
-    void Stop();
-
-    /// This is an overloaded function.
-    /** @param name Name of the script. The script is ran only if the script name matches.
+    /** @param name Name of the script, optional. The script is stopped only if the script name matches.
     */
-    void Stop(const QString &name);
+    void Stop(const QString &name = QString());
+
+    /// Stops the script instance. Runs the script if runOnLoad is true
+    /** @param name Name of the script, optional. The script is reloaded only if the script name matches.
+    */
+    void Reload(const QString &name = QString());
 
 signals:
     /// Emitted when script reference changes.

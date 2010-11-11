@@ -25,28 +25,30 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
     scriptInstance_ = instance;
 }
 
-void EC_Script::Run()
-{
-    if (scriptInstance_)
-        scriptInstance_->Run();
-}
-
 void EC_Script::Run(const QString &name)
 {
-    if (name == scriptRef.Get().ref && scriptInstance_)
-        scriptInstance_->Run();
-}
-
-void EC_Script::Stop()
-{
     if (scriptInstance_)
-        scriptInstance_->Stop();
+        if (name.isEmpty() || (name == scriptRef.Get().ref))
+            scriptInstance_->Run();
 }
 
 void EC_Script::Stop(const QString &name)
 {
-    if (name == scriptRef.Get().ref && scriptInstance_)
-        scriptInstance_->Stop();
+    if (scriptInstance_)
+        if (name.isEmpty() || (name == scriptRef.Get().ref))
+            scriptInstance_->Stop();
+}
+
+void EC_Script::Reload(const QString &name)
+{
+    if (scriptInstance_)
+        if (name.isEmpty() || (name == scriptRef.Get().ref))
+        {
+            scriptInstance_->Unload();
+            scriptInstance_->Load();
+            if (runOnLoad.Get())
+                scriptInstance_->Run();
+        }
 }
 
 EC_Script::EC_Script(IModule *module):
@@ -54,7 +56,6 @@ EC_Script::EC_Script(IModule *module):
     scriptRef(this, "Script ref"),
     type(this, "Type"),
     runOnLoad(this, "Run on load", false),
-//    scriptRef(this, "Script ref"),
     scriptInstance_(0)
 {
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
@@ -80,10 +81,9 @@ void EC_Script::RegisterActions()
     assert(entity);
     if (entity)
     {
-        entity->ConnectAction("Run", this, SLOT(Run()));
-        entity->ConnectAction("Run", this, SLOT(Run(const QString &)));
-        entity->ConnectAction("Stop", this, SLOT(Stop()));
-        entity->ConnectAction("Stop", this, SLOT(Stop(const QString &)));
+        entity->ConnectAction("RunScript", this, SLOT(Run(const QString &)));
+        entity->ConnectAction("StopScript", this, SLOT(Stop(const QString &)));
+        entity->ConnectAction("ReloadScript", this, SLOT(Reload(const QString &)));
     }
 }
 
