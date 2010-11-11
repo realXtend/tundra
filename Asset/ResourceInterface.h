@@ -77,9 +77,17 @@ namespace Foundation
         //! returns type in text form
         virtual const std::string& GetType() const = 0;
 
+        //! returns internal resource name (for example GPU resource name, when applicable)
+        /*! will be empty until the internal resource has actually been created
+         */
+        const std::string& GetInternalName() { return internal_name_; }
+        
     protected:
         //! resource identifier
         std::string id_;
+        
+        //! internal name
+        std::string internal_name_;
         
         //! content valid-flag
         bool valid_;
