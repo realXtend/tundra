@@ -995,18 +995,17 @@ void EC_Mesh::OnMaterialAssetLoaded()
     {
         if(*it == QString(resource->GetId().c_str()))
         {
+            index = it.key();
             found = true;
             break;
         }
-        
-        ++index;
     }
 
     if(found)
     {
         if (index > meshMaterial.Get().size()) 
             return;
-
+        
         materialRequests.erase(it);
         SetMaterial(index, QString(resource->GetMaterial()->getName().c_str()));
     }
@@ -1023,7 +1022,7 @@ bool EC_Mesh::HasMaterialsChanged() const
         if(i >= materials.size())
             break;
 
-        if(entity_->getSubEntity(i)->getMaterial()->getName() != materials[i].toString().toStdString())
+        if(entity_->getSubEntity(i)->getMaterial()->getName() != SanitateAssetIdForOgre(materials[i].toString().toStdString()))
             return true;
     }
     return false;
