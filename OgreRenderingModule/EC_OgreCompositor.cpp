@@ -24,22 +24,23 @@ EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
 
 EC_OgreCompositor::~EC_OgreCompositor()
 {
+    UpdateCompositor("");
 }
 
 void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
 {
     if (attribute == &compositorref)
     {
-        UpdateCompositor();
+        UpdateCompositor(compositorref.Get());
     }
 
     if (attribute == &priority)
     {
-        UpdateCompositor();
+        UpdateCompositor(compositorref.Get());
     }
 }
 
-void EC_OgreCompositor::UpdateCompositor()
+void EC_OgreCompositor::UpdateCompositor(const QString &compositor)
 {
     if (ViewEnabled())
     {
@@ -49,12 +50,12 @@ void EC_OgreCompositor::UpdateCompositor()
         if (!compositorref.Get().isEmpty())
         {
             if (priority.Get() == -1)
-                handler_->AddCompositorForViewport(compositorref.Get().toStdString());
+                handler_->AddCompositorForViewport(compositor.toStdString());
             else
-                handler_->AddCompositorForViewportPriority(compositorref.Get().toStdString(), priority.Get());
+                handler_->AddCompositorForViewportPriority(compositor.toStdString(), priority.Get());
         }
 
-        previous_ref_ = compositorref.Get();
+        previous_ref_ = compositor;
     }
 }
 
