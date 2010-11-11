@@ -189,7 +189,7 @@ public slots:
 	 *
 	 *	\return true if everything is ok
      */
-	virtual bool TransferWidgetInOut(QString widgetToChange) = 0;
+	//virtual bool TransferWidgetInOut(QString widgetToChange) = 0;
 
     /*! Show the widget
      *	\param widget name of the widget to show

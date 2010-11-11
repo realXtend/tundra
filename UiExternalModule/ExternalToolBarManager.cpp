@@ -104,7 +104,7 @@ namespace UiExternalServices
 		if (!controller_toolbar_.contains(name)) {
 			//Create it and add to list
 			QToolBar *aux = new QToolBar(name, main_window_);
-			aux->setObjectName(name);
+			aux->setObjectName(name); 
 			AddExternalToolbar(aux, name);			
 		}
 

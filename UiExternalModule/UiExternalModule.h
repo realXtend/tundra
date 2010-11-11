@@ -79,8 +79,6 @@ namespace UiExternalServices
 		//!Slots used to implement static menus
 		void SwitchToEtherScene();
 		void ExitApp();
-		void Test();
-		void SaveState();
 
     private:
 		//! Method to configure static content of the MainWindow
@@ -97,11 +95,7 @@ namespace UiExternalServices
 		//! Static toolbar
 		StaticToolBar* staticToolBar_;
 		//! Category event to handle
-		event_category_id_t scene_event_category_;
-
-		//test 
-		QByteArray conf;
-		
+		event_category_id_t scene_event_category_;		
     };
 }
 

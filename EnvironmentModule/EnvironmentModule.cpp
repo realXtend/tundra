@@ -94,7 +94,7 @@ namespace Environment
             if (!ui)
                 return;
 
-            ui->AddWidgetToScene(postprocess_dialog_, false, true);
+            ui->AddWidgetToScene(postprocess_dialog_);
 			//$ BEGIN_MOD $
 			//ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
 			ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("Panels"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");

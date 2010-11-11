@@ -140,6 +140,12 @@ namespace UiServices
 
 		qtWin_ = new QMainWindow();
 
+		//QSettings
+		QSettings settings("Naali UIExternal", "UiExternal Settings");
+		QPoint pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
+		QSize size = settings.value("win_size", QSize(400, 400)).toSize();		
+		
+
 		// Create window title
         std::string group = Foundation::Framework::ConfigurationGroup();
         std::string version_major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
@@ -151,6 +157,7 @@ namespace UiServices
 		//Get config parameters
 		int width = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_width", 800);
         int height = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_height", 600);
+		
         bool maximized = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", false); 
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", false);
 
@@ -159,6 +166,10 @@ namespace UiServices
 		qtWin_->setMinimumSize(width,height);
 		qtWin_->setDockNestingEnabled(true);
 		qtWin_->setCentralWidget(GetFramework()->GetMainWindow());
+
+		//Set size
+		qtWin_->resize(size);
+		qtWin_->move(pos);
 		
 		//Menu bar for Qwin this Mac support
 		 QMenuBar *menuBar = new QMenuBar(qtWin_);
@@ -196,6 +207,11 @@ namespace UiServices
             connect(worldLogic, SIGNAL(AboutToDeleteWorld()), SLOT(TakeEtherScreenshots()));
         else
             LogWarning("Could not get world logic service.");
+
+		//$ BEGIN_MOD $
+		//We create and add the settings panel
+		ui_scene_service_->CreateSettingsPanel();
+		//$ END_MOD $
     }
 
     void UiModule::Uninitialize()

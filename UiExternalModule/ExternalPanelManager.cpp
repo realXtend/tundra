@@ -91,14 +91,14 @@ namespace UiExternalServices
 		//Enable QDockWidgets
 		QDockWidget *s;
 		foreach( s , all_qdockwidgets_in_window_ )
-			s->setEnabled(true);
+			s->widget()->setEnabled(true);
 	}
 
 	void ExternalPanelManager::DisableDockWidgets(){
 		//Disable QDockWidgets
 		QDockWidget *s;
 		foreach( s , all_qdockwidgets_in_window_ )
-			s->setEnabled(false);
+			s->widget()->setEnabled(false);
 	}
 
 	void ExternalPanelManager::SceneChanged(const QString &old_name, const QString &new_name)

@@ -25,7 +25,7 @@
 #include <QFontDatabase>
 #include <QDir>
 #include <QByteArray>
-//#include "qcstring.h"
+#include <QSettings>
 
 
 namespace UiExternalServices
@@ -84,10 +84,6 @@ namespace UiExternalServices
 
     void UiExternalModule::PostInitialize()
     {
-		/*conf = qWin_->saveState();
-		if (conf.isNull() || conf.isEmpty())
-			LogWarning("Could not save settings to restore!!!"); */
-
 		//TODO: REMOVE THE FOLLOWING ACTIONS AND CREATE WHEN THE FUNCTIONALITY IS DONE..
 		//Create->Scene
 		QAction *action = new QAction("Scene:TODO", qWin_); 
@@ -102,39 +98,36 @@ namespace UiExternalServices
 		QAction *action4 = new QAction("Assets:TODO", qWin_);
 		menu_manager_->AddExternalMenuAction(action4, "Assets:TODO", "Panels");
 
-		//test settings!
-		QAction *action5 = new QAction("Restore_test", qWin_);
-		menu_manager_->AddExternalMenuAction(action5, "Restore_test", "Test");
-		if (!connect(action5, SIGNAL(triggered()), SLOT(Test())))
-			LogWarning("Could not connect with Framework to Exit!!!!"); 
-
-		QAction *action6 = new QAction("Save_test", qWin_);
-		menu_manager_->AddExternalMenuAction(action6, "Save_test", "Test");
-		if (!connect(action6, SIGNAL(triggered()), SLOT(SaveState())))
-			LogWarning("Could not connect with Framework to Exit!!!!"); 
-
-
-		//TRY TO SAVE STATE OF THE QMAINWINDOW AND RESTORE IT..
+		//SAVE STATE OF THE QMAINWINDOW AND RESTORE IT..
 		QByteArray state = QString(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").c_str()).toAscii();//.toByteArray();
 		qWin_->restoreState(state);
 
-
-		//qWin_->restoreState(QByteArray(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").data()));
+		QSettings settings("Naali UIExternal", "UiExternal Settings");	
+		qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
 	
-		ui_external_scene_service_->SetEnableEditMode(true);
+
+		//INITIAL TEST TO DO IT WITH NAALI'S MANAGER TO SAVE DATA, UNABLE TO SAVE QBYTEARRAY IN THE XML FILES...
+		//qWin_->restoreState(QByteArray(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").data()));		
     }
 
     void UiExternalModule::Uninitialize()
     {
 		//TRY TO SAVE STATE OF THE QMAINWINDOW AND RESTORE IT..
+		/*INITIAL TEST TO DO IT WITH NAALI'S MANAGER TO SAVE DATA, UNABLE TO SAVE QBYTEARRAY IN THE XML FILES...
 		QByteArray test1 = QByteArray("loquesea");
-		QString test2 = QString(conf.data());
-		
+		QString test2 = QString(conf.data());		
 		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test1", QString(test1).toStdString());
 		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test2", QString(conf).toStdString());
-
 		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "test", std::string("./data/assetcache"));
 		framework_->GetDefaultConfig().SetSetting("ExternalMainWindow", "config", QString(QByteArray(qWin_->saveState())).toStdString());
+		*/
+
+		//Save settings with QtSettings..
+		QSettings settings("Naali UIExternal", "UiExternal Settings");
+		settings.setValue("win_pos", qWin_->pos());
+	    settings.setValue("win_size", qWin_->size());
+		settings.setValue("win_state", qWin_->saveState());
+
 		
         framework_->GetServiceManager()->UnregisterService(ui_external_scene_service_);
         ui_external_scene_service_.reset();
@@ -146,8 +139,6 @@ namespace UiExternalServices
 
     bool UiExternalModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
-   //     if (category_id == scene_event_category_)
-			//ui_external_scene_service_.get()->HandleEvent(category_id, event_id, data);
 		return false;
     }
 
@@ -189,16 +180,6 @@ namespace UiExternalServices
 
 	void UiExternalModule::ExitApp(){
 		framework_->Exit();	
-	}
-
-	void UiExternalModule::Test(){
-		qWin_->restoreState(conf);
-	}
-
-	void UiExternalModule::SaveState(){
-		conf = qWin_->saveState();
-		//if (conf.isNull() || conf.isEmpty())
-		//	LogWarning("Could not save settings to restore!!!"); 
 	}
 }
 
