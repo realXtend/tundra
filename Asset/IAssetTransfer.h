@@ -21,6 +21,9 @@ public:
     /// Specifies the source where this asset was loaded from.
     AssetReference source;
 
+    /// Specifies the internal resource name. Will not be filled until the resource is loaded
+    QString internalResourceName;
+    
     /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
     /// transition period to new Asset API. Will be removed. -jj
     Foundation::AssetPtr assetPtr;

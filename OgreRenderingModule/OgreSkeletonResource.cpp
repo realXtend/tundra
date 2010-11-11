@@ -63,6 +63,7 @@ namespace OgreRenderer
             return false;
         }
 
+        internal_name_ = SanitateAssetIdForOgre(id_);
         OgreRenderingModule::LogDebug("Ogre skeleton " + id_ + " created");
         return true;
     }
