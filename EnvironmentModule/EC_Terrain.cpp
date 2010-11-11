@@ -383,30 +383,75 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
     int yFloor = (int)floor(y);
     int yCeil = (int)ceil(y);
 
-    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize);
-    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize);
-    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize);
-    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize);
+    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
+    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
+    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
+    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
 
-    float xFrac = fmod(x, 1.f);
-    float yFrac = fmod(y, 1.f);
+    float u = fmod(x, 1.f);
+    float v = fmod(y, 1.f);
     float h1;
-    if (xFrac + yFrac >= 1.f)
+    float h2 = GetPoint(xFloor, yCeil);
+    float h3 = GetPoint(xCeil, yFloor);
+
+    if (u + v >= 1.f)
     {
         //if xFrac >= yFrac
         h1 = GetPoint(xCeil, yCeil);
-        xFrac = 1.f - xFrac;
-        yFrac = 1.f - yFrac;
+        u = 1.f - u;
+        v = 1.f - v;
     }
     else
+    {
         h1 = GetPoint(xFloor, yFloor);
+        swap(h2, h3);
+    }
 
-    float h2 = GetPoint(xCeil, yFloor);
-    float h3 = GetPoint(xFloor, yCeil);
-    return h1 * (1.f - xFrac - yFrac) + h2 * xFrac + h3 * yFrac;
+    return h1 * (1.f - u - v) + h2 * u + h3 * v;
 }
 
-Vector3df EC_Terrain::GetInterpolatedNormal(float x, float y) const
+Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const Vector3df& direction) const
+{
+    Vector3df worldPos(x,y,z);
+    Vector3df local = GetPointOnMapLocal(worldPos);
+    // Get terrain normal.
+    Vector3df worldUp = GetInterpolatedNormal(local.x,local.y);
+
+    // Get a vector which is perpendicular for direction and plane normal
+    Vector3df xVec = direction.crossProduct(worldUp);
+    Vector3df front = worldUp.crossProduct(xVec);
+    
+    xVec.normalize();  // X 
+    front.normalize(); // Y 
+    xVec = -xVec;
+    front = -front;
+    worldUp.normalize(); // Z 
+    
+  
+    Ogre::Matrix3 m3x3;
+
+    m3x3[0][0] = xVec.x;
+ 	m3x3[0][1] = front.x;
+ 	m3x3[0][2] = worldUp.x;
+ 	m3x3[1][0] = xVec.y;
+ 	m3x3[1][1] = front.y;
+ 	m3x3[1][2] = worldUp.y;
+ 	m3x3[2][0] = xVec.z;
+ 	m3x3[2][1] = front.z;
+ 	m3x3[2][2] = worldUp.z; 
+ 
+    Ogre::Quaternion q(m3x3);
+    Quaternion orientation(q.x, q.y,q.z, q.w);
+    
+    Vector3df rotations;
+    orientation.toEuler(rotations);
+    
+    rotations*=RADTODEG;
+    return rotations;
+
+}
+
+void EC_Terrain::GetTriangleNormals(float x, float y, Vector3df &n1, Vector3df &n2, Vector3df &n3, float &u, float &v) const
 {
     x = max(0.f, min((float)VerticesWidth()-1.f, x));
     y = max(0.f, min((float)VerticesHeight()-1.f, y));
@@ -416,30 +461,75 @@ Vector3df EC_Terrain::GetInterpolatedNormal(float x, float y) const
     int yFloor = (int)floor(y);
     int yCeil = (int)ceil(y);
 
-    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize);
-    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize);
-    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize);
-    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize);
+    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
+    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
+    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
+    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
 
     float xFrac = fmod(x, 1.f);
     float yFrac = fmod(y, 1.f);
-    Vector3df h1;
 
-    Vector3df h2 = Vector3df((float)xCeil, (float)yFloor, GetPoint(xCeil, yFloor));
-    Vector3df h3 = Vector3df((float)xFloor, (float)yCeil, GetPoint(xFloor, yCeil));
+    n2 = CalculateNormal(static_cast<int>(xFloor), static_cast<int>(yCeil));
+    n3 = CalculateNormal(static_cast<int>(xCeil), static_cast<int>(yFloor));
 
     if (xFrac + yFrac >= 1.f)
     {
         //if xFrac >= yFrac
-        h1 = Vector3df((float)xCeil, (float)yCeil, GetPoint(xCeil, yCeil));
+        n1 = CalculateNormal(static_cast<int>(xCeil), static_cast<int>(yCeil));
         xFrac = 1.f - xFrac;
         yFrac = 1.f - yFrac;
     }
     else
     {
-        h1 = Vector3df((float)xFloor, (float)yFloor, GetPoint(xFloor, yFloor));
-        swap(h2, h3);
+        n1 = CalculateNormal( static_cast<int>(xFloor), static_cast<int>(yFloor));
+        swap(n2, n3);
     }
+    u = xFrac;
+    v = yFrac;
+}
+
+void EC_Terrain::GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df &v2, Vector3df &v3, float &u, float &v) const
+{
+    x = max(0.f, min((float)VerticesWidth()-1.f, x));
+    y = max(0.f, min((float)VerticesHeight()-1.f, y));
+
+    int xFloor = (int)floor(x);
+    int xCeil = (int)ceil(x);
+    int yFloor = (int)floor(y);
+    int yCeil = (int)ceil(y);
+
+    xFloor = clamp(xFloor, 0, PatchWidth() * cPatchSize - 1);
+    xCeil = clamp(xCeil, 0, PatchWidth() * cPatchSize - 1);
+    yFloor = clamp(yFloor, 0, PatchHeight() * cPatchSize - 1);
+    yCeil = clamp(yCeil, 0, PatchHeight() * cPatchSize - 1);
+
+    float xFrac = fmod(x, 1.f);
+    float yFrac = fmod(y, 1.f);
+
+    v2 = Vector3df((float)xFloor, (float)yCeil, GetPoint(xFloor, yCeil));
+    v3 = Vector3df((float)xCeil, (float)yFloor, GetPoint(xCeil, yFloor));
+
+    if (xFrac + yFrac >= 1.f)
+    {
+        //if xFrac >= yFrac
+        v1 = Vector3df((float)xCeil, (float)yCeil, GetPoint(xCeil, yCeil));
+        xFrac = 1.f - xFrac;
+        yFrac = 1.f - yFrac;
+    }
+    else
+    {
+        v1 = Vector3df((float)xFloor, (float)yFloor, GetPoint(xFloor, yFloor));
+        swap(v2, v3);
+    }
+    u = xFrac;
+    v = yFrac;
+}
+
+Vector3df EC_Terrain::GetPlaneNormal(float x, float y) const
+{
+    Vector3df h1, h2, h3;
+    float u, v;
+    GetTriangleVertices(x, y, h1, h2, h3, u, v);
 
     // h1 to h3 are the three terrain height points in local coordinate space.
     Vector3df normal = (h3-h2).crossProduct(h3-h1);
@@ -453,7 +543,25 @@ Vector3df EC_Terrain::GetInterpolatedNormal(float x, float y) const
     return normal;
 }
 
-Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside)
+Vector3df EC_Terrain::GetInterpolatedNormal(float x, float y) const
+{
+    Vector3df n1, n2, n3;
+    float u, v;
+    GetTriangleNormals(x, y, n1, n2, n3, u, v);
+
+    // h1 to h3 are the three terrain height points in local coordinate space.
+    Vector3df normal = (1.f - u - v) * n1 + u * n2 + v * n3;
+    Ogre::Vector4 oNormal = Ogre::Vector4(normal.x, normal.y, normal.z, 0.f);
+
+    Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
+    oNormal = worldTM * oNormal;
+    normal = Vector3df(oNormal.x, oNormal.y, oNormal.z);
+    normal.normalize();
+
+    return normal;
+}
+
+Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) const
 {
     int px = x * cPatchSize + xinside;
     int py = y * cPatchSize + yinside;
