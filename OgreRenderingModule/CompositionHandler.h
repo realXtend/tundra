@@ -88,13 +88,26 @@ namespace OgreRenderer
         //! Returns list of available post-processing effects
         QVector<QString>  &GetAvailableCompositors() { return postprocess_effects_; }
 
-        //! Convenience function that will add specified compositor for the default viewport given in initialization
+        //! Convenience function that will add specified compositor for the default viewport given in initialization. HDR will always be first.
         bool AddCompositorForViewport(const std::string &compositor, int position = -1);
+
+        //! Convenience function that will add specified compositor for the default viewport given in initialization, uses priority rather than position
+        bool AddCompositorForViewportPriority(const std::string &compositor, int priority = 0);
 
         //! Convenience funtion to remove specified  compositor from the default viewport
         void RemoveCompositorFromViewport(const std::string &compositor);
 
     private:
+        struct Compositor
+        {
+            std::string name;
+            int position;
+            bool operator <(const Compositor &rhs) const { return position < rhs.position; }
+        };
+
+        //! Adds and enables compositor on viewport
+        bool AddCompositor(const std::string &compositor, Ogre::Viewport *vp, int position);
+
         //Used to specify postprocessing effects currently available. Number is needed to map server requests to the actual effect name.
         //std::vector<std::string> postprocess_effects_;
         QVector<QString> postprocess_effects_;
@@ -110,6 +123,9 @@ namespace OgreRenderer
 
         //! Framelistener for gaussian blur
         GaussianListener gaussian_listener_;
+
+        //! Stores priorities for compositors. Compositor name is used for the key to make sure each compositor only has one priority.
+        std::map<std::string, int> priorities_;
 
         //! handle to framework
         Foundation::Framework* framework_;
