@@ -56,7 +56,7 @@ function ServerHandleUserConnected(connectionID, username)
     script.type = "js";
     script.runOnLoad = true;
     var r = script.scriptRef;
-    r.ref = "./jsmodules/camera/freelookcamera.js";
+    r.ref = "./jsmodules/avatar/simpleavatar.js";
     script.scriptRef = r;
 
     var placeable = avatarEntity.GetComponentRaw("EC_Placeable");
