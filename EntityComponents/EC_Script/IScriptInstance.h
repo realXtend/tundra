@@ -21,8 +21,8 @@ public:
     /// Destructor.
     virtual ~IScriptInstance() {}
 
-    /// Loads/reload this script instance.
-    virtual void Reload() = 0;
+    /// Loads this script instance.
+    virtual void Load() = 0;
 
     /// Unloads this script instance.
     virtual void Unload() = 0;

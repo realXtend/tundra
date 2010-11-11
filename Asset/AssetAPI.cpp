@@ -60,7 +60,7 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
     // Find an asset provider that can take in the request for the desired assetRef.
     IAssetTransfer *transfer = new IAssetTransfer(); ///\todo Don't new here, but have the asset provider new it.
-    transfer->source = AssetReference(assetRef, assetType);
+    transfer->source = AssetReference(assetRef/*, assetType*/);
     // (the above leaks, but not fixing before the above todo is properly implemented -jj.)
 
     // Get the asset service. \todo This will be removed. There will be no asset service. -jj.
@@ -68,14 +68,14 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
     if (!asset_service)
     {
         LogError("Asset service doesn't exist.");
-        return false;
+        return 0;
     }
 
     Foundation::RenderServiceInterface *renderer = framework->GetService<Foundation::RenderServiceInterface>();
     if (!renderer)
     {
         LogError("Renderer service doesn't exist.");
-        return false;
+        return 0;
     }
 
     request_tag_t tag;
