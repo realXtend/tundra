@@ -14,10 +14,15 @@ struct AssetReference// : public QObject
 
     /// Constructs an asset reference pointing to the given asset.
     /** @param reference The URL of the asset to point to, e.g. "file://myasset.mesh", or "http://www.website.com/texture.png".
+    */
+    AssetReference(const QString &reference) : ref(reference) {}
+
+    /// Constructs an asset reference pointing to the given asset.
+    /** @param reference The URL of the asset to point to, e.g. "file://myasset.mesh", or "http://www.website.com/texture.png".
         @param type_ The type of the asset that is being pointed to. If the file name suffix of the URL uniquely identifies the asset type,
             this field may be left blank.
     */
-    AssetReference(const QString &reference, const QString &type_ = QString()) :ref(reference), type(type_) {}
+//    AssetReference(const QString &reference, const QString &type_ = QString()) :ref(reference), type(type_) {}
 
     bool operator == (const AssetReference &rhs) const { return this->ref == rhs.ref; }
 
@@ -27,7 +32,7 @@ struct AssetReference// : public QObject
     QString ref;
 
     /// Specifies the data type of the asset, like "Mesh", "Texture", or "Script". If the URL specifies the type, this field may be left blank.
-    QString type;
+//    QString type;
 
 //signals:
 
