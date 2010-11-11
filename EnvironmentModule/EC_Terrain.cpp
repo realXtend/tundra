@@ -58,12 +58,12 @@ EC_Terrain::EC_Terrain(IModule* module) :
     MakePatchFlat(0, 0, 0.f);
     uScale.Set(0.13f, AttributeChange::Disconnected);
     vScale.Set(0.13f, AttributeChange::Disconnected);
-    texture0.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
-    texture1.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
-    texture2.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
-    texture3.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
-    texture4.Set(AssetReference("ogre://terr_dirt-grass.jpg", "OgreTexture"), AttributeChange::Disconnected);
-    material.Set(AssetReference("ogre://Rex/TerrainPCF", "OgreMaterial"), AttributeChange::Disconnected);
+    texture0.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
+    texture1.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
+    texture2.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
+    texture3.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
+    texture4.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
+    material.Set(AssetReference("ogre://Rex/TerrainPCF"/*, "OgreMaterial"*/), AttributeChange::Disconnected);
 //    heightMap.Set("media/samples/terrain.ntf", AttributeChange::Disconnected);
 }
 
@@ -223,7 +223,7 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     }
     else if (changedAttribute == heightMap.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref, "Terrain"));
+        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref/*, "Terrain"*/));
         connect(transfer, SIGNAL(Downloaded()), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
@@ -815,7 +815,7 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
             SetPointHeight(x, y, height);
         }
 
-    heightMap.Set(AssetReference("",""), AttributeChange::Disconnected);
+    heightMap.Set(AssetReference(""/*,""*/), AttributeChange::Disconnected);
 
     xPatches.Changed(AttributeChange::LocalOnly);
     yPatches.Changed(AttributeChange::LocalOnly);
@@ -1120,7 +1120,7 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     // Adjust offset so that we always have the lowest point of the terrain at height 0.
     RemapHeightValues(0.f, maxHeight - minHeight);
 
-    heightMap.Set(AssetReference("",""), AttributeChange::Disconnected);
+    heightMap.Set(AssetReference(""/*,""*/), AttributeChange::Disconnected);
 
     xPatches.Changed(AttributeChange::LocalOnly);
     yPatches.Changed(AttributeChange::LocalOnly);

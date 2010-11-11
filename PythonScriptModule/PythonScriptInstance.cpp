@@ -27,7 +27,7 @@ PythonScriptInstance::PythonScriptInstance(const QString &filename, Scene::Entit
     PythonQt::self()->addObject(context_, "scene", entity->GetScene());
 }
 
-void PythonScriptInstance::Reload()
+void PythonScriptInstance::Load()
 {
 //    PythonQt::self()->importModule("sys").evalScript("sys.reload(" + filename_ + ")");
 //    context_.evalScript("import sys\nsys.reload('" + moduleName_ + "')");

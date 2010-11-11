@@ -33,7 +33,7 @@ public:
     virtual ~PythonScriptInstance() {}
 
     /// IScriptInstance override.
-    void Reload();
+    void Load();
 
     /// IScriptInstance override.
     void Unload();
