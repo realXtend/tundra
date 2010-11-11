@@ -928,9 +928,11 @@ void EC_Mesh::OnMeshAssetLoaded()
         return;
 
     OgreMeshResource *resource = dynamic_cast<OgreMeshResource *>(transfer->resourcePtr.get());
-    assert(resource);
     if (!resource)
+    {
+        LogWarning("Failed to handle mesh resource ready event cause resource pointer was null.");
         return;
+    }
 
     SetMesh(meshRef.Get().ref);
 
@@ -947,10 +949,9 @@ void EC_Mesh::OnSkeletonAssetLoaded()
         return;
 
     OgreSkeletonResource *resource = dynamic_cast<OgreSkeletonResource *>(transfer->resourcePtr.get());
-    assert(resource);
     if (!resource)
     {
-        LogWarning("Fail to handle skeleton resource ready event cause skeletonRes was null.");
+        LogWarning("Failed to handle skeleton resource ready event because resource pointer was null.");
         return;
     }
 
@@ -992,9 +993,11 @@ void EC_Mesh::OnMaterialAssetLoaded()
         return;
 
     OgreMaterialResource *resource = dynamic_cast<OgreMaterialResource *>(transfer->resourcePtr.get());
-    assert(resource);
     if (!resource)
+    {
+        LogWarning("Failed to handle material resource ready event because resource pointer was null.");
         return;
+    }
 
     //! a bit hackish way to get materials in right order.
     bool found = false;

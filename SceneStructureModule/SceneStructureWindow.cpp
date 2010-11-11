@@ -398,7 +398,7 @@ void SceneStructureWindow::RemoveAssetReference(IAttribute *attr)
     while(*it)
     {
         AssetItem *a = dynamic_cast<AssetItem *>(*it);
-        if (a && (a->type == assetRef->Get().type && a->id == assetRef->Get().ref))
+        if (a && (/*a->type == assetRef->Get().type && */a->id == assetRef->Get().ref))
         {
             assetItem = a;
             break;
