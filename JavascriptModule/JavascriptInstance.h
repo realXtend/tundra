@@ -39,17 +39,14 @@ public:
     //! Overload from IScriptInstance
     void Run();
 
-    //! Overload from IScriptInstance
-    void Stop();
-
     //! Register new service to java script engine.
     void RegisterService(QObject *serviceObject, const QString &name);
 
     //void SetPrototype(QScriptable *prototype, );
     QScriptEngine* GetEngine() const { return engine_; }
 
-    /// Sets owner component.
-    /** @owner Owner (EC_Script) component.
+    /// Sets owner (EC_Script) component.
+    /** @param owner Owner component.
     */
     void SetOwnerComponent(ComponentPtr owner) { owner_ = owner; }
 
@@ -74,6 +71,7 @@ private:
     QString program_; ///< Program loaded from script file.
     ComponentWeakPtr owner_; ///< Owner (EC_Script) component, if existing.
     JavascriptModule *module_; ///< Javascript module.
+    bool evaluated; ///< Has the script program been evaluated.
 
 private slots:
     void OnSignalHandlerException(const QScriptValue& exception);
