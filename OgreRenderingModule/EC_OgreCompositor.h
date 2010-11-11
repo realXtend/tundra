@@ -59,11 +59,14 @@ public:
 
     virtual ~EC_OgreCompositor();
 
+    //! Set component as serializable.
+    virtual bool IsSerializable() const { return true; }
+
 private slots:
     void AttributeUpdated(IAttribute* attribute);
 
 private:
-    void UpdateCompositor();
+    void UpdateCompositor(const QString &compositor);
 
     //! constructor
     /*! \param module Ogre module
