@@ -77,7 +77,6 @@ namespace Environment
         lastXsize_ = xSizeAttr.Get();
         lastYsize_ = ySizeAttr.Get();
         
-        CreateWaterPlane();
         QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(SetParent()));
         
         // If there exist placeable copy its position for default position and rotation.
@@ -114,6 +113,11 @@ namespace Environment
 
     void EC_WaterPlane::SetParent()
     {
+        if (!ViewEnabled())
+            return;
+        
+        CreateWaterPlane();
+        
         // Parent entity has set.
         // Has parent a placeable?
         EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
@@ -276,6 +280,12 @@ namespace Environment
 
     void EC_WaterPlane::CreateWaterPlane()
     {
+        if (!ViewEnabled())
+            return;
+        
+        if (entity_)
+            RemoveWaterPlane();
+        
         // Create waterplane 
         if (renderer_.lock() != 0) 
         {
@@ -332,6 +342,9 @@ namespace Environment
 
     void EC_WaterPlane::SetPosition()
     {
+        if ((!node_) || (!ViewEnabled()))
+            return;
+        
         Vector3df vec = positionAttr.Get();
         //node_->setPosition(vec.x, vec.y, vec.z);
 
@@ -354,6 +367,9 @@ namespace Environment
 
     void EC_WaterPlane::SetOrientation()
     {
+        if ((!node_) || (!ViewEnabled()))
+            return;
+        
         // Set orientation
         Quaternion rot = rotationAttr.Get();
 
@@ -377,7 +393,6 @@ namespace Environment
           || name == scaleVfactorAttr.GetNameString() ) && 
           ( lastXsize_ != xSizeAttr.Get() || lastYsize_ != ySizeAttr.Get() ) )
         {
-            RemoveWaterPlane();
             CreateWaterPlane();
             
             lastXsize_ = xSizeAttr.Get();
@@ -386,7 +401,6 @@ namespace Environment
         }
         else if ( name == xSegmentsAttr.GetNameString() || name == ySegmentsAttr.GetNameString() )
         {
-            RemoveWaterPlane();
             CreateWaterPlane();
         }
         else if ( name == positionAttr.GetNameString() )

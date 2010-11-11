@@ -864,6 +864,9 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
     }
     else if (attribute == &meshRef)
     {
+        if (!ViewEnabled())
+            return;
+            
         //Ensure that mesh is requested only when it's has actually changed.
         if(entity_)
             if(QString::fromStdString(entity_->getMesh()->getName()) == meshRef.Get().ref/*meshResourceId.Get()*/)
@@ -877,6 +880,9 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
     }
     else if (attribute == &meshMaterial)
     {
+        if (!ViewEnabled())
+            return;
+        
         // We won't request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
         if(!HasMaterialsChanged())
             return;
@@ -895,6 +901,9 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
     }
     else if((attribute == &skeletonRef) && (!skeletonRef.Get().ref.isEmpty()))
     {
+        if (!ViewEnabled())
+            return;
+        
         // If same name skeleton already set no point to do it again.
         if (entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonRef.Get().ref/*skeletonId.Get()*/.toStdString())
             return;
@@ -998,18 +1007,17 @@ void EC_Mesh::OnMaterialAssetLoaded()
     {
         if(*it == QString(resource->GetId().c_str()))
         {
+            index = it.key();
             found = true;
             break;
         }
-        
-        ++index;
     }
 
     if(found)
     {
         if (index > meshMaterial.Get().size()) 
             return;
-
+        
         materialRequests.erase(it);
         SetMaterial(index, QString(resource->GetMaterial()->getName().c_str()));
     }
@@ -1026,7 +1034,7 @@ bool EC_Mesh::HasMaterialsChanged() const
         if(i >= materials.size())
             break;
 
-        if(entity_->getSubEntity(i)->getMaterial()->getName() != materials[i].toString().toStdString())
+        if(entity_->getSubEntity(i)->getMaterial()->getName() != SanitateAssetIdForOgre(materials[i].toString().toStdString()))
             return true;
     }
     return false;
