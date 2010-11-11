@@ -6,6 +6,8 @@
 
 #include "IAttribute.h"
 #include "Entity.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Script")
 
 EC_Script::~EC_Script()
 {
@@ -17,7 +19,6 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
     // If we already have a script instance, unload and delete it.
     if (scriptInstance_)
     {
-        scriptInstance_->Stop();
         scriptInstance_->Unload();
         SAFE_DELETE(scriptInstance_);
     }
@@ -27,28 +28,31 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
 
 void EC_Script::Run(const QString &name)
 {
-    if (scriptInstance_)
-        if (name.isEmpty() || (name == scriptRef.Get().ref))
+    if (!scriptInstance_)
+    {
+        LogError("Cannot perform Run(), no script instance set");
+        return;
+    }
+
+    if (name.isEmpty() || (name == scriptRef.Get().ref))
+    {
+        scriptInstance_->Unload();
+        scriptInstance_->Load();
+        if (runOnLoad.Get())
             scriptInstance_->Run();
+    }
 }
 
-void EC_Script::Stop(const QString &name)
+void EC_Script::Unload(const QString &name)
 {
-    if (scriptInstance_)
-        if (name.isEmpty() || (name == scriptRef.Get().ref))
-            scriptInstance_->Stop();
-}
+    if (!scriptInstance_)
+    {
+        LogError("Cannot perform Unload(), no script instance set");
+        return;
+    }
 
-void EC_Script::Reload(const QString &name)
-{
-    if (scriptInstance_)
-        if (name.isEmpty() || (name == scriptRef.Get().ref))
-        {
-            scriptInstance_->Unload();
-            scriptInstance_->Load();
-            if (runOnLoad.Get())
-                scriptInstance_->Run();
-        }
+    if (name.isEmpty() || (name == scriptRef.Get().ref))
+        scriptInstance_->Unload();
 }
 
 EC_Script::EC_Script(IModule *module):
