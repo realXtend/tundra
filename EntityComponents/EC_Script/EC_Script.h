@@ -36,8 +36,7 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 <b>Reacts on the following actions:</b>
 <ul>
 <li> "RunScript": Runs the script. Usage: RunScript [filename]
-<li> "StopScript": Stops the script execution. Usage: StopScript [filename]
-<li> "ReloadScript": Reloads the script. Runs the script if runOnLoad is true. Usage: ReloadScript [filename]
+<li> "UnloadScript": Stops and unloads the script. Usage: UnloadScript [filename]
 </ul>
 </td>
 </tr>
@@ -87,15 +86,10 @@ public slots:
     */
     void Run(const QString &name = QString());
 
-    /// Stops the script instance.
-    /** @param name Name of the script, optional. The script is stopped only if the script name matches.
+    /// Stops and unloads the script.
+    /** @param name Name of the script, optional. The script is unloaded only if the script name matches.
     */
-    void Stop(const QString &name = QString());
-
-    /// Stops the script instance. Runs the script if runOnLoad is true
-    /** @param name Name of the script, optional. The script is reloaded only if the script name matches.
-    */
-    void Reload(const QString &name = QString());
+    void Unload(const QString &name = QString());
 
 signals:
     /// Emitted when script reference changes.
