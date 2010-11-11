@@ -68,7 +68,7 @@ QStringList EC_VolumeTrigger::GetEntityNamesInside() const
     return entitynames;
 }
 
-float EC_VolumeTrigger::GetEntityInsidePercent(Scene::Entity *entity) const
+float EC_VolumeTrigger::GetEntityInsidePercent(const Scene::Entity *entity) const
 {
     if (entity)
     {
@@ -90,10 +90,11 @@ float EC_VolumeTrigger::GetEntityInsidePercent(Scene::Entity *entity) const
         } else
             LogWarning("EC_VolumeTrigger: no EC_RigidBody for entity or volume.");
     }
-    return 0.f;
+    return 0.0f;
 }
 
-f32 EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
+
+float EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
 {
     QList<Scene::EntityWeakPtr> entities = entities_.keys();
     foreach(Scene::EntityWeakPtr wentity, entities)

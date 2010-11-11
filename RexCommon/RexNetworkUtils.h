@@ -21,6 +21,7 @@ namespace RexTypes
 
     bool IsValidPositionVector(const Vector3df &pos);
     bool IsValidVelocityVector(const Vector3df &pos);
+    bool IsValidOrientation(const Quaternion& orientation);
 
     bool ParseBool(const std::string &value);
     bool ParseBool(const QString &value);
