@@ -10,7 +10,7 @@
 
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
-#include "JavascriptEngine.h"
+#include "JavascriptInstance.h"
 
 #include "EC_Script.h"
 #include "EC_DynamicComponent.h"
@@ -119,10 +119,10 @@ bool JavascriptModule::HandleEvent(event_category_id_t category_id, event_id_t e
             if (po_event->options.count("run"))
             {
                 commandLineStartupScript_ = po_event->options["run"].as<std::string>();
-                JavascriptEngine* javaScriptInstance = new JavascriptEngine(QString::fromStdString(commandLineStartupScript_));
-                PrepareScriptEngine(javaScriptInstance);
-                startupScripts_.push_back(javaScriptInstance);
-                javaScriptInstance->Run();
+                JavascriptInstance* jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
+                PrepareScriptInstance(jsInstance);
+                startupScripts_.push_back(jsInstance);
+                jsInstance->Run();
             }
         }
     }
@@ -199,10 +199,10 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     if(!scriptRef.endsWith(".js"))
     {
         // If script ref is empty or otherwise invalid we need to destroy the previous script if it's type is javascript.
-        if(dynamic_cast<JavascriptEngine*>(sender->GetScriptInstance()))
+        if(dynamic_cast<JavascriptInstance*>(sender->GetScriptInstance()))
         {
-            JavascriptEngine *javaScriptInstance = new JavascriptEngine("");
-            sender->SetScriptInstance(javaScriptInstance);
+            JavascriptInstance *jsInstance = new JavascriptInstance("", this);
+            sender->SetScriptInstance(jsInstance);
         }
         return;
     }
@@ -210,19 +210,12 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     if (sender->type.Get() != "js")
         return;
     
-    JavascriptEngine *javaScriptInstance = new JavascriptEngine(scriptRef);
-    sender->SetScriptInstance(javaScriptInstance);
+    JavascriptInstance *jsInstance = new JavascriptInstance(scriptRef, this);
+    jsInstance->SetOwnerComponent(sender->GetSharedPtr());
+    sender->SetScriptInstance(jsInstance);
 
     //Register all services to script engine
-    PrepareScriptEngine(javaScriptInstance);
-
-    //Send entity that owns the EC_Script component.
-    javaScriptInstance->RegisterService(sender->GetParentEntity(), "me");
-    //Send the scene that owns the script component.
-    javaScriptInstance->RegisterService(sender->GetParentEntity()->GetScene(), "scene");
-
-    javaScriptInstance->RegisterService(javaScriptInstance, "engine");
-
+    PrepareScriptInstance(jsInstance, sender);
 
     if (sender->runOnLoad.Get())
         sender->Run();
@@ -230,13 +223,13 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
 
 void JavascriptModule::ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
-    if(comp->TypeName() == "EC_Script")
+    if (comp->TypeName() == EC_Script::TypeNameStatic())
         connect(comp, SIGNAL(ScriptRefChanged(const QString &)), SLOT(ScriptChanged(const QString &)));
 }
 
 void JavascriptModule::ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
-    if(comp->TypeName() == "EC_Script")
+    if (comp->TypeName() == EC_Script::TypeNameStatic())
         disconnect(comp, SIGNAL(ScriptRefChanged(const QString &)), this, SLOT(ScriptChanged(const QString &)));
 }
 
@@ -267,16 +260,13 @@ void JavascriptModule::LoadStartupScripts()
     {
     }
     
-    // Create a scriptengine for each of the files, and try to run
+    // Create a script instance for each of the files, register services for it and try to run.
     for (uint i = 0; i < scripts.size(); ++i)
     {
-        JavascriptEngine* javaScriptInstance = new JavascriptEngine(QString::fromStdString(scripts[i]));
-        
-        //Register all services to script engine
-        PrepareScriptEngine(javaScriptInstance);
-        
-        startupScripts_.push_back(javaScriptInstance);
-        javaScriptInstance->Run();
+        JavascriptInstance* jsInstance = new JavascriptInstance(QString::fromStdString(scripts[i]), this);
+        PrepareScriptInstance(jsInstance);
+        startupScripts_.push_back(jsInstance);
+        jsInstance->Run();
     }
 }
 
@@ -290,7 +280,7 @@ void JavascriptModule::UnloadStartupScripts()
     startupScripts_.clear();
 }
 
-void JavascriptModule::PrepareScriptEngine(JavascriptEngine* engine)
+void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp)
 {
     static std::set<QObject*> checked;
     
@@ -300,7 +290,7 @@ void JavascriptModule::PrepareScriptEngine(JavascriptEngine* engine)
     {
         QString name = properties[i];
         QObject* serviceobject = framework_->property(name.toStdString().c_str()).value<QObject*>();
-        engine->RegisterService(serviceobject, name);
+        instance->RegisterService(serviceobject, name);
         
         if (checked.find(serviceobject) == checked.end())
         {
@@ -312,16 +302,21 @@ void JavascriptModule::PrepareScriptEngine(JavascriptEngine* engine)
             checked.insert(serviceobject);
         }
     }
-    
-    engine->RegisterService(framework_, "framework");
-    
-    for (uint i = 0; i < properties.size(); ++i)
+
+    instance->RegisterService(framework_, "framework");
+
+    for(uint i = 0; i < properties.size(); ++i)
+        instance->RegisterService(framework_->property(properties[i]).value<QObject*>(), properties[i]);
+
+    if (comp)
     {
-        QString name = properties[i];
-        engine->RegisterService(framework_->property(name.toStdString().c_str()).value<QObject*>(), name);
+        // Set entity and scene that own the EC_Script component.
+        instance->RegisterService(comp->GetParentEntity(), "me");
+        instance->RegisterService(comp->GetParentEntity()->GetScene(), "scene");
+        instance->RegisterService(instance, "engine");
     }
-    
-    emit ScriptEngineCreated(engine->GetEngine());
+
+    emit ScriptEngineCreated(instance->GetEngine());
 }
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)

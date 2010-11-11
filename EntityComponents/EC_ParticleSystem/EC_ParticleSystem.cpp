@@ -134,15 +134,17 @@ ComponentPtr EC_ParticleSystem::FindPlaceable() const
 
 void EC_ParticleSystem::ParticleSystemAssetLoaded()
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
     assert(transfer);
     if (!transfer)
         return;
 
     OgreParticleResource *resource = dynamic_cast<OgreParticleResource *>(transfer->resourcePtr.get());
-    assert(resource);
     if (!resource)
+    {
+        LogWarning("Failed to handle particle resource ready event because resource pointer was null.");
         return;
+    }
 
     if (resource->GetNumTemplates())
         CreateParticleSystem(QString::fromStdString(resource->GetTemplateName(0)));

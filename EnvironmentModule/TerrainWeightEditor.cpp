@@ -421,7 +421,7 @@ namespace Environment
             {
                 tex->getBuffer()->blitFromMemory(bufbox);
             }
-            ptr->texture0.Set(AssetReference(texname, "OgreTexture"), AttributeChange::Disconnected);
+            ptr->texture0.Set(AssetReference(texname/*, "OgreTexture"*/), AttributeChange::Disconnected);
             it++;
 
             ///For now we just save this to assets folder. Later on, this should be replicated to server/clients etc.
@@ -454,11 +454,11 @@ namespace Environment
             boost::shared_ptr<EC_Terrain> ptr = (*it)->GetComponent<EC_Terrain>();
             if(val)
             {
-                ptr->material.Set(AssetReference("Rex/TerrainPCF_weighted", "OgreMaterial"), AttributeChange::Disconnected);
+                ptr->material.Set(AssetReference("Rex/TerrainPCF_weighted"/*, "OgreMaterial"*/), AttributeChange::Disconnected);
             }
             else
             {
-                ptr->material.Set(AssetReference("Rex/TerrainPCF", "OgreMaterial"), AttributeChange::Disconnected);
+                ptr->material.Set(AssetReference("Rex/TerrainPCF"/*, "OgreMaterial"*/), AttributeChange::Disconnected);
             }
             it++;
         }
