@@ -120,8 +120,8 @@ namespace UiExternalServices
 
 
 		//qWin_->restoreState(QByteArray(framework_->GetDefaultConfig().GetSetting<std::string>("ExternalMainWindow", "config").data()));
-		
-		
+	
+		ui_external_scene_service_->SetEnableEditMode(true);
     }
 
     void UiExternalModule::Uninitialize()
@@ -146,8 +146,8 @@ namespace UiExternalServices
 
     bool UiExternalModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
-        if (category_id == scene_event_category_)
-			staticToolBar_->HandleEvent(category_id, event_id, data);
+   //     if (category_id == scene_event_category_)
+			//ui_external_scene_service_.get()->HandleEvent(category_id, event_id, data);
 		return false;
     }
 
@@ -160,6 +160,7 @@ namespace UiExternalServices
 
 		UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
 		if (ui_service){
+			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), ui_external_scene_service_.get(), SLOT(SceneChanged(const QString&, const QString&)));
 			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), panel_manager_, SLOT(SceneChanged(const QString&, const QString&)));
 			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), toolbar_manager_, SLOT(SceneChanged(const QString&, const QString&)));
 			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), menu_manager_, SLOT(SceneChanged(const QString&, const QString&)));

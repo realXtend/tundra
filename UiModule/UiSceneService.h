@@ -46,6 +46,7 @@ namespace UiServices
         ~UiSceneService();
 
     public slots:
+
         /// UiServiceInterface override.
         UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = true, bool outside = true, Qt::WindowFlags flags = Qt::Dialog);
 
@@ -117,6 +118,8 @@ namespace UiServices
         void BringWidgetToFront(QString widget);
 		/// UiServiceInterface override.
 		void TransferWidgetOut(QString widgetToChange, bool out);
+		/// UiServiceInterface override.
+		void AddPanelToEditMode(QWidget* widget);
 
 		//TOOLBARS
 

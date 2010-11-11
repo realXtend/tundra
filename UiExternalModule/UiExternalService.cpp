@@ -1,14 +1,23 @@
 //$ HEADER_NEW_FILE $
 #include "StableHeaders.h"
 #include "UiExternalService.h"
-
+#include "UiServiceInterface.h"
+#include "WorldBuildingServiceInterface.h"
+#include "EventManager.h"
+#include "ServiceManager.h"
+#include "SceneEvents.h"
+#include "InputEvents.h"
+#include "MainWindow.h"
 
 namespace UiExternalServices
 {
 	//
 	UiExternalService::UiExternalService(UiExternalModule *owner):
-	   owner_(owner)
+	   owner_(owner),
+	   entitySelected_(0),
+	   edit_mode_(true)
 	   {		   
+		   qWin_=dynamic_cast<QMainWindow*>(owner_->GetFramework()->GetMainWindow()->parentWidget());
 	   }
 
     // Destructor.
@@ -54,7 +63,8 @@ namespace UiExternalServices
 	}
 
 	void UiExternalService::SetEnableEditMode(bool b){
-		owner_->GetExternalPanelManager()->SetEnableEditMode(b);
+		edit_mode_=b;		
+		emit EditModeChanged(edit_mode_);	
 	}
 
 	void UiExternalService::AddPanelToEditMode(QWidget* widget){
@@ -62,7 +72,7 @@ namespace UiExternalServices
 	}
 
 	bool UiExternalService::IsEditModeEnable(){
-		return owner_->GetExternalPanelManager()->IsEditModeEnable();
+		return edit_mode_;
 	}
 
 	bool UiExternalService::AddExternalToolbar(QToolBar *toolbar, const QString &name){
@@ -87,4 +97,14 @@ namespace UiExternalServices
 	QToolBar* UiExternalService::GetExternalToolbar(QString name){
 		return owner_->GetExternalToolBarManager()->GetExternalToolbar(name);
 	}
+
+	void UiExternalService::SceneChanged(const QString &old_name, const QString &new_name)
+    {
+		currentScene=new_name;
+    }
+
+	void UiExternalService::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
+    {
+	}
+
 }

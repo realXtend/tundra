@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -72,6 +73,17 @@ namespace ECEditor
         network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
 
         AddEditorWindowToUI();
+//$ BEGIN_MOD $
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		if(ui){
+			QToolBar* editToolbar_= ui->GetExternalToolbar("EditToolBar");
+			if(editToolbar_){
+				QAction* ecEditorButton_=new QAction(QIcon("./media/icons/components.png"),"Components",editToolbar_);
+				editToolbar_->addAction(ecEditorButton_);
+				connect(ecEditorButton_, SIGNAL(triggered()), this, SLOT(ActionToolBarECEditor()));
+			}
+		}
+//$ END_MOD $
     }
 
     void ECEditorModule::Uninitialize()
@@ -155,6 +167,13 @@ namespace ECEditor
         connect(editor_window_, SIGNAL(EditComponentXml(const QList<ComponentPtr> &)), this, SLOT(CreateXmlEditor(const QList<ComponentPtr> &)));
     }
 
+//$ BEGIN_MOD $
+	void ECEditorModule::ActionToolBarECEditor()
+	{
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		ui->ShowWidget(editor_window_);
+	}
+//$ END_MOD $
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
     {
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();

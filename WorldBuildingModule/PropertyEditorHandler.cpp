@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -158,4 +159,26 @@ namespace WorldBuilding
 
         SetCurrentPrim(prim);
     }
+//$ BEGIN_MOD $
+	QWidget *PropertyEditorHandler::CreatePropertyWindow()
+	{
+        propertyWindow_ = ui_helper_->CreatePropertyWindow(this);
+
+        connect(ui_helper_->variant_manager, SIGNAL(valueChanged(QtProperty*, const QVariant&)), 
+                SLOT(PrimValueChanged(QtProperty*, const QVariant&)));
+        connect(ui_helper_->string_manager, SIGNAL(valueChanged(QtProperty*, const QString&)), 
+                SLOT(PrimValueChanged(QtProperty*, const QString&)));
+
+		return dynamic_cast<QWidget*>(propertyWindow_);
+	}
+
+	void PropertyEditorHandler::UpdatePropertyWindow(EC_OpenSimPrim *prim)
+	{
+		if(prim){
+			PrimSelected(prim);
+			ui_helper_->UpdatePropertyWindow(prim);
+		}else
+			propertyWindow_->clear();
+	}
+//$ END_MOD $
 }

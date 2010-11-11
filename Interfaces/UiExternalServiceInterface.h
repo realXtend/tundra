@@ -11,6 +11,7 @@
 #define incl_Interfaces_UiExternalServiceInterface_h
 
 #include "ServiceInterface.h"
+#include "Entity.h"
 
 #include <QObject>
 #include <QWidget>
@@ -169,6 +170,13 @@ namespace Foundation
 		 *	\Note: if the Toolbar doesn't exist, it is created first
          */
 		virtual QToolBar* GetExternalToolbar(QString name) = 0;
+
+	signals:
+		
+		/*! Signal to advise of edit mode change
+		 */
+		void EditModeChanged(bool b);
+
     };
 }
 

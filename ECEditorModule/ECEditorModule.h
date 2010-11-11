@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_ECEditorModule_ECEditorModule_h
@@ -8,7 +9,10 @@
 
 #include <QObject>
 #include <QPointer>
-
+//$ BEGIN_MOD $
+#include <QToolbar>
+#include <QAction>
+//$ END_MOD $
 namespace ECEditor
 {
     class ECEditorWindow;
@@ -76,7 +80,13 @@ namespace ECEditor
         //! \param components List of component pointers.
         void CreateXmlEditor(const QList<ComponentPtr> &components);
 
+//$ BEGIN_MOD $
+	private slots:
+		//! Action for EditToolBar
+		void ActionToolBarECEditor();
+//$ END_MOD $
     private:
+
         //! Static name of the module
         static std::string name_static_;
 

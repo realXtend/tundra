@@ -12,8 +12,7 @@
 namespace UiExternalServices
 {
 	ExternalPanelManager::ExternalPanelManager(QMainWindow *qWin):
-          qWin_(qWin),
-		  edit_mode_(true)
+          qWin_(qWin)
     {
         assert(qWin_);
 		//Define QDockAreas allowed, or configuration staff
@@ -118,15 +117,13 @@ namespace UiExternalServices
 		return false;
 
 	}
-	void ExternalPanelManager::SetEnableEditMode(bool b){		
-		edit_mode_=b;		
-		emit changeEditMode(edit_mode_);	
+
+	void ExternalPanelManager::EditModeChanged(bool b){		
+		emit changeEditMode(b);	
 	}	
+
 	void ExternalPanelManager::AddToEditMode(QWidget* widget){		
 		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))			
 			connect(this,SIGNAL(changeEditMode(bool)),widget,SLOT(setEnabled(bool)));	
 	}	
-	bool ExternalPanelManager::IsEditModeEnable(){		
-		return edit_mode_;	
-	}
 }

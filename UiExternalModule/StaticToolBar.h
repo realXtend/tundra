@@ -5,11 +5,9 @@
 
 #include "Framework.h"
 #include "SceneManager.h"
-#include "Entity.h"
 
 #include <QObject>
 #include <QToolBar>
-#include <QMenu>
 
 namespace UiExternalServices
 {
@@ -38,9 +36,6 @@ namespace UiExternalServices
 		
 		//! Destructor
 		~StaticToolBar();
-		
-		//! Handle the scene events to take the entity which has been clicked when the edit mode is active
-		void HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
 	public slots:
 
@@ -53,10 +48,6 @@ namespace UiExternalServices
 		void freeCameraMode();
 		//! Switch between play and edit mode.
 		void editMode();
-		//! Open the EC Editor Window.
-		void openECEditor();
-		//! Open the Build Window..
-		void openBuild();
 
 	private:
 
@@ -64,8 +55,6 @@ namespace UiExternalServices
 		void createActions();
 		//! Add actions to this class (toolbar)
 		void addActions();
-		//! Create menu and actions to right button click functionality
-		void CreateMenu();
 
 		//! Fly action of toolbar
 		QAction *flyAction_;
@@ -74,20 +63,14 @@ namespace UiExternalServices
 		//! Edit action of toolbar
 		QAction *editAction_;
 
-		//! Framework pointer
-		Foundation::Framework *framework_;
-
 		//! Query category of events
 		 event_category_id_t scene_event_category_;
-	
-		//! Entity selected
-		 Scene::Entity* entitySelected_;
-
-		 //! Right button click menu
-		 QMenu* menu_asset;
 
 		 //! Name of the current scene
 		 QString currentScene;
+
+		//! Framework pointer
+		Foundation::Framework *framework_;
 	};
 }
 

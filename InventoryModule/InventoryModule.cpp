@@ -501,8 +501,22 @@ void InventoryModule::CreateInventoryWindow()
         SAFE_DELETE(uploadProgressWindow_);
     uploadProgressWindow_ = new UploadProgressWindow(this);
 */
+//$ BEGIN_MOD $
+	QToolBar* editToolbar_= ui->GetExternalToolbar("EditToolBar");
+	if(editToolbar_){
+		QAction* inventoryButton_=new QAction(QIcon("./media/icons/inventory.png"),"Inventory",editToolbar_);
+		editToolbar_->addAction(inventoryButton_);
+		connect(inventoryButton_, SIGNAL(triggered()), this, SLOT(ActionToolBarInventory()));
+	}
+//$ END_MOD $
 }
-
+//$ BEGIN_MOD $
+	void InventoryModule::ActionToolBarInventory()
+	{
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		ui->ShowWidget(inventoryWindow_);
+	}
+//$ END_MOD $
 Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 {
     using namespace RexTypes;

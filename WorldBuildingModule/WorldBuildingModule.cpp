@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -7,7 +8,9 @@
 
 #include "NetworkEvents.h"
 #include "SceneEvents.h"
-
+//$ BEGIN_MOD $
+#include "UiExternalServiceInterface.h"
+//$ END_MOD $
 #include "BuildSceneManager.h"
 
 #include <QDebug>
@@ -67,13 +70,21 @@ namespace WorldBuilding
                 case Scene::Events::EVENT_ENTITY_CLICKED:
                 {
                     Scene::Events::EntityClickedData *entity_data = checked_static_cast<Scene::Events::EntityClickedData*>(data);
-                    if (entity_data)
+//$ BEGIN_MOD $
+					if (entity_data){
                         build_scene_manager_->ObjectSelected(entity_data->entity);
-                    break;
+						if(framework_->GetService<Foundation::UiExternalServiceInterface>())
+							build_scene_manager_->GetSelectedEntity(entity_data->entity);
+					}break;
+//$ END_MOD $
                 }
                 case Scene::Events::EVENT_ENTITY_NONE_CLICKED:
                 {
                     build_scene_manager_->ObjectDeselected();
+//$ BEGIN_MOD $
+					if(framework_->GetService<Foundation::UiExternalServiceInterface>())
+						build_scene_manager_->GetSelectedEntity(0);
+//$ END_MOD $
                     break;
                 }
                 default:

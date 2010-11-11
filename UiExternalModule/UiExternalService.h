@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QDockWidget>
 #include <QMenuBar>
+#include <QMenu>
 
 namespace UiExternalServices
 {
@@ -29,6 +30,8 @@ namespace UiExternalServices
 
         //! Destructor.
         ~UiExternalService();
+
+		void HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     public slots:
 
@@ -165,12 +168,42 @@ namespace UiExternalServices
          */
 		QToolBar* GetExternalToolbar(QString name);
 
+		void SceneChanged(const QString &old_name, const QString &new_name);
+	
+  //  private slots:
+
+		////! Open the EC Editor Window.
+		//void openECEditor();
+		////! Open the Build Window..
+		//void openBuild();
+
     private:
+
+		/*! Create menu and actions to right button click functionality
+		 *	note: not use for now
+		 */
+		//void CreateMenu();
+
         //! Owner UI module.
         UiExternalModule *owner_;
 
 		//!Main Window
 		QMainWindow *qWin_;
+
+		//! Entity selected
+		 Scene::Entity* entitySelected_;
+
+		 //! Name of the current scene
+		 QString currentScene;
+
+		 //! Query category of events
+		 event_category_id_t scene_event_category_;
+
+		 //! Right button click menu
+		 QMenu* menu_asset;
+
+		 //! Edit Mode
+		 bool edit_mode_;
     };
 }
 

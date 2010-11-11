@@ -6,11 +6,6 @@
 #include "SceneEvents.h"
 #include "InputEvents.h"
 #include "UiExternalServiceInterface.h"
-#include "UiServiceInterface.h"
-#include "WorldBuildingServiceInterface.h"
-#include "MainWindow.h"
-#include "Entity.h"
-#include "EC_Highlight.h"
 #include "StaticToolBar.h"
 #include "UiServiceInterface.h"
 
@@ -19,13 +14,11 @@ namespace UiExternalServices
 
 	StaticToolBar::StaticToolBar(const QString &title, QWidget *parent, Foundation::Framework* framework): 
 		QToolBar(title,parent), 
-		framework_(framework),
-		entitySelected_(0)
+		framework_(framework)
 	{
 		createActions();
 		addActions();
 		CreateMenu();
-		scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
 	}
 
 	StaticToolBar::~StaticToolBar()
@@ -34,15 +27,15 @@ namespace UiExternalServices
 
 	void StaticToolBar::createActions()
 	{
-		flyAction_ = new QAction(tr("&Fly"), this);
+		flyAction_ = new QAction(QIcon("./media/icons/fly.png"),tr("&Fly"), this);
 		flyAction_->setStatusTip(tr("Set fly mode"));
 		connect(flyAction_, SIGNAL(triggered()), this, SLOT(flyMode()));
 
-		cameraAction_ = new QAction(tr("&Free Camera"), this);
+		cameraAction_ = new QAction(QIcon("./media/icons/camera.png"),tr("&Free Camera"), this);
 		cameraAction_->setStatusTip(tr("Set free camera mode"));
 		connect(cameraAction_, SIGNAL(triggered()), this, SLOT(freeCameraMode()));
 
-		editAction_ = new QAction(tr("&Edit Mode"), this);
+		editAction_ = new QAction(QIcon("./media/icons/build.png"),tr("&Edit Mode"), this);
 		editAction_->setStatusTip(tr("Set edit mode to modify entity properties"));
 		connect(editAction_, SIGNAL(triggered()), this, SLOT(editMode()));
 	}
@@ -72,72 +65,5 @@ namespace UiExternalServices
 		uiExternal->SetEnableEditMode(!uiExternal->IsEditModeEnable());
 	}
 
-	void StaticToolBar::openECEditor()
-	{
-		UiServiceInterface *uiService = framework_->GetService<UiServiceInterface>();
-		uiService->BringWidgetToFront(QString("Entity-component Editor"));
-	}
 
-	void StaticToolBar::openBuild()
-	{
-		UiServiceInterface *uiService = framework_->GetService<UiServiceInterface>();
-		uiService->SwitchToScene("WorldBuilding");
-	}
-	
-	void StaticToolBar::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-    {
-       if (category_id == scene_event_category_)
-       {
-		    menu_asset->close();
-			switch(event_id)
-            {
-			case Scene::Events::EVENT_ENTITY_CLICKED:
-            {
-				Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
-				Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
-				if (entity_clicked_data && uiExternal->IsEditModeEnable() && !entity_clicked_data->entity->HasComponent("EC_Terrain") && currentScene=="Inworld")
-				{
-					if (entitySelected_==entity_clicked_data->entity){
-						menu_asset->exec(framework_->GetMainWindow()->cursor().pos());
-					}    
-					else{
-						if(entitySelected_)
-							entitySelected_->RemoveComponent(entitySelected_->GetComponent("EC_Highlight","editMode"));
-						entitySelected_=entity_clicked_data->entity;
-						EC_Highlight *luz = checked_static_cast<EC_Highlight*>(entitySelected_->GetOrCreateComponent("EC_Highlight","editMode",AttributeChange::LocalOnly,true).get());
-						luz->Show();
-					}
-				}else{
-					if(entitySelected_)
-						entitySelected_->RemoveComponent(entitySelected_->GetComponent("EC_Highlight","editMode"));
-					entitySelected_=0;
-				}
-				break;
-            }
-   		  case Scene::Events::EVENT_ENTITY_NONE_CLICKED:
-            {
-				if(entitySelected_)
-					entitySelected_->RemoveComponent(entitySelected_->GetComponent("EC_Highlight","editMode"));
-               	entitySelected_=0;
-				break;
-            }
-            default:
-                break;
-            }
-		}
-	}
-
-
-	void StaticToolBar::CreateMenu()
-	{
-		menu_asset = new QMenu(dynamic_cast<QMainWindow *>(parentWidget())->centralWidget());
-
-		QAction *ec_action = new QAction("Entiy Component",menu_asset);
-		connect(ec_action, SIGNAL(triggered()), this, SLOT(openECEditor()));
-		menu_asset->addAction(ec_action);
-
-		QAction *build_action = new QAction("Properties",menu_asset);
-		connect(build_action, SIGNAL(triggered()), this, SLOT(openBuild()));
-		menu_asset->addAction(build_action);
-	}
 }
