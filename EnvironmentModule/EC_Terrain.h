@@ -136,9 +136,11 @@ public:
     /// Calculates and returns the vertex normal for the given terrain vertex.
     /// @param patchX The patch to read from, [0, PatchWidth()[.
     /// @param patchY The patch to read from, [0, PatchHeight()[.
-    /// @param vertexX The vertex inside the patch to compute the normal for, [0, cPatchSize[.
-    /// @param vertexY The vertex inside the patch to compute the normal for, [0, cPatchSize[.
-    Vector3df CalculateNormal(int patchX, int patchY, int vertexX, int vertexY);
+    /// @param xinside The vertex inside the patch to compute the normal for, [0, cPatchSize[.
+    /// @param yinside The vertex inside the patch to compute the normal for, [0, cPatchSize[.
+    Vector3df CalculateNormal(int x, int y, int xinside, int yinside) const;
+
+    Vector3df CalculateNormal(int mapX, int mapY) const { return CalculateNormal( (int) mapX / cPatchSize, (int) mapY / cPatchSize, mapX % cPatchSize, mapY % cPatchSize); }
 
 public slots:
     /// Returns true if the given patch exists, i.e. whether the given coordinates are within the current terrain patch dimensions.
@@ -193,9 +195,33 @@ public slots:
     /// @param y In the range [0, EC_Terrain::PatchHeight * EC_Terrain::cPatchSize-1.0f ].
     float GetInterpolatedHeightValue(float x, float y) const;
 
+    /// Returns the triangle and barycentric UV of the triangle at the given map coordinate, in local space.
+    /// @param n1 [out]
+    /// @param n2 [out]
+    /// @param n3 [out]
+    /// @param u [out]
+    /// @param v [out]
+
+    void GetTriangleNormals(float x, float y, Vector3df &n1, Vector3df &n2, Vector3df &n3, float &u, float &v) const;
+
+    /// Returns the vertices and barycentric UV of the triangle at the given map coordinate, in local space.
+    /// @param n1 [out]
+    /// @param n2 [out]
+    /// @param n3 [out]
+    /// @param u [out]
+    /// @param v [out]
+    void GetTriangleVertices(float x, float y, Vector3df &v1, Vector3df &v2, Vector3df &v3, float &u, float &v) const;
+
+    /// Computes the terrain plane normal (uninterpolated triangle normal) at the given map coordinate.
+    Vector3df GetPlaneNormal(float x, float y) const;
+
     /// Returns the triangle normal of the given triangle on the map, given the local space 2D map coordinates for the point.
     /// The normal is returned in *world* space.
     Vector3df GetInterpolatedNormal(float x, float y) const;
+
+    /// Helper function, which returns for given world coordinate point terrain rotation in Euler angles. 
+    /// @note This assumes that "mesh" which is rotation for terrain is searched is orginally authored to look -y - axis.
+    Vector3df GetTerrainRotationAngles(float x, float y, float z, const Vector3df& direction) const;
 
     /// Removes all stored terrain patches and the associated Ogre scene nodes.
     void Destroy();

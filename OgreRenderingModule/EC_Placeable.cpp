@@ -8,7 +8,6 @@
 #include "RexNetworkUtils.h"
 
 #include <Ogre.h>
-#include <QDebug>
 
 using namespace OgreRenderer;
 
@@ -340,7 +339,12 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         Quaternion orientation(DEGTORAD * trans.rotation.x,
                           DEGTORAD * trans.rotation.y,
                           DEGTORAD * trans.rotation.z);
-        link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+
+        assert(RexTypes::IsValidOrientation(orientation));
+        if ( RexTypes::IsValidOrientation(orientation) )
+        {
+            link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+        }
 
         // Prevent Ogre exception from zero scale
         Vector3df scale(trans.scale.x, trans.scale.y, trans.scale.z);
@@ -395,6 +399,7 @@ void EC_Placeable::RegisterActions()
         entity->ConnectAction("ToggleEntity", this, SLOT(ToggleVisibility()));
     }
 }
+
 
 void EC_Placeable::Translate(const Vector3df& translation)
 {

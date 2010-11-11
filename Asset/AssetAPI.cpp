@@ -48,6 +48,8 @@ namespace
         if (name.find(".jpg") != std::string::npos || name.find(".png") != std::string::npos || name.find(".tga") != std::string::npos
             || name.find(".bmp") != std::string::npos || name.find(".dds") != std::string::npos)
             return "OgreTexture";
+        if (name.find(".particle") != std::string::npos)
+            return "OgreParticle";
 
         return "";
         // Note: There's a separate OgreImageTextureResource which isn't handled above.
@@ -92,7 +94,7 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
 IAssetTransfer *AssetAPI::RequestAsset(const AssetReference &ref)
 {
-    return RequestAsset(ref.ref, ref.type);
+    return RequestAsset(ref.ref, ""/*ref.type*/);
 }
 
 bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)

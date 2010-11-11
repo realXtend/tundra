@@ -84,6 +84,20 @@ namespace RexTypes
         return true;
     }
 
+    bool IsValidOrientation(const Quaternion& orientation)
+    {
+         // This is a heuristic check to guard against the OpenSim server sending us stupid velocity vectors.
+        if (fabs(orientation.x) > 1e3f || fabs(orientation.y) > 1e3f || fabs(orientation.z) > 1e3f || fabs(orientation.w) > 1e3f)
+            return false;
+        if (_isnan(orientation.x) || _isnan(orientation.y) || _isnan(orientation.z) || _isnan(orientation.w) )
+            return false;
+        if (!_finite(orientation.x) || !_finite(orientation.y) || !_finite(orientation.z) || !_finite(orientation.w) )
+            return false;
+
+        return true;
+
+    }
+
     bool ReadBoolFromBytes(const uint8_t* bytes, int& idx)
     {
         bool result = *(bool*)(&bytes[idx]);

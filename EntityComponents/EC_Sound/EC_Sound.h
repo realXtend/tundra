@@ -6,6 +6,7 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "Declare_EC.h"
+#include "AssetReference.h"
 
 /// Represents in-world sound source.
 /**
@@ -17,15 +18,17 @@ Represents in-world sound source. To apply a new sound sound, user should change
 and ISoundService should handle resource request for you. To play the sound there are two options:
 1. trigger sound by setting trigger sound attribute to true or 2. directly call PlaySound slot method.
 
-@note If component cant find EC_Placeable compoent in entity, sound is treated as AbmientSound.
+@note If component cant find EC_Placeable component in entity, sound is treated as AmbientSound.
 
-@note If sound attributes has been changed while the audio clip is on playing state, user need to call
-UpdateSoundSettings method to apply those changes into the SoundService.
+@note If sound attributes has been changed while the audio clip is on playing state, user needs to call
+UpdateSoundSettings() to apply those changes into the SoundService.
 
 Registered by RexLogic::RexLogicModule.
 
 <b>Attributes</b>:
 <ul>
+<li>AssetReference: soundRef
+<div>Sound asset reference that is used to request a sound from sound service.</div> 
 <li>QString: soundId
 <div>Sound asset reference that is used to request a sound from sound service.</div> 
 <li>float: soundInnerRadius
@@ -62,29 +65,42 @@ class EC_Sound : public IComponent
 {
     DECLARE_EC(EC_Sound);
     Q_OBJECT
+
 public:
     ~EC_Sound();
     virtual bool IsSerializable() const { return true; }
 
-    Q_PROPERTY(QString soundId READ getsoundId WRITE setsoundId);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, soundId);
+    //! Sound asset reference.
+    Q_PROPERTY(AssetReference soundRef READ getsoundRef WRITE setsoundRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, soundRef);
 
+    /// Sound asset reference that is used to request a sound from sound service.
+//    Q_PROPERTY(QString soundId READ getsoundId WRITE setsoundId);
+//    DEFINE_QPROPERTY_ATTRIBUTE(QString, soundId);
+
+    /// Sound inner radius tell the distance where sound gain value is in it's maximum.
     Q_PROPERTY(float soundInnerRadius READ getsoundInnerRadius WRITE setsoundInnerRadius);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundInnerRadius);
 
+    /// Sound outer radius tell the distance where sound gain value is zero.
     Q_PROPERTY(float soundOuterRadius READ getsoundOuterRadius WRITE setsoundOuterRadius);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundOuterRadius);
 
+    /// Sound gain value should be between 0.0-1.0
     Q_PROPERTY(float soundGain READ getsoundGain WRITE setsoundGain);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundGain);
 
+    /// Do we want to loop the sound until the stop sound is called.
     Q_PROPERTY(bool loopSound READ getloopSound WRITE setloopSound);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, loopSound);
 
-
 public slots:
+    /// Starts playing the sound.
     void PlaySound();
+
+    /// Stops playing the sound.
     void StopSound();
+
     //! Get each attribute value and send them over to sound service.
     void UpdateSoundSettings();
 

@@ -55,7 +55,9 @@ function ServerHandleUserConnected(connectionID, username)
     var script = avatarEntity.GetComponentRaw("EC_Script");
     script.type = "js";
     script.runOnLoad = true;
-    script.scriptRef = "./jsmodules/avatar/simpleavatar.js";
+    var r = script.scriptRef;
+    r.ref = "./jsmodules/camera/freelookcamera.js";
+    script.scriptRef = r;
 
     var placeable = avatarEntity.GetComponentRaw("EC_Placeable");
     // Set random starting position for avatar

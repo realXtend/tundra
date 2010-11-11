@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "Color.h"
 #include "Quaternion.h"
@@ -5,6 +7,7 @@
 #include "Vector3D.h"
 #include "Matrix4.h"
 #include "IAttribute.h"
+#include "AssetReference.h"
 
 #include <QScriptEngine>
 #include <QColor>
@@ -25,7 +28,7 @@ QScriptValue toScriptValueColor(QScriptEngine *engine, const Color &s)
     obj.setProperty("a", QScriptValue(engine, s.a));
     return obj;
 }
- 
+
 void fromScriptValueColor(const QScriptValue &obj, Color &s)
 {
     s.r = (float)obj.property("r").toNumber();
@@ -43,7 +46,7 @@ QScriptValue toScriptValueQColor(QScriptEngine *engine, const QColor &s)
     obj.setProperty("a", QScriptValue(engine, s.alpha()));
     return obj;
 }
- 
+
 void fromScriptValueQColor(const QScriptValue &obj, QColor &s)
 {
     s.setRed((float)obj.property("r").toNumber());
@@ -51,7 +54,6 @@ void fromScriptValueQColor(const QScriptValue &obj, QColor &s)
     s.setBlue((float)obj.property("b").toNumber());
     s.setAlpha((float)obj.property("a").toNumber());
 }
-
 
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 {
@@ -61,7 +63,7 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
     obj.setProperty("z", QScriptValue(engine, s.z));
     return obj;
 }
- 
+
 void fromScriptValueVector3(const QScriptValue &obj, Vector3df &s)
 {
     s.x = (float)obj.property("x").toNumber();
@@ -77,14 +79,13 @@ QScriptValue toScriptValueQVector3D(QScriptEngine *engine, const QVector3D &s)
     obj.setProperty("z", QScriptValue(engine, s.z()));
     return obj;
 }
- 
+
 void fromScriptValueQVector3D(const QScriptValue &obj, QVector3D &s)
 {
     s.setX((float)obj.property("x").toNumber());
     s.setY((float)obj.property("y").toNumber());
     s.setZ((float)obj.property("z").toNumber());
 }
-
 
 QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
 {
@@ -95,7 +96,7 @@ QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
     obj.setProperty("w", QScriptValue(engine, s.w));
     return obj;
 }
- 
+
 void fromScriptValueQuaternion(const QScriptValue &obj, Quaternion &s)
 {
     s.x = (float)obj.property("x").toNumber();
@@ -113,7 +114,7 @@ QScriptValue toScriptValueQQuaternion(QScriptEngine *engine, const QQuaternion &
     obj.setProperty("w", QScriptValue(engine, s.scalar()));
     return obj;
 }
- 
+
 void fromScriptValueQQuaternion(const QScriptValue &obj, QQuaternion &s)
 {
     s.setX((float)obj.property("x").toNumber());
@@ -154,6 +155,18 @@ QScriptValue toScriptValueIAttribute(QScriptEngine *engine, const IAttribute *&s
     return obj;
 }
 
+void fromScriptValueAssetReference(const QScriptValue &obj, AssetReference &s)
+{
+    s.ref = obj.property("ref").toString();
+}
+
+QScriptValue toScriptValueAssetReference(QScriptEngine *engine, const AssetReference &s)
+{
+    QScriptValue obj = engine->newObject();
+    obj.setProperty("ref", QScriptValue(engine, s.ref));
+    return obj;
+}
+
 void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
 {
 }
@@ -185,12 +198,19 @@ QScriptValue createTransform(QScriptContext *ctx, QScriptEngine *engine)
     return engine->toScriptValue(newTransform);
 }
 
+QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
+{
+    AssetReference newAssetRef;
+    return engine->toScriptValue(newAssetRef);
+}
+
 void RegisterNaaliCoreMetaTypes()
 {
     qRegisterMetaType<Color>("Color");
     qRegisterMetaType<Vector3df>("Vector3df");
     qRegisterMetaType<Quaternion>("Quaternion");
     qRegisterMetaType<Transform>("Transform");
+    qRegisterMetaType<AssetReference>("AssetReference");
 }
 
 void ExposeNaaliCoreTypes(QScriptEngine *engine)
@@ -202,6 +222,7 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueQuaternion, fromScriptValueQuaternion);
     qScriptRegisterMetaType(engine, toScriptValueQQuaternion, fromScriptValueQQuaternion);
     qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
+    qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
 
     //qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
     int id = qRegisterMetaType<IAttribute*>("IAttribute*");
@@ -209,7 +230,7 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueIAttribute),
         reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueIAttribute),
         QScriptValue());
-        
+
     // Register constructors
     QScriptValue ctorColor = engine->newFunction(createColor);
     engine->globalObject().setProperty("Color", ctorColor);
@@ -219,4 +240,6 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("Quaternion", ctorQuaternion);
     QScriptValue ctorTransform = engine->newFunction(createTransform);
     engine->globalObject().setProperty("Transform", ctorTransform);
+    QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
+    engine->globalObject().setProperty("AssetReference", ctorAssetReference);
 }
