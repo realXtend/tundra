@@ -80,7 +80,7 @@ namespace Foundation
         //! returns internal resource name (for example GPU resource name, when applicable)
         /*! will be empty until the internal resource has actually been created
          */
-        const std::string& GetInternalName() { return internal_name_; }
+        const std::string& GetInternalName() const { return internal_name_; }
         
     protected:
         //! resource identifier
