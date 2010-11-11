@@ -24,6 +24,8 @@ namespace Ogre
     class Viewport;
     class RenderTexture;
     class DefaultHardwareBufferManager;
+    class ParticleSystem;
+    class Skeleton;
 }
 
 namespace OgreRenderer

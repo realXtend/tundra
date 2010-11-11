@@ -5,6 +5,7 @@
 
 #include "IComponent.h"
 #include "Declare_EC.h"
+#include "AssetReference.h"
 
 class IScriptInstance;
 
@@ -19,10 +20,12 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QString: scriptRef
-<div></div> 
+<li>AssetReference: scriptRef
+<div>Reference the the script asset.</div> 
 <li>QString: type
-<div></div> 
+<div>Type of the script as string (js/py).</div> 
+<li>bool: runOnLoad
+<div>Is the script run as soon as the script reference is set/loaded.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -39,7 +42,7 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
 Does not emit any actions.
 
-<b>Doesn't depend on any entity Component</b>.
+<b>Doesn't depend on any other entity-component</b>.
 </table>
 */
 class EC_Script: public IComponent
@@ -57,14 +60,18 @@ public:
     /// Type of the script as string (js/py)
     Q_PROPERTY(QString type READ gettype WRITE settype);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, type);
-    
+
     /// Is the script run as soon as the script reference is set/loaded.
     Q_PROPERTY(bool runOnLoad READ getrunOnLoad WRITE setrunOnLoad);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, runOnLoad);
-    
+
+    //! Script asset reference
+    Q_PROPERTY(AssetReference scriptRef READ getscriptRef WRITE setscriptRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, scriptRef);
+
     /// Reference to a script file.
-    Q_PROPERTY(QString scriptRef READ getscriptRef WRITE setscriptRef);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, scriptRef);
+//    Q_PROPERTY(QString scriptRef READ getscriptRef WRITE setscriptRef);
+//    DEFINE_QPROPERTY_ATTRIBUTE(QString, scriptRef);
 
     /// Sets new script instance.
     /** Unloads and deletes possible already existing script instance.

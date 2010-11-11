@@ -77,11 +77,10 @@ class AssetItem : public QTreeWidgetItem
 public:
     /// Constructor.
     /** @param name Name of the asset reference attribute.
-        @param id ID.
-        @param type Type.
+        @param ref Asset reference URI.
         @param parent Parent item.
     */
-    AssetItem(const QString &name, const QString &id, const QString &type, QTreeWidgetItem *parent = 0);
+    AssetItem(const QString &name, const QString &ref, QTreeWidgetItem *parent = 0);
 
     QString name; ///< Name of the attribute.
     QString id; ///< ID.
