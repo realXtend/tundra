@@ -41,6 +41,8 @@ void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
 
 void EC_OgreCompositor::UpdateCompositor()
 {
+    if (ViewEnabled())
+    {
         if (!previous_ref_.isEmpty())
             handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
 
@@ -53,5 +55,6 @@ void EC_OgreCompositor::UpdateCompositor()
         }
 
         previous_ref_ = compositorref.Get();
+    }
 }
 
