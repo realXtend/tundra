@@ -7,7 +7,7 @@ for( i in entityList)
 	entity = scene.GetEntityRaw(entityList[i]);
 	if(entity.Name == "CollisionBox")
 	{
-		entity.rigidbody.mass = 3.0;
+		entity.rigidbody.mass = 1.2 + Math.random() * 6;// 3.0 + Math.random()*11;
 		entity.rigidbody.friction = 1.0;
 	}
 }
