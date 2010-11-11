@@ -126,7 +126,8 @@ public slots:
         \param entity entity
         \return approximated percent of how much of the entity is inside this volume
     */
-    float GetEntityInsidePercent(Scene::Entity *entity) const;
+    float GetEntityInsidePercent(const Scene::Entity* entity) const;
+
 
     //! Returns an approximate percent of how much of the entity is inside this volume, [0,1]
     /*! If entity is not inside this volume at all, returns 0, if entity is completely inside this volume, returns 1.
