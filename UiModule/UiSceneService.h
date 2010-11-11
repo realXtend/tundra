@@ -15,6 +15,7 @@
 #include "UiServiceInterface.h"
 //$ BEGIN_MOD $
 #include "UiExternalServiceInterface.h"
+#include "MenuSettingsWidget.h"
 #include <QMap>
 #include <QList>
 //$ END_MOD $
@@ -112,8 +113,6 @@ namespace UiServices
 		/// UiServiceInterface override.
 		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0);
 		/// UiServiceInterface override.
-		bool TransferWidgetInOut(QString widgetToChange);
-		/// UiServiceInterface override.
         void BringWidgetToFront(QString widget);
 		/// UiServiceInterface override.
 		void TransferWidgetOut(QString widgetToChange, bool out);
@@ -140,6 +139,32 @@ namespace UiServices
 
 		/// UiServiceInterface override.
 		QToolBar* GetExternalToolbar(QString name);
+
+		//TO MANAGE MENU SETTINGS
+		/*! Method to create the settings panel and add it to scene
+		*
+		*/
+		void CreateSettingsPanel();
+
+		/*! Method to check if one menu is inside the scene or outside
+		* \param name Name of the widget to be checked
+		*/
+		bool IsMenuInside(QString name);
+
+		/*! Method to check if one menu is moveable or not
+		* \param name Name of the widget to be checked
+		*/
+		bool IsMenuMoveable(QString name);
+
+		/*! Method to give the settings panel the list of the panels available
+			We only give the list when we switch from Ether scene to a new one.
+		* \param old_name Name of the old scene
+		* \param new_name Name of the new scene
+		*
+		* \note: this slot is conected to a signal
+		*/
+		void SetPanelsList(const QString& old_name, const QString& new_name);
+
 //$ END_MOD $
 
     private slots:
@@ -166,6 +191,8 @@ namespace UiServices
 		QMap<QString, proxyDock> proxy_dock_list;
 		//! QMap of menu pairs 
 		QMap<QString, menusPair> panels_menus_list_;
+		//!Menu Settings Panel
+		MenuSettingsWidget *settings_panel_;
 //$ END_MOD $
     };
 }

@@ -46,4 +46,3 @@ SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()
 
 final_target ()
-

@@ -39,7 +39,10 @@ namespace Console
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
         if (ui)
         {
-            proxy_widget_ = ui->AddWidgetToScene(console_widget_);
+			//$ BEGIN_MOD $
+            //proxy_widget_ = ui->AddWidgetToScene(console_widget_);
+			proxy_widget_ = ui->AddWidgetToScene(console_widget_, false, true);
+			//$ END_MOD $ 
             proxy_widget_->setMinimumHeight(0);
             proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
             proxy_widget_->setOpacity(opacity_);
