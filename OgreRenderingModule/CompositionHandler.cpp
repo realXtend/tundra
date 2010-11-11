@@ -88,10 +88,13 @@ namespace OgreRenderer
 
     void CompositionHandler::RemoveCompositorFromViewport(const std::string &compositor, Ogre::Viewport *vp)
     {
-        c_manager_->setCompositorEnabled(vp, compositor, false);
-        c_manager_->removeCompositor(vp, compositor);
+        if (c_manager_!=0 && vp != 0)
+        {
+            c_manager_->setCompositorEnabled(vp, compositor, false);
+            c_manager_->removeCompositor(vp, compositor);
 
-        priorities_.erase(compositor);
+            priorities_.erase(compositor);
+        }
     }
 
     bool CompositionHandler::AddCompositorForViewportPriority(const std::string &compositor, int priority)
@@ -138,7 +141,7 @@ namespace OgreRenderer
     {
         bool succesfull = false;
 
-        if (c_manager_!=0)
+        if (c_manager_!=0 && vp != 0)
         {
             Ogre::CompositorInstance* comp = c_manager_->addCompositor(vp, compositor, position);
             if(comp != 0)
