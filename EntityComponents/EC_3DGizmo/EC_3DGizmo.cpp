@@ -37,6 +37,8 @@ EC_3DGizmo::EC_3DGizmo(IModule *module) :
 
 EC_3DGizmo::~EC_3DGizmo()
 {
+	attributes_.clear();
+	subproperties_.clear();
 }
 
 void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop)
