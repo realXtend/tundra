@@ -302,7 +302,7 @@ void FunctionDialog::UpdateEditors()
     QString doxyFuncName = QString(obj->metaObject()->className()) + "::" + fmd.function;
     QUrl styleSheetPath;
     QString documentation;
-    bool success = DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
+    /*bool success = */DoxygenDocReader::GetSymbolDocumentation(doxyFuncName, &documentation, &styleSheetPath);
     if (documentation.length() != 0)
     {
         doxygenView->setHtml(documentation);//, styleSheetPath);

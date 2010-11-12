@@ -27,8 +27,8 @@ namespace AssImp
     class OpenAssetImport
     {
     public:
-		OpenAssetImport();
-		~OpenAssetImport();
+        OpenAssetImport();
+        ~OpenAssetImport();
         
         //! Returns true if filename has an extension that implies supported file format
         bool IsSupportedExtension(const QString& filename);
@@ -60,7 +60,7 @@ namespace AssImp
         */
         void Import(const void *data, size_t length, const QString &name, const char* hint, const QString &nodeName, std::vector<std::string> &outMeshNames);
 
-	private:
+    private:
         class AssImpLogStream : public Assimp::LogStream
         {
         public:
@@ -76,11 +76,11 @@ namespace AssImp
         void ImportNode(const struct aiScene *scene, const struct aiNode *node, const QString& file, const QString &nodeName, 
             std::vector<std::string> &outMeshNames);
 
-		boost::shared_ptr<Assimp::Importer> importer_;
+        boost::shared_ptr<Assimp::Importer> importer_;
         AssImpLogStream *logstream_;
 
         const unsigned int loglevels_;     //! Log levels to capture during import
         const unsigned int default_flags_; //! Default import postprocess flags
-	};
+    };
 }
 #endif

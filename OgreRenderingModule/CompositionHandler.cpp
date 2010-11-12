@@ -179,6 +179,89 @@ namespace OgreRenderer
         return RemoveCompositorFromViewport(compositor, viewport_);
     }
 
+    void CompositionHandler::SetCompositorParameter(const std::string &compositorName, const QList< std::pair<std::string, Ogre::Vector4> > &source) const
+    {
+        // find compositor materials
+        Ogre::CompositorPtr compositor = c_manager_->getByName(compositorName);
+        if (compositor.get())
+        {
+            compositor->load();
+            for (int t=0 ; t<compositor->getNumTechniques () ; ++t)
+            {
+                Ogre::CompositionTechnique *ct = compositor->getTechnique(t);
+                if (ct)
+                {
+                    for (int tp=0 ; tp<ct->getNumTargetPasses () ; ++tp)
+                    {
+                        Ogre:: CompositionTargetPass *ctp = ct->getTargetPass (tp);
+                        SetCompositorTargetParameters(ctp, source);
+                    }
+                    SetCompositorTargetParameters(ct->getOutputTargetPass(), source);
+                }
+            }
+        }
+    }
+
+    void CompositionHandler::SetEnableCompositor(const std::string &compositor, bool enable) const
+    {
+        if (c_manager_ && viewport_)
+            c_manager_->setCompositorEnabled(viewport_, compositor, enable);
+    }
+
+    void CompositionHandler::SetCompositorTargetParameters(Ogre::CompositionTargetPass *target, const QList< std::pair<std::string, Ogre::Vector4> > &source) const
+    {
+        if (target)
+        {
+            for (int p=0 ; p<target->getNumPasses() ; ++p)
+            {
+                Ogre::CompositionPass *pass = target->getPass(p);
+                if (pass)
+                {
+                    SetMaterialParameters(pass->getMaterial(), source);
+                }
+            }
+        }
+    }
+
+    void CompositionHandler::SetMaterialParameters(const Ogre::MaterialPtr &material, const QList< std::pair<std::string, Ogre::Vector4> > &source) const
+    {
+        assert (material.get());
+        material->load();
+        for (int t=0 ; t<material->getNumTechniques() ; ++t)
+        {
+            Ogre::Technique *technique = material->getTechnique(t);
+            if (technique)
+            {
+                for (int p=0 ; p<technique->getNumPasses() ; ++p)
+                {
+                    Ogre::Pass *pass = technique->getPass(p);
+                    if (pass)
+                    {
+                        if (pass->hasVertexProgram())
+                        {
+                            Ogre::GpuProgramParametersSharedPtr destination = pass->getVertexProgramParameters();
+                            for (int i=0 ; i<source.size() ; ++i)
+                            {
+                                if (destination->_findNamedConstantDefinition(source[i].first, false))
+                                    destination->setNamedConstant(source[i].first, source[i].second);
+                            }
+
+                        }
+                        if (pass->hasFragmentProgram())
+                        {
+                            Ogre::GpuProgramParametersSharedPtr destination = pass->getFragmentProgramParameters();
+                            for (int i=0 ; i<source.size() ; ++i)
+                            {
+                                if (destination->_findNamedConstantDefinition(source[i].first, false))
+                                    destination->setNamedConstant(source[i].first, source[i].second);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     /*************************************************************************
     HDRListener Methods

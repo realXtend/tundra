@@ -21,13 +21,13 @@ class JavascriptInstance : public IScriptInstance
     Q_OBJECT
 
 public:
-    ///
-    /** @param scriptRef
-        @param module Javascript module
+    /// Creates script engine for this script instance and loads the script but doesn't run it yet.
+    /** @param scriptRef Script asset reference.
+        @param module Javascript module.
     */
     JavascriptInstance(const QString &scriptRef, JavascriptModule *module);
 
-    ///
+    /// Destroys script engine created for this script instance.
     virtual ~JavascriptInstance();
 
     //! Overload from IScriptInstance
@@ -48,7 +48,7 @@ public:
     /// Sets owner (EC_Script) component.
     /** @param owner Owner component.
     */
-    void SetOwnerComponent(ComponentPtr owner) { owner_ = owner; }
+    void SetOwnerComponent(const ComponentPtr &owner) { owner_ = owner; }
 
 public slots:
     /// Loads a given script in engine. This function can be used to create a property as you could include js-files.
