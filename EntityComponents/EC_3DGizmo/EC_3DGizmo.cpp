@@ -111,6 +111,7 @@ void EC_3DGizmo::Manipulate(QVariant datum)
                     trans.position.x += vec.x();
                     trans.position.y += vec.y();
                     trans.position.z += vec.z();
+                }
                 attribute->Set(trans, AttributeChange::Default);
             }
         } else {
