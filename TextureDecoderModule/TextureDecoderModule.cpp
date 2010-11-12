@@ -24,13 +24,13 @@ namespace TextureDecoder
     void TextureDecoderModule::Initialize()
     {
         texture_service_ = TextureServicePtr(new TextureService(framework_));
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Texture, texture_service_);
+        framework_->GetServiceManager()->RegisterService(Service::ST_Texture, texture_service_);
     }
     
      // virtual
     void TextureDecoderModule::PostInitialize()
     {   
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
         task_event_category_ = event_manager->QueryEventCategory("Task");
     }

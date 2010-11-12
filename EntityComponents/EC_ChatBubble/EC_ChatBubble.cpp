@@ -250,7 +250,7 @@ void EC_ChatBubble::Refresh()
         return;
 
     // Check texture size
-    if (texture->getWidth() != buffer.width() || texture->getHeight() != buffer.height())
+    if ((int)texture->getWidth() != buffer.width() || (int)texture->getHeight() != buffer.height())
     {
         texture->freeInternalResources();
         texture->setWidth(buffer.width());

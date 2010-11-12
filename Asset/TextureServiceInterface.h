@@ -3,7 +3,12 @@
 #ifndef incl_Interfaces_TextureServiceInterface_h
 #define incl_Interfaces_TextureServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
+
+namespace TextureDecoder
+{
+    class TextureResource;
+}
 
 namespace Foundation
 {    
@@ -16,7 +21,7 @@ namespace Foundation
         (Foundation::TextureInterface).
         Implemented by the \ref TextureDecoderModule.
     */
-    class TextureServiceInterface : public ServiceInterface
+    class TextureServiceInterface : public IService
     {
     public:
         TextureServiceInterface() {}
@@ -29,8 +34,13 @@ namespace Foundation
          */
         virtual request_tag_t RequestTexture(const std::string& asset_id) = 0;
 
+        //! Gets a texture rousource from cache
+        //! @param texture_id as std::string
+        //! @return valid ptr if found, 0 ptr if not
+        virtual TextureDecoder::TextureResource *GetFromCache(const std::string &texture_id) = 0;
+
         //! Removes a texture from the disk cache with the texture id
-        //! @param texture_is as std::string
+        //! @param texture_id as std::string
         virtual void DeleteFromCache(const std::string &texture_id) = 0;
     };
 }

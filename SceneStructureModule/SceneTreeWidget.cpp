@@ -493,7 +493,7 @@ void SceneTreeWidget::LoadInvokeHistory()
     invokeHistory.clear();
 
     // Load and parse invoke history from settings.
-    Foundation::ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
+    ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
 
     try
     {
@@ -525,7 +525,7 @@ void SceneTreeWidget::SaveInvokeHistory()
     // Sort descending by MRU order.
     qSort(invokeHistory);
 
-    Foundation::ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
+    ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
     for(int idx = 0; idx < invokeHistory.size(); ++idx)
         cfgMgr.SetSetting<std::string>("InvokeHistory", "item" + ToString(idx), invokeHistory[idx].ToSetting());
 }
@@ -870,7 +870,7 @@ void SceneTreeWidget::SaveAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    fileDialog = QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Save Selection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
 }
 
@@ -878,7 +878,7 @@ void SceneTreeWidget::SaveSceneAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    fileDialog = QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
@@ -886,7 +886,7 @@ void SceneTreeWidget::Import()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + 
 #ifdef ASSIMP_ENABLED
         cMeshFileFilter + ";;" + 
@@ -899,7 +899,7 @@ void SceneTreeWidget::OpenNewScene()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" +
         cAllTypesFileFilter, tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
@@ -1233,7 +1233,7 @@ void SceneTreeWidget::InvokeActionTriggered()
     if (sel.IsEmpty())
         return;
 
-    InvokeItem *invokedItem;
+    InvokeItem *invokedItem = 0;
     foreach(InvokeItem ii, invokeHistory)
         if (ii.ToString() == action->text())
         {
@@ -1243,6 +1243,7 @@ void SceneTreeWidget::InvokeActionTriggered()
 
     InvokeItem *mruItem = FindMruItem();
     assert(mruItem);
+    assert(invokedItem);
     invokedItem->mruOrder = mruItem->mruOrder + 1;
 
     // Gather target objects.

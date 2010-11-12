@@ -31,6 +31,8 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     renderer_ = GetFramework()->GetServiceManager()->GetService<Renderer>();
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(ParentEntitySet()),
+            SLOT(EntitySetted()));
 }
 
 EC_ParticleSystem::~EC_ParticleSystem()
@@ -49,13 +51,17 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
     try
     {
         DeleteParticleSystem();
+        EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
+        if (!placeable)
+        {
+            LogError("Fail to create a new particle system, make sure that entity has EC_Placeable component created.");
+            return;
+        }
+
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), SanitateAssetIdForOgre(systemName.toStdString()));
-        if(particleSystem_)
+        if (particleSystem_)
         {
-            EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
-            if(!placeable)
-                return;
             placeable->GetSceneNode()->attachObject(particleSystem_);
             particleSystem_->setCastShadows(castShadows.Get());
             particleSystem_->setRenderingDistance(renderingDistance.Get());
@@ -108,7 +114,7 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
         if (particleSystem_)
             particleSystem_->setCastShadows(castShadows.Get());
     }
-    else if(attribute->GetNameString() == renderingDistance.GetNameString())
+    else if (attribute->GetNameString() == renderingDistance.GetNameString())
     {
         if (particleSystem_)
             particleSystem_->setRenderingDistance(renderingDistance.Get());
@@ -122,6 +128,14 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
         connect(transfer, SIGNAL(Loaded()), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
     }
+    Scene::Entity *entity = qobject_cast<Scene::Entity*>(this->GetParentEntity());
+    if (!entity)
+    {
+        LogError("Failed to connect entity signals, component's parent entity is null");
+        return;
+    }
+    disconnect(this, SLOT(DeleteParticleSystem()));
+    connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(DeleteParticleSystem()));
 }
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const

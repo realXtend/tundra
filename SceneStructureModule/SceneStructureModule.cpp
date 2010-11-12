@@ -298,11 +298,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             if (!scene)
                 return;
 
-            Scene::EntityList cameras = scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic());
-            if (cameras.empty())
-                return;
-
-            foreach(Scene::EntityPtr cam, cameras)
+            foreach(Scene::EntityPtr cam, scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic()))
                 if (cam->GetComponent<EC_OgreCamera>()->IsActive())
                 {
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();

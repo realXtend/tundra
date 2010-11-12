@@ -182,6 +182,7 @@ namespace Console
         
         Console::CallbackPtr callback;
         bool delayed = false;
+        UNREFERENCED_PARAM(delayed);
         {
             RecursiveMutexLock lock(commands_mutex_);
             CommandMap::const_iterator iter = commands_.find(low_name);

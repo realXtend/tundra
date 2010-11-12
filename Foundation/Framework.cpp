@@ -50,7 +50,7 @@ namespace Resource
 {
     namespace Events
     {
-        void RegisterResourceEvents(const Foundation::EventManagerPtr &event_manager)
+        void RegisterResourceEvents(const EventManagerPtr &event_manager)
         {
             event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Resource");
             event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_READY, "ResourceReady");
@@ -63,7 +63,7 @@ namespace Task
 {
     namespace Events
     {
-        void RegisterTaskEvents(const Foundation::EventManagerPtr &event_manager)
+        void RegisterTaskEvents(const EventManagerPtr &event_manager)
         {
             event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Task");
             event_manager->RegisterEvent(resource_event_category, Task::Events::REQUEST_COMPLETED, "RequestCompleted");
@@ -134,7 +134,7 @@ namespace Foundation
 
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.2"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.3"));
 
             CreateLoggingSystem(); // depends on config and platform
 
@@ -361,6 +361,7 @@ namespace Foundation
             }
 
             input->Update(frametime);
+            input->Update(frametime);
         }
 
         RESETPROFILER
@@ -488,7 +489,7 @@ namespace Foundation
 
     Console::CommandResult Framework::ConsoleListModules(const StringVector &params)
     {
-        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
+        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Service::ST_Console).lock();
         if (console)
         {
             console->Print("Loaded modules:");
@@ -595,7 +596,7 @@ namespace Foundation
     Console::CommandResult Framework::ConsoleProfile(const StringVector &params)
     {
 #ifdef PROFILING
-        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
+        boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Service::ST_Console).lock();
         if (console)
         {
             Profiler &profiler = GetProfiler();
@@ -614,7 +615,7 @@ namespace Foundation
 
     void Framework::RegisterConsoleCommands()
     {
-        boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
+        boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
         if (console)
         {
             console->RegisterCommand(Console::CreateCommand("LoadModule", 
@@ -721,7 +722,7 @@ namespace Foundation
     ISoundService *Framework::Audio() const
     {
         boost::shared_ptr<ISoundService> sound_logic = GetServiceManager()->
-                GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+                GetService<ISoundService>(Service::ST_Sound).lock();
         if (!sound_logic.get())
 //            throw Exception("Fatal: Sound service not present!");
             RootLogWarning("Framework::Audio(): Sound service not present!");
@@ -779,7 +780,11 @@ namespace Foundation
 
     void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
     {
-        default_scene_ = scene;
+        if(scene != default_scene_)
+        {
+            default_scene_ = scene;
+            emit DefaultWorldSceneChanged(scene);
+        }
     }
 
     const Framework::SceneMap &Framework::GetSceneMap() const

@@ -42,7 +42,7 @@ namespace Console
         
         // Init internals
         console_ui_->setupUi(console_widget_);
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (ui)
         {
             proxy_widget_ = ui->AddWidgetToScene(console_widget_);
@@ -112,6 +112,12 @@ namespace Console
         }
     }
 
+    void UiConsoleManager::KeyPressed(KeyEvent *key_event)
+    {
+        if (key_event->keyCode == Qt::Key_F1)
+            ToggleConsole();
+    }
+
     void UiConsoleManager::ToggleConsole()
     {
         if (!ui_view_)
@@ -119,7 +125,7 @@ namespace Console
 
         if (!hooked_to_scenes_)
         {
-            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
             if (ui)
             {
                 QGraphicsScene *scene = ui->GetScene("Inworld");

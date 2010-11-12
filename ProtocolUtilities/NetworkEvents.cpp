@@ -7,32 +7,26 @@
 namespace ProtocolUtilities
 {
     ClientParameters::ClientParameters() :
-        agentID(RexUUID()),
-        sessionID(RexUUID()),
-        regionID(RexUUID()),
-        circuitCode(0),
-        sessionHash(""),
-        gridUrl(""),
-        avatarStorageUrl(""),
-        seedCapabilities(""),
         regionX(1000),
-        regionY(1000) {}
+        regionY(1000)
+    {
+    }
 
-    /// Resets parameters.
     void ClientParameters::Reset()
     {
-        agentID = RexUUID();
-        sessionID = RexUUID();
-        regionID = RexUUID();
-        uint32_t circuitCode = 0;
-        std::string sessionHash = "";
-        std::string gridUrl = "";
-        std::string avatarStorageUrl = "";
-        std::string seedCapabilities = "";        
-        uint16_t regionX = 1000;
-        uint16_t regionY = 1000;
-        //inventory.reset();
+        agentID.SetNull();
+        sessionID.SetNull();
+        regionID.SetNull();
+        circuitCode = 0;
+        sessionHash = "";
+        gridUrl = "";
+        avatarStorageUrl = "";
+        seedCapabilities = "";
+        regionX = 1000;
+        regionY = 1000;
+        inventory.reset();
         if (buddy_list)
             buddy_list->Clear();
+        buddy_list.reset();
     }
 }

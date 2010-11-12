@@ -13,10 +13,8 @@
 #include "EC_DynamicComponent.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
-#include "ConfigurationManager.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
-
 #include <QtBrowserItem>
 #include <QLayout>
 #include <QShortcut>
@@ -170,6 +168,11 @@ namespace ECEditor
         event->ignore();
     }
 
+    void ECBrowser::focusInEvent(QFocusEvent *event)
+    {
+        QtTreePropertyBrowser::focusInEvent(event);
+    }
+
     bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action)
     {
         if (action == Qt::IgnoreAction)
@@ -264,9 +267,9 @@ namespace ECEditor
                             return false;
 
                         std::vector<QVariant> variants = attribute->Get();
-                        if(variants.size() > index)
+                        if ((int)variants.size() > index)
                             variants[index] = asset_id;
-                        else if(variants.size() == index)
+                        else if((int)variants.size() == index)
                             variants.push_back(asset_id);
                         else
                             return false;
@@ -592,14 +595,10 @@ namespace ECEditor
             return;
 
         bool ok = false;
-        QStringList attributeList;
-        StringVector attributeTypes = framework_->GetComponentManager()->GetAttributeTypes();
-        for(uint i = 0; i < attributeTypes.size(); i++)
-            attributeList.push_back(QString::fromStdString(attributeTypes[i]));
-
         //! @todo replace this code with a one that will use Dialog::open method and listens a signal
         //! that will tell us when dialog is closed. Should be more safe way to get this done.
-        QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Type name:"), attributeList, 0, false, &ok);
+        QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
+            framework_->GetComponentManager()->GetAttributeTypes(), 0, false, &ok);
         if (!ok)
             return;
         QString name = QInputDialog::getText(this, tr("Give attribute name"), tr("Name:"), QLineEdit::Normal, QString(), &ok);

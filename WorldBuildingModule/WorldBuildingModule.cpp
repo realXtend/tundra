@@ -38,10 +38,10 @@ namespace WorldBuilding
     {        
         // Init and register services
         build_scene_manager_ = BuildServicePtr(new BuildSceneManager(this, GetFramework()));
-        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldBuilding, build_scene_manager_);
+        GetFramework()->GetServiceManager()->RegisterService(Service::ST_WorldBuilding, build_scene_manager_);
 
         opensim_scene_service_ = OpenSimSceneServicePtr(new OpenSimSceneService(this, GetFramework()));
-        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_OpenSimScene, opensim_scene_service_);
+        GetFramework()->GetServiceManager()->RegisterService(Service::ST_OpenSimScene, opensim_scene_service_);
     }
 
     void WorldBuildingModule::PostInitialize()

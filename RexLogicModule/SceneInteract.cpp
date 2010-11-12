@@ -22,7 +22,7 @@ SceneInteract::SceneInteract(Foundation::Framework *fw) :
     lastY_(-1),
     itemUnderMouse_(false)
 {
-    renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer);
+    renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer);
 
     input_ = framework_->GetInput()->RegisterInputContext("SceneInteract", 100);
     input_->SetTakeMouseEventsOverQt(true);

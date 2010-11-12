@@ -160,8 +160,6 @@ namespace OgreRenderer
     {
         RemoveLogListener();
 
-        NaaliMainWindow *main_window_ = framework_->Ui()->MainWindow();
-
         if ((scenemanager_) && (scenemanager_->getRenderQueue()))
             scenemanager_->getRenderQueue()->setRenderableListener(0);
 
@@ -197,7 +195,7 @@ namespace OgreRenderer
 
     void Renderer::InitializeEvents()
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
         event_manager->RegisterEvent(renderercategory_id_, Events::POST_RENDER, "PostRender");
         event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_CLOSED, "WindowClosed");
@@ -552,6 +550,7 @@ namespace OgreRenderer
         }
 
         bool applyFPSLimit = true;
+        UNREFERENCED_PARAM(applyFPSLimit);
 
         NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
 
@@ -1205,7 +1204,7 @@ namespace OgreRenderer
             return QPixmap::fromImage(captured_pixmap);
 
         // Resize rendering texture if needed
-        if (image_rendering->getWidth() != window_width || image_rendering->getHeight() != window_height)
+        if ((int)image_rendering->getWidth() != window_width || (int)image_rendering->getHeight() != window_height)
         {
             ResetImageRendering();
             PrepareImageRendering(window_width, window_height);

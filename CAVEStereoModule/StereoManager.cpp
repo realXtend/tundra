@@ -609,7 +609,7 @@ namespace CAVEStereo
         Ogre::ConfigFile cf;
         cf.load(filename.c_str());
 
-        StereoMode mode;
+        StereoMode mode = SM_NONE;
 
         const Ogre::String &modeName = cf.getSetting("Stereo mode","Stereoscopy");
         const StereoModeList::const_iterator end = available_nodes_.end();
@@ -635,8 +635,7 @@ namespace CAVEStereo
         setEyesSpacing(Ogre::StringConverter::parseReal(cf.getSetting("Eyes spacing","Stereoscopy")));
         setScreenWidth(Ogre::StringConverter::parseReal(cf.getSetting("Screen width","Stereoscopy")));
         inverseStereo(Ogre::StringConverter::parseBool(cf.getSetting("Inverse stereo","Stereoscopy")));
-        
+
         return mode;
     }
-
 }

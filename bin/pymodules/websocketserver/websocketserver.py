@@ -21,9 +21,7 @@ class NaaliWebsocketServer(circuits.BaseComponent):
 
     def __init__(self):
         circuits.BaseComponent.__init__(self)
-        print "websocket listen.."
         self.sock = eventlet.listen(('0.0.0.0', 9999))
-        print "..done"
         self.server = async_eventlet_wsgiserver.server(self.sock, handle_clients)
         print "websocket server started."
 
@@ -31,9 +29,7 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         self.clientavs = {}
 
     def newclient(self, clientid, position, orientation):
-        #self.clients.add()
         ent = naali.createMeshEntity("Jack.mesh")
-        self.previd += 1
 
         ent.placeable.Position = Vec3(position[0], position[1], position[2])
 
@@ -77,7 +73,6 @@ def handle_clients(ws):
         # connection break from the loop. It is important to remove
         # the socket from clients set
 
-
         try:
             msg = ws.wait()
         except socket.error:
@@ -95,6 +90,7 @@ def handle_clients(ws):
             function, params = json.loads(msg)
         except ValueError, error:
             print error
+            continue
 
         if function == 'CONNECTED':
             ws.send(json.dumps(['initGraffa', {}]))
@@ -119,7 +115,6 @@ def handle_clients(ws):
             ws.send(json.dumps(['logMessage', {'message': 'Naps itelles!'}]))
             
         elif function == 'giev update':
-            print params
             id = params.get('id')
             position = params.get('position')
             orientation = params.get('orientation')
@@ -144,6 +139,17 @@ def handle_clients(ws):
                           'orientation': orientation,
                           }])
 
+        elif function == 'updateObject':
+            id = params['id']
+            data = params['data']
+
+
+            entity = scene.GetEntityRaw(id)
+            component = entity.GetComponentRaw('EC_DynamicComponent', 'door')
+            
+            component.SetAttribute('opened', data['opened'])
+                    
+
                 
         elif function == 'setSize':
             y_max = params['height']
@@ -155,6 +161,3 @@ def handle_clients(ws):
 
     clients.remove(ws)
     print 'END', ws
-
-def handle_move():
-    pass
