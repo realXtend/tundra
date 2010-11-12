@@ -48,6 +48,8 @@ namespace
         if (name.find(".jpg") != std::string::npos || name.find(".png") != std::string::npos || name.find(".tga") != std::string::npos
             || name.find(".bmp") != std::string::npos || name.find(".dds") != std::string::npos)
             return "OgreTexture";
+        if (name.find(".particle") != std::string::npos)
+            return "OgreParticle";
 
         return "";
         // Note: There's a separate OgreImageTextureResource which isn't handled above.
@@ -58,7 +60,7 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
     // Find an asset provider that can take in the request for the desired assetRef.
     IAssetTransfer *transfer = new IAssetTransfer(); ///\todo Don't new here, but have the asset provider new it.
-    transfer->source = AssetReference(assetRef, assetType);
+    transfer->source = AssetReference(assetRef/*, assetType*/);
     // (the above leaks, but not fixing before the above todo is properly implemented -jj.)
 
     // Get the asset service. \todo This will be removed. There will be no asset service. -jj.
@@ -66,14 +68,14 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
     if (!asset_service)
     {
         LogError("Asset service doesn't exist.");
-        return false;
+        return 0;
     }
 
     Foundation::RenderServiceInterface *renderer = framework->GetService<Foundation::RenderServiceInterface>();
     if (!renderer)
     {
         LogError("Renderer service doesn't exist.");
-        return false;
+        return 0;
     }
 
     request_tag_t tag;
@@ -92,7 +94,7 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
 IAssetTransfer *AssetAPI::RequestAsset(const AssetReference &ref)
 {
-    return RequestAsset(ref.ref, ref.type);
+    return RequestAsset(ref.ref, ""/*ref.type*/);
 }
 
 bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
@@ -124,6 +126,8 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
                 IAssetTransfer *transfer = iter->second;
                 transfer->resourcePtr = resourceReady->resource_;
                 assert(transfer);
+                //! \todo Causes linker error in debug build, must be disabled for now
+                //transfer->internalResourceName = QString::fromStdString(resourceReady->resource_->GetInternalName());
                 transfer->EmitAssetLoaded();
             }
         }

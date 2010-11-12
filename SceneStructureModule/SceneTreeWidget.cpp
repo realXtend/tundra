@@ -87,12 +87,12 @@ EntityItem *ComponentItem::Parent() const
 }
 
 // AssetItem
-AssetItem::AssetItem(const QString &name, const QString &id, const QString &type, QTreeWidgetItem *parent) :
+
+AssetItem::AssetItem(const QString &name, const QString &ref, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent)
 {
     this->name = name;
-    this->id = id;
-    this->type = type;
+    this->id = ref;
 }
 
 // Selection

@@ -7,7 +7,6 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "RenderServiceInterface.h"
-#include "CompositionHandler.h"
 #include "ForwardDefines.h"
 
 #include <QObject>
@@ -16,11 +15,14 @@
 #include <QRect>
 #include <QPixmap>
 #include <QImage>
+#include <OgrePrerequisites.h>
 
 class NaaliRenderWindow;
 
 namespace OgreRenderer
 {
+    
+
     /// Shadow quality settings
     enum ShadowQuality
     {
@@ -44,6 +46,7 @@ namespace OgreRenderer
     class StereoController;
     class CompositionHandler;
     class GaussianListener;
+    class CompositionHandler;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;

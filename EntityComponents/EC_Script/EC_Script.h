@@ -5,6 +5,7 @@
 
 #include "IComponent.h"
 #include "Declare_EC.h"
+#include "AssetReference.h"
 
 class IScriptInstance;
 
@@ -19,10 +20,12 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QString: scriptRef
-<div></div> 
+<li>AssetReference: scriptRef
+<div>Reference the the script asset.</div> 
 <li>QString: type
-<div></div> 
+<div>Type of the script as string (js/py).</div> 
+<li>bool: runOnLoad
+<div>Is the script run as soon as the script reference is set/loaded.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -32,14 +35,15 @@ Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li> "RunScript": Runs the script. Usage: RunScript [filename]
+<li> "UnloadScript": Stops and unloads the script. Usage: UnloadScript [filename]
 </ul>
 </td>
 </tr>
 
 Does not emit any actions.
 
-<b>Doesn't depend on any entity Component</b>.
+<b>Doesn't depend on any other entity-component</b>.
 </table>
 */
 class EC_Script: public IComponent
@@ -57,14 +61,14 @@ public:
     /// Type of the script as string (js/py)
     Q_PROPERTY(QString type READ gettype WRITE settype);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, type);
-    
+
     /// Is the script run as soon as the script reference is set/loaded.
     Q_PROPERTY(bool runOnLoad READ getrunOnLoad WRITE setrunOnLoad);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, runOnLoad);
-    
-    /// Reference to a script file.
-    Q_PROPERTY(QString scriptRef READ getscriptRef WRITE setscriptRef);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, scriptRef);
+
+    //! Script asset reference
+    Q_PROPERTY(AssetReference scriptRef READ getscriptRef WRITE setscriptRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, scriptRef);
 
     /// Sets new script instance.
     /** Unloads and deletes possible already existing script instance.
@@ -78,20 +82,14 @@ public:
 
 public slots:
     /// Runs the script instance.
-    void Run();
-
-    /// This is an overloaded function.
-    /** @param name Name of the script. The script is ran only if the script name matches.
+    /** @param name Name of the script, optional. The script is ran only if the script name matches.
     */
-    void Run(const QString &name);
+    void Run(const QString &name = QString());
 
-    /// Stops the script instance.
-    void Stop();
-
-    /// This is an overloaded function.
-    /** @param name Name of the script. The script is ran only if the script name matches.
+    /// Stops and unloads the script.
+    /** @param name Name of the script, optional. The script is unloaded only if the script name matches.
     */
-    void Stop(const QString &name);
+    void Unload(const QString &name = QString());
 
 signals:
     /// Emitted when script reference changes.

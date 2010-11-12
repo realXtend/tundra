@@ -156,7 +156,8 @@ void EC_VolumeTrigger::UpdateSignals()
 
     Scene::SceneManager* scene = parent->GetScene();
     Physics::PhysicsWorld* world = owner_->GetPhysicsWorldForScene(scene);
-    connect(world, SIGNAL(Updated(float)), this, SLOT(OnPhysicsUpdate()));
+    if (world)
+        connect(world, SIGNAL(Updated(float)), this, SLOT(OnPhysicsUpdate()));
 }
 
 void EC_VolumeTrigger::CheckForRigidBody()

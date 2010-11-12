@@ -660,24 +660,26 @@ namespace ECEditor
     template<> void ECAttributeEditor<QString>::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
-        if(!useMultiEditor_)
+        if (!useMultiEditor_)
         {
             QtStringPropertyManager *qStringPropertyManager = new QtStringPropertyManager(this);
-            ECEditor::LineEditPropertyFactory *lineEditFactory = new ECEditor::LineEditPropertyFactory(this);
+            LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
             propertyMgr_ = qStringPropertyManager;
             factory_ = lineEditFactory;
             rootProperty_ = qStringPropertyManager->addProperty(name_);
-            if(rootProperty_)
+            if (rootProperty_)
             {
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+                connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
+
             owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
         }
         else
         {
             InitializeMultiEditor();
         }
+
         emit EditorChanged(name_);
     }
 
@@ -689,7 +691,7 @@ namespace ECEditor
 
     template<> void ECAttributeEditor<QString>::Update()
     {
-        if(!useMultiEditor_)
+        if (!useMultiEditor_)
         {
             ComponentPtr comp = components_[0].lock();
             QtStringPropertyManager *qStringPropertyManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
@@ -721,7 +723,7 @@ namespace ECEditor
         if(!useMultiEditor_)
         {
             QtStringPropertyManager *qStringPropertyManager = new QtStringPropertyManager(this);
-            ECEditor::LineEditPropertyFactory *lineEditFactory = new ECEditor::LineEditPropertyFactory(this);
+            LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
             propertyMgr_ = qStringPropertyManager;
             factory_ = lineEditFactory;
             rootProperty_ = qStringPropertyManager->addProperty(name_);
@@ -880,23 +882,25 @@ namespace ECEditor
 
     template<> void ECAttributeEditor<AssetReference>::Update()
     {
-        if(!useMultiEditor_)
+        if (!useMultiEditor_)
         {
-            QList<QtProperty*> children = rootProperty_->subProperties();
-            if(children.size() == 2)
+            //QList<QtProperty*> children = rootProperty_->subProperties();
+            //if(children.size() == 2)
+            //{
+            ComponentPtr comp = components_[0].lock();
+            //QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
+            QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
+            Attribute<AssetReference> *attribute = dynamic_cast<Attribute<AssetReference> *>(FindAttribute(comp));
+            if (!attribute || !stringManager)
             {
-                ComponentPtr comp = components_[0].lock();
-                QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
-                Attribute<AssetReference> *attribute = dynamic_cast<Attribute<AssetReference> *>(FindAttribute(comp));
-                if(!attribute || !stringManager)
-                {
-                    //! @todo add log error.
-                    return;
-                }
-
-                stringManager->setValue(children[0], attribute->Get().ref);
-                stringManager->setValue(children[1], attribute->Get().type);
+                //! @todo add log error.
+                return;
             }
+
+            stringManager->setValue(rootProperty_, attribute->Get().ref);
+//                stringManager->setValue(children[0], attribute->Get().ref);
+//                stringManager->setValue(children[1], attribute->Get().type);
+            //}
         }
         else
             UpdateMultiEditorValue();
@@ -905,47 +909,43 @@ namespace ECEditor
     template<> void ECAttributeEditor<AssetReference>::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
-        if(!useMultiEditor_)
+        if (!useMultiEditor_)
         {
-            QtGroupPropertyManager *groupManager = new QtGroupPropertyManager(this);
             QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
             LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
-            propertyMgr_ = groupManager;
+            propertyMgr_ = stringManager;
             factory_ = lineEditFactory;
-            optionalPropertyManagers_.push_back(stringManager);
 
-            rootProperty_ = groupManager->addProperty();
-            rootProperty_->setPropertyName(name_);
-            if(rootProperty_)
+            rootProperty_ = propertyMgr_->addProperty(name_);
+            assert(rootProperty_);
+            if (rootProperty_)
             {
-                QtProperty *childProperty = 0;
-                childProperty = stringManager->addProperty("Asset ID");
-                rootProperty_->addSubProperty(childProperty);
-
-                childProperty = stringManager->addProperty("Asset type");
-                rootProperty_->addSubProperty(childProperty);
-
                 Update();
-                QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+                connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), SLOT(PropertyChanged(QtProperty*)));
             }
+
             owner_->setFactoryForManager(stringManager, lineEditFactory);
         }
         else
             InitializeMultiEditor();
+
         emit EditorChanged(name_);
     }
 
     template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property)
     {
-        if(listenEditorChangedSignal_)
+        if (listenEditorChangedSignal_)
+            SetValue(AssetReference(property->valueText()));
+        /*
+        if (listenEditorChangedSignal_)
         {
             QList<QtProperty*> children = rootProperty_->subProperties();
-            if(children.size() == 2)
+            if (children.size() == 2)
             {
                 ComponentPtr comp = components_[0].lock();
                 QtStringPropertyManager *strMgr = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
                 Attribute<AssetReference> *attribute = dynamic_cast<Attribute<AssetReference> *>(FindAttribute(comp));
-                if(!attribute || !strMgr)
+                if (!attribute || !strMgr)
                 {
                     //! @todo add log error.
                     return;
@@ -954,6 +954,7 @@ namespace ECEditor
                 SetValue(AssetReference(strMgr->value(children[0]), strMgr->value(children[1])));
             }
         }
+        */
     }
 
     //---------------------------TRANSFORM----------------------------

@@ -1100,7 +1100,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, RaycastResult *resu
         ++iter;
     }
 
-    if (!camera)
+    if ((!camera) || (!camera->ViewEnabled()))
         return false;
 
     Ogre::Vector3 nearest_world_pos(Ogre::Vector3::ZERO);

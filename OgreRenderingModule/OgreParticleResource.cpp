@@ -178,6 +178,9 @@ namespace OgreRenderer
             }
         }
         
+        // Give only the name of the first template
+        internal_name_ = SanitateAssetIdForOgre(id_) + "_0";
+        
         // Theoretical success if at least one template was created
         return IsValid();
     }

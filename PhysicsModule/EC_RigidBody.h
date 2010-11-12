@@ -6,6 +6,7 @@
 #include "Core.h"
 #include "IComponent.h"
 #include "LinearMath/btMotionState.h"
+#include "AssetReference.h"
 #include "Declare_EC.h"
 
 #include <QVector>
@@ -46,7 +47,7 @@ Registered by Physics::PhysicsModule.
 <div>Shape type. Can be box, sphere, cylinder, capsule, trimesh, or heightfield (not yet supported)</div>
 <li>Vector3df: size
 <div>Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.</div>
-<li>QString: collisionMeshId
+<li>QString: collisionMeshRef
 <div>Asset ref of the collision mesh. Only effective if shapetype is TriMesh.</div>
 <li>float: friction
 <div>Friction coefficient between 0.0 - 1.0.</div>
@@ -59,7 +60,8 @@ Registered by Physics::PhysicsModule.
 <li>Vector3df: linearFactor
 <div>Specifies the axes on which forces can act on the object, making it move</div>
 <li>Vector3df: angularFactor
-<div>Specifies the axes on which torques can act on the object, making it rotate. Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself.</div>
+<div>Specifies the axes on which torques can act on the object, making it rotate.
+Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself.</div>
 <li>bool: phantom
 <div>If true, contact response is disabled, ie. there is no collision interaction between this object and others.</div>
 <li>bool: drawDebug
@@ -140,11 +142,11 @@ public:
     //! Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.
     Q_PROPERTY(Vector3df size READ getsize WRITE setsize)
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, size);
-    
-    //! Collision mesh asset ID
-    Q_PROPERTY(QString collisionMeshId READ getcollisionMeshId WRITE setcollisionMeshId);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, collisionMeshId);
-    
+
+    //! Collision mesh asset reference.
+    Q_PROPERTY(AssetReference collisionMeshRef READ getcollisionMeshRef WRITE setcollisionMeshRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, collisionMeshRef);
+
     //! Friction
     Q_PROPERTY(float friction READ getfriction WRITE setfriction);
     DEFINE_QPROPERTY_ATTRIBUTE(float, friction);
@@ -189,11 +191,10 @@ public:
     
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }
-    
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
-    
+
     //! btMotionState override. Called when Bullet wants us to tell the body's initial transform
     virtual void getWorldTransform(btTransform &worldTrans) const;
+
     //! btMotionState override. Called when Bullet wants to tell us the body's current transform
     virtual void setWorldTransform(const btTransform &worldTrans);
 
@@ -205,7 +206,8 @@ signals:
         \param normal World normal of collision
         \param distance Contact distance
         \param impulse Impulse applied to the objects to separate them
-        \param newCollision True if same collision did not happen on the previous frame. If collision has multiple contact points, newCollision can only be true for the first of them.
+        \param newCollision True if same collision did not happen on the previous frame.
+        If collision has multiple contact points, newCollision can only be true for the first of them.
      */
     void PhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
     
@@ -259,13 +261,15 @@ public slots:
     void ResetForces();
     
     //! Forcibly set rotation
-    /*! Use this instead of just setting the placeable's full transform to allow linear motion to continue uninterrupted (with proper inter-step interpolation)
+    /*! Use this instead of just setting the placeable's full transform to allow linear motion
+        to continue uninterrupted (with proper inter-step interpolation)
         \param rotation New rotation (eulers)
      */
     void SetRotation(const Vector3df& rotation);
     
     //! Rotate the body
-    /*! Use this instead of just setting the placeable's full transform to allow linear motion to continue uninterrupted (with proper inter-step interpolation)
+    /*! Use this instead of just setting the placeable's full transform to allow linear motion
+        to continue uninterrupted (with proper inter-step interpolation)
         \param rotation Delta rotation (eulers)
      */
     void Rotate(const Vector3df& rotation);
@@ -285,7 +289,7 @@ public slots:
     */
     void GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax);
 
-    btRigidBody* GetRigidBody() { return body_; }
+    btRigidBody* GetRigidBody() const { return body_; }
     
 private slots:
     //! Called when the parent entity has been set.
@@ -305,7 +309,10 @@ private slots:
     
     //! Called when EC_Terrain has been regenerated
     void OnTerrainRegenerated();
-    
+
+    //! Called when collision mesh has been downloaded.
+    void OnCollisionMeshAssetLoaded();
+
 private:
     //! constructor
     /*! \param module Physics module
@@ -370,14 +377,10 @@ private:
     
     //! Cached shapetype (last created)
     int cachedShapeType_;
+
     //! Cached shapesize (last created)
     Vector3df cachedSize_;
-    
-    //! Request tag for the collision mesh
-    request_tag_t collision_mesh_tag_;
-    //! Resource event category
-    event_category_id_t resource_event_category_;
-    
+
     //! Bullet triangle mesh
     boost::shared_ptr<btTriangleMesh> triangleMesh_;
     

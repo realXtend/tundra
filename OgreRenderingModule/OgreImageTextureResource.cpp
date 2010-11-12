@@ -49,7 +49,7 @@ namespace OgreRenderer
             if (texturequality_ == Texture_Low)
                 image.resize(image.getWidth() / 2, image.getHeight() / 2);
             ogre_texture_ = Ogre::TextureManager::getSingleton().loadImage(SanitateAssetIdForOgre(id_), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
-            
+            internal_name_ = SanitateAssetIdForOgre(id_);
         }
         catch (Ogre::Exception &e)
         {
