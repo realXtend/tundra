@@ -274,7 +274,7 @@ void JavascriptModule::UnloadStartupScripts()
 {
     // Stop the startup scripts, if any running
     for (uint i = 0; i < startupScripts_.size(); ++i)
-        startupScripts_[i]->Stop();
+        startupScripts_[i]->Unload();
     for (uint i = 0; i < startupScripts_.size(); ++i)
         delete startupScripts_[i];
     startupScripts_.clear();
