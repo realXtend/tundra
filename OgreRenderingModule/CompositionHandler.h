@@ -97,6 +97,14 @@ namespace OgreRenderer
         //! Convenience funtion to remove specified  compositor from the default viewport
         void RemoveCompositorFromViewport(const std::string &compositor);
 
+        //! Apply a shader parameter to the specified compositor.
+        /*! The compositor should be enabled of course
+        */
+        void SetCompositorParameter(const std::string &compositorName, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
+
+        //! Enable or disable a compositor that has already been added to the default viewport
+        void SetEnableCompositor(const std::string &compositor, bool enable) const;
+
     private:
         struct Compositor
         {
@@ -107,6 +115,12 @@ namespace OgreRenderer
 
         //! Adds and enables compositor on viewport
         bool AddCompositor(const std::string &compositor, Ogre::Viewport *vp, int position);
+
+        //! Set gpu program parameters for the specified composition target
+        void SetCompositorTargetParameters(Ogre::CompositionTargetPass *target, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
+
+        //! Set gpu program parameters for the specified material
+        void SetMaterialParameters(const Ogre::MaterialPtr &material, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
 
         //Used to specify postprocessing effects currently available. Number is needed to map server requests to the actual effect name.
         //std::vector<std::string> postprocess_effects_;

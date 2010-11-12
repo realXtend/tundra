@@ -10,6 +10,9 @@
 #include <DefaultLogger.h>
 #include <Ogre.h>
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport");
+
 using namespace Assimp;
 
 namespace AssImp
@@ -86,7 +89,7 @@ namespace AssImp
         } else
         {       
             // report error
-            Foundation::RootLogError(importer_->GetErrorString());
+            RootLogError(importer_->GetErrorString());
         }
     }
 
@@ -102,7 +105,7 @@ namespace AssImp
         } else
         {       
             // report error
-            Foundation::RootLogError(importer_->GetErrorString());
+            RootLogError(importer_->GetErrorString());
         }
     }
 
@@ -328,8 +331,8 @@ namespace AssImp
         } catch (Ogre::Exception &e)
         {
             // error
-            Foundation::RootLogError("Failed to create Ogre mesh. Reason: ");
-            Foundation::RootLogError(e.what());
+            RootLogError("Failed to create Ogre mesh. Reason: ");
+            RootLogError(e.what());
         }
 
         // import children
@@ -340,9 +343,9 @@ namespace AssImp
     void OpenAssetImport::AssImpLogStream::write(const char* message)
     {
 #ifdef _DEBUG
-        Foundation::RootLogDebug(message);
+        RootLogDebug(message);
 #else
-        Foundation::RootLogInfo(message);
+        RootLogInfo(message);
 #endif
     }
 }
