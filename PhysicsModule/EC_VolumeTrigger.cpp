@@ -202,7 +202,6 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 {
                     emit EntityLeave(entity.get());
                     disconnect(entity.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-                    LogDebug("Entity " + entity->GetName().toStdString() + " left volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
                 }
                 continue;
             }
@@ -231,7 +230,6 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
             {
                 emit EntityEnter(otherEntity);
                 connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-                LogDebug("Entity " + entity->GetName().toStdString() + " entered volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
             }
 
             entities_.insert(entity, true);
@@ -245,7 +243,6 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
             {
                 emit EntityEnter(otherEntity);
                 connect(otherEntity, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), this, SLOT(OnEntityRemoved(Scene::Entity*)));
-                LogDebug("Entity " + entity->GetName().toStdString() + " entered volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
             }
         }
         entities_.insert(entity, true);
@@ -261,7 +258,6 @@ void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
         entities_.erase(i);
 
         emit EntityLeave(entity);
-        LogDebug("Entity " + entity->GetName().toStdString() + " left volume trigger " + GetParentEntity()->GetName().toStdString() + ".");
     }
 }
 

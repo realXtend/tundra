@@ -23,9 +23,14 @@ Registered by OgreRenderer::OgreRenderingModule.
 <ul>
 <li>QString: compositorref
 <div>Name of the compositor (Ogre resource name), f.ex. "HDR"</div>
+<li>bool: enabled
+<div>Enables or disables this compositor effect. Useful for when you don't want to recreate and delete the component just to enable / disable an effect.</div>
 <li>int: priority
 <div>Priority for the compositor. Lower values mean the compositor is rendered earlier. Use -1 to auto order. If there are more
 than one compositor in the scene with the same priority, the order of the compositors is arbitrary.</div>
+<li>QVariantList: parameters
+<div>Key-value pair for shader parameters, separated with a '='. The value supports up to 4 floats (Vector4) separated by spaces.
+F.ex. 'strength=1.2' or 'color=1 0 0 0.5'</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -51,11 +56,17 @@ class EC_OgreCompositor : public IComponent
     
     DECLARE_EC(EC_OgreCompositor);
 public:
+    Q_PROPERTY(bool enabled READ getenabled WRITE setenabled);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
+
     Q_PROPERTY(QString compositorref READ getcompositorref WRITE setcompositorref);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, compositorref);
 
     Q_PROPERTY(int priority READ getpriority WRITE setpriority);
     DEFINE_QPROPERTY_ATTRIBUTE(int, priority);
+
+    Q_PROPERTY(QVariantList parameters READ getparameters WRITE setparameters);
+    DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, parameters);
 
     virtual ~EC_OgreCompositor();
 
@@ -66,7 +77,11 @@ private slots:
     void AttributeUpdated(IAttribute* attribute);
 
 private:
+    //! Enables or disables and sets the priority of the specified compositor based on the attributes
     void UpdateCompositor(const QString &compositor);
+
+    //! Updates compositor shader parameters
+    void UpdateCompositorParams(const QString &compositor);
 
     //! constructor
     /*! \param module Ogre module
