@@ -26,6 +26,9 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>int: priority
 <div>Priority for the compositor. Lower values mean the compositor is rendered earlier. Use -1 to auto order. If there are more
 than one compositor in the scene with the same priority, the order of the compositors is arbitrary.</div>
+<li>QVariantList: parameters
+<div>Key-value pair for shader parameters, separated with a '='. The value supports up to 4 floats (Vector4) separated by spaces.
+F.ex. 'strength=1.2' or 'color=1 0 0 0.5'</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -69,6 +72,7 @@ private slots:
     void AttributeUpdated(IAttribute* attribute);
 
 private:
+    //! Enables or disables and sets the priority of the specified compositor based on the attributes
     void UpdateCompositor(const QString &compositor);
 
     //! constructor
