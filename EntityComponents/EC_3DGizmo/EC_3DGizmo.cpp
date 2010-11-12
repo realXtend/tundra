@@ -91,10 +91,62 @@ void EC_3DGizmo::Manipulate(QVariant datum)
     std::cout << "3dgizmo update" << std::endl;
     for(int i = 0; i < attributes_.size(); i++) {
         IAttribute * attr = attributes_.at(i);
-        AttributeMetadata *meta = attr->GetMetadata();
-        std::cout << attr->GetNameString() << ":" << subproperties_.at(i).toStdString() << std::endl;
-        if(meta) {
-            std::cout << "meta:" << meta->description.toStdString() << std::endl;
+        if(attr->GetNameString() == "Transform") {
+            Attribute<Transform>* attribute = dynamic_cast<Attribute<Transform> *>(attr);
+            if(attribute && datum.type()==QVariant::Vector3D) {
+                Transform trans = attribute->Get();
+                QVector3D vec = datum.value<QVector3D>();
+                QString subproperty = subproperties_.at(i);
+                if(subproperty=="position") {
+                    trans.position.x = vec.x();
+                    trans.position.y = vec.y();
+                    trans.position.z = vec.z();
+                } else if (subproperty=="scale") {
+                    trans.scale.x = vec.x();
+                    trans.scale.y = vec.y();
+                    trans.scale.z = vec.z();
+                } else if (subproperty=="rotation") {
+                    trans.rotation.x = vec.x();
+                    trans.rotation.y = vec.y();
+                    trans.rotation.z = vec.z();
+                }
+            }
+        } else {
+            switch(datum.type()) {
+                case QVariant::Double:
+                    {
+                        float value = datum.toFloat();
+                        Attribute<float> *attribute = dynamic_cast<Attribute<float> *>(attr);
+                        if(attribute)
+                            attribute->Set(attribute->Get() + value, AttributeChange::Default);
+                    }
+                    break;
+                case QVariant::Int:
+                    {
+                        int value = datum.toInt();
+                        Attribute<int> *attribute = dynamic_cast<Attribute<int> *>(attr);
+                        if(attribute)
+                            attribute->Set(attribute->Get() + value, AttributeChange::Default);
+                    }
+                    break;
+                case QVariant::Bool:
+                    {
+                        bool value = datum.toBool();
+                        Attribute<bool> *attribute = dynamic_cast<Attribute<bool> *>(attr);
+                        if(attribute)
+                            attribute->Set(value, AttributeChange::Default);
+                    }
+                    break;
+                case QVariant::Vector3D:
+                    {
+                        QVector3D vec = datum.value<QVector3D>();
+                        Vector3df value(vec.x(), vec.y(), vec.z());
+                        Attribute<Vector3df> *attribute = dynamic_cast<Attribute<Vector3df> *>(attr);
+                        if(attribute)
+                            attribute->Set(attribute->Get() + value, AttributeChange::Default);
+                    }
+                    break;
+            }
         }
     }
     std::cout << " ... ok" << std::endl;
