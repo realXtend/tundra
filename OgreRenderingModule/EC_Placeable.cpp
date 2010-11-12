@@ -366,6 +366,16 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
     }
 }
 
+Vector3df  EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df& to)
+{
+    Quaternion orientation;
+    orientation.rotationFromTo(from,to);
+    Vector3df result;
+    orientation.toEuler(result);
+    result *= RADTODEG;
+    return result;
+}
+
 void EC_Placeable::Show()
 {
 	if (!link_scene_node_)
