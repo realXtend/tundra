@@ -686,13 +686,20 @@ namespace Avatar
         Ogre::MeshPtr mesh = entity->getMesh();
         if (mesh.isNull())
             return;
-        
+        if (!mesh->getNumSubMeshes())
+            return;
         for (uint m = 0; m < 1; ++m)
         {
             // Under current system, it seems vertices should only be hidden from first submesh
             Ogre::SubMesh *submesh = mesh->getSubMesh(m);
+            if (!submesh)
+                return;
             Ogre::IndexData *data = submesh->indexData;
+            if (!data)
+                return;
             Ogre::HardwareIndexBufferSharedPtr ibuf = data->indexBuffer;
+            if (ibuf.isNull())
+                return;
 
             unsigned long* lIdx = static_cast<unsigned long*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
             unsigned short* pIdx = reinterpret_cast<unsigned short*>(lIdx);
