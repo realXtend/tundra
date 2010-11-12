@@ -98,18 +98,19 @@ void EC_3DGizmo::Manipulate(QVariant datum)
                 QVector3D vec = datum.value<QVector3D>();
                 QString subproperty = subproperties_.at(i);
                 if(subproperty=="position") {
-                    trans.position.x = vec.x();
-                    trans.position.y = vec.y();
-                    trans.position.z = vec.z();
+                    trans.position.x += vec.x();
+                    trans.position.y += vec.y();
+                    trans.position.z += vec.z();
                 } else if (subproperty=="scale") {
-                    trans.scale.x = vec.x();
-                    trans.scale.y = vec.y();
-                    trans.scale.z = vec.z();
+                    trans.scale.x += vec.x();
+                    trans.scale.y += vec.y();
+                    trans.scale.z += vec.z();
                 } else if (subproperty=="rotation") {
-                    trans.rotation.x = vec.x();
-                    trans.rotation.y = vec.y();
-                    trans.rotation.z = vec.z();
+                    trans.rotation.x += vec.x();
+                    trans.rotation.y += vec.y();
+                    trans.rotation.z += vec.z();
                 }
+                attribute->Set(trans, AttributeChange::Default);
             }
         } else {
             switch(datum.type()) {
