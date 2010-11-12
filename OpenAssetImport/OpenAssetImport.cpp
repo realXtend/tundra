@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "OpenAssetImport.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport")
@@ -12,8 +13,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport")
 #include <DefaultLogger.h>
 #include <Ogre.h>
 
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport");
+#include "MemoryLeakCheck.h"
 
 using namespace Assimp;
 
@@ -21,7 +21,9 @@ namespace AssImp
 {
     OpenAssetImport::OpenAssetImport() :
         importer_(new Importer()),
+#include "DisableMemoryLeakCheck.h"
         logstream_(new AssImpLogStream()),
+#include "EnableMemoryLeakCheck.h"
 #ifdef _DEBUG
         loglevels_(Logger::DEBUGGING | Logger::INFO | Logger::ERR | Logger::WARN),
 #else
@@ -162,7 +164,7 @@ namespace AssImp
                 ogreMesh->setAutoBuildEdgeLists(false);
 
                 Ogre::Vector3 vmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-                Ogre::Vector3 vmax(std::numeric_limits<float>::min(), std::numeric_limits<float>::min(), std::numeric_limits<float>::min());
+                Ogre::Vector3 vmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
 
                 for (unsigned int i=0 ; i<node->mNumMeshes ; ++i)
                 {
@@ -171,7 +173,9 @@ namespace AssImp
                     Ogre::SubMesh *ogreSubmesh = ogreMesh->createSubMesh();
                     
                     ogreSubmesh->useSharedVertices = false;
+#include "DisableMemoryLeakCheck.h"
                     ogreSubmesh->vertexData = new Ogre::VertexData();
+#include "EnableMemoryLeakCheck.h"
                     ogreSubmesh->vertexData->vertexCount = mesh->mNumVertices;
                     Ogre::VertexData *data = ogreSubmesh->vertexData;
                     
