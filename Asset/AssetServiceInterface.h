@@ -46,6 +46,11 @@ namespace Foundation
             \return Pointer to asset           
          */
         virtual AssetPtr GetAsset(const std::string& asset_id, const std::string& asset_type) = 0;
+
+        //! Get absolute asset cache path
+        //! If asset is in cache this will return the absolute path to the file
+        //! If it does not exists 
+        virtual QString GetAbsoluteAssetPath(const std::string& asset_id, const std::string& asset_type) = 0;
         
         //! Gets incomplete asset
         /*! If not enough bytes received, will return empty pointer
