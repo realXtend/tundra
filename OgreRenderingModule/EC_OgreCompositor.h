@@ -57,6 +57,9 @@ public:
     Q_PROPERTY(int priority READ getpriority WRITE setpriority);
     DEFINE_QPROPERTY_ATTRIBUTE(int, priority);
 
+    Q_PROPERTY(QVariantList parameters READ getparameters WRITE setparameters);
+    DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, parameters);
+
     virtual ~EC_OgreCompositor();
 
     //! Set component as serializable.

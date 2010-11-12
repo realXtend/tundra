@@ -13,6 +13,7 @@ EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
     IComponent(module->GetFramework()),
     compositorref(this, "Compositor ref", ""),
     priority(this, "Priority", -1),
+    parameters(this, "Parameters"),
     owner_(checked_static_cast<OgreRenderer::OgreRenderingModule*>(module)),
     handler_(owner_->GetRenderer()->GetCompositionHandler())
 {
@@ -37,6 +38,32 @@ void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
     if (attribute == &priority)
     {
         UpdateCompositor(compositorref.Get());
+    }
+
+    if (attribute == &parameters && ViewEnabled())
+    {
+        QList< std::pair<std::string, Ogre::Vector4> > programParams;
+        foreach(QVariant keyvalue, parameters.Get())
+        {
+            QString params = keyvalue.toString();
+            QStringList sepParams = params.split('=');
+            if (sepParams.size() > 1)
+            {
+                try
+                {
+                    float value = boost::lexical_cast<float>(sepParams[1].toStdString());
+                    std::string name = sepParams[0].toStdString();
+
+                    programParams.push_back(std::make_pair(name, Ogre::Vector4(value, 0, 0, 0)));
+                } catch (boost::bad_lexical_cast &)
+                {
+                    // no need to handle
+                }
+            }
+        }
+        handler_->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
+        handler_->SetEnableCompositor(compositorref.Get().toStdString(), false);
+        handler_->SetEnableCompositor(compositorref.Get().toStdString(), true);
     }
 }
 
