@@ -76,7 +76,6 @@ namespace WorldBuilding
         if (ui)
         {
             backup_proxy_ = ui->AddWidgetToScene(backup_widget_);
-            ui->RegisterUniversalWidget("OpenSim Scene Backup Tool", backup_proxy_);
             backup_widget_->hide();
         }
         else
