@@ -1,0 +1,98 @@
+
+material Rex/TerrainPCF
+{
+	technique TerrainPCF
+	{
+		pass
+		{
+			iteration once
+			ambient 0 0 0
+			
+			fragment_program_ref Rex/TerrainPCFFS
+			{
+			}
+
+			vertex_program_ref Rex/TerrainPCFVS
+			{
+				//For 1st texunit (detail0)
+				param_named scale1 float2 1.00 1.00
+
+				//For 2nd texunit (detail1)
+				param_named scale2 float2 1.00 1.00
+
+				//For 3rd texunit (detail2)
+				param_named scale3 float2 1.00 1.00
+
+				//For 4th texunit (detail3)
+				param_named scale4 float2 1.00 1.00
+
+				//Detail texture positions (heights and fades)
+				param_named detailRegion0 float4 -5.0    0.0     25.0    40.0
+				param_named detailRegion1 float4 25.0    40.0    40.0    50.0
+				param_named detailRegion2 float4 40.0    50.0    1000.0  10000.0
+				param_named detailRegion3 float4 0.0     0.0     0.0     0.0
+
+				// Lowest supported terrain height (will be clamped if lower)
+				param_named lowestHeight float 0.0
+			}
+
+			//Detail0
+			texture_unit detail0
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			//Detail1
+			texture_unit detail1
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			//Detail2
+			texture_unit detail2
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			//Detail3
+			texture_unit detail3
+			{
+				texture terr_dirt-grass.jpg
+			}
+			
+			//Detail4
+			texture_unit detail4
+			{
+				texture terr_dirt-grass.jpg
+			}
+
+			texture_unit shadowMap0
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap1
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap2
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+		}
+	}
+
+	// fallback
+	technique Fallback
+	{
+		pass
+		{
+			texture_unit baseMap
+			{
+				texture TextureMissing.png
+			}
+		}
+      }	
+}
