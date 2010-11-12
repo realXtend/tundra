@@ -55,6 +55,8 @@ namespace Asset
         //! Update. Adds age to assets, removes oldest if cache size too big
         void Update(f64 frametime);
 
+        std::string GetAbsoluteFilePath(const std::string& asset_id, const std::string& asset_type);
+
     private slots:
         void InitDiskCaching();
         void ClearDiskCache();

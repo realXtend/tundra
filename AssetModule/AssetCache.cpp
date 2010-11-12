@@ -379,6 +379,11 @@ namespace Asset
         }
     }
 
+    std::string AssetCache::GetAbsoluteFilePath(const std::string& asset_id, const std::string& asset_type)
+    {
+        return cache_path_ + "/" + GetHash(asset_id)  + "." + asset_type;
+    }
+
     std::string AssetCache::GetHash(const std::string &asset_id)
     {
         QCryptographicHash md5_engine(QCryptographicHash::Md5);
