@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -126,12 +127,14 @@ namespace UiServices
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
         ///\todo This string comparison is awful, get rid of this.
+		/*$ BEGIN_MOD $
         if ( name.contains("inv", Qt::CaseInsensitive))
         {
             UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
         }
-        else
+        else*/
+		//$ END_MOD
             menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
     }
 
@@ -139,10 +142,12 @@ namespace UiServices
     {
         ///\todo This string comparison is awful, get rid of this.
         //if (name== "Inventory")
-        if ( name.contains("inv", Qt::CaseInsensitive) )
-            control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
+		//$ BEGIN_MOD $
+        //if ( name.contains("inv", Qt::CaseInsensitive) )
+        //    control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
+		//$ END_MOD $
         //else if (name== "Avatar Editor")
-        else if ( name.contains("avatar", Qt::CaseSensitive) )
+        /*$ END_MOD $ else $ END_MOD $*/ if  ( name.contains("avatar", Qt::CaseSensitive) )
            control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
         else
             menu_manager_->AddMenuItem(widget, name, menu, icon);

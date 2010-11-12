@@ -54,6 +54,8 @@ namespace UiServices
 		widget->setObjectName(widget->windowTitle());
 		UiProxyWidget *proxy;
 
+		QString test = widget->windowTitle();
+
 		//First of all, we check if it is moveable and if it has been placed in settings file..
 		if (moveable){
 			//save value
@@ -394,43 +396,32 @@ namespace UiServices
 		if(uiExternal){
 			QList<QString> panels;
 			panels << "Entity-component Editor";
-			panels << "Inventory";
+			panels << "Store";
 			panels << "Environment Editor";
 
 			if(new_name=="WorldBuilding"){
 				foreach(QString s, panels){
-					proxyDock pair = proxy_dock_list.value(s);
-					QDockWidget* qdock=pair.second;
-					UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
-					QWidget* widget;
-					if(qdock->widget()){
-						qdock->hide();
-						widget=qdock->widget();
-						uiExternal->RemoveExternalPanel(widget);
-						uiExternal->RemoveExternalMenuPanel(widget);
-						widget->setParent(0);
-						proxy->setWidget(widget);
-						owner_->GetInworldSceneController()->AddProxyWidget(proxy);
-					}
+					TransferWidgetOut(s,false);
 				}
-			}else if(new_name=="Inworld")
+			}else if(new_name=="Inworld" && old_name=="WorldBuilding")
 			{
+				//begin_mod
 				foreach(QString s, panels){
+					QSettings settings("Naali UIExternal", "UiExternal Settings");
+					QString pos = settings.value(s, QString("vacio")).toString();
+					if (pos == "outside" && uiExternal){
+						TransferWidgetOut(s,true); 
+					} else
+						TransferWidgetOut(s,false);
+					//Hide panels
 					proxyDock pair = proxy_dock_list.value(s);
 					QDockWidget* qdock=pair.second;
 					UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
-					QWidget* widget;
-					if(!qdock->widget()){
-						proxy->hide();
-						widget=proxy->widget();
-						owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy);
-						owner_->GetInworldSceneController()->RemoveWidgetFromMenu(proxy);
-						proxy->setWidget(0);
-						qdock->setWidget(widget);
-						if (uiExternal->AddExternalPanel(qdock))
-							uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels");
-						
-					}
+					if(qdock->widget())
+						HideWidget(qdock->widget());
+					else
+						HideWidget(proxy->widget());
+				//end_mod
 				}
 			}
 		}
@@ -490,6 +481,9 @@ namespace UiServices
 
 	//TO MANAGE MENU SETTINGS
 	void UiSceneService::CreateSettingsPanel(){
+		//Only if uiexternal available
+		if (!uiExternal)
+			return;
 		// Initialize post-process dialog.
 		settings_panel_ = new MenuSettingsWidget(this);
 		settings_panel_->setWindowTitle("Menu Config");

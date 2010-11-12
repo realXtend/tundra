@@ -31,7 +31,7 @@ namespace UiExternalServices
 		if (!root_menu_)
 			return;
 		//Qicon TODO
-		QMenu* menu = root_menu_->addMenu(name);
+		QMenu* menu = root_menu_->addMenu(name); 
 		category_menu_[name] = menu;
     }
 
@@ -99,8 +99,10 @@ namespace UiExternalServices
 			QMutableMapIterator<QString, QMenu*> i(category_menu_);
 			while (i.hasNext()) {
 				i.next();
-				if (i.value()->isEmpty())
+				if (i.value()->isEmpty()) {					
 					SAFE_DELETE(i.value());
+					category_menu_.remove(i.key());
+				}
 			}
 			return true;
 		}

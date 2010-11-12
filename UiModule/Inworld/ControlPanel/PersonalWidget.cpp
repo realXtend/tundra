@@ -125,6 +125,7 @@ namespace CoreUi
                 image_normal += "uibutton_INV_click.png";
             image_hover += "uibutton_INV_hover.png"; 
             image_pressed += "uibutton_INV_click.png";*/
+			return;
 			//$ END_MOD $
         }
         else

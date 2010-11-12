@@ -41,7 +41,6 @@ namespace Console
         {
 //$ BEGIN_MOD $
             proxy_widget_ = ui->AddWidgetToScene(console_widget_,true,true);
-			ui->AddWidgetToMenu(console_widget_);
 //$ END_MOD $
             proxy_widget_->setMinimumHeight(0);
             proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
@@ -50,7 +49,7 @@ namespace Console
             ui->RegisterUniversalWidget("Console", proxy_widget_);
 //$ BEGIN_MOD $
 			//ui->TransferWidgetOut("ConsoleWidget",false);
-			ui->AddWidgetToMenu(console_widget_, "Console", tr("Panels"));
+			ui->AddWidgetToMenu(console_widget_, "Console", tr("Panels"),"./data/ui/images/menus/edbutton_ENVED_normal");
 //$ END_MOD $  
         }
 

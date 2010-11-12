@@ -479,11 +479,11 @@ void InventoryModule::CreateInventoryWindow()
     SAFE_DELETE(inventoryWindow_); 
     inventoryWindow_ = new InventoryWindow;
 	//$ BEGIN_MOD $
-	//inventoryWindow_->setWindowTitle("Inventory");
+	inventoryWindow_->setWindowTitle("Store");
 	//$ END_MOD $
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, false, true);
+    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, true, true);
 	//$ BEGIN_MOD $	
 	ui->AddWidgetToMenu(inventoryWindow_, "Store", "Create");
     //ui->AddWidgetToMenu(inventoryWindow_);
