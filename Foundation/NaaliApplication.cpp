@@ -26,6 +26,8 @@ namespace Foundation
         app_translator_(new QTranslator)//,
 //        main_window_(new MainWindow(framework_))
     {
+        QApplication::setApplicationName("realXtend-Naali");
+
 #ifdef Q_WS_WIN
         // If under windows, add run_dir/plugins as library path
         // unix users will get plugins from their OS Qt installation folder automatically
