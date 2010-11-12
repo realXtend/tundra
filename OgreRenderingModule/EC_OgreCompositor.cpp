@@ -11,8 +11,10 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_OgreCompositor");
 
 EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
     IComponent(module->GetFramework()),
+    enabled(this, "Enabled", true),
     compositorref(this, "Compositor ref", ""),
     priority(this, "Priority", -1),
+    parameters(this, "Parameters"),
     owner_(checked_static_cast<OgreRenderer::OgreRenderingModule*>(module)),
     handler_(owner_->GetRenderer()->GetCompositionHandler())
 {
@@ -29,6 +31,13 @@ EC_OgreCompositor::~EC_OgreCompositor()
 
 void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
 {
+    if (attribute == &enabled)
+    {
+        handler_->SetEnableCompositor(compositorref.Get().toStdString(), enabled.Get());
+        UpdateCompositor(compositorref.Get());
+        UpdateCompositorParams(compositorref.Get());
+    }
+
     if (attribute == &compositorref)
     {
         UpdateCompositor(compositorref.Get());
@@ -38,11 +47,16 @@ void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
     {
         UpdateCompositor(compositorref.Get());
     }
+
+    if (attribute == &parameters)
+    {
+        UpdateCompositorParams(compositorref.Get());
+    }
 }
 
 void EC_OgreCompositor::UpdateCompositor(const QString &compositor)
 {
-    if (ViewEnabled())
+    if (ViewEnabled() && enabled.Get())
     {
         if (!previous_ref_.isEmpty())
             handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
@@ -56,6 +70,37 @@ void EC_OgreCompositor::UpdateCompositor(const QString &compositor)
         }
 
         previous_ref_ = compositor;
+    }
+}
+
+void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
+{
+    if (ViewEnabled() && enabled.Get())
+    {
+        QList< std::pair<std::string, Ogre::Vector4> > programParams;
+        foreach(QVariant keyvalue, parameters.Get())
+        {
+            QString params = keyvalue.toString();
+            QStringList sepParams = params.split('=');
+            if (sepParams.size() > 1)
+            {
+                try
+                {
+                    Ogre::Vector4 value;
+                    QStringList valueList = sepParams[1].split(" ", QString::SkipEmptyParts);
+                    if (valueList.size() > 0) value.x = boost::lexical_cast<Ogre::Real>(valueList[0].toStdString());
+                    if (valueList.size() > 1) value.y = boost::lexical_cast<Ogre::Real>(valueList[1].toStdString());
+                    if (valueList.size() > 2) value.z = boost::lexical_cast<Ogre::Real>(valueList[2].toStdString());
+                    if (valueList.size() > 3) value.w = boost::lexical_cast<Ogre::Real>(valueList[3].toStdString());
+                    std::string name = sepParams[0].toStdString();
+
+                    programParams.push_back(std::make_pair(name, value));
+                } catch(boost::bad_lexical_cast &) {}
+            }
+        }
+        handler_->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
+        handler_->SetEnableCompositor(compositorref.Get().toStdString(), false);
+        handler_->SetEnableCompositor(compositorref.Get().toStdString(), true);
     }
 }
 
