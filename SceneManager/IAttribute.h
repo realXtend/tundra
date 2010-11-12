@@ -14,7 +14,6 @@
 
 #include <map>
 
-#include <QList>
 #include <QVariant>
 
 class IComponent;
@@ -155,7 +154,7 @@ protected:
     AttributeMetadata *metadata_;
 };
 
-typedef QList<IAttribute*> AttributeVector;
+typedef std::vector<IAttribute*> AttributeVector;
 
 //! Attribute template class
 template<typename T> class Attribute : public IAttribute

@@ -11,8 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr.hpp>
 
-//#include <vector>
-#include <QList>
+#include <vector>
 
 class ISoundService;
 
@@ -73,8 +72,7 @@ namespace Foundation
 class RaycastResult;
 
 class IAttribute;
-//#typedef std::vector<IAttribute*> AttributeVector;
-typedef QList<IAttribute*> AttributeVector;
+typedef std::vector<IAttribute*> AttributeVector;
 
 class KeyEvent;
 class MouseEvent;
