@@ -290,18 +290,18 @@ namespace CoreUi
     {
         if (resize_animations_->direction() == QAbstractAnimation::Forward)
         {
-            foreach (MenuNode* child_node, children_)
-            {
+            //foreach (MenuNode* child_node, children_)
+            //{
                 //child_node->EnableText();
                 //child_node->GetMenuButton()->setStyleSheet(base_stylesheet_ + group_stylesheet + "background-color: rgba(255,255,255,50);");
-            }
+            //}
         }
         else if (resize_animations_->direction() == QAbstractAnimation::Backward)
         {
-            foreach (MenuNode* child_node, children_)
-            {
+            //foreach (MenuNode* child_node, children_)
+            //{
                 //child_node->ChangeMoveState(false);
-            }
+            //}
             if (IsExpanded())
             {
                 adjust_position_animations_->setDirection(QAbstractAnimation::Backward);

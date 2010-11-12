@@ -6,14 +6,23 @@
 #include <QObject>
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
+#include "AttributeChangeType.h"
+#include "WorldStream.h"
 
 class UiProxyWidget;
 class IEventData;
+class QSignalMapper;
+class EC_VoiceChannel;
 
 namespace Foundation
 {
     class Framework;
 }
+namespace Scene
+{
+    class Entity;
+}
+class IComponent;
 
 namespace MumbleVoip
 {
@@ -29,28 +38,42 @@ namespace MumbleVoip
     public:
         Provider(Foundation::Framework* framework, Settings* settings);
         virtual ~Provider();
+
     public slots:
         virtual Communications::InWorldVoice::SessionInterface* Session();
         virtual QString& Description();
         virtual void Update(f64 frametime);
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
         virtual QList<QString> Statistics();
-
         virtual void ShowMicrophoneAdjustmentDialog();
+
+    private slots:
+        void OnECAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+        void OnECVoiceChannelDestroyed(QObject* obj);
+        void OnSceneAdded(const QString &name);
+
     private:
+        void CreateSession();
         void CloseSession();
+        QString GetUsername();
+
         Foundation::Framework* framework_;
         QString description_;
         MumbleVoip::Session* session_;  //! \todo Use shared ptr ...
         ServerInfoProvider* server_info_provider_;
-        ServerInfo* server_info_;
         event_category_id_t networkstate_event_category_;
+        event_category_id_t framework_event_category_;
         Settings* settings_;
         QWidget* microphone_adjustment_widget_;
+        QList<EC_VoiceChannel*> ec_voice_channels_;
+        QMap<EC_VoiceChannel*, QString> channel_names_;
+        QSignalMapper* signal_mapper_;
+        ProtocolUtilities::WorldStreamPtr world_stream_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);
         void OnMicrophoneAdjustmentWidgetDestroyed();
+        void ECVoiceChannelChanged(const QString &channelname);
     };
 
 } // MumbleVoip

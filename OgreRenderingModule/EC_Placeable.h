@@ -220,6 +220,16 @@ public slots:
 	/// Toggle Visibility
 	void ToggleVisibility();
 
+signals:
+    //! emmitted when position has changed.
+    void PositionChanged(const QVector3D &pos);
+
+    //! emmitted when rotation has changed.
+    void OrientationChanged(const QQuaternion &rot);
+
+    //! emmitted when scale has changed.
+    void ScaleChanged(const QVector3D &scale);
+
 private slots:
     //! Handle attributechange
     /*! \param attribute Attribute that changed.

@@ -56,7 +56,7 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
 
 
 {
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 
     visibility_animation_timeline_->setFrameRange(0,100);
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
@@ -310,7 +310,7 @@ void EC_HoveringText::Redraw()
             texPtr = Ogre::TextureManager::getSingleton().getByName(textureName_);
             assert(!texPtr.isNull());
             // See if size/format changed, have to delete/recreate internal resources
-            if (img.width() != texPtr->getWidth() || img.height() != texPtr->getHeight())
+            if (img.width() != (int)texPtr->getWidth() || img.height() != (int)texPtr->getHeight())
             {
                 texPtr->freeInternalResources();
                 texPtr->setWidth(img.width());

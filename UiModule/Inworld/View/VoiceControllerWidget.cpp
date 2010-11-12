@@ -11,10 +11,7 @@
 
 #include "VoiceControllerWidget.h"
 #include "CommunicationsService.h"
-//#include <CommunicationsService.h>
-//#include <QMouseEvent>
 #include "VoiceUsersWidget.h" /// @todo Separate to VoiceParticipantWidget.h/cpp
-//#include "VoiceControl.h"
 
 #include "DebugOperatorNew.h"
 
@@ -24,29 +21,15 @@ namespace CommUI
 {
 
     VoiceControllerWidget::VoiceControllerWidget(Communications::InWorldVoice::SessionInterface* voice_session) :
-        voice_controller_(voice_session)
+        voice_session_(voice_session)
     {
         setupUi(this);
-
-        QStringList options;
-        options << "Mute" << "Continuous transmission" << "Push-to-Talk" << "Toggle mode";
-        transmissionModeComboBox->addItems(options);   
-        QObject::connect(transmissionModeComboBox, SIGNAL(currentIndexChanged(int)), (VoiceControllerWidget*)this, SLOT(ApplyTransmissionModeSelection(int)));
-
-        QObject::connect(showListButton, SIGNAL(clicked()), this, SLOT(OpenParticipantListWidget()));
+        UpdateUI();
 
         QObject::connect(muteAllCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ApplyMuteAllSelection()));
 
-        QObject::connect(voice_controller_.GetSession(), SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
-        QObject::connect(voice_controller_.GetSession(), SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
-        UpdateUI();
-
-        /// @todo Use Settings class from MumbeVoipModule
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
-        int default_voice_mode = settings.value("MumbleVoice/default_voice_mode").toInt();
-        transmissionModeComboBox->setCurrentIndex(default_voice_mode);
-
-        showListButton->hide(); // temporaly hide the button because there is an another similiar button.
+        QObject::connect(voice_session, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
+        QObject::connect(voice_session, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
 
         UpdateParticipantList();
         if (voice_session)
@@ -62,76 +45,28 @@ namespace CommUI
 
     }
 
-    void VoiceControllerWidget::ApplyTransmissionModeSelection(int selection)
-    {
-        UpdateUI();
-        voice_controller_.SetTransmissionMode(VoiceController::TransmissionMode(selection));
-    }
-
-    void VoiceControllerWidget::OpenParticipantListWidget()
-    {
-
-
-    }
-
     void VoiceControllerWidget::ApplyMuteAllSelection()
     {
         if (muteAllCheckBox->checkState() == Qt::Checked)
-        {
-            voice_controller_.GetSession()->DisableAudioReceiving();
-        }
+            voice_session_->DisableAudioReceiving();
         else
-        {
-            voice_controller_.GetSession()->EnableAudioReceiving();
-        }
+            voice_session_->EnableAudioReceiving();
     }
 
     void VoiceControllerWidget::UpdateUI()
     {
-        if (voice_controller_.GetSession()->Participants().length() > 0)
-            participantsCountLabel->setText(QString("%1 participants").arg(voice_controller_.GetSession()->Participants().length()));
+        if (voice_session_->Participants().length() > 0)
+            participantsCountLabel->setText(QString("%1 participants").arg(voice_session_->Participants().length()));
         else
             participantsCountLabel->setText("No participants");
-
-        switch(transmissionModeComboBox->currentIndex())
-        {
-        case 0:
-            transmissionModeDescriptionLabel->setText("Another participants cannot hear you.");
-            break;
-        case 1:
-            transmissionModeDescriptionLabel->setText("Another participants can here you.");
-            break;
-        case 2:
-            transmissionModeDescriptionLabel->setText("Another participants can here you while you keep pressing middle mouse button (MMB) down.");
-            break;
-        case 3:
-            transmissionModeDescriptionLabel->setText("Another participants can here you when you have enabled transmission. You can toggle the state by pressing middle mouse button (MMB).");
-            break;
-        }
-    }
-
-    void VoiceControllerWidget::SetPushToTalkOn()
-    {
-        voice_controller_.SetPushToTalkOn();
-    }
-
-    void VoiceControllerWidget::SetPushToTalkOff()
-    {
-        voice_controller_.SetPushToTalkOff();
-    }
-
-    void VoiceControllerWidget::Toggle()
-    {
-        voice_controller_.Toggle();
     }
 
     void VoiceControllerWidget::UpdateParticipantList()
     {
-        Communications::InWorldVoice::SessionInterface* session = voice_controller_.GetSession();
-        if (!session)
+        if (!voice_session_)
             return;
 
-        QList<Communications::InWorldVoice::ParticipantInterface*> list = session->Participants();
+        QList<Communications::InWorldVoice::ParticipantInterface*> list = voice_session_->Participants();
         foreach(Communications::InWorldVoice::ParticipantInterface* p, list)
         {
             bool widget_exist = false;
@@ -178,8 +113,7 @@ namespace CommUI
             area_height = number*user_widgets_[0]->height() + userListLayout->spacing()*(number-1) + userListLayout->contentsMargins().bottom() + userListLayout->contentsMargins().top();
 
         const QRect& geometry = userListScrollAreaWidgetContents->geometry();
-        userListScrollAreaWidgetContents->
-        setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
+        userListScrollAreaWidgetContents->setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
     }
 
 } // CommUI

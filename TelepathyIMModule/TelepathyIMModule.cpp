@@ -58,7 +58,6 @@ namespace Communication
 
     void TelepathyIMModule::PostInitialize()
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager(); 
         CommunicationService::CreateInstance(framework_);
         communication_service_ = CommunicationService::GetInstance();
         if (communication_service_ == 0)

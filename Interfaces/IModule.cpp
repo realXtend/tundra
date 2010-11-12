@@ -29,7 +29,7 @@ IModule::IModule(const std::string &name) :
     }
     catch (const std::exception &e)
     {
-        Foundation::RootLogError("Failed to create logger " + Name() + ":" + std::string(e.what()));
+        RootLogError("Failed to create logger " + Name() + ":" + std::string(e.what()));
     }
 }
 

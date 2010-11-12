@@ -9,22 +9,13 @@
 
 namespace CommUI
 {
-    //namespace InWorldVoice
-    //{
-    //    class SessionInterface;
-    //    class ParticipantInterface;
-    //}
-
     //! Presents state with a set of status icons.
-    //!
-    //! @todo: Move to out from UModule
-    //! @todo: Rename to VoiceStateButton
     class VoiceStateWidget : public QPushButton
     {
         Q_OBJECT
     public:
         enum State { STATE_OFFLINE, STATE_ONLINE };
-        VoiceStateWidget(QWidget * parent = 0, Qt::WindowFlags f = 0 );
+        VoiceStateWidget();
         virtual void setState(State state);
         virtual State state() const;
         virtual void SetVoiceActivity(double activity);

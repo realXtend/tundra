@@ -31,7 +31,7 @@ EC_Clone::EC_Clone(IModule *module) :
     entityClone_(0),
     sceneNode_(0)
 {
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 }
 
 EC_Clone::~EC_Clone()

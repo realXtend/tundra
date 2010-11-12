@@ -1,4 +1,5 @@
 import dotscene
+import math
 try:
     import naali
 except ImportError:
@@ -53,8 +54,15 @@ class OgreNode:
         # this kind of rotations during import. But I guess this is old problem and similar rotations
         # are being done elsewhere too.
         # looks like objects are often exported wrong, so rotate along x axis
-        p.Orientation = o * Quat(1,1,0,0)
-
+        #p.Orientation = o * Quat(1,1,0,0)
+        # XXX if artists want rotate along x axis they can do it so now by checking flip z-y checkbox
+        # at the moment it looks like, its needed to rotate each node 180 degrees along z axis to get it right
+        #p.Orientation = o * Quat(1,0,0,1) * Quat(1,0,0,1)
+        #p.Orientation = o * Quat(math.sqrt(0.5),0,0,math.sqrt(0.5)) * Quat(math.sqrt(0.5),0,0,math.sqrt(0.5))
+        rotate90z = Quat(1,0,0,1)
+        rotate90z.normalize() # ekvivalent of sqrt Quat above, (this fixes collisions)
+        p.Orientation = o * rotate90z* rotate90z
+        
         p.Scale = self.scale
 
 """
@@ -123,6 +131,7 @@ class NaaliSceneManagerFacade:
 def load_dotscene(fname):
     sm = NaaliSceneManagerFacade()
     ds = dotscene.DotScene(fname, sm)
+    ds.dotscenemanager.rotateScene90DegreesAlongAxis('x')
     return ds, ds.dotscenemanager
 
 def unload_dotscene(ds):

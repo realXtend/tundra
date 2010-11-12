@@ -8,6 +8,8 @@
 #include "Vector3D.h"
 
 #include <QDomNode>
+#include <QSet>
+#include <QHash>
 
 class EC_Placeable;
 class EC_OpenSimPrim;
@@ -47,15 +49,26 @@ namespace WorldBuilding
         SceneParser(QObject *parent, Foundation::Framework *framework);
         virtual ~SceneParser();
 
+        QSet<QString> *mesh_ref_set;
+        QSet<QString> *animation_ref_set;
+        QSet<QString> *particle_ref_set;
+        QSet<QString> *sound_ref_set;
+        QHash<QString, uint> *material_ref_set;
+
     public slots:
         void ExportToFile(const QString &filename, QList<Scene::Entity *> entities);
+        QByteArray ExportToByteArray(QList<Scene::Entity *> entities);
         QByteArray ParseAndAdjust(const QByteArray &content, const Vector3df &avatar_position);
+
+        QByteArray ExportSceneXml();
 
     private slots:
         QByteArray ExportXml(const QString &filename, const QList<Scene::Entity *> entity_list);
         QList<Scene::Entity*> GetAllPlaceableChildren(EC_Placeable *parent);
         void ProcessElement(QDomElement node_element, Vector3df adjust_pos);
-        void AddExportData(Scene::Entity *entity);
+
+        bool AddExportData(Scene::Entity *entity);
+        void RemoveExportData(QList<Scene::Entity *> entities);
 
     private:
         Foundation::Framework *framework_;
@@ -64,6 +77,8 @@ namespace WorldBuilding
         QString export_component_name_;
 
         entity_id_t processing_ent_id_;
+
+        
     };
 }
 #endif

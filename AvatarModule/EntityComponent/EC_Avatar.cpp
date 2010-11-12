@@ -28,7 +28,7 @@ EC_Avatar::EC_Avatar(IModule* module) :
     avatar_handler_(checked_static_cast<Avatar::AvatarModule*>(module)->GetAvatarHandler()),
     appearance_tag_(0)
 {
-    Foundation::EventManager *event_manager = framework_->GetEventManager().get();
+    EventManager *event_manager = framework_->GetEventManager().get();
     if(event_manager)
     {
         event_manager->RegisterEventSubscriber(this, 99);
@@ -110,7 +110,7 @@ void EC_Avatar::AttributeUpdated(IAttribute *attribute)
             return;
             
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-            GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (!asset_service)
             return;
         request_tag_t tag = asset_service->RequestAsset(ref.toStdString(), ASSETTYPENAME_GENERIC_AVATAR_XML);

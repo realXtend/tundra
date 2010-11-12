@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "StereoWidget.h"
 #include "ServiceManager.h"
@@ -7,10 +9,8 @@
 
 namespace CAVEStereo
 {
-
     StereoWidget::StereoWidget(Foundation::Framework* framework, QWidget* parent)
         :QWidget(parent)
-
     {
         setupUi(this);
 
@@ -24,7 +24,6 @@ namespace CAVEStereo
         QObject::connect(this->left_color, SIGNAL(clicked()), this, SLOT(ColorLeftChanged()));
         QObject::connect(this->right_color, SIGNAL(clicked()), this, SLOT(ColorRightChanged()));
     }
-
 
     void StereoWidget::StereoOn()
     {
@@ -46,8 +45,8 @@ namespace CAVEStereo
         }
 
         emit EnableStereo(tech_name, eye,focal,offset, scrn_width);
-
     }
+
     void StereoWidget::StereoOff()
     {
         emit DisableStereo();
@@ -62,6 +61,7 @@ namespace CAVEStereo
             emit ChangeColorLeft(col.redF(), col.greenF(), col.blueF());
         }
     }
+
     void StereoWidget::ColorRightChanged()
     {
         QColorDialog dialog(QColor(0,1,1));

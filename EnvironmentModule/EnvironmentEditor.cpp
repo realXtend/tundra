@@ -1610,6 +1610,7 @@ namespace Environment
 
         const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
         int button_number = 0;
+        UNREFERENCED_PARAM(button_number);
         if(sender)
         {
             // Make sure that the signal sender was some of those apply buttons.
@@ -2204,7 +2205,7 @@ namespace Environment
 
     void EnvironmentEditor::CreatePaintAreaMesh(int x_pos, int y_pos, const Color &color, float gradient_size)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
             return;
 
@@ -2234,7 +2235,7 @@ namespace Environment
         int nub_of_neighbour_vertices = paint_area_size / 2;
 
         float middle_point_height = terrain_component->GetPoint(x_pos, y_pos);
-
+        UNREFERENCED_PARAM(middle_point_height);
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
         manual_paint_object_ = sceneMgr->createManualObject("paint_area");
         manual_paint_object_->estimateVertexCount(9*9);
@@ -2308,7 +2309,7 @@ namespace Environment
     void EnvironmentEditor::RaycastScreenPosToTerrainPos(int clientX, int clientY, int &mapX, int &mapY)
     {
         // do raycast into the world when user is dragging the mouse while hes holding left button down.
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
             return;
 
@@ -2344,7 +2345,7 @@ namespace Environment
 
     void EnvironmentEditor::ReleasePaintMeshOnScene()
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
             return;
 
@@ -2366,13 +2367,13 @@ namespace Environment
     {
         if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
 
-        Foundation::ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
+        ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
         if(service_manager)
         {
-            if(service_manager->IsRegistered(Foundation::Service::ST_Texture))
+            if(service_manager->IsRegistered(Service::ST_Texture))
             {
                 boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
-                    service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
+                    service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();
                 if(!texture_service)
                     return 0;
 

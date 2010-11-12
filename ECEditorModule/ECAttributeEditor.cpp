@@ -530,7 +530,6 @@ namespace ECEditor
     {
         if(listenEditorChangedSignal_)
         {
-            QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
             QList<QtProperty *> children = rootProperty_->subProperties();
             if(children.size() >= 3)
             {
@@ -631,8 +630,7 @@ namespace ECEditor
     {
         if(listenEditorChangedSignal_)
         {
-            QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-            QList<QtProperty *> children = rootProperty_->subProperties();
+           QList<QtProperty *> children = rootProperty_->subProperties();
             if(children.size() >= 4)
             {
                 ComponentPtr comp = components_[0].lock();
@@ -830,7 +828,7 @@ namespace ECEditor
             QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
             QList<QtProperty*> children = rootProperty_->subProperties();
             QVariantList value;
-            for(uint i = 0; i < children.size(); i++)
+            for(int i = 0; i < children.size(); i++)
             {
                 QVariant variant = QVariant(stringManager->value(children[i]));
                 if(variant.toString() == "" && i == children.size() - 1)
@@ -1061,7 +1059,6 @@ namespace ECEditor
     {
         if(listenEditorChangedSignal_)
         {
-            QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
             QList<QtProperty *> children = rootProperty_->subProperties();
             if(children.size() >= 3)
             {

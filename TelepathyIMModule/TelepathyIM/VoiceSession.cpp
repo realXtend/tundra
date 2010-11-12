@@ -138,10 +138,10 @@ namespace TelepathyIM
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)
             return;
-        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+        ServiceManagerPtr service_manager = framework->GetServiceManager();
         if (!service_manager.get())
             return;
-        boost::shared_ptr<ISoundService> soundsystem = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
         if (!soundsystem.get())
             return;   
 
@@ -700,10 +700,10 @@ namespace TelepathyIM
         Foundation::Framework* framework = ((Communication::CommunicationService*)(Communication::CommunicationService::GetInstance()))->GetFramework();
         if (!framework)
             return;
-        Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+        ServiceManagerPtr service_manager = framework->GetServiceManager();
         if (!service_manager.get())
             return;
-        boost::shared_ptr<ISoundService> soundsystem = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
         if (!soundsystem.get())
             return;     
         if (!farsight_channel_)

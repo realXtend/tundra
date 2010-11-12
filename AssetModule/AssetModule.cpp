@@ -38,7 +38,7 @@ namespace Asset
     void AssetModule::Initialize()
     {
         manager_ = AssetManagerPtr(new AssetManager(framework_));
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Asset, manager_);
+        framework_->GetServiceManager()->RegisterService(Service::ST_Asset, manager_);
 
         // Add XMLRPC asset provider before http asset provider, so it will take requests it recognizes though both use http
         xmlrpc_asset_provider_ = Foundation::AssetProviderPtr(new XMLRPCAssetProvider(framework_));

@@ -64,6 +64,7 @@ void AudioSignalLabel::GenerateAudioSignalImage()
         int image_width_index = 0;
         int steps_per_sample = bitsPerSample_ / 8;
         int half_image_height = image.height() / 2;
+        UNREFERENCED_PARAM(half_image_height);
         for(uint i = 0; i < audioData_.size(); i += steps_per_sample)
         {
             sample_ptr = (short*)&audioData_[i];
@@ -109,6 +110,7 @@ void AudioSignalLabel::GenerateAudioSignalImage()
         int image_width_index = 0;
         int steps_per_sample = bitsPerSample_ / 8;
         int half_image_height = image.height() / 2;
+        UNREFERENCED_PARAM(half_image_height);
         for(uint i = 0; i < audioData_.size(); i += steps_per_sample)
         {
             sample_ptr = (short*)&audioData_[i];

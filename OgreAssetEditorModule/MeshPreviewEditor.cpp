@@ -316,10 +316,8 @@ void MeshPreviewEditor::CreateRenderTexture()
          Ogre::Vector3 pos(x,y,z);
          camera_->setPosition(pos);
          camera_->lookAt(boxCenterPos);
-      
+
          newLight_ = manager_->createLight("light");
-        
-      
 
          newLight_->setDirection(Ogre::Vector3(-x,-y,-z));
          newLight_->setType(Ogre::Light::LT_DIRECTIONAL);
@@ -334,11 +332,6 @@ void MeshPreviewEditor::CreateRenderTexture()
 
         render_texture_ = tex->getBuffer()->getRenderTarget();
         render_texture_->setAutoUpdated(false);
-        
-        Ogre::Viewport* vieport = render_texture_->addViewport(camera_);
-     
-      
-
 }
 
 void MeshPreviewEditor::Closed()
@@ -399,7 +392,6 @@ void MeshPreviewEditor::MouseWheelEvent(QWheelEvent* ev)
     int delta = ev->delta();
     mouseDelta_ += delta;
     Update();
-    
 }
 
 void MeshPreviewEditor::MouseEvent(QMouseEvent* event)
@@ -457,7 +449,7 @@ void MeshPreviewEditor::MouseEvent(QMouseEvent* event)
     
     }
 
-   lastPos_ = pos;    
+   lastPos_ = pos;
 }
 
 QImage MeshPreviewEditor::ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels)

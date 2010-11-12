@@ -60,7 +60,7 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     hovering_timer_ = new QTimer(this);
     hovering_timer_->setSingleShot(true);
 
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 
     visibility_animation_timeline_->setFrameRange(0,100);
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
@@ -497,7 +497,7 @@ void EC_HoveringWidget::Redraw()
             assert(!texPtr1.isNull() || !texPtr2.isNull());
 
             // See if size/format changed, have to delete/recreate internal resources
-            if (img1.width() != texPtr1->getWidth() || img1.height() != texPtr1->getHeight())
+            if (img1.width() != (int)texPtr1->getWidth() || img1.height() != (int)texPtr1->getHeight())
             {
                 texPtr1->freeInternalResources();
                 texPtr1->setWidth(img1.width());
@@ -505,7 +505,7 @@ void EC_HoveringWidget::Redraw()
                 texPtr1->setFormat(Ogre::PF_A8R8G8B8);
                 texPtr1->createInternalResources();
             }
-            if (img2.width() != texPtr2->getWidth() || img2.height() != texPtr2->getHeight())
+            if (img2.width() != (int)texPtr2->getWidth() || img2.height() != (int)texPtr2->getHeight())
             {
                 texPtr2->freeInternalResources();
                 texPtr2->setWidth(img2.width());

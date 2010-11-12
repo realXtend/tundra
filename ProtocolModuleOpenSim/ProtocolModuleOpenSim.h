@@ -141,7 +141,7 @@ namespace OpenSimProtocol
         ProtocolUtilities::AuthenticationType authenticationType_;
 
         /// Event manager.
-        Foundation::EventManagerPtr eventManager_;
+        EventManagerPtr eventManager_;
 
         /// Network state event category.
         event_category_id_t networkStateEventCategory_;

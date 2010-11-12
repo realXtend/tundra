@@ -99,7 +99,8 @@ namespace TelepathyIM
             return;
         }
 
-        Tp::PendingOperation* op = tp_text_channel_->requestClose(); 
+        Tp::PendingOperation* op = tp_text_channel_->requestClose();
+        UNREFERENCED_PARAM(op);
         LogDebug("Text channel is closed.");
         //connect(op, SIGNAL( finished(Tp::PendingOperation*) ), SLOT( OnTextChannelClosed(Tp::PendingOperation*) ));
     }
@@ -239,6 +240,9 @@ namespace TelepathyIM
         bool have_message_capabilities = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageCapabilities);
         bool have_message_queue = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageQueue);
         bool have_message_sent_signal = tp_text_channel_->isReady(Tp::TextChannel::FeatureMessageSentSignal);
+        UNREFERENCED_PARAM(have_message_capabilities);
+        UNREFERENCED_PARAM(have_message_queue);
+        UNREFERENCED_PARAM(have_message_sent_signal);
         //if (!have_message_capabilities)
         //{
         //    LogError("Text channel doesn't have the message capabilities!");

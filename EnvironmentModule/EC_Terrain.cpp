@@ -654,7 +654,7 @@ Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) co
 
 bool EC_Terrain::SaveToFile(QString filename)
 {
-    if (patchWidth * patchHeight != patches.size())
+    if (patchWidth * patchHeight != (int)patches.size())
         return false; ///\todo Log out error. The EC_Terrain is in inconsistent state. Cannot save.
 
     FILE *handle = fopen(filename.toStdString().c_str(), "wb");
@@ -1223,7 +1223,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 
     EC_Terrain::Patch &patch = GetPatch(patchX, patchY);
 
-    boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    Renderer *renderer = framework_->GetService<Renderer>();
     if (!renderer)
         return;
     if (!ViewEnabled())
@@ -1231,6 +1231,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 
     Ogre::SceneNode *node = patch.node;
     bool firstTimeFill = (node == 0);
+    UNREFERENCED_PARAM(firstTimeFill);
     if (!node)
     {
         CreateOgreTerrainPatchNode(node, patch.x, patch.y);
@@ -1386,7 +1387,7 @@ void EC_Terrain::CreateRootNode()
     if (rootNode)
         return;
 
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
 
@@ -1402,7 +1403,7 @@ void EC_Terrain::CreateRootNode()
 
 void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY)
 {
-    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
 

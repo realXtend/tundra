@@ -9,7 +9,7 @@
 #include <TelepathyQt4/PendingReady>
 #include "ModuleLoggingFunctions.h"
 //#include <Foundation.h>
-//#include "ServiceInterface.h"
+//#include "IService.h"
 //#include "ISoundService.h"
 
 //#include "interface.h"

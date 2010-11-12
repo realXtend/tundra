@@ -30,8 +30,12 @@ namespace RexLogic
 
     void NotificationWidget::SetupScene()
     {
-        float width = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock()->GetWindowWidth();
-        float height = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock()->GetWindowHeight();
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+        if (!renderer)
+            return;
+        float width = renderer->GetWindowWidth();
+        float height = renderer->GetWindowHeight();
+        UNREFERENCED_PARAM(height);
         frame_pic_->move(width - frame_pic_->width() - 10, 40);
         
         QString style_sheet_ = start_ + picture_name_ + end_;
