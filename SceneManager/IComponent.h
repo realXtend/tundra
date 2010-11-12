@@ -155,6 +155,10 @@ public slots:
     ///       because the parent entity has not yet been set with a call to SetParentEntity at that point.
     Scene::Entity* GetParentEntity() const;
 
+    /// Returns the scene this Component is part of.
+    /// May return null if component is not in an entity or entity is not in a scene
+    Scene::SceneManager* GetParentScene() const;
+
     //! Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
     void SetTemporary(bool enable);
      

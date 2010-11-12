@@ -257,13 +257,31 @@ namespace Scene
 
     void SceneManager::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
     {
-        if (change == AttributeChange::Disconnected)
+        if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
             return;
         if (change == AttributeChange::Default)
             change = comp->GetUpdateMode();
         emit AttributeChanged(comp, attribute, change);
     }
 
+    void SceneManager::EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
+    {
+        if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
+            return;
+        if (change == AttributeChange::Default)
+            change = comp->GetUpdateMode();
+        emit AttributeAdded(comp, attribute, change);
+    }
+    
+    void SceneManager::EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
+    {
+        if ((!comp) || (!attribute) || (change == AttributeChange::Disconnected))
+            return;
+        if (change == AttributeChange::Default)
+            change = comp->GetUpdateMode();
+        emit AttributeRemoved(comp, attribute, change);
+    }
+    
   /*void SceneManager::EmitComponentInitialized(IComponent* comp)
     {
         emit ComponentInitialized(comp);

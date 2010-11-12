@@ -122,7 +122,7 @@ public:
 
 public slots:
     /// A factory method that constructs a new attribute given the typename. This factory is not extensible.
-    /// If attrbitue was already created mehtod will return it's pointer.
+    /// If attribute was already created the method will return it's pointer.
     IAttribute *CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Create new attribute that type is QVariant.
