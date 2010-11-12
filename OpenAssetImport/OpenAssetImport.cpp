@@ -2,6 +2,8 @@
 
 #include "StableHeaders.h"
 #include "OpenAssetImport.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport")
 
 #include <assimp.hpp>      // C++ importer interface
 #include <aiScene.h>       // Output data structure
@@ -14,39 +16,39 @@ using namespace Assimp;
 
 namespace AssImp
 {
-    OpenAssetImport::OpenAssetImport() : 
-        importer_(new Importer()), 
-        logstream_(new AssImpLogStream()), 
+    OpenAssetImport::OpenAssetImport() :
+        importer_(new Importer()),
+        logstream_(new AssImpLogStream()),
 #ifdef _DEBUG
         loglevels_(Logger::DEBUGGING | Logger::INFO | Logger::ERR | Logger::WARN),
 #else
         loglevels_(Logger::INFO | Logger::ERR | Logger::WARN),
 #endif
-        default_flags_( aiProcess_JoinIdenticalVertices		|
-                        aiProcess_Triangulate				|
-                        aiProcess_RemoveComponent			|
-                        aiProcess_GenSmoothNormals  		|	// ignored if model already has normals
-                        aiProcess_LimitBoneWeights			|
+        default_flags_( aiProcess_JoinIdenticalVertices     |
+                        aiProcess_Triangulate               |
+                        aiProcess_RemoveComponent           |
+                        aiProcess_GenSmoothNormals          |   // ignored if model already has normals
+                        aiProcess_LimitBoneWeights          |
                         aiProcess_FlipUVs                   |   // UVs are upside down
                         aiProcess_GenUVCoords               |   // for formats with pre-defined UV mappings (sphere, cylindrical...), convert to proper UV channels
-                        aiProcess_SortByPType				|	// remove point and line primitive types
+                        aiProcess_SortByPType               |   // remove point and line primitive types
                         aiProcess_ValidateDataStructure         // makes sure that all indices are valid, all animations and bones are linked correctly, all material references are correct...
                       )
     {
         // set up importer
-        importer_->SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, 4);	// limit bone weights to 4 vertices
-		
-        importer_->SetPropertyInteger(			// ignore vertex colours, textures, lights and cameras (for now)
-            AI_CONFIG_PP_RVC_FLAGS, 
-            aiComponent_COLORS		|
-            aiComponent_TEXTURES	|
-            aiComponent_LIGHTS		|
+        importer_->SetPropertyInteger(AI_CONFIG_PP_LBW_MAX_WEIGHTS, 4);    // limit bone weights to 4 vertices
+        
+        importer_->SetPropertyInteger(  // ignore vertex colours, textures, lights and cameras (for now)
+            AI_CONFIG_PP_RVC_FLAGS,
+            aiComponent_COLORS      |
+            aiComponent_TEXTURES    |
+            aiComponent_LIGHTS      |
             aiComponent_CAMERAS
             );
 
-        importer_->SetPropertyInteger(			// ignore point and line primitives (for now)
-            AI_CONFIG_PP_SBP_REMOVE, 
-            aiPrimitiveType_POINT		|
+        importer_->SetPropertyInteger(  // ignore point and line primitives (for now)
+            AI_CONFIG_PP_SBP_REMOVE,
+            aiPrimitiveType_POINT   |
             aiPrimitiveType_LINE
             );
 #ifdef _DEBUG
@@ -84,9 +86,9 @@ namespace AssImp
             transform.FromEulerAnglesXYZ(90 * DEGTORAD, 0, 180 * DEGTORAD);
             GetNodeData(scene, rootNode, file, transform, outMeshData);
         } else
-        {       
+        {
             // report error
-            Foundation::RootLogError(importer_->GetErrorString());
+            LogError(importer_->GetErrorString());
         }
     }
 
@@ -97,12 +99,11 @@ namespace AssImp
         if (scene)
         {
             const struct aiNode *rootNode = scene->mRootNode;
-            
             ImportNode(scene, rootNode, name, nodeName, outMeshNames);
         } else
-        {       
+        {
             // report error
-            Foundation::RootLogError(importer_->GetErrorString());
+            LogError(importer_->GetErrorString());
         }
     }
 
@@ -147,7 +148,7 @@ namespace AssImp
                 // testing getting Ogre material.xml names
                 aiString name;
                 scene->mMaterials[0]->Get(AI_MATKEY_NAME,name);
-                Foundation::RootLogInfo(std::string("Found material ") + std::string(name.data));
+                LogInfo(std::string("Found material ") + std::string(name.data));
             }*/
 
 
@@ -328,8 +329,8 @@ namespace AssImp
         } catch (Ogre::Exception &e)
         {
             // error
-            Foundation::RootLogError("Failed to create Ogre mesh. Reason: ");
-            Foundation::RootLogError(e.what());
+            LogError("Failed to create Ogre mesh. Reason: ");
+            LogError(e.what());
         }
 
         // import children
@@ -340,9 +341,9 @@ namespace AssImp
     void OpenAssetImport::AssImpLogStream::write(const char* message)
     {
 #ifdef _DEBUG
-        Foundation::RootLogDebug(message);
+        LogDebug(message);
 #else
-        Foundation::RootLogInfo(message);
+        LogInfo(message);
 #endif
     }
 }
