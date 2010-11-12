@@ -77,6 +77,9 @@ class Manipulator:
         self.highlightedSubMesh = None
         self.axisSubmesh = None
 
+        self.entCenterVectors={}
+        self.centerPoint = None
+
     def compareIds(self, id):
         if self.usesManipulator:
             if self.manipulator.Id == id:
@@ -98,8 +101,10 @@ class Manipulator:
         if self.manipulator is None and self.usesManipulator:
             ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
             ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
+            ruler.SetVisible(False)
+            #r.logInfo("hide ruler createManipulator")
             ruler.SetType(self.MANIPULATOR_RULER_TYPE)
-            ruler.SetVisible(True)
+            ruler.UpdateRuler()
             return ent 
 
     def stopManipulating(self):
@@ -124,13 +129,14 @@ class Manipulator:
             self.moveTo(ents)
             self.manipulator.placeable.Scale = self.MANIPULATORSCALE
             try:
-                r = self.manipulator.ruler
+                ruler = self.manipulator.ruler
             except:
                 print "no ruler yet O.o"
             else:
-                r.SetType(self.MANIPULATOR_RULER_TYPE)
-                r.SetVisible(True)
-                r.UpdateRuler()
+                ruler.SetType(self.MANIPULATOR_RULER_TYPE)
+                ruler.SetVisible(True)
+                #r.logInfo("showing ruler showManipulator")
+                ruler.UpdateRuler()
             if self.controller.useLocalTransform:
                 # first according object, then manipulator orientation - otherwise they go wrong order
                 self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
@@ -160,6 +166,7 @@ class Manipulator:
                     self.manipulator.placeable.Scale = QVector3D(0.0, 0.0, 0.0) #ugly hack
                     self.manipulator.placeable.Position = QVector3D(0.0, 0.0, 0.0)#another ugly hack
                     self.manipulator.ruler.SetVisible(False)
+                    #r.logInfo("hiding ruler hideManipulator")
                     self.manipulator.ruler.UpdateRuler()
                 
                 self.grabbed_axis = None
@@ -197,6 +204,8 @@ class Manipulator:
                 if self.grabbed_axis != None:
                     self.manipulator.ruler.SetAxis(self.grabbed_axis)
                     self.manipulator.ruler.SetVisible(True)
+                    #r.logInfo("show ruler initManipulation")
+                    self.manipulator.ruler.UpdateRuler()
                     if ents[0]:
                         placeable = ents[0].placeable
                         self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
@@ -204,6 +213,8 @@ class Manipulator:
                 else:
                     remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
                     self.manipulator.ruler.SetVisible(False)
+                    #r.logInfo("hide ruler initManipulation")
+                    self.manipulator.ruler.UpdateRuler()
 
     def setManipulatorScale(self, ents):
         if ents is None or len(ents) == 0: 
@@ -248,14 +259,20 @@ class Manipulator:
             rightvec *= amountx
             upvec *= amounty
             changevec = rightvec - upvec
-            
-            for ent in ents:
-                self._manipulate(ent, amountx, amounty, changevec)
-                self.controller.soundRuler(ent)
-            if not self.manipulator is None:
-                if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
-                    placeable = ents[0].placeable
-                    self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+
+            # group rotation
+            if self.NAME=="RotationManipulator" and len(ents)>1 and self.grabbed_axis == self.AXIS_BLUE:
+                self.setCenterPointAndCenterVectors(ents)
+                self._manipulate2(ents, amountx, amounty, changevec, self.entCenterVectors, self.centerPoint)
+            else:            
+                for ent in ents:
+                    self._manipulate(ent, amountx, amounty, changevec)
+                    self.controller.soundRuler(ent)
+
+                if not self.manipulator is None:
+                    if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
+                        placeable = ents[0].placeable
+                        self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
 
                 self.manipulator.ruler.UpdateRuler()
                 
@@ -290,6 +307,41 @@ class Manipulator:
                 self.manipulator.mesh.SetMaterial(self.highlightedSubMesh, name)
             self.highlightedSubMesh = None
             remove_custom_cursors()
+            
+    def setCenterPointAndCenterVectors(self, ents):
+        self.centerPoint = self.getPivotPos(ents)
+        for ent in ents:
+            pos = ent.placeable.Position
+            diff = self.vectorDifference(pos, self.centerPoint)
+            self.entCenterVectors[ent]=diff 
+        # print "center vectors"
+        # for e, vec in self.entCenterVectors.iteritems():
+            # print vec
+        
+    def vectorDifference(self, v1, v2):
+        x = v1.x()-v2.x()
+        y = v1.y()-v2.y()
+        z = v1.z()-v2.z()
+        return QVector3D(x, y, z)
+
+    def calibrateVec(self, r, v):
+        if(self.vectorLen(r)!=0):
+            factor = self.vectorLen(v)/self.vectorLen(r)
+            rx = factor* r.x()
+            ry = factor* r.y()
+            rz = factor* r.z()
+            return QVector3D(rx, ry, rz)
+        else: # if original vector is zero length, the rotated one must be too, just return r
+            return r
+
+    def vectorLen(self, v):
+        return math.sqrt(v.x()**2 + v.y()**2 + v.z()**2)
+
+    def vectorAdd(self, v1, v2):
+        x = v1.x()+v2.x()
+        y = v1.y()+v2.y()
+        z = v1.z()+v2.z()
+        return QVector3D(x, y, z)
         
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
@@ -424,7 +476,6 @@ class RotationManipulator(Manipulator):
                 ort = ort * QQuaternion.fromAxisAndAngle(axis, mov)
             else:
                 euler = mu.quat_to_euler(ort)
-
                 if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
                     euler[0] -= math.radians(mov)
                 elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
@@ -436,4 +487,101 @@ class RotationManipulator(Manipulator):
 
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
+    
+    """ Rotate locations around center point """
+    def _manipulate2(self, ents, amountx, amounty, changevec, centervecs, centerpoint):
+        # calculate quaternion for rotation
+        # get axis
+        # print "amountx %s"%amountx
+        # print "amounty %s"%amounty
+        # print "changevec %s"%changevec
+        
+        if self.grabbed and self.grabbed_axis is not None:
+            local = self.controller.useLocalTransform
+            mov = changevec.length() * 30
 
+            axis = None
+            #angle = 90 # just do 90 degrees rotations
+            #angle = 15 # just do 15 degrees rotations
+            angle = 5 # just do 5 degrees rotations
+            
+            if amountx < 0 and amounty < 0:
+                dir = -1
+            elif amountx < 0 and amounty >= 0:
+                dir = 1
+                if self.grabbed_axis == self.AXIS_BLUE:
+                    dir *= -1
+            elif amountx >= 0 and amounty < 0:
+                dir = -1
+            elif amountx >= 0 and amounty >= 0:
+                dir = 1
+
+            mov *= dir
+            angle *= dir
+            q = None
+            
+            euler = None
+            if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
+                axis = QVector3D(1,0,0)
+                # disable this for now
+                # return 
+            elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
+                axis = QVector3D(0,1,0)
+                # disable this for now
+                # return
+            elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
+                axis = QVector3D(0,0,1)
+
+            q = QQuaternion.fromAxisAndAngle(axis, angle)
+            q.normalize()
+
+            self._rotateEntsWithQuaternion(q, ents, amountx, amounty, changevec, centervecs, centerpoint)
+            self._rotateEachEntWithQuaternion(q, ents, angle)
+        pass
+        
+    def _rotateEntsWithQuaternion(self, q, ents, amountx, amounty, changevec, centervecs, centerpoint):
+        for ent, qvec in centervecs.iteritems():
+            # rotate center vectors and calculate new points to ents
+            # print "qvec %s"%str(qvec)
+            crot=q.rotatedVector(qvec) # rotated center vector
+            # print "crot %s"%str(crot)
+            calibVec = self.calibrateVec(crot, qvec) # just incase
+            centervecs[ent]=calibVec # store new rotated vector
+            
+        for ent, newVec in centervecs.iteritems():
+            # print "centerpoint %s"%centerpoint
+            # print "newVec %s"%newVec
+            newPos = self.vectorAdd(centerpoint, newVec)
+            if hasattr(ent, "placeable"):
+                ent.placeable.Position = newPos
+                ent.network.Position = newPos
+            else:
+                print "entity missing placeable"
+                # print type(ent)
+        pass
+
+    """ This part still has some issues, z-group rotation now working perfectly,
+        x and y group rotations still go bonkers, y-rotation stops when limit -1.0 or 1.0 rads
+        is reached, and x-rotation is totally wrong
+        also this method functionality probably overlaps with above single object specific rotation, 
+        anyway keeping it separate untill multirotate works correctly """
+    def _rotateEachEntWithQuaternion(self, q, ents, angle):
+        for ent in ents:
+            ort = ent.placeable.Orientation
+            euler = mu.quat_to_euler(ort)
+            if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
+                #print euler[0] 
+                #print math.radians(angle)
+                euler[0] += math.radians(angle)
+            elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
+                #print euler[1] 
+                #print math.radians(angle)
+                euler[1] += math.radians(angle)
+            elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
+                #print euler[2] 
+                #print math.radians(angle)
+                euler[2] += math.radians(angle)
+            ort = mu.euler_to_quat(euler)
+            ent.placeable.Orientation = ort
+            ent.network.Orientation = ort
+        pass

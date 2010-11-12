@@ -46,13 +46,13 @@ AudioPreviewEditor::~AudioPreviewEditor()
 
 void AudioPreviewEditor::HandleAssetReady(Foundation::AssetPtr asset)
 {
-    Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)
     {
-        if(service_manager->IsRegistered(Foundation::Service::ST_Sound))
+        if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
@@ -123,13 +123,13 @@ void AudioPreviewEditor::PlaySound()
     if(assetId_.size() <= 0)
         return;
 
-    Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)
     {
-        if(service_manager->IsRegistered(Foundation::Service::ST_Sound))
+        if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
@@ -173,13 +173,13 @@ void AudioPreviewEditor::TimerTimeout()
     if(assetId_.size() <= 0 || soundId_ == 0)
         return;
 
-    Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)
     {
-        if(service_manager->IsRegistered(Foundation::Service::ST_Sound))
+        if(service_manager->IsRegistered(Service::ST_Sound))
         {
             boost::shared_ptr<ISoundService> sound_service = 
-                service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+                service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 

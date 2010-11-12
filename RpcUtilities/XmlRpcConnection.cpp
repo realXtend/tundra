@@ -3,10 +3,21 @@
 #include "StableHeaders.h"
 #include "XmlRpcException.h"
 #include "XmlRpcConnection.h"
-#include "Poco/URI.h"
-#include "boost/lexical_cast.hpp"
-
 #include "HttpRequest.h"
+
+#include <Poco/URI.h>
+
+// Disable warnings C4702 coming from boost
+#ifdef _MSC_VER
+#pragma warning ( push )
+#pragma warning( disable : 4702 )
+#endif
+
+#include <boost/lexical_cast.hpp>
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 XmlRpcConnection::XmlRpcConnection(const std::string& url)
 {

@@ -31,7 +31,7 @@ namespace ProtocolUtilities
         while (!xml_reader.atEnd())
         {
             QXmlStreamReader::TokenType token = xml_reader.readNext();
-
+            UNREFERENCED_PARAM(token);
             if (xml_reader.hasError())
                 break;
 

@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_AssetServiceInterface_h
 #define incl_Interfaces_AssetServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include "AssetProviderInterface.h"
 
 #include "AssetFwd.h"
@@ -31,7 +31,7 @@ namespace Foundation
 
         \ingroup Services_group
      */
-    class AssetServiceInterface : public ServiceInterface
+    class AssetServiceInterface : public IService
     {
     public:
         AssetServiceInterface() {}

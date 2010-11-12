@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_CoreStdIncludes_h__
-#define incl_CoreStdIncludes_h__
+#ifndef incl_Core_CoreStdIncludes_h
+#define incl_Core_CoreStdIncludes_h
 
 #if defined(WIN32) || defined(WIN64)
 #undef _WINDOWS
@@ -39,17 +39,28 @@
 #include <math.h>
 #include <limits>
 
+// Disable warnings C4702 and C4244 coming from boost
+#ifdef _MSC_VER
+#pragma warning ( push )
+#pragma warning( disable : 4702 )
+#pragma warning( disable : 4244 )
+#endif
+
 #include <boost/smart_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/condition.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/timer.hpp>
 #include <boost/program_options.hpp>
+#include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 #include <Poco/Foundation.h>
 #include <Poco/DirectoryIterator.h>

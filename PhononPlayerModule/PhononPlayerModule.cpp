@@ -33,7 +33,7 @@ namespace PhononPlayer
     {
         player_service_ = MediaPlayer::ServicePtr(new Service());
 
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Player, player_service_);
+        framework_->GetServiceManager()->RegisterService(::Service::ST_Player, player_service_);
     }
 
     void PhononPlayerModule::PostInitialize()

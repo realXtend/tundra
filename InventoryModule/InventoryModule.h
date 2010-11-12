@@ -128,7 +128,7 @@ namespace Inventory
         static std::string type_name_static_;
 
         /// Event manager pointer.
-        Foundation::EventManagerPtr eventManager_;
+        EventManagerPtr eventManager_;
 
         /// Inventory event category.
         event_category_id_t inventoryEventCategory_;

@@ -18,7 +18,8 @@ compshorthand = {
     'EC_OpenSimPresence': 'opensimpresence',
     'EC_SoundRuler': 'soundruler',
     'EC_Name': 'ecname',
-    'EC_Ruler': 'ruler'
+    'EC_Ruler': 'ruler',
+    'EC_3DGizmo': 'gizmo',
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):

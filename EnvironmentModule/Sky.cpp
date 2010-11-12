@@ -15,7 +15,7 @@
 
 namespace Environment
 {
-        
+
 Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(SKYTYPE_BOX) 
 {
 }
@@ -80,14 +80,14 @@ void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
     type_ = type;
     if (type_ == SKYTYPE_NONE)
     {
-        DisableSky();       
+        DisableSky();
         emit SkyTypeChanged();
         return;
        
     }
 
     boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+        <OgreRenderer::Renderer>(Service::ST_Renderer);
     boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
 
     switch (type_ )
@@ -164,9 +164,7 @@ void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
         
         default:
             break;
-
     }
-  
 
     emit SkyTypeChanged();
 }
@@ -175,11 +173,10 @@ void Sky::CreateDefaultSky(const bool &show)
 {
     type_ = SKYTYPE_BOX;
     // Exist sky? 
-    if ( !ExistSky<EC_SkyBox>() )
+    if (!ExistSky<EC_SkyBox>() )
         CreateSky<EC_SkyBox>();
 
     EnableSky(true);
- 
 }
 
 void Sky::DisableSky()
@@ -187,54 +184,36 @@ void Sky::DisableSky()
     RemoveSky<EC_SkyBox>();
     RemoveSky<EC_SkyPlane>();
     RemoveSky<EC_SkyDome >();
-    
-    
-   
 }
 
 void Sky::Update()
 {
    switch (type_)
-   {    
-       case SKYTYPE_BOX:
-           {
-                EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
-                if (sky == 0)
-                {
-                    CreateSky<EC_SkyBox >();
-                    EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
-            
-                }
-                break;
-           }
-       case SKYTYPE_PLANE:
-           {
-                EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
-                if (sky == 0)
-                {
-                    CreateSky<EC_SkyPlane>();
-                    EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
-               
-                }
-                break;       
-           }
-       case SKYTYPE_DOME:
-           {
-                EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
-                if (sky == 0)
-                {
-                    CreateSky<EC_SkyDome>();
-                    EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
-                
-                }
-               
-                break;
-           }
-       default:
-           break;
-
+   {
+   case SKYTYPE_BOX:
+   {
+        EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
+        if (sky == 0)
+            CreateSky<EC_SkyBox >();
+        break;
    }
-
+   case SKYTYPE_PLANE:
+   {
+        EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
+        if (sky == 0)
+            CreateSky<EC_SkyPlane>();
+        break;
+   }
+   case SKYTYPE_DOME:
+   {
+        EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
+        if (sky == 0)
+            CreateSky<EC_SkyDome>();
+        break;
+   }
+   default:
+       break;
+   }
 }
 
 bool Sky::IsSkyEnabled() 
@@ -242,27 +221,21 @@ bool Sky::IsSkyEnabled()
     bool exist = false;
     switch (type_ )
     {
-        case SKYTYPE_BOX:
-            {
-                exist = ExistSky<EC_SkyBox >();
-
-                break;
-            }
-         case SKYTYPE_PLANE:
-            {
-                exist = ExistSky<EC_SkyPlane >();
-                break;
-            }
-         case SKYTYPE_DOME:
-             {
-                 exist = ExistSky<EC_SkyDome >();
-                 break;
-             }
-
+    case SKYTYPE_BOX:
+        exist = ExistSky<EC_SkyBox >();
+        break;
+     case SKYTYPE_PLANE:
+        exist = ExistSky<EC_SkyPlane >();
+        break;
+     case SKYTYPE_DOME:
+         exist = ExistSky<EC_SkyDome >();
+         break;
     }
+
     return exist;
-   
 }
+
+
 
 void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
 {
@@ -275,69 +248,64 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
         {
             switch ( type_ )
             {
-                 case SKYTYPE_BOX:
+             case SKYTYPE_BOX:
+             {
+                 EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
+                 if ( sky != 0)
+                 {
+                     QVariantList lstTextures = sky->textureAttr.Get();
+                     if ( requestMap_.contains(tex->tag_) )
                      {
-                         EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
-                         if ( sky != 0)
+                         int index = requestMap_[tex->tag_];
+                         if ( index >= 0 && index <= 6)
                          {
-                             QVariantList lstTextures = sky->textureAttr.Get();
-                             if ( requestMap_.contains(tex->tag_) )
-                             {
-                                 int index = requestMap_[tex->tag_];
-                                 if ( index >= 0 && index <= 6)
-                                 {
-                                    lstTextures[requestMap_[tex->tag_]] = QString(tex->id_.c_str());
-                                    sky->textureAttr.Set(lstTextures, AttributeChange::Default);
-                                 
-                                 }
-                                 else
-                                    EnvironmentModule::LogWarning("Tried to change texture which index was higher then 6 or less then 0");
+                            lstTextures[requestMap_[tex->tag_]] = QString(tex->id_.c_str());
+                            sky->textureAttr.Set(lstTextures, AttributeChange::Default);
+                         
+                         }
+                         else
+                            EnvironmentModule::LogWarning("Tried to change texture which index was higher then 6 or less then 0");
 
-                             }
-                                
-                         }
-                         break;
                      }
-
-                 case SKYTYPE_PLANE:
-                     {
-                         EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
-                         if ( sky != 0)
-                         {
-                             QString texture = sky->textureRef.Get().ref;
-                             QString strDownloaded(tex->id_.c_str());
-                             if (texture != strDownloaded )
-                                 sky->textureRef.Set(AssetReference(strDownloaded), AttributeChange::Default);
-                         }
-                         break;
-                     }
-                 case SKYTYPE_DOME:
-                     {
-                         EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
-                         if ( sky != 0)
-                         {
-                             QString texture = sky->textureRef.Get().ref;
-                             QString strDownloaded(tex->id_.c_str());
-                             if (texture != strDownloaded)
-                                 sky->textureRef.Set(AssetReference(strDownloaded), AttributeChange::Default);
-                         }
-                         break;
-                     }
-                 default:
-                     break;
+                        
+                 }
+                 break;
+             }
+             case SKYTYPE_PLANE:
+             {
+                 EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
+                 if ( sky != 0)
+                 {
+                     QString texture = sky->textureRef.Get().ref;
+                     QString strDownloaded(tex->id_.c_str());
+                     if (texture != strDownloaded )
+                         sky->textureRef.Set(AssetReference(strDownloaded), AttributeChange::Default);
+                 }
+                 break;
+             }
+             case SKYTYPE_DOME:
+             {
+                 EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
+                 if ( sky != 0)
+                 {
+                     QString texture = sky->textureRef.Get().ref;
+                     QString strDownloaded(tex->id_.c_str());
+                     if (texture != strDownloaded)
+                         sky->textureRef.Set(AssetReference(strDownloaded), AttributeChange::Default);
+                 }
+                 break;
+             }
+             default:
+                 break;
             }
 
             lstRequestTags_.removeAt(i);
-            // Now all done. 
+            // Now all done.
             return;
         }
-
     }
-
-   
 }
 
-    
 SkyType Sky::GetSkyType() const
 {
     return type_;
@@ -354,40 +322,25 @@ void Sky::EnableSky(bool enabled)
 
 void Sky::ChangeSkyType(SkyType type, bool update_sky)
 {
-    if ( type == type_ && update_sky )
-            return;
+    if (type == type_ && update_sky )
+        return;
 
     DisableSky();
-    
-    switch(type )
-    {
-      
-        case SKYTYPE_BOX:
-            {
-                CreateSky<EC_SkyBox>();
-                EC_SkyBox* box = GetEnviromentSky<EC_SkyBox>();
-               
-                break;
-            }
-        case SKYTYPE_PLANE:
-            {
-               CreateSky<EC_SkyPlane>();
-               EC_SkyPlane* plane = GetEnviromentSky<EC_SkyPlane>();
-        
-               break;
-            }          
-        case SKYTYPE_DOME:
-            {
-                CreateSky<EC_SkyDome>();
-                EC_SkyDome* plane = GetEnviromentSky<EC_SkyDome >();
-        
-                break;
-            }
 
+    switch(type)
+    {
+    case SKYTYPE_BOX:
+        CreateSky<EC_SkyBox>();
+        break;
+    case SKYTYPE_PLANE:
+       CreateSky<EC_SkyPlane>();
+       break;
+    case SKYTYPE_DOME:
+        CreateSky<EC_SkyDome>();
+        break;
     }
-    
+
     type_ = type;
-  
 }
 
 } // namespace RexLogic

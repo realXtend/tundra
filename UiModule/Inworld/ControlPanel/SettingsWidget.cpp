@@ -103,6 +103,7 @@ namespace CoreUi
     {
         // Emit extra params for InworldSceneManager
         int new_animation_speed = showAnimationSpinBox->value();
+        UNREFERENCED_PARAM(new_animation_speed);
         if (animationEnabledCheckBox->checkState() == Qt::Unchecked)
             emit NewUserInterfaceSettingsApplied(opacitySlider->value(), 0);
         else

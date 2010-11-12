@@ -334,7 +334,7 @@ void Environment::Update(f64 frametime)
         return;
 #endif
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     
     if (!renderer)
        return;

@@ -33,45 +33,36 @@ namespace Console
 }
 
 class IComponentFactory;
-typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
-
 class IComponent;
+class ComponentManager;
+class ConfigurationManager;
+class ModuleManager;
+class IEventData;
+class EventManager;
+class ServiceManager;
+
 typedef boost::shared_ptr<IComponent> ComponentPtr;
 typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
+typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
+typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
+typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
+typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
+typedef boost::shared_ptr<EventManager> EventManagerPtr;
+typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
 
 namespace Foundation
 {
-    class ModuleManager;
-    class ComponentManager;
-    class ServiceManager;
-    class ConfigurationManager;
-    class EventManager;
     class Platform;
     class Application;
-    class ConfigurationManager;
     class ThreadTaskManager;
-    class Profiler;
     class Framework;
     class KeyBindings;
     class MainWindow;
+    class Profiler;
 
-    typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
-    typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
-    typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
-    typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
-    typedef boost::shared_ptr<EventManager> EventManagerPtr;
     typedef boost::shared_ptr<Platform> PlatformPtr;
     typedef boost::shared_ptr<Application> ApplicationPtr;
     typedef boost::shared_ptr<ThreadTaskManager> ThreadTaskManagerPtr;
-
-    void RootLogFatal(const std::string &msg);
-    void RootLogCritical(const std::string &msg);
-    void RootLogError(const std::string &msg);
-    void RootLogWarning(const std::string &msg);
-    void RootLogNotice(const std::string &msg);
-    void RootLogInfo(const std::string &msg);
-    void RootLogTrace(const std::string &msg);
-    void RootLogDebug(const std::string &msg);
 
     class RenderServiceInterface;
     typedef boost::shared_ptr<RenderServiceInterface> RendererPtr;
@@ -89,10 +80,25 @@ class InputContext;
 class InputServiceInterface;
 typedef boost::shared_ptr<InputContext> InputContextPtr;
 
-class IEventData;
-
 class UiServiceInterface;
 typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;
 typedef boost::weak_ptr<UiServiceInterface> UiServiceWeakPtr;
+
+//! Use root logging only in foundation classes.
+void RootLogFatal(const std::string &msg);
+//! Use root logging only in foundation classes.
+void RootLogCritical(const std::string &msg);
+//! Use root logging only in foundation classes.
+void RootLogError(const std::string &msg);
+//! Use root logging only in foundation classes.
+void RootLogWarning(const std::string &msg);
+//! Use root logging only in foundation classes.
+void RootLogNotice(const std::string &msg);
+//! Use root logging only in foundation classes.
+void RootLogInfo(const std::string &msg);
+//! Use root logging only in foundation classes.
+void RootLogTrace(const std::string &msg);
+//! Use root logging only in foundation classes.
+void RootLogDebug(const std::string &msg);
 
 #endif

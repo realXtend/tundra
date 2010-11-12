@@ -30,7 +30,7 @@ namespace Asset
     {
         asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "xmlrpc_timeout", DEFAULT_ASSET_TIMEOUT);
 
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         
         event_category_ = event_manager->QueryEventCategory("Asset");
     }
@@ -196,8 +196,8 @@ namespace Asset
         
         std::istringstream base64_data(RexTypes::GetLLSDTagContent(result_data, index));
 
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
         {
             Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(request.asset_id_, request.asset_type_));
@@ -216,7 +216,7 @@ namespace Asset
             asset_service->StoreAsset(new_asset);
             
             // Send asset ready event for each request tag
-            Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+            EventManagerPtr event_manager = framework_->GetEventManager();
             const RequestTagVector& tags = request.tags_;
             for (uint i = 0; i < tags.size(); ++i)
             {          
@@ -234,7 +234,7 @@ namespace Asset
     {
         AssetModule::LogDebug("XMLRPC asset request for " + request.asset_id_ + " failed: " + error_message);
         
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         Events::AssetCanceled event_data(request.asset_id_, request.asset_type_);
         event_manager->SendEvent(event_category_, Events::ASSET_CANCELED, &event_data);
     }

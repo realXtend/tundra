@@ -7,6 +7,7 @@
 #include "ui_OpenSimSceneWidget.h"
 
 #include <QList>
+#include <QDir>
 
 namespace Scene
 {
@@ -54,6 +55,7 @@ namespace WorldBuilding
         void ResetExporting();
         void SelectScene();
         void ExportSelected();
+        void ExportScene();
         void PublishFile();
         void VisibilityChange(bool visible);
 
@@ -62,6 +64,7 @@ namespace WorldBuilding
     signals:
         void PublishFromFile(const QString &filename, bool adjust_pos_to_avatar);
         void ExportToFile(const QString &filename, QList<Scene::Entity *> entities);
+        void ExportSceneRequest();
 
     private:
         void ShowAllHightLights(bool visible);

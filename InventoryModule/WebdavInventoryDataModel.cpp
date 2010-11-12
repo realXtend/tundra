@@ -459,7 +459,7 @@ namespace Inventory
         }
 
         QMap<QString, QString> folders;
-        InventoryFolder *parentFolder;
+        InventoryFolder *parentFolder= 0;
         for (int index=0; index<=rootResources.count(); index++)
         {
             if (!rootResources.value(index).isEmpty() && !rootResources.value(index+1).isEmpty())

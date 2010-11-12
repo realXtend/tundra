@@ -93,7 +93,7 @@ namespace Avatar
         ComponentWeakPtr component_;
 
         //! event manager
-        Foundation::EventManagerPtr event_manager_;
+        EventManagerPtr event_manager_;
 
         //! mappings from input events to actions
         RexTypes::Actions::ActionInputMap input_events_;

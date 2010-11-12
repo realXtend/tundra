@@ -53,7 +53,7 @@ namespace OgreRenderer
     
     void ResourceHandler::PostInitialize()
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
     }
@@ -242,14 +242,15 @@ namespace OgreRenderer
             }
         }
         
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         
         // Hack: if the texture indicates a local asset, do not go through the J2K pipe, but request as an image asset
         if ((id.find("file://") == 0) && (asset_service))
         {
             // This request tag is unnecessary... as the asset should be loaded immediately if it exists
             request_tag_t source_tag = asset_service->RequestAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
+            UNREFERENCED_PARAM(source_tag);
         }
         
         // See if already have in the cache with a superior (non-J2K) format
@@ -280,7 +281,7 @@ namespace OgreRenderer
         }
         
         // Otherwise, request from texture decoder
-        boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();            
+        boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();            
         if (texture_service)
         {
             // Perform the actual decode request only once, for the first request
@@ -364,8 +365,8 @@ namespace OgreRenderer
         }
         
         // Request from asset system
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
         {
             // Perform the actual asset request only once, for the first request
@@ -532,8 +533,8 @@ namespace OgreRenderer
         
         for (uint i = 0; i < references.size(); ++i)
         {
-            Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
-            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
             if (asset_service)
             {
                 // Check that the dependency is asset based
