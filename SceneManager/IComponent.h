@@ -156,8 +156,6 @@ public slots:
     /*! Note: if parent entity is temporary, this returns always true regardless of the component's temporary flag
      */
     bool IsTemporary() const;
-    
-    IAttribute *GetAttribute(int i) { if(i >= 0 && i < attributes_.size()) return attributes_.at(i); else return 0; }
 
 public:
 
@@ -172,8 +170,8 @@ public:
     template<typename T> Attribute<T> *GetAttribute(const std::string &name) const
     {
         for(size_t i = 0; i < attributes_.size(); ++i)
-            if (attributes_.at(i)->GetNameString() == name)
-                return dynamic_cast<Attribute<T> *>(&attributes_.at(i));
+            if (attributes_[i]->GetNameString() == name)
+                return dynamic_cast<Attribute<T> *>(&attributes_[i]);
         return 0;
     }
 
