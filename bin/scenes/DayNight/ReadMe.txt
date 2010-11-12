@@ -1,0 +1,2 @@
+This is a sample script which contains test world which have a terrain and entity which has EC_EnvironmentLight - component. Same entity contains EC_Script which runs Javascript which
+changes world time between 0.0 - 1.0. 

@@ -1,0 +1,46 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1">
+  <component type="EC_Terrain" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="16" name="Grid Width"/>
+   <attribute value="16" name="Grid Height"/>
+   <attribute value="0.129999995" name="Tex. U scale"/>
+   <attribute value="0.129999995" name="Tex. V scale"/>
+   <attribute value="file://RexTerrainPCF.material" name="Material"/>
+   <attribute value="" name="Texture 0"/>
+   <attribute value="" name="Texture 1"/>
+   <attribute value="" name="Texture 2"/>
+   <attribute value="" name="Texture 3"/>
+   <attribute value="" name="Texture 4"/>
+   <attribute value="file://terrain_map.ntf" name="Heightmap"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Terrain" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+ <entity id="2">
+  <component type="EC_Name" sync="1">
+   <attribute value="Environment" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_EnvironmentLight" sync="1">
+   <attribute value="0.0261437912 0.0261437912 0.0261437912 1" name="Sun color"/>
+   <attribute value="0.100000001 0.100000001 0.300000012 3" name="Ambient color"/>
+   <attribute value="0.930000007 1 0.129999995 1" name="Sun diffuse color"/>
+   <attribute value="0.0121698435 0.502004623 -0.864779294" name="Sun direction vector"/>
+   <attribute value="true" name="Use fixed time"/>
+   <attribute value="0.116916552" name="Current time"/>
+   <attribute value="true" name="Sun cast shadows"/>
+   <attribute value="true" name="Use Caelum"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="scenes/DayNight/assets/daynight.js" name="Script ref"/>
+  </component>
+ </entity>
+</scene>
