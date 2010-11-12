@@ -4,9 +4,10 @@
 #include "DebugOperatorNew.h"
 #include "EllipseMenu.h"
 
+#include <math.h>
+
 #include "MemoryLeakCheck.h"
 
-#include <math.h>
 #define M_PI_2     1.57079632679489661923 // In naali this didnt get defined from math.h
 
 namespace Ether
@@ -25,17 +26,11 @@ namespace Ether
         void EllipseMenu::CalculatePositions(QVector<QPointF> &positions)
         {
             QRectF boundaries = boundaries_;
-
-            qreal start_phase;
-
-            qreal end_phase;
-
+            qreal start_phase = 0.0;
+            qreal end_phase = 0.0;
             int visible_objects = max_visible_objects_;
-
             boundaries.setWidth(boundaries.width() - current_card_max_size_.width());
-
             qreal width_radius = boundaries.width()/2;
-
             qreal phase_change = 0;
             qreal height_bias = 0;
 

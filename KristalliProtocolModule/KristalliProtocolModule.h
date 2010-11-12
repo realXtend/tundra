@@ -119,7 +119,7 @@ namespace KristalliProtocol
         event_category_id_t networkEventCategory;
         
         /// Event manager.
-        Foundation::EventManagerPtr eventManager_ ;
+        EventManagerPtr eventManager_ ;
 
         /// Id for "NetworkIn" event category.
         event_category_id_t networkInEventCategory_;

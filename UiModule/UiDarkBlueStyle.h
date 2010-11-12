@@ -4,10 +4,11 @@
 #define incl_UiModule_UiDarkBlueStyle_h
 
 #include <QCleanlooksStyle>
+#include <QWindowsStyle>
+
 #include <QPalette>
 #include <QPainter>
 #include <QPainterPath>
-#include <QStyleOptionTitleBar>
 #include <QRect>
 
 namespace UiServices
@@ -20,6 +21,7 @@ namespace UiServices
 
     public:
         UiDarkBlueStyle();
+        virtual ~UiDarkBlueStyle();
 
         void polish(QPalette &palette);
         void polish(QWidget *widget);
@@ -40,6 +42,7 @@ namespace UiServices
 
         QPalette default_palette_;
 
+        QWindowsStyle *win_style_;
     };
 
 }

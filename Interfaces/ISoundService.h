@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_ISoundService_h
 #define incl_Interfaces_ISoundService_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include "CoreTypes.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -12,7 +12,7 @@
 #include <QString>
 
 //! An interface for sound functionality.
-class ISoundService : public QObject, public Foundation::ServiceInterface
+class ISoundService : public QObject, public IService
 {
     Q_OBJECT
     Q_ENUMS(SoundState)

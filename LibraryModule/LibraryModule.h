@@ -89,7 +89,7 @@ namespace Library
         Q_DISABLE_COPY(LibraryModule);
 
         /// Returns caycast entity pos, if no entity is hit, returns Vector3df::ZERO
-        Foundation::RaycastResult RayCast(QDropEvent *drop_event);
+        RaycastResult* RayCast(QDropEvent *drop_event);
 
         /// Request the inparam url as a mesh asset
         void RequestMeshAssetAsCurrent(const QUrl& mesh_url);
@@ -124,7 +124,11 @@ namespace Library
 
         void AssignMaterials();
 
+        QStringList supported_drop_formats_;
+
     private slots:
+        void HandleDragEnterEvent(QDragEnterEvent *e);
+        void HandleDragMoveEvent(QDragMoveEvent *e);
         void DropEvent(QDropEvent *drop_event);
         void EntityCreated(Scene::Entity* entity, AttributeChange::Type change);
 

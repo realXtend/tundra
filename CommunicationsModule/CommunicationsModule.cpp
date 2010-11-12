@@ -38,7 +38,7 @@ namespace CommunicationsService
             return;
         }
 
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Communications, communications_service_);
+        framework_->GetServiceManager()->RegisterService(::Service::ST_Communications, communications_service_);
         QString message("Communications service registered.");
         LogInfo(message.toStdString());
     }

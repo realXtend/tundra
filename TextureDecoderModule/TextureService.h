@@ -33,6 +33,11 @@ namespace TextureDecoder
          */
         virtual request_tag_t RequestTexture(const std::string& asset_id);
 
+        //! Gets a texture rousource from cache
+        //! @param texture_id as std::string
+        //! @return valid ptr if found, 0 ptr if not
+        virtual TextureResource *GetFromCache(const std::string &texture_id);
+
         //! Removes a texture from the disk cache with the texture id
         //! @param texture_is as std::string
         virtual void DeleteFromCache(const std::string &texture_id);

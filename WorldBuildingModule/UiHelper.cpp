@@ -171,8 +171,8 @@ namespace WorldBuilding
                     group = title_animation_group;
                 else if (item_name.contains("ID"))
                     group = title_appearance_group;
-                else
-                    int i = 0;
+                //else
+                    //int i = 0;
         
                 // Add to tree and to internals
                 group->addSubProperty(item);
@@ -459,7 +459,7 @@ namespace WorldBuilding
             // Get data model and service
             InventoryPtr inv_data = inv_module->GetInventoryPtr();
             InventoryService *inv_serv = inv_module->GetInventoryService();
-            InventoryModule::InventoryDataModelType inv_type = inv_module->GetInventoryType();
+//           InventoryModule::InventoryDataModelType inv_type = inv_module->GetInventoryType();
             if (!inv_data || !inv_serv)
                 return;
 

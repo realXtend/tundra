@@ -81,10 +81,12 @@ lower values are less curved meaning more distortion at the horizons but a bette
         DEFINE_QPROPERTY_ATTRIBUTE(float, distanceAttr);
         Q_PROPERTY(float distanceAttr READ getdistanceAttr WRITE setdistanceAttr); 
 
-        /// The curvature of the dome. Good values are between 2 and 65. Higher values are more curved leading to a smoother effect,
-        /// lower values are less curved meaning more distortion at the horizons but a better distance effect.
+        /// The curvature of the dome.
+        /** Good values are between 2 and 65. Higher values are more curved leading to a smoother effect,
+            lower values are less curved meaning more distortion at the horizons but a better distance effect.
+        */
         DEFINE_QPROPERTY_ATTRIBUTE(float, curvatureAttr);
-        Q_PROPERTY(float curvatureAttr READ getcurvatureAttr WRITE setcurvatureAttr); 
+        Q_PROPERTY(float curvatureAttr READ getcurvatureAttr WRITE setcurvatureAttr);
 
         /// Defines how many times to tile the texture(s) across the dome. 
         DEFINE_QPROPERTY_ATTRIBUTE(float, tilingAttr);
@@ -109,7 +111,7 @@ lower values are less curved meaning more distortion at the horizons but a bette
 
     public slots:
          /// Called If some of the attributes has been changed.
-        void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+        void AttributeUpdated(IAttribute* attribute);
         void DisableSky();
 
     private:

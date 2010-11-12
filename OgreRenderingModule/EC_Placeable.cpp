@@ -268,6 +268,7 @@ QVector3D EC_Placeable::GetQPosition() const
 void EC_Placeable::SetQPosition(const QVector3D newpos)
 {
     SetPosition(Vector3df(newpos.x(), newpos.y(), newpos.z()));
+    emit PositionChanged(newpos);
 }
 
 
@@ -280,6 +281,7 @@ QQuaternion EC_Placeable::GetQOrientation() const
 void EC_Placeable::SetQOrientation(const QQuaternion newort)
 {
     SetOrientation(Quaternion(newort.x(), newort.y(), newort.z(), newort.scalar()));
+    OrientationChanged(newort);
 }
 
 
@@ -292,6 +294,7 @@ QVector3D EC_Placeable::GetQScale() const
 void EC_Placeable::SetQScale(const QVector3D newscale)
 {
     SetScale(Vector3df(newscale.x(), newscale.y(), newscale.z()));
+    emit ScaleChanged(newscale);
 }
 
 QVector3D EC_Placeable::translate(int axis, float amount)

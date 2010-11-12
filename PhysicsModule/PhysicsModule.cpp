@@ -237,7 +237,7 @@ void PhysicsModule::SetDrawDebugGeometry(bool enable)
     if (!framework_ || !framework_->GetServiceManager())
         return;
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
     if (!renderer)
         return;
     Ogre::SceneManager* scenemgr = renderer->GetSceneManager();

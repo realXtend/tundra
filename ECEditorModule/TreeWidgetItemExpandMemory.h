@@ -37,7 +37,7 @@ public:
     /** @param group Group name identifier.
         @param mgr Config manager.
     */
-    TreeWidgetItemExpandMemory(const char *, const Foundation::ConfigurationManager &mgr);
+    TreeWidgetItemExpandMemory(const char *group, const ConfigurationManager &mgr);
 
     /// Destroyes the object and saves information about currently expanded items to config file.
     ~TreeWidgetItemExpandMemory();
@@ -79,7 +79,7 @@ private:
     std::string ToString() const;
 
     QSet<QString> items; ///< Set of item identifier texts.
-    Foundation::ConfigurationManager cfgMgr; ///< Config manager.
+    ConfigurationManager cfgMgr; ///< Config manager.
     std::string groupName; ///< Setting group name.
 };
 

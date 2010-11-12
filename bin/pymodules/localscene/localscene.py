@@ -53,16 +53,17 @@ class LocalScene(Component):
         self.uploadThread = None
         self.sceneActionThread = None
 
-        self.xsift = 127
-        self.ysift = 127
-        self.zsift = 25
+        self.xshift = 127
+        self.yshift = 127
+        self.zshift = 25
         self.xscale = 1
         self.yscale = 1
         self.zscale = 1
         self.dotScene = None
         self.dsManager = None
         self.worldstream = None
-        self.flipZY = False
+        self.flipZY = True
+        #self.flipZY = False
         self.highlight = False
         self.uploader = None
         self.filename = ""
@@ -96,8 +97,15 @@ class LocalScene(Component):
             if(filename!=None):
                 if(filename!=""):
                     self.dotScene, self.dsManager = loader.load_dotscene(filename)
+                    self.dsManager.localScene=self
+                    self.dsManager.startcenterX = self.dsManager.xshift
+                    self.dsManager.startcenterY = self.dsManager.yshift
+                    self.dsManager.startcenterZ = self.dsManager.zshift
+                    
                     self.dsManager.setHighlight(self.highlight)
-                    self.dsManager.setFlipZY(self.flipZY, self.xsift, self.ysift, self.zsift, self.xscale, self.yscale, self.zscale)
+                    #self.dsManager.setFlipZY(self.flipZY, self.xshift, self.yshift, self.zshift, self.xscale, self.yscale, self.zscale)
+                    self.dsManager.setFlipZY(self.flipZY)
+                    
         else:
             self.queue.put(('local scene', 'you already have scene loaded'))
             pass
@@ -140,19 +148,19 @@ class LocalScene(Component):
         self.queue.put(('scene upload', 'upload done'))
 
     def setxpos(self, x):
-        self.xsift = x
+        self.xshift = x
         if(self.dsManager!=None):
-            self.dsManager.setPosition(self.xsift, self.ysift, self.zsift)
+            self.dsManager.setPosition(self.xshift, self.yshift, self.zshift)
 
     def setypos(self, y):
-        self.ysift = y
+        self.yshift = y
         if(self.dsManager!=None):
-            self.dsManager.setPosition(self.xsift, self.ysift, self.zsift)
+            self.dsManager.setPosition(self.xshift, self.yshift, self.zshift)
 
     def setzpos(self, z):
-        self.zsift = z
+        self.zshift = z
         if(self.dsManager!=None):
-            self.dsManager.setPosition(self.xsift, self.ysift, self.zsift)
+            self.dsManager.setPosition(self.xshift, self.yshift, self.zshift)
 
     def setxscale(self, x):
         self.xscale = x
@@ -169,10 +177,18 @@ class LocalScene(Component):
         if(self.dsManager!=None):
             self.dsManager.setScale(self.xscale, self.yscale, self.zscale)
 
+    def rotateX(self, rotX):
+        self.dsManager.rotateX(rotX)
+    def rotateY(self, rotY):
+        self.dsManager.rotateY(rotY)
+    def rotateZ(self, rotZ):
+        self.dsManager.rotateZ(rotZ)
+            
     def checkBoxZYToggled(self, enabled):
         self.flipZY = enabled
         if(self.dsManager!=None):
-            self.dsManager.setFlipZY(enabled, self.xsift, self.ysift, self.zsift, self.xscale, self.yscale, self.zscale)
+            # self.dsManager.setFlipZY(enabled, self.xshift, self.yshift, self.zshift, self.xscale, self.yscale, self.zscale)
+            self.dsManager.setFlipZY(enabled)            
         pass
 
     def on_exit(self):
@@ -290,7 +306,8 @@ class SceneSaver:
                 rotation = newdoc.createElement('rotation')
                 # XXX counter the 'fix' done in loading the scene
                 # loader.py in def create_naali_meshentity()
-                ort = oNode.naali_ent.placeable.Orientation * QQuaternion(1, -1, 0, 0)
+                # XXX not countering, saving as it is
+                ort = oNode.naali_ent.placeable.Orientation #* QQuaternion(1, -1, 0, 0)
                 rotation.setAttribute("qx", str(oNode.naali_ent.placeable.Orientation.x()))
                 rotation.setAttribute("qy", str(oNode.naali_ent.placeable.Orientation.y()))
                 rotation.setAttribute("qz", str(oNode.naali_ent.placeable.Orientation.z()))

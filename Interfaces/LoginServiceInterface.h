@@ -9,7 +9,7 @@
 #ifndef incl_Interfaces_LoginServiceInterface_h
 #define incl_Interfaces_LoginServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 
 #include <QObject>
 #include <QMap>
@@ -21,7 +21,7 @@ namespace Foundation
     /** Login service provides interface for passing your login information
      *  from login screen to the login logic.
      */
-    class LoginServiceInterface : public QObject, public Foundation::ServiceInterface
+    class LoginServiceInterface : public QObject, public IService
     {
         Q_OBJECT
 

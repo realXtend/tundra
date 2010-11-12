@@ -21,7 +21,7 @@ namespace CommunicationTest
 {
     Test::Test(Foundation::Framework* framework): framework_(framework), jabber_connection_(0), opensim_connection_(0)
     {
-        boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Foundation::Service::ST_ConsoleCommand).lock();
+        boost::shared_ptr<Console::CommandService> console_service = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
         if (console_service)
         {
             console_service->RegisterCommand(Console::CreateCommand("comm test", "Run a test for communication service", Console::Bind(this, &Test::OnConsoleCommand)));

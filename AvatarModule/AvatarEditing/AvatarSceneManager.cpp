@@ -117,7 +117,7 @@ namespace Avatar
 
     void AvatarSceneManager::SendModeEvents(bool mode_activated)
     {
-        Foundation::EventManagerPtr e_manager = framework_->GetEventManager();
+        EventManagerPtr e_manager = framework_->GetEventManager();
         if (!e_manager)
             return;
 

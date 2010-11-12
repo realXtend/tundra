@@ -105,7 +105,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     label->setPixmap(QPixmap::fromImage(img));
 
     const int headerHeight = tree_profiling_data_->headerItem()->sizeHint(0).height();
-
+    UNREFERENCED_PARAM(headerHeight);
     tree_profiling_data_->header()->resizeSection(0, 300);
     tree_profiling_data_->header()->resizeSection(1, 60);
     tree_profiling_data_->header()->resizeSection(2, 50);
@@ -219,7 +219,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     QObject::connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
     QObject::connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
 
-    boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
+    boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0)
         asset_event_category_ = event_manager_->QueryEventCategory("Asset");
 
@@ -310,7 +310,7 @@ void TimeProfilerWindow::CopyMaterialAssetName()
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Mesh));
-    boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
+    boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0 )
     {
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
@@ -330,7 +330,7 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 
     /*
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Texture));
-    boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
+    boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0 )
     {
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
@@ -1636,6 +1636,7 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
     int regionX = simStats->ReadU32();
     int regionY = simStats->ReadU32();
     u32 regionFlags = simStats->ReadU32();
+    UNREFERENCED_PARAM(regionFlags);
     int objectCapacity = simStats->ReadU32();
 
     tree_sim_stats_->clear();
@@ -1666,7 +1667,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     tree_asset_transfers_->clear();
 
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-        framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
     if (!asset_service)
         return;
         
@@ -1712,7 +1713,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         return;
     
     boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
-        framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+        framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer).lock();
     assert(renderer);
     if (!renderer)
         return;

@@ -13,6 +13,8 @@ class QLineEdit;
 class QWidget;
 class QUrl;
 
+class EC_3DCanvas;
+
 /// A 3D canvas controller that initializes an EC_3DCanvas into the same entity, with source parameters (for example html page url)
 /**
 <table class="header">
@@ -75,10 +77,6 @@ public:
     Q_PROPERTY(QString source READ getsource WRITE setsource);
 	DEFINE_QPROPERTY_ATTRIBUTE(QString, source);
 
-    //! Position within source (for example scrollbar value, page number)
-    Q_PROPERTY(int position READ getposition WRITE setposition);
-	DEFINE_QPROPERTY_ATTRIBUTE(int, position);
-
     //! Submesh number into which to apply the 3DCanvas
     Q_PROPERTY(int submesh READ getsubmesh WRITE setsubmesh);
 	DEFINE_QPROPERTY_ATTRIBUTE(int, submesh);
@@ -87,7 +85,10 @@ public:
     Q_PROPERTY(bool show2d READ getshow2d WRITE setshow2d);
 	DEFINE_QPROPERTY_ATTRIBUTE(bool, show2d);
 
-    bool manipulate_ec_3dcanvas;
+    //! Refresh rate
+    Q_PROPERTY(int refreshRate READ getrefreshRate WRITE setrefreshRate);
+	DEFINE_QPROPERTY_ATTRIBUTE(int, refreshRate);
+
 
 public slots:
     void OnClick();
@@ -102,7 +103,7 @@ public slots:
     void EndPressed();
     
 private slots:
-    void UpdateWidgetAndCanvas();
+    void UpdateWidgetAndCanvas(IAttribute *attribute, AttributeChange::Type type);
     void UpdateWidget();
     void UpdateCanvas();
     void RepaintCanvas();
@@ -111,6 +112,8 @@ private slots:
 
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
+
+    EC_3DCanvas *Get3DCanvas();
 
 private:
     //! Constuctor.
@@ -138,6 +141,8 @@ private:
     
     //! Last set source
     QString last_source_;
+
+    bool canvas_started_;
 };
 
 #endif

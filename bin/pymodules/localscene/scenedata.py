@@ -53,6 +53,12 @@ class SceneDataManager:
             self.materials.append(os.path.basename(self.materialFile))
             self.hasCopyFiles = True
 
+	def getExternalMaterialFiles(self):
+		elems = self.xmlDoc.getElementsByTagName('externals')
+		for f in elems[0].getElementsByTagName('file'):
+			self.materials.append(f.getAttribute('name'))
+		
+					
 
     def hasMaterialFile(self, scenefile):
         mfile = scenefile[:-6] + ".material"

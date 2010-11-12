@@ -15,8 +15,6 @@
 #include "OgreSceneNode.h"
 #include "OgreEntity.h"
 
-#include <QFile>
-
 namespace WorldBuilding
 {
     OpenSimSceneService::OpenSimSceneService(QObject *parent, Foundation::Framework *framework) :
@@ -26,11 +24,15 @@ namespace WorldBuilding
         scene_widget_(new OpenSimSceneWidget()),
         capability_name_("UploadNaaliScene")
     {
+        scene_exporter_ = new SceneExporter(this, framework_, scene_parser_);
         ResetWorldStream();
 
         connect(network_manager_, SIGNAL(finished(QNetworkReply*)), SLOT(SceneUploadResponse(QNetworkReply*)));
         connect(scene_widget_, SIGNAL(PublishFromFile(const QString&, bool)), SLOT(PublishToServer(const QString &, bool)));
         connect(scene_widget_, SIGNAL(ExportToFile(const QString&, QList<Scene::Entity *>)), SLOT(StoreEntities(const QString &, QList<Scene::Entity *>)));
+        connect(scene_widget_, SIGNAL(destroyed()), this, SLOT(AbandonSceneWidget()));
+
+        connect(scene_widget_, SIGNAL(ExportSceneRequest()), scene_exporter_, SLOT(ShowBackupTool()));
     }
 
     OpenSimSceneService::~OpenSimSceneService()
@@ -62,6 +64,8 @@ namespace WorldBuilding
         }
         else
             WorldBuildingModule::LogWarning("OpenSimSceneService: Failed to add OpenSim Scene Tool to scene and menu");
+
+        scene_exporter_->PostInitialize();
     }
 
     void OpenSimSceneService::MouseLeftPressed(MouseEvent *mouse_event)
@@ -72,13 +76,13 @@ namespace WorldBuilding
         Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
         {
-            Foundation::RaycastResult result = renderer->Raycast(mouse_event->x, mouse_event->y);
-            if (!result.entity_)
+            RaycastResult* result = renderer->Raycast(mouse_event->x, mouse_event->y);
+            if (!result->entity_)
                 return;
             // If adding fails it means its already in the list, then we remove it
-            const QString ent_id = QString::number(result.entity_->GetId());
-            if (!scene_widget_->AddEntityToList(ent_id, result.entity_))
-                scene_widget_->RemoveEntityFromList(ent_id, result.entity_);
+            const QString ent_id = QString::number(result->entity_->GetId());
+            if (!scene_widget_->AddEntityToList(ent_id, result->entity_))
+                scene_widget_->RemoveEntityFromList(ent_id, result->entity_);
         }
     }
 
@@ -164,8 +168,6 @@ namespace WorldBuilding
             QNetworkRequest request;
             request.setUrl(QUrl(upload_cap));
             request.setRawHeader("ImportMethod", "Upload");
-            request.setRawHeader("RegionX", QString::number(current_stream_->GetInfo().regionX).toAscii());
-            request.setRawHeader("RegionY", QString::number(current_stream_->GetInfo().regionY).toAscii());
             network_manager_->post(request, publish_data);
         }
         else
@@ -175,6 +177,16 @@ namespace WorldBuilding
     void OpenSimSceneService::StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities)
     {
         scene_parser_->ExportToFile(save_filename, entities);
+    }
+
+    void OpenSimSceneService::StoreSceneAndAssets(QDir store_location, const QString &asset_base_url)
+    {
+        scene_exporter_->StoreSceneAndAssets(store_location, asset_base_url);
+    }
+
+    QByteArray OpenSimSceneService::ExportEntities(QList<Scene::Entity *> entities)
+    {
+        return scene_parser_->ExportToByteArray(entities);
     }
 
     Vector3df OpenSimSceneService::GetPosFrontOfAvatar()
@@ -204,7 +216,7 @@ namespace WorldBuilding
         // Get a pos in front of avatar
         Ogre::Vector3 av_pos = av_placeable->GetLinkSceneNode()->_getDerivedPosition();
         return_pos = Vector3df(av_pos.x, av_pos.y, av_pos.z);
-        return_pos += (av_placeable->GetOrientation() * Vector3df(3.0f, 0.0f, 3.0f));
+        return_pos += (av_placeable->GetOrientation() * Vector3df(3.0f, 0.0f, 2.0f));
         return return_pos;
     }
 
@@ -228,5 +240,10 @@ namespace WorldBuilding
         }
         reply->close();
         reply->deleteLater();
+    }
+
+    void OpenSimSceneService::AbandonSceneWidget()
+    {
+        scene_widget_ = 0;
     }
 }

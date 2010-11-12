@@ -31,7 +31,7 @@ void UiServiceModule::Initialize()
     // Register UI service.
     assert(GetFramework()->Ui()->GraphicsView());
     service_ = boost::shared_ptr<UiService>(new UiService(GetFramework()->Ui()->GraphicsView()));
-    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, service_);
+    framework_->GetServiceManager()->RegisterService(Service::ST_Gui, service_);
     framework_->RegisterDynamicObject("uiservice", service_.get());
 }
 
