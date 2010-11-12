@@ -19,7 +19,6 @@
 #include "MsgRemoveEntity.h"
 #include "MsgEntityIDCollision.h"
 #include "MsgEntityAction.h"
-#include "EC_DynamicComponent.h"
 
 #include "kNet.h"
 
@@ -466,9 +465,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                             DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
                             bool has_changes = false;
                             
-                            //! \todo Hack! Here EC_DynamicComponent is handled as a special case, which basically fullserializes everything.
-                            //! Will be refactored when there is time
-                            if (dynamic_cast<EC_DynamicComponent*>(component.get()))
+                            //! \todo Do proper per attribute sync for dynamic structured components
+                            if (component->HasDynamicStructure())
                             {
                                 component->SerializeToBinary(dest);
                                 has_changes = true;
@@ -838,8 +836,8 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             {
                 DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
                 
-                //! \todo Hack special case handling for EC_DynamicComponent: deserialize in full
-                if (dynamic_cast<EC_DynamicComponent*>(component.get()))
+                //! \todo Per-attribute sync also for dynamic structure component
+                if (component->HasDynamicStructure())
                 {
                     try
                     {

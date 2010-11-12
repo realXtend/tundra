@@ -109,6 +109,9 @@ public slots:
     /// the network layer. To create 'local-only' components, use the above SetNetworkSyncEnabled flag instead. -jj.
     virtual bool IsSerializable() const { return false; }
 
+    /// Returns true if component has dynamic attribute structure
+    virtual bool HasDynamicStructure() const { return false; }
+
     /// Returns the number of Attributes in this component.
     int GetNumberOfAttributes() const { return attributes_.size(); }
 
