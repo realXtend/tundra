@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_ConsoleServiceInterface_h
 #define incl_Interfaces_ConsoleServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include "CoreTypes.h"
 
 namespace Console
@@ -18,7 +18,7 @@ namespace Console
         \ingroup Services_group
         \ingroup DebugConsole_group
     */
-    class ConsoleServiceInterface : public Foundation::ServiceInterface
+    class ConsoleServiceInterface : public IService
     {
     public:
         //! default constructor

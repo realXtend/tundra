@@ -413,10 +413,12 @@ namespace TelepathyIM
         if (GST_BUFFER_OFFSET_IS_VALID(buffer))
         {
             guint64 offset = GST_BUFFER_OFFSET (buffer);
+            UNREFERENCED_PARAM(offset);
         }
         if (GST_BUFFER_OFFSET_END_IS_VALID(buffer))
         {
             guint64 offset = GST_BUFFER_OFFSET_END(buffer);
+            UNREFERENCED_PARAM(offset);
         }
 
         u8* data = GST_BUFFER_DATA(buffer);
@@ -490,17 +492,18 @@ namespace TelepathyIM
             LogError("Trying to set volume out of range");
             return;
         }
-        double setValue = value*10; // range is from 0 to 10
+        //double setValue = value*10; // range is from 0 to 10
         //g_value_set_double(&volume_, setValue); 
         //g_object_set_property (G_OBJECT(audio_volume_), "volume", &volume_);
     }
     
     void FarsightChannel::SetAudioRecordVolume(const double value)
     {
-        if(value<0||value>1){
+        if(value<0||value>1)
+        {
             LogError("Trying to set record volume out of range");
             return;
-        }        
+        }
         // todo: Implement
     }
 
@@ -573,14 +576,14 @@ namespace TelepathyIM
     }
 
     void FarsightChannel::LinkIncomingSourcePad(TfStream *stream, GstPad *src_pad, FsCodec *codec)
-    {           
+    {
         incoming_video_widget_mutex_.lock();
 
         // todo: Check if source pad is already linked!
         gint clock_rate = codec->clock_rate;
         audio_stream_in_clock_rate_ = clock_rate;
         gint channel_count = codec->channels;
-
+        UNREFERENCED_PARAM(channel_count);
         guint media_type;
         g_object_get(stream, "media-type", &media_type, NULL);
 

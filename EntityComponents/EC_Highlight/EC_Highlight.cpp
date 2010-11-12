@@ -74,7 +74,7 @@ EC_Highlight::EC_Highlight(IModule *module) :
     entityClone_(0),
     sceneNode_(0)
 {
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 }
 
 void EC_Highlight::Create()

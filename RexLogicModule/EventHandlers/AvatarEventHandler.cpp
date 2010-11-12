@@ -45,7 +45,7 @@ namespace RexLogic
 
     void AvatarEventHandler::SendRegisterEvent(const RexUUID &fullid, entity_id_t entityid)
     {
-        Foundation::EventManagerPtr event_manager = owner_->GetFramework()->GetEventManager();
+        EventManagerPtr event_manager = owner_->GetFramework()->GetEventManager();
         if (event_manager)
         {
             Avatar::Events::SceneRegisterEntityData data(fullid, entityid);
@@ -55,7 +55,7 @@ namespace RexLogic
 
     void AvatarEventHandler::SendUnregisterEvent(const RexUUID &fullid)
     {
-        Foundation::EventManagerPtr event_manager = owner_->GetFramework()->GetEventManager();
+        EventManagerPtr event_manager = owner_->GetFramework()->GetEventManager();
         if (event_manager)
         {
             Avatar::Events::SceneRegisterEntityData data(fullid);

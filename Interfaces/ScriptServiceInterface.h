@@ -3,13 +3,13 @@
 #ifndef incl_Interfaces_ScriptServiceInterface_h
 #define incl_Interfaces_ScriptServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include <QString>
 #include <QVariant>
 
 namespace Foundation
 {
-    class ScriptServiceInterface : public ServiceInterface
+    class ScriptServiceInterface : public IService
     {
     public:
         ScriptServiceInterface() {}

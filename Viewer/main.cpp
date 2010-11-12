@@ -6,6 +6,14 @@
 #include "ModuleManager.h"
 #include "HttpUtilities.h"
 
+// Disable warning C4244 coming from boost
+#ifdef _MSC_VER
+#pragma warning ( push )
+#pragma warning( disable : 4244 )
+#include <boost/thread.hpp>
+#pragma warning( pop )
+#endif
+
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
 #include <crtdbg.h>
@@ -181,7 +189,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Naali_v0.3.2";
+    WCHAR* szVersion = L"Naali_v0.3.3";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;

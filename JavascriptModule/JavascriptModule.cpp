@@ -65,7 +65,7 @@ void JavascriptModule::Initialize()
     // Register ourselves as javascript scripting service.
     boost::shared_ptr<JavascriptModule> jsmodule = framework_->GetModuleManager()->GetModule<JavascriptModule>().lock();
     boost::weak_ptr<ScriptServiceInterface> service = boost::dynamic_pointer_cast<ScriptServiceInterface>(jsmodule);
-    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_JavascriptScripting, service);
+    framework_->GetServiceManager()->RegisterService(Service::ST_JavascriptScripting, service);
 
     engine->globalObject().setProperty("print", engine->newFunction(Print));
 

@@ -90,6 +90,7 @@ AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
 AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
 AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
 AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
+AddEntityComponent(EntityComponents/EC_3DGizmo EC_3DGizmo)
 
 # The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)

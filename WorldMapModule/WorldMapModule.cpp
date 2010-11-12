@@ -210,7 +210,7 @@ namespace WorldMap
             block.mapImageID = msg.ReadUUID();
             mapBlocks.append(block);
 
-            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = framework_->GetServiceManager()->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();            
+            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = framework_->GetServiceManager()->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();            
             if (texture_service)
             {
                 texture_service->DeleteFromCache(block.mapImageID.ToString());

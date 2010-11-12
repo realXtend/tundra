@@ -113,9 +113,9 @@ namespace Ether
         {
             QPixmap bg;
             if (connected_)
-                bg = bg_image_connected_.scaled(new_rect.size().toSize());
+                bg = bg_image_connected_.scaled(new_rect.size().toSize(), Qt::KeepAspectRatioByExpanding);
             else
-                bg = bg_image_disconnected_.scaled(new_rect.size().toSize());
+                bg = bg_image_disconnected_.scaled(new_rect.size().toSize(), Qt::KeepAspectRatioByExpanding);
             setBackgroundBrush(QBrush(bg));
         }
 

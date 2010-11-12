@@ -3,16 +3,13 @@
 #ifndef incl_Interfaces_CommunicationsService_h
 #define incl_Interfaces_CommunicationsService_h
 
-#include "ServiceInterface.h"
-// todo: Make these forward declarations if possible
+#include "IService.h"
+#include "Vector3D.h"
+
 #include <QObject>
-#include <Vector3D.h>
 #include <QList>
-#include <QByteArray>
 #include <QString>
 #include <QDateTime>
-//class QString;
-//class QDateTime;
 
 namespace Communications
 {
@@ -264,6 +261,10 @@ namespace Communications
             virtual int GetAverageBandwithIn() const = 0;
             virtual int GetAverageBandwithOut() const = 0;
 
+            virtual QString GetActiveChannel() const = 0;
+            virtual void SetActiveChannel(QString channel) = 0;
+            virtual QStringList GetChannels() = 0;
+
             //virtual void SetSelfPosition(const vector3df& pos) = 0;
 
             //! \todo: Give weak_ptr instead
@@ -278,6 +279,8 @@ namespace Communications
             void StartReceivingAudio();
             void StopReceivingAudio();
             void SpeakerVoiceActivityChanged(double volume);
+            void ActiceChannelChanged(QString new_channel);
+            void ChannelListChanged(QStringList list);
 //            void ReceivedVoiceActivity(double volume);
         };
 
@@ -305,7 +308,7 @@ namespace Communications
     //! The services are considired to be available until viewer shutdown. (???)
     //!
     //! \todo Define how to signal about service becomes unavailable.
-    class ServiceInterface : public QObject, public Foundation::ServiceInterface 
+    class ServiceInterface : public QObject, public IService 
     {
         Q_OBJECT
     public:

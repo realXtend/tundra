@@ -241,6 +241,7 @@ namespace TelepathyIM
 
         presence_status_ = status;
         Tp::PendingOperation* op = tp_connection_->setSelfPresence(presence_status_,presence_message_);
+        UNREFERENCED_PARAM(op);
         //! @todo Check success
     }
 
@@ -251,6 +252,7 @@ namespace TelepathyIM
 
         presence_message_ = message;
         Tp::PendingOperation* op = tp_connection_->setSelfPresence(presence_status_,presence_message_);
+        UNREFERENCED_PARAM(op);
         //! @todo Check success
     }
 
@@ -265,6 +267,7 @@ namespace TelepathyIM
         DisconnectSignals();
 
         Tp::PendingOperation* op = tp_connection_->requestDisconnect();
+        UNREFERENCED_PARAM(op);
         tp_connection_.reset();
     }
 
@@ -626,6 +629,7 @@ namespace TelepathyIM
                 if ( !tp_streamed_media_channel->initiatorContact().isNull() )
                 {
                     Contact* initiator = GetContact(tp_streamed_media_channel->initiatorContact());
+                    UNREFERENCED_PARAM(initiator);
                     //! @todo get the actual contact object
                     VoiceSession* session = new VoiceSession(tp_streamed_media_channel);
                     voice_sessions_.push_back(session);
@@ -635,7 +639,7 @@ namespace TelepathyIM
                 else
                 {
                     Contact* null_contact = new Contact(tp_streamed_media_channel->initiatorContact()); // we don't have the contact!
-
+                    UNREFERENCED_PARAM(null_contact);
                     VoiceSession* session = new VoiceSession(tp_streamed_media_channel);
                     connect(session, SIGNAL( Ready(VoiceSession*) ), SLOT( IncomingVoiceSessionReady(VoiceSession*) ));
 
@@ -687,7 +691,7 @@ namespace TelepathyIM
                 friend_list_.AddContact(contact);
                 emit FriendRequestAccepted(contact->GetID());
                 emit NewContact(*contact);
-                return;        
+                return;
             }
 
              if ( c->subscriptionState() == Tp::Contact::PresenceStateYes && c->publishState() == Tp::Contact::PresenceStateNo )
@@ -697,6 +701,8 @@ namespace TelepathyIM
              }
              Tp::Contact::PresenceState state1 = c->subscriptionState();
              Tp::Contact::PresenceState state2 = c->publishState();
+             UNREFERENCED_PARAM(state1);
+             UNREFERENCED_PARAM(state2);
         }
     }
 

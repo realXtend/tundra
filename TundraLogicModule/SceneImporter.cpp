@@ -417,7 +417,7 @@ void SceneImporter::ProcessAssets(const std::string& matfilename, const std::str
             bool duplicate_found = false;
             for (unsigned j = 0; j < created_meshes.size(); ++j)
             {
-                if (created_meshes[j].filesize_ == bytes.size())
+                if (created_meshes[j].filesize_ == (unsigned)bytes.size())
                 {
                     QFile mesh_compare((out_asset_dir + created_meshes[j].name_).c_str());
                     if (!mesh_compare.open(QFile::ReadOnly))
@@ -814,8 +814,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const std::string& meshname
     {
         QByteArray mesh_bytes = mesh_in.readAll();
         mesh_in.close();
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->
-            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
         if (!renderer)
         {
             TundraLogicModule::LogError("Renderer does not exist");

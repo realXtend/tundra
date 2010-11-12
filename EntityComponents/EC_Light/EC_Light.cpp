@@ -48,7 +48,7 @@ EC_Light::EC_Light(IModule *module) :
     type.SetMetadata(&typeAttrData);
 
     boost::shared_ptr<Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService
-        <Renderer>(Foundation::Service::ST_Renderer).lock();
+        <Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
 
@@ -64,7 +64,7 @@ EC_Light::~EC_Light()
         return;
 
     boost::shared_ptr<Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-        <Renderer>(Foundation::Service::ST_Renderer).lock();
+        <Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
         return;
 

@@ -7,125 +7,114 @@
 
 #include <map>
 
-namespace Foundation
-{
-    //! Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
-    /*! See \ref SceneModelPage "Scenes, entities and components" for details about the viewer's scene model.
-    
-        \defgroup Scene_group Scene Model Client Interface
-    */
+//! Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
+/*! See \ref SceneModelPage "Scenes, entities and components" for details about the viewer's scene model.
 
-    //! Manages components. Also works as a component factory.
-    /*! \ingroup Foundation_group
-        \ingroup Scene_group
-    */
-    class ComponentManager
-    {
-    public:
-        typedef std::list<ComponentWeakPtr> ComponentList;
-        typedef std::map<std::string, ComponentList> ComponentTypeMap;
-        typedef ComponentList::iterator iterator;
-        typedef ComponentList::const_iterator const_iterator;
-        typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
+    \defgroup Scene_group Scene Model Client Interface
+*/
         typedef std::map<uint, ComponentFactoryPtr> ComponentFactoryHashMap;
 
-        //! default constructor
-        explicit ComponentManager(Framework *framework);
+//! Manages components. Also works as a component factory.
+/*! \ingroup Foundation_group
+    \ingroup Scene_group
+*/
+class ComponentManager
+{
+public:
+    typedef std::list<ComponentWeakPtr> ComponentList;
+    typedef std::map<std::string, ComponentList> ComponentTypeMap;
+    typedef ComponentList::iterator iterator;
+    typedef ComponentList::const_iterator const_iterator;
+    typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
 
-        //! destructor
-        ~ComponentManager() { }
+    //! default constructor
+    ComponentManager(Foundation::Framework *framework);
 
-        //! register factory for the component
-        void RegisterFactory(const QString &component, const ComponentFactoryPtr &factory);
+    //! destructor
+    ~ComponentManager() { }
 
-        //! Unregister the component. Removes the factory.
-        void UnregisterFactory(const QString &component);
+    //! register factory for the component
+    void RegisterFactory(const QString &component, const ComponentFactoryPtr &factory);
 
-        //! Returns true if component can be created (a factory for the component has registered itself)
-        /*!
-            \param type_name name of the component type
-            \return true if component can be created, false otherwise
-        */
-        bool CanCreate(const QString &type_name);
+    //! Unregister the component. Removes the factory.
+    void UnregisterFactory(const QString &component);
 
-        //! Returns true if component can be created (a factory for the component has registered itself)
-        /*!
-            \param type_hash String hash of the component typename
-            \return true if component can be created, false otherwise
-        */
-        bool CanCreate(uint type_hash);
+    //! Returns true if component can be created (a factory for the component has registered itself)
+    /*! \param type_name Component type name.
+        \return true if component can be created, false otherwise
+    */
+    bool CanCreate(const QString &type_name);
 
-        //! Create a new component
-        /*!
-            Precondition: CanCreate(componentName)
+    //! This is an overloaded function.
+    /*! \param type_hash String hash of the component typename
+        \return true if component can be created, false otherwise
+    */
+    bool CanCreate(uint type_hash);
 
-            \param type_name type of the component to create
-        */
-        ComponentPtr CreateComponent(const QString &type_name);
+    //! Create a new component
+    /*! Precondition: CanCreate(componentName)
+        \param type_name type of the component to create
+    */
+    ComponentPtr CreateComponent(const QString &type_name);
 
-        //! Create a new component
-        /*!
-            Precondition: CanCreate(componentName)
+    //! Create a new component
+    /*! Precondition: CanCreate(componentName)
+        \param type_hash String hash of the component typename
+    */
+    ComponentPtr CreateComponent(uint type_hash);
 
-            \param type_hash String hash of the component typename
-        */
-        ComponentPtr CreateComponent(uint type_hash);
+    //! Create a new component
+    /*!
+        Precondition: CanCreate(componentName)
+        \param type_name type of the component to create
+        \param name name of the component to create
+    */
+    ComponentPtr CreateComponent(const QString &type_name, const QString &name);
 
-        //! Create a new component
-        /*!
-            Precondition: CanCreate(componentName)
+    //! Create a new component
+    /*!
+        Precondition: CanCreate(componentName)
+        \param type_hash String hash of the component typename
+        \param name name of the component to create
+    */
+    ComponentPtr CreateComponent(uint type_hash, const QString &name);
 
-            \param type_name type of the component to create
-            \param name name of the component to create
-        */
-        ComponentPtr CreateComponent(const QString &type_name, const QString &name);
+    //! Create clone of the specified component
+    ComponentPtr CloneComponent(const ComponentPtr &component);
 
-        //! Create a new component
-        /*!
-            Precondition: CanCreate(componentName)
+    //! Create new attribute for spesific component.
+    IAttribute *CreateAttribute(IComponent *owner, const std::string &typeName, const std::string &name);
 
-            \param type_hash String hash of the component typename
-            \param name name of the component to create
-        */
-        ComponentPtr CreateComponent(uint type_hash, const QString &name);
+    //! Returns list of supported attribute types.
+    QStringList GetAttributeTypes() const;
 
-        //! Create clone of the specified component
-        ComponentPtr CloneComponent(const ComponentPtr &component);
+    //! Get all component factories
+    const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
 
-        //! Create new attribute for spesific component.
-        IAttribute *CreateAttribute(IComponent *owner, const std::string &typeName, const std::string &name);
+    //! Returns string list of available component type names.
+    QStringList GetAvailableComponentTypeNames() const;
 
-        //! Returns list of supported attribute types.
-        StringVector GetAttributeTypes() const;
+    //! Get component typename from typename hash
+    /*! \param type_hash String hash of component typename
+        \return Typename, or empty if not found
+     */
+    const QString& GetComponentTypeName(uint type_hash) const;
 
-        //! Returns all component factories.
-        const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
+private:
+    //! Map of component factories
+    ComponentFactoryMap factories_;
 
-        //! Returns string list of available component type names.
-        QStringList GetAvailableComponentTypeNames() const;
+    //! Map of component factories by hash
+    ComponentFactoryHashMap factories_hash_;
 
-        //! Get component typename from typename hash
-        /*! \param type_hash String hash of component typename
-            \return Typename, or empty if not found
-         */
-        const QString& GetComponentTypeName(uint type_hash) const;
+    //! Map of component typename hash to typename
+    std::map<uint, QString> hashToTypeName_;
 
-    private:
-        //! Map of component factories
-        ComponentFactoryMap factories_;
+    //! List of supported attribute types.
+    QStringList attributeTypes_;
 
-        //! Map of component factories by hash
-        ComponentFactoryHashMap factories_hash_;
-
-        //! Map of component typename hash to typename
-        std::map<uint, QString> hashToTypeName_;
-
-        //! List of supported attribute types.
-        StringVector attributeTypes_;
-
-        //! Framework
-        Framework *framework_;
-    };
-}
+    //! Framework
+    Foundation::Framework *framework_;
+};
 
 #endif

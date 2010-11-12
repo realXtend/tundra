@@ -10,7 +10,11 @@
 
 #include "HighPerfClock.h"
 
-#include "boost/thread.hpp"
+// Disable warning C4244 coming from boost
+#pragma warning ( push )
+#pragma warning( disable : 4244 )
+#include <boost/thread.hpp>
+#pragma warning( pop )
 
 #if (defined(_POSIX_C_SOURCE) || defined(_WINDOWS)) && defined(PROFILING)
 //! Profiles a block of code in current scope. Ends the profiling when it goes out of scope

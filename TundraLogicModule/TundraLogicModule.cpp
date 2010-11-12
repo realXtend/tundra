@@ -150,7 +150,7 @@ void TundraLogicModule::LoadStartupScene()
     if (!dirname.empty())
     {
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-            framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
             asset_service->AddLocalAssetDirectory(dirname, true);
     }

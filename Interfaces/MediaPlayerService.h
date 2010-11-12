@@ -4,7 +4,7 @@
 #ifndef incl_Interfaces_PlayerService_h
 #define incl_Interfaces_PlayerService_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 
 #include <QObject>
 
@@ -15,7 +15,7 @@ namespace MediaPlayer
 {
     /// Service offer player widget for video content.
     ///
-    class ServiceInterface : public QObject, public Foundation::ServiceInterface 
+    class ServiceInterface : public QObject, public IService 
     {
         Q_OBJECT
     public:

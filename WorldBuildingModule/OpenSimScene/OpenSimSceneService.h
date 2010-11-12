@@ -9,13 +9,16 @@
 #include "WorldStream.h"
 #include "MouseEvent.h"
 
+
 #include "SceneParser.h"
 #include "OpenSimSceneWidget.h"
+#include "OpenSimSceneExporter.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QUrl>
+#include <QSet>
 
 namespace WorldBuilding
 {
@@ -40,6 +43,10 @@ namespace WorldBuilding
         /// Service interface implementation
         virtual void StoreEntities(const QString &save_filename, QList<Scene::Entity *> entities);
         /// Service interface implementation
+        virtual void StoreSceneAndAssets(QDir store_location, const QString &asset_base_url);
+        /// Service interface implementation
+        virtual QByteArray ExportEntities(QList<Scene::Entity *> entities);
+        /// Service interface implementation
         virtual Vector3df GetPosFrontOfAvatar();
 
         void SetWorldStream(ProtocolUtilities::WorldStreamPtr stream) { current_stream_ = stream; }
@@ -50,12 +57,14 @@ namespace WorldBuilding
     private slots:
         void MouseLeftPressed(MouseEvent *mouse);
         void SceneUploadResponse(QNetworkReply *reply);
+        void AbandonSceneWidget();
 
     private:
         QNetworkAccessManager *network_manager_;
         ProtocolUtilities::WorldStreamPtr current_stream_;
         Foundation::Framework *framework_;
 
+        SceneExporter *scene_exporter_;
         SceneParser *scene_parser_;
         OpenSimSceneWidget *scene_widget_;
 

@@ -98,6 +98,11 @@ material Rex/TerrainPCF
 			{
 				texture terr_dirt-grass.jpg
 			}
+			//Detail4
+			texture_unit detail4
+			{
+				texture terr_dirt-grass.jpg
+			}
 		}
 	}
 

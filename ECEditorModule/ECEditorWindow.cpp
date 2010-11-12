@@ -18,6 +18,8 @@
 #include "FunctionInvoker.h"
 #include "ECEditorModule.h"
 
+#include "UiProxyWidget.h"
+#include "UiServiceInterface.h"
 #include "ModuleManager.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
@@ -49,7 +51,7 @@ namespace ECEditor
                 return i;
         }
 
-        EntityListWidgetItem *new_item = new EntityListWidgetItem(name, list, entity);
+       new EntityListWidgetItem(name, list, entity);
         return list->count() - 1;
     }
 
@@ -64,7 +66,8 @@ namespace ECEditor
         toggle_entities_button_(0),
         entity_list_(0),
         browser_(0),
-        component_dialog_(0)
+        component_dialog_(0),
+        has_focus_(true)
     {
         Initialize();
     }
@@ -183,6 +186,14 @@ namespace ECEditor
             component_dialog_->SetComponentList(framework_->GetComponentManager()->GetAvailableComponentTypeNames());
             connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinished(int)));
             component_dialog_->show();
+        }
+    }
+
+    void ECEditorWindow::ActionTriggered(Scene::Entity *entity, const QString &action)
+    {
+        if(has_focus_ && action == "MousePress" && isVisible())
+        {
+            AddEntity(entity->GetId());
         }
     }
 
@@ -588,9 +599,48 @@ namespace ECEditor
 
     void ECEditorWindow::EntityRemoved(Scene::Entity* entity)
     {
-        QList<QListWidgetItem*> items = entity_list_->findItems(QString::number(entity->GetId()), Qt::MatchExactly);
-        for(uint i = 0; i < items.size(); i++)
-            SAFE_DELETE(items[i]);
+        for(uint i = 0; i < entity_list_->count(); i++)
+        {
+            EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
+            if (item->GetEntity().data() == entity)
+            {
+                SAFE_DELETE(item);
+                break;
+            }
+        }
+    }
+
+    void ECEditorWindow::SetFocus(bool focus)
+    {
+        // Ensure that only this editor have the focus and other editors don't.
+        if(focus)
+        {
+            QGraphicsProxyWidget *widget =  graphicsProxyWidget();
+            if(widget)
+            {
+                QGraphicsScene *scene = widget->scene();
+                if(scene)
+                {
+                    QList<QGraphicsItem *> items = scene->items();
+                    foreach(QGraphicsItem *item, items)
+                    {
+                        QGraphicsProxyWidget *proxyWidget = dynamic_cast<QGraphicsProxyWidget *>(item);
+                        ECEditorWindow *ec_editor_widget = 0;
+                        if(proxyWidget && (ec_editor_widget = dynamic_cast<ECEditorWindow*>(proxyWidget->widget())))
+                            if(ec_editor_widget != this)
+                                ec_editor_widget->SetFocus(false);
+                    }
+                }
+            }
+        }
+
+        has_focus_ = focus;
+    }
+
+    void ECEditorWindow::FocusChanged(QFocusEvent *e)
+    {
+        if (e->type() == QEvent::FocusIn)
+            SetFocus(true);
     }
 
     void ECEditorWindow::hideEvent(QHideEvent* hide_event)
@@ -661,7 +711,7 @@ namespace ECEditor
         entity_list_ = findChild<QListWidget*>("list_entities");
         QWidget *entity_widget = findChild<QWidget*>("entity_widget");
         if(entity_widget)
-            entity_widget->hide(); 
+            entity_widget->hide();
 
         QWidget *browserWidget = findChild<QWidget*>("browser_widget");
         if(browserWidget)
@@ -685,12 +735,6 @@ namespace ECEditor
         if (entity_list_)
         {
             entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-            /*QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
-            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_C), entity_list_);
-            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_V), entity_list_);
-            connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
-            connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyEntity()));
-            connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteEntity()));*/
             connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
             connect(entity_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowEntityContextMenu(const QPoint &)));
         }
@@ -698,21 +742,18 @@ namespace ECEditor
         if (toggle_entities_button_)
             connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
 
-        // Scene is not added yet so we need to listen when it's added and we can connect scenemanager's EntityRemoved singal.
-        connect(framework_, SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
+        // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
+        connect(framework_, SIGNAL(DefaultWorldSceneChanged(const Scene::ScenePtr &)), SLOT(DefaultSceneChanged(const Scene::ScenePtr &)));
     }
 
-    void ECEditorWindow::SceneAdded(const QString &name)
+    void ECEditorWindow::DefaultSceneChanged(const Scene::ScenePtr &scene)
     {
-        Scene::ScenePtr scenePtr = framework_->GetScene(name);
-        if(scenePtr)
-        {
-            // If scene has already added no need to do multiple connection.
-            disconnect(scenePtr.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)),
-                       this, SLOT(EntityRemoved(Scene::Entity*)));
-            connect(scenePtr.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
-                    this, SLOT(EntityRemoved(Scene::Entity*)));
-        }
+        assert(scene);
+        //! todo disconnect previous scene connection.
+        connect(scene.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
+                SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
+        connect(scene.get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
+                SLOT(ActionTriggered(Scene::Entity *, const QString &)), Qt::UniqueConnection);
     }
 
     void ECEditorWindow::ComponentDialogFinished(int result)

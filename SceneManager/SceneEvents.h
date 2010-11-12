@@ -252,7 +252,7 @@ namespace Scene
             float height;
         };
 
-        void RegisterSceneEvents(const Foundation::EventManagerPtr &event_manager);
+        void RegisterSceneEvents(const EventManagerPtr &event_manager);
     }
 }
 

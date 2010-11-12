@@ -263,7 +263,7 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
                         {
                             // Named parameters (constants)
                             Ogre::GpuConstantDefinitionIterator mapIter = verPtr->getConstantDefinitionIterator();
-                            int constNum = 0;
+                            //int constNum = 0;
                             while(mapIter.hasMoreElements())
                             {
                                 QString paramName(mapIter.peekNextKey().c_str());

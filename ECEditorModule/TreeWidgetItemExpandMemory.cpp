@@ -10,7 +10,7 @@
 
 #include <QTreeWidget>
 
-TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, const Foundation::ConfigurationManager &mgr) :
+TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, const ConfigurationManager &mgr) :
     cfgMgr(mgr),
     groupName(group)
 {

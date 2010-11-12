@@ -120,7 +120,7 @@ namespace MumbleVoip
         ServerInfo info;
         info.server = reply->rawHeader("Mumble-Server");
         info.version = reply->rawHeader("Mumble-Version");
-        info.channel = reply->rawHeader("Mumble-Channel");
+        info.channel_id = reply->rawHeader("Mumble-Channel");
         info.user_name = reply->rawHeader("Mumble-User");
         info.password = reply->rawHeader("Mumble-Password");
         info.avatar_id = reply->rawHeader("Mumble-Avatar-Id");

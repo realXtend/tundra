@@ -68,8 +68,8 @@ namespace OpenALAudio
         }
         if (index >= size) return false;
         uint total_size = ReadU32(data, index);
-
-        u8 wave_text[4];        
+        UNREFERENCED_PARAM(total_size);
+        u8 wave_text[4];
         ReadBytes(wave_text, data, index, 4);
         if (memcmp(wave_text, "WAVE", 4))
         {
@@ -101,7 +101,9 @@ namespace OpenALAudio
         uint avgbytes = ReadU32(data, index);
         uint blockalign = ReadU16(data, index);
         u16 bits = ReadU16(data, index);
-        
+        UNREFERENCED_PARAM(blockalign);
+        UNREFERENCED_PARAM(avgbytes);
+
         if (format != 1)
         {
             OpenALAudioModule::LogError("Sound is not PCM data");
