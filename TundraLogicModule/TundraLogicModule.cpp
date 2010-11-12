@@ -155,7 +155,7 @@ void TundraLogicModule::LoadStartupScene()
             asset_service->AddLocalAssetDirectory(dirname, true);
     }
     
-    bool useBinary = startup_scene_.find(".nbf") != std::string::npos;
+    bool useBinary = startup_scene_.find(".tbin") != std::string::npos;
     if (!useBinary)
         scene->LoadSceneXML(startup_scene_, true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
     else

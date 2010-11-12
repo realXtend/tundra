@@ -9,6 +9,7 @@
 #include "DebugOperatorNew.h"
 #include "SceneTreeWidget.h"
 #include "SceneStructureModule.h"
+#include "SupportedFileTypes.h"
 
 #include "UiServiceInterface.h"
 #include "SceneManager.h"
@@ -37,21 +38,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
-
-// File filter definitions for supported files.
-const QString cOgreSceneFileFilter(QApplication::translate("SceneTreeWidget", "OGRE scene (*.scene)"));
-const QString cOgreMeshFileFilter(QApplication::translate("SceneTreeWidget", "OGRE mesh (*.mesh)"));
-#ifdef ASSIMP_ENABLED
-const QString cMeshFileFilter(QApplication::translate("SceneTreeWidget", "Mesh (*.xml *.3d *.b3d *.dae *.bvh *.3ds *.ase *.obj *.ply *.dxf *.nff *.smd *.vta *.mdl *.md2 *.md3 *.mdc *.md5mesh *.x *.q3o *.q3s *.raw *.ac *.stl *.irrmesh *.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)"));
-#endif
-const QString cNaaliXmlFileFilter(QApplication::translate("SceneTreeWidget", "Naali scene XML(*.xml)"));
-const QString cNaaliBinaryFileFilter(QApplication::translate("SceneTreeWidget", "Naali Binary Format (*.nbf)"));
-#ifdef ASSIMP_ENABLED
-const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf *.xml *.dae *.bvh *.3ds *.ase *.obj *.ply *.dxf *.nff *.smd *.vta *.mdl *.md2 *.md3 *.mdc *.md5mesh *.x *.q3o *.q3s *.raw *.ac *.stl *.irrmesh *.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)"));
-#else
-const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf)"));
-#endif
-const QString cAllTypesFileFilter(QApplication::translate("SceneTreeWidget", "All types (*.*)"));
 
 // EntityItem
 
@@ -870,7 +856,7 @@ void SceneTreeWidget::SaveAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
         tr("Save Selection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
 }
 
@@ -878,7 +864,7 @@ void SceneTreeWidget::SaveSceneAs()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
         tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
@@ -891,7 +877,7 @@ void SceneTreeWidget::Import()
 #ifdef ASSIMP_ENABLED
         cMeshFileFilter + ";;" + 
 #endif
-        cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" + cAllTypesFileFilter,
+        cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter + ";;" + cAllTypesFileFilter,
         tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
@@ -900,7 +886,7 @@ void SceneTreeWidget::OpenNewScene()
     if (fileDialog)
         fileDialog->close();
     fileDialog = QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
-        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" +
+        cOgreSceneFileFilter + ";;" + cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter + ";;" +
         cAllTypesFileFilter, tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
@@ -1101,14 +1087,14 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
     {
         fileExtension = files[0].mid(files[0].lastIndexOf('.'));
     }
-    else if (dialog->selectedNameFilter() == cNaaliXmlFileFilter)
+    else if (dialog->selectedNameFilter() == cTundraXmlFileFilter)
     {
-        fileExtension = ".xml";
+        fileExtension = cTundraXmlFileExtension;
         files[0].append(fileExtension);
     }
-    else if (dialog->selectedNameFilter() == cNaaliBinaryFileFilter)
+    else if (dialog->selectedNameFilter() == cTundraBinaryFileFilter)
     {
-        fileExtension = ".nbf";
+        fileExtension = cTundraBinFileExtension;
         files[0].append(fileExtension);
     }
 
@@ -1121,7 +1107,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 
     QByteArray bytes;
 
-    if (fileExtension == ".xml")
+    if (fileExtension == cTundraXmlFileExtension)
     {
         bytes = GetSelectionAsXml().toAscii();
     }
@@ -1176,17 +1162,17 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
     if (files[0].lastIndexOf('.') != -1)
     {
         fileExtension = files[0].mid(files[0].lastIndexOf('.'));
-        if (fileExtension.compare(".xml", Qt::CaseInsensitive) != 0)
+        if (fileExtension.compare(cTundraXmlFileExtension, Qt::CaseInsensitive) != 0)
             binary = true;
     }
-    else if (dialog->selectedNameFilter() == cNaaliXmlFileFilter)
+    else if (dialog->selectedNameFilter() == cTundraXmlFileFilter)
     {
-        fileExtension = ".xml";
+        fileExtension = cTundraXmlFileExtension;
         files[0].append(fileExtension);
     }
-    else if (dialog->selectedNameFilter() == cNaaliBinaryFileFilter)
+    else if (dialog->selectedNameFilter() == cTundraBinaryFileFilter)
     {
-        fileExtension = ".nbf";
+        fileExtension = cTundraBinFileExtension;
         files[0].append(fileExtension);
         binary = true;
     }
