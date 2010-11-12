@@ -12,6 +12,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport")
 #include <DefaultLogger.h>
 #include <Ogre.h>
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport");
+
 using namespace Assimp;
 
 namespace AssImp
