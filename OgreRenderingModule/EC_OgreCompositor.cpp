@@ -51,14 +51,16 @@ void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
             {
                 try
                 {
-                    float value = boost::lexical_cast<float>(sepParams[1].toStdString());
+                    Ogre::Vector4 value;
+                    QStringList valueList = sepParams[1].split(" ", QString::SkipEmptyParts);
+                    if (valueList.size() > 0) value.x = boost::lexical_cast<Ogre::Real>(valueList[0].toStdString());
+                    if (valueList.size() > 1) value.y = boost::lexical_cast<Ogre::Real>(valueList[1].toStdString());
+                    if (valueList.size() > 2) value.z = boost::lexical_cast<Ogre::Real>(valueList[2].toStdString());
+                    if (valueList.size() > 3) value.w = boost::lexical_cast<Ogre::Real>(valueList[3].toStdString());
                     std::string name = sepParams[0].toStdString();
 
-                    programParams.push_back(std::make_pair(name, Ogre::Vector4(value, 0, 0, 0)));
-                } catch (boost::bad_lexical_cast &)
-                {
-                    // no need to handle
-                }
+                    programParams.push_back(std::make_pair(name, value));
+                } catch(boost::bad_lexical_cast &) {}
             }
         }
         handler_->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
