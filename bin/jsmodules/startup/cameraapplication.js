@@ -30,7 +30,9 @@ function CreateCamera(scene)
 
     var script = entity.GetComponentRaw("EC_Script");
     script.type = "js";
-    script.scriptRef = "./jsmodules/camera/freelookcamera.js";
+    var r = script.scriptRef;
+    r.ref = "./jsmodules/camera/freelookcamera.js";
+    script.scriptRef = r;
     script.Run();
     
     scene.EmitEntityCreated(entity);

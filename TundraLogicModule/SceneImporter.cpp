@@ -198,9 +198,11 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
     if (meshPtr)
     {
-        meshPtr->meshResourceId.Set(QString::fromStdString(prefix + meshleafname), AttributeChange::Disconnected);
+//        meshPtr->meshResourceId.Set(QString::fromStdString(prefix + meshleafname), AttributeChange::Disconnected);
+        meshPtr->meshRef.Set(AssetReference(QString::fromStdString(prefix + meshleafname)), AttributeChange::Disconnected);
         if (!skeleton_name.empty())
-            meshPtr->skeletonId.Set(QString::fromStdString(prefix + skeleton_name), AttributeChange::Disconnected);
+//            meshPtr->skeletonId.Set(QString::fromStdString(prefix + skeleton_name), AttributeChange::Disconnected);
+            meshPtr->skeletonRef.Set(AssetReference(QString::fromStdString(prefix + skeleton_name)), AttributeChange::Disconnected);
         meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), AttributeChange::Disconnected);
 
         if (inspect)
@@ -625,7 +627,8 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Sce
                     meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
                     
                     placeablePtr->transform.Set(entity_transform, change);
-                    meshPtr->meshResourceId.Set(mesh_name, change);
+//                    meshPtr->meshResourceId.Set(mesh_name, change);
+                    meshPtr->meshRef.Set(AssetReference(mesh_name), change);
                     meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), change);
                     meshPtr->castShadows.Set(cast_shadows, change);
 

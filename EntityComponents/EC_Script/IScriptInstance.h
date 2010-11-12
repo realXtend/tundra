@@ -10,7 +10,7 @@
 
 #include <QObject>
 
-/// Interface for different script instances, e.g. Javascript of Python.
+/// Interface for different script instances, e.g. Javascript or Python.
 class IScriptInstance : public QObject
 {
     Q_OBJECT
@@ -21,17 +21,14 @@ public:
     /// Destructor.
     virtual ~IScriptInstance() {}
 
-    /// Loads/reload this script instance.
-    virtual void Reload() = 0;
+    /// Loads this script instance.
+    virtual void Load() = 0;
 
     /// Unloads this script instance.
     virtual void Unload() = 0;
 
     /// Starts this script instance.
     virtual void Run() = 0;
-
-    /// Stops this script instance.
-    virtual void Stop() = 0;
 };
 
 #endif

@@ -1546,14 +1546,14 @@ namespace Environment
                     else if ( sky_type_ == SKYTYPE_PLANE)
                     {
                         EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
-                        if ( skyPlane != 0 )
-                            skyPlane->textureAttr.Set(text_field->text(), AttributeChange::Default);
+                        if (skyPlane != 0 )
+                            skyPlane->textureRef.Set(AssetReference(text_field->text()), AttributeChange::Default);
                     }
                     else if(sky_type_ == SKYTYPE_DOME )
                     {
                         EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome >();
                         if ( skyDome != 0 )
-                            skyDome->textureAttr.Set(text_field->text(), AttributeChange::Default);
+                            skyDome->textureRef.Set(AssetReference(text_field->text()), AttributeChange::Default);
                     }
                 }
             }
@@ -1590,17 +1590,15 @@ namespace Environment
             EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome >();
            
             if(texture_line_edit != 0 && skyDome != 0)
-                texture_line_edit->setText(skyDome->textureAttr.Get());
+                texture_line_edit->setText(skyDome->textureRef.Get().ref);
         }
         else if(sky_type_ == SKYTYPE_PLANE)
         {
             QString line_edit_name = "sky_texture_line_edit_1";
             QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
             EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane >();
-            if ( skyPlane != 0 && texture_line_edit != 0)
-            {
-                texture_line_edit->setText(skyPlane->textureAttr.Get());
-            }
+            if (skyPlane != 0 && texture_line_edit != 0)
+                texture_line_edit->setText(skyPlane->textureRef.Get().ref);
         }
     }
 

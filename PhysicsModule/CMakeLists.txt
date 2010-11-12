@@ -18,11 +18,11 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 add_definitions (-DPHYSICS_MODULE_EXPORTS)
 
 use_package_bullet()
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon Asset)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon Asset)
 link_ogre()
 link_package_bullet()
 
