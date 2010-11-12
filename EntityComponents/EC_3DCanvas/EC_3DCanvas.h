@@ -7,6 +7,7 @@
 #include "Declare_EC.h"
 
 #include <QMap>
+#include <QImage>
 
 namespace Scene
 {
@@ -76,6 +77,7 @@ public:
 
 public slots:
     void Start();
+    void Stop();
     void Update();
     void Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second);
 
@@ -107,6 +109,8 @@ private:
 
     int update_interval_msec_;
     bool update_internals_;
+
+    QImage buffer_;
 };
 
 #endif

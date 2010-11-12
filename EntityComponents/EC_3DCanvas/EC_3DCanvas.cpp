@@ -88,6 +88,12 @@ void EC_3DCanvas::Start()
         Update();
 }
 
+void EC_3DCanvas::Stop()
+{
+    if (refresh_timer_)
+        refresh_timer_->stop();
+}
+
 void EC_3DCanvas::Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second)
 {
     SetWidget(widget);
@@ -153,8 +159,9 @@ void EC_3DCanvas::Update()
     if (texture.isNull())
         return;
 
-    QImage buffer(widget_->size(), QImage::Format_ARGB32_Premultiplied);
-    QPainter painter(&buffer);
+    if (buffer_.size() != widget_->size())
+        buffer_ = QImage(widget_->size(), QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&buffer_);
     widget_->render(&painter);
 
     // Set texture to material
@@ -168,16 +175,16 @@ void EC_3DCanvas::Update()
         update_internals_ = false;
     }
 
-    if ((int)texture->getWidth() != buffer.width() || (int)texture->getHeight() != buffer.height())
+    if ((int)texture->getWidth() != buffer_.width() || (int)texture->getHeight() != buffer_.height())
     {
         texture->freeInternalResources();
-        texture->setWidth(buffer.width());
-        texture->setHeight(buffer.height());
+        texture->setWidth(buffer_.width());
+        texture->setHeight(buffer_.height());
         texture->createInternalResources();
     }
 
-    Ogre::Box update_box(0,0, buffer.width(), buffer.height());
-    Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)buffer.bits());
+    Ogre::Box update_box(0,0, buffer_.width(), buffer_.height());
+    Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)buffer_.bits());
     if (!texture->getBuffer().isNull())
         texture->getBuffer()->blitFromMemory(pixel_box, update_box);
 }

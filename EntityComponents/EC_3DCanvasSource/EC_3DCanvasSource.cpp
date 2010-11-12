@@ -128,13 +128,18 @@ void EC_3DCanvasSource::UpdateWidgetAndCanvas(IAttribute *attribute, AttributeCh
         if (canvas)
         {
             int ref_rate_sec = getrefreshRate();
-            int ref_rate_msec = ref_rate_sec * 1000;
-            if (canvas->GetRefreshRate() != ref_rate_msec)
+            if (ref_rate_sec > 0)
             {
-                canvas->SetRefreshRate(ref_rate_sec);
-                canvas_started_ = false;
-                UpdateCanvas();
+                int ref_rate_msec = 1000 / ref_rate_sec;
+                if (canvas->GetRefreshRate() != ref_rate_msec)
+                {
+                    canvas->SetRefreshRate(ref_rate_sec);
+                    canvas_started_ = false;
+                    UpdateCanvas();
+                }
             }
+            else
+                canvas->SetRefreshRate(0);
         }
     }
     
@@ -283,9 +288,17 @@ void EC_3DCanvasSource::UpdateCanvas()
 
     // Refresh rate
     int ref_rate_sec = getrefreshRate();
-    int ref_rate_msec = ref_rate_sec * 1000;
-    if (canvas->GetRefreshRate() != ref_rate_msec)
-        canvas->SetRefreshRate(ref_rate_sec);
+    if (ref_rate_sec > 0)
+    {
+        int ref_rate_msec = 1000 / ref_rate_sec;
+        if (canvas->GetRefreshRate() != ref_rate_msec)
+        {
+            canvas->SetRefreshRate(ref_rate_sec);
+            canvas_started_ = false;
+        }
+    }
+    else
+        canvas->SetRefreshRate(0);
 
     // Start if first run
     if (!canvas_started_)
