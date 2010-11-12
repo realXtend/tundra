@@ -30,8 +30,6 @@ EC_3DGizmo::EC_3DGizmo(IModule *module) :
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
     
-    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(Update3DGizmo()));
-    
     attributes_ = QList<IAttribute *>();
     subproperties_ = QStringList();
     attribute_ = QString();
