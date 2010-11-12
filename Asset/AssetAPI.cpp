@@ -126,6 +126,8 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
                 IAssetTransfer *transfer = iter->second;
                 transfer->resourcePtr = resourceReady->resource_;
                 assert(transfer);
+                //! \todo Causes linker error in debug build, must be disabled for now
+                //transfer->internalResourceName = QString::fromStdString(resourceReady->resource_->GetInternalName());
                 transfer->EmitAssetLoaded();
             }
         }
