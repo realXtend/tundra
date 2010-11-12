@@ -116,13 +116,20 @@ void EC_3DCanvas::SetRefreshRate(int refresh_per_second)
     if (refresh_per_second < 0)
         refresh_per_second = 0;
 
+    bool was_running = false;
+    if (refresh_timer_)
+        was_running = refresh_timer_->isActive();
     SAFE_DELETE(refresh_timer_);
 
     if (refresh_per_second != 0)
     {
-        update_interval_msec_ = 1000 / refresh_per_second;
         refresh_timer_ = new QTimer(this);
-        connect(refresh_timer_, SIGNAL(timeout()), SLOT(Update()));
+        connect(refresh_timer_, SIGNAL(timeout()), SLOT(Update()), Qt::UniqueConnection);
+
+        int temp_msec = 1000 / refresh_per_second;
+        if (update_interval_msec_ != temp_msec && was_running)
+            refresh_timer_->start(temp_msec);
+        update_interval_msec_ = temp_msec;
     }
     else
         update_interval_msec_ = 0;

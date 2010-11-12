@@ -13,6 +13,7 @@
 #include <QString>
 #include <QTimer>
 #include <QLabel>
+#include <QSize>
 
 #include <Phonon/VideoPlayer>
 #include <Phonon/MediaObject>
@@ -51,6 +52,9 @@ public:
     Q_PROPERTY(float audioPlaybackVolume READ getaudioPlaybackVolume WRITE setaudioPlaybackVolume);
     DEFINE_QPROPERTY_ATTRIBUTE(float, audioPlaybackVolume);
 
+    Q_PROPERTY(bool scaleDown READ getscaleDown WRITE setscaleDown);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, scaleDown);
+
     Q_PROPERTY(bool looping READ getlooping WRITE setlooping);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, looping);
 
@@ -81,6 +85,8 @@ private slots:
 private:
     explicit EC_VideoSource(IModule *module);
 
+    EC_3DCanvas *Get3DCanvas();
+
     Phonon::VideoPlayer *player_;
     Phonon::VideoWidget *video_widget_;
     Phonon::MediaObject *media_object_;
@@ -94,6 +100,8 @@ private:
     bool stop_canvas_;
     bool playing_canvas_;
     bool expecting_resources_;
+
+    QSize original_size_;
 
     QString current_video_path_;
     QTimer *ready_poller_;

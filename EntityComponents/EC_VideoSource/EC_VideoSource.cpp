@@ -41,6 +41,7 @@ EC_VideoSource::EC_VideoSource(IModule *module):
     audioPlaybackVolume(this, "Audio playback volume", 0.8f),
     looping(this, "Looping", false),
     refreshRate(this, "Refresh per sec", 15),
+    scaleDown(this, "Scale to 320x240", false),
     startup_checker_(false),
     start_canvas_(false),
     stop_canvas_(false),
@@ -138,21 +139,19 @@ bool EC_VideoSource::HandleEvent(event_category_id_t category_id, event_id_t eve
 
 void EC_VideoSource::LoadVideo(Foundation::AssetPtr asset)
 {
-    // Hack to get the absolute file path to our cached video file
-    std::string path_to_video = framework_->GetPlatform()->GetApplicationDataDirectory() + "/assetcache/";
-    current_video_path_ = path_to_video.c_str();
-
-    std::string asset_id = asset->GetId();
-    QCryptographicHash md5_engine(QCryptographicHash::Md5);
-    md5_engine.addData(asset_id.c_str(), asset_id.size());
-    QString md5_hash(md5_engine.result().toHex());
-    md5_engine.reset();
-
-    current_video_path_.append(md5_hash);
-    current_video_path_.append(".Video");
-    current_video_path_ = current_video_path_.replace("\\", "/");
-
-    LoadCurrentVideo();
+    Foundation::AssetServiceInterface *asset_service = GetFramework()->GetService<Foundation::AssetServiceInterface>();
+    if (asset_service)
+    {
+        current_video_path_ = asset_service->GetAbsoluteAssetPath(asset->GetId(), asset->GetType());
+        current_video_path_ = current_video_path_.replace("\\", "/");
+        if (!current_video_path_.isEmpty())
+            LoadCurrentVideo();
+    }
+    else
+    {
+        LogDebug("Could not get asset service");
+        return;
+    }
 }
 
 void EC_VideoSource::LoadCurrentVideo()
@@ -289,6 +288,63 @@ void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
             LogDebug("Volume set to " + QString::number(volume).toStdString());
         }
     }
+    else if (attribute->GetNameString() == refreshRate.GetNameString())
+    {
+        EC_3DCanvas *canvas = Get3DCanvas();
+        if (canvas)
+        {
+            if (getrefreshRate() > 0)
+            {
+                int ref_rate_msec = 1000 / getrefreshRate();
+                if (canvas->GetRefreshRate() != ref_rate_msec)
+                {
+                    canvas->SetRefreshRate(getrefreshRate());
+                    LogDebug("Refresh rate set");
+                }
+            }
+            else if (canvas->GetRefreshRate() != 0)
+                canvas->SetRefreshRate(0);
+        }
+        else
+            LogError("Could not get 3D Canvas component to set refresh rate");
+    }
+    else if (attribute->GetNameString() == scaleDown.GetNameString())
+    {
+        if (getscaleDown() && player_)
+        {
+            original_size_ = player_->size();
+            if (original_size_.width() < 1 && original_size_.height() < 1)
+                original_size_ = QSize(0,0);
+            else
+                qDebug() << "Original size set: " << original_size_;
+
+            if (original_size_.width() > 1 && original_size_.height() > 1)
+            {
+                QSize scale_down_size(320, 240);
+                if (player_->size().width() > scale_down_size.width() && player_->size().height() > scale_down_size.height())
+                {
+                    //player_->resize(scale_down_size);
+                    //LogDebug("Scaled video widget down to 320x240 for performance");
+                }
+            }
+        }
+        else if (!getscaleDown() && player_)
+        {
+            if (!original_size_.isNull())
+            {
+                if (original_size_.width() > 0 && original_size_.height() > 0)
+                {
+                    if (player_->size().width() > original_size_.width() && player_->size().height() > original_size_.height())
+                    {
+                        //player_->resize(original_size_);
+                        //LogDebug("Restored original video widget size");
+                    }
+                }
+                else
+                    original_size_ = QSize(0,0);
+            }
+        }
+    }
 
     if (update_canvas)
         UpdateCanvas();
@@ -327,6 +383,16 @@ void EC_VideoSource::Play()
         {
             LogDebug("Play");
             player_->play();
+            if (original_size_.isNull())
+            {
+                original_size_ = player_->size();
+                if (original_size_.width() < 1 && original_size_.height() < 1)
+                    original_size_ = QSize(0,0);
+                else
+                    qDebug() << "Original size set: " << original_size_;
+            }
+            
+
             start_canvas_ = true;
             UpdateCanvas();
         }
@@ -344,6 +410,7 @@ void EC_VideoSource::Stop()
     {
         LogDebug("Stop");
         player_->stop();
+        player_->seek(0);
     }
     if (getplaybackState() != PS_Stop)
         playbackState.Set(PS_Stop, AttributeChange::LocalOnly);
@@ -374,7 +441,9 @@ void EC_VideoSource::UpdateSignals()
         return;
     }
 
-    // hack hack :D
+    // hack hack: seems phonon is more unstable to if we login to a world and instantiate many
+    // players ~at the same time, so here we do a random timer to instantiate the objects so the QThreads are not
+    // started ~at the same time and we minimize risk or crashing. Yes i know its stupid, blame phonon!
     int rand_time = qrand();
     while (rand_time > 3000)
         rand_time /= 2;
@@ -392,17 +461,10 @@ void EC_VideoSource::UpdateSignals()
     else
     {
         LogDebug("Will not instantiate Phonon objects, world already has 2 EC_VideoSources. Limit hit.");
-
-        Scene::Entity* entity = GetParentEntity();
-        if (!entity)
+        canvas_ = Get3DCanvas();
+        if (!canvas_)
         {
-            LogError("No parent entity, cannot create/update 3DCanvas");
-            return;
-        }
-        ComponentPtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
-        if (!comp)
-        {
-            LogError("Could not create/get 3DCanvas component");
+            LogError("Could not get 3D Canvas component");
             return;
         }
 
@@ -415,8 +477,7 @@ void EC_VideoSource::UpdateSignals()
         size.setHeight(size.height()+10);
         size.setWidth(size.width()+10);
         error_label_->resize(size);
-
-        canvas_ = checked_static_cast<EC_3DCanvas*>(comp.get());     
+  
         canvas_->SetWidget(error_label_);
         canvas_->SetRefreshRate(0);
         canvas_->SetSubmesh(0);
@@ -438,13 +499,6 @@ void EC_VideoSource::UpdateCanvas()
         return;
     }
 
-    ComponentPtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
-    if (!comp)
-    {
-        LogError("Could not create/get 3DCanvas component");
-        return;
-    }
-
     // If entity has no valid mesh or prim yet, start a retry timer and try to set the canvas later
     if ((!entity->GetComponent(EC_Mesh::TypeNameStatic())) && 
         (!entity->GetComponent(EC_OgreCustomObject::TypeNameStatic())))
@@ -454,7 +508,12 @@ void EC_VideoSource::UpdateCanvas()
         return;
     }
 
-    canvas_ = checked_static_cast<EC_3DCanvas*>(comp.get());
+    canvas_ = Get3DCanvas();
+    if (!canvas_)
+    {
+        LogError("Could not get 3D Canvas component");
+        return;
+    }
 
     // Update widget
     if (canvas_->GetWidget() != player_)
@@ -485,6 +544,29 @@ void EC_VideoSource::UpdateCanvas()
     }
     else
         canvas_->SetRefreshRate(0);
+
+    // Scale down widget
+    if (getscaleDown() && player_)
+    {
+        if (original_size_.isNull())
+        {
+            original_size_ = player_->size();
+            if (original_size_.width() < 1 && original_size_.height() < 1)
+                original_size_ = QSize(0,0);
+            else
+                qDebug() << "Original size set: " << original_size_;
+        }
+
+        if (!original_size_.isNull())
+        {
+            QSize scale_down_size(320, 240);
+            if (player_->size().width() > scale_down_size.width() && player_->size().height() > scale_down_size.height())
+            {
+                //player_->resize(scale_down_size);
+                //LogDebug("Scaled video widget down to 320x240 for performance");
+            }
+        }
+    }
 
     if (start_canvas_)
     {
@@ -574,4 +656,15 @@ void EC_VideoSource::PlaybackFinished()
         player_->seek(0);
         Play();
     }
+}
+
+EC_3DCanvas *EC_VideoSource::Get3DCanvas()
+{
+    EC_3DCanvas *canvas = 0;
+    Scene::Entity* entity = GetParentEntity();
+    if (entity)
+        canvas = dynamic_cast<EC_3DCanvas*>(entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic()).get());
+    else
+        LogError("Could not get parent entity");
+    return canvas;
 }
