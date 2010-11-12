@@ -11,6 +11,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_OgreCompositor");
 
 EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
     IComponent(module->GetFramework()),
+    enabled(this, "Enabled", true),
     compositorref(this, "Compositor ref", ""),
     priority(this, "Priority", -1),
     parameters(this, "Parameters"),
@@ -30,6 +31,13 @@ EC_OgreCompositor::~EC_OgreCompositor()
 
 void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
 {
+    if (attribute == &enabled)
+    {
+        handler_->SetEnableCompositor(compositorref.Get().toStdString(), enabled.Get());
+        UpdateCompositor(compositorref.Get());
+        UpdateCompositorParams(compositorref.Get());
+    }
+
     if (attribute == &compositorref)
     {
         UpdateCompositor(compositorref.Get());
@@ -40,7 +48,34 @@ void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
         UpdateCompositor(compositorref.Get());
     }
 
-    if (attribute == &parameters && ViewEnabled())
+    if (attribute == &parameters)
+    {
+        UpdateCompositorParams(compositorref.Get());
+    }
+}
+
+void EC_OgreCompositor::UpdateCompositor(const QString &compositor)
+{
+    if (ViewEnabled() && enabled.Get())
+    {
+        if (!previous_ref_.isEmpty())
+            handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
+
+        if (!compositorref.Get().isEmpty())
+        {
+            if (priority.Get() == -1)
+                handler_->AddCompositorForViewport(compositor.toStdString());
+            else
+                handler_->AddCompositorForViewportPriority(compositor.toStdString(), priority.Get());
+        }
+
+        previous_ref_ = compositor;
+    }
+}
+
+void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
+{
+    if (ViewEnabled() && enabled.Get())
     {
         QList< std::pair<std::string, Ogre::Vector4> > programParams;
         foreach(QVariant keyvalue, parameters.Get())
@@ -66,25 +101,6 @@ void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
         handler_->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
         handler_->SetEnableCompositor(compositorref.Get().toStdString(), false);
         handler_->SetEnableCompositor(compositorref.Get().toStdString(), true);
-    }
-}
-
-void EC_OgreCompositor::UpdateCompositor(const QString &compositor)
-{
-    if (ViewEnabled())
-    {
-        if (!previous_ref_.isEmpty())
-            handler_->RemoveCompositorFromViewport(previous_ref_.toStdString());
-
-        if (!compositorref.Get().isEmpty())
-        {
-            if (priority.Get() == -1)
-                handler_->AddCompositorForViewport(compositor.toStdString());
-            else
-                handler_->AddCompositorForViewportPriority(compositor.toStdString(), priority.Get());
-        }
-
-        previous_ref_ = compositor;
     }
 }
 
