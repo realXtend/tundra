@@ -232,7 +232,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
         {
             // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
-            //UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            //UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
             //if (ui)
             {
                 if (inventoryWindow_)
@@ -453,7 +453,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     if (!wnd)
         return;
 
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
     if (ui)
         ui->RemoveWidgetFromScene(wnd);
 

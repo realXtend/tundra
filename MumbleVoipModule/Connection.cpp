@@ -189,6 +189,24 @@ namespace MumbleLib
 
     void Connection::Close()
     {
+        if (state_ == STATE_CONNECTING)
+        {
+            lock_state_.lockForWrite();
+            state_ = STATE_CLOSED;
+            lock_state_.unlock();
+            emit StateChanged(state_);
+            return;
+        }
+
+        if (state_ == STATE_AUTHENTICATING)
+        {
+            lock_state_.lockForWrite();
+            state_ = STATE_CLOSED;
+            lock_state_.unlock();
+            emit StateChanged(state_);
+            return;
+        }
+
         user_update_timer_.stop();
         QMutexLocker raw_udp_tunnel_locker(&mutex_raw_udp_tunnel_);
         lock_state_.lockForWrite();
@@ -481,8 +499,6 @@ namespace MumbleLib
     void Connection::RemoveChannel(const MumbleClient::Channel& channel)
     {
         QMutexLocker locker(&mutex_channels_);
-
-        int i = 0;
         for (int i = 0; i < channels_.size(); ++i)
         {
             if (channels_.at(i)->Id() == channel.id)
@@ -524,10 +540,11 @@ namespace MumbleLib
 
         PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
         bool valid = data_stream.isValid();
-
+        UNREFERENCED_PARAM(valid);
         uint8_t first_byte = static_cast<unsigned char>(data_stream.next());
         MumbleClient::UdpMessageType::MessageType type = static_cast<MumbleClient::UdpMessageType::MessageType>( ( first_byte >> 5) & 0x07 );
         uint8_t flags = first_byte & 0x1f;
+        UNREFERENCED_PARAM(flags);
         switch (type)
         {
         case MumbleClient::UdpMessageType::UDPVoiceCELTAlpha:

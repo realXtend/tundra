@@ -12,22 +12,16 @@
 namespace WorldMap
 {
     WorldMapWidget::WorldMapWidget() : 
-        update_timer_(new QTimer(this)),        
+        update_timer_(new QTimer(this)),
         brush_(Qt::white),
         sim_name_(QString(""))
     {
         setupUi(this);
     }
-    
+
     WorldMapWidget::~WorldMapWidget()
     {
-        if (avatar_items_.size() > 0)
-        {
-            for (QMap<QString, WorldMap::ImageItem *>::iterator iter = avatar_items_.begin(); iter!=avatar_items_.end(); ++iter)
-            {
-                SAFE_DELETE(iter.value());
-            }
-        }
+        qDeleteAll(avatar_items_);
     }
 
     void WorldMapWidget::ClearAllContent()
@@ -67,21 +61,19 @@ namespace WorldMap
             }
 
             if (avatar_names_.contains(avatar_id))
-            {
                 avatar_names_.remove(avatar_id);
-            }
         }
     }
-        
+
     void WorldMapWidget::StoreMapData(QPixmap image, QString map_id)
-    {        
+    {
         if (!region_images_.contains(map_id))
         {
             region_images_.insert(map_id, image);
             DrawMap();
         }
     }
-    
+
     void WorldMapWidget::DrawMap()
     {
         //Try to draw current region map.
@@ -98,16 +90,14 @@ namespace WorldMap
         if (map_blocks_.size() == 0)
             return;
 
-        ProtocolUtilities::MapBlock *currentBlock;
+        ProtocolUtilities::MapBlock *currentBlock = 0;
 
         foreach (ProtocolUtilities::MapBlock block, map_blocks_)
-        {            
             if (sim_name_ == QString(block.regionName.c_str()))
             {
                 currentBlock = &block;
                 break;
             }
-        }
 
         if (currentBlock)
         {
@@ -119,11 +109,10 @@ namespace WorldMap
                     {
                         worldMapGraphicsView->setScene(scene);
                         worldMapGraphicsView->scene()->setSceneRect(iter.value().rect());
-                        scene->setBackgroundBrush(QBrush(iter.value()));                       
+                        scene->setBackgroundBrush(QBrush(iter.value()));
 
-                        QGraphicsTextItem *item = new QGraphicsTextItem(0, scene);                        
-                        item->setHtml(sim_name_);                        
-                        
+                        QGraphicsTextItem *item = new QGraphicsTextItem(0, scene);
+                        item->setHtml(sim_name_);
                         if (!item->scene())
                             scene->addItem(item);
 
@@ -137,7 +126,6 @@ namespace WorldMap
                 }
             }
         }
-
     }
 
     void WorldMapWidget::UpdateAvatarPosition(Vector3df position, QString avatar_id, QString avatar_name)
@@ -145,7 +133,7 @@ namespace WorldMap
         QGraphicsScene *scene = worldMapGraphicsView->scene();
         if (!scene)
             scene = new QGraphicsScene(this);
-                
+
         worldMapGraphicsView->setScene(scene);
 
         ImageItem *item = 0;
@@ -157,23 +145,21 @@ namespace WorldMap
         {
             item = new ImageItem(QPixmap("./data/ui/images/worldmap/default_avatar.png"), 0, scene);
             if (!my_avatar_id_.isEmpty() && my_avatar_id_ == avatar_id)
-            {
-                item->SetMyAvatar(true);                
-            }
+                item->SetMyAvatar(true);
 
             item->SetAvatarName(avatar_name);
-            
+
             if (!item->scene()) 
                 scene->addItem(item);
-            
-            avatar_items_.insert(avatar_id, item); //Add to items            
+
+            avatar_items_.insert(avatar_id, item); //Add to items
         }
 
         if (!avatar_names_.contains(avatar_id))
             avatar_names_.insert(avatar_id, avatar_name); //Add to names
         
-        if (!item->scene()) 
-            scene->addItem(item);            
+        if (!item->scene())
+            scene->addItem(item);
 
         item->setPos(position.x, 256-position.y);
         item->SetTextPosition(position.x, 256-position.y);
@@ -183,4 +169,3 @@ namespace WorldMap
         scene->update();
     }
 }
-

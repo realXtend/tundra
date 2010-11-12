@@ -39,15 +39,14 @@ class TestGui(Component):
 
         self.widget = group
 
+        #naali proxywidget boilerplate
+        GUINAME = "PythonQt Test"
         uism = naali.ui
-        uiprops = r.createUiWidgetProperty(1)
-        uiprops.widget_name_ = "Test Widget"
-        #uiprops.my_size_ = QSize(width, height)
-        #self.proxywidget = uism.AddWidgetToScene(ui, uiprops)
-        self.proxywidget = r.createUiProxyWidget(self.widget, uiprops)
-        ##print widget, dir(widget)
-        if not uism.AddProxyWidget(self.proxywidget):
+        self.proxywidget = r.createUiProxyWidget(self.widget)
+        self.proxywidget.setWindowTitle(GUINAME)
+        if not uism.AddWidgetToScene(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
+        uism.AddWidgetToMenu(self.proxywidget, GUINAME, "Developer Tools")
 
         #self.canvas.Show()
 

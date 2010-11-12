@@ -3,7 +3,7 @@
 #ifndef incl_Interfaces_UiSettingsServiceInterface_h
 #define incl_Interfaces_UiSettingsServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 #include <QObject>
 
 namespace Foundation
@@ -14,7 +14,7 @@ namespace Foundation
     // Can be used to fetch settings widget qpointers without link dependency
     // this can be used to track ui changes in real time or special emits that these widgets do
     // just check the widgets header and connect to the signals using the qobject pointer
-    class UiSettingsServiceInterface : public QObject, public Foundation::ServiceInterface
+    class UiSettingsServiceInterface : public QObject, public IService
     {
 
     Q_OBJECT

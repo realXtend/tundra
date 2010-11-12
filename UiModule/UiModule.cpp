@@ -117,12 +117,12 @@ namespace UiServices
 
             // Register settings service
             ui_settings_service_ = UiSettingsPtr(new UiSettingsService(inworld_scene_controller_->GetControlPanelManager()));
-            GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_UiSettings, ui_settings_service_);
+            GetFramework()->GetServiceManager()->RegisterService(Service::ST_UiSettings, ui_settings_service_);
             LogDebug("UI Settings Service registered and READY");
 
             // Register UI service
             ui_scene_service_ = UiSceneServicePtr(new UiSceneService(this));
-            framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, ui_scene_service_);
+            framework_->GetServiceManager()->RegisterService(Service::ST_Gui, ui_scene_service_);
             connect(ui_scene_service_.get(), SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)),
                     inworld_scene_controller_, SLOT(HandleWidgetTransfer(const QString&, QGraphicsProxyWidget*)));
 
@@ -366,7 +366,7 @@ namespace UiServices
         // Get paths where to store the screenshots and pass to renderer for screenshots.
         QPair<QString, QString> paths = ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
         boost::shared_ptr<Foundation::RenderServiceInterface> render_service = 
-            framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+            framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer).lock();
 
         if (render_service && !paths.first.isEmpty() && !paths.second.isEmpty())
         {

@@ -46,12 +46,12 @@ namespace MumbleVoip
         if (!framework_)
             return;
 
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
         if (!service_manager.get())
             return;
 
-        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
 
         if (!sound_service.get())
             return;
@@ -68,12 +68,12 @@ namespace MumbleVoip
         if (!framework_)
             return;
 
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
         if (!service_manager.get())
             return;
 
-        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
 
         if (!sound_service.get())
             return;
@@ -98,12 +98,12 @@ namespace MumbleVoip
         if (!framework_)
             return ;
 
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
         if (!service_manager.get())
             return ;
 
-        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
 
         if (!sound_service)
             return ;

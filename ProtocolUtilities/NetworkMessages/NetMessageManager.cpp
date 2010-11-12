@@ -190,7 +190,6 @@ namespace ProtocolUtilities
         {
             int curBlock = msg->GetCurrentBlock();
             const NetMessageBlock &block = info->blocks[curBlock];
-            size_t blockInstanceCount = msg->ReadCurrentBlockInstanceCount();
             const NetMessageVariable &var = block.variables[msg->GetCurrentVariable()];
 
             if (curBlock != prevBlock || (curBlock == 0 && prevBlock == 0))

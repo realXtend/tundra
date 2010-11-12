@@ -17,6 +17,11 @@
 #include "UiProxyWidget.h"
 #include "VoiceControllerWidget.h"
 #include "VoiceUsersInfoWidget.h"
+#include "VoiceTransmissionModeWidget.h"
+#include "VoiceController.h"
+#include <QSettings>
+#include <QComboBox>
+#include <QGraphicsScene>
 
 #include "DebugOperatorNew.h"
 
@@ -28,10 +33,18 @@ namespace CommUI
         in_world_voice_session_(0),
         voice_state_widget_(0),
         voice_controller_widget_(0),
-        voice_controller_proxy_widget_(0)
+        voice_controller_proxy_widget_(0),
+        channel_selection_(0),
+        transmission_mode_widget_(0),
+        voice_controller_(0)
     {
         setupUi(this);
         InitializeInWorldVoice();
+    }
+
+    VoiceToolWidget::~VoiceToolWidget()
+    {
+        UninitializeInWorldVoice();
     }
 
     void VoiceToolWidget::InitializeInWorldVoice()
@@ -50,63 +63,16 @@ namespace CommUI
         if (!session)
             return;
 
-        QObject::connect(in_world_voice_session_, SIGNAL(StartSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
-        QObject::connect(in_world_voice_session_, SIGNAL(StopSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
-        QObject::connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateInWorldVoiceIndicator()) );
-        QObject::connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
-        QObject::connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface*)) );
-        QObject::connect(in_world_voice_session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
-        QObject::connect(in_world_voice_session_, SIGNAL(destroyed()), SLOT(UninitializeInWorldVoice()));
-        QObject::connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivityChanged(double)), SLOT(UpdateInWorldVoiceIndicator()));
-        QObject::connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateInWorldVoiceIndicator()));
-
-        if (voice_state_widget_)
-        {
-            this->layout()->removeWidget(voice_state_widget_);
-            SAFE_DELETE(voice_state_widget_);
-        }
-        voice_state_widget_ = new VoiceStateWidget(0);
-        connect(voice_state_widget_, SIGNAL( clicked() ), SLOT(ToggleVoiceControlWidget() ) );
-        this->layout()->addWidget(voice_state_widget_);
-        voice_state_widget_->show();
-
-        if (voice_users_info_widget_)
-        {
-            this->layout()->removeWidget(voice_users_info_widget_);
-            SAFE_DELETE(voice_users_info_widget_);
-        }
-        voice_users_info_widget_ = new CommUI::VoiceUsersInfoWidget(0);
-        connect(voice_users_info_widget_, SIGNAL( clicked() ), SLOT(ToggleVoiceControlWidget() ) );
-        this->layout()->addWidget(voice_users_info_widget_);
-        voice_users_info_widget_->show();
-
-        UpdateInWorldVoiceIndicator();
-
-        UiServiceInterface* ui_service = framework_->GetService<UiServiceInterface>();
-        if (ui_service)
-        {
-            if (voice_controller_widget_)
-                SAFE_DELETE(voice_controller_widget_);
-
-            voice_controller_widget_ = new VoiceControllerWidget(in_world_voice_session_);
-
-            voice_controller_proxy_widget_ = ui_service->AddWidgetToScene(voice_controller_widget_);
-            voice_controller_proxy_widget_->setWindowTitle("In-world voice");
-            voice_controller_proxy_widget_->hide();
-
-            if (framework_)
-            {
-                input_context_ = framework_->GetInput()->RegisterInputContext("CommunicationWidget", 90);
-                connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(SetPushToTalkOn()));
-                connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent*)),voice_controller_widget_, SLOT(SetPushToTalkOff()));
-                connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(Toggle()));
-            }
-        }
-    }
-
-    VoiceToolWidget::~VoiceToolWidget()
-    {
-        UninitializeInWorldVoice();
+        QObject::connect(in_world_voice_session_, SIGNAL(StartSendingAudio()), this, SLOT(UpdateInWorldVoiceIndicator()) );
+        QObject::connect(in_world_voice_session_, SIGNAL(StopSendingAudio()), this, SLOT(UpdateInWorldVoiceIndicator()) );
+        QObject::connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), this, SLOT(UpdateInWorldVoiceIndicator()));
+        QObject::connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateInWorldVoiceIndicator()) );
+        QObject::connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface*)) );
+        QObject::connect(in_world_voice_session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateInWorldVoiceIndicator()) );
+        QObject::connect(in_world_voice_session_, SIGNAL(destroyed()), this, SLOT(UninitializeInWorldVoice()));
+        QObject::connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivityChanged(double)), this, SLOT(UpdateInWorldVoiceIndicator()));
+        QObject::connect(in_world_voice_session_, SIGNAL(ActiceChannelChanged(QString)), this, SLOT(UpdateUI()));
+        QObject::connect(in_world_voice_session_, SIGNAL(ChannelListChanged(QStringList)), this, SLOT(UpdateUI()));
     }
 
     void VoiceToolWidget::Minimize()
@@ -128,6 +94,8 @@ namespace CommUI
         {
             voice_users_info_widget_->hide();
             voice_state_widget_->hide();
+            if (voice_controller_proxy_widget_)
+                voice_controller_proxy_widget_->hide();
             return;
         }
         else
@@ -175,9 +143,14 @@ namespace CommUI
 
     void VoiceToolWidget::UninitializeInWorldVoice()
     {
-        in_world_voice_session_ = 0;
+        if (voice_controller_proxy_widget_)
+            framework_->UiService()->RemoveWidgetFromScene(voice_controller_proxy_widget_);
         if (voice_controller_widget_)
             SAFE_DELETE(voice_controller_widget_);
+
+        if (voice_controller_)
+            SAFE_DELETE(voice_controller_);
+        in_world_voice_session_ = 0;
     }
 
     void VoiceToolWidget::ToggleVoiceControlWidget()
@@ -195,6 +168,135 @@ namespace CommUI
             voice_controller_proxy_widget_->moveBy(-1,-1);
             /// HACK END
         }
+    }
+
+    void VoiceToolWidget::UpdateUI()
+    {
+        QString channel = in_world_voice_session_->GetActiveChannel();
+
+        if (!voice_controller_)
+        {
+            voice_controller_ = new VoiceController(in_world_voice_session_);
+            /// @todo Use Settings class from MumbeVoipModule
+            QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
+            switch(settings.value("MumbleVoice/default_voice_mode").toInt())
+            {
+            case 0: 
+                voice_controller_->SetTransmissionMode(VoiceController::Mute);
+                break;
+            case 1: 
+                voice_controller_->SetTransmissionMode(VoiceController::ContinuousTransmission);
+                break;
+            case 2: 
+                voice_controller_->SetTransmissionMode(VoiceController::PushToTalk);
+                break;
+            case 3: 
+                voice_controller_->SetTransmissionMode(VoiceController::ToggleMode);
+                break;
+            }
+        }
+
+        if (!voice_state_widget_)
+        {
+            voice_state_widget_ = new VoiceStateWidget();
+            connect(voice_state_widget_, SIGNAL( clicked() ), SLOT(ToggleTransmissionModeWidget() ) );
+            this->layout()->addWidget(voice_state_widget_);
+            voice_state_widget_->show();
+        }
+        
+        if (!voice_users_info_widget_)
+        {
+            voice_users_info_widget_ = new CommUI::VoiceUsersInfoWidget(0);
+            connect(voice_users_info_widget_, SIGNAL( clicked() ), SLOT(ToggleVoiceControlWidget() ) );
+            this->layout()->addWidget(voice_users_info_widget_);
+        }
+        voice_users_info_widget_->show();
+        voice_users_info_widget_->updateGeometry();
+
+        if (!channel_selection_)
+        {
+            channel_selection_ = new QComboBox();
+            channel_selection_->setSizeAdjustPolicy( QComboBox::AdjustToContents );
+            this->layout()->addWidget(channel_selection_);
+        }
+        
+        disconnect(channel_selection_, SIGNAL(currentIndexChanged(const QString&)), in_world_voice_session_, SLOT(SetActiveChannel(QString)));
+        channel_selection_->clear();
+        channel_selection_->addItems(in_world_voice_session_->GetChannels());
+        channel_selection_->addItems( QStringList() << ""); // no active channel
+        channel_selection_->setCurrentIndex(channel_selection_->findText(in_world_voice_session_->GetActiveChannel()));
+        channel_selection_->updateGeometry();
+        connect(channel_selection_, SIGNAL(currentIndexChanged(const QString&)), in_world_voice_session_, SLOT(SetActiveChannel(QString)));
+        this->update();
+
+        if (voice_controller_widget_)
+        {
+            SAFE_DELETE(voice_controller_widget_);
+            voice_controller_proxy_widget_ = 0; // automatically deleted by framework
+        }
+        if (in_world_voice_session_->GetState() == Communications::InWorldVoice::SessionInterface::STATE_OPEN)
+        {
+            voice_controller_widget_ = new VoiceControllerWidget(in_world_voice_session_);
+            voice_controller_proxy_widget_ = framework_->UiService()->AddWidgetToScene(voice_controller_widget_);
+            voice_controller_proxy_widget_->setWindowTitle("In-world voice");
+            voice_controller_proxy_widget_->hide();
+            /// @todo fixme HACK BEGIN
+            voice_controller_proxy_widget_->moveBy(1,1);
+            voice_controller_proxy_widget_->moveBy(-1,-1);
+            /// HACK END
+
+            /// @todo Make these configurable
+            input_context_ = framework_->GetInput()->RegisterInputContext("CommunicationWidget", 90);
+            connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_, SLOT(SetPushToTalkOn()));
+            connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent*)),voice_controller_, SLOT(SetPushToTalkOff()));
+            connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_, SLOT(Toggle()));
+        }
+        UpdateInWorldVoiceIndicator();
+    }
+
+    void VoiceToolWidget::ToggleTransmissionModeWidget()
+    {
+        if (!transmission_mode_widget_)
+        {
+            /// @todo Use Settings class from MumbeVoipModule
+            QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
+            int default_voice_mode = settings.value("MumbleVoice/default_voice_mode").toInt();
+
+            transmission_mode_widget_ = new VoiceTransmissionModeWidget(default_voice_mode);
+            connect(transmission_mode_widget_, SIGNAL(TransmissionModeSelected(int)), this, SLOT(ChangeTransmissionMode(int)));
+            
+            UiProxyWidget* proxy = framework_->UiService()->AddWidgetToScene(transmission_mode_widget_, Qt::Widget);
+            QObject::connect(proxy->scene(), SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(UpdateTransmissionModeWidgetPosition()));
+            UpdateTransmissionModeWidgetPosition();
+            transmission_mode_widget_->show();
+        }
+        else
+        {
+            if (transmission_mode_widget_->isVisible())
+                transmission_mode_widget_->hide();
+            else
+            {
+                transmission_mode_widget_->show();
+            }
+        }
+    }
+
+    void VoiceToolWidget::UpdateTransmissionModeWidgetPosition()
+    {
+        QPoint absolute_pos;
+        QWidget* p = parentWidget();
+        while (p)
+        {
+            absolute_pos += p->pos();
+            p = p->parentWidget();
+        }
+        absolute_pos.setY(absolute_pos.y() - transmission_mode_widget_->height());
+        transmission_mode_widget_->move(absolute_pos);
+    }
+
+    void VoiceToolWidget::ChangeTransmissionMode(int mode)
+    {
+        voice_controller_->SetTransmissionMode(static_cast<VoiceController::TransmissionMode>(mode));
     }
 
 } // CommUI

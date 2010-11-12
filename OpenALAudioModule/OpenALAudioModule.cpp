@@ -40,13 +40,13 @@ namespace OpenALAudio
         soundsystem_ = SoundSystemPtr(new SoundSystem(framework_));
         if (!soundsystem_->IsInitialized())
             return;
-        framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, soundsystem_);
+        framework_->GetServiceManager()->RegisterService(Service::ST_Sound, soundsystem_);
         framework_->RegisterDynamicObject("audio", soundsystem_.get());
     }
 
     void OpenALAudioModule::PostInitialize()
     {
-        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        EventManagerPtr event_manager = framework_->GetEventManager();
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
         task_event_category_ = event_manager->QueryEventCategory("Task");
 

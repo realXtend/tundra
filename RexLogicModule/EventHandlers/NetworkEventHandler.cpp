@@ -277,7 +277,9 @@ bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(NetworkEventInboundDa
 
         /// \todo tucofixme, what to do with regionhandle & timestamp?
         uint64_t regionhandle = msg.ReadU64();
-        uint32_t timestamp = msg.ReadU32(); 
+        uint32_t timestamp = msg.ReadU32();
+        UNREFERENCED_PARAM(regionhandle);
+        UNREFERENCED_PARAM(timestamp);
     }
 
     owner_->GetServerConnection()->SendAgentSetAppearancePacket();
@@ -290,6 +292,7 @@ bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(NetworkEventInbou
     msg.ResetReading();
 
     uint64_t regionhandle = msg.ReadU64();
+    UNREFERENCED_PARAM(regionhandle);
     msg.SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
 
     if (msg.GetCurrentBlock() >= msg.GetBlockCount())
@@ -369,7 +372,7 @@ bool NetworkEventHandler::HandleOSNE_PreloadSound(NetworkEventInboundData* data)
 
         // Preload the sound asset into cache, the sound service will get it from there when actually needed.
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-            owner_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+            owner_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
             asset_service->RequestAsset(asset_id, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
 
@@ -463,11 +466,12 @@ bool NetworkEventHandler::HandleOSNE_LoadURL(NetworkEventInboundData *data)
     std::string object_id = msg.ReadUUID().ToString(); // ObjectID
     std::string owner_id = msg.ReadUUID().ToString(); // ObjectID
     bool owner_is_group = msg.ReadBool(); // OwnerIsGroup
+    UNREFERENCED_PARAM(owner_is_group);
     std::string message = msg.ReadString(); // Message
     std::string url = msg.ReadString(); // URL
 
     boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice =
-        owner_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
+        owner_->GetFramework()->GetServiceManager()->GetService<Foundation::ScriptServiceInterface>(Service::ST_PythonScripting).lock();
     if (pyservice)
         pyservice->RunString("import loadurlhandler; loadurlhandler.loadurl('" + QString::fromStdString(url) + "');");
 
@@ -581,7 +585,9 @@ bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(NetworkEventInboundData *
     RexUUID object_owner = msg.ReadUUID();
     ChatSourceType source_type = static_cast<ChatSourceType>(msg.ReadU8());
     ChatType chat_type = static_cast<ChatType>(msg.ReadU8());
+    UNREFERENCED_PARAM(chat_type);
     ChatAudibleLevel audible = static_cast<ChatAudibleLevel>(msg.ReadU8());
+    UNREFERENCED_PARAM(audible);
     RexTypes::Vector3 position = msg.ReadVector3();
     std::string message = msg.ReadString();
     if (message.size() > 0)
@@ -643,7 +649,7 @@ bool NetworkEventHandler::HandleOSNE_KickUser(NetworkEventInboundData *data)
     if (agent_id == owner_->GetServerConnection()->GetInfo().agentID &&
         session_id == owner_->GetServerConnection()->GetInfo().sessionID)
     {
-        Foundation::EventManagerPtr eventmgr = owner_->GetFramework()->GetEventManager();
+        EventManagerPtr eventmgr = owner_->GetFramework()->GetEventManager();
         eventmgr->SendDelayedEvent(eventmgr->QueryEventCategory("NetworkState"), Events::EVENT_USER_KICKED_OUT, EventDataPtr());
     }
 

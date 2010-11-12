@@ -406,7 +406,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 {
                     // Create componentstate so we can start tracking individual attributes
                     ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeNameHash(), component->Name());
-                    
+                    UNREFERENCED_PARAM(componentstate);
                     MsgCreateEntity::S_components newComponent;
                     newComponent.componentTypeHash = component->TypeNameHash();
                     newComponent.componentName = StringToBuffer(component->Name().toStdString());
@@ -658,6 +658,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
                 // Reflect changes back to syncstate
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
                 ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
+                UNREFERENCED_PARAM(componentstate);
             }
         }
         else
@@ -768,6 +769,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                 // Reflect changes back to syncstate
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
                 ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
+                UNREFERENCED_PARAM(componentstate);
             }
         }
         else

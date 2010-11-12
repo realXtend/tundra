@@ -20,7 +20,7 @@ namespace Asset
 OgreAssetProvider::OgreAssetProvider(Foundation::Framework* framework) :
     framework_(framework)
 {
-    Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+    EventManagerPtr event_manager = framework_->GetEventManager();
     event_category_ = event_manager->QueryEventCategory("Asset");
 }
 
@@ -45,9 +45,9 @@ bool OgreAssetProvider::RequestAsset(const std::string& asset_id, const std::str
     if (!IsValidId(asset_id, asset_type))
         return false;
     
-    Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->GetServiceManager();
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-        service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
     if (!asset_service)
         return false;
     

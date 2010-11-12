@@ -7,6 +7,7 @@
 #include <QPropertyAnimation>
 
 #include "CoreTypes.h"
+#include "Input.h"
 
 namespace Foundation
 {
@@ -47,6 +48,8 @@ namespace Console
 
         //! Handle input to the console(called after return pushed)
         void HandleInput();
+
+        void KeyPressed(KeyEvent *key_event);
 
     signals:
         //! This emit is Qt::QueuedConnection type to avoid issues when printing from threads

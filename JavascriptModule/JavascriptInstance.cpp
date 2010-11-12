@@ -26,7 +26,8 @@ JavascriptInstance::JavascriptInstance(const QString &scriptRef, JavascriptModul
     module_(module),
     evaluated(false)
 {
-//    CreateEngine();
+    CreateEngine();
+    Load();
 }
 
 JavascriptInstance::~JavascriptInstance()
@@ -74,6 +75,12 @@ void JavascriptInstance::Run()
 
 void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &name)
 {
+    if (!engine_)
+    {
+        LogError("No Qt script engine created when tyring to register service to js script instance.");
+        return;
+    }
+
     QScriptValue scriptValue = engine_->newQObject(serviceObject);
     engine_->globalObject().setProperty(name, scriptValue);
 }

@@ -39,7 +39,7 @@ EC_Ruler::EC_Ruler(IModule *module) :
     sceneNode_(0),
     type(EC_Ruler::Rotation)
 {
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
     
     RexUUID uuid = RexUUID::CreateRandom();
     rulerName = uuid.ToString() + "ruler";

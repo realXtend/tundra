@@ -99,10 +99,16 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.xpos = self.gui.findChild("QDoubleSpinBox", "xpos")
         self.ypos = self.gui.findChild("QDoubleSpinBox", "ypos")
         self.zpos = self.gui.findChild("QDoubleSpinBox", "zpos")
+        self.step1 = self.gui.findChild("QDoubleSpinBox", "step1")
+        #self.step1 = self.gui.findChild("QSpinBox", "step1")
 
         self.xscale = self.gui.findChild("QDoubleSpinBox", "xscale")
         self.yscale = self.gui.findChild("QDoubleSpinBox", "yscale")
         self.zscale = self.gui.findChild("QDoubleSpinBox", "zscale")
+
+        self.rotateX = self.gui.findChild("QDoubleSpinBox", "rotateX")
+        self.rotateY = self.gui.findChild("QDoubleSpinBox", "rotateY")
+        self.rotateZ = self.gui.findChild("QDoubleSpinBox", "rotateZ")        
 
         self.btnLoad = self.gui.findChild("QPushButton", "pushButtonLoad")
         self.btnUnload = self.gui.findChild("QPushButton", "pushButtonUnload")
@@ -112,6 +118,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.chkBoxFlipZY = self.gui.findChild("QCheckBox", "checkBoxFlipZY")
         self.checkBoxHighlight = self.gui.findChild("QCheckBox", "checkBoxHighlight")
         self.checkBoxLockScale = self.gui.findChild("QCheckBox", "checkBoxLockScale")
+        self.checkBoxToCenter = self.gui.findChild("QCheckBox", "checkBoxToCenter")
 
         # server end scene editing
         self.btnLoadServerSceneList = self.gui.findChild("QPushButton", "pushButtonLoadServerSceneList")
@@ -141,11 +148,17 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.xpos.connect("valueChanged(double)", self.spinBoxXPosValueChanged)
         self.ypos.connect("valueChanged(double)", self.spinBoxYPosValueChanged)
         self.zpos.connect("valueChanged(double)", self.spinBoxZPosValueChanged)
+        self.step1.connect("valueChanged(double)", self.spinBoxPosStepPosValueChanged)
 
         self.xscale.connect("valueChanged(double)", self.spinBoxXScaleValueChanged)
         self.yscale.connect("valueChanged(double)", self.spinBoxYScaleValueChanged)
         self.zscale.connect("valueChanged(double)", self.spinBoxZScaleValueChanged)
 
+        self.rotateX.connect("valueChanged(double)", self.spinBoxXRotateValueChanged)
+        self.rotateY.connect("valueChanged(double)", self.spinBoxYRotateValueChanged)
+        self.rotateZ.connect("valueChanged(double)", self.spinBoxZRotateValueChanged)
+        
+        
         self.chkBoxFlipZY.connect("toggled(bool)", self.checkBoxZYToggled)
         self.checkBoxHighlight.connect("toggled(bool)", self.checkBoxHighlightToggled)
         self.checkBoxLockScale.connect("toggled(bool)", self.checkBoxLockScaleToggled)
@@ -167,7 +180,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
 
         self.progressBar.setFormat("Upload progress: inactive %p%")
 
-        self.sizeLock = False
+        self.sizeLock = True
         self.filename = ""
         self.serverScenes = {} # key container
         self.serverSceneNames = {}
@@ -238,7 +251,17 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.controller.setypos(double)
     def spinBoxZPosValueChanged(self, double):
         self.controller.setzpos(double)
-
+    def spinBoxPosStepPosValueChanged(self, double):
+        #switch={0:0.10, 1:1.00, 2:5.00}
+        #val = int(double)
+        #step=switch[val]
+        self.xpos.singleStep=double
+        self.ypos.singleStep=double
+        self.zpos.singleStep=double
+        self.rotateX.singleStep=double
+        self.rotateY.singleStep=double
+        self.rotateZ.singleStep=double
+        
     def spinBoxXScaleValueChanged(self, double):
         if(self.sizeLock):
             self.controller.setxscale(double)
@@ -269,6 +292,17 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         else:
             self.controller.setzscale(double)
 
+    def spinBoxXRotateValueChanged(self, double):
+        self.controller.rotateX(double)
+        pass
+    def spinBoxYRotateValueChanged(self, double):
+        self.controller.rotateY(double)
+        pass
+    def spinBoxZRotateValueChanged(self, double):
+        self.controller.rotateZ(double)
+        pass
+    
+            
     def checkBoxZYToggled(self, enabled):
         self.controller.checkBoxZYToggled(enabled)
 

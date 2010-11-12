@@ -53,7 +53,7 @@ namespace Scene
 
 
         ///\todo Refactor these.
-        void RegisterSceneEvents(const Foundation::EventManagerPtr &event_manager)
+        void RegisterSceneEvents(const EventManagerPtr &event_manager)
         {
             event_category_id_t scene_event_category = event_manager->RegisterEventCategory("Scene");
             event_manager->RegisterEvent(scene_event_category, Events::EVENT_SCENE_ADDED, "Scene Added");

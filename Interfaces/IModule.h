@@ -26,8 +26,8 @@
     { ComponentRegistrarPtr registrar = ComponentRegistrarPtr(new component::component##Registrar); \
     DeclareComponent(registrar); } \
 
-/** Possible module states
-    @ingroup Module_group
+/// Possible module states
+/** @ingroup Module_group
 */
 enum ModuleState
 {
@@ -37,26 +37,26 @@ enum ModuleState
     MS_Unknown ///< Module state is unkown
 };
 
-/** Interface for modules. When creating new modules, inherit from this class.
-    See @ref ModuleArchitecture for details.
+/// Interface for modules. When creating new modules, inherit from this class.
+/** See @ref ModuleArchitecture for details.
     @ingroup Foundation_group
     @ingroup Module_group
 */
 class IModule
 {
-    friend class Foundation::ModuleManager;
+    friend class ModuleManager;
 
 public:
-    /** Constructor. Creates logger for the module.
-        @param name Module name.
+    /// Constructor. Creates logger for the module.
+    /** @param name Module name.
     */
     explicit IModule(const std::string &name);
 
     /// Destructor. Destroys logger of the module.
     virtual ~IModule();
 
-    /** Called when module is loaded into memory. Do not trust that framework can be used.
-        Override in your own module. Do not call.
+    /// Called when module is loaded into memory. Do not trust that framework can be used.
+    /** Override in your own module. Do not call.
         Components in the module should be declared here by using DECLARE_MODULE_EC(Component) macro, where
         Component is the class of the component.
     */
@@ -90,8 +90,8 @@ public:
     */
     virtual void Update(f64 frametime) {}
 
-    /** Receives an event
-        Should return true if the event was handled and is not to be propagated further
+    /// Receives an event.
+    /** Should return true if the event was handled and is not to be propagated further
         Override in your own module if you want to receive events. Do not call.
         See @ref EventSystem.
         @param category_id Category id of the event
@@ -116,8 +116,8 @@ protected:
     /// Parent framework
     Foundation::Framework *framework_;
 
-    /** Registers console command for this module.
-        @param command Console command.
+    /// Registers console command for this module.
+    /** @param command Console command.
     */
     void RegisterConsoleCommand(const Console::Command &command);
 

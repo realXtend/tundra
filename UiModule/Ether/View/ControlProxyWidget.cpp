@@ -347,6 +347,7 @@ namespace Ether
                 // Calculate new geometry, set scale
                 QSize overlay_size(470,431);
                 int name_height = 48 * scale;
+                UNREFERENCED_PARAM(name_height);
                 int button_height = 55 * scale;
                 if (direction_ == TopToBottom)
                     new_rect.setY(new_rect.y()-button_height + 15 * scale);
@@ -379,8 +380,7 @@ namespace Ether
             }
             else if (type_ == AddRemoveControl)
             {
-                qreal widgets_width = 0.0;
-                qreal widest_widget, shortest_widget;
+                qreal widgets_width = 0.0, widest_widget = 0.0, shortest_widget = 0.0;
                 foreach (QWidget *w, widget_map_.keys())
                 {
                     qreal width = w->width();

@@ -51,7 +51,7 @@ namespace Asset
 
     private:
         Foundation::Framework *framework_;
-        Foundation::EventManager *event_manager_;
+        EventManager *event_manager_;
         const std::string name_;
         QNetworkAccessManager *network_manager_;
         

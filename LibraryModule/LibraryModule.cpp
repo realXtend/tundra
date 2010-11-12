@@ -39,7 +39,7 @@
 #include "RexTypes.h"
 
 #include "ScriptServiceInterface.h" // call py directly
-
+#include <QImageReader>
 
 namespace Library
 {
@@ -56,6 +56,11 @@ namespace Library
         entity_(0),
         time_from_last_update_ms_(0)
     {
+        supported_drop_formats_ << ".scene" << ".mesh" << ".material" << ".xml";
+        
+        QList<QByteArray> qt_support = QImageReader::supportedImageFormats();
+        foreach (QByteArray arr, qt_support)
+            supported_drop_formats_ << QString(".%1").arg(QString(arr));
     }
 
     LibraryModule::~LibraryModule()
@@ -82,11 +87,13 @@ namespace Library
             QGraphicsView *ui_view = framework_->Ui()->GraphicsView();
             library_widget_ = new LibraryWidget(ui_view);
 
-            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();                
+            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();                
             UiProxyWidget *lib_proxy = ui->AddWidgetToScene(library_widget_);
             ui->RegisterUniversalWidget("Library", lib_proxy);
 
             connect(ui_view, SIGNAL(DropEvent(QDropEvent *)), SLOT(DropEvent(QDropEvent *) ));
+            connect(ui_view, SIGNAL(DragEnterEvent(QDragEnterEvent *)), SLOT(HandleDragEnterEvent(QDragEnterEvent *)));
+            connect(ui_view, SIGNAL(DragMoveEvent(QDragMoveEvent *)), SLOT(HandleDragMoveEvent(QDragMoveEvent *)));
         }
     }
 
@@ -232,7 +239,6 @@ namespace Library
 
     bool LibraryModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
-
         if (event_id != Resource::Events::RESOURCE_READY)
             return false;
         
@@ -249,7 +255,6 @@ namespace Library
 
         if (res->resource_->GetType() == "OgreMaterial")
         {
-                          
             OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(res->resource_.get());
             if (!mat_res)
                 return false;
@@ -258,10 +263,41 @@ namespace Library
             {
                 mesh_file_request_->AddMaterialId(QString(mat_res->GetId().c_str()));
             }   
-
         }
 
         return false;
+    }
+
+    void LibraryModule::HandleDragEnterEvent(QDragEnterEvent *e)
+    {
+        if (e->mimeData()->hasUrls())
+        {
+            QList<QUrl> urls = e->mimeData()->urls();
+            QString first_url = urls.first().toString();
+            if (!first_url.isEmpty())
+            {
+                QString extension = ".";
+                extension.append(first_url.split(".").last());
+                if (supported_drop_formats_.contains(extension))
+                    e->accept();
+            }
+        }
+    }
+
+    void LibraryModule::HandleDragMoveEvent(QDragMoveEvent *e)
+    {
+        if (e->mimeData()->hasUrls())
+        {
+            QList<QUrl> urls = e->mimeData()->urls();
+            QString first_url = urls.first().toString();
+            if (!first_url.isEmpty())
+            {
+                QString extension = ".";
+                extension.append(first_url.split(".").last());
+                if (supported_drop_formats_.contains(extension))
+                    e->accept();
+            }
+        }
     }
 
     void LibraryModule::DropEvent(QDropEvent *drop_event)
@@ -292,8 +328,8 @@ namespace Library
         QStringList urlList = urlString.split(";");
 
         // Do a raycast to drop position, 
-        Foundation::RaycastResult cast_result = RayCast(drop_event);
-        raycast_pos_ = cast_result.pos_;
+        RaycastResult* cast_result = RayCast(drop_event);
+        raycast_pos_ = cast_result->pos_;
 
         // Get drop pos in front of avatar if raycast did not hit any object
         IOpenSimSceneService *scene_service = framework_->GetService<IOpenSimSceneService>();
@@ -323,8 +359,8 @@ namespace Library
             {
                 // Call python directly (dont want to add dependency to optional module in pythonscript module)
                 // Change coords to string format for calling py
-                Foundation::ServiceManagerPtr manager = this->framework_->GetServiceManager();
-                boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = manager->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_PythonScripting).lock();
+                ServiceManagerPtr manager = this->framework_->GetServiceManager();
+                boost::shared_ptr<Foundation::ScriptServiceInterface> pyservice = manager->GetService<Foundation::ScriptServiceInterface>(Service::ST_PythonScripting).lock();
                 if (pyservice)
                     pyservice->RunString(QString("import localscene; lc = localscene.getLocalScene(); lc.onUploadSceneFile('" + url.toString() + "', %1, %2, %3);").arg(
                         raycast_pos_.x, raycast_pos_.y, raycast_pos_.z));
@@ -335,12 +371,12 @@ namespace Library
             }
             else if (urlString.endsWith(".material"))
             {
-                if (cast_result.entity_)
+                if (cast_result->entity_)
                 {
-                    EC_Mesh *mesh = cast_result.entity_->GetComponent<EC_Mesh>().get();
-                    EC_OpenSimPrim *prim = cast_result.entity_->GetComponent<EC_OpenSimPrim>().get();
-                    uint submesh = cast_result.submesh_;
-                    if (submesh != 0 && mesh && prim)
+                    EC_Mesh *mesh = cast_result->entity_->GetComponent<EC_Mesh>().get();
+                    EC_OpenSimPrim *prim = cast_result->entity_->GetComponent<EC_OpenSimPrim>().get();
+                    uint submesh = cast_result->submesh_;
+                    if (mesh && prim)
                     {
                         MaterialMap materials = prim->Materials;
                         
@@ -359,11 +395,11 @@ namespace Library
             }
             else if (urlString.endsWith(".png") || urlString.endsWith(".jpg") || urlString.endsWith(".jpeg"))
             {
-                if (cast_result.entity_)
+                if (cast_result->entity_)
                 {
-                    EC_Mesh *mesh = cast_result.entity_->GetComponent<EC_Mesh>().get();
-                    EC_OpenSimPrim *prim = cast_result.entity_->GetComponent<EC_OpenSimPrim>().get();
-                    uint submesh = cast_result.submesh_;
+                    EC_Mesh *mesh = cast_result->entity_->GetComponent<EC_Mesh>().get();
+                    EC_OpenSimPrim *prim = cast_result->entity_->GetComponent<EC_OpenSimPrim>().get();
+                    uint submesh = cast_result->submesh_;
                     if (mesh && prim)
                     {
                         MaterialMap materials = prim->Materials;
@@ -402,7 +438,7 @@ namespace Library
             }
             else if (url.toString().endsWith(".material"))
             {
-                boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
                 if (renderer)
                 {
                     request_tag_t tag = renderer->RequestResource(url.toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
@@ -419,21 +455,21 @@ namespace Library
         }
     }
 
-    Foundation::RaycastResult LibraryModule::RayCast(QDropEvent *drop_event)
+    RaycastResult* LibraryModule::RayCast(QDropEvent *drop_event)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
         {
             LogDebug("Could not get rendering service, could not raycast");
-            Foundation::RaycastResult fail_result;
+            static RaycastResult fail_result;
             fail_result.entity_ = 0;
             fail_result.pos_ = Vector3df::ZERO;
-            return fail_result;
+            return &fail_result;
         }
 
-        Foundation::RaycastResult cast_result = renderer->Raycast(drop_event->pos().x(), drop_event->pos().y());
-        if (!cast_result.entity_)
-            cast_result.pos_ = Vector3df::ZERO;
+        RaycastResult* cast_result = renderer->Raycast(drop_event->pos().x(), drop_event->pos().y());
+        if (!cast_result->entity_)
+            cast_result->pos_ = Vector3df::ZERO;
         return cast_result;
     }
 
@@ -478,6 +514,7 @@ namespace Library
             return;
 
         uint submesh_count = 0;
+        UNREFERENCED_PARAM(submesh_count);
         QVector3D temp = pos->GetQPosition();
 
         Vector3df meshpos = mesh_file_request_->GetRayCastPos();
@@ -519,7 +556,7 @@ Console::CommandResult LibraryModule::ShowWindow(const StringVector &params)
         QGraphicsView *ui_view = framework_->Ui()->GraphicsView();
         library_widget_ = new LibraryWidget(ui_view);
 
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();                
+        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();                
         ui->AddWidgetToScene(library_widget_);
 
         connect(ui_view, SIGNAL(DropEvent(QDropEvent *) ), SLOT(DropEvent(QDropEvent *) ));

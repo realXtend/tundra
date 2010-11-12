@@ -29,7 +29,7 @@ RexMovementInput::RexMovementInput(Foundation::Framework *framework_)
 }
 
 // Either sends an input event press or release, depending on the key event type.
-void SendPressOrRelease(Foundation::EventManagerPtr eventMgr, const KeyEvent *key, int eventID)
+void SendPressOrRelease(EventManagerPtr eventMgr, const KeyEvent *key, int eventID)
 {
     // In the AvatarControllable and CameraControllable framework, each input event id that denotes a press
     // also has a corresponding release event, which has an ID one larger than the press event.
@@ -47,7 +47,7 @@ void RexMovementInput::HandleKeyEvent(KeyEvent *key)
 
     Input *inputService = framework->GetInput();
 
-    Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
+    EventManagerPtr eventMgr = framework->GetEventManager();
 
     ///\todo Accessing the key bindings by string names is a bit silly, since for each key event, this
     /// generates a string compare. Now for every key, we do this for every key we want to act on.
@@ -121,7 +121,7 @@ void RexMovementInput::HandleKeyEvent(KeyEvent *key)
 
 void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
 {
-    Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
+    EventManagerPtr eventMgr = framework->GetEventManager();
 
     // This function handles received input events and translates them to the "traditional"-style
     // Naali input events. New modules should really prefer using an InputContext of their

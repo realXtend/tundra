@@ -18,6 +18,8 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 
+#include <QCursor>
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -84,6 +86,7 @@ Does not emit any actions.
 EC_OgreCustomObject (if prim) components available in advance.</b>. 
 </table>
 */
+
 class EC_Touchable : public IComponent
 {
     Q_OBJECT
@@ -97,13 +100,16 @@ public:
     bool IsSerializable() const { return true; }
 
     /// Name of the material used for this EC.
-    Attribute<QString> materialName;
+	Q_PROPERTY(QString materialName READ getmaterialName WRITE setmaterialName);
+	DEFINE_QPROPERTY_ATTRIBUTE(QString, materialName);
 
     /// Is highlight material shown on mouse hover.
-    Attribute<bool> highlightOnHover;
+	Q_PROPERTY(bool highlightOnHover READ gethighlightOnHover WRITE sethighlightOnHover);
+	DEFINE_QPROPERTY_ATTRIBUTE(bool, highlightOnHover);
 
     /// Hover mouse cursor, see @see Qt::CursorShape
-    Attribute<int> hoverCursor;
+	Q_PROPERTY(int hoverCursor READ gethoverCursor WRITE sethoverCursor);
+	DEFINE_QPROPERTY_ATTRIBUTE(int, hoverCursor);
 
 public slots:
     /// Shows the effect.

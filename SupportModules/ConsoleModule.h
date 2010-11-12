@@ -4,6 +4,7 @@
 #define incl_SupportModules_ConsoleModule_h
 
 #include "IModule.h"
+#include "ForwardDefines.h"
 #include "ModuleLoggingFunctions.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleModuleApi.h"

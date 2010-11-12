@@ -54,7 +54,7 @@ namespace OgreRenderer
         ui->AddSettingsWidget(settings_widget_, "Rendering");
 
         QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
-        boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();
+        boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Service::ST_Renderer).lock();
         if (!spin || !renderer)
             return;
         spin->setValue(renderer->GetViewDistance());

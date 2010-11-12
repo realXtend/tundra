@@ -108,13 +108,13 @@ void TexturePreviewEditor::Closed()
 
 void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
 {
-    Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+    ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)
     {
-        if(service_manager->IsRegistered(Foundation::Service::ST_Texture))
+        if(service_manager->IsRegistered(Service::ST_Texture))
         {
             boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
-                service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
+                service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();
             if(!texture_service)
                 return;
             // Request texture assets.

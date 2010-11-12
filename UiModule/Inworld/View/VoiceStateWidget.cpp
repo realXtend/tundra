@@ -5,13 +5,13 @@
 
 namespace CommUI
 {
-    VoiceStateWidget::VoiceStateWidget(QWidget * parent, Qt::WindowFlags f)
-        : QPushButton(parent),
+    VoiceStateWidget::VoiceStateWidget()
+        : QPushButton(0),
           state_(STATE_OFFLINE)
     {
-        setMinimumSize(42,32);
-        setObjectName("stateIndicatorWidget"); // There can be obly one instance of this class
+        setObjectName("stateIndicatorWidget"); // for style sheets ( works only if there is only one instance of this class )
         UpdateStyleSheet();
+        setMinimumSize(32,32);
         update_timer_.start(VOICE_ACTIVITY_UPDATE_INTERVAL_MS_);
         update_timer_.setSingleShot(false);
         connect(&update_timer_, SIGNAL(timeout()), SLOT(UpdateVoiceActivity()) );

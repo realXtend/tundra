@@ -35,12 +35,7 @@ void EC_Script::Run(const QString &name)
     }
 
     if (name.isEmpty() || (name == scriptRef.Get().ref))
-    {
-        scriptInstance_->Unload();
-        scriptInstance_->Load();
-        if (runOnLoad.Get())
-            scriptInstance_->Run();
-    }
+        scriptInstance_->Run();
 }
 
 void EC_Script::Unload(const QString &name)
@@ -86,8 +81,7 @@ void EC_Script::RegisterActions()
     if (entity)
     {
         entity->ConnectAction("RunScript", this, SLOT(Run(const QString &)));
-        entity->ConnectAction("StopScript", this, SLOT(Stop(const QString &)));
-        entity->ConnectAction("ReloadScript", this, SLOT(Reload(const QString &)));
+        entity->ConnectAction("UnloadScript", this, SLOT(Unload(const QString &)));
     }
 }
 
