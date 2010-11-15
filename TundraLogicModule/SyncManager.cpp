@@ -29,6 +29,14 @@
 
 using namespace kNet;
 
+// This define controls whether to echo scene changes back to the sending client. For some applications (ie. synced UI widgets)
+// it is nice to have off, but there might be possible determinism issues if many clients are updating the same attribute at the same time
+// Note: changes must definitely be sent also to sender if server can change the value sent by the client. Also when/if changes can be 
+// rejected, an overriding update should be sent to the sending client
+// #define ECHO_CHANGES_TO_SENDER
+
+KristalliProtocol::UserConnection* currentSender = 0;
+
 namespace TundraLogic
 {
 
@@ -102,6 +110,9 @@ void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
+    if (owner_->IsServer())
+        currentSender = owner_->GetKristalliModule()->GetUserConnection(source);
+    
     switch (id)
     {
     case cCreateEntityMessage:
@@ -146,6 +157,8 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             HandleEntityAction(source, msg);
         }
     }
+    
+    currentSender = 0;
 }
 
 void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
@@ -190,6 +203,11 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
             {
@@ -225,6 +243,11 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
@@ -251,6 +274,11 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
@@ -273,6 +301,11 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnEntityChanged(entity->GetId());
@@ -297,6 +330,11 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnEntityRemoved(entity->GetId());
@@ -598,7 +636,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     }
     
     if (num_messages_sent)
-        TundraLogicModule::LogDebug("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
+        TundraLogicModule::LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
@@ -830,11 +868,6 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg)
 {
-    //! \todo For now, if server receives an update from a client, it marks it for send to all clients, also the one
-    /*! who originated the change. This probably is undesirable: have to investigate if this "feature" can be safely
-        eliminated
-     */
-    
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return;
