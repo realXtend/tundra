@@ -261,7 +261,7 @@ class Manipulator:
             changevec = rightvec - upvec
 
             # group rotation
-            if self.NAME=="RotationManipulator" and len(ents)>1 and self.grabbed_axis == self.AXIS_BLUE:
+            if self.NAME=="RotationManipulator" and len(ents)>1: # and self.grabbed_axis == self.AXIS_BLUE:
                 self.setCenterPointAndCenterVectors(ents)
                 self._manipulate2(ents, amountx, amounty, changevec, self.entCenterVectors, self.centerPoint)
             else:            
@@ -313,12 +313,14 @@ class Manipulator:
         for ent in ents:
             pos = ent.placeable.Position
             diff = self.vectorDifference(pos, self.centerPoint)
+            #diff = pos - self.centerPoint
             self.entCenterVectors[ent]=diff 
         # print "center vectors"
         # for e, vec in self.entCenterVectors.iteritems():
             # print vec
         
     def vectorDifference(self, v1, v2):
+        """ rotations stopped working when using v1-v2 and v1+v2, so currently this method remains here """
         x = v1.x()-v2.x()
         y = v1.y()-v2.y()
         z = v1.z()-v2.z()
@@ -327,6 +329,7 @@ class Manipulator:
     def calibrateVec(self, r, v):
         if(self.vectorLen(r)!=0):
             factor = self.vectorLen(v)/self.vectorLen(r)
+            #factor = v.length()/r.length()
             rx = factor* r.x()
             ry = factor* r.y()
             rz = factor* r.z()
@@ -338,6 +341,7 @@ class Manipulator:
         return math.sqrt(v.x()**2 + v.y()**2 + v.z()**2)
 
     def vectorAdd(self, v1, v2):
+        """ rotations stopped working when using v1-v2 and v1+v2, so currently this method remains here """
         x = v1.x()+v2.x()
         y = v1.y()+v2.y()
         z = v1.z()+v2.z()
@@ -503,7 +507,7 @@ class RotationManipulator(Manipulator):
             axis = None
             #angle = 90 # just do 90 degrees rotations
             #angle = 15 # just do 15 degrees rotations
-            angle = 5 # just do 5 degrees rotations
+            angle = 1 # just do 1 degrees rotations
             
             if amountx < 0 and amounty < 0:
                 dir = -1
@@ -552,6 +556,7 @@ class RotationManipulator(Manipulator):
             # print "centerpoint %s"%centerpoint
             # print "newVec %s"%newVec
             newPos = self.vectorAdd(centerpoint, newVec)
+            #newPos = centerpoint + newVec
             if hasattr(ent, "placeable"):
                 ent.placeable.Position = newPos
                 ent.network.Position = newPos
@@ -560,28 +565,31 @@ class RotationManipulator(Manipulator):
                 # print type(ent)
         pass
 
-    """ This part still has some issues, z-group rotation now working perfectly,
-        x and y group rotations still go bonkers, y-rotation stops when limit -1.0 or 1.0 rads
-        is reached, and x-rotation is totally wrong
-        also this method functionality probably overlaps with above single object specific rotation, 
-        anyway keeping it separate untill multirotate works correctly """
+        
     def _rotateEachEntWithQuaternion(self, q, ents, angle):
+        """ Rotate each object along selected axis """
         for ent in ents:
             ort = ent.placeable.Orientation
-            euler = mu.quat_to_euler(ort)
+                        
+            v1 = ort.rotatedVector(QVector3D(1,0,0))
+            v2 = ort.rotatedVector(QVector3D(0,1,0))
+            v3 = ort.rotatedVector(QVector3D(0,0,1))
+
+            m = ((v1.x(),v1.y(),v1.z()),(v2.x(),v2.y(),v2.z()),(v3.x(),v3.y(),v3.z()))
+            inv = mu.invert_3x3_matrix(m)
+
             if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                #print euler[0] 
-                #print math.radians(angle)
-                euler[0] += math.radians(angle)
+                #axis = QVector3D(1,0,0) # this objects x-axis
+                axis = QVector3D(inv[0][0],inv[0][1],inv[0][2]) # this objects x-axis
             elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                #print euler[1] 
-                #print math.radians(angle)
-                euler[1] += math.radians(angle)
+                #axis = QVector3D(0,1,0) # this objects y-axis
+                axis = QVector3D(inv[1][0],inv[1][1],inv[1][2]) # this objects x-axis
             elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                #print euler[2] 
-                #print math.radians(angle)
-                euler[2] += math.radians(angle)
-            ort = mu.euler_to_quat(euler)
-            ent.placeable.Orientation = ort
-            ent.network.Orientation = ort
-        pass
+                #axis = QVector3D(0,0,1) # this objects z-axis
+                axis = QVector3D(inv[2][0],inv[2][1],inv[2][2]) # this objects x-axis
+
+            q = QQuaternion.fromAxisAndAngle(axis, angle)
+            q.normalize()
+            ent.placeable.Orientation = ort*q
+        
+
