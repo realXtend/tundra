@@ -309,7 +309,7 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QDoubleSpinBox" name="rotateX">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximum">
              <double>360.000000000000000</double>
@@ -329,7 +329,7 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QDoubleSpinBox" name="rotateY">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="maximum">
              <double>360.000000000000000</double>

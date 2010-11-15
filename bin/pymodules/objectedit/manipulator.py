@@ -579,17 +579,15 @@ class RotationManipulator(Manipulator):
             inv = mu.invert_3x3_matrix(m)
 
             if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                #axis = QVector3D(1,0,0) # this objects x-axis
-                axis = QVector3D(inv[0][0],inv[0][1],inv[0][2]) # this objects x-axis
+                axis = QVector3D(inv[0][0],inv[0][1],inv[0][2]) 
             elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                #axis = QVector3D(0,1,0) # this objects y-axis
-                axis = QVector3D(inv[1][0],inv[1][1],inv[1][2]) # this objects x-axis
+                axis = QVector3D(inv[1][0],inv[1][1],inv[1][2]) 
             elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                #axis = QVector3D(0,0,1) # this objects z-axis
-                axis = QVector3D(inv[2][0],inv[2][1],inv[2][2]) # this objects x-axis
+                axis = QVector3D(inv[2][0],inv[2][1],inv[2][2]) 
 
             q = QQuaternion.fromAxisAndAngle(axis, angle)
             q.normalize()
+
             ent.placeable.Orientation = ort*q
         
 
