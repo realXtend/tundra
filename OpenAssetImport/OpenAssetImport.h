@@ -12,11 +12,15 @@ namespace OgreRenderer { class Renderer; }
 //! Open Asset Import, a wrapper for Open Asset Import library that is used for loading model formats other than Ogre .mesh.
 namespace AssImp
 {
+    //! Contains mesh data information about a file that can be imported with OpenAssetImport.
+    /*! GetMeshData() uses this to fill out information which can be used to generate entities
+        and components.
+    */
     struct MeshData
     {
-        QString file_;
-        QString name_;
-        Transform transform_;
+        QString file_;          //! file path, same for each individual mesh in the file.
+        QString name_;          //! name of an individual mesh inside the file. May be empty if file contains only one mesh.
+        Transform transform_;   //! transforms in global space for an individual mesh.
     };
 
     /*! Imports an Ogre mesh from various different model formats.
@@ -36,7 +40,7 @@ namespace AssImp
         //! Imports mesh data from a file.
         /*! Import mesh names and transformations contained in the model file. This
             information can be used to create entities, components ands asset refs.
-            Use Import() to create the actual mesh data.
+            Use Import() to create the actual Ogre mesh data.
 
             \note Does not handle scene hierarchy, all transformations are converted
                   to world space.
