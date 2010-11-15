@@ -303,6 +303,9 @@ namespace Scene
          */
         QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
 
+        //! Returns Framework
+        Foundation::Framework *GetFramework() const { return framework_; }
+
     signals:
         //! Signal when an attribute of a component has changed
         /*! Network synchronization managers should connect to this

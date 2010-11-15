@@ -89,9 +89,9 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         boost::filesystem::path path(filename.toStdString());
         std::string dirname = path.branch_path().string();
 
-        TundraLogic::SceneImporter importer(framework_);
+        TundraLogic::SceneImporter importer(scene);
         ///\todo Take into account asset sources.
-        ret = importer.Import(scene, filename.toStdString(), dirname, "./data/assets",
+        ret = importer.Import(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
 
         if (ret.empty())
@@ -104,8 +104,8 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         boost::filesystem::path path(filename.toStdString());
         std::string dirname = path.branch_path().string();
 
-        TundraLogic::SceneImporter importer(framework_);
-        Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
+        TundraLogic::SceneImporter importer(scene);
+        Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
         if (entity)
         {
@@ -133,10 +133,10 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             std::vector<AssImp::MeshData> meshNames;
             assimporter.GetMeshData(filename, meshNames);
 
-            TundraLogic::SceneImporter sceneimporter(framework_);
+            TundraLogic::SceneImporter sceneimporter(scene);
             for (size_t i=0 ; i<meshNames.size() ; ++i)
             {
-                Scene::EntityPtr entity = sceneimporter.ImportMesh(scene, meshNames[i].file_.toStdString(), dirname, "./data/assets",
+                Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, "./data/assets",
                     meshNames[i].transform_, std::string(), AttributeChange::Default, true, false, meshNames[i].name_.toStdString());
                 if (entity)
                 {
