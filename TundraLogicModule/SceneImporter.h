@@ -34,16 +34,15 @@ class TUNDRALOGIC_MODULE_API SceneImporter
 {
 public:
     //! Constructs the importer.
-    /*! \param scene Destination scene
+    /*! \param dest_scene Destination scene
     */
-    explicit SceneImporter(Foundation::Framework* framework);
+    explicit SceneImporter(const Scene::ScenePtr &scene);
     
-    //! Destroyes the importer.
+    //! Destroys the importer.
     ~SceneImporter();
     
     //! Import a single mesh. Scans the mesh for needed skeleton & materials
-    /*! \param scene Destination scene
-        \param meshname Filename of mesh
+    /*! \param meshname Filename of mesh
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param worldtransform Transform to use for the entity's placeable. You can use Transform's default ctor if you don't want to spesify custom Transform.
@@ -54,13 +53,12 @@ public:
         \param meshName Name of mesh inside the file
         \return Entity pointer if successful (null if failed)
      */
-    Scene::EntityPtr ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
+    Scene::EntityPtr ImportMesh(const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
         const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets,
         bool inspect = true, const std::string &meshName = std::string());
     
     //! Import a dotscene
-    /*! \param scene Destination scene
-        \param filename Input filename
+    /*! \param filename Input filename
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param worldtransform Transform to use for the entity's placeable
@@ -71,7 +69,7 @@ public:
                Default true. If this is false, all entities will be created as new
         \return List of created entities, of empty list if import failed.
      */
-    QList<Scene::Entity *> Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, const Transform &worldtransform,
+    QList<Scene::Entity *> Import(const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, const Transform &worldtransform,
         AttributeChange::Type change, bool clearscene = false, bool localassets = true, bool replace = true);
     
     //! Parse a mesh for materials & skeleton ref
@@ -97,7 +95,6 @@ private:
     
     //! Process node and its child nodes for creation of entities & components. Done after asset pass
     /*! \param [out] entities List of created entities
-        \param scene Destination scene
         \param node_elem Node element
         \param pos Current position
         \param rot Current rotation
@@ -107,7 +104,7 @@ private:
         \param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
         \param replace Whether to replace contents of entities by name. If false, all entities will be created as new
      */
-    void ProcessNodeForCreation(QList<Scene::Entity* > &entities, Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+    void ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, bool localassets, bool flipyz, bool replace);
     
     //! Process a material file, searching for used materials and writing them to separate files if found, and also recording used textures
@@ -117,7 +114,8 @@ private:
         \param localassets Whether to put file:// prefix into all asset references
         \return Set of used textures
      */
-    std::set<std::string> ProcessMaterialFile(const std::string& matfilename, const std::set<std::string>& used_materials, const std::string& out_asset_dir, bool localassets);
+    std::set<std::string> ProcessMaterialFile(const std::string& matfilename, const std::set<std::string>& used_materials,
+        const std::string& out_asset_dir, bool localassets);
     
     //! Copy textures to destination asset directory
     /*! \param used_textures Set of texture names
@@ -146,8 +144,8 @@ private:
     //! Nodes already created into the scene. Used for name-based "update import" logic
     std::set<std::string> node_names_;
     
-    //! Framework
-    Foundation::Framework* framework_;
+    //! Destination scene.
+    Scene::ScenePtr scene_;
 };
 
 }

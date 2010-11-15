@@ -187,6 +187,20 @@ namespace Scene
          */
         void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
+        //! Emit notification of an attribute having been created. Called by IComponent's with dynamic structure
+        /*! \param comp Component pointer
+            \param attribute Attribute pointer
+            \param change Network replication mode
+         */
+        void EmitAttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
+
+        //! Emit notification of an attribute about to be deleted. Called by IComponent's with dynamic structure
+        /*! \param comp Component pointer
+            \param attribute Attribute pointer
+            \param change Network replication mode
+         */
+         void EmitAttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
+         
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
@@ -289,11 +303,24 @@ namespace Scene
          */
         QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
 
+        //! Returns Framework
+        Foundation::Framework *GetFramework() const { return framework_; }
+
     signals:
         //! Signal when an attribute of a component has changed
         /*! Network synchronization managers should connect to this
          */
         void AttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
+
+        //! Signal when an attribute of a component has been added (dynamic structure components only)
+        /*! Network synchronization managers should connect to this
+         */
+        void AttributeAdded(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
+
+        //! Signal when an attribute of a component has been added (dynamic structure components only)
+        /*! Network synchronization managers should connect to this
+         */
+        void AttributeRemoved(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this

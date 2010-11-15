@@ -21,7 +21,8 @@ struct ComponentSyncState
     uint type_hash_;
     QString name_;
     // Note! These pointers are never dereferenced, and might be invalid. They are just for quick response to AttributeChanged signals.
-    std::set<IAttribute*> dirty_attributes_;
+    std::set<IAttribute*> dirty_static_attributes_;
+    std::set<QString> dirty_dynamic_attributes_;
 };
 
 //! State of entity replication for a specific user
@@ -84,8 +85,18 @@ struct EntitySyncState
         {
             ComponentSyncState* compState = GetComponent(type_hash, name);
             if (compState)
-                compState->dirty_attributes_.insert(attribute);
+                compState->dirty_static_attributes_.insert(attribute);
         }
+    }
+    
+    void OnDynamicAttributeChanged(uint type_hash, const QString& name, const QString& attrName)
+    {
+        dirty_components_.insert(std::make_pair<uint, QString>(type_hash, name));
+        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        // If client already has the component state, dirty the specific attribute
+        ComponentSyncState* compState = GetComponent(type_hash, name);
+        if (compState)
+            compState->dirty_dynamic_attributes_.insert(attrName);
     }
     
     void OnComponentRemoved(uint type_hash, const QString& name)
@@ -99,7 +110,10 @@ struct EntitySyncState
         dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
         ComponentSyncState* compState = GetComponent(type_hash, name);
         if (compState)
-            compState->dirty_attributes_.clear();
+        {
+            compState->dirty_static_attributes_.clear();
+            compState->dirty_dynamic_attributes_.clear();
+        }
     }
     
     void AckRemove(uint type_hash, const QString& name)
@@ -166,6 +180,17 @@ struct SceneSyncState : public IUserData
         if (!entitystate)
             return;
         entitystate->OnAttributeChanged(type_hash, name, attribute);
+    }
+    
+    void OnDynamicAttributeChanged(entity_id_t id, uint type_hash, const QString& name, const QString& attrName)
+    {
+        OnEntityChanged(id);
+        // If the entity does not exist in the user's syncstate yet, don't have to care
+        // (full entitystate will be serialized once it's time)
+        EntitySyncState* entitystate = GetEntity(id);
+        if (!entitystate)
+            return;
+        entitystate->OnDynamicAttributeChanged(type_hash, name, attrName);
     }
     
     void OnComponentAdded(entity_id_t id, uint type_hash, const QString& name)

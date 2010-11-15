@@ -22,7 +22,7 @@ use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule Ogr
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule PhysicsModule RexCommon)
+link_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule PhysicsModule RexCommon EC_DynamicComponent)
 link_ogre()
 
 LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)

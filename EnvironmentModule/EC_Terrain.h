@@ -19,14 +19,16 @@ namespace Ogre
 
 namespace Environment
 {
-	/**
 
+/// Adds a heightmap-based terrain to the scene.
+/**
 <table class="header">
 
 <tr>
 <td>
 <h2>Terrain</h2>
-Adds a heightmap-based terrain to the scene. A Terrain is composed of a rectangular grid of adjacent "patches". Each patch is a fixed-size 16x16 height map.
+Adds a heightmap-based terrain to the scene. A Terrain is composed of a rectangular grid of adjacent "patches".
+Each patch is a fixed-size 16x16 height map.
 
 Registered by Environment::EnvironmentModule.
 
@@ -62,7 +64,6 @@ to create a dependency to Placeable, so that the position of the terrain is edit
 </table>
 
 */
-/// Stores all the terrain patches (typically 16x16) in a given terrain.
 class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
 {
     Q_OBJECT

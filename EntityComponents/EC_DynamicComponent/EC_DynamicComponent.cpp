@@ -6,6 +6,7 @@
 #include "ModuleManager.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
+#include "SceneManager.h"
 
 #include <QScriptEngine>
 #include <QScriptValueIterator>
@@ -182,6 +183,12 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
         return 0;
     }
 
+    // Trigger scenemanager signal
+    Scene::SceneManager* scene = GetParentScene();
+    if (scene)
+        scene->EmitAttributeAdded(this, attribute, change);
+    
+    // Trigger internal signal
     emit AttributeAdded(attribute);
     AttributeChanged(attribute, change);
     return attribute;
@@ -193,8 +200,13 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
     {
         if((*iter)->GetNameString() == name.toStdString())
         {
-            //! /todo Make sure that component removal is replicated to the server if change type is Replicate.
-            AttributeChanged(*iter, change);
+            // Trigger scenemanager signal
+            Scene::SceneManager* scene = GetParentScene();
+            if (scene)
+                scene->EmitAttributeRemoved(this, *iter, change);
+            
+            // Trigger internal signal(s)
+            // AttributeChanged(*iter, change);
             emit AttributeAboutToBeRemoved(*iter);
             SAFE_DELETE(*iter);
             attributes_.erase(iter);
@@ -241,7 +253,8 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
     {
         attributes_[index]->FromQVariant(value, change);
     }
-    LogWarning("Cannot get attribute name, cause index is out of range.");
+    else
+        LogWarning("Cannot get attribute name, cause index is out of range.");
 }
 
 void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change)

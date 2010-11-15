@@ -12,13 +12,14 @@
 #include "EC_Mesh.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
-
-#include <Ogre.h>
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialResource.h"
 #include "OgreTextureResource.h"
 #include "OgreConversionUtils.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Terrain")
 
+#include <Ogre.h>
 #include <utility>
 
 using namespace std;
@@ -655,12 +656,15 @@ Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside) co
 bool EC_Terrain::SaveToFile(QString filename)
 {
     if (patchWidth * patchHeight != (int)patches.size())
-        return false; ///\todo Log out error. The EC_Terrain is in inconsistent state. Cannot save.
+    {
+        LogError("The EC_Terrain is in inconsistent state. Cannot save.");
+        return false;
+    }
 
     FILE *handle = fopen(filename.toStdString().c_str(), "wb");
     if (!handle)
     {
-        ///\todo Log out error!
+        LogError("Could not open file " + filename.toStdString() + ".");
         return false;
     }
 
@@ -688,9 +692,10 @@ bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
     FILE *handle = fopen(filename, "rb");
     if (!handle)
     {
-        ///\todo Log out warning.
+        LogError("Could not open file " + std::string(filename) + ".");
         return false;
     }
+
     fseek(handle, 0, SEEK_END);
     long numBytes = ftell(handle);
     if (numBytes == 0)
@@ -698,12 +703,13 @@ bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
         fclose(handle);
         return false;
     }
+
     fseek(handle, 0, SEEK_SET);
     dst.resize(numBytes);
     size_t numRead = fread(&dst[0], sizeof(u8), numBytes, handle);
     fclose(handle);
 
-    return numRead == numBytes;
+    return (long)numRead == numBytes;
 }
 
 u32 ReadU32(const char *dataPtr, size_t numBytes, int &offset)
@@ -797,7 +803,7 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
         image.load(stream);
     } catch(...)
     {
-        ///\todo Log out warning.
+        LogError("Execption catched when trying load terrain from image file" + filename.toStdString() + ".");
         return false;
     }
 
@@ -1062,7 +1068,7 @@ void EC_Terrain::GenerateFromOgreMesh(QString ogreMeshResourceName, const Ogre::
     Ogre::Mesh *mesh = dynamic_cast<Ogre::Mesh*>(Ogre::MeshManager::getSingleton().getByName(ogreMeshResourceName.toStdString().c_str()).get());
     if (!mesh)
     {
-        ///\todo Log out warning.
+        LogError("Could not get mesh " + ogreMeshResourceName.toStdString() + ".");
         return;
     }
 
@@ -1154,7 +1160,7 @@ void EC_Terrain::RemapHeightValues(float minHeight, float maxHeight)
     {
         MakeTerrainFlat(minHeight);
         return;
-    }        
+    }
 
     AffineTransform((maxHeight - minHeight) / (maxHeightCur - minHeightCur), minHeight - minHeightCur);
 }
@@ -1506,5 +1512,4 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
     emit TerrainRegenerated();
 }
 
-
-} 
+}
