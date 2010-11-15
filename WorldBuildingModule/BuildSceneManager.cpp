@@ -885,7 +885,8 @@ namespace WorldBuilding
 				if (prim && propertyWidget_->isVisible())
 					property_editor_handler_->UpdatePropertyWindow(prim);
 			}else{
-				//python_handler_->EmitRemoveHightlight();
+				if(prim_selected_)
+					python_handler_->EmitRemoveHightlight();
 				ObjectSelected(false);
 				property_editor_handler_->UpdatePropertyWindow(0);
 			}
