@@ -43,7 +43,7 @@ namespace WorldBuilding
         viewport_poller_(new QTimer(this)),
         override_server_time_(false),
 //$ BEGIN_MOD $
-		editToolbar_(0)
+		inside_(false)
 //$ END_MOD $
     {
         setParent(parent);
@@ -211,7 +211,8 @@ namespace WorldBuilding
 
     void BuildSceneManager::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
     {
-        if (!widget)
+
+		if (!widget)
             return;
         if (!scene_->isActive())
             return;
@@ -251,6 +252,14 @@ namespace WorldBuilding
             widget->setPos(object_manipulations_widget_->rect().width() + 25, 60);
             widget->hide();
         }
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal){
+			if(!inside_){
+				TransferAssetWidget(inside_);
+			}
+		}
+//$ END_MOD $
     }
 
     void BuildSceneManager::HandleTransfersBack()
@@ -278,6 +287,14 @@ namespace WorldBuilding
         }
         tranfer_widgets_.clear();
         object_manip_ui.tab_widget->clear();
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal){
+			if(inside_){
+				TransferAssetWidget(inside_);
+			}
+		}
+//$ END_MOD $
     }
 
     void BuildSceneManager::HandlePythonWidget(const QString &type, QWidget *widget)
@@ -326,13 +343,8 @@ namespace WorldBuilding
         if (create_widgets)
         {
             int inject_pos = object_manip_ui.main_layout->count() - 1;
-//$ BEGIN_MOD $
-			//Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
-			//QLayout* layout;
-			//if(uiExternal)
-			//	layout=assignWidget_->layout();
-//$ END_MOD $
-            // Make title if needed
+
+			// Make title if needed
             if (!label_title.isEmpty())
             {
                 // Make title and insert widget
@@ -343,13 +355,20 @@ namespace WorldBuilding
 
                 toggle_visibility_widgets_ << title;
                 object_manip_ui.main_layout->insertWidget(inject_pos, title);
+//$ BEGIN_MOD $				
+				panel_widgets_ << title;
+				asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), title);
+//$ END_MOD $
                 inject_pos++;
             }
 
             // Insert widget to layout
             widget->hide();
             object_manip_ui.main_layout->insertWidget(inject_pos, widget);		
-
+//$ BEGIN_MOD $			
+			panel_widgets_ << widget;
+			asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), widget);
+//$ END_MOD $
             // Put to internal lists for visibility and deleting
             if (toggle_visiblity)
                 toggle_visibility_widgets_ << widget;
@@ -570,12 +589,12 @@ namespace WorldBuilding
             python_handler_->EmitEditingActivated(false);
             toolbar_->RemoveAllButtons();
             HandleTransfersBack();
-//$ BEGIN_MOD $
-			Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
-			if(uiExternal)
-				ActiveEditMode(uiExternal->IsEditModeEnable());
-//$ END_MOD $
         }
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal && new_name=="Inworld")
+			ActiveEditMode(uiExternal->IsEditModeEnable());
+//$ END_MOD $
     }
 
     void BuildSceneManager::CreateCamera()
@@ -613,6 +632,14 @@ namespace WorldBuilding
             ManipModeChanged(python_handler_->GetCurrentManipulationMode());
         else
             ManipModeChanged(PythonParams::MANIP_FREEMOVE);
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if(uiExternal){
+		    if (selected)
+				ManipExternalModeChanged(python_handler_->GetCurrentManipulationMode());
+			else
+				ManipExternalModeChanged(PythonParams::MANIP_FREEMOVE);
+		}
 
          // Update ui visibility if the mode changed from previous known one
         if (prim_selected_ == selected)
@@ -632,6 +659,15 @@ namespace WorldBuilding
 		object_manip_ui.button_move->setEnabled(selected);
 		object_manip_ui.button_rotate->setEnabled(selected);
 
+//$ BEGIN_MOD $
+		if(uiExternal){
+			asset_ui_.button_clone->setEnabled(selected);
+			asset_ui_.button_delete->setEnabled(selected);
+			asset_ui_.button_scale->setEnabled(selected);
+			asset_ui_.button_move->setEnabled(selected);
+			asset_ui_.button_rotate->setEnabled(selected);
+		}
+//$ END_MOD $
         property_editor_handler_->SetEditorVisible(selected);
 
         foreach(QWidget *widget, toggle_visibility_widgets_)
@@ -766,25 +802,20 @@ namespace WorldBuilding
 			
 			//Create the Assign Widget
 			assignWidget_= new QWidget();
+			asset_ui_.setupUi(assignWidget_);
+			asset_ui_.tab_widget->setVisible(false);
 
-			object_manip_ui.setupUi(assignWidget_);
-			object_manip_ui.tab_widget->setVisible(false);
-			object_manip_ui.button_clone->setEnabled(true);
-			object_manip_ui.button_delete->setEnabled(true);
-			object_manip_ui.button_scale->setEnabled(true);
-			object_manip_ui.button_move->setEnabled(true);
-			object_manip_ui.button_rotate->setEnabled(true);
-
-			connect(object_manip_ui.button_new, SIGNAL(clicked()), SLOT(NewObjectClicked()));
-			connect(object_manip_ui.button_clone, SIGNAL(clicked()), SLOT(DuplicateObjectClicked()));
-			connect(object_manip_ui.button_delete, SIGNAL(clicked()), SLOT(DeleteObjectClicked()));
-			connect(object_manip_ui.button_move, SIGNAL(clicked()), SLOT(ExternalToggleMove()));
-			connect(object_manip_ui.button_scale, SIGNAL(clicked()), SLOT(ExternalToggleScale()));
-			connect(object_manip_ui.button_rotate, SIGNAL(clicked()), SLOT(ExternalToggleRotate()));
+			connect(asset_ui_.button_new, SIGNAL(clicked()), SLOT(NewObjectClicked()));
+			connect(asset_ui_.button_clone, SIGNAL(clicked()), SLOT(DuplicateObjectClicked()));
+			connect(asset_ui_.button_delete, SIGNAL(clicked()), SLOT(DeleteObjectClicked()));
+			connect(asset_ui_.button_move, SIGNAL(clicked()), SLOT(ExternalToggleMove()));
+			connect(asset_ui_.button_scale, SIGNAL(clicked()), SLOT(ExternalToggleScale()));
+			connect(asset_ui_.button_rotate, SIGNAL(clicked()), SLOT(ExternalToggleRotate()));
 
 			// Setup ui helper
-			ui_helper_->SetupManipControls(&object_manip_ui, python_handler_);
+			ui_helper_->SetupManipControls(&asset_ui_, python_handler_);
 
+			assignWidget_->setMinimumSize(QSize(300,300));
 			assignWidget_->setWindowTitle("Asset");
 			ui->AddWidgetToScene(assignWidget_,true,true);
 			ui->AddWidgetToMenu(assignWidget_,"Asset","Panels");
@@ -799,6 +830,7 @@ namespace WorldBuilding
 			editToolbar_->setEnabled(true);
 		}else{
 			python_handler_->EmitEditingActivated(false);
+			ObjectSelected(false);
 			editToolbar_->setEnabled(false);
 		}
 	}
@@ -825,26 +857,38 @@ namespace WorldBuilding
 	void BuildSceneManager::ActionToolBarProperties()
 	{
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-		if (ui && !scene_->isActive())
-			ui->ShowWidget(propertyWidget_);
+		if (ui && !scene_->isActive()){
+			if(!propertyWidget_->isVisible())
+				ui->ShowWidget(propertyWidget_);
+			else
+				ui->HideWidget(propertyWidget_);
+		}
 	}
 
 	void BuildSceneManager::ActionToolBarAsset()
 	{
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-		if(ui && !scene_->isActive())
-			ui->ShowWidget(assignWidget_);
+		if(ui && !scene_->isActive()){
+			if(!assignWidget_->isVisible())
+				ui->ShowWidget(assignWidget_);
+			else
+				ui->HideWidget(assignWidget_);
+		}
 	}
+
 	void BuildSceneManager::GetSelectedEntity(Scene::Entity *entity)
 	{
 		if(!scene_->isActive())
-			if(entity){
+			if(entity && !entity->HasComponent("EC_Terrain") && !entity->HasComponent("EC_Controllable")){
 				ObjectSelected(true);
 				EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
 				if (prim && propertyWidget_->isVisible())
 					property_editor_handler_->UpdatePropertyWindow(prim);
-			}else
+			}else{
+				//python_handler_->EmitRemoveHightlight();
+				ObjectSelected(false);
 				property_editor_handler_->UpdatePropertyWindow(0);
+			}
 	}
 
 	void BuildSceneManager::ChangeAndCreateObject(){
@@ -859,9 +903,9 @@ namespace WorldBuilding
     {
 		if(prim_selected_){
 			if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_MOVE)
-				ManipModeChanged(PythonParams::MANIP_FREEMOVE);
+				ManipExternalModeChanged(PythonParams::MANIP_FREEMOVE);
 			else
-				ManipModeChanged(PythonParams::MANIP_MOVE);
+				ManipExternalModeChanged(PythonParams::MANIP_MOVE);
 		}
     }
 
@@ -869,9 +913,9 @@ namespace WorldBuilding
     {
 		if(prim_selected_){
 			if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_SCALE)
-				ManipModeChanged(PythonParams::MANIP_FREEMOVE);
+				ManipExternalModeChanged(PythonParams::MANIP_FREEMOVE);
 			else
-				ManipModeChanged(PythonParams::MANIP_SCALE);
+				ManipExternalModeChanged(PythonParams::MANIP_SCALE);
 		}
     }
 
@@ -879,12 +923,80 @@ namespace WorldBuilding
     {
 		if(prim_selected_){
 			if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_ROTATE)
-				ManipModeChanged(PythonParams::MANIP_FREEMOVE);
+				ManipExternalModeChanged(PythonParams::MANIP_FREEMOVE);
 			else
-				ManipModeChanged(PythonParams::MANIP_ROTATE);
+				ManipExternalModeChanged(PythonParams::MANIP_ROTATE);
 		}
     }
 
+	void BuildSceneManager::TransferAssetWidget(bool inside){
+		if(inside){
+			foreach(QWidget *w, panel_widgets_){
+				int inject_pos = asset_ui_.main_layout->count() - 2;
+				asset_ui_.main_layout->insertWidget(inject_pos,w);
+			}
 
+			// Setup ui helper
+			ui_helper_->SetupManipControls(&asset_ui_, python_handler_);
+
+			assignWidget_->setEnabled(true);
+			inside_=false;
+		}else{
+			foreach(QWidget *w, panel_widgets_){
+				int inject_pos = object_manip_ui.main_layout->count() - 2;
+				w->hide();
+				object_manip_ui.main_layout->insertWidget(inject_pos, w);
+			}
+
+			// Setup ui helper
+			ui_helper_->SetupManipControls(&object_manip_ui, python_handler_);
+
+			assignWidget_->setEnabled(false);
+			inside_=true;
+		}
+	}
+
+    void BuildSceneManager::ManipExternalModeChanged(PythonParams::ManipulationMode mode)
+    {
+        python_handler_->EmitManipulationModeChange(mode);
+        ui_helper_->SetManipMode(mode);
+
+        bool show_rotate_controls = false;
+        bool show_scale_controls = false;
+        bool show_pos_controls = false;
+        QString selected_style = "background-color: qlineargradient(spread:pad, x1:0, y1:0.165, x2:0, y2:0.864, stop:0 rgba(248, 248, 248, 255), stop:1 rgba(232, 232, 232, 255));"
+                                 "border: 1px solid grey; border-radius: 0px; color: black; font-weight: bold; padding-top: 5px; padding-bottom: 4px;";
+        switch (mode)
+        {
+            case PythonParams::MANIP_MOVE:
+                asset_ui_.button_move->setStyleSheet(selected_style);
+                asset_ui_.button_scale->setStyleSheet("");
+                asset_ui_.button_rotate->setStyleSheet("");
+                show_pos_controls = true;
+                break;
+            case PythonParams::MANIP_SCALE:
+                asset_ui_.button_scale->setStyleSheet(selected_style);
+                asset_ui_.button_move->setStyleSheet("");
+                asset_ui_.button_rotate->setStyleSheet("");
+                show_scale_controls = true;
+                break;
+            case PythonParams::MANIP_ROTATE:
+                asset_ui_.button_rotate->setStyleSheet(selected_style);
+                asset_ui_.button_move->setStyleSheet("");
+                asset_ui_.button_scale->setStyleSheet("");
+                show_rotate_controls = true;
+                break;
+            case PythonParams::MANIP_FREEMOVE:
+                asset_ui_.button_move->setStyleSheet("");
+                asset_ui_.button_scale->setStyleSheet("");
+                asset_ui_.button_rotate->setStyleSheet("");
+                break;
+            default:
+                break;
+        }
+        asset_ui_.rotate_frame->setVisible(show_rotate_controls);
+        asset_ui_.scale_frame->setVisible(show_scale_controls);
+        asset_ui_.pos_frame->setVisible(show_pos_controls);
+    }
 //$ END_MOD $
 }

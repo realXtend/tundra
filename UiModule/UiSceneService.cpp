@@ -396,12 +396,38 @@ namespace UiServices
 		if(uiExternal){
 			QList<QString> panels;
 			panels << "Entity-component Editor";
-			panels << "Store";
+			panels << "Inventory";
 			panels << "Environment Editor";
 
 			if(new_name=="WorldBuilding"){
 				foreach(QString s, panels){
-					TransferWidgetOut(s,false);
+					//Get info from the list
+					proxyDock pair = proxy_dock_list.value(s);
+					QDockWidget* qdock=pair.second;
+					UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
+					QWidget* widget;
+
+					//We have to put it inside
+					if(qdock->widget()){
+						//It is outside
+						qdock->hide();
+						widget=qdock->widget();
+						widget->adjustSize();
+						//Remove Panel and Menu from External
+						uiExternal->RemoveExternalPanel(widget);
+						uiExternal->RemoveExternalMenuPanel(widget);
+						//Put Panel inside Proxy, add to scene and add internal menu entry with icon if available
+						widget->setParent(0);
+						proxy->setWidget(widget);
+						if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
+							if (panels_menus_list_.contains(widget->windowTitle())){
+								menusPair par = panels_menus_list_.value(widget->windowTitle());
+								owner_->GetInworldSceneController()->AddWidgetToMenu(proxy, proxy->windowTitle(), par.first, par.second);
+							}
+							else
+								owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
+						}
+					}
 				}
 			}else if(new_name=="Inworld" && old_name=="WorldBuilding")
 			{
@@ -410,17 +436,37 @@ namespace UiServices
 					QSettings settings("Naali UIExternal", "UiExternal Settings");
 					QString pos = settings.value(s, QString("vacio")).toString();
 					if (pos == "outside" && uiExternal){
-						TransferWidgetOut(s,true); 
-					} else
-						TransferWidgetOut(s,false);
-					//Hide panels
+						proxyDock pair = proxy_dock_list.value(s);
+						QDockWidget* qdock=pair.second;
+						UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
+						QWidget* widget;
+
+						proxy->hide();
+						widget=proxy->widget();
+						//Remove panel and menu entry
+						owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy);
+						owner_->GetInworldSceneController()->RemoveWidgetFromMenu(proxy);
+						proxy->setWidget(0);
+						qdock->setWidget(widget);
+						//Put external panel and menu entry
+						if (uiExternal->AddExternalPanel(qdock)){
+							if (panels_menus_list_.contains(widget->windowTitle())){
+								menusPair par = panels_menus_list_.value(widget->windowTitle());
+								uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),par.first);
+							} else
+								uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"panels");
+						}
+					} //else{
+						//TransferWidgetOut(s,false);
+					//}
+					/*Hide panels
 					proxyDock pair = proxy_dock_list.value(s);
 					QDockWidget* qdock=pair.second;
 					UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
 					if(qdock->widget())
 						HideWidget(qdock->widget());
 					else
-						HideWidget(proxy->widget());
+						HideWidget(proxy->widget());*/
 				//end_mod
 				}
 			}

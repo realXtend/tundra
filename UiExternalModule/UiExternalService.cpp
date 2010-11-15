@@ -68,7 +68,7 @@ namespace UiExternalServices
 	}
 
 	void UiExternalService::AddPanelToEditMode(QWidget* widget){
-		owner_->GetExternalPanelManager()->AddToEditMode(widget);
+		connect(this,SIGNAL(EditModeChanged(bool)),widget,SLOT(setEnabled(bool)));
 	}
 
 	bool UiExternalService::IsEditModeEnable(){

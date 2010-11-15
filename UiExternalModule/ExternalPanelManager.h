@@ -91,22 +91,6 @@ namespace UiExternalServices
          */
 		QDockWidget* GetExternalMenuPanel(QString &widget);
 		
-		/*! Receive the state of the edit mode and emit the signal to connected panels
-		 *  \param b Enable/disable the edit mode
-		 */
-		void EditModeChanged(bool b);
-
-		/*! Connect the panel to the signal for enable or disable with the edit mode
-		 *  \param widget Widget
-		 */
-		void AddToEditMode(QWidget* widget);
-
-	signals:
-		/*! Signal to connect with the panels 
-		 *  \param b Enable/disable the panel
-		 */
-		void changeEditMode(bool b);
-
     private:
 
         //! Pointer to main QMainWindow

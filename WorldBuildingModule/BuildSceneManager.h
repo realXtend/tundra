@@ -164,6 +164,14 @@ namespace WorldBuilding
 		/*! If build scene is nor active, active it and creates an object
 		 */
 		void ChangeAndCreateObject();
+
+		/*! Transfer the widget into build or Asset widget
+		 */
+		void TransferAssetWidget(bool inside);
+		
+		/*! Change the mode os manipulation object when uses the Asset Widget
+		 */
+		void ManipExternalModeChanged(PythonParams::ManipulationMode mode);
 //$ END_MOD $
 
     private:
@@ -202,9 +210,13 @@ namespace WorldBuilding
 //$ BEGIN_MOD $
 		//! Pointer to edit toolbar.
 		QToolBar* editToolbar_;
-		//* Properties asset widgets
+		//! Properties asset widgets
 		QWidget* propertyWidget_;
 		QWidget* assignWidget_;
+		//! Elements of assignWidget
+		Ui_ObjectManipulationsWidget asset_ui_;
+		//! The elements os Asset widget is inside or outside of build 
+		bool inside_;
 //$ END_MOD $
     };
 }

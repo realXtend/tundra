@@ -479,13 +479,13 @@ void InventoryModule::CreateInventoryWindow()
     SAFE_DELETE(inventoryWindow_); 
     inventoryWindow_ = new InventoryWindow;
 	//$ BEGIN_MOD $
-	inventoryWindow_->setWindowTitle("Store");
+	inventoryWindow_->setWindowTitle("Inventory");
 	//$ END_MOD $
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
     UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, true, true);
 	//$ BEGIN_MOD $	
-	ui->AddWidgetToMenu(inventoryWindow_, "Store", "Create");
+	ui->AddWidgetToMenu(inventoryWindow_, "Inventory", "Create");
     //ui->AddWidgetToMenu(inventoryWindow_);
 	//$ END_MOD $
     ui->RegisterUniversalWidget("Inventory", inv_proxy);
@@ -514,7 +514,10 @@ void InventoryModule::CreateInventoryWindow()
 	void InventoryModule::ActionToolBarInventory()
 	{
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-		ui->ShowWidget(inventoryWindow_);
+		if(!inventoryWindow_->isVisible())
+			ui->ShowWidget(inventoryWindow_);
+		else
+			ui->HideWidget(inventoryWindow_);
 	}
 //$ END_MOD $
 Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)

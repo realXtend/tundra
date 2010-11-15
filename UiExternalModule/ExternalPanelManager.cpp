@@ -117,13 +117,4 @@ namespace UiExternalServices
 		return false;
 
 	}
-
-	void ExternalPanelManager::EditModeChanged(bool b){		
-		emit changeEditMode(b);	
-	}	
-
-	void ExternalPanelManager::AddToEditMode(QWidget* widget){		
-		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))			
-			connect(this,SIGNAL(changeEditMode(bool)),widget,SLOT(setEnabled(bool)));	
-	}	
 }

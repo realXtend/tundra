@@ -171,7 +171,10 @@ namespace ECEditor
 	void ECEditorModule::ActionToolBarECEditor()
 	{
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-		ui->ShowWidget(editor_window_);
+		if(!editor_window_->isVisible())
+			ui->ShowWidget(editor_window_);
+		else
+			ui->HideWidget(editor_window_);
 	}
 //$ END_MOD $
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
