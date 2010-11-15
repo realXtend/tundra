@@ -28,6 +28,10 @@
 #include "ArgumentType.h"
 #include "InvokeItem.h"
 #include "FunctionInvoker.h"
+#include "AssetEvents.h"
+#include "RexTypes.h"
+#include "OgreConversionUtils.h"
+#include "Inventory/InventoryEvents.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -85,7 +89,7 @@ AssetItem::AssetItem(const QString &name, const QString &ref, QTreeWidgetItem *p
 
 bool Selection::IsEmpty() const
 {
-    return entities.size() == 0 && components.size() == 0;
+    return entities.size() == 0 && components.size() == 0 && assets.isEmpty();
 }
 
 bool Selection::HasEntities() const
@@ -96,6 +100,11 @@ bool Selection::HasEntities() const
 bool Selection::HasComponents() const
 {
     return components.size() > 0;
+}
+
+bool Selection::HasAssets() const
+{
+    return !assets.isEmpty();
 }
 
 QList<entity_id_t> Selection::EntityIds() const
@@ -271,6 +280,16 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
 {
     assert(menu);
 
+    Selection sel = GetSelection();
+
+    if (sel.HasAssets() && !sel.HasComponents() && !sel.HasEntities())
+    {
+        QAction *editAction = new QAction(tr("Edit"), menu);
+        connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
+        menu->addAction(editAction);
+        menu->setDefaultAction(editAction);
+    } else
+    {
     // "New entity...", "Import..." and "Open new scene..." actions are available always
     QAction *newEntityAction = new QAction(tr("New entity..."), menu);
     QAction *importAction = new QAction(tr("Import..."), menu);
@@ -343,6 +362,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
     if (hasSelection)
     {
         menu->addAction(editAction);
+        menu->setDefaultAction(editAction);
         menu->addAction(editInNewAction);
     }
 
@@ -376,7 +396,6 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         menu->addAction(functionsAction);
 
         // "Functions..." is disabled if we have both entities and components selected simultaneously.
-        Selection sel = GetSelection();
         if (sel.HasEntities() && sel.HasComponents())
             functionsAction->setDisabled(true);
 
@@ -405,6 +424,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
                 }
         }
     }
+    }
 }
 
 Selection SceneTreeWidget::GetSelection() const
@@ -422,6 +442,12 @@ Selection SceneTreeWidget::GetSelection() const
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
             if (cItem)
                 ret.components << cItem;
+            else
+            {
+                AssetItem *aItem = dynamic_cast<AssetItem *>(item);
+                if (aItem)
+                    ret.assets << aItem;
+            }
         }
     }
 
@@ -537,31 +563,44 @@ void SceneTreeWidget::Edit()
     if (selection.IsEmpty())
         return;
 
-    UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-    assert(ui);
-
-    // If we have an existing editor instance, use it.
-    if (ecEditor)
+    if (selection.HasComponents() || selection.HasEntities())
     {
+        UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
+        assert(ui);
+
+        // If we have an existing editor instance, use it.
+        if (ecEditor)
+        {
+            foreach(entity_id_t id, selection.EntityIds())
+                ecEditor->AddEntity(id);
+            ecEditor->SetSelectedEntities(selection.EntityIds());
+            ui->BringWidgetToFront(ecEditor);
+            return;
+        }
+
+        // Create new editor.
+        ecEditor = new ECEditor::ECEditorWindow(framework);
+        ecEditor->setAttribute(Qt::WA_DeleteOnClose);
+        ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
+        ecEditor->hide();
         foreach(entity_id_t id, selection.EntityIds())
             ecEditor->AddEntity(id);
         ecEditor->SetSelectedEntities(selection.EntityIds());
+
+        ui->AddWidgetToScene(ecEditor);
+        ui->ShowWidget(ecEditor);
         ui->BringWidgetToFront(ecEditor);
-        return;
+    } else
+    {
+        foreach(AssetItem *aItem, selection.assets)
+        {
+            int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
+
+            Asset::Events::AssetOpen event_data(QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), QString::number(itype));
+            //Inventory::InventoryItemOpenEventData event_data(
+            framework->GetEventManager()->SendEvent(framework->GetEventManager()->QueryEventCategory("Asset"), Asset::Events::ASSET_OPEN, &event_data);
+        }
     }
-
-    // Create new editor.
-    ecEditor = new ECEditor::ECEditorWindow(framework);
-    ecEditor->setAttribute(Qt::WA_DeleteOnClose);
-    ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
-    ecEditor->hide();
-    foreach(entity_id_t id, selection.EntityIds())
-        ecEditor->AddEntity(id);
-    ecEditor->SetSelectedEntities(selection.EntityIds());
-
-    ui->AddWidgetToScene(ecEditor);
-    ui->ShowWidget(ecEditor);
-    ui->BringWidgetToFront(ecEditor);
 }
 
 void SceneTreeWidget::EditInNew()
