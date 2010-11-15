@@ -84,7 +84,7 @@ namespace CoreUi
         QList<UiServices::ControlButtonType> buttons;
 		//$ BEGIN_MOD $
 		//$ MOD_DESCRIPTION We want to disable Quit and Ether options $
-        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit ;/*ENNE << UiServices::Build << UiServices::Ether;*/
+        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
 		//buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
 		//$ END_MOD $
 

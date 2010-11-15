@@ -22,13 +22,13 @@ namespace CoreUi
         connect(avatarToggle, SIGNAL(clicked()), SLOT(AvatarToggle()));
 		//$ BEGIN_MOD $
 		//Deleted from ui to check behaviour
-        //connect(inventoryToggle, SIGNAL(clicked()), SLOT(InventoryToggle()));
+        connect(inventoryToggle, SIGNAL(clicked()), SLOT(InventoryToggle()));
 		//$ END_MOD $
 
 
         CheckStyle(false, "avatarToggle");
 		//$ BEGIN_MOD $
-        //CheckStyle(false, "inventoryToggle");
+        CheckStyle(false, "inventoryToggle");
 		//$ END_MOD $
     }
 
@@ -117,15 +117,14 @@ namespace CoreUi
         else if (type == "inventoryToggle")
         {
 			//$ BEGIN_MOD $
-			/*Deleted from ui to check behaviour
+			//Deleted from ui to check behaviour
             button = inventoryToggle;
             if (!pressed_down)
                 image_normal += "uibutton_INV_normal.png";
             else
                 image_normal += "uibutton_INV_click.png";
             image_hover += "uibutton_INV_hover.png"; 
-            image_pressed += "uibutton_INV_click.png";*/
-			return;
+            image_pressed += "uibutton_INV_click.png";
 			//$ END_MOD $
         }
         else

@@ -127,13 +127,13 @@ namespace UiServices
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
         ///\todo This string comparison is awful, get rid of this.
-		/*$ BEGIN_MOD $
+		//$ BEGIN_MOD $
         if ( name.contains("inv", Qt::CaseInsensitive))
         {
             UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
         }
-        else*/
+        else
 		//$ END_MOD
             menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
     }
@@ -143,11 +143,11 @@ namespace UiServices
         ///\todo This string comparison is awful, get rid of this.
         //if (name== "Inventory")
 		//$ BEGIN_MOD $
-        //if ( name.contains("inv", Qt::CaseInsensitive) )
-        //    control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
+        if ( name.contains("inv", Qt::CaseInsensitive) )
+            control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
 		//$ END_MOD $
         //else if (name== "Avatar Editor")
-        /*$ END_MOD $ else $ END_MOD $*/ if  ( name.contains("avatar", Qt::CaseSensitive) )
+        else  if  ( name.contains("avatar", Qt::CaseSensitive) )
            control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
         else
             menu_manager_->AddMenuItem(widget, name, menu, icon);
@@ -166,6 +166,8 @@ namespace UiServices
 
     void InworldSceneController::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
     {
+		if ( widget->windowTitle().contains("inv", Qt::CaseInsensitive) )
+			return;
         menu_manager_->RemoveMenuItem(widget);
     }
 
