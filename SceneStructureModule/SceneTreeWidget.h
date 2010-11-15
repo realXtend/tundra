@@ -99,11 +99,15 @@ struct Selection
     /// Returns true if selected contains components.
     bool HasComponents() const;
 
+    /// Returns true if selection contains assets.
+    bool HasAssets() const;
+
     /// Returns list containing unique entity ID's of both selected entities and parent entities of selected components
     QList<entity_id_t> EntityIds() const;
 
     QList<EntityItem *> entities; ///< List of selected entities.
     QList<ComponentItem *> components; ///< List of selected components.
+    QList<AssetItem *> assets; ///< List of selected asset refs
 };
 
 /// Context menu for SceneTreeWidget.
