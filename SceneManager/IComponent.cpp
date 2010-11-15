@@ -88,6 +88,13 @@ Scene::Entity* IComponent::GetParentEntity() const
     return parent_entity_;
 }
 
+Scene::SceneManager* IComponent::GetParentScene() const
+{
+    if (!parent_entity_)
+        return 0;
+    return parent_entity_->GetScene();
+}
+
 void IComponent::SetNetworkSyncEnabled(bool enabled)
 {
     network_sync_ = enabled;
@@ -188,12 +195,9 @@ void IComponent::AttributeChanged(IAttribute* attribute, AttributeChange::Type c
         return; // No signals
     
     // Trigger scenemanager signal
-    if (parent_entity_)
-    {
-        Scene::SceneManager* scene = parent_entity_->GetScene();
-        if (scene)
-            scene->EmitAttributeChanged(this, attribute, change);
-    }
+    Scene::SceneManager* scene = GetParentScene();
+    if (scene)
+        scene->EmitAttributeChanged(this, attribute, change);
     
     // Trigger internal signal
     emit OnAttributeChanged(attribute, change);

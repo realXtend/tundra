@@ -19,6 +19,7 @@
 #include "MsgRemoveEntity.h"
 #include "MsgEntityIDCollision.h"
 #include "MsgEntityAction.h"
+#include "EC_DynamicComponent.h"
 
 #include "kNet.h"
 
@@ -27,6 +28,14 @@
 #include "MemoryLeakCheck.h"
 
 using namespace kNet;
+
+// This define controls whether to echo scene changes back to the sending client. For some applications (ie. synced UI widgets)
+// it is nice to have off, but there might be possible determinism issues if many clients are updating the same attribute at the same time
+// Note: changes must definitely be sent also to sender if server can change the value sent by the client. Also when/if changes can be 
+// rejected, an overriding update should be sent to the sending client
+// #define ECHO_CHANGES_TO_SENDER
+
+KristalliProtocol::UserConnection* currentSender = 0;
 
 namespace TundraLogic
 {
@@ -74,6 +83,10 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     
     connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( AttributeAdded(IComponent*, IAttribute*, AttributeChange::Type) ),
+        SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( AttributeRemoved(IComponent*, IAttribute*, AttributeChange::Type) ),
+        SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
         SLOT( OnComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
@@ -97,6 +110,9 @@ void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
+    if (owner_->IsServer())
+        currentSender = owner_->GetKristalliModule()->GetUserConnection(source);
+    
     switch (id)
     {
     case cCreateEntityMessage:
@@ -141,6 +157,8 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             HandleEntityAction(source, msg);
         }
     }
+    
+    currentSender = 0;
 }
 
 void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
@@ -178,21 +196,36 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     Scene::Entity* entity = comp->GetParentEntity();
     if ((!entity) || (entity->IsLocal()))
         return;
+    bool dynamic = comp->HasDynamicStructure();
     
     if (owner_->IsServer())
     {
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
-                state->OnAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), attr);
+            {
+                if (!dynamic)
+                    state->OnAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), attr);
+                else
+                    // Note: this may be an add, change or remove. We inspect closer when it's time to send the update message.
+                    state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), QString::fromStdString(attr->GetNameString()));
+            }
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), attr);
+        if (!dynamic)
+            state->OnAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), attr);
+        else
+            state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), QString::fromStdString(attr->GetNameString()));
     }
 }
 
@@ -210,6 +243,11 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
@@ -236,6 +274,11 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
@@ -258,6 +301,11 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnEntityChanged(entity->GetId());
@@ -282,6 +330,11 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if (&(*i) == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnEntityRemoved(entity->GetId());
@@ -458,26 +511,20 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                         else
                         {
                             // Existing data, serialize changed attributes only
-                            MsgUpdateComponents::S_components updComponent;
-                            updComponent.componentTypeHash = component->TypeNameHash();
-                            updComponent.componentName = StringToBuffer(component->Name().toStdString());
-                            updComponent.componentData.resize(64 * 1024);
-                            DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
-                            bool has_changes = false;
-                            
-                            //! \todo Do proper per attribute sync for dynamic structured components
-                            if (component->HasDynamicStructure())
+                            // Static structure component
+                            if (!component->HasDynamicStructure())
                             {
-                                component->SerializeToBinary(dest);
-                                has_changes = true;
-                            }
-                            else
-                            {
+                                MsgUpdateComponents::S_components updComponent;
+                                updComponent.componentTypeHash = component->TypeNameHash();
+                                updComponent.componentName = StringToBuffer(component->Name().toStdString());
+                                updComponent.componentData.resize(64 * 1024);
+                                DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
+                                bool has_changes = false;
                                 // Otherwise, we assume the attribute structure is static in the component, and we check which attributes are in the dirty list
                                 const AttributeVector& attributes = component->GetAttributes();
                                 for (uint k = 0; k < attributes.size(); k++)
                                 {
-                                    if (componentstate->dirty_attributes_.find(attributes[k]) != componentstate->dirty_attributes_.end())
+                                    if (componentstate->dirty_static_attributes_.find(attributes[k]) != componentstate->dirty_static_attributes_.end())
                                     {
                                         dest.Add<bit>(1);
                                         attributes[k]->ToBinary(dest);
@@ -486,12 +533,47 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                     else
                                         dest.Add<bit>(0);
                                 }
+                                if (has_changes)
+                                {
+                                    updComponent.componentData.resize(dest.BytesFilled());
+                                    updateMsg.components.push_back(updComponent);
+                                }
                             }
-                                                        
-                            if (has_changes)
+                            // Existing data, dynamically structured component
+                            else
                             {
-                                updComponent.componentData.resize(dest.BytesFilled());
-                                updateMsg.components.push_back(updComponent);
+                                MsgUpdateComponents::S_dynamiccomponents updComponent;
+                                updComponent.componentTypeHash = component->TypeNameHash();
+                                updComponent.componentName = StringToBuffer(component->Name().toStdString());
+                                bool has_changes = false;
+                                const std::set<QString>& dirtyAttrs = componentstate->dirty_dynamic_attributes_;
+                                std::set<QString>::const_iterator k = dirtyAttrs.begin();
+                                while (k != dirtyAttrs.end())
+                                {
+                                    has_changes = true;
+                                    MsgUpdateComponents::S_dynamiccomponents::S_attributes updAttribute;
+                                    // Check if the attribute is changed or removed
+                                    IAttribute* attribute = component->GetAttribute(*k);
+                                    if (attribute)
+                                    {
+                                        updAttribute.attributeName = StringToBuffer((*k).toStdString());
+                                        updAttribute.attributeType = StringToBuffer(attribute->TypenameToString());
+                                        updAttribute.attributeData.resize(64 * 1024);
+                                        DataSerializer dest((char*)&updAttribute.attributeData[0], updAttribute.attributeData.size());
+                                        attribute->ToBinary(dest);
+                                        updAttribute.attributeData.resize(dest.BytesFilled());
+                                    }
+                                    else
+                                    {
+                                        // Removed attribute: empty typename & data
+                                        updAttribute.attributeName = StringToBuffer((*k).toStdString());
+                                    }
+                                    
+                                    updComponent.attributes.push_back(updAttribute);
+                                    ++k;
+                                }
+                                if (has_changes)
+                                    updateMsg.dynamiccomponents.push_back(updComponent);
                             }
                         }
                     }
@@ -504,7 +586,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     destination->Send(createMsg);
                     ++num_messages_sent;
                 }
-                if (updateMsg.components.size())
+                if (updateMsg.components.size() || updateMsg.dynamiccomponents.size())
                 {
                     destination->Send(updateMsg);
                     ++num_messages_sent;
@@ -554,7 +636,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     }
     
     if (num_messages_sent)
-        TundraLogicModule::LogDebug("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
+        TundraLogicModule::LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
@@ -823,10 +905,10 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
         state->GetOrCreateEntity(entityID);
     }
     
-    std::vector<ComponentPtr> fully_changed_components;
-    std::map<IComponent*, std::vector<bool> > partially_changed_components;
+    std::map<IComponent*, std::vector<bool> > partially_changed_static_components;
+    std::map<IComponent*, std::vector<QString> > partially_changed_dynamic_components;
     
-    // Read the components
+    // Read the static structured components
     for (uint i = 0; i < msg.components.size(); ++i)
     {
         uint type_hash = msg.components[i].componentTypeHash;
@@ -838,20 +920,8 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             {
                 DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
                 
-                //! \todo Per-attribute sync also for dynamic structure component
                 if (component->HasDynamicStructure())
-                {
-                    try
-                    {
-                        // Deserialize with no signals first
-                        component->DeserializeFromBinary(source, AttributeChange::Disconnected);
-                        fully_changed_components.push_back(component);
-                    }
-                    catch (...)
-                    {
-                        TundraLogicModule::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
-                    }
-                }
+                    TundraLogicModule::LogWarning("Received static structure update for a dynamic structured component");
                 else
                 {
                     std::vector<bool> actually_changed_attributes;
@@ -869,7 +939,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                             else
                                 actually_changed_attributes.push_back(false);
                         }
-                        partially_changed_components[component.get()] = actually_changed_attributes;
+                        partially_changed_static_components[component.get()] = actually_changed_attributes;
                     }
                     catch (...)
                     {
@@ -882,14 +952,70 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
-    // Signal the component changes last
-    for(uint i = 0; i < fully_changed_components.size(); ++i)
-        fully_changed_components[i]->ComponentChanged(change);
-    
-    std::map<IComponent*, std::vector<bool> >::iterator i = partially_changed_components.begin();
-    while (i != partially_changed_components.end())
+    // Read the dynamic structured components. For now, they have to be DynamicComponents.
+    for (uint i = 0; i < msg.dynamiccomponents.size(); ++i)
     {
-        // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be seure
+        uint type_hash = msg.dynamiccomponents[i].componentTypeHash;
+        QString name = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].componentName));
+        ComponentPtr component = entity->GetOrCreateComponent(type_hash, name, change);
+        if (component)
+        {
+            EC_DynamicComponent* dynComp = dynamic_cast<EC_DynamicComponent*>(component.get());
+            if (!dynComp)
+                TundraLogicModule::LogWarning("Received dynamic attribute update for a component that is not EC_DynamicComponent");
+            else
+            {
+                for (uint j = 0; j < msg.dynamiccomponents[i].attributes.size(); ++j)
+                {
+                    QString attrName = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].attributes[j].attributeName));
+                    QString attrTypeName = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].attributes[j].attributeType));
+                    // Empty typename: delete attribute
+                    if (!attrTypeName.size())
+                    {
+                        // Note: signal remove immediately, as nothing should depend on batched attribute remove
+                        dynComp->RemoveAttribute(attrName, change);
+                    }
+                    // Otherwise add or modify attribute
+                    else
+                    {
+                        IAttribute* attr = component->GetAttribute(attrName);
+                        if (attr)
+                        {
+                            // If wrong type of attribute, delete and recreate
+                            if (attr->TypenameToString() != attrTypeName.toStdString())
+                            {
+                                dynComp->RemoveAttribute(attrName, AttributeChange::Disconnected);
+                                attr = dynComp->CreateAttribute(attrTypeName, attrName, AttributeChange::Disconnected);
+                            }
+                        }
+                        else
+                            attr = dynComp->CreateAttribute(attrTypeName, attrName, AttributeChange::Disconnected);
+                        
+                        if (attr)
+                        {
+                            if (msg.dynamiccomponents[i].attributes[j].attributeData.size())
+                            {
+                                DataDeserializer source((const char*)&msg.dynamiccomponents[i].attributes[j].attributeData[0], 
+                                    msg.dynamiccomponents[i].attributes[j].attributeData.size());
+                                attr->FromBinary(source, AttributeChange::Disconnected);
+                            }
+                            partially_changed_dynamic_components[dynComp].push_back(attrName);
+                        }
+                        else
+                            TundraLogicModule::LogWarning("Could not create attribute type " + attrTypeName.toStdString() + " to dynamic component");
+                    }
+                }
+            }
+        }
+        else
+            TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+    }
+    
+    // Signal static components
+    std::map<IComponent*, std::vector<bool> >::iterator i = partially_changed_static_components.begin();
+    while (i != partially_changed_static_components.end())
+    {
+        // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be sure
         ComponentPtr compShared = entity->GetComponent(i->first);
         if (compShared)
         {
@@ -899,6 +1025,24 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                     compShared->AttributeChanged(attributes[j], change);
         }
         ++i;
+    }
+    
+    // Signal dynamic components
+    std::map<IComponent*, std::vector<QString> >::iterator j = partially_changed_dynamic_components.begin();
+    while (j != partially_changed_dynamic_components.end())
+    {
+        // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be sure
+        ComponentPtr compShared = entity->GetComponent(j->first);
+        if (compShared)
+        {
+            for (uint k = 0; k < j->second.size(); ++k)
+            {
+                IAttribute* attr = compShared->GetAttribute(j->second[k]);
+                if (attr)
+                    compShared->AttributeChanged(attr, change);
+            }
+        }
+        ++j;
     }
 }
 

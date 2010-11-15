@@ -11,6 +11,7 @@
 
 #include "SceneStructureModule.h"
 #include "SceneStructureWindow.h"
+#include "SupportedFileTypes.h"
 
 #include "Console.h"
 #include "UiServiceInterface.h"
@@ -83,14 +84,14 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             worldPos.z = pos[2].toFloat();
     }
 
-    if (filename.toLower().indexOf(".scene") != -1)
+    if (filename.toLower().indexOf(cOgreSceneFileExtension) != -1)
     {
         boost::filesystem::path path(filename.toStdString());
         std::string dirname = path.branch_path().string();
 
-        TundraLogic::SceneImporter importer(framework_);
+        TundraLogic::SceneImporter importer(scene);
         ///\todo Take into account asset sources.
-        ret = importer.Import(scene, filename.toStdString(), dirname, "./data/assets",
+        ret = importer.Import(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
 
         if (ret.empty())
@@ -98,13 +99,13 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         else
             LogInfo("Import successful. " + ToString(ret.size()) + " entities created.");
     }
-    else if (filename.endsWith(".mesh", Qt::CaseInsensitive))
+    else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
     {
         boost::filesystem::path path(filename.toStdString());
         std::string dirname = path.branch_path().string();
 
-        TundraLogic::SceneImporter importer(framework_);
-        Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
+        TundraLogic::SceneImporter importer(scene);
+        Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
         if (entity)
         {
@@ -112,11 +113,11 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             ret << entity.get();
         }
     }
-    else if (filename.toLower().indexOf(".xml") != -1 && filename.toLower().indexOf(".mesh") == -1)
+    else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
     {
         ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
     }
-    else if (filename.toLower().indexOf(".nbf") != -1)
+    else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
     {
         ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
     }
@@ -132,10 +133,10 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             std::vector<AssImp::MeshData> meshNames;
             assimporter.GetMeshData(filename, meshNames);
 
-            TundraLogic::SceneImporter sceneimporter(framework_);
+            TundraLogic::SceneImporter sceneimporter(scene);
             for (size_t i=0 ; i<meshNames.size() ; ++i)
             {
-                Scene::EntityPtr entity = sceneimporter.ImportMesh(scene, meshNames[i].file_.toStdString(), dirname, "./data/assets",
+                Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, "./data/assets",
                     meshNames[i].transform_, std::string(), AttributeChange::Default, true, false, meshNames[i].name_.toStdString());
                 if (entity)
                 {
@@ -191,10 +192,10 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
 
 bool SceneStructureModule::IsSupportedFileType(const QString &filename)
 {
-    if ((filename.toLower().indexOf(".mesh") != -1) ||
-        (filename.toLower().indexOf(".scene") != -1) ||
-        (filename.toLower().indexOf(".xml") != -1) ||
-        (filename.toLower().indexOf(".nbf") != -1))
+    if ((filename.toLower().indexOf(cTundraXmlFileExtension) != -1) ||
+        (filename.toLower().indexOf(cTundraBinFileExtension) != -1) ||
+        (filename.toLower().indexOf(cOgreMeshFileExtension) != -1) ||
+        (filename.toLower().indexOf(cOgreSceneFileExtension) != -1))
     {
         return true;
     }
@@ -246,37 +247,17 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
 {
     if (e->mimeData()->hasUrls())
-    {
         foreach (QUrl url, e->mimeData()->urls())
-        {
-            QString filename = url.path();
-#ifdef _WINDOWS
-            // We have '/' as the first char on windows and the filename
-            // is not identified as a file properly. But on other platforms the '/' is valid/required.
-            filename = filename.mid(1);
-#endif
-            if (IsSupportedFileType(filename))
+            if (IsSupportedFileType(url.path()))
                 e->accept();
-        }
-    }
 }
 
 void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
 {
     if (e->mimeData()->hasUrls())
-    {
         foreach (QUrl url, e->mimeData()->urls())
-        {
-            QString filename = url.path();
-#ifdef _WINDOWS
-            // We have '/' as the first char on windows and the filename
-            // is not identified as a file properly. But on other platforms the '/' is valid/required.
-            filename = filename.mid(1);
-#endif
-            if (IsSupportedFileType(filename))
+            if (IsSupportedFileType(url.path()))
                 e->accept();
-        }
-    }
 }
 
 void SceneStructureModule::HandleDropEvent(QDropEvent *e)

@@ -55,10 +55,21 @@
     <!-- Update component(s) inside an existing entity. The components are deltaencoded. -->
     <message id="113" name="UpdateComponents" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
+        <!-- Static structure components -->
         <struct name="components" dynamicCount="8">
             <u32 name="componentTypeHash" />
             <s8 name="componentName" dynamicCount="8" />
             <u8 name="componentData" dynamicCount="16" />
+        </struct>
+        <!-- Dynamic structure components -->
+        <struct name="dynamiccomponents" dynamicCount="8">
+            <u32 name="componentTypeHash" />
+            <s8 name="componentName" dynamicCount="8" />
+            <struct name="attributes" dynamicCount="8">
+                <s8 name="attributeName" dynamicCount="8" />
+                <s8 name="attributeType" dynamicCount="8" />
+                <u8 name="attributeData" dynamicCount="16" />
+            </struct>
         </struct>
     </message>
 

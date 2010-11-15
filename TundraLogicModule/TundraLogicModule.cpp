@@ -155,7 +155,7 @@ void TundraLogicModule::LoadStartupScene()
             asset_service->AddLocalAssetDirectory(dirname, true);
     }
     
-    bool useBinary = startup_scene_.find(".nbf") != std::string::npos;
+    bool useBinary = startup_scene_.find(".tbin") != std::string::npos;
     if (!useBinary)
         scene->LoadSceneXML(startup_scene_, true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
     else
@@ -286,8 +286,9 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     boost::filesystem::path path(filename);
     std::string dirname = path.branch_path().string();
     
-    SceneImporter importer(framework_);
-    QList<Scene::Entity *> entities = importer.Import(scene, filename, dirname, "./data/assets", Transform(), AttributeChange::Default, clearscene, true, replace);
+    SceneImporter importer(scene);
+    QList<Scene::Entity *> entities = importer.Import(filename, dirname, "./data/assets", Transform(),
+        AttributeChange::Default, clearscene, true, replace);
     if (!entities.empty())
     {
         return Console::ResultSuccess();
@@ -330,8 +331,9 @@ Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &
     boost::filesystem::path path(filename);
     std::string dirname = path.branch_path().string();
     
-    SceneImporter importer(framework_);
-    Scene::EntityPtr entity = importer.ImportMesh(scene, filename, dirname, "./data/assets", Transform(Vector3df(x,y,z), Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), AttributeChange::Default, true);
+    SceneImporter importer(scene);
+    Scene::EntityPtr entity = importer.ImportMesh(filename, dirname, "./data/assets", Transform(Vector3df(x,y,z),
+        Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), AttributeChange::Default, true);
     
     return Console::ResultSuccess();
 }
