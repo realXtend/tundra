@@ -35,7 +35,7 @@ using namespace kNet;
 // rejected, an overriding update should be sent to the sending client
 // #define ECHO_CHANGES_TO_SENDER
 
-// This variable is used for the sender echo check
+// This variable is used for the sender echo & interpolation stop check
 kNet::MessageConnection* currentSender = 0;
 
 namespace TundraLogic
@@ -189,6 +189,21 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
 {
     if (!comp->IsSerializable())
         return;
+    
+    bool isServer = owner_->IsServer();
+    
+    // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
+    if (!isServer)
+    {
+        Scene::ScenePtr scene = scene_.lock();
+        if ((scene) && (!scene->IsInterpolating()) && (!currentSender))
+        {
+            if ((attr->HasMetadata()) && (attr->GetMetadata()->interpolation == AttributeMetadata::Interpolate))
+                // Note: it does not matter if the attribute was not actually interpolating
+                scene->EndAttributeInterpolation(attr);
+        }
+    }
+    
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
     Scene::Entity* entity = comp->GetParentEntity();
@@ -196,7 +211,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         return;
     bool dynamic = comp->HasDynamicStructure();
     
-    if (owner_->IsServer())
+    if (isServer)
     {
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
@@ -929,7 +944,6 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                                     IAttribute* endValue = attributes[i]->Clone();
                                     endValue->FromBinary(source, AttributeChange::Disconnected);
                                     //! \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
-                                    //! \todo abort interpolation if a local change occurs during interpolation
                                     // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
                                     scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.25f);
                                     // Do not signal attribute change at this point at all
