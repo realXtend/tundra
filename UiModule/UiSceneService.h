@@ -49,7 +49,7 @@ namespace UiServices
     public slots:
 
         /// UiServiceInterface override.
-        UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = true, bool outside = true, Qt::WindowFlags flags = Qt::Dialog);
+        UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = true, bool outside = false, Qt::WindowFlags flags = Qt::Dialog);
 
         /// UiServiceInterface override.
         bool AddWidgetToScene(UiProxyWidget *widget);

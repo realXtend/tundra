@@ -90,7 +90,9 @@ namespace CommUI
 
             voice_controller_widget_ = new VoiceControllerWidget(in_world_voice_session_);
 
-            voice_controller_proxy_widget_ = ui_service->AddWidgetToScene(voice_controller_widget_);
+			//$ BEGIN_MOD $
+            voice_controller_proxy_widget_ = ui_service->AddWidgetToScene(voice_controller_widget_, false, false);
+			//$ END_MOD $
             voice_controller_proxy_widget_->setWindowTitle("In-world voice");
             voice_controller_proxy_widget_->hide();
 
