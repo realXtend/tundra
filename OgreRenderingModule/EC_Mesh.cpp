@@ -874,9 +874,13 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
         if (transfer)
+        {
             connect(transfer, SIGNAL(Loaded()), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
+        }
         else
+        {
             RemoveMesh();
+        }
     }
     else if (attribute == &meshMaterial)
     {

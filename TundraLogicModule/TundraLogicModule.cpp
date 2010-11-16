@@ -133,6 +133,10 @@ void TundraLogicModule::Update(f64 frametime)
         // Run scene sync
         if (syncManager_)
             syncManager_->Update(frametime);
+        // Run scene interpolation
+        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        if (scene)
+            scene->UpdateAttributeInterpolations(frametime);
     }
     
     RESETPROFILER;

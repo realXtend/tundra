@@ -225,16 +225,16 @@ namespace ECEditor
             AttributeMetadata *metaData = attribute->GetMetadata();
             if (metaData)
             {
-                if(!metaData->min.isEmpty())
+                if(!metaData->minimum.isEmpty())
                     metaDataFlag_ |= UsingMinValue;
-                if(!metaData->max.isEmpty())
+                if(!metaData->maximum.isEmpty())
                     metaDataFlag_ |= UsingMaxValue;
                 if(!metaData->step.isEmpty())
                     metaDataFlag_ |= UsingStepValue;
                 if((metaDataFlag_ & UsingMinValue) != 0)
-                    realPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<float>(metaData->min.toStdString()));
+                    realPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<float>(metaData->minimum.toStdString()));
                 if((metaDataFlag_ & UsingMaxValue) != 0)
-                    realPropertyManager->setAttribute(rootProperty_, "maximum", ::ParseString<float>(metaData->max.toStdString()));
+                    realPropertyManager->setAttribute(rootProperty_, "maximum", ::ParseString<float>(metaData->maximum.toStdString()));
                 if((metaDataFlag_ & UsingStepValue) != 0)
                     realPropertyManager->setAttribute(rootProperty_, "singleStep", ::ParseString<float>(metaData->step.toStdString()));
             }
@@ -325,9 +325,9 @@ namespace ECEditor
                     metaDataFlag_ |= UsingEnums;
                 else
                 {
-                    if(!metaData->min.isEmpty())
+                    if(!metaData->minimum.isEmpty())
                         metaDataFlag_ |= UsingMinValue;
-                    if(!metaData->max.isEmpty())
+                    if(!metaData->maximum.isEmpty())
                         metaDataFlag_ |= UsingMaxValue;
                     if(!metaData->step.isEmpty())
                         metaDataFlag_ |= UsingStepValue;
@@ -355,9 +355,9 @@ namespace ECEditor
             {
                 rootProperty_ = intPropertyManager->addProperty(QVariant::Int, name_);
                 if((metaDataFlag_ & UsingMinValue) != 0)
-                    intPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<int>(metaData->min.toStdString()));
+                    intPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<int>(metaData->minimum.toStdString()));
                 if((metaDataFlag_ & UsingMaxValue) != 0)
-                    intPropertyManager->setAttribute(rootProperty_, "maximum", ::ParseString<int>(metaData->max.toStdString()));
+                    intPropertyManager->setAttribute(rootProperty_, "maximum", ::ParseString<int>(metaData->maximum.toStdString()));
                 if((metaDataFlag_ & UsingStepValue) != 0)
                     intPropertyManager->setAttribute(rootProperty_, "singleStep", ::ParseString<int>(metaData->step.toStdString()));
             }
