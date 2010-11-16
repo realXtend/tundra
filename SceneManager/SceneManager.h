@@ -349,6 +349,9 @@ namespace Scene
          */ 
         void UpdateAttributeInterpolations(float frametime);
         
+        //! Returns Framework
+        Foundation::Framework *GetFramework() const { return framework_; }
+
     signals:
         //! Signal when an attribute of a component has changed
         /*! Network synchronization managers should connect to this

@@ -13,6 +13,10 @@
 #include "Foundation.h"
 #include "Framework.h"
 
+#include <QtCore>
+
+#include <Ogre.h>
+
 #endif
 
 #endif

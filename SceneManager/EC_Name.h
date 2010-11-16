@@ -61,14 +61,18 @@ public:
     /// This component is serializable.
     virtual bool IsSerializable() const { return true; }
 
-    /// Name.
-    Attribute<QString> name;
+    // Name
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, name);
+    Q_PROPERTY(QString name READ getname WRITE setname); 
 
     /// Description.
-    Attribute<QString> description;
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, description);
+    Q_PROPERTY(QString description READ getdescription WRITE setdescription); 
 
     /// Boolean which indicates that the current name value is defined by the user and should not be set programmatically.
-    Attribute<bool> userDefined;
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, userDefined);
+    Q_PROPERTY(bool userDefined READ getuserDefined WRITE setuserDefined); 
+
 
 private:
     /// Constructor. Sets name and description to empty strings.
@@ -77,7 +81,5 @@ private:
         name(this, "name", ""),
         description(this, "description", ""),
         userDefined(this, "user-defined", false)
-    {
-        SetNetworkSyncEnabled(true);
-    }
+    {}
 };

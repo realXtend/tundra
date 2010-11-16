@@ -47,8 +47,8 @@ bool ProcessBraces(const std::string& line, int& braceLevel)
     else return false;
 }
 
-SceneImporter::SceneImporter(Foundation::Framework* framework) :
-    framework_(framework)
+SceneImporter::SceneImporter(const Scene::ScenePtr &scene) :
+    scene_(scene)
 {
 }
 
@@ -56,11 +56,11 @@ SceneImporter::~SceneImporter()
 {
 }
 
-Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
+Scene::EntityPtr SceneImporter::ImportMesh(const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
                                            const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change,
                                            bool localassets, bool inspect, const std::string &meshName)
 {
-    if (!scene)
+    if (!scene_)
     {
         TundraLogicModule::LogError("Null scene for mesh import");
         return Scene::EntityPtr();
@@ -157,7 +157,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     if (!meshName.empty()) meshleafname += std::string("/") + meshName;
     
     // Create a new entity in any case, with a new ID
-    Scene::EntityPtr newentity = scene->CreateEntity(0, QStringList(), change, true);
+    Scene::EntityPtr newentity = scene_->CreateEntity(0, QStringList(), change, true);
     if (!newentity)
     {
         TundraLogicModule::LogError("Could not create entity for mesh");
@@ -182,7 +182,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
                 newcomp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
             comp_elem = comp_elem.nextSiblingElement("component");
         }
-        scene->EmitEntityCreated(newentity, change);
+        scene_->EmitEntityCreated(newentity, change);
     }
     
     // Fill the placeable attributes
@@ -198,10 +198,8 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
     if (meshPtr)
     {
-//        meshPtr->meshResourceId.Set(QString::fromStdString(prefix + meshleafname), AttributeChange::Disconnected);
         meshPtr->meshRef.Set(AssetReference(QString::fromStdString(prefix + meshleafname)), AttributeChange::Disconnected);
         if (!skeleton_name.empty())
-//            meshPtr->skeletonId.Set(QString::fromStdString(prefix + skeleton_name), AttributeChange::Disconnected);
             meshPtr->skeletonRef.Set(AssetReference(QString::fromStdString(prefix + skeleton_name)), AttributeChange::Disconnected);
         meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), AttributeChange::Disconnected);
 
@@ -221,11 +219,11 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     return newentity;
 }
 
-QList<Scene::Entity *> SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
+QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
     const Transform &worldtransform, AttributeChange::Type change, bool clearscene, bool localassets, bool replace)
 {
     QList<Scene::Entity *> ret;
-    if (!scene)
+    if (!scene_)
     {
         TundraLogicModule::LogError("Null scene for import");
         return ret;
@@ -299,7 +297,7 @@ QList<Scene::Entity *> SceneImporter::Import(Scene::ScenePtr scene, const std::s
             flipyz = true;
         
         if (clearscene)
-            scene->RemoveAllEntities(true, change);
+            scene_->RemoveAllEntities(true, change);
         
         QDomElement node_elem = nodes_elem.firstChildElement("node");
         
@@ -337,8 +335,7 @@ QList<Scene::Entity *> SceneImporter::Import(Scene::ScenePtr scene, const std::s
 
         Quaternion rot(DEGTORAD * worldtransform.rotation.x, DEGTORAD * worldtransform.rotation.y,
             DEGTORAD * worldtransform.rotation.z);
-//        ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz, replace);
-        ProcessNodeForCreation(ret, scene, node_elem, worldtransform.position, rot, worldtransform.scale, change, localassets, flipyz, replace);
+        ProcessNodeForCreation(ret, node_elem, worldtransform.position, rot, worldtransform.scale, change, localassets, flipyz, replace);
     }
     catch (Exception& e)
     {
@@ -465,7 +462,7 @@ void SceneImporter::ProcessAssets(const std::string& matfilename, const std::str
     }
 }
 
-void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
     AttributeChange::Type change, bool localassets, bool flipyz, bool replace)
 {
     while (!node_elem.isNull())
@@ -541,11 +538,11 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Sce
             
             // Try to find existing entity by name
             if (replace)
-                entity = scene->GetEntity(node_name_qstr);
+                entity = scene_->GetEntity(node_name_qstr);
 
             if (!entity)
             {
-                entity = scene->CreateEntity(scene->GetNextFreeId());
+                entity = scene_->CreateEntity(scene_->GetNextFreeId());
                 new_entity = true;
             }
             else
@@ -627,13 +624,12 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Sce
                     meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
                     
                     placeablePtr->transform.Set(entity_transform, change);
-//                    meshPtr->meshResourceId.Set(mesh_name, change);
                     meshPtr->meshRef.Set(AssetReference(mesh_name), change);
                     meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), change);
                     meshPtr->castShadows.Set(cast_shadows, change);
 
                     if (new_entity)
-                        scene->EmitEntityCreated(entity, change);
+                        scene_->EmitEntityCreated(entity, change);
                     placeablePtr->ComponentChanged(change);
                     meshPtr->ComponentChanged(change);
                     namePtr->ComponentChanged(change);
@@ -648,7 +644,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Sce
         // Process child nodes
         QDomElement childnode_elem = node_elem.firstChildElement("node");
         if (!childnode_elem.isNull())
-            ProcessNodeForCreation(entities, scene, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz, replace);
+            ProcessNodeForCreation(entities, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz, replace);
         
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
@@ -814,7 +810,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const std::string& meshname
     {
         QByteArray mesh_bytes = mesh_in.readAll();
         mesh_in.close();
-        OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
+        OgreRenderer::RendererPtr renderer = scene_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
         if (!renderer)
         {
             TundraLogicModule::LogError("Renderer does not exist");
