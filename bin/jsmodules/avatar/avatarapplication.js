@@ -67,7 +67,7 @@ function ServerHandleUserConnected(connectionID, username)
     transform.pos.z = avatar_area_z;
     placeable.transform = transform;
 
-    scene.EmitEntityCreated(avatarEntity);
+    scene.EmitEntityCreatedRaw(avatarEntity);
 }
 
 function ServerHandleUserDisconnected(connectionID)
