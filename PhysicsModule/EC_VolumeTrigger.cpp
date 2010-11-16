@@ -141,15 +141,14 @@ bool EC_VolumeTrigger::IsPivotInside(Scene::Entity *entity) const
 bool EC_VolumeTrigger::IsInsideVolume(const Vector3df& point) const
 {
     boost::shared_ptr<EC_RigidBody> rigidbody = rigidbody_.lock();
-    if ( rigidbody != 0)
+    if (!rigidbody)
     {
-        
-        return ( RayTestSingle(Vector3df(point.x, point.y, point.z - 1e7), point, rigidbody->GetRigidBody()) &&
-                 RayTestSingle(Vector3df(point.x, point.y, point.z + 1e7), point, rigidbody->GetRigidBody()) );
-    }
-    else
         LogWarning("Volume has no EC_RigidBody.");
+        return false;
+    }
 
+    return RayTestSingle(Vector3df(point.x, point.y, point.z - 1e7), point, rigidbody->GetRigidBody()) &&
+           RayTestSingle(Vector3df(point.x, point.y, point.z + 1e7), point, rigidbody->GetRigidBody());
 }
 
 void EC_VolumeTrigger::AttributeUpdated(IAttribute* attribute)
