@@ -126,9 +126,10 @@ QVector3D EC_Placeable::GetQLocalZAxis() const
     return QVector3D(zaxis.x, zaxis.y, zaxis.z);
 }
 
-void EC_Placeable::SetPosition(const Vector3df& position)
+void EC_Placeable::SetPosition(const Vector3df& pos)
 {
-    link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+    link_scene_node_->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
+    position.Set(QVector3D(pos.x, pos.y, pos.z), AttributeChange::Default);
     AttachNode(); // Nodes become visible only after having their position set at least once
 }
 
