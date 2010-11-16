@@ -274,7 +274,7 @@ class Manipulator:
                         placeable = ents[0].placeable
                         self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
 
-                self.manipulator.ruler.UpdateRuler()
+                    self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
                 self.moveTo(ents)
@@ -325,20 +325,6 @@ class Manipulator:
         y = v1.y()-v2.y()
         z = v1.z()-v2.z()
         return QVector3D(x, y, z)
-
-    def calibrateVec(self, r, v):
-        if(self.vectorLen(r)!=0):
-            factor = self.vectorLen(v)/self.vectorLen(r)
-            #factor = v.length()/r.length()
-            rx = factor* r.x()
-            ry = factor* r.y()
-            rz = factor* r.z()
-            return QVector3D(rx, ry, rz)
-        else: # if original vector is zero length, the rotated one must be too, just return r
-            return r
-
-    def vectorLen(self, v):
-        return math.sqrt(v.x()**2 + v.y()**2 + v.z()**2)
 
     def vectorAdd(self, v1, v2):
         """ rotations stopped working when using v1-v2 and v1+v2, so currently this method remains here """
@@ -505,9 +491,7 @@ class RotationManipulator(Manipulator):
             mov = changevec.length() * 30
 
             axis = None
-            #angle = 90 # just do 90 degrees rotations
-            #angle = 15 # just do 15 degrees rotations
-            angle = 1 # just do 1 degrees rotations
+            #angle = 1 # just do 1 degrees rotations
             
             if amountx < 0 and amounty < 0:
                 dir = -1
@@ -521,18 +505,15 @@ class RotationManipulator(Manipulator):
                 dir = 1
 
             mov *= dir
-            angle *= dir
+            #angle *= dir
+            angle = mov
             q = None
             
             euler = None
             if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
                 axis = QVector3D(1,0,0)
-                # disable this for now
-                # return 
             elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
                 axis = QVector3D(0,1,0)
-                # disable this for now
-                # return
             elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
                 axis = QVector3D(0,0,1)
 
@@ -546,15 +527,10 @@ class RotationManipulator(Manipulator):
     def _rotateEntsWithQuaternion(self, q, ents, amountx, amounty, changevec, centervecs, centerpoint):
         for ent, qvec in centervecs.iteritems():
             # rotate center vectors and calculate new points to ents
-            # print "qvec %s"%str(qvec)
             crot=q.rotatedVector(qvec) # rotated center vector
-            # print "crot %s"%str(crot)
-            calibVec = self.calibrateVec(crot, qvec) # just incase
-            centervecs[ent]=calibVec # store new rotated vector
+            centervecs[ent]=crot # store new rotated vector
             
         for ent, newVec in centervecs.iteritems():
-            # print "centerpoint %s"%centerpoint
-            # print "newVec %s"%newVec
             newPos = self.vectorAdd(centerpoint, newVec)
             #newPos = centerpoint + newVec
             if hasattr(ent, "placeable"):
@@ -562,7 +538,6 @@ class RotationManipulator(Manipulator):
                 ent.network.Position = newPos
             else:
                 print "entity missing placeable"
-                # print type(ent)
         pass
 
         
@@ -575,6 +550,15 @@ class RotationManipulator(Manipulator):
             v2 = ort.rotatedVector(QVector3D(0,1,0))
             v3 = ort.rotatedVector(QVector3D(0,0,1))
 
+            # rotated unit vectors are equals of objects unit vectors in objects perspective
+            # this gives equation M * x = x' (x=(i,j,k) & x'=(i',j',k'))
+            # ( M = conversion matrix, x = world unit vector, x' = object unit vector)
+            # multiply each sides of equation with inverted matrix of M^-1 gives us:
+            # I * x = M^-1 *x' => x = M^-1 * x' 
+            # => we can now express world unit vectors i,j,k with i',j',k' 
+            # with help of inverted matrix, and use objects quaternion to rotate
+            # along world unit vectors i, j, k
+            
             m = ((v1.x(),v1.y(),v1.z()),(v2.x(),v2.y(),v2.z()),(v3.x(),v3.y(),v3.z()))
             inv = mu.invert_3x3_matrix(m)
 
