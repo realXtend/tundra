@@ -52,9 +52,11 @@ public:
 
 public slots:
     /// Loads a given script in engine. This function can be used to create a property as you could include js-files.
-    /** @param path is relative path from bin/ to file. Example jsmodules/apitest/myscript.js
-    */
-    void IncludeFile(const QString& file);
+    /** @param path is relative path from bin/ to file. Example jsmodules/apitest/myscript.js */
+    void IncludeFile(const QString &file);
+
+    /// Imports the given QtScript extension plugin into the current script instance.
+    void ImportExtension(const QString &scriptExtensionName);
 
 private:
     /// Loads script from the current script reference location.
