@@ -15,6 +15,7 @@
 #include "Transform.h"
 #include "AssetReference.h"
 
+#include <QVector3D>
 #include <QVariant>
 #include <QStringList>
 #include <QScriptEngine>
@@ -145,6 +146,15 @@ template<> std::string Attribute<Transform>::ToString() const
     return value.toStdString();
 }
 
+template<> std::string Attribute<QVector3D>::ToString() const
+{
+    QVector3D value = Get();
+    
+    return ::ToString<float>(value.x()) + " " +
+        ::ToString<float>(value.y()) + " " +
+        ::ToString<float>(value.z());
+}
+
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> std::string Attribute<int>::TypenameToString() const
@@ -205,6 +215,11 @@ template<> std::string Attribute<QVariantList >::TypenameToString() const
 template<> std::string Attribute<Transform>::TypenameToString() const
 {
     return "transform";
+}
+
+template<> std::string Attribute<QVector3D>::TypenameToString() const
+{
+    return "qvector3d";
 }
 
     // FROMSTRING TEMPLATE IMPLEMENTATIONS.
@@ -371,6 +386,23 @@ template<> void Attribute<Transform>::FromString(const std::string& str, Attribu
     Set(result, change);
 }
 
+template<> void Attribute<QVector3D>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    StringVector components = SplitString(str, ' ');
+    if (components.size() == 3)
+    {
+        try
+        {
+            QVector3D value;
+            value.setX(ParseString<float>(components[0]));
+            value.setY(ParseString<float>(components[1]));
+            value.setZ(ParseString<float>(components[2]));
+            Set(value, change);
+        }
+        catch (...) {}
+    }
+}
+
     // FROMQVARIANT TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
@@ -430,7 +462,12 @@ template<> void Attribute<QVariantList >::FromQVariant(const QVariant &variant, 
 
 template<> void Attribute<Transform>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
-    Set(qvariant_cast<Transform>(variant), change); 
+    Set(qvariant_cast<Transform>(variant), change);
+}
+
+template <> void Attribute<QVector3D>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<QVector3D>(variant), change);
 }
 
     // TOQVARIANT TEMPLATE IMPLEMENTATIONS.
@@ -495,6 +532,11 @@ template<> QVariant Attribute<Transform>::ToQVariant() const
     return QVariant::fromValue<Transform>(Get());
 }
 
+template<> QVariant Attribute<QVector3D>::ToQVariant() const
+{
+    return QVariant::fromValue<QVector3D>(Get());
+}
+
     // FROMSCRIPTVALUE TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
@@ -555,4 +597,9 @@ template<> void Attribute<QVariantList>::FromScriptValue(const QScriptValue &val
 template<> void Attribute<Transform>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
     Set(qScriptValueToValue<Transform>(value), change);
+}
+
+template<> void Attribute<QVector3D>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QVector3D>(value), change);
 }
