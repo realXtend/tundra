@@ -87,6 +87,7 @@ namespace Scene
         QByteArray GetEntityXml(Scene::Entity *entity);
         
         void EmitEntityCreated(Scene::Entity *entity, AttributeChange::Type change = AttributeChange::Default);
+        void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default) { return EmitEntityCreated(dynamic_cast<Scene::Entity*>(entity), change); }
         
         void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
         

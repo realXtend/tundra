@@ -34,6 +34,6 @@ function CreateCamera(scene)
     r.ref = "./jsmodules/camera/freelookcamera.js";
     script.scriptRef = r;
     script.Run();
-    
-    scene.EmitEntityCreated(entity);
+
+    scene.EmitEntityCreatedRaw(entity);
 }
