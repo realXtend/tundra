@@ -182,7 +182,10 @@ class Manipulator:
             if ent is None:
                 return
 
+
             if ent.Id == self.manipulator.Id:
+                ent.gizmo.ClearEditableAttributes();
+                self.setAttributes(ents)
                 submeshid = results[-3]
                 self.axisSubmesh = submeshid
                 u = results[-2]
@@ -372,8 +375,11 @@ class MoveManipulator(Manipulator):
                 elif self.grabbed_axis == self.AXIS_GREEN:
                     changevec.setZ(0)
                     changevec.setX(0)
-                ent.placeable.Position += changevec
-                ent.network.Position += changevec
+                self.manipulator.gizmo.Manipulate(changevec)
+
+    def setAttributes(self, ents):
+        for e in ents:
+            self.manipulator.gizmo.AddEditableAttribute(e.placeable, "Position", "")
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
@@ -407,6 +413,8 @@ class ScaleManipulator(Manipulator):
                 changevec.setZ(0)
             
             ent.placeable.Scale += changevec
+    def setAttributes(self, ents):
+        pass
             
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
@@ -414,8 +422,10 @@ class FreeMoveManipulator(Manipulator):
     
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
     def _manipulate(self, ent, amountx, amounty, changevec):
-        ent.placeable.Position += changevec
-        ent.network.Position += changevec
+        pass #ent.placeable.Position += changevec
+        #ent.network.Position += changevec
+    def setAttributes(self, ents):
+        pass
         
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
@@ -576,3 +586,5 @@ class RotationManipulator(Manipulator):
             ent.placeable.Orientation = ort*q
         
 
+    def setAttributes(self, ents):
+        pass
