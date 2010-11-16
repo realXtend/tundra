@@ -16,7 +16,8 @@ EC_Placeable::EC_Placeable(IModule* module) :
     link_scene_node_(0),
     attached_(false),
     select_priority_(0),
-    transform(this, "Transform")
+    transform(this, "Transform"),
+    position(this, "Position", QVector3D())
 {
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
@@ -327,6 +328,14 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         link_scene_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         
         AttachNode(); // Nodes become visible only after having their position set at least once
+    }
+    if(attribute == &position)
+    {
+        if (!link_scene_node_)
+            return;
+        QVector3D newPosition = position.Get();
+        link_scene_node_->setPosition(newPosition.x(), newPosition.y(), newPosition.z());
+        AttachNode();
     }
 }
 
