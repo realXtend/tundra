@@ -37,8 +37,8 @@ EC_3DGizmo::EC_3DGizmo(IModule *module) :
 
 EC_3DGizmo::~EC_3DGizmo()
 {
-	attributes_.clear();
-	subproperties_.clear();
+    attributes_.clear();
+    subproperties_.clear();
 }
 
 void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop)
@@ -48,13 +48,9 @@ void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString attribute_n
     
     if(attribute_ == attribute_name) {
         IAttribute* attribute = component->GetAttribute(attribute_name);
-        attributes_ << attribute;
-        subproperties_ << subprop;
-
-        for( int i = 0; i < attributes_.size(); i++)
-        {
-            IAttribute *attr = attributes_.at(i);
-            std::cout << attr->GetNameString() << std::endl;
+        if(attribute) {
+            attributes_ << attribute;
+            subproperties_ << subprop;
         }
     }
 }
@@ -88,7 +84,6 @@ void EC_3DGizmo::ClearEditableAttributes()
 
 void EC_3DGizmo::Manipulate(QVariant datum)
 {
-    std::cout << "3dgizmo update" << std::endl;
     for(int i = 0; i < attributes_.size(); i++) {
         IAttribute * attr = attributes_.at(i);
         if(attr->GetNameString() == "Transform") {
@@ -143,14 +138,19 @@ void EC_3DGizmo::Manipulate(QVariant datum)
                 case QVariant::Vector3D:
                     {
                         QVector3D vec = datum.value<QVector3D>();
-                        Vector3df value(vec.x(), vec.y(), vec.z());
-                        Attribute<Vector3df> *attribute = dynamic_cast<Attribute<Vector3df> *>(attr);
-                        if(attribute)
-                            attribute->Set(attribute->Get() + value, AttributeChange::Default);
+                        Attribute<QVector3D> *attribute = dynamic_cast<Attribute<QVector3D> *>(attr);
+                        if(attribute) {
+                            attribute->Set(attribute->Get() + vec, AttributeChange::Default);
+                        } else {
+                            Attribute<Vector3df> *attribute = dynamic_cast<Attribute<Vector3df> *>(attr);
+                            Vector3df newvec(vec.x(), vec.y(), vec.z());
+                            if(attribute) {
+                                attribute->Set(attribute->Get() + newvec, AttributeChange::Default);
+                            }
+                        }
                     }
                     break;
             }
         }
     }
-    std::cout << " ... ok" << std::endl;
 }
