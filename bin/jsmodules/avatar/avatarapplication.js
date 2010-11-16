@@ -48,7 +48,7 @@ function ClientHandleToggleCamera()
 function ServerHandleUserConnected(connectionID, username)
 {
     var avatarEntityName = "Avatar" + connectionID;
-    var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable"]);
+    var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController"]);
     avatarEntity.SetName(avatarEntityName);
     avatarEntity.SetDescription(username);
 

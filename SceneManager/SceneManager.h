@@ -16,6 +16,28 @@ namespace Scene
 {
     typedef std::list<EntityPtr> EntityList;
 
+    //! Container for an ongoing attribute interpolation
+    struct AttributeInterpolation
+    {
+        AttributeInterpolation() :
+            dest_(0),
+            start_(0),
+            end_(0),
+            time_(0.0f),
+            length_(0.0f)
+        {
+        }
+        
+        IAttribute* dest_;
+        IAttribute* start_;
+        IAttribute* end_;
+        entity_id_t entityid_;
+        uint comp_typenamehash_;
+        QString comp_name_;
+        float time_;
+        float length_;
+    };
+
     //! Acts as a generic scenegraph for all entities in the world.
     /*! Contains all entities in the world.
         Acts as a factory for all entities.
@@ -303,6 +325,30 @@ namespace Scene
          */
         QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
 
+        //! Starts an attribute interpolation
+        /*! \param attr Attribute inside a static-structured component.
+            \param endvalue Same kind of attribute holding the endpoint value. You must dynamically allocate this yourself, but SceneManager
+                   will always take care of deleting it.
+            \param length Time length
+            \return true if successful (attribute must be in interpolated mode (set in metadata), must be in component, component 
+                    must be static-structured, component must be in an entity which is in a scene, scene must be us)
+         */
+        bool StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length);
+        
+        //! Ends an attribute interpolation. The last set value will remain.
+        /*! \param attr Attribute inside a static-structured component.
+            \return true if an interpolation existed
+         */
+        bool EndAttributeInterpolation(IAttribute* attr);
+        
+        //! Ends all attribute interpolations
+        void EndAllAttributeInterpolations();
+        
+        //! Processes all running attribute interpolations. LocalOnly change will be used.
+        /*! \param frametime Time step
+         */ 
+        void UpdateAttributeInterpolations(float frametime);
+        
     signals:
         //! Signal when an attribute of a component has changed
         /*! Network synchronization managers should connect to this
@@ -374,6 +420,9 @@ namespace Scene
         
         //! View enabled-flag
         bool viewenabled_;
+        
+        //! Running attribute interpolations
+        std::vector<AttributeInterpolation> interpolations_;
     };
 }
 
