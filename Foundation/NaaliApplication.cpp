@@ -6,6 +6,7 @@
 #include "NaaliApplication.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
+#include "CoreStringUtils.h"
 
 #include <QDir>
 #include <QGraphicsView>
@@ -27,9 +28,9 @@ namespace Foundation
 //        main_window_(new MainWindow(framework_))
     {
 #ifdef Q_WS_WIN
-        // If under windows, add run_dir/plugins as library path
+        // If under windows, add installdirectory/plugins as library path
         // unix users will get plugins from their OS Qt installation folder automatically
-        QString run_directory = applicationDirPath();
+        QString run_directory = QString::fromStdString(ReplaceChar(framework_->GetPlatform()->GetInstallDirectory(), '\\', '/'));
         run_directory += "/qtplugins";
         addLibraryPath(run_directory);
 #endif

@@ -350,6 +350,9 @@ namespace Scene
          */ 
         void UpdateAttributeInterpolations(float frametime);
         
+        //! See if scene is currently performing interpolations, to differentiate between interpolative & non-interpolative attributechanges
+        bool IsInterpolating() const { return interpolating_; }
+        
         //! Returns Framework
         Foundation::Framework *GetFramework() const { return framework_; }
 
@@ -424,6 +427,9 @@ namespace Scene
         
         //! View enabled-flag
         bool viewenabled_;
+        
+        //! Currently doing interpolation-flag
+        bool interpolating_;
         
         //! Running attribute interpolations
         std::vector<AttributeInterpolation> interpolations_;

@@ -24,6 +24,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
+#include "Profiler.h"
 
 using namespace kNet;
 
@@ -33,7 +34,8 @@ namespace Scene
         framework_(0),
         gid_(1),
         gid_local_(LocalEntity + 1),
-        viewenabled_(true)
+        viewenabled_(true),
+        interpolating_(false)
     {
     }
     
@@ -41,7 +43,8 @@ namespace Scene
         name_(name),
         framework_(framework),
         gid_(1),
-        gid_local_(LocalEntity + 1)
+        gid_local_(LocalEntity + 1),
+        interpolating_(false)
     {
         // In headless mode only view disabled-scenes can be created
         if (framework->IsHeadless())
@@ -738,6 +741,10 @@ namespace Scene
     
     void SceneManager::UpdateAttributeInterpolations(float frametime)
     {
+        PROFILE(Scene_UpdateInterpolation);
+        
+        interpolating_ = true;
+        
         for (uint i = interpolations_.size() - 1; i < interpolations_.size(); --i)
         {
             AttributeInterpolation& interp = interpolations_[i];
@@ -780,6 +787,8 @@ namespace Scene
                 interpolations_.erase(interpolations_.begin() + i);
             }
         }
+        
+        interpolating_ = false;
     }
 }
 
