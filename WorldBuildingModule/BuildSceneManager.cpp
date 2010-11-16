@@ -69,7 +69,7 @@ namespace WorldBuilding
 			QAction *action2 = new QAction("Modify Object",this);
 			if (ui->AddExternalMenuAction(action2, "Modify Object", tr("Panels"))){
 				//We change scene
-				connect(action2, SIGNAL(triggered()), SLOT(ToggleBuildScene()));
+				connect(action2, SIGNAL(triggered()), SLOT(ShowBuildPanels()));
 			}
 		}
 		//$ END_MOD $
@@ -343,7 +343,9 @@ namespace WorldBuilding
         if (create_widgets)
         {
             int inject_pos = object_manip_ui.main_layout->count() - 1;
-
+//$ BEGIN_MOD $		
+			Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+//$ END_MOD $	
 			// Make title if needed
             if (!label_title.isEmpty())
             {
@@ -355,9 +357,11 @@ namespace WorldBuilding
 
                 toggle_visibility_widgets_ << title;
                 object_manip_ui.main_layout->insertWidget(inject_pos, title);
-//$ BEGIN_MOD $				
-				panel_widgets_ << title;
-				asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), title);
+//$ BEGIN_MOD $		
+				if(uiExternal){
+					panel_widgets_ << title;
+					asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), title);
+				}
 //$ END_MOD $
                 inject_pos++;
             }
@@ -366,8 +370,10 @@ namespace WorldBuilding
             widget->hide();
             object_manip_ui.main_layout->insertWidget(inject_pos, widget);		
 //$ BEGIN_MOD $			
-			panel_widgets_ << widget;
-			asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), widget);
+			if(uiExternal){
+				panel_widgets_ << widget;
+				asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), widget);
+			}
 //$ END_MOD $
             // Put to internal lists for visibility and deleting
             if (toggle_visiblity)
@@ -895,7 +901,7 @@ namespace WorldBuilding
 	void BuildSceneManager::ChangeAndCreateObject(){
 		//Change to Build Scene if we are not still there
 		if (!IsBuildingActive())
-			ShowBuildScene();
+			ShowBuildPanels();
 		//Create new object
 		NewObjectClicked();	
 	}
@@ -999,5 +1005,12 @@ namespace WorldBuilding
         asset_ui_.scale_frame->setVisible(show_scale_controls);
         asset_ui_.pos_frame->setVisible(show_pos_controls);
     }
+	void BuildSceneManager::ShowBuildPanels(){
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		ui->ShowWidget(assignWidget_);
+		ui->ShowWidget(propertyWidget_);
+		ui->BringWidgetToFront("Entity-component Editor");
+		ui->BringWidgetToFront("Inventory");
+	}
 //$ END_MOD $
 }

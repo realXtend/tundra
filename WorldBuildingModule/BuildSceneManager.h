@@ -172,6 +172,8 @@ namespace WorldBuilding
 		/*! Change the mode os manipulation object when uses the Asset Widget
 		 */
 		void ManipExternalModeChanged(PythonParams::ManipulationMode mode);
+
+		void ShowBuildPanels();
 //$ END_MOD $
 
     private:
