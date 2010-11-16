@@ -210,6 +210,9 @@ namespace UiServices
 
 		//$ BEGIN_MOD $
 		//We create and add the settings panel
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if (!uiExternal)
+			inworld_scene_controller_->GetControlPanelManager()->CreateOptionalControls();
 		ui_scene_service_->CreateSettingsPanel();
 		//$ END_MOD $
     }
