@@ -12,6 +12,7 @@
 #include "SceneStructureModule.h"
 #include "SceneStructureWindow.h"
 #include "SupportedFileTypes.h"
+#include "AddContentWindow.h"
 
 #include "Console.h"
 #include "UiServiceInterface.h"
@@ -23,6 +24,7 @@
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
 #include "LoggingFunctions.h"
+#include "SceneDesc.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
@@ -60,6 +62,8 @@ void SceneStructureModule::PostInitialize()
 QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene, bool queryPosition)
 {
     QList<Scene::Entity *> ret;
+//    SceneDesc sceneDesc;
+
     const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return ret;
@@ -90,10 +94,10 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(scene);
+//        sceneDesc = importer.GetSceneDescription(filename);
         ///\todo Take into account asset sources.
         ret = importer.Import(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
-
         if (ret.empty())
             LogError("Import failed");
         else
@@ -105,6 +109,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(scene);
+//        sceneDesc = importer.GetSceneDescription(filename);
         Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
         if (entity)
@@ -116,10 +121,12 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
     {
         ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
+//        sceneDesc = scene->GetSceneDescription(filename);
     }
     else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
     {
         ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
+//        sceneDesc = scene->GetSceneDescription(filename);
     }
     else
     {
@@ -150,7 +157,11 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             LogError("Unsupported file extension: " + filename.toStdString());
         }
     }
-
+/*
+    AddContentWindow *addContent = new AddContentWindow;
+    addContent->AddDescription(sceneDesc);
+    addContent->show();
+*/
     return ret;
 }
 
@@ -246,6 +257,7 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 
 void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
 {
+    // If at least one file is supported, accept.
     if (e->mimeData()->hasUrls())
         foreach (QUrl url, e->mimeData()->urls())
             if (IsSupportedFileType(url.path()))
@@ -254,6 +266,7 @@ void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
 
 void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
 {
+    // If at least one file is supported, accept.
     if (e->mimeData()->hasUrls())
         foreach (QUrl url, e->mimeData()->urls())
             if (IsSupportedFileType(url.path()))

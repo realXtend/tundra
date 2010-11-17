@@ -12,6 +12,8 @@
 #include <QVariant>
 #include <QStringList>
 
+struct SceneDesc;
+
 namespace Scene
 {
     typedef std::list<EntityPtr> EntityList;
@@ -70,7 +72,7 @@ namespace Scene
         
         //! Is scene view enabled (ie. rendering-related components actually create stuff)
         bool ViewEnabled() const { return viewenabled_; }
-        
+
     public:
         //! destructor
         ~SceneManager();
@@ -106,7 +108,8 @@ namespace Scene
             \param change Notification/network replication mode
             \param defaultNetworkSync Whether components will have network sync. Default true
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
+            AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
 
         //! Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
         /*! Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
@@ -306,6 +309,11 @@ namespace Scene
         //! Returns Framework
         Foundation::Framework *GetFramework() const { return framework_; }
 
+        /// Inspects file and returns a scene description structure of the contents of the file.
+        /** @param filename File name.
+        */
+        SceneDesc GetSceneDescription(const QString &filename) const;
+
     signals:
         //! Signal when an attribute of a component has changed
         /*! Network synchronization managers should connect to this
@@ -374,7 +382,7 @@ namespace Scene
 
         //! Name of the scene
         QString name_;
-        
+
         //! View enabled-flag
         bool viewenabled_;
     };

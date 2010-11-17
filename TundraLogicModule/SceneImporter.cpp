@@ -13,6 +13,7 @@
 #include "EC_Name.h"
 #include "ServiceManager.h"
 #include "Renderer.h"
+#include "SceneDesc.h"
 
 #include <Ogre.h>
 
@@ -345,6 +346,171 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
     
     TundraLogicModule::LogInfo("Finished");
     return ret;
+}
+
+bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const std::string& meshname, std::vector<std::string>& material_names, std::string& skeleton_name)
+{
+    material_names.clear();
+    
+    QFile mesh_in((meshname).c_str());
+    if (!mesh_in.open(QFile::ReadOnly))
+    {
+        TundraLogicModule::LogError("Could not open input mesh file " + meshname);
+        return false;
+    }
+    else
+    {
+        QByteArray mesh_bytes = mesh_in.readAll();
+        mesh_in.close();
+        OgreRenderer::RendererPtr renderer = scene_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
+        if (!renderer)
+        {
+            TundraLogicModule::LogError("Renderer does not exist");
+            return false;
+        }
+        
+        std::string uniquename = renderer->GetUniqueObjectName();
+        try
+        {
+            Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            if (tempmesh.isNull())
+            {
+                TundraLogicModule::LogError("Failed to create temp mesh");
+                return false;
+            }
+            
+            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)mesh_bytes.data(), mesh_bytes.size(), false));
+            Ogre::MeshSerializer serializer;
+            serializer.importMesh(stream, tempmesh.getPointer());
+            
+            for (uint i = 0; i < tempmesh->getNumSubMeshes(); ++i)
+            {
+                Ogre::SubMesh* submesh = tempmesh->getSubMesh(i);
+                if (submesh)
+                {
+                    // Replace / with _ from material name
+                    std::string submeshmat = submesh->getMaterialName();
+                    ReplaceCharInplace(submeshmat, '/', '_');
+                    
+                    material_names.push_back(submeshmat);
+                }
+            }
+            skeleton_name = tempmesh->getSkeletonName();
+            
+            // Now delete the mesh as we're done with inspecting it
+            tempmesh.setNull();
+            Ogre::MeshManager::getSingleton().remove(uniquename);
+        }
+        catch (...)
+        {
+            TundraLogicModule::LogError("Exception while inspecting mesh " + meshname);
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+SceneDesc SceneImporter::GetSceneDescription(const QString &filename) const
+{
+    SceneDesc sceneDesc;
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly))
+    {
+        file.close();
+        TundraLogicModule::LogError("Failed to open file " + filename.toStdString());
+        return sceneDesc;
+    }
+
+    //if (!IsSupportedFileType())
+    // LogError, return
+
+    QDomDocument dotscene;
+    if (!dotscene.setContent(&file))
+    {
+        file.close();
+        TundraLogicModule::LogError("Failed to parse XML content");
+        return sceneDesc;
+    }
+    
+    file.close();
+    
+    QDomElement scene_elem = dotscene.firstChildElement("scene");
+    if (scene_elem.isNull())
+    {
+        TundraLogicModule::LogError("No scene element");
+        return sceneDesc;
+    }
+
+    QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
+    if (nodes_elem.isNull())
+    {
+        TundraLogicModule::LogError("No nodes element");
+        return sceneDesc;
+    }
+
+    QDomElement node_elem = nodes_elem.firstChildElement("node");
+    while (!node_elem.isNull())
+    {
+        // Process entity node, if any
+        QDomElement entity_elem = node_elem.firstChildElement("entity");
+        if (!entity_elem.isNull())
+        {
+            EntityDesc entityDesc;
+            entityDesc.name = entity_elem.attribute("name");
+            //info.id = scene->GetNextFreeId();
+
+            // Store the original name. Later we fix duplicates.
+            QString mesh_name = entity_elem.attribute("meshFile");
+            ComponentDesc compDesc;
+
+            // Attribute for mesh asset reference.
+            AttributeDesc meshAttrDesc = { "assetreference", "mesh", mesh_name };
+            compDesc.attributes.append(meshAttrDesc);
+
+            //mesh_names_[mesh_name] = mesh_name;
+            QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
+            if (!subentities_elem.isNull())
+            {
+                QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
+                while (!subentity_elem.isNull())
+                {
+                    QString material_name = subentity_elem.attribute("materialName");
+                    // Attribute for material asset reference.
+                    AttributeDesc matAttrDesc = { "assetreference", "material", material_name };
+                    compDesc.attributes.append(matAttrDesc);
+                    //material_names_.insert(material_name);
+                    subentity_elem = subentity_elem.nextSiblingElement("subentity");
+                }
+            }
+            else
+            {
+                // If no subentity element, have to interrogate the mesh.
+                /*
+                std::vector<std::string> material_names;
+                std::string skeleton_name;
+                ParseMeshForMaterialsAndSkeleton(in_asset_dir + mesh_name, material_names, skeleton_name);
+                for (uint i = 0; i < material_names.size(); ++i)
+                    material_names_.insert(material_names[i]);
+                mesh_default_materials_[mesh_name] = material_names;
+                */
+            }
+
+            entityDesc.components.append(compDesc);
+            sceneDesc.entities.append(entityDesc);
+        }
+        
+        // Process child nodes
+        /*
+        QDomElement childnode_elem = node_elem.firstChildElement("node");
+        if (!childnode_elem.isNull())
+            ProcessNodeForAssets(childnode_elem, in_asset_dir);
+        */
+        // Process siblings
+        node_elem = node_elem.nextSiblingElement("node");
+    }
+
+    return sceneDesc;
 }
 
 void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir)
@@ -790,69 +956,6 @@ bool SceneImporter::CopyAsset(const std::string& name, const std::string& in_ass
         {
             asset_out.write(bytes);
             asset_out.close();
-        }
-    }
-    
-    return true;
-}
-
-bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const std::string& meshname, std::vector<std::string>& material_names, std::string& skeleton_name)
-{
-    material_names.clear();
-    
-    QFile mesh_in((meshname).c_str());
-    if (!mesh_in.open(QFile::ReadOnly))
-    {
-        TundraLogicModule::LogError("Could not open input mesh file " + meshname);
-        return false;
-    }
-    else
-    {
-        QByteArray mesh_bytes = mesh_in.readAll();
-        mesh_in.close();
-        OgreRenderer::RendererPtr renderer = scene_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
-        if (!renderer)
-        {
-            TundraLogicModule::LogError("Renderer does not exist");
-            return false;
-        }
-        
-        std::string uniquename = renderer->GetUniqueObjectName();
-        try
-        {
-            Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-            if (tempmesh.isNull())
-            {
-                TundraLogicModule::LogError("Failed to create temp mesh");
-                return false;
-            }
-            
-            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)mesh_bytes.data(), mesh_bytes.size(), false));
-            Ogre::MeshSerializer serializer;
-            serializer.importMesh(stream, tempmesh.getPointer());
-            
-            for (uint i = 0; i < tempmesh->getNumSubMeshes(); ++i)
-            {
-                Ogre::SubMesh* submesh = tempmesh->getSubMesh(i);
-                if (submesh)
-                {
-                    // Replace / with _ from material name
-                    std::string submeshmat = submesh->getMaterialName();
-                    ReplaceCharInplace(submeshmat, '/', '_');
-                    
-                    material_names.push_back(submeshmat);
-                }
-            }
-            skeleton_name = tempmesh->getSkeletonName();
-            
-            // Now delete the mesh as we're done with inspecting it
-            tempmesh.setNull();
-            Ogre::MeshManager::getSingleton().remove(uniquename);
-        }
-        catch (...)
-        {
-            TundraLogicModule::LogError("Exception while inspecting mesh " + meshname);
-            return false;
         }
     }
     
