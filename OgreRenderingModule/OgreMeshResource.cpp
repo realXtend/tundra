@@ -182,4 +182,25 @@ namespace OgreRenderer
     {
         return (!ogre_mesh_.isNull());
     }
+
+    bool OgreMeshResource::Export(const std::string &filename)
+    {
+        if (ogre_mesh_.isNull())
+        {
+            OgreRenderingModule::LogWarning("Tried to export non-existing Ogre mesh " + id_ + ".");
+            return false;
+        }
+        try
+        {
+            Ogre::MeshSerializer serializer;
+            serializer.exportMesh(ogre_mesh_.get(), filename);
+        } catch (std::exception &e)
+        {
+            OgreRenderingModule::LogError("Failed to export Ogre mesh " + id_ + ":");
+            if (e.what())
+                OgreRenderingModule::LogError(e.what());
+            return false;
+        }
+        return true;
+    }
 }

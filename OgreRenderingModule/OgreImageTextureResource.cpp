@@ -62,6 +62,29 @@ namespace OgreRenderer
         return true;
     }
 
+    bool OgreImageTextureResource::Export(const std::string &filename)
+    {
+        if (ogre_texture_.isNull())
+        {
+            OgreRenderingModule::LogWarning("Tried to export non-existing Ogre texture " + id_ + ".");
+            return false;
+        }
+
+        try
+        {
+            Ogre::Image image;
+            ogre_texture_->convertToImage(image);
+            image.save(filename);
+        } catch (std::exception &e)
+        {
+            OgreRenderingModule::LogError("Failed to export Ogre texture " + id_ + ":");
+            if (e.what())
+                OgreRenderingModule::LogError(e.what());
+            return false;
+        }
+        return true;
+    }
+
     bool OgreImageTextureResource::HasAlpha() const
     {
         if (ogre_texture_.get())
