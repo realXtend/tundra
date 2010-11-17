@@ -65,6 +65,8 @@ namespace OgreRenderer
             \return true if successful
          */
         bool SetData(Foundation::TexturePtr source);
+
+        bool Export(const std::string &filename);
         
         //! returns resource type in text form (static)
         static const std::string& GetTypeStatic();

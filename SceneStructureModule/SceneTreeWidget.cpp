@@ -31,7 +31,11 @@
 #include "AssetEvents.h"
 #include "RexTypes.h"
 #include "OgreConversionUtils.h"
-#include "Inventory/InventoryEvents.h"
+//#include "Inventory/InventoryEvents.h"
+#include "AssetApi.h"
+#include "IAsset.h"
+#include "IAssetTransfer.h"
+#include "ResourceInterface.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -283,13 +287,34 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
     Selection sel = GetSelection();
 
     if (sel.HasAssets() && !sel.HasComponents() && !sel.HasEntities())
+        AddAvailableAssetActions(menu);
+    else
+        AddAvailableEntityActions(menu);
+}
+
+void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
+{
+    assert(menu);
+
+    Selection sel = GetSelection();
+
+    QAction *action = new QAction(tr("Edit"), menu);
+    connect(action, SIGNAL(triggered()), SLOT(Edit()));
+    menu->addAction(action);
+    menu->setDefaultAction(action);
+
+    if (sel.assets.size() == 1)
     {
-        QAction *editAction = new QAction(tr("Edit"), menu);
-        connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
-        menu->addAction(editAction);
-        menu->setDefaultAction(editAction);
-    } else
-    {
+        action = new QAction(tr("Save") + " " + sel.assets[0]->id + " " + tr("as..."), menu);
+        connect(action, SIGNAL(triggered()), SLOT(SaveAssetAs()));
+        menu->addAction(action);
+    }
+}
+
+void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
+{
+    assert(menu);
+
     // "New entity...", "Import..." and "Open new scene..." actions are available always
     QAction *newEntityAction = new QAction(tr("New entity..."), menu);
     QAction *importAction = new QAction(tr("Import..."), menu);
@@ -395,6 +420,8 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         menu->addAction(actionsAction);
         menu->addAction(functionsAction);
 
+        Selection sel = GetSelection();
+
         // "Functions..." is disabled if we have both entities and components selected simultaneously.
         if (sel.HasEntities() && sel.HasComponents())
             functionsAction->setDisabled(true);
@@ -423,7 +450,6 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
                     ++numItemsAdded;
                 }
         }
-    }
     }
 }
 
@@ -1325,4 +1351,65 @@ void SceneTreeWidget::InvokeActionTriggered()
             }
         }
     }
+}
+
+
+void SceneTreeWidget::SaveAssetAs()
+{
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = QtUtils::SaveFileDialogNonModal("",
+        tr("Save asset"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+}
+
+void SceneTreeWidget::SaveAssetDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+
+    //if (result != QDialog::Accepted)
+    //    return;
+
+    if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().isEmpty() || scene.expired())
+        return;
+
+    QStringList files = dialog->selectedFiles();
+    Selection sel = GetSelection();
+    
+    if (sel.assets.size() == 1)
+    {
+        //Foundation::AssetPtr asset = framework->Asset()->GetAsset(sel.assets[0]->id);
+        //if (asset)
+        //{
+        //    asset->SaveToFile(files[0]);
+        //
+        //SceneTreeWidget::ExportAsset *ea = new SceneTreeWidget::ExportAsset;
+        //ea.filename_ = files[0];
+        IAssetTransfer *transfer = framework->Asset()->RequestAsset(sel.assets[0]->id);
+        filesaves_.insert(transfer, files[0]);
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(AssetLoaded()));
+    }
+}
+
+void SceneTreeWidget::AssetLoaded()
+{
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
+    assert(transfer && "Do not call directly, only through signal.");
+
+    assert (filesaves_.contains(transfer));
+
+    QString filename = filesaves_.take(transfer);
+    if (!transfer->resourcePtr->Export(filename.toStdString()))
+        LogError("Could not save asset to file " + filename.toStdString() + ".");
+    
+    /*QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        LogError("Could not open file " + filename.toStdString() + " for writing.");
+        return;
+    }
+
+    //QByteArray *bytes = new QByteArray(reinterpret_cast<const char*>(transfer->assetPtr->GetData()), transfer->assetPtr->GetSize());
+    file.write((const char*)(transfer->assetPtr->GetData()), transfer->assetPtr->GetSize());
+    file.close();*/
 }
