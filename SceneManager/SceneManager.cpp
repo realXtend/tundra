@@ -27,6 +27,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
+#include "Profiler.h"
 
 using namespace kNet;
 
@@ -36,7 +37,8 @@ namespace Scene
         framework_(0),
         gid_(1),
         gid_local_(LocalEntity + 1),
-        viewenabled_(true)
+        viewenabled_(true),
+        interpolating_(false)
     {
     }
     
@@ -44,7 +46,8 @@ namespace Scene
         name_(name),
         framework_(framework),
         gid_(1),
-        gid_local_(LocalEntity + 1)
+        gid_local_(LocalEntity + 1),
+        interpolating_(false)
     {
         // In headless mode only view disabled-scenes can be created
         if (framework->IsHeadless())
@@ -55,6 +58,8 @@ namespace Scene
 
     SceneManager::~SceneManager()
     {
+        EndAllAttributeInterpolations();
+        
         // Do not send entity removal or scene cleared events on destruction
         RemoveAllEntities(false);
         
@@ -870,6 +875,124 @@ namespace Scene
         scene_doc.appendChild(scene_elem);
         
         return scene_doc.toByteArray();
+    }
+    
+    bool SceneManager::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length)
+    {
+        if (!endvalue)
+            return false;
+        
+        IComponent* comp = attr ? attr->GetOwner() : 0;
+        Entity* entity = comp ? comp->GetParentEntity() : 0;
+        SceneManager* scene = entity ? entity->GetScene() : 0;
+        
+        if ((length <= 0.0f) || (!attr) || (!attr->HasMetadata()) || (attr->GetMetadata()->interpolation == AttributeMetadata::None) || (!comp) || (comp->HasDynamicStructure()) 
+            || (!entity) || (!scene) || (scene != this))
+        {
+            delete endvalue;
+            return false;
+        }
+        
+        // End previous interpolation if existed
+        bool previous = EndAttributeInterpolation(attr);
+        
+        // If previous interpolation does not exist, perform a direct snapping to the end value
+        // but still start an interpolation period, so that on the next update we detect that an interpolation is going on,
+        // and will interpolate normally
+        if (!previous)
+            attr->CopyValue(endvalue, AttributeChange::LocalOnly);
+        
+        AttributeInterpolation newInterp;
+        newInterp.entityid_ = entity->GetId();
+        newInterp.comp_name_ = comp->Name();
+        newInterp.comp_typenamehash_ = comp->TypeNameHash();
+        newInterp.dest_ = attr;
+        newInterp.start_ = attr->Clone();
+        newInterp.end_ = endvalue;
+        newInterp.length_ = length;
+        
+        interpolations_.push_back(newInterp);
+        return true;
+    }
+    
+    bool SceneManager::EndAttributeInterpolation(IAttribute* attr)
+    {
+        for (uint i = 0; i < interpolations_.size(); ++i)
+        {
+            AttributeInterpolation& interp = interpolations_[i];
+            if (interp.dest_ == attr)
+            {
+                delete interp.start_;
+                delete interp.end_;
+                interpolations_.erase(interpolations_.begin() + i);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    void SceneManager::EndAllAttributeInterpolations()
+    {
+        for (uint i = 0; i < interpolations_.size(); ++i)
+        {
+            AttributeInterpolation& interp = interpolations_[i];
+            delete interp.start_;
+            delete interp.end_;
+        }
+        
+        interpolations_.clear();
+    }
+    
+    void SceneManager::UpdateAttributeInterpolations(float frametime)
+    {
+        PROFILE(Scene_UpdateInterpolation);
+        
+        interpolating_ = true;
+        
+        for (uint i = interpolations_.size() - 1; i < interpolations_.size(); --i)
+        {
+            AttributeInterpolation& interp = interpolations_[i];
+            bool finished = false;
+            
+            // Check that the entity & component exist ie. it's safe to access the attribute
+            Entity* entity = GetEntity(interp.entityid_).get();
+            IComponent* comp = 0;
+            if (entity)
+                comp = entity->GetComponent(interp.comp_typenamehash_, interp.comp_name_).get();
+            
+            if (comp)
+            {
+                // Allow the interpolation to persist for 2x time, though we are no longer setting the value
+                // This is for the continuous/discontinuous update detection in StartAttributeInterpolation()
+                if (interp.time_ <= interp.length_)
+                {
+                    interp.time_ += frametime;
+                    float t = interp.time_ / interp.length_;
+                    if (t > 1.0f)
+                        t = 1.0f;
+                    interp.dest_->Interpolate(interp.start_, interp.end_, t, AttributeChange::LocalOnly);
+                }
+                else
+                {
+                    interp.time_ += frametime;
+                    if (interp.time_ >= interp.length_ * 2.0f)
+                        finished = true;
+                }
+            }
+            else
+                // Component could not be found, abort this interpolation
+                finished = true;
+            
+            // Remove interpolation (& delete start/endpoints) when done
+            if (finished)
+            {
+                delete interp.start_;
+                delete interp.end_;
+                interpolations_.erase(interpolations_.begin() + i);
+            }
+        }
+        
+        interpolating_ = false;
     }
 }
 

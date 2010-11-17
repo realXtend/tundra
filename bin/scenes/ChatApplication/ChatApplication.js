@@ -44,11 +44,11 @@ function empty()
 
 print("Loading ChatApplication");
 
-var widget = ui.LoadFromFile(".\\scenes\\ChatApplication\\ChatWidget.ui", false);	
+var widget = uiservice.LoadFromFile(".\\scenes\\ChatApplication\\ChatWidget.ui", false);	
 var chatLog = widget.findChild("chatLog");
 var lineEdit = widget.findChild("lineEdit");
 var proxy = new UiProxyWidget(widget);
-ui.AddWidgetToScene(proxy);
+uiservice.AddWidgetToScene(proxy);
 proxy.x = 10;
 proxy.y = 10;
 proxy.visible = false;
@@ -68,12 +68,12 @@ else
 	print("Starting Chat Client");
 	
 	//Insert Username from widget. In future this is replaced
-	var joinWidget = ui.LoadFromFile(".\\scenes\\ChatApplication\\JoinWidget.ui", false);	
+	var joinWidget = uiservice.LoadFromFile(".\\scenes\\ChatApplication\\JoinWidget.ui", false);	
 	var btn = joinWidget.findChild("pushJoin");
 	var lineUser = joinWidget.findChild("lineUserName");
 
 	var joinProxy = new UiProxyWidget(joinWidget);
-	ui.AddWidgetToScene(joinProxy);
+	uiservice.AddWidgetToScene(joinProxy);
 	joinProxy.x = 50;
 	joinProxy.y = 50;
 	joinProxy.visible = true;
