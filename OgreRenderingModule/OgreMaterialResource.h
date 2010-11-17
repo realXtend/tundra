@@ -54,6 +54,11 @@ namespace OgreRenderer
         */
         bool SetData(Foundation::AssetPtr source);
 
+        //! Save material to a file
+        /*! \param filename full path to file
+        */
+        virtual bool Export(const std::string &filename) const;
+
         //! sets to contain an external material pointer
         void SetMaterial(Ogre::MaterialPtr material);
 

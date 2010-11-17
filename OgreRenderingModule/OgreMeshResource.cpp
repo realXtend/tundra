@@ -183,7 +183,7 @@ namespace OgreRenderer
         return (!ogre_mesh_.isNull());
     }
 
-    bool OgreMeshResource::Export(const std::string &filename)
+    bool OgreMeshResource::Export(const std::string &filename) const
     {
         if (ogre_mesh_.isNull())
         {

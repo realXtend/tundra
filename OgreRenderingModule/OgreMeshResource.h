@@ -43,7 +43,7 @@ namespace OgreRenderer
         //! Export Ogre mesh to the specified file
         /*! \param filename full path to file
         */
-        virtual bool Export(const std::string &filename);
+        virtual bool Export(const std::string &filename) const;
         
         //! returns Ogre mesh
         /*! may be null if no data successfully set yet

@@ -83,7 +83,7 @@ namespace Foundation
         const std::string& GetInternalName() const { return internal_name_; }
 
         //! Exports resource to a file
-        virtual bool Export(const std::string &filename) { assert(0 && "Not implemented."); return false; }
+        virtual bool Export(const std::string &filename) const { assert(0 && "Not implemented."); return false; }
         
     protected:
         //! resource identifier
