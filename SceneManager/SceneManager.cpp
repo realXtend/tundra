@@ -6,12 +6,15 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "SceneEvents.h"
+#include "SceneDesc.h"
+#include "IComponent.h"
+#include "IAttribute.h"
+#include "EC_Name.h"
+
 #include "Framework.h"
 #include "ComponentManager.h"
 #include "EventManager.h"
-#include "IComponent.h"
 #include "ForwardDefines.h"
-#include "EC_Name.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
@@ -640,6 +643,207 @@ namespace Scene
         }
         
         return ret;
+    }
+
+    SceneDesc SceneManager::GetSceneDescription(const QString &filename) const
+    {
+        ///\todo Maybe refine and break this function into more logical and/or smaller parts?
+        SceneDesc sceneDesc;
+        QDomDocument scene_doc("Scene");
+        
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("Failed to open file " + filename.toStdString() + " when trying to create scene description.");
+            return sceneDesc;
+        }
+
+        if (filename.toLower().indexOf(".txml") != -1)
+        {
+            if (!scene_doc.setContent(&file))
+            {
+                LogError("Parsing scene XML from "+ filename.toStdString() + " failed when loading scene xml.");
+                file.close();
+                return sceneDesc;
+            }
+
+            file.close();
+
+            // Check for existence of the scene element before we begin
+            QDomElement scene_elem = scene_doc.firstChildElement("scene");
+            if (scene_elem.isNull())
+            {
+                LogError("Could not find 'scene' element from XML.");
+                return sceneDesc;
+            }
+
+            QDomElement ent_elem = scene_elem.firstChildElement("entity");
+            while (!ent_elem.isNull())
+            {
+                QString id_str = ent_elem.attribute("id");
+                if (!id_str.isEmpty())
+                {
+                    EntityDesc entityDesc;
+                    entityDesc.id = id_str;
+                    /*
+                    entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
+                    if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
+                    {
+                        if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
+                            RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+                        else // Create a new ID for the new entity.
+                        {
+                            if ((id & LocalEntity) != 0) // Check if the ID is local
+                                id = GetNextFreeIdLocal();
+                            else
+                                id = GetNextFreeId();
+                        }
+                    }
+                    */
+                    //EntityPtr entity = CreateEntity(id);
+                    //if (entity)
+                    {
+                        QDomElement comp_elem = ent_elem.firstChildElement("component");
+                        while(!comp_elem.isNull())
+                        {
+                            QString type_name = comp_elem.attribute("type");
+                            QString name = comp_elem.attribute("name");
+                            ComponentDesc compDesc;
+                            compDesc.typeName = type_name;
+                            compDesc.name = name;
+
+                            // A bit of a hack to get the name from EC_Name.
+                            if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
+                            {
+                                ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+                                EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
+                                ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                                entityDesc.name = ecName->name.Get();
+                            }
+
+                            // Find asset references.
+                            ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+                            comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                            foreach(IAttribute *a,comp->GetAttributes())
+                                if (a->TypenameToString() == "assetreference" && !a->ToString().empty())
+                                {
+                                    AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                                    compDesc.attributes.append(attrDesc);
+                                }
+
+                            entityDesc.components.append(compDesc);
+
+                            comp_elem = comp_elem.nextSiblingElement("component");
+                        }
+
+                        sceneDesc.entities.append(entityDesc);
+                    }
+                }
+
+                // Process siblings.
+                ent_elem = ent_elem.nextSiblingElement("entity");
+            }
+        }
+#if 0
+        else if (filename.toLower().indexOf(".tbin") != -1)
+        {
+            QByteArray bytes = file.readAll();
+            file.close();
+            
+            if (!bytes.size())
+            {
+                LogError("File " + filename.toStdString() + " contained 0 bytes when trying to create scene description.");
+                return sceneDesc;
+            }
+
+            try
+            {
+                DataDeserializer source(bytes.data(), bytes.size());
+                
+                uint num_entities = source.Read<u32>();
+                for (uint i = 0; i < num_entities; ++i)
+                {
+                    EntityDesc entityDesc;
+                    entity_id_t id = source.Read<u32>();
+                    entityDesc.id = QString::number((int)id);
+                    /*
+                    if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
+                    {
+                        if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
+                            RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+                        else // Create a new ID for the new entity.
+                        {
+                            if ((id & LocalEntity) != 0) // Check if the ID is local
+                                id = GetNextFreeIdLocal();
+                            else
+                                id = GetNextFreeId();
+                        }
+                    }
+
+                    EntityPtr entity = CreateEntity(id);
+                    if (!entity)
+                    {
+                        std::cout << "Failed to create entity, stopping scene load" << std::endl;
+                        return ret; // If entity creation fails, stream desync is more than likely so stop right here
+                    }
+                    */
+                    
+                    uint num_components = source.Read<u32>();
+                    for (uint i = 0; i < num_components; ++i)
+                    {
+                        uint type_hash = source.Read<u32>();
+                        type_hash;
+                        QString name = QString::fromStdString(source.ReadString());
+                        bool sync = source.Read<u8>() ? true : false;
+                        sync;
+                        uint data_size = source.Read<u32>();
+                        
+                        // Read the component data into a separate byte array, then deserialize from there.
+                        // This way the whole stream should not desync even if something goes wrong
+                        QByteArray comp_bytes;
+                        comp_bytes.resize(data_size);
+                        if (data_size)
+                            source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
+                        /*
+                        try
+                        {
+                            ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
+                            if (new_comp)
+                            {
+                                new_comp->SetNetworkSyncEnabled(sync);
+                                if (data_size)
+                                {
+                                    DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
+                                    // Trigger no signal yet when scene is in incoherent state
+                                    new_comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
+                                }
+                            }
+                            else
+                                LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                        }
+                        catch (...)
+                        {
+                            LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                        }
+                        */
+                    }
+
+                    sceneDesc.entities.append(entityDesc);
+                }
+            }
+            catch (...)
+            {
+                // Note: if exception happens, no change signals are emitted
+                return SceneDesc();
+            }
+        }
+#endif
+        else
+        {
+            LogError("Unsupported file extension : " + filename.toStdString() + " when trying to create scene description.");
+        }
+
+        return sceneDesc;
     }
 
     QByteArray SceneManager::GetEntityXml(Scene::Entity *entity)
