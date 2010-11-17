@@ -398,6 +398,8 @@ namespace Environment
         
 
         QImage map  = CreateImageFromCanvases();
+        if(map.isNull())
+            return;
         
         if(map.format() != QImage::Format_ARGB32)
         {
