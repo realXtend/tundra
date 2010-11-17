@@ -51,6 +51,11 @@ namespace OgreRenderer
         */
         bool SetData(Foundation::AssetPtr source);
 
+        //! Export Ogre skeleton to the specified file
+        /*! \param filename full path to file
+        */
+        virtual bool Export(const std::string &filename) const;
+
         //! returns resource type in text form (static)
         static const std::string& GetTypeStatic();
 

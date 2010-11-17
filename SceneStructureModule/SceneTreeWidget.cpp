@@ -305,7 +305,8 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
 
     if (sel.assets.size() == 1)
     {
-        action = new QAction(tr("Save") + " " + sel.assets[0]->id + " " + tr("as..."), menu);
+        QString assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
+        action = new QAction(tr("Save") + " " + assetName + " " + tr("as..."), menu);
         connect(action, SIGNAL(triggered()), SLOT(SaveAssetAs()));
         menu->addAction(action);
     }
@@ -1356,19 +1357,22 @@ void SceneTreeWidget::InvokeActionTriggered()
 
 void SceneTreeWidget::SaveAssetAs()
 {
+    Selection sel = GetSelection();
+    QString assetName;
+    if (sel.assets.size() == 1)
+        assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
+
     if (fileDialog)
         fileDialog->close();
+    
     fileDialog = QtUtils::SaveFileDialogNonModal("",
-        tr("Save asset"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+        tr("Save asset"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
 }
 
 void SceneTreeWidget::SaveAssetDialogClosed(int result)
 {
     QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
     assert(dialog);
-
-    //if (result != QDialog::Accepted)
-    //    return;
 
     if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().isEmpty() || scene.expired())
         return;
@@ -1378,13 +1382,6 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
     
     if (sel.assets.size() == 1)
     {
-        //Foundation::AssetPtr asset = framework->Asset()->GetAsset(sel.assets[0]->id);
-        //if (asset)
-        //{
-        //    asset->SaveToFile(files[0]);
-        //
-        //SceneTreeWidget::ExportAsset *ea = new SceneTreeWidget::ExportAsset;
-        //ea.filename_ = files[0];
         IAssetTransfer *transfer = framework->Asset()->RequestAsset(sel.assets[0]->id);
         filesaves_.insert(transfer, files[0]);
         connect(transfer, SIGNAL(Loaded()), this, SLOT(AssetLoaded()));
@@ -1400,16 +1397,10 @@ void SceneTreeWidget::AssetLoaded()
 
     QString filename = filesaves_.take(transfer);
     if (!transfer->resourcePtr->Export(filename.toStdString()))
-        LogError("Could not save asset to file " + filename.toStdString() + ".");
-    
-    /*QFile file(filename);
-    if (!file.open(QIODevice::WriteOnly))
     {
-        LogError("Could not open file " + filename.toStdString() + " for writing.");
-        return;
+        LogError("Could not save asset to file " + filename.toStdString() + ".");
+        QMessageBox box(QMessageBox::Warning, tr("Save asset"), tr("Failed to save asset."), QMessageBox::Ok);
+        box.setInformativeText(tr("Please check the selected storage device can be written to."));
+        box.exec();
     }
-
-    //QByteArray *bytes = new QByteArray(reinterpret_cast<const char*>(transfer->assetPtr->GetData()), transfer->assetPtr->GetSize());
-    file.write((const char*)(transfer->assetPtr->GetData()), transfer->assetPtr->GetSize());
-    file.close();*/
 }

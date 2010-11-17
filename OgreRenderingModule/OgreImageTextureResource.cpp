@@ -62,7 +62,7 @@ namespace OgreRenderer
         return true;
     }
 
-    bool OgreImageTextureResource::Export(const std::string &filename)
+    bool OgreImageTextureResource::Export(const std::string &filename) const
     {
         if (ogre_texture_.isNull())
         {

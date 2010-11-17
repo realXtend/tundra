@@ -68,6 +68,27 @@ namespace OgreRenderer
         return true;
     }
 
+    bool OgreSkeletonResource::Export(const std::string &filename) const
+    {
+        if (ogre_skeleton_.isNull())
+        {
+            OgreRenderingModule::LogWarning("Tried to export non-existing Ogre skeleton " + id_ + ".");
+            return false;
+        }
+        try
+        {
+            Ogre::SkeletonSerializer serializer;
+            serializer.exportSkeleton(ogre_skeleton_.get(), filename);
+        } catch (std::exception &e)
+        {
+            OgreRenderingModule::LogError("Failed to export Ogre skeleton " + id_ + ":");
+            if (e.what())
+                OgreRenderingModule::LogError(e.what());
+            return false;
+        }
+        return true;
+    }
+
     static const std::string type_name("OgreSkeleton");
 
     const std::string& OgreSkeletonResource::GetType() const
