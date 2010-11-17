@@ -15,6 +15,7 @@
 #include "UiProxyWidget.h"
 #include "UiServiceInterface.h"
 
+
 #include "ConsoleCommandServiceInterface.h"
 namespace Environment
 {
@@ -420,7 +421,7 @@ namespace Environment
             {
                 tex->getBuffer()->blitFromMemory(bufbox);
             }
-            ptr->settexture0(texname);
+            ptr->texture0.Set(texname, AttributeChange::Default);
             it++;
         }
     }
@@ -442,18 +443,41 @@ namespace Environment
             return;
         Scene::EntityList list = scene_manager_->GetEntitiesWithComponent("EC_Terrain");
         Scene::EntityList::const_iterator it = list.begin();
+
+        //Quickfix, we will clone a new material copy for each terrain and assume there does not exist previous materialclones
+        int i = 0;
+        Ogre::String mat_name;
         while(it!= list.end())
         {
             boost::shared_ptr<EC_Terrain> ptr = (*it)->GetComponent<EC_Terrain>();
             if(val)
             {
-                ptr->setmaterial("Rex/TerrainPCF_weighted");
+                mat_name = "Rex/TerrainPCF_weighted";
             }
             else
             {
-                ptr->setmaterial("Rex/TerrainPCF");
+                mat_name = "Rex/TerrainPCF";
+            }
+            Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName(mat_name);
+            if(mat.get())
+            {
+                if(i>0)
+                {
+                    //So we have several terrains, need to create more materials
+                    mat_name += Ogre::StringConverter::toString(i);
+                }
+                Ogre::MaterialPtr new_mat =Ogre::MaterialManager::getSingleton().getByName(mat_name);
+                if(!new_mat.get())
+                {
+                    new_mat =  mat->clone(mat_name);
+                }
+                if(new_mat.get())
+                {
+                    ptr->material.Set(QString(new_mat->getName().c_str()),AttributeChange::Default);
+                }
             }
             it++;
+            i++;
         }
     }
 
@@ -461,8 +485,14 @@ namespace Environment
     {
 
         QString fileName = QFileDialog::getOpenFileName(this, tr("Select Image"),"" , tr("Image Files (*.png)"));
-        QPixmap image(fileName);
+        QPixmap pix(fileName, "PNG");
+        if(pix.isNull())
+            return;
 
-        DecomposeImageToCanvases(image.toImage());
+        
+        QImage img(pix.size(),QImage::Format_ARGB32);
+        QImageReader reader(fileName);
+        if(reader.read(&img))
+            DecomposeImageToCanvases(img);
     }
 }
