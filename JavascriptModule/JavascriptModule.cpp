@@ -283,7 +283,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     
     // Register framework's dynamic properties (service objects) and the framework itself to the script engine
     QList<QByteArray> properties = framework_->dynamicPropertyNames();
-    for (uint i = 0; i < properties.size(); ++i)
+    for (QList<QByteArray>::size_type i = 0; i < properties.size(); ++i)
     {
         QString name = properties[i];
         QObject* serviceobject = framework_->property(name.toStdString().c_str()).value<QObject*>();
