@@ -50,20 +50,20 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     owner_(checked_static_cast<PhysicsModule*>(module)),
     cachedShapeType_(-1)
 {
-    static AttributeMetadata metadata;
+    static AttributeMetadata shapemetadata;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
-        metadata.enums[Shape_Box] = "Box";
-        metadata.enums[Shape_Sphere] = "Sphere";
-        metadata.enums[Shape_Cylinder] = "Cylinder";
-        metadata.enums[Shape_Capsule] = "Capsule";
-        metadata.enums[Shape_TriMesh] = "TriMesh";
-        metadata.enums[Shape_HeightField] = "HeightField";
-        metadata.enums[Shape_ConvexHull] = "ConvexHull";
+        shapemetadata.enums[Shape_Box] = "Box";
+        shapemetadata.enums[Shape_Sphere] = "Sphere";
+        shapemetadata.enums[Shape_Cylinder] = "Cylinder";
+        shapemetadata.enums[Shape_Capsule] = "Capsule";
+        shapemetadata.enums[Shape_TriMesh] = "TriMesh";
+        shapemetadata.enums[Shape_HeightField] = "HeightField";
+        shapemetadata.enums[Shape_ConvexHull] = "ConvexHull";
         metadataInitialized = true;
     }
-    shapeType.SetMetadata(&metadata);
+    shapeType.SetMetadata(&shapemetadata);
 
     // Note: we cannot create the body yet because we are not in an entity/scene yet (and thus don't know what physics world we belong to)
     // We will create the body when the scene is known.

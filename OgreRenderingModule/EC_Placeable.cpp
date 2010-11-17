@@ -35,6 +35,16 @@ EC_Placeable::EC_Placeable(IModule* module) :
     transform(this, "Transform"),
     drawDebug(this, "Show bounding box", false)
 {
+    // Enable network interpolation for the transform
+    static AttributeMetadata transAttrData;
+    static bool metadataInitialized = false;
+    if(!metadataInitialized)
+    {
+        transAttrData.interpolation = AttributeMetadata::Interpolate;
+        metadataInitialized = true;
+    }
+    transform.SetMetadata(&transAttrData);
+
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     link_scene_node_ = scene_mgr->createSceneNode();

@@ -22,9 +22,13 @@
 
 #include "EntityAction.h"
 
+#include "LoggingFunctions.h"
+
 #include <QUiLoader>
 #include <QFile>
 #include "MemoryLeakCheck.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("Script")
 
 //! Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
@@ -63,12 +67,29 @@ Q_DECLARE_METATYPE(RaycastResult*);
 
 void ExposeQtMetaTypes(QScriptEngine *engine)
 {
+    assert(engine);
+    if (!engine)
+        return;
+
     QScriptValue object = engine->scriptValueFromQMetaObject<QPushButton>();
     engine->globalObject().setProperty("QPushButton", object);
     object = engine->scriptValueFromQMetaObject<QWidget>();
     engine->globalObject().setProperty("QWidget", object);
     object = engine->scriptValueFromQMetaObject<QTimer>();
     engine->globalObject().setProperty("QTimer", object);
+/*
+    ImportExtension(engine, "qt.core");
+    ImportExtension(engine, "qt.gui");
+    ImportExtension(engine, "qt.network");
+    ImportExtension(engine, "qt.uitools");
+    ImportExtension(engine, "qt.xml");
+    ImportExtension(engine, "qt.xmlpatterns");
+*/
+//  Our deps contain these plugins as well, but we don't use them (for now at least).
+//    ImportExtension(engine, "qt.opengl");
+//    ImportExtension(engine, "qt.phonon");
+//    ImportExtension(engine, "qt.webkit"); // The webkit plugin of QtScriptGenerator fails to load.
+
 }
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)

@@ -35,7 +35,8 @@ using namespace kNet;
 // rejected, an overriding update should be sent to the sending client
 // #define ECHO_CHANGES_TO_SENDER
 
-KristalliProtocol::UserConnection* currentSender = 0;
+// This variable is used for the sender echo & interpolation stop check
+kNet::MessageConnection* currentSender = 0;
 
 namespace TundraLogic
 {
@@ -110,9 +111,6 @@ void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 
 void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
-    if (owner_->IsServer())
-        currentSender = owner_->GetKristalliModule()->GetUserConnection(source);
-    
     switch (id)
     {
     case cCreateEntityMessage:
@@ -191,6 +189,21 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
 {
     if (!comp->IsSerializable())
         return;
+    
+    bool isServer = owner_->IsServer();
+    
+    // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
+    if (!isServer)
+    {
+        Scene::ScenePtr scene = scene_.lock();
+        if ((scene) && (!scene->IsInterpolating()) && (!currentSender))
+        {
+            if ((attr->HasMetadata()) && (attr->GetMetadata()->interpolation == AttributeMetadata::Interpolate))
+                // Note: it does not matter if the attribute was not actually interpolating
+                scene->EndAttributeInterpolation(attr);
+        }
+    }
+    
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
     Scene::Entity* entity = comp->GetParentEntity();
@@ -198,13 +211,13 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         return;
     bool dynamic = comp->HasDynamicStructure();
     
-    if (owner_->IsServer())
+    if (isServer)
     {
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             #ifndef ECHO_CHANGES_TO_SENDER
-            if (&(*i) == currentSender)
+            if ((*i).connection == currentSender)
                 continue;
             #endif
             
@@ -227,6 +240,9 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         else
             state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), QString::fromStdString(attr->GetNameString()));
     }
+    
+    // This attribute changing might in turn cause other attributes to change on the server, and these must be echoed to all, so reset sender now
+    currentSender = 0;
 }
 
 void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
@@ -243,11 +259,6 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            #ifndef ECHO_CHANGES_TO_SENDER
-            if (&(*i) == currentSender)
-                continue;
-            #endif
-            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
@@ -274,11 +285,6 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            #ifndef ECHO_CHANGES_TO_SENDER
-            if (&(*i) == currentSender)
-                continue;
-            #endif
-            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
@@ -301,11 +307,6 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            #ifndef ECHO_CHANGES_TO_SENDER
-            if (&(*i) == currentSender)
-                continue;
-            #endif
-            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnEntityChanged(entity->GetId());
@@ -330,11 +331,6 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            #ifndef ECHO_CHANGES_TO_SENDER
-            if (&(*i) == currentSender)
-                continue;
-            #endif
-            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
                 state->OnEntityRemoved(entity->GetId());
@@ -635,8 +631,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         
     }
     
-    if (num_messages_sent)
-        TundraLogicModule::LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
+    //if (num_messages_sent)
+    //    TundraLogicModule::LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
@@ -933,8 +929,26 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                         {
                             if (source.Read<bit>())
                             {
-                                attributes[i]->FromBinary(source, AttributeChange::Disconnected);
-                                actually_changed_attributes.push_back(true);
+                                // If attribute supports interpolation, queue interpolation instead
+                                bool interpolate = false;
+                                if ((!isServer) && (attributes[i]->HasMetadata()) && (attributes[i]->GetMetadata()->interpolation == AttributeMetadata::Interpolate))
+                                    interpolate = true;
+                                
+                                if (!interpolate)
+                                {
+                                    attributes[i]->FromBinary(source, AttributeChange::Disconnected);
+                                    actually_changed_attributes.push_back(true);
+                                }
+                                else
+                                {
+                                    IAttribute* endValue = attributes[i]->Clone();
+                                    endValue->FromBinary(source, AttributeChange::Disconnected);
+                                    //! \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
+                                    // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
+                                    scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.25f);
+                                    // Do not signal attribute change at this point at all
+                                    actually_changed_attributes.push_back(false);
+                                }
                             }
                             else
                                 actually_changed_attributes.push_back(false);
@@ -1022,7 +1036,10 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             const AttributeVector& attributes = compShared->GetAttributes();
             for (uint j = 0; (j < attributes.size()) && (j < i->second.size()); ++j)
                 if (i->second[j])
+                {
+                    currentSender = source;
                     compShared->AttributeChanged(attributes[j], change);
+                }
         }
         ++i;
     }
@@ -1039,7 +1056,10 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             {
                 IAttribute* attr = compShared->GetAttribute(j->second[k]);
                 if (attr)
+                {
+                    currentSender = source;
                     compShared->AttributeChanged(attr, change);
+                }
             }
         }
         ++j;

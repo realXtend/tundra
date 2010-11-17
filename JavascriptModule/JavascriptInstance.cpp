@@ -102,39 +102,40 @@ QString JavascriptInstance::LoadScript() const
     return result;
 }
 
-void JavascriptInstance::IncludeFile(const QString& path)
+void JavascriptInstance::IncludeFile(const QString &path)
 {
     QFile scriptFile(path);
     if (!scriptFile.open(QIODevice::ReadOnly))
     {
-        LogError(("Failed to load script from file " + path + "!").toStdString());
+        LogError(("JavascriptInstance::IncludeFile: Failed to load script from file \"" + path + "\"!").toStdString());
         return;
     }
 
     QString script = scriptFile.readAll();
     scriptFile.close();
 
-    QScriptContext* context = engine_->currentContext();
+    QScriptContext *context = engine_->currentContext();
     assert(context);
     if (!context)
+    {
+        LogError("JavascriptInstance::IncludeFile: QScriptEngine::currentContext() returned null!");
         return;
+    }
 
-    QScriptContext* parent = context->parentContext();
-    if(parent != 0 )
+    QScriptContext *parent = context->parentContext();
+    if (!parent)
     {
-        context->setActivationObject(context->parentContext()->activationObject());
-        context->setThisObject(context->parentContext()->thisObject());
-    }
-    else
-    {
-        LogError("Did not find parent contex for script");
+        LogError("JavascriptInstance::IncludeFile: QScriptEngine::parentContext() returned null!");
         return;
     }
+
+    context->setActivationObject(context->parentContext()->activationObject());
+    context->setThisObject(context->parentContext()->thisObject());
 
     QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(script);
     if(syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
     {
-        LogError("Syntax error in " + path.toStdString() + syntaxResult.errorMessage().toStdString()
+        LogError("JavascriptInstance::IncludeFile: Syntax error in " + path.toStdString() + syntaxResult.errorMessage().toStdString()
             + " In line:" + QString::number(syntaxResult.errorLineNumber()).toStdString());
         return;
     }
@@ -143,6 +144,20 @@ void JavascriptInstance::IncludeFile(const QString& path)
 
     if (engine_->hasUncaughtException())
         LogError(result.toString().toStdString());
+}
+
+void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
+{
+    assert(engine_);
+    if (!engine_)
+    {
+        LogWarning(("JavascriptInstance::ImportExtension(" + scriptExtensionName + ") failed, QScriptEngine==null!").toStdString());
+        return;
+    }
+
+    QScriptValue success = engine_->importExtension(scriptExtensionName);
+    if (!success.isUndefined()) // Yes, importExtension returns undefinedValue if the import succeeds. http://doc.qt.nokia.com/4.7/qscriptengine.html#importExtension
+        LogWarning(std::string("JavascriptInstance::ImportExtension: Failed to load ") + scriptExtensionName.toStdString() + " plugin for QtScript!");
 }
 
 void JavascriptInstance::CreateEngine()
