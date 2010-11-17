@@ -83,7 +83,7 @@ def handle_clients(ws):
         print msg
 
         if msg is None:
-            # if there is no message the client has quit. 
+            # if there is no message the client will quit. 
             break
 
         try:
@@ -101,30 +101,49 @@ def handle_clients(ws):
             NaaliWebsocketServer.instance.newclient(myid, start_position, start_orientation)
 
             ws.send(json.dumps(['setId', {'id': myid}]))
-            sendAll(['newAvatar', {'id': myid, 'position': start_position, 'orientation': start_orientation}])
+            sendAll(['addEntity', {'id': myid}])
+            sendAll(['addComponent', {'id': myid, 'component': 'EC_Mesh', 'url': 'http://localhost:8000/WebNaali/ankka.dae'}])
+            sendAll(['addComponent',{'id': myid, 'component': 'EC_Placeable',
+                                     'x': x,
+                                     'y': y,
+                                     'z': z,
+                                     'rotx': 1.57,
+                                     'roty': 0,
+                                     'rotz': 0}])
 
-            ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent")
+            # ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent")
 
-            for ent in ents:
-                id = ent.Id
-                position = ent.placeable.Position.x(), ent.placeable.Position.y(), ent.placeable.Position.z()
-                orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
-                sendAll(['addObject', {'id': id, 'position': position, 'orientation': orientation, 'xml': scene.GetEntityXml(ent).data()}])
+            # for ent in ents:
+            #     id = ent.Id
+            #     position = ent.placeable.Position.x(), ent.placeable.Position.y(), ent.placeable.Position.z()
+            #     orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
+            #     sendAll(['addObject', {'id': id, 'position': position, 'orientation': orientation, 'xml': scene.GetEntityXml(ent).data()}])
 
         elif function == 'Naps':
             ws.send(json.dumps(['logMessage', {'message': 'Naps itelles!'}]))
             
-        elif function == 'giev update':
+        elif function == 'setAttr':
             id = params.get('id')
-            position = params.get('position')
-            orientation = params.get('orientation')
-
-            NaaliWebsocketServer.instance.updateclient(myid, position, orientation)
+            component = params.get('component')
             
+            if component == 'EC_Placeable':
+                # What to do here?
+                ent = NaaliWebsocketServer.instance.clientavs[myid]
+                position = ent.placeable.Position
+                orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
+
+                x = params.get('x', position.x())
+                y = params.get('y', position.y())
+                z = params.get('z', position.z())
+                rotx = params.get('rotx', orientation[0])
+                roty = params.get('roty', orientation[1])
+                rotz = params.get('rotz', orientation[2])
+                11
+                NaaliWebsocketServer.instance.updateclient(myid, (x, y, z), (rotx, roty, rotz))
+
             ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
-
             for ent in ents:
-
+                
                 x = ent.placeable.Position.x()
                 y = ent.placeable.Position.y()
                 z = ent.placeable.Position.z()
@@ -133,11 +152,19 @@ def handle_clients(ws):
 
                 id = ent.Id
 
-                sendAll(['updateAvatar',
+                sendAll(['addEntity', {'id': id}])
+                sendAll(['addComponent', {'id': id, 'component': 'EC_Mesh', 'url': 'http://localhost:8000/WebNaali/ankka.dae'}])
+                sendAll(['addComponent', {'id': id, 'component': 'EC_Placeable'}])
+
+                sendAll(['setAttr',
                          {'id': id,
-                          'position': (x, y, z),
-                          'orientation': orientation,
-                          }])
+                          'component': 'EC_Placeable',
+                          'x': x,
+                          'y': y,
+                          'z': z,
+                          'rotx': orientation[0],
+                          'roty': orientation[1],
+                          'rotz': orientation[2]}])
 
         elif function == 'updateObject':
             id = params['id']
@@ -149,8 +176,6 @@ def handle_clients(ws):
             
             component.SetAttribute('opened', data['opened'])
                     
-
-                
         elif function == 'setSize':
             y_max = params['height']
             x_max = params['width']
