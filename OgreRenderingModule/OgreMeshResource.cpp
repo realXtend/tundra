@@ -58,19 +58,13 @@ namespace OgreRenderer
             // For efficiency we might also just check if id_ has .mesh extension and load it with Ogre importer, and only then check
             // if it can be imported with Assimp.
             AssImp::OpenAssetImport import;
-            std::string filepath = id_;
-            size_t lastSlash = id_.find_last_of('/');
 
             QString nodename;
-            if (lastSlash != std::string::npos && lastSlash > 6)
+            QString filepath;
+            import.StripMeshnameFromAssetId(QString(id_.c_str()), filepath, nodename);
+            if (import.IsSupportedExtension(filepath))
             {
-                filepath = id_.substr(0, lastSlash);
-                nodename = QString(id_.substr(lastSlash + 1).c_str());
-            }
-            
-            if (import.IsSupportedExtension(QString(filepath.c_str())))
-            {
-                boost::filesystem::path path(filepath);
+                boost::filesystem::path path(filepath.toStdString());
                 QString extension = QString(path.extension().c_str()).toLower();
 
                 std::vector<std::string> importedMeshes;
