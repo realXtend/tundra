@@ -108,7 +108,7 @@ namespace WorldBuilding
     {
         if (!backup_button_enabled_)
         {
-            QMessageBox* message = new QMessageBox("Accecc denied", "You don't have permission to excecute this command.", QMessageBox::Icon::Critical, QMessageBox::Ok, 0, 0, 0);
+            QMessageBox* message = new QMessageBox("Accecc denied", "You don't have permission to excecute this command.", QMessageBox::Critical, QMessageBox::Ok, 0, 0, 0);
             message->show();
             return;
         }
