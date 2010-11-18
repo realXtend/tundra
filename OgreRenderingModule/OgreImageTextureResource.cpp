@@ -72,9 +72,33 @@ namespace OgreRenderer
 
         try
         {
-            Ogre::Image image;
-            ogre_texture_->convertToImage(image);
-            image.save(filename);
+            //Ogre::Image image;
+            //ogre_texture_->convertToImage(image);
+            Ogre::Image new_image;
+                    
+            // From Ogre 1.7 Texture::convertToImage()
+            size_t numMips = 1;
+            size_t dataSize = Ogre::Image::calculateSize(numMips,
+                ogre_texture_->getNumFaces(), ogre_texture_->getWidth(), ogre_texture_->getHeight(), ogre_texture_->getDepth(), ogre_texture_->getFormat());
+            void* pixData = OGRE_MALLOC(dataSize, Ogre::MEMCATEGORY_GENERAL);
+            // if there are multiple faces and mipmaps we must pack them into the data
+            // faces, then mips
+            void* currentPixData = pixData;
+            for (size_t face = 0; face < ogre_texture_->getNumFaces(); ++face)
+            {
+                for (size_t mip = 0; mip < numMips; ++mip)
+                {
+                    size_t mipDataSize = Ogre::PixelUtil::getMemorySize(ogre_texture_->getWidth(), ogre_texture_->getHeight(), ogre_texture_->getDepth(), ogre_texture_->getFormat());
+                    Ogre::PixelBox pixBox(ogre_texture_->getWidth(), ogre_texture_->getHeight(), ogre_texture_->getDepth(), ogre_texture_->getFormat(), currentPixData);
+                    ogre_texture_->getBuffer(face, mip)->blitToMemory(pixBox);
+                    currentPixData = (void*)((char*)currentPixData + mipDataSize);
+                }
+            }
+            // load, and tell Image to delete the memory when it's done.
+            new_image.loadDynamicImage((Ogre::uchar*)pixData, ogre_texture_->getWidth(), ogre_texture_->getHeight(), ogre_texture_->getDepth(), ogre_texture_->getFormat(), true, 
+                ogre_texture_->getNumFaces(), numMips - 1);
+
+            new_image.save(filename);
         } catch (std::exception &e)
         {
             OgreRenderingModule::LogError("Failed to export Ogre texture " + id_ + ":");
