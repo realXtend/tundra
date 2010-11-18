@@ -28,6 +28,17 @@
 #include "ArgumentType.h"
 #include "InvokeItem.h"
 #include "FunctionInvoker.h"
+#include "AssetEvents.h"
+#include "RexTypes.h"
+#include "OgreConversionUtils.h"
+//#include "Inventory/InventoryEvents.h"
+#include "AssetApi.h"
+#include "IAsset.h"
+#include "IAssetTransfer.h"
+#include "ResourceInterface.h"
+#ifdef OGREASSETEDITOR_ENABLED
+#  include "TexturePreviewEditor.h"
+#endif
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -85,7 +96,7 @@ AssetItem::AssetItem(const QString &name, const QString &ref, QTreeWidgetItem *p
 
 bool Selection::IsEmpty() const
 {
-    return entities.size() == 0 && components.size() == 0;
+    return entities.size() == 0 && components.size() == 0 && assets.isEmpty();
 }
 
 bool Selection::HasEntities() const
@@ -96,6 +107,11 @@ bool Selection::HasEntities() const
 bool Selection::HasComponents() const
 {
     return components.size() > 0;
+}
+
+bool Selection::HasAssets() const
+{
+    return !assets.isEmpty();
 }
 
 QList<entity_id_t> Selection::EntityIds() const
@@ -271,6 +287,47 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
 {
     assert(menu);
 
+    Selection sel = GetSelection();
+
+    if (sel.HasAssets() && !sel.HasComponents() && !sel.HasEntities())
+        AddAvailableAssetActions(menu);
+    else
+        AddAvailableEntityActions(menu);
+}
+
+void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
+{
+    assert(menu);
+
+    Selection sel = GetSelection();
+
+    QAction *action;
+#ifdef OGREASSETEDITOR_ENABLED
+    action = new QAction(tr("Edit"), menu);
+    connect(action, SIGNAL(triggered()), SLOT(Edit()));
+    menu->addAction(action);
+    menu->setDefaultAction(action);
+#endif
+
+    if (sel.assets.size() > 0)
+    {
+        
+        if (sel.assets.size() > 1)
+            action = new QAction(tr("Save selected assets..."), menu);
+        else
+        {
+            QString assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
+            action = new QAction(tr("Save") + " " + assetName + " " + tr("as..."), menu);
+        }
+        connect(action, SIGNAL(triggered()), SLOT(SaveAssetAs()));
+        menu->addAction(action);
+    } 
+}
+
+void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
+{
+    assert(menu);
+
     // "New entity...", "Import..." and "Open new scene..." actions are available always
     QAction *newEntityAction = new QAction(tr("New entity..."), menu);
     QAction *importAction = new QAction(tr("Import..."), menu);
@@ -343,6 +400,7 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
     if (hasSelection)
     {
         menu->addAction(editAction);
+        menu->setDefaultAction(editAction);
         menu->addAction(editInNewAction);
     }
 
@@ -375,8 +433,9 @@ void SceneTreeWidget::AddAvailableActions(QMenu *menu)
         menu->addAction(actionsAction);
         menu->addAction(functionsAction);
 
-        // "Functions..." is disabled if we have both entities and components selected simultaneously.
         Selection sel = GetSelection();
+
+        // "Functions..." is disabled if we have both entities and components selected simultaneously.
         if (sel.HasEntities() && sel.HasComponents())
             functionsAction->setDisabled(true);
 
@@ -422,6 +481,12 @@ Selection SceneTreeWidget::GetSelection() const
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
             if (cItem)
                 ret.components << cItem;
+            else
+            {
+                AssetItem *aItem = dynamic_cast<AssetItem *>(item);
+                if (aItem)
+                    ret.assets << aItem;
+            }
         }
     }
 
@@ -537,31 +602,54 @@ void SceneTreeWidget::Edit()
     if (selection.IsEmpty())
         return;
 
-    UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-    assert(ui);
-
-    // If we have an existing editor instance, use it.
-    if (ecEditor)
+    if (selection.HasComponents() || selection.HasEntities())
     {
+        UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
+        assert(ui);
+
+        // If we have an existing editor instance, use it.
+        if (ecEditor)
+        {
+            foreach(entity_id_t id, selection.EntityIds())
+                ecEditor->AddEntity(id);
+            ecEditor->SetSelectedEntities(selection.EntityIds());
+            ui->BringWidgetToFront(ecEditor);
+            return;
+        }
+
+        // Create new editor.
+        ecEditor = new ECEditor::ECEditorWindow(framework);
+        ecEditor->setAttribute(Qt::WA_DeleteOnClose);
+        ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
+        ecEditor->hide();
         foreach(entity_id_t id, selection.EntityIds())
             ecEditor->AddEntity(id);
         ecEditor->SetSelectedEntities(selection.EntityIds());
+
+        ui->AddWidgetToScene(ecEditor);
+        ui->ShowWidget(ecEditor);
         ui->BringWidgetToFront(ecEditor);
-        return;
+    } else
+    {
+#ifdef OGREASSETEDITOR_ENABLED
+        foreach(AssetItem *aItem, selection.assets)
+        {
+            int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
+
+            if (itype == RexTypes::RexAT_Mesh)
+            {
+       //         Asset::Events::AssetOpen event_data(QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), QString::number(itype));
+                Asset::Events::AssetOpen event_data(aItem->id, QString::number(itype));
+
+                //Inventory::InventoryItemOpenEventData event_data(
+                framework->GetEventManager()->SendEvent(framework->GetEventManager()->QueryEventCategory("Asset"), Asset::Events::ASSET_OPEN, &event_data);
+            } else
+            {
+                TexturePreviewEditor::CreatePreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
+            }
+        }
+#endif
     }
-
-    // Create new editor.
-    ecEditor = new ECEditor::ECEditorWindow(framework);
-    ecEditor->setAttribute(Qt::WA_DeleteOnClose);
-    ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
-    ecEditor->hide();
-    foreach(entity_id_t id, selection.EntityIds())
-        ecEditor->AddEntity(id);
-    ecEditor->SetSelectedEntities(selection.EntityIds());
-
-    ui->AddWidgetToScene(ecEditor);
-    ui->ShowWidget(ecEditor);
-    ui->BringWidgetToFront(ecEditor);
 }
 
 void SceneTreeWidget::EditInNew()
@@ -1285,5 +1373,80 @@ void SceneTreeWidget::InvokeActionTriggered()
                 LogInfo("Invoked function returned " + retVal.toString().toStdString());
             }
         }
+    }
+}
+
+
+void SceneTreeWidget::SaveAssetAs()
+{
+    Selection sel = GetSelection();
+    QString assetName;
+
+    if (fileDialog)
+        fileDialog->close();
+
+    if (sel.assets.size() == 1)
+    {
+        assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
+
+        fileDialog = QtUtils::SaveFileDialogNonModal("",
+            tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+    } else
+    {
+        QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+    }
+}
+
+void SceneTreeWidget::SaveAssetDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+
+    if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().isEmpty() || scene.expired())
+        return;
+
+    QStringList files = dialog->selectedFiles();
+    Selection sel = GetSelection();
+    
+    bool isDir = QDir(files[0]).exists();
+
+    if ((sel.assets.size() == 1 && isDir) || (sel.assets.size() > 1 && !isDir))
+    {
+        // should not happen normally, so just log error. No prompt for user.
+        LogError("Could not save asset: no such directory.");
+        return;
+    }
+
+    foreach(AssetItem *aItem, sel.assets)
+    {
+        IAssetTransfer *transfer = framework->Asset()->RequestAsset(aItem->id);
+
+        // if saving multiple assets, append filename to directory
+        QString filename = files[0];
+        if (isDir)
+        {
+            QString assetName = aItem->id.right(aItem->id.size() - aItem->id.lastIndexOf("://") - 3);
+            filename += QDir::separator() + assetName;
+        }
+
+        filesaves_.insert(transfer, filename);
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(AssetLoaded()));
+    }
+}
+
+void SceneTreeWidget::AssetLoaded()
+{
+    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
+    assert(transfer && "Do not call directly, only through signal.");
+
+    assert (filesaves_.contains(transfer));
+
+    QString filename = filesaves_.take(transfer);
+    if (!transfer->resourcePtr->Export(filename.toStdString()))
+    {
+        LogError("Could not save asset to file " + filename.toStdString() + ".");
+        QMessageBox box(QMessageBox::Warning, tr("Save asset"), tr("Failed to save asset."), QMessageBox::Ok);
+        box.setInformativeText(tr("Please check the selected storage device can be written to."));
+        box.exec();
     }
 }

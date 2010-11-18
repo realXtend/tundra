@@ -103,7 +103,8 @@ void TexturePreviewEditor::Closed()
 
     ui->RemoveWidgetFromScene(this);
 
-    emit Closed(inventoryId_, assetType_);
+    // Must be last line in this function, since it is possible this causes the deletion of this object
+    emit Closed(inventoryId_);
 }
 
 void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
@@ -290,6 +291,11 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
      
     Ogre::ResourcePtr res = Ogre::TextureManager::getSingleton().getByName(name.toStdString().c_str());
     Ogre::Texture* tex = static_cast<Ogre::Texture* >(res.get());
+    if (!tex)
+    {
+        LogWarning("Failed to open Ogre texture " + name.toStdString() + " .");
+        return;
+    }
 
     int width = tex->getWidth();
     int height = tex->getHeight();

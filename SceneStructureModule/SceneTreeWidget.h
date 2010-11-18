@@ -23,6 +23,7 @@ namespace ECEditor
 
 struct InvokeItem;
 class IArgumentType;
+class IAssetTransfer;
 
 class QWidget;
 class QFileDialog;
@@ -99,11 +100,15 @@ struct Selection
     /// Returns true if selected contains components.
     bool HasComponents() const;
 
+    /// Returns true if selection contains assets.
+    bool HasAssets() const;
+
     /// Returns list containing unique entity ID's of both selected entities and parent entities of selected components
     QList<entity_id_t> EntityIds() const;
 
     QList<EntityItem *> entities; ///< List of selected entities.
     QList<ComponentItem *> components; ///< List of selected components.
+    QList<AssetItem *> assets; ///< List of selected asset refs
 };
 
 /// Context menu for SceneTreeWidget.
@@ -165,9 +170,19 @@ protected:
 
 private:
     /// Creates and adds applicable actions to the right-click context menu.
-    /** @param [out] menu Context menu.
+    /** @param menu Context menu.
     */
     void AddAvailableActions(QMenu *menu);
+
+    /// Creates and adds applicable asset actions to the right-click context menu.
+    /** @param menu Context menu.
+    */
+    void AddAvailableAssetActions(QMenu *menu);
+
+    /// Creates and adds applicable entity and component actions to the right-click context menu.
+    /** @param menu Context menu.
+    */
+    void AddAvailableEntityActions(QMenu *menu);
 
     /// Returns selected items as Selection struct, which contains both selected entities and components.
     Selection GetSelection() const;
@@ -207,6 +222,8 @@ private:
 
     /// Context menu.
     QPointer<Menu> contextMenu;
+
+    QMap<IAssetTransfer*, QString> filesaves_;
 
 private slots:
     /// Opens selected entities in EC editor window. An existing editor window is used if possible.
@@ -290,6 +307,17 @@ private slots:
 
     /// Executes invoke item or opens it for editing.
     void InvokeActionTriggered();
+
+    //! Save selected asset as
+    void SaveAssetAs();
+
+    /// Called by SaveAssetAs save file dialog when it's closed.
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
+    */
+    void SaveAssetDialogClosed(int result);
+
+    void AssetLoaded();
 };
+
 
 #endif
