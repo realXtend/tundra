@@ -65,6 +65,22 @@ Q_DECLARE_METATYPE(DelayedSignal*);
 //! Naali renderer defines
 Q_DECLARE_METATYPE(RaycastResult*);
 
+QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
+{
+    if(ctx->argumentCount() == 2)
+    {
+        QObject *object = qscriptvalue_cast<QObject*>(ctx->argument(0));
+        QString childName = qscriptvalue_cast<QString>(ctx->argument(1));
+        if(object)
+        {
+            QObject *obj = object->findChild<QObject*>(childName);
+            if (obj)
+                return eng->newQObject(obj);
+        }
+    }
+    return QScriptValue();
+}
+
 void ExposeQtMetaTypes(QScriptEngine *engine)
 {
     assert(engine);
@@ -77,6 +93,7 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("QWidget", object);
     object = engine->scriptValueFromQMetaObject<QTimer>();
     engine->globalObject().setProperty("QTimer", object);
+    engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
 /*
     ImportExtension(engine, "qt.core");
     ImportExtension(engine, "qt.gui");
