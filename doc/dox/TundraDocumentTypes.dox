@@ -19,8 +19,9 @@ On Windows, you can automatically set up a context menu handler for these file t
 If you are running a binary release of Tundra using an installer, this should be automatically done for you. This topic concerns developers who have built Tundra from the source tree.
 
 <ol>
-<li>In the folder GitTrunk\tools there is a file TundraExtHandler.reg. Edit this file by replacing all occurrences of the string "C:\\ReplaceWithAbsoluteTundraInstallationDirectory" with the bin-directory where you have built Tundra in.
-<li>Double-click on the .reg file and add it to the registry.
+<li>In the Git trunk repository folder <b>tools</b> there is a file TundraExtHandler.reg. Edit this file by replacing all occurrences of the string "C:\\ReplaceWithAbsoluteTundraInstallationDirectory" with the bin-directory where you have built Tundra in. Remember to double each '\' sign in the path.
+<li>Additionally, there is a TundraExtHandlerDebug.reg file in the same folder. This registers the invokation of debug-mode executables (serverd.exe and viewerd.exe) into the context menu, which can be useful if you are developing your own code. 
+<li>Double-click on the .reg file(s) and add it to the registry.
 <li>Log out and log back in (or restart your computer)
 </ol>
 
