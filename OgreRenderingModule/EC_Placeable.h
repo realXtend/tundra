@@ -64,14 +64,14 @@ public:
     Q_PROPERTY(QVector3D position READ getposition WRITE setposition)
     Attribute<QVector3D> position;
     QVector3D getposition() const { return position.Get(); }
-    void setposition(QVector3D value) { SetQPosition(value); position.Set(value, AttributeChange::Default); }
+    void setposition(QVector3D value) { SetQPosition(value); }
     
     
     Q_PROPERTY(QVector3D Scale READ GetQScale WRITE SetQScale)
     Q_PROPERTY(QVector3D scale READ getscale WRITE setscale)
     Attribute<QVector3D> scale;
     QVector3D getscale() const { return scale.Get(); }
-    void setscale(QVector3D value) { SetQScale(value); scale.Set(value, AttributeChange::Default); }
+    void setscale(QVector3D value) { SetQScale(value); }
     
     Q_PROPERTY(QQuaternion Orientation READ GetQOrientation WRITE SetQOrientation)
     Q_PROPERTY(QVector3D LocalXAxis READ GetQLocalXAxis)
