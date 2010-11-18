@@ -6,12 +6,15 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "SceneEvents.h"
+#include "SceneDesc.h"
+#include "IComponent.h"
+#include "IAttribute.h"
+#include "EC_Name.h"
+
 #include "Framework.h"
 #include "ComponentManager.h"
 #include "EventManager.h"
-#include "IComponent.h"
 #include "ForwardDefines.h"
-#include "EC_Name.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
@@ -24,6 +27,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
+#include "Profiler.h"
 
 using namespace kNet;
 
@@ -33,7 +37,8 @@ namespace Scene
         framework_(0),
         gid_(1),
         gid_local_(LocalEntity + 1),
-        viewenabled_(true)
+        viewenabled_(true),
+        interpolating_(false)
     {
     }
     
@@ -41,7 +46,8 @@ namespace Scene
         name_(name),
         framework_(framework),
         gid_(1),
-        gid_local_(LocalEntity + 1)
+        gid_local_(LocalEntity + 1),
+        interpolating_(false)
     {
         // In headless mode only view disabled-scenes can be created
         if (framework->IsHeadless())
@@ -52,6 +58,8 @@ namespace Scene
 
     SceneManager::~SceneManager()
     {
+        EndAllAttributeInterpolations();
+        
         // Do not send entity removal or scene cleared events on destruction
         RemoveAllEntities(false);
         
@@ -642,6 +650,207 @@ namespace Scene
         return ret;
     }
 
+    SceneDesc SceneManager::GetSceneDescription(const QString &filename) const
+    {
+        ///\todo Maybe refine and break this function into more logical and/or smaller parts?
+        SceneDesc sceneDesc;
+        QDomDocument scene_doc("Scene");
+        
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("Failed to open file " + filename.toStdString() + " when trying to create scene description.");
+            return sceneDesc;
+        }
+
+        if (filename.toLower().indexOf(".txml") != -1)
+        {
+            if (!scene_doc.setContent(&file))
+            {
+                LogError("Parsing scene XML from "+ filename.toStdString() + " failed when loading scene xml.");
+                file.close();
+                return sceneDesc;
+            }
+
+            file.close();
+
+            // Check for existence of the scene element before we begin
+            QDomElement scene_elem = scene_doc.firstChildElement("scene");
+            if (scene_elem.isNull())
+            {
+                LogError("Could not find 'scene' element from XML.");
+                return sceneDesc;
+            }
+
+            QDomElement ent_elem = scene_elem.firstChildElement("entity");
+            while (!ent_elem.isNull())
+            {
+                QString id_str = ent_elem.attribute("id");
+                if (!id_str.isEmpty())
+                {
+                    EntityDesc entityDesc;
+                    entityDesc.id = id_str;
+                    /*
+                    entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
+                    if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
+                    {
+                        if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
+                            RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+                        else // Create a new ID for the new entity.
+                        {
+                            if ((id & LocalEntity) != 0) // Check if the ID is local
+                                id = GetNextFreeIdLocal();
+                            else
+                                id = GetNextFreeId();
+                        }
+                    }
+                    */
+                    //EntityPtr entity = CreateEntity(id);
+                    //if (entity)
+                    {
+                        QDomElement comp_elem = ent_elem.firstChildElement("component");
+                        while(!comp_elem.isNull())
+                        {
+                            QString type_name = comp_elem.attribute("type");
+                            QString name = comp_elem.attribute("name");
+                            ComponentDesc compDesc;
+                            compDesc.typeName = type_name;
+                            compDesc.name = name;
+
+                            // A bit of a hack to get the name from EC_Name.
+                            if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
+                            {
+                                ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+                                EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
+                                ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                                entityDesc.name = ecName->name.Get();
+                            }
+
+                            // Find asset references.
+                            ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+                            comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                            foreach(IAttribute *a,comp->GetAttributes())
+                                if (a->TypenameToString() == "assetreference" && !a->ToString().empty())
+                                {
+                                    AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                                    compDesc.attributes.append(attrDesc);
+                                }
+
+                            entityDesc.components.append(compDesc);
+
+                            comp_elem = comp_elem.nextSiblingElement("component");
+                        }
+
+                        sceneDesc.entities.append(entityDesc);
+                    }
+                }
+
+                // Process siblings.
+                ent_elem = ent_elem.nextSiblingElement("entity");
+            }
+        }
+#if 0
+        else if (filename.toLower().indexOf(".tbin") != -1)
+        {
+            QByteArray bytes = file.readAll();
+            file.close();
+            
+            if (!bytes.size())
+            {
+                LogError("File " + filename.toStdString() + " contained 0 bytes when trying to create scene description.");
+                return sceneDesc;
+            }
+
+            try
+            {
+                DataDeserializer source(bytes.data(), bytes.size());
+                
+                uint num_entities = source.Read<u32>();
+                for (uint i = 0; i < num_entities; ++i)
+                {
+                    EntityDesc entityDesc;
+                    entity_id_t id = source.Read<u32>();
+                    entityDesc.id = QString::number((int)id);
+                    /*
+                    if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
+                    {
+                        if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
+                            RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+                        else // Create a new ID for the new entity.
+                        {
+                            if ((id & LocalEntity) != 0) // Check if the ID is local
+                                id = GetNextFreeIdLocal();
+                            else
+                                id = GetNextFreeId();
+                        }
+                    }
+
+                    EntityPtr entity = CreateEntity(id);
+                    if (!entity)
+                    {
+                        std::cout << "Failed to create entity, stopping scene load" << std::endl;
+                        return ret; // If entity creation fails, stream desync is more than likely so stop right here
+                    }
+                    */
+                    
+                    uint num_components = source.Read<u32>();
+                    for (uint i = 0; i < num_components; ++i)
+                    {
+                        uint type_hash = source.Read<u32>();
+                        type_hash;
+                        QString name = QString::fromStdString(source.ReadString());
+                        bool sync = source.Read<u8>() ? true : false;
+                        sync;
+                        uint data_size = source.Read<u32>();
+                        
+                        // Read the component data into a separate byte array, then deserialize from there.
+                        // This way the whole stream should not desync even if something goes wrong
+                        QByteArray comp_bytes;
+                        comp_bytes.resize(data_size);
+                        if (data_size)
+                            source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
+                        /*
+                        try
+                        {
+                            ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
+                            if (new_comp)
+                            {
+                                new_comp->SetNetworkSyncEnabled(sync);
+                                if (data_size)
+                                {
+                                    DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
+                                    // Trigger no signal yet when scene is in incoherent state
+                                    new_comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
+                                }
+                            }
+                            else
+                                LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                        }
+                        catch (...)
+                        {
+                            LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                        }
+                        */
+                    }
+
+                    sceneDesc.entities.append(entityDesc);
+                }
+            }
+            catch (...)
+            {
+                // Note: if exception happens, no change signals are emitted
+                return SceneDesc();
+            }
+        }
+#endif
+        else
+        {
+            LogError("Unsupported file extension : " + filename.toStdString() + " when trying to create scene description.");
+        }
+
+        return sceneDesc;
+    }
+
     QByteArray SceneManager::GetEntityXml(Scene::Entity *entity)
     {
         QDomDocument scene_doc("Scene");
@@ -666,6 +875,124 @@ namespace Scene
         scene_doc.appendChild(scene_elem);
         
         return scene_doc.toByteArray();
+    }
+    
+    bool SceneManager::StartAttributeInterpolation(IAttribute* attr, IAttribute* endvalue, float length)
+    {
+        if (!endvalue)
+            return false;
+        
+        IComponent* comp = attr ? attr->GetOwner() : 0;
+        Entity* entity = comp ? comp->GetParentEntity() : 0;
+        SceneManager* scene = entity ? entity->GetScene() : 0;
+        
+        if ((length <= 0.0f) || (!attr) || (!attr->HasMetadata()) || (attr->GetMetadata()->interpolation == AttributeMetadata::None) || (!comp) || (comp->HasDynamicStructure()) 
+            || (!entity) || (!scene) || (scene != this))
+        {
+            delete endvalue;
+            return false;
+        }
+        
+        // End previous interpolation if existed
+        bool previous = EndAttributeInterpolation(attr);
+        
+        // If previous interpolation does not exist, perform a direct snapping to the end value
+        // but still start an interpolation period, so that on the next update we detect that an interpolation is going on,
+        // and will interpolate normally
+        if (!previous)
+            attr->CopyValue(endvalue, AttributeChange::LocalOnly);
+        
+        AttributeInterpolation newInterp;
+        newInterp.entityid_ = entity->GetId();
+        newInterp.comp_name_ = comp->Name();
+        newInterp.comp_typenamehash_ = comp->TypeNameHash();
+        newInterp.dest_ = attr;
+        newInterp.start_ = attr->Clone();
+        newInterp.end_ = endvalue;
+        newInterp.length_ = length;
+        
+        interpolations_.push_back(newInterp);
+        return true;
+    }
+    
+    bool SceneManager::EndAttributeInterpolation(IAttribute* attr)
+    {
+        for (uint i = 0; i < interpolations_.size(); ++i)
+        {
+            AttributeInterpolation& interp = interpolations_[i];
+            if (interp.dest_ == attr)
+            {
+                delete interp.start_;
+                delete interp.end_;
+                interpolations_.erase(interpolations_.begin() + i);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    void SceneManager::EndAllAttributeInterpolations()
+    {
+        for (uint i = 0; i < interpolations_.size(); ++i)
+        {
+            AttributeInterpolation& interp = interpolations_[i];
+            delete interp.start_;
+            delete interp.end_;
+        }
+        
+        interpolations_.clear();
+    }
+    
+    void SceneManager::UpdateAttributeInterpolations(float frametime)
+    {
+        PROFILE(Scene_UpdateInterpolation);
+        
+        interpolating_ = true;
+        
+        for (uint i = interpolations_.size() - 1; i < interpolations_.size(); --i)
+        {
+            AttributeInterpolation& interp = interpolations_[i];
+            bool finished = false;
+            
+            // Check that the entity & component exist ie. it's safe to access the attribute
+            Entity* entity = GetEntity(interp.entityid_).get();
+            IComponent* comp = 0;
+            if (entity)
+                comp = entity->GetComponent(interp.comp_typenamehash_, interp.comp_name_).get();
+            
+            if (comp)
+            {
+                // Allow the interpolation to persist for 2x time, though we are no longer setting the value
+                // This is for the continuous/discontinuous update detection in StartAttributeInterpolation()
+                if (interp.time_ <= interp.length_)
+                {
+                    interp.time_ += frametime;
+                    float t = interp.time_ / interp.length_;
+                    if (t > 1.0f)
+                        t = 1.0f;
+                    interp.dest_->Interpolate(interp.start_, interp.end_, t, AttributeChange::LocalOnly);
+                }
+                else
+                {
+                    interp.time_ += frametime;
+                    if (interp.time_ >= interp.length_ * 2.0f)
+                        finished = true;
+                }
+            }
+            else
+                // Component could not be found, abort this interpolation
+                finished = true;
+            
+            // Remove interpolation (& delete start/endpoints) when done
+            if (finished)
+            {
+                delete interp.start_;
+                delete interp.end_;
+                interpolations_.erase(interpolations_.begin() + i);
+            }
+        }
+        
+        interpolating_ = false;
     }
 }
 

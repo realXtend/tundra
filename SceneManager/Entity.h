@@ -30,7 +30,7 @@ namespace Scene
         Entities should not be directly created, instead use SceneManager::CreateEntity().
 
         Each component type that is added to this entity is registered as
-        Q_PROPETY as in following syntax EC_Light -> light, where EC_ is cutted off
+        Q_PROPERTY as in following syntax EC_Light -> light, where EC_ is cutted off
         and name is converted to low case format. This allow scripter to get access to
         component using a following code "entity.mesh.SetMesh("mesh id");"
         
@@ -344,7 +344,7 @@ namespace Scene
         QString GetDescription() const;
 
         //! Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
-        void RemoveComponentRaw(IComponent* comp);
+        void RemoveComponentRaw(QObject* comp);
 
         //! Returns actions map for introspection/reflection.
         const ActionMap &Actions() const { return actions_; }

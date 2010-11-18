@@ -154,6 +154,10 @@ public slots:
     */
     bool IsPivotInside(Scene::Entity *entity) const;
 
+    /// Returns true if given world coordinate point is inside volume. 
+    bool IsInsideVolume(const Vector3df& point) const;
+
+
 private slots:
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);

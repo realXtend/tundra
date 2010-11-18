@@ -26,7 +26,7 @@ class IComponent;
 class QScriptValue;
 
 //! Attribute metadata contains information about the attribute: description (e.g. "color" or "direction",
-/*! possible min and max values mapping of enumeration signatures and values.
+/*! possible min and max values, mapping of enumeration signatures and values, and interpolation mode.
  *
  *  Usage example (we're assuming that you have attribute "Attribute<float> range" as member variable):
  *
@@ -40,6 +40,12 @@ class QScriptValue;
 class AttributeMetadata
 {
 public:
+    enum InterpolationMode
+    {
+        None,
+        Interpolate
+    };
+
     typedef std::map<int, std::string> EnumDescMap_t;
 
     //! Default constructor.
@@ -50,9 +56,18 @@ public:
      *  \param min Minimum value.
      *  \param max Maximum value.
      *  \param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
+        \param interpolation Interpolation mode for clients
      */
-    AttributeMetadata(const QString &desc, const QString &min = "",
-        const QString &max = "", const QString &step = "", const EnumDescMap_t &enum_desc= EnumDescMap_t()) {}
+    AttributeMetadata(const QString &desc_, const QString &min_ = "", const QString &max_ = "", const QString &step_ = "", 
+        const EnumDescMap_t &enums_ = EnumDescMap_t(), InterpolationMode interpolation_ = None) :
+        description(desc_),
+        minimum(min_),
+        maximum(max_),
+        step(step_),
+        enums(enums_),
+        interpolation(interpolation_)
+    {
+    }
 
     //! Destructor.
     ~AttributeMetadata() {}
@@ -61,14 +76,17 @@ public:
     QString description;
 
     //! Minimum value.
-    QString min;
+    QString minimum;
 
     //! Maximum value.
-    QString max;
+    QString maximum;
 
     //! Step value.
     QString step;
 
+    //! Interpolation mode for clients
+    InterpolationMode interpolation;
+    
     //! Mapping of enumeration's signatures (in readable form) and actual values.
     EnumDescMap_t enums;
 
@@ -92,14 +110,6 @@ public:
     //! Destructor.
     virtual ~IAttribute() {}
 
-    //! Sets attribute null i.e. its value should be fetched from a parent entity
-    /*! \todo Not implemented yet. Implement parent entity concept and fetching of values
-     */
-    void SetNull(bool enable) { null_ = enable; }
-
-    //! Returns true if the attribute is null i.e. its value should be fetched from a parent entity
-    bool IsNull() const { return null_; }
-
     //! Returns attributes owner component.
     IComponent* GetOwner() const { return owner_; }
 
@@ -120,11 +130,6 @@ public:
     
     //! Read attribute from binary for binary deserialization
     virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change) = 0;
-
-    //! Compare current value of attribute to binary deserialized data
-    /*! \return true if different (deltaserialization needed)
-     */
-    virtual bool CompareBinary(kNet::DataDeserializer& source) const = 0;
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const = 0;
@@ -157,6 +162,28 @@ public:
     //! of this attribute.
     void Changed(AttributeChange::Type change);
 
+    //! Creates a clone of this attribute by dynamic allocation.
+    /*! The caller is responsible for eventually freeing the created attribute. The clone will have the same type and value, but no owner.
+        This is meant to be used by network sync managers and such, that need to do interpolation/extrapolation/dead reckoning.
+     */
+    virtual IAttribute* Clone() const = 0;
+    
+    //! Copies the value from another attribute of the same type.
+    virtual void CopyValue(IAttribute* source, AttributeChange::Type change) = 0;
+    
+    //! Interpolates the value of this attribute based on two values, and a lerp factor between 0 and 1
+    /*! The attributes given must be of the same type for the result to be defined.
+        Is a no-op if the attribute (for example string) does not support interpolation.
+        The value will be set using the given changetype.
+     */
+    virtual void Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change) = 0;
+    
+    //! Sets attribute null i.e. its value should be fetched from a parent entity
+    //void SetNull(bool enable) { null_ = enable; }
+
+    //! Returns true if the attribute is null i.e. its value should be fetched from a parent entity
+    //bool IsNull() const { return null_; }
+    
 protected:
     //! Owning component
     IComponent* owner_;
@@ -164,11 +191,13 @@ protected:
     //! Name of attribute
     std::string name_;
 
-    //! Null flag. If attribute is null, its value should be fetched from a parent entity
-    bool null_;
-
     //! Possible attribute metadata.
     AttributeMetadata *metadata_;
+
+    //! Null flag. If attribute is null, its value should be fetched from a parent entity
+    /*! \todo To be thinked about more thoroughly in the future, and then possibly implemented
+     */
+    // bool null_;
 };
 
 typedef std::vector<IAttribute*> AttributeVector;
@@ -210,6 +239,24 @@ public:
         Changed(change);
     }
     
+    //! IAttribute override
+    virtual IAttribute* Clone() const
+    {
+        Attribute<T>* new_attr = new Attribute<T>(0, name_.c_str());
+        new_attr->metadata_ = metadata_;
+        // The new attribute has no owner, so the Changed function will have no effect, and therefore the changetype does not actually matter
+        new_attr->Set(Get(), AttributeChange::Disconnected);
+        return static_cast<IAttribute*>(new_attr);
+    }
+    
+    //! IAttribute override
+    virtual void CopyValue(IAttribute* source, AttributeChange::Type change)
+    {
+        Attribute<T>* source_attr = dynamic_cast<Attribute<T>*>(source);
+        if (source_attr)
+            Set(source_attr->Get(), change);
+    }
+    
     //! IAttribute override.
     virtual std::string ToString() const;
 
@@ -223,8 +270,8 @@ public:
     virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
     //! IAttribute override
-    virtual bool CompareBinary(kNet::DataDeserializer& source) const;
-
+    virtual void Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change);
+    
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const;
 

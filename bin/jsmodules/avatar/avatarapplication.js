@@ -48,7 +48,7 @@ function ClientHandleToggleCamera()
 function ServerHandleUserConnected(connectionID, username)
 {
     var avatarEntityName = "Avatar" + connectionID;
-    var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable"]);
+    var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController"]);
     avatarEntity.SetName(avatarEntityName);
     avatarEntity.SetDescription(username);
 
@@ -67,7 +67,7 @@ function ServerHandleUserConnected(connectionID, username)
     transform.pos.z = avatar_area_z;
     placeable.transform = transform;
 
-    scene.EmitEntityCreated(avatarEntity);
+    scene.EmitEntityCreatedRaw(avatarEntity);
 }
 
 function ServerHandleUserDisconnected(connectionID)
