@@ -19,7 +19,6 @@ use_package_assimp()
 
 use_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule TundraLogicModule
     OgreRenderingModule AssetModule RexCommon)
-#	ProtocolUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
