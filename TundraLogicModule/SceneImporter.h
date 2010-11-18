@@ -17,9 +17,11 @@
 #include "IAttribute.h"
 #include "Transform.h"
 
+#include <map>
+
 class QDomElement;
 
-#include <map>
+struct SceneDesc;
 
 namespace Foundation
 {
@@ -79,6 +81,11 @@ public:
      */
     bool ParseMeshForMaterialsAndSkeleton(const std::string& meshname, std::vector<std::string>& material_names, std::string& skeleton_name);
 
+    /// Inspects file and returns a scene description structure of the contents of the file.
+    /** @param filename File name.
+    */
+    SceneDesc GetSceneDescription(const QString &filename) const;
+
 private:
     //! Process the asset references of a node, and its child nodes
     /*! \param node_elem Node element
@@ -131,19 +138,21 @@ private:
         \return true if successful
      */
     bool CopyAsset(const std::string& name, const std::string& in_asset_dir, const std::string& out_asset_dir);
-    
+
     //! Materials read from meshes, in case of no subentity elements
     std::map<std::string, std::vector<std::string> > mesh_default_materials_;
-    
+
     //! Materials encountered in scene
     std::set<std::string> material_names_;
+
     //! Meshes encountered in scene
     /*! For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored.
      */
     std::map<std::string, std::string> mesh_names_;
+
     //! Nodes already created into the scene. Used for name-based "update import" logic
     std::set<std::string> node_names_;
-    
+
     //! Destination scene.
     Scene::ScenePtr scene_;
 };
