@@ -47,8 +47,9 @@ See the following pages for help on working on the Naali codebase.
 <li><a href="http://wiki.realxtend.org/index.php/Header_Usage_Best_Practices">Header usage best practices</a>.
 <li><a href="http://doc.qt.nokia.com/">Qt documentation</a>.
 <li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.
-<li>\ref component_base "Entity-Component Reference"
-<li>\ref ScriptSamples "Scripting Samples"
+<li>\ref component_base "Entity-Component reference."
+<li>\ref ScriptSamples "Scripting samples."
+<li>\ref TundraDocumentfiles "Working with Tundra document files."
 </ul>
 </td>
 </tr>
