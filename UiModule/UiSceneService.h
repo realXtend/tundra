@@ -168,6 +168,11 @@ namespace UiServices
 		*/
 		void SetPanelsList(const QString& old_name, const QString& new_name);
 
+		/* Mehtod to change in fullscreenmode
+		*
+		*/
+		void ToggleFullScreen();
+
 //$ END_MOD $
 
     private slots:

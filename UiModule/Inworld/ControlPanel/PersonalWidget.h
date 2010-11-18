@@ -7,7 +7,12 @@
 
 #include "UiTypes.h"
 #include "UiProxyWidget.h"
+
+#ifdef PLAYER_VIEWER
+#include "ui_PersonalWidgetPlayer.h"
+#else
 #include "ui_PersonalWidget.h"
+#endif
 
 namespace CoreUi
 {

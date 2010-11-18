@@ -157,9 +157,14 @@ namespace UiServices
 		//Get config parameters
 		int width = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_width", 800);
         int height = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_height", 600);
-		
-        bool maximized = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", false); 
+	
+#ifdef PLAYER_VIEWER
+        bool maximized = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", true);
+		bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", true);
+#else
+		bool maximized = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", false);
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", false);
+#endif
 
 		//Assign parameters to our window
 		qtWin_->setWindowTitle(window_title);
@@ -177,7 +182,10 @@ namespace UiServices
 		 qtWin_->setMenuBar(menuBar);
 				
 		//Show  window
-		qtWin_->show();		
+		 if (!fullscreen)
+			 qtWin_->showNormal();
+		else
+			qtWin_->showFullScreen();	
 	}
 	//$ END_MOD $
 
@@ -313,8 +321,18 @@ namespace UiServices
             ui_state_machine_->ToggleEther();
 
         if (key->keyCode == toggleWorldChat)
-            inworld_scene_controller_->SetFocusToChat();
+            inworld_scene_controller_->SetFocusToChat();		
     }
+
+	//$ BEGIN_MOD $
+	void UiModule::ToggleFullScreen()
+	{
+		if (qtWin_->isFullScreen())
+			qtWin_->showNormal();
+		else
+			qtWin_->showFullScreen();
+	}
+	//$ END_MOD $
 
     void UiModule::OnSceneChanged(const QString &old_name, const QString &new_name)
     {

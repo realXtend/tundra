@@ -84,7 +84,11 @@ namespace CoreUi
         QList<UiServices::ControlButtonType> buttons;
 		//$ BEGIN_MOD $
 		//$ MOD_DESCRIPTION We want to disable Quit and Ether options $
+#ifdef PLAYER_VIEWER
+        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
+#else
 		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
+#endif
 		//buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
 		//$ END_MOD $
 
@@ -215,6 +219,8 @@ namespace CoreUi
 	//$ BEGIN_MOD $
 	    void ControlPanelManager::CreateOptionalControls()
     {
+#ifdef PLAYER_VIEWER
+		//If player_viewer is defined, the buttons are placed above
         QList<UiServices::ControlButtonType> buttons;
         buttons  << UiServices::Build << UiServices::Ether;
 
@@ -238,6 +244,7 @@ namespace CoreUi
             previous_button = button;
         }
         UpdateBackdrop();
+#endif
     }
 	//$ END_MOD $
 

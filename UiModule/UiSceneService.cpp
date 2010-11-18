@@ -342,7 +342,7 @@ namespace UiServices
 					widget->setParent(0);
 					proxy->setWidget(widget);
 					if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
-						owner_->GetInworldSceneController()->BringProxyToFront(widget);
+						owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
 						if (panels_menus_list_.contains(widget->windowTitle())){
 							menusPair par = panels_menus_list_.value(widget->windowTitle());
 							owner_->GetInworldSceneController()->AddWidgetToMenu(proxy, proxy->windowTitle(), par.first, par.second);
@@ -563,6 +563,10 @@ namespace UiServices
 	void UiSceneService::SetPanelsList(const QString& old_name, const QString& new_name) {
 		if (settings_panel_ && old_name == "Ether" && uiExternal)
 			settings_panel_->SetPanelsList(panels_menus_list_.keys());
+	}
+
+	void UiSceneService::ToggleFullScreen(){
+		owner_->ToggleFullScreen();
 	}
 
 //$ END_MOD $

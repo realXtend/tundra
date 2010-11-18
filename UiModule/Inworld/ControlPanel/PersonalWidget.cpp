@@ -22,13 +22,21 @@ namespace CoreUi
         connect(avatarToggle, SIGNAL(clicked()), SLOT(AvatarToggle()));
 		//$ BEGIN_MOD $
 		//Deleted from ui to check behaviour
+#ifdef PLAYER_VIEWER
+		//Dont create inventory item...
+#else
         connect(inventoryToggle, SIGNAL(clicked()), SLOT(InventoryToggle()));
+#endif
 		//$ END_MOD $
 
 
         CheckStyle(false, "avatarToggle");
 		//$ BEGIN_MOD $
+#ifdef PLAYER_VIEWER
+		//Dont create inventory item...
+#else
         CheckStyle(false, "inventoryToggle");
+#endif
 		//$ END_MOD $
     }
 
@@ -117,6 +125,10 @@ namespace CoreUi
         else if (type == "inventoryToggle")
         {
 			//$ BEGIN_MOD $
+#ifdef PLAYER_VIEWER
+		//Dont create inventory item...
+		return;
+#else
 			//Deleted from ui to check behaviour
             button = inventoryToggle;
             if (!pressed_down)
@@ -125,6 +137,7 @@ namespace CoreUi
                 image_normal += "uibutton_INV_click.png";
             image_hover += "uibutton_INV_hover.png"; 
             image_pressed += "uibutton_INV_click.png";
+#endif
 			//$ END_MOD $
         }
         else

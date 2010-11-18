@@ -76,6 +76,10 @@ namespace UiServices
 
         Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
 
+		//$ BEGIN_MOD $
+		void ToggleFullScreen();
+		//$ END_MOD $
+
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
 
