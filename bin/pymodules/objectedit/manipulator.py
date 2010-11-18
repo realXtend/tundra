@@ -411,10 +411,11 @@ class ScaleManipulator(Manipulator):
             elif self.grabbed_axis == self.AXIS_GREEN:
                 changevec.setX(0)
                 changevec.setZ(0)
-            
-            ent.placeable.Scale += changevec
+            self.manipulator.gizmo.Manipulate(changevec)
+
     def setAttributes(self, ents):
-        pass
+        for e in ents:
+            self.manipulator.gizmo.AddEditableAttribute(e.placeable, "Scale", "")
             
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
