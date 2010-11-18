@@ -89,9 +89,9 @@ namespace QtUtils
 
     QFileDialog *DirectoryDialogNonModal(const QString &caption, const QString &dir, QWidget *parent, QObject* initiator, const char* slot)
     {
-        QFileDialog* dialog = new CustomFileDialog(parent, caption, dir, "");
-        dialog->setOptions(QFileDialog::ShowDirsOnly);
+        QFileDialog* dialog = new QFileDialog(parent, caption, dir, "");
         dialog->setFileMode(QFileDialog::Directory);
+        dialog->setOption(QFileDialog::ShowDirsOnly, true);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
         dialog->show();
