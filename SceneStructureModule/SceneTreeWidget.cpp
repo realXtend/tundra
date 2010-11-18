@@ -36,7 +36,9 @@
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "ResourceInterface.h"
-#include "TexturePreviewEditor.h"
+#ifdef OGREASSETEDITOR_ENABLED
+#  include "TexturePreviewEditor.h"
+#endif
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -299,10 +301,13 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
 
     Selection sel = GetSelection();
 
-    QAction *action = new QAction(tr("Edit"), menu);
+    QAction *action;
+#ifdef OGREASSETEDITOR_ENABLED
+    action = new QAction(tr("Edit"), menu);
     connect(action, SIGNAL(triggered()), SLOT(Edit()));
     menu->addAction(action);
     menu->setDefaultAction(action);
+#endif
 
     if (sel.assets.size() > 0)
     {
@@ -626,6 +631,7 @@ void SceneTreeWidget::Edit()
         ui->BringWidgetToFront(ecEditor);
     } else
     {
+#ifdef OGREASSETEDITOR_ENABLED
         foreach(AssetItem *aItem, selection.assets)
         {
             int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
@@ -642,6 +648,7 @@ void SceneTreeWidget::Edit()
                 TexturePreviewEditor::CreatePreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
             }
         }
+#endif
     }
 }
 
