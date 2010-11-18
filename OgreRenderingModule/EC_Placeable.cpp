@@ -181,7 +181,8 @@ float EC_Placeable::GetRoll() const
 void EC_Placeable::SetScale(const Vector3df& newscale)
 {
     scene_node_->setScale(Ogre::Vector3(newscale.x, newscale.y, newscale.z));
-    scale.Set(QVector3D(newscale.x, newscale.y, newscale.z), AttributeChange::Default);
+    this->scale.Set(QVector3D(newscale.x, newscale.y, newscale.z), AttributeChange::Default);
+    AttachNode(); // Nodes become visible only after having their position set at least once
 }
 
 void EC_Placeable::AttachNode()
@@ -345,7 +346,7 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         if (!link_scene_node_)
             return;
         QVector3D newScale = scale.Get();
-        link_scene_node_->setScale(newScale.x(), newScale.y(), newScale.z());
+        scene_node_->setScale(newScale.x(), newScale.y(), newScale.z());
         AttachNode();
     }
 }
