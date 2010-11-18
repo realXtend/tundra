@@ -423,8 +423,8 @@ class FreeMoveManipulator(Manipulator):
     
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
     def _manipulate(self, ent, amountx, amounty, changevec):
-        pass #ent.placeable.Position += changevec
-        #ent.network.Position += changevec
+        ent.placeable.Position += changevec
+        ent.network.Position += changevec
     def setAttributes(self, ents):
         pass
         
