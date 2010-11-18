@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -24,6 +25,9 @@
 #include "CoreException.h"
 #include "Entity.h"
 #include "MainWindow.h"
+
+#include "ServiceManager.h"
+#include "UiServiceInterface.h"
 
 #include <Ogre.h>
 
@@ -370,10 +374,18 @@ namespace OgreRenderer
 
     void Renderer::SetFullScreen(bool value)
     {
-        if(value)
+		//$ BEGIN_MOD $
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        if (!ui)
+            return;
+
+		ui->ToggleFullScreen();
+
+		//$ END_MOD $
+        /*if(value)
             main_window_->showFullScreen();
         else
-            main_window_->showNormal();
+            main_window_->showNormal();*/
     }
 
     void Renderer::SetShadowQuality(ShadowQuality newquality)

@@ -257,6 +257,10 @@ public slots:
          */
 		virtual QToolBar* GetExternalToolbar(QString name) = 0;
 
+		/*To change in fullscreen mode or not
+		*/
+		virtual void ToggleFullScreen() = 0;
+
 //$ END_MOD $
 
     /** Load widget from .ui file and as default add it to a scene. This method is for scripters.

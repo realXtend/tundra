@@ -104,8 +104,13 @@ void InventoryModule::PostInitialize()
     frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
-
+//$ BEGIN_MOD $
+#ifdef PLAYER_VIEWER
+	//Dont create inventory..
+#else
     CreateInventoryWindow();
+#endif
+//$ END_MOD $
 }
 
 void InventoryModule::Uninitialize()

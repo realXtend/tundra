@@ -81,11 +81,14 @@ namespace Environment
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
-
+#ifdef PLAYER_VIEWER
+		//DONT CREATE POST-PROCESSING WINDOWS..
+#else
         OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
         {
             // Initialize post-process dialog.
+
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
 			postprocess_dialog_->setWindowTitle("Post-processing");
 
@@ -109,6 +112,7 @@ namespace Environment
             QObject::connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
             QObject::connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
         }
+#endif
     }
 
     void EnvironmentModule::Uninitialize()
