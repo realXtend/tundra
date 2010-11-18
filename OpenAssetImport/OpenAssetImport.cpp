@@ -71,6 +71,17 @@ namespace AssImp
         DefaultLogger::kill();
     }
 
+    void OpenAssetImport::StripMeshnameFromAssetId(const QString& id, QString &outfile, QString &outMeshname)
+    {
+        int lastSlash = id.lastIndexOf('/');
+
+        if (lastSlash != -1 && lastSlash > 6)
+        {
+            outfile = id.left(lastSlash);
+            outMeshname = id.mid(lastSlash + 1);
+        }
+    }
+
     bool OpenAssetImport::IsSupportedExtension(const QString& filename)
     {
         boost::filesystem::path path(filename.toStdString());

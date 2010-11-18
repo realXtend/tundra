@@ -37,7 +37,7 @@ void IAssetTransfer::EmitAssetLoaded()
 
 namespace
 {
-    std::string GetResourceTypeFromResourceName(std::string name)
+    std::string GetResourceTypeFromResourceName(const std::string &name)
     {
         if (name.find(".mesh") != std::string::npos)
             return "OgreMesh";
@@ -50,6 +50,45 @@ namespace
             return "OgreTexture";
         if (name.find(".particle") != std::string::npos)
             return "OgreParticle";
+        
+        if (name.find("3d") != std::string::npos ||
+            name.find("b3d") != std::string::npos ||
+            name.find("dae") != std::string::npos ||
+            name.find("bvh") != std::string::npos ||
+            name.find("3ds") != std::string::npos ||
+            name.find("ase") != std::string::npos ||
+            name.find("obj") != std::string::npos ||
+            name.find("ply") != std::string::npos ||
+            name.find("dxf") != std::string::npos ||
+            name.find("nff") != std::string::npos ||
+            name.find("smd") != std::string::npos ||
+            name.find("vta") != std::string::npos ||
+            name.find("mdl") != std::string::npos ||
+            name.find("md2") != std::string::npos ||
+            name.find("md3") != std::string::npos ||
+            name.find("mdc") != std::string::npos ||
+            name.find("md5mesh") != std::string::npos ||
+            name.find("x") != std::string::npos ||
+            name.find("q3o") != std::string::npos ||
+            name.find("q3s") != std::string::npos ||
+            name.find("raw") != std::string::npos ||
+            name.find("ac") != std::string::npos ||
+            name.find("stl") != std::string::npos ||
+            name.find("irrmesh") != std::string::npos ||
+            name.find("irr") != std::string::npos ||
+            name.find("off") != std::string::npos ||
+            name.find("ter") != std::string::npos ||
+            name.find("mdl") != std::string::npos ||
+            name.find("hmp") != std::string::npos ||
+            name.find("ms3d") != std::string::npos ||
+            name.find("lwo") != std::string::npos ||
+            name.find("lws") != std::string::npos ||
+            name.find("lxo") != std::string::npos ||
+            name.find("csm") != std::string::npos ||
+            name.find("ply") != std::string::npos ||
+            name.find("cob") != std::string::npos ||
+            name.find("scn") != std::string::npos )
+            return "OgreMesh";
 
         return "";
         // Note: There's a separate OgreImageTextureResource which isn't handled above.
@@ -82,8 +121,9 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
     // Depending on the asset type, we must request the asset from the Renderer or from the asset service.
 
-    if (GetResourceTypeFromResourceName(assetRef.toStdString()) != "")
-        tag = renderer->RequestResource(assetRef.toStdString(), GetResourceTypeFromResourceName(assetRef.toStdString()));
+    std::string foundAssetType = GetResourceTypeFromResourceName(assetRef.toLower().toStdString());
+    if (foundAssetType != "")
+        tag = renderer->RequestResource(assetRef.toStdString(), foundAssetType);
     else
         tag = asset_service->RequestAsset(assetRef.toStdString(), assetType.toStdString());
 

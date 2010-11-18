@@ -196,6 +196,28 @@ namespace OgreRenderer
         return true;
     }
 
+    bool OgreMaterialResource::Export(const std::string &filename) const
+    {
+        if (ogre_material_.isNull())
+        {
+            OgreRenderingModule::LogWarning("Tried to export non-existing Ogre material " + id_ + ".");
+            return false;
+        }
+        try
+        {
+            Ogre::MaterialSerializer serializer;
+            serializer.queueForExport(ogre_material_);
+            serializer.exportQueued(filename);
+        } catch (std::exception &e)
+        {
+            OgreRenderingModule::LogError("Failed to export Ogre material " + id_ + ":");
+            if (e.what())
+                OgreRenderingModule::LogError(e.what());
+            return false;
+        }
+        return true;
+    }
+
     static const std::string type_name("OgreMaterial");
         
     const std::string& OgreMaterialResource::GetType() const

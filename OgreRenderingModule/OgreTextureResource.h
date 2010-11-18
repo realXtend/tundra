@@ -65,6 +65,12 @@ namespace OgreRenderer
             \return true if successful
          */
         bool SetData(Foundation::TexturePtr source);
+
+        //! Export texture to a file. 
+        /*! Filename extension determines file format, supported extension
+            are same as what Ogre supports.
+        */
+        virtual bool Export(const std::string &filename) const;
         
         //! returns resource type in text form (static)
         static const std::string& GetTypeStatic();

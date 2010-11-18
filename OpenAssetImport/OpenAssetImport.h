@@ -12,11 +12,15 @@ namespace OgreRenderer { class Renderer; }
 //! Open Asset Import, a wrapper for Open Asset Import library that is used for loading model formats other than Ogre .mesh.
 namespace AssImp
 {
+    //! Contains mesh data information about a file that can be imported with OpenAssetImport.
+    /*! GetMeshData() uses this to fill out information which can be used to generate entities
+        and components.
+    */
     struct MeshData
     {
-        QString file_;
-        QString name_;
-        Transform transform_;
+        QString file_;          //! file path, same for each individual mesh in the file.
+        QString name_;          //! name of an individual mesh inside the file. May be empty if file contains only one mesh.
+        Transform transform_;   //! transforms in global space for an individual mesh.
     };
 
     /*! Imports an Ogre mesh from various different model formats.
@@ -29,14 +33,27 @@ namespace AssImp
     public:
         OpenAssetImport();
         ~OpenAssetImport();
+
+        //! Helper function for stripping mesh name from asset id
+        /*! If asset is contained in a file that contains other assets as well,
+            this function can be used to separate the mesh name so you can
+            get a file name and a mesh name
+            \param id asset id
+            \param outfile asset filename
+            \param outMeshname mesh name
+        */
+        static void StripMeshnameFromAssetId(const QString& id, QString &outfile, QString &outMeshname);
         
         //! Returns true if filename has an extension that implies supported file format
+        /*!
+            \param filename full path or only filename to test
+        */
         bool IsSupportedExtension(const QString& filename);
 
         //! Imports mesh data from a file.
         /*! Import mesh names and transformations contained in the model file. This
             information can be used to create entities, components ands asset refs.
-            Use Import() to create the actual mesh data.
+            Use Import() to create the actual Ogre mesh data.
 
             \note Does not handle scene hierarchy, all transformations are converted
                   to world space.
