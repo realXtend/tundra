@@ -306,10 +306,14 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
 
     if (sel.assets.size() > 0)
     {
-        QString assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
+        
         if (sel.assets.size() > 1)
-            assetName = tr("selected");
-        action = new QAction(tr("Save") + " " + assetName + " " + tr("as..."), menu);
+            action = new QAction(tr("Save selected assets..."), menu);
+        else
+        {
+            QString assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
+            action = new QAction(tr("Save") + " " + assetName + " " + tr("as..."), menu);
+        }
         connect(action, SIGNAL(triggered()), SLOT(SaveAssetAs()));
         menu->addAction(action);
     } 
@@ -1379,10 +1383,10 @@ void SceneTreeWidget::SaveAssetAs()
         assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
 
         fileDialog = QtUtils::SaveFileDialogNonModal("",
-            tr("Save asset"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+            tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
     } else
     {
-        QtUtils::DirectoryDialogNonModal(tr("Save selected assets"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+        QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
 }
 
