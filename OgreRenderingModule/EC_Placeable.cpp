@@ -17,7 +17,8 @@ EC_Placeable::EC_Placeable(IModule* module) :
     attached_(false),
     select_priority_(0),
     transform(this, "Transform"),
-    position(this, "Position", QVector3D())
+    position(this, "Position", QVector3D()),
+    scale(this, "Scale", QVector3D())
 {
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
@@ -177,9 +178,10 @@ float EC_Placeable::GetRoll() const
     return orientation.getRoll().valueRadians();
 }
 
-void EC_Placeable::SetScale(const Vector3df& scale)
+void EC_Placeable::SetScale(const Vector3df& newscale)
 {
-    scene_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
+    scene_node_->setScale(Ogre::Vector3(newscale.x, newscale.y, newscale.z));
+    scale.Set(QVector3D(newscale.x, newscale.y, newscale.z), AttributeChange::Default);
 }
 
 void EC_Placeable::AttachNode()
@@ -330,12 +332,20 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         
         AttachNode(); // Nodes become visible only after having their position set at least once
     }
-    if(attribute == &position)
+    else if(attribute == &position)
     {
         if (!link_scene_node_)
             return;
         QVector3D newPosition = position.Get();
         link_scene_node_->setPosition(newPosition.x(), newPosition.y(), newPosition.z());
+        AttachNode();
+    }
+    else if(attribute == &scale)
+    {
+        if (!link_scene_node_)
+            return;
+        QVector3D newScale = scale.Get();
+        link_scene_node_->setScale(newScale.x(), newScale.y(), newScale.z());
         AttachNode();
     }
 }
