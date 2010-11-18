@@ -87,6 +87,22 @@ namespace QtUtils
         return dialog;
     }
 
+    QFileDialog *DirectoryDialogNonModal(const QString &caption, const QString &dir, QWidget *parent, QObject* initiator, const char* slot)
+    {
+        QFileDialog* dialog = new CustomFileDialog(parent, caption, dir, "");
+        dialog->setOptions(QFileDialog::ShowDirsOnly);
+        dialog->setFileMode(QFileDialog::Directory);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
+        dialog->show();
+        dialog->resize(500, 300);
+
+        if (dialog->graphicsProxyWidget())
+            dialog->graphicsProxyWidget()->setWindowTitle(caption);
+
+        return dialog;
+    }
+
     std::string GetOpenFileName(
         const std::string &filter,
         const std::string &caption,
