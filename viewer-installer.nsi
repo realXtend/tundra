@@ -1,4 +1,4 @@
-!define VERSION "0.3.3"
+!define VERSION "0.3.4-RC1"
 
 Name "Naali ${VERSION}"
 
@@ -8,7 +8,7 @@ Page instfiles
 InstallDir "$PROGRAMFILES\Naali ${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "Naali-0.3.3.exe"
+OutFile "Naali-0.3.4-RC1.exe"
 
 XPStyle on
 
