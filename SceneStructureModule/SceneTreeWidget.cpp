@@ -36,6 +36,7 @@
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "ResourceInterface.h"
+#include "TexturePreviewEditor.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -303,13 +304,15 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
     menu->addAction(action);
     menu->setDefaultAction(action);
 
-    if (sel.assets.size() == 1)
+    if (sel.assets.size() > 0)
     {
         QString assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
+        if (sel.assets.size() > 1)
+            assetName = tr("selected");
         action = new QAction(tr("Save") + " " + assetName + " " + tr("as..."), menu);
         connect(action, SIGNAL(triggered()), SLOT(SaveAssetAs()));
         menu->addAction(action);
-    }
+    } 
 }
 
 void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
@@ -623,9 +626,17 @@ void SceneTreeWidget::Edit()
         {
             int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
 
-            Asset::Events::AssetOpen event_data(QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), QString::number(itype));
-            //Inventory::InventoryItemOpenEventData event_data(
-            framework->GetEventManager()->SendEvent(framework->GetEventManager()->QueryEventCategory("Asset"), Asset::Events::ASSET_OPEN, &event_data);
+            if (itype == RexTypes::RexAT_Mesh)
+            {
+       //         Asset::Events::AssetOpen event_data(QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), QString::number(itype));
+                Asset::Events::AssetOpen event_data(aItem->id, QString::number(itype));
+
+                //Inventory::InventoryItemOpenEventData event_data(
+                framework->GetEventManager()->SendEvent(framework->GetEventManager()->QueryEventCategory("Asset"), Asset::Events::ASSET_OPEN, &event_data);
+            } else
+            {
+                TexturePreviewEditor::CreatePreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
+            }
         }
     }
 }
@@ -1359,14 +1370,20 @@ void SceneTreeWidget::SaveAssetAs()
 {
     Selection sel = GetSelection();
     QString assetName;
-    if (sel.assets.size() == 1)
-        assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
 
     if (fileDialog)
         fileDialog->close();
-    
-    fileDialog = QtUtils::SaveFileDialogNonModal("",
-        tr("Save asset"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+
+    if (sel.assets.size() == 1)
+    {
+        assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
+
+        fileDialog = QtUtils::SaveFileDialogNonModal("",
+            tr("Save asset"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+    } else
+    {
+        QtUtils::DirectoryDialogNonModal(tr("Save selected assets"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+    }
 }
 
 void SceneTreeWidget::SaveAssetDialogClosed(int result)
@@ -1380,10 +1397,28 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
     QStringList files = dialog->selectedFiles();
     Selection sel = GetSelection();
     
-    if (sel.assets.size() == 1)
+    bool isDir = QDir(files[0]).exists();
+
+    if ((sel.assets.size() == 1 && isDir) || (sel.assets.size() > 1 && !isDir))
     {
-        IAssetTransfer *transfer = framework->Asset()->RequestAsset(sel.assets[0]->id);
-        filesaves_.insert(transfer, files[0]);
+        // should not happen normally, so just log error. No prompt for user.
+        LogError("Could not save asset: no such directory.");
+        return;
+    }
+
+    foreach(AssetItem *aItem, sel.assets)
+    {
+        IAssetTransfer *transfer = framework->Asset()->RequestAsset(aItem->id);
+
+        // if saving multiple assets, append filename to directory
+        QString filename = files[0];
+        if (isDir)
+        {
+            QString assetName = aItem->id.right(aItem->id.size() - aItem->id.lastIndexOf("://") - 3);
+            filename += QDir::separator() + assetName;
+        }
+
+        filesaves_.insert(transfer, filename);
         connect(transfer, SIGNAL(Loaded()), this, SLOT(AssetLoaded()));
     }
 }

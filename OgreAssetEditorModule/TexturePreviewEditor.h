@@ -74,6 +74,20 @@ public:
     //! Open Ogre texture
     void OpenOgreTexture(const QString& name);
 
+    //! Convenience function for opening texture preview editor with a texture.
+    /*! Opens a TexturePreviewEditor window which gets auto-deleted upon close.
+        \param framework framework
+        \param texture texture name to open
+        \param parent parent widget
+    */
+    static void CreatePreviewEditor(Foundation::Framework *framework, const QString &texture, QWidget* parent = 0)
+    {
+        TexturePreviewEditor *editor = new TexturePreviewEditor(framework, parent);
+        QObject::connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
+        editor->OpenOgreTexture(texture);
+        editor->show();
+    }
+
      
 public slots:
     /// Close the window.
@@ -90,7 +104,11 @@ public slots:
  
 signals:
     /// This signal is emitted when the editor is closed.
-    void Closed(const QString &inventory_id, asset_type_t asset_type);
+    void Closed(const QString &inventory_id);
+
+private slots:
+    //! Delete this object.
+    void Deleted() { delete this; }
 
 protected:
     //! overrides QWidget's resizeEvent so we can recalculate new image differences.
