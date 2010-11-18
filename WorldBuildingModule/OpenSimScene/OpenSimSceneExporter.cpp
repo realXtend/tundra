@@ -26,6 +26,7 @@
 #include <QGraphicsScene>
 #include <QCryptographicHash>
 #include <QUrl>
+#include <QMessageBox>
 
 namespace WorldBuilding
 {
