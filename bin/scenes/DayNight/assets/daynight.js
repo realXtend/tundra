@@ -11,8 +11,8 @@ function FindEnvironmentLight()
     environment_ = me.GetComponentRaw("EC_EnvironmentLight");
     if (environment_ != null)
     {
-      environment_.currentTimeAttr = 0.0;
-      environment_.fixedTimeAttr = true;
+      environment_.currentTimeAttr = 0.5; // Start at midday.
+      environment_.fixedTimeAttr = true; // Don't do hardcoded time animation in C++.
     }
   }
 }
