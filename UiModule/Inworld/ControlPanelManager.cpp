@@ -221,6 +221,7 @@ namespace CoreUi
     {
 #ifdef PLAYER_VIEWER
 		//If player_viewer is defined, the buttons are placed above
+#else
         QList<UiServices::ControlButtonType> buttons;
         buttons  << UiServices::Build << UiServices::Ether;
 
