@@ -104,13 +104,8 @@ void InventoryModule::PostInitialize()
     frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
-//$ BEGIN_MOD $
-#ifdef PLAYER_VIEWER
-	//Dont create inventory..
-#else
+
     CreateInventoryWindow();
-#endif
-//$ END_MOD $
 }
 
 void InventoryModule::Uninitialize()
@@ -483,6 +478,10 @@ void InventoryModule::CreateInventoryWindow()
 
     SAFE_DELETE(inventoryWindow_); 
     inventoryWindow_ = new InventoryWindow;
+//$ BEGIN_MOD $
+#ifdef PLAYER_VIEWER
+	//Dont create inventory..
+#else
 	//$ BEGIN_MOD $
 	inventoryWindow_->setWindowTitle("Inventory");
 	//$ END_MOD $
@@ -494,6 +493,8 @@ void InventoryModule::CreateInventoryWindow()
     //ui->AddWidgetToMenu(inventoryWindow_);
 	//$ END_MOD $
     ui->RegisterUniversalWidget("Inventory", inv_proxy);
+#endif
+	//$ END_MOD $
 
 #ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();

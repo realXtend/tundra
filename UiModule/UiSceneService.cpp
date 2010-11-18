@@ -527,9 +527,6 @@ namespace UiServices
 
 	//TO MANAGE MENU SETTINGS
 	void UiSceneService::CreateSettingsPanel(){
-		//Only if uiexternal available
-		if (!uiExternal)
-			return;
 		// Initialize post-process dialog.
 		settings_panel_ = new MenuSettingsWidget(this);
 		settings_panel_->setWindowTitle("Menu Config");

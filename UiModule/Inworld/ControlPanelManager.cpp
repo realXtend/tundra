@@ -84,11 +84,8 @@ namespace CoreUi
         QList<UiServices::ControlButtonType> buttons;
 		//$ BEGIN_MOD $
 		//$ MOD_DESCRIPTION We want to disable Quit and Ether options $
-#ifdef PLAYER_VIEWER
-        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
-#else
+
 		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
-#endif
 		//buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
 		//$ END_MOD $
 
