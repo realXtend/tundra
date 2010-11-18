@@ -29,6 +29,15 @@
 
 using namespace kNet;
 
+// This define controls whether to echo scene changes back to the sending client. For some applications (ie. synced UI widgets)
+// it is nice to have off, but there might be possible determinism issues if many clients are updating the same attribute at the same time
+// Note: changes must definitely be sent also to sender if server can change the value sent by the client. Also when/if changes can be 
+// rejected, an overriding update should be sent to the sending client
+// #define ECHO_CHANGES_TO_SENDER
+
+// This variable is used for the sender echo & interpolation stop check
+kNet::MessageConnection* currentSender = 0;
+
 namespace TundraLogic
 {
 
@@ -146,6 +155,8 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             HandleEntityAction(source, msg);
         }
     }
+    
+    currentSender = 0;
 }
 
 void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
@@ -178,6 +189,21 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
 {
     if (!comp->IsSerializable())
         return;
+    
+    bool isServer = owner_->IsServer();
+    
+    // Client: Check for stopping interpolation, if we change a currently interpolating variable ourselves
+    if (!isServer)
+    {
+        Scene::ScenePtr scene = scene_.lock();
+        if ((scene) && (!scene->IsInterpolating()) && (!currentSender))
+        {
+            if ((attr->HasMetadata()) && (attr->GetMetadata()->interpolation == AttributeMetadata::Interpolate))
+                // Note: it does not matter if the attribute was not actually interpolating
+                scene->EndAttributeInterpolation(attr);
+        }
+    }
+    
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
     Scene::Entity* entity = comp->GetParentEntity();
@@ -185,11 +211,16 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         return;
     bool dynamic = comp->HasDynamicStructure();
     
-    if (owner_->IsServer())
+    if (isServer)
     {
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
+            #ifndef ECHO_CHANGES_TO_SENDER
+            if ((*i).connection == currentSender)
+                continue;
+            #endif
+            
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
             {
@@ -209,6 +240,9 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         else
             state->OnDynamicAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), QString::fromStdString(attr->GetNameString()));
     }
+    
+    // This attribute changing might in turn cause other attributes to change on the server, and these must be echoed to all, so reset sender now
+    currentSender = 0;
 }
 
 void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
@@ -597,8 +631,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         
     }
     
-    if (num_messages_sent)
-        TundraLogicModule::LogDebug("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
+    //if (num_messages_sent)
+    //    TundraLogicModule::LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
@@ -830,11 +864,6 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg)
 {
-    //! \todo For now, if server receives an update from a client, it marks it for send to all clients, also the one
-    /*! who originated the change. This probably is undesirable: have to investigate if this "feature" can be safely
-        eliminated
-     */
-    
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return;
@@ -900,8 +929,26 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                         {
                             if (source.Read<bit>())
                             {
-                                attributes[i]->FromBinary(source, AttributeChange::Disconnected);
-                                actually_changed_attributes.push_back(true);
+                                // If attribute supports interpolation, queue interpolation instead
+                                bool interpolate = false;
+                                if ((!isServer) && (attributes[i]->HasMetadata()) && (attributes[i]->GetMetadata()->interpolation == AttributeMetadata::Interpolate))
+                                    interpolate = true;
+                                
+                                if (!interpolate)
+                                {
+                                    attributes[i]->FromBinary(source, AttributeChange::Disconnected);
+                                    actually_changed_attributes.push_back(true);
+                                }
+                                else
+                                {
+                                    IAttribute* endValue = attributes[i]->Clone();
+                                    endValue->FromBinary(source, AttributeChange::Disconnected);
+                                    //! \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
+                                    // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
+                                    scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.25f);
+                                    // Do not signal attribute change at this point at all
+                                    actually_changed_attributes.push_back(false);
+                                }
                             }
                             else
                                 actually_changed_attributes.push_back(false);
@@ -989,7 +1036,10 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             const AttributeVector& attributes = compShared->GetAttributes();
             for (uint j = 0; (j < attributes.size()) && (j < i->second.size()); ++j)
                 if (i->second[j])
+                {
+                    currentSender = source;
                     compShared->AttributeChanged(attributes[j], change);
+                }
         }
         ++i;
     }
@@ -1006,7 +1056,10 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
             {
                 IAttribute* attr = compShared->GetAttribute(j->second[k]);
                 if (attr)
+                {
+                    currentSender = source;
                     compShared->AttributeChanged(attr, change);
+                }
             }
         }
         ++j;

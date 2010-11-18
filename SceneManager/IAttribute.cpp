@@ -28,7 +28,6 @@ using namespace kNet;
 IAttribute::IAttribute(IComponent* owner, const char* name) :
     owner_(owner),
     name_(name),
-    null_(false),
     metadata_(0)
 {
     if (owner)
@@ -746,111 +745,123 @@ template<> void Attribute<Transform>::FromBinary(kNet::DataDeserializer& source,
     Set(value, change);
 }
 
-// COMPAREBINARY TEMPLATE IMPLEMENTATIONS.
+// INTERPOLATE TEMPLATE IMPLEMENTATIONS
 
-template<> bool Attribute<QString>::CompareBinary(kNet::DataDeserializer& source) const
+template<> void Attribute<QString>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
-    QByteArray utf8bytes;
-    utf8bytes.resize(source.Read<u16>());
-    if (utf8bytes.size())
-        source.ReadArray<u8>((u8*)utf8bytes.data(), utf8bytes.size());
-    
-    QString value = QString::fromUtf8(utf8bytes.data(), utf8bytes.size());
-    return value_ != value;
 }
 
-template<> bool Attribute<bool>::CompareBinary(kNet::DataDeserializer& source) const
+template<> void Attribute<bool>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
-    bool value = source.Read<u8>() ? true : false;
-    return value_ != value;
 }
 
-template<> bool Attribute<int>::CompareBinary(kNet::DataDeserializer& source) const
+template<> void Attribute<int>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
-    int value = source.Read<s32>();
-    return value_ != value;
-}
-
-template<> bool Attribute<uint>::CompareBinary(kNet::DataDeserializer& source) const
-{
-    uint value = source.Read<u32>();
-    return value_ != value;
-}
-
-template<> bool Attribute<float>::CompareBinary(kNet::DataDeserializer& source) const
-{
-    float value = source.Read<float>();
-    return value_ != value;
-}
-
-template<> bool Attribute<Vector3df>::CompareBinary(kNet::DataDeserializer& source) const
-{
-    Vector3df value;
-    value.x = source.Read<float>();
-    value.y = source.Read<float>();
-    value.z = source.Read<float>();
-    return value_ != value;
-}
-
-template<> bool Attribute<Color>::CompareBinary(kNet::DataDeserializer& source) const
-{
-    Color value;
-    value.r = source.Read<float>();
-    value.g = source.Read<float>();
-    value.b = source.Read<float>();
-    value.a = source.Read<float>();
-    return value_ != value;
-}
-
-template<> bool Attribute<Quaternion>::CompareBinary(kNet::DataDeserializer& source) const
-{
-    Quaternion value;
-    value.x = source.Read<float>();
-    value.y = source.Read<float>();
-    value.z = source.Read<float>();
-    value.w = source.Read<float>();
-    return value_ != value;
-}
-
-template<> bool Attribute<AssetReference>::CompareBinary(kNet::DataDeserializer& source) const
-{
-    AssetReference value;
-    value.ref = source.ReadString().c_str();
-    return value_ != value;
-}
-
-template<> bool Attribute<QVariant>::CompareBinary(kNet::DataDeserializer& source) const
-{
-    std::string str = source.ReadString();
-    QVariant value(QString(str.c_str()));
-    return value_ != value;
-}
-
-template<> bool Attribute<QVariantList>::CompareBinary(kNet::DataDeserializer& source) const
-{
-    QVariantList value;
-    
-    u8 numValues = source.Read<u8>();
-    for (u32 i = 0; i < numValues; ++i)
+    Attribute<int>* startInt = dynamic_cast<Attribute<int>*>(start);
+    Attribute<int>* endInt = dynamic_cast<Attribute<int>*>(end);
+    if ((startInt) && (endInt))
     {
-        std::string str = source.ReadString();
-        value.append(QVariant(QString(str.c_str())));
+        Set(lerp(startInt->Get(), endInt->Get(), t), change);
     }
-    return value_ != value;
 }
 
-template<> bool Attribute<Transform>::CompareBinary(kNet::DataDeserializer& source) const
+template<> void Attribute<uint>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
-    Transform value;
-    value.position.x = source.Read<float>();
-    value.position.y = source.Read<float>();
-    value.position.z = source.Read<float>();
-    value.rotation.x = source.Read<float>();
-    value.rotation.y = source.Read<float>();
-    value.rotation.z = source.Read<float>();
-    value.scale.x = source.Read<float>();
-    value.scale.y = source.Read<float>();
-    value.scale.z = source.Read<float>();
-    return value_ != value;
+    Attribute<uint>* startUint = dynamic_cast<Attribute<uint>*>(start);
+    Attribute<uint>* endUint = dynamic_cast<Attribute<uint>*>(end);
+    if ((startUint) && (endUint))
+    {
+        Set(lerp(startUint->Get(), endUint->Get(), t), change);
+    }
 }
 
+template<> void Attribute<float>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    Attribute<float>* startFloat = dynamic_cast<Attribute<float>*>(start);
+    Attribute<float>* endFloat = dynamic_cast<Attribute<float>*>(end);
+    if ((startFloat) && (endFloat))
+    {
+        Set(lerp(startFloat->Get(), endFloat->Get(), t), change);
+    }
+}
+
+template<> void Attribute<Vector3df>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    Attribute<Vector3df>* startVec = dynamic_cast<Attribute<Vector3df>*>(start);
+    Attribute<Vector3df>* endVec = dynamic_cast<Attribute<Vector3df>*>(end);
+    if ((startVec) && (endVec))
+    {
+        Set(lerp(startVec->Get(), endVec->Get(), t), change);
+    }
+}
+
+template<> void Attribute<Quaternion>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    Attribute<Quaternion>* startQuat = dynamic_cast<Attribute<Quaternion>*>(start);
+    Attribute<Quaternion>* endQuat = dynamic_cast<Attribute<Quaternion>*>(end);
+    if ((startQuat) && (endQuat))
+    {
+        Quaternion newQuat;
+        newQuat.slerp(startQuat->Get(), endQuat->Get(), t);
+        Set(newQuat, change);
+    }
+}
+
+template<> void Attribute<Color>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    Attribute<Color>* startColor = dynamic_cast<Attribute<Color>*>(start);
+    Attribute<Color>* endColor = dynamic_cast<Attribute<Color>*>(end);
+    if ((startColor) && (endColor))
+    {
+        const Color& startValue = startColor->Get();
+        const Color& endValue = endColor->Get();
+        Color newColor;
+        newColor.r = lerp(startValue.r, endValue.r, t);
+        newColor.g = lerp(startValue.g, endValue.g, t);
+        newColor.b = lerp(startValue.b, endValue.b, t);
+        newColor.a = lerp(startValue.a, endValue.a, t);
+        Set(newColor, change);
+    }
+    std::cout << "Interpolated color" << std::endl;
+}
+
+template<> void Attribute<AssetReference>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
+template<> void Attribute<QVariant>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
+template<> void Attribute<QVariantList>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
+template<> void Attribute<Transform>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    Attribute<Transform>* startTrans = dynamic_cast<Attribute<Transform>*>(start);
+    Attribute<Transform>* endTrans = dynamic_cast<Attribute<Transform>*>(end);
+    if ((startTrans) && (endTrans))
+    {
+        const Transform& startValue = startTrans->Get();
+        const Transform& endValue = endTrans->Get();
+        Transform newTrans;
+        
+        // Position
+        newTrans.position = lerp(startValue.position, endValue.position, t);
+        
+        // Rotation
+        Quaternion startRot(DEGTORAD * startValue.rotation.x, DEGTORAD * startValue.rotation.y, DEGTORAD * startValue.rotation.z);
+        Quaternion endRot(DEGTORAD * endValue.rotation.x, DEGTORAD * endValue.rotation.y, DEGTORAD * endValue.rotation.z);
+        Quaternion newRot;
+        newRot.slerp(startRot, endRot, t);
+        Vector3df newRotEuler;
+        newRot.toEuler(newRotEuler);
+        newTrans.SetRot(newRotEuler.x * RADTODEG, newRotEuler.y * RADTODEG, newRotEuler.z * RADTODEG);
+        
+        // Scale
+        newTrans.scale = lerp(startValue.scale, endValue.scale, t);
+        
+        Set(newTrans, change);
+    }
+}

@@ -133,6 +133,10 @@ void TundraLogicModule::Update(f64 frametime)
         // Run scene sync
         if (syncManager_)
             syncManager_->Update(frametime);
+        // Run scene interpolation
+        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        if (scene)
+            scene->UpdateAttributeInterpolations(frametime);
     }
     
     RESETPROFILER;
@@ -286,8 +290,9 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     boost::filesystem::path path(filename);
     std::string dirname = path.branch_path().string();
     
-    SceneImporter importer(framework_);
-    QList<Scene::Entity *> entities = importer.Import(scene, filename, dirname, "./data/assets", Transform(), AttributeChange::Default, clearscene, true, replace);
+    SceneImporter importer(scene);
+    QList<Scene::Entity *> entities = importer.Import(filename, dirname, "./data/assets", Transform(),
+        AttributeChange::Default, clearscene, true, replace);
     if (!entities.empty())
     {
         return Console::ResultSuccess();
@@ -330,8 +335,9 @@ Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &
     boost::filesystem::path path(filename);
     std::string dirname = path.branch_path().string();
     
-    SceneImporter importer(framework_);
-    Scene::EntityPtr entity = importer.ImportMesh(scene, filename, dirname, "./data/assets", Transform(Vector3df(x,y,z), Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), AttributeChange::Default, true);
+    SceneImporter importer(scene);
+    Scene::EntityPtr entity = importer.ImportMesh(filename, dirname, "./data/assets", Transform(Vector3df(x,y,z),
+        Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), AttributeChange::Default, true);
     
     return Console::ResultSuccess();
 }
