@@ -1,0 +1,183 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="180">
+  <component type="EC_Name" sync="1">
+   <attribute value="terrain" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Terrain" sync="1">
+   <attribute value="-127,-137,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="16" name="Grid Width"/>
+   <attribute value="16" name="Grid Height"/>
+   <attribute value="0.129999995" name="Tex. U scale"/>
+   <attribute value="0.129999995" name="Tex. V scale"/>
+   <attribute value="file://RexTerrainPCF.material" name="Material"/>
+   <attribute value="" name="Texture 0"/>
+   <attribute value="" name="Texture 1"/>
+   <attribute value="" name="Texture 2"/>
+   <attribute value="" name="Texture 3"/>
+   <attribute value="" name="Texture 4"/>
+   <attribute value="file://terrain.ntf" name="Heightmap"/>
+  </component>
+ </entity>
+ <entity id="181">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-8.538,-10.523,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://crab_stand_swim.mesh" name="Mesh ref"/>
+   <attribute value="file://crab_stand_swim.skeleton" name="Skeleton ref"/>
+   <attribute value="file://crab.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_AnimationController" sync="1" name="hop">
+   <attribute value="" name="Animation state"/>
+  </component>
+ </entity>
+ <entity id="182">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-6,-20,82,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://Jack.mesh" name="Mesh ref"/>
+   <attribute value="file://Jack.skeleton" name="Skeleton ref"/>
+   <attribute value="file://male/Body.material;file://male/Face.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_AnimationController" sync="1">
+   <attribute value="" name="Animation state"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="183">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-7.91201,-8.274,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://crab_stand_swim.mesh" name="Mesh ref"/>
+   <attribute value="file://crab_stand_swim.skeleton" name="Skeleton ref"/>
+   <attribute value="file://crab.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_AnimationController" sync="1" name="hop">
+   <attribute value="" name="Animation state"/>
+  </component>
+ </entity>
+ <entity id="184">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-8.9465,-9.8495,77,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://crab_stand_swim.mesh" name="Mesh ref"/>
+   <attribute value="file://crab_stand_swim.skeleton" name="Skeleton ref"/>
+   <attribute value="file://crab.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_AnimationController" sync="1" name="hop">
+   <attribute value="" name="Animation state"/>
+  </component>
+ </entity>
+ <entity id="185">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-10.3815,-9.55253,77,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,2,2,2" name="Transform"/>
+   <attribute value="file://crab_stand_swim.mesh" name="Mesh ref"/>
+   <attribute value="file://crab_stand_swim.skeleton" name="Skeleton ref"/>
+   <attribute value="file://crab.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_AnimationController" sync="1" name="hop">
+   <attribute value="" name="Animation state"/>
+  </component>
+ </entity>
+ <entity id="186">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-68,-4.32,80,0,0,0,2,2,2" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://crab_stand_swim.mesh" name="Mesh ref"/>
+   <attribute value="file://crab_stand_swim.skeleton" name="Skeleton ref"/>
+   <attribute value="file://crab.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_AnimationController" sync="1" name="hop">
+   <attribute value="" name="Animation state"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="C:\Script\js\testanimation.js" name="Script ref"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="1 1 1" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="1" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="true" name="Phantom"/>
+   <attribute value="false" name="Draw Debug"/>
+   <attribute value="0 0 -1.63500023" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
+ </entity>
+ <entity id="190">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="file://grass_ground_plane.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="file://NoMaterial.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="grass_ground_plane04" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-6.13633,-7.18559,76.5,2.73208e-05,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value=".\jsmodules\apitest\CrabGame\game.js" name="Script ref"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="1" name="CrabGame">
+   <attribute value="4" type="real" name="Player2Points"/>
+   <attribute value="empty" type="string" name="Player2"/>
+   <attribute value="2" type="real" name="Player1Points"/>
+   <attribute value="empty" type="string" name="Player1"/>
+  </component>
+  <component type="EC_DynamicComponent" sync="0" name="server"/>
+ </entity>
+</scene>

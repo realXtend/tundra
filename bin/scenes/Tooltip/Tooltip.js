@@ -27,19 +27,28 @@ me.Action("MouseHoverOut").Triggered.connect(MouseOut);
 
 function GetHoveringTextComponent()
 {
-	comp = me.GetComponentRaw("EC_HoveringText");
-	var mode = me.hoveringtext.GetUpdateMode();
-	mode.value = 2;
-	me.hoveringtext.SetUpdateMode(mode);
-		
-	bc = comp.backgroundColorAttr;
-	fc = comp.fontColorAttr;
-	origBA = bc.a; 
-	origFA = fc.a;
+  if (comp == null)
+  {
+  	comp = me.GetComponentRaw("EC_HoveringText");
+  	if (comp != null)
+  	{
+    	var mode = me.hoveringtext.GetUpdateMode();
+    	mode.value = 2;
+    	me.hoveringtext.SetUpdateMode(mode);
+    		
+    	bc = comp.backgroundColorAttr;
+    	fc = comp.fontColorAttr;
+    	origBA = bc.a; 
+    	origFA = fc.a;
+    }
+  }
 }
 
 function Update(frametime)
 {
+  if (comp == null)
+    return;
+    
 	bc = comp.backgroundColorAttr;
 	fc = comp.fontColorAttr;
 
@@ -82,6 +91,9 @@ function Update(frametime)
 
 function OnScriptDestroyed()
 {	
+  if (comp == null)
+    return;
+    
 	//Return original values
 	bc.a = origBA;
 	fc.a = origFA;

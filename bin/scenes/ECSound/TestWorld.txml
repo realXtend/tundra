@@ -353,13 +353,13 @@
    <attribute value="16" name="Grid Height"/>
    <attribute value="0.129999995" name="Tex. U scale"/>
    <attribute value="0.129999995" name="Tex. V scale"/>
-   <attribute value="Rex/TerrainPCF" name="Material"/>
+   <attribute value="file://RexTerrainPCF.material" name="Material"/>
    <attribute value="" name="Texture 0"/>
    <attribute value="" name="Texture 1"/>
    <attribute value="" name="Texture 2"/>
    <attribute value="" name="Texture 3"/>
    <attribute value="" name="Texture 4"/>
-   <attribute value="media/samples/terrain.ntf" name="Heightmap"/>
+   <attribute value="file://terrain.ntf" name="Heightmap"/>
   </component>
   <component type="EC_RigidBody" sync="1">
    <attribute value="0" name="Mass"/>
