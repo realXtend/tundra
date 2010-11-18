@@ -33,8 +33,21 @@ namespace AssImp
     public:
         OpenAssetImport();
         ~OpenAssetImport();
+
+        //! Helper function for stripping mesh name from asset id
+        /*! If asset is contained in a file that contains other assets as well,
+            this function can be used to separate the mesh name so you can
+            get a file name and a mesh name
+            \param id asset id
+            \param outfile asset filename
+            \param outMeshname mesh name
+        */
+        static void StripMeshnameFromAssetId(const QString& id, QString &outfile, QString &outMeshname);
         
         //! Returns true if filename has an extension that implies supported file format
+        /*!
+            \param filename full path or only filename to test
+        */
         bool IsSupportedExtension(const QString& filename);
 
         //! Imports mesh data from a file.
