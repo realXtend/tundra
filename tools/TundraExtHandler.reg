@@ -28,10 +28,12 @@ Windows Registry Editor Version 5.00
 [HKEY_CLASSES_ROOT\Applications\Server.exe\Shell\OpenServer\Command]
 @="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\server.exe\" --file \"%1\""
 
-[HKEY_CLASSES_ROOT\Applications\Viewer.exe\Shell\OpenServer]
-@="Open in Tundra Viewer"
+[HKEY_CLASSES_ROOT\Applications\Viewer.exe]
+[HKEY_CLASSES_ROOT\Applications\Viewer.exe\Shell]
+[HKEY_CLASSES_ROOT\Applications\Viewer.exe\Shell\OpenViewer]
+@="Open Tundra Viewer in this directory"
 "Icon"="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\data\\ui\\images\\naali_icon.ico\",0"
-[HKEY_CLASSES_ROOT\Applications\Viewer.exe\Shell\OpenServer\Command]
+[HKEY_CLASSES_ROOT\Applications\Viewer.exe\Shell\OpenViewer\Command]
 @="\"C:\\ReplaceWithAbsoluteTundraInstallationDirectory\\viewer.exe\""
 
 [HKEY_CLASSES_ROOT\Tundra_File_Type]
