@@ -5,8 +5,8 @@ to connects/disconnects of users and creates/deletes avatars for them, as well a
 To test, copy default_avatar.xml, fish.mesh & WoodPallet.mesh to your tundra bin/data/assets directory, and avatar.xml
 to your bin directory.
 
-Then, run the server and load the scene on it:
-loadscene(avatar.xml)
+Then, run the server and load the scene on it by drag-and-dropping avatar.txml to the main window, or by using console
+command loadscene(avatar.txml)
 
 Next, start one or more clients and connect to the server. Each client should get an avatar that can be controlled
 with WASD + arrows + mouse. Only third person camera is currently implemented.
