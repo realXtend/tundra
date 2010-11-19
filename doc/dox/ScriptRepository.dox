@@ -13,11 +13,15 @@ Naali offers several mechanisms for adding scripts to your application. You can
 
 \section NaaliApplicationQtScripts Writing Application Scripts using QtScript
 
-\todo write this section.
+JavaScriptModule manages the execution of <b>application-level scripts</b>, which are scripts that are not attached to any scene, server or an entity. These scripts are executed once during startup from the folder /bin/jsmodules/startup at the module PostInitialize time, and their contexts stay alive until application shutdown. Each application script file is executed in a separate context.  
 
 \section ECScriptScripts Embedding scripts to a scene using EC_Script
 
-\todo write this section.
+The EC_Script component holds a reference to a script file. Script files are assets like meshes and materials, and are loaded using the built-in asset system. To add a script into an entity, add the EC_Script component into it using the Scene Structure window or the EC Editor window.
+
+\image html ECScript.png
+
+The <i>Script ref</i> attribute stores the actual asset reference address. To run the script, execute the <b>RunScript</b> Entity Action on the entity the EC_Script component is part of. If you check the <i>Run on load</i> attribute, the script will be loaded immediately when the component is added or the asset reference is changed, and manually invoking RunScript is not necessary.
 
 \section JavaScriptExtensions Naali Extensions to QtScript
 
