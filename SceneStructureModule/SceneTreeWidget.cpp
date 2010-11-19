@@ -31,7 +31,6 @@
 #include "AssetEvents.h"
 #include "RexTypes.h"
 #include "OgreConversionUtils.h"
-//#include "Inventory/InventoryEvents.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
