@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -489,6 +490,12 @@ namespace Foundation
         assert(name.empty() == false);
 
         std::string path(name);
+//$ BEGIN_MOD $
+//$ MOD_DESCRIPTION add player_viewer configurations suffix ("p") $
+#if PLAYER_VIEWER
+		path.append("p");
+#endif
+//$ END_MOD $
         path.append(Poco::SharedLibrary::suffix());
 
         Module::SharedLibraryPtr library;
