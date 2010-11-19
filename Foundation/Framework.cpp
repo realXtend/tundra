@@ -118,8 +118,13 @@ namespace Foundation
 
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
+// $ BEGIN_MOD $
+#ifdef PLAYER_VIEWER
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.2-Player-0.1"));
+#else
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.2-UiExternal-0.2"));
-
+#endif
+// $ END_MOD $
             CreateLoggingSystem(); // depends on config and platform
 
             // create managers
