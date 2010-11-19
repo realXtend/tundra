@@ -41,6 +41,7 @@ namespace CommunicationsService
         framework_->GetServiceManager()->RegisterService(::Service::ST_Communications, communications_service_);
         QString message("Communications service registered.");
         LogInfo(message.toStdString());
+        framework_->RegisterDynamicObject("communications_service", communications_service_.get());
     }
 
     void CommunicationsModule::PostInitialize()

@@ -19,6 +19,7 @@
 #include "ISoundService.h"
 #include "InputContext.h"
 #include "RenderServiceInterface.h"
+#include "CommunicationsService.h"
 
 #include "EntityAction.h"
 
@@ -64,6 +65,9 @@ Q_DECLARE_METATYPE(DelayedSignal*);
 
 //! Naali renderer defines
 Q_DECLARE_METATYPE(RaycastResult*);
+
+//! Communications metatype
+Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
 
 QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
 {
@@ -157,6 +161,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 
     // Renderer metatypes
     qScriptRegisterQObjectMetaType<RaycastResult*>(engine);
+
+    // Communications metatypes
+    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::SessionInterface*>(engine);
 }
 
 
