@@ -1,27 +1,38 @@
 /**
 
-\page TundraDocumentfiles Tundra document files 
+\page TundraDocumentfiles Tundra Document Files 
 
 Tundra provides two different scene file formats:
   - .txml: An XML formatted readable text file.
   - .tbin: A space-efficient binary file format.
 
-These two file types can be thought of as being "document" files (as opposed to persistent database storage files). You can open them into the Tundra server or viewer to browse them. At any time, you can save the whole scene state, or part of it, into these file formats for later loading. In this sense, Tundra can be used as a standalone "document editor" application. The only exception to this model is that Tundra does not keep state of which document was the currently loaded one. You can import multiple scene files into the same scene just by dragging them into the Scene Structure window. 
+These two file types can be thought of as representing "document" files, as opposed to e.g. persistent database storage files. You can open them into the Tundra server or viewer to browse them. At any time, you can save the whole scene state, or part of it, into these file formats for later loading. In this sense, Tundra can be used as a standalone "document editor" application. The only exception to this model is that Tundra does not keep state of which document was the currently loaded one. You can import multiple scene files into the same scene just by dragging them into the Scene Structure window. 
 
-The .txml or .tbin files do not need to store whole scenes. You can also store individual entities in these files, and later on use a script to instantiate these entities to the scene. Tundra does not make a distinction between an object/entity file and a scene file.
+The .txml or .tbin files do not need to store whole scenes. You can also store individual scene entities in these files, and later on use a script to instantiate these entities to the world. Tundra does not make a distinction between an object/entity file and a scene file.
  
-Typically, a scene file refers to several assets. These assets can be stored locally, in which case they should be saved to the same folder or a subfolder of where the .txml/.tbin file resides. Alternatively, the assets can be stored in an asset storage on a network server, and fetched e.g. by using HTTP.
+Typically, a scene file holds references to several asset files (textures, meshes, etc). These assets can be stored locally, in which case they should be saved to the same folder or a subfolder of where the .txml/.tbin file resides. Alternatively, the assets can be stored in an asset storage on a network server, and fetched e.g. by using HTTP.
+
+\section CommandLineOpen Opening Tundra Scene Files from the Command Line
+
+If you directly start viewer.exe or server.exe, the application will start up with an empty world. You can open a scene file manually into this world using the Scene Structure window or by dragging a scene file to on top of the main application window.
+
+You can automate the loading of a scene file when Tundra loads up by specifying the scene file to load from the command line. This is performed using the following syntax:
+
+<pre>server.exe --file myscenefile.txml</pre>
+
+To be able to load scenes outside the git trunk bin folder, you will need to specify the full path of server.exe, or add the directory of server.exe to your PATH environment variable.
 
 \section FileExtHandler Registering a File Extension Handler for Tundra Scene Files
  
 On Windows, you can automatically set up a context menu handler for these file types. This allows you to start the Tundra server and automatically load in the given scene document file.  
 
-If you are running a binary release of Tundra using an installer, this should be automatically done for you. This topic concerns developers who have built Tundra from the source tree.
+If you are running a binary release of Tundra using an installer, this should be automatically done for you. This topic concerns developers who have built Tundra from the source tree or have obtained Tundra by other means.
 
 <ol>
-<li>In the Git trunk repository folder <b>tools</b> there is a file TundraExtHandler.reg. Edit this file by replacing all occurrences of the string "C:\\ReplaceWithAbsoluteTundraInstallationDirectory" with the bin-directory where you have built Tundra in. Remember to double each '\' sign in the path.
-<li>Additionally, there is a TundraExtHandlerDebug.reg file in the same folder. This registers the invokation of debug-mode executables (serverd.exe and viewerd.exe) into the context menu, which can be useful if you are developing your own code. 
+<li>In the Git trunk repository folder <b>tools</b> there is a file TundraExtHandler.reg. Edit this file by replacing all occurrences of the string "C:\\ReplaceWithAbsoluteTundraInstallationDirectory" with the bin-directory where you have built Tundra in. <b>Remember to double each '\' sign in the path</b>, e.g. "C:\Projects\Tundra\bin" should be stored as "C:\\Projects\\Tundra\\bin".
+<li><b>For developers</b>: Additionally, there is a TundraExtHandlerDebug.reg file in the same folder. This registers the invokation of debug-mode executables (serverd.exe and viewerd.exe) into the context menu, which can be useful if you are developing your own code. 
 <li>Double-click on the .reg file(s) and add it to the registry.
+<li><b>For developers</b>: Remember to revert the .reg files or make the above modifications to a copy to avoid commiting the changed files back to the repository. 
 <li>Log out and log back in (or restart your computer)
 </ol>
 
@@ -29,8 +40,8 @@ If you are running a binary release of Tundra using an installer, this should be
 
 After that, right-clicking on a .tbin or .txml file should show like depicted above. Double-clicking on a Tundra scene file will perform the default action of opening the selected scene file into the Tundra server.
 
-\section LocalAssetProvider Asset system behavior with double-click-open 
+\section LocalAssetProvider Asset System Behavior with Double-Click Open 
 
-Starting up the Tundra server or viewer by double-clicking on a file has a special meaning for the Local Asset Provider. When the application is started by double-clicking on a .txml or .tbin file, the Local Asset Provider will pick up the directory where that file resides and add that directory and all its subdirectories to the asset storage lookup path. This will allow you to store assets in the same directory or subdirectories of the scene file and refer to them in the scene by using the <b>file://</b> URL protocol specifier. This way you can "bundle" a whole scene with all its assets into one directory and make e.g. a .zip package out of this folder to distribute it.      
+Starting up the Tundra server or viewer by double-clicking on a file (or with the --file parameter) has a special meaning for the Local Asset Provider. When the application is started by double-clicking on a .txml or .tbin file, the Local Asset Provider will pick up the directory where that file resides and add that directory and all its subdirectories to the asset storage lookup path. This will allow you to store assets in the same directory or subdirectories of the scene file and refer to them in the scene by using the <b>file://</b> URL protocol specifier. This way you can "bundle" a whole scene with all its assets into one directory and make e.g. a .zip package out of this folder to distribute it.      
 
 */
