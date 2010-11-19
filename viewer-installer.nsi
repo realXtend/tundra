@@ -27,6 +27,11 @@ Section ""
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
 
+  # register url scheme handler				   
+  WriteRegStr HKCR "realxtend" "" "URL:realXtend Protocol"
+  WriteRegStr HKCR "realxtend" "URL Protocol" ""
+  WriteRegStr HKCR "realxtend\shell\open\command" "" "$INSTDIR\viewer.exe %1"
+  
   ExecWait '"$INSTDIR\oalinst.exe"'
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
   ExecWait '"$INSTDIR\dxwebsetup.exe"'
