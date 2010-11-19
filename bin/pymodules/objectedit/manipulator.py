@@ -277,7 +277,8 @@ class Manipulator:
                     if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
                         placeable = ents[0].placeable
                         self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
-
+                
+                if(self.manipulator!=None):
                     self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
