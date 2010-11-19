@@ -1284,10 +1284,7 @@ void WorldStream::SendGenericMessage(const std::string& method, const StringVect
 
     // Strings
     for(uint i = 0; i < strings.size(); ++i)
-    {
         m->AddString(strings[i]);
-        std::cout << method + " STRINGS FROM GENERICMESSAGE: " + strings[i] << std::endl;
-    }
 
     m->MarkReliable();
 
@@ -1339,67 +1336,6 @@ void WorldStream::SendGenericMessageBinary(
     for(uint i = 0; i < strings.size(); ++i)
         m->AddString(strings[i]);
 
-    // Binary strings
-    size_t idx = 0;
-    count = binary.size();   
-    for(uint i = 0; i < binarystrings; ++i)
-    {
-        size_t size = count;
-        if (size > max_string_size)
-            size = max_string_size;
-            
-        m->AddBuffer(size, (uint8_t*)&binary[idx]);
-        idx += size;
-        count -= size;
-    }
-
-    m->MarkReliable();
-
-    FinishMessageBuilding(m);
-    std::cout << "End of SendGenericMessageBinary with method: " + method << std::endl;
-}
-
-void WorldStream::SendECGenericMessageBinary(
-    const std::string& method,
-    const std::vector<uint8_t>& binary)
-{
-    if (!connected_)
-        return;
-
-    const size_t max_string_size = 200;
-    
-    NetOutMessage *m = StartMessageBuilding(RexNetMsgGenericMessage);
-    assert(m);
-
-    // AgentData
-    m->AddUUID(clientParameters_.agentID);
-    m->AddUUID(clientParameters_.sessionID);
-
-    // Transaction ID
-    m->AddUUID(RexUUID::CreateRandom());
-
-    // Method
-    m->AddString(method);
-
-    // Invoice ID
-    m->AddUUID(RexUUID::CreateRandom());
-
-    // See how many binary strings 
-    size_t binarystrings = 0;
-    size_t count = binary.size();
-    while (count)
-    {
-        if (count > max_string_size)
-            count -= max_string_size;
-        else
-            count -= count;
-        binarystrings++;
-    }
-    
-    // Variable count of strings
-    m->SetVariableBlockCount(binarystrings);
-
-    
     // Binary strings
     size_t idx = 0;
     count = binary.size();   

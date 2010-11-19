@@ -508,7 +508,6 @@ bool Primitive::HandleRexGM_RexFreeData(ProtocolUtilities::NetworkEventInboundDa
 
 bool Primitive::HandleECGM_ECData(ProtocolUtilities::NetworkEventInboundData* data)
 {
-    /*
     std::vector<u8> fulldata;
     RexUUID primuuid;
 
@@ -545,50 +544,71 @@ bool Primitive::HandleECGM_ECData(ProtocolUtilities::NetworkEventInboundData* da
     }
 
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
-    // If cannot get the entity, put to pending rexprimdata
     if (entity)
         HandleECData(entity->GetId(), &fulldata[0], fulldata.size());
-    else
-        //pending_rexprimdata_[primuuid] = fulldata;
 
-    */
     return false;
 }
 
 bool Primitive::HandleECGM_ECRemove(ProtocolUtilities::NetworkEventInboundData* data)
 {
-    /*
     StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
-    
+  
     if (params.size() < 2)
         return false;
     
     // First parameter: prim id
     RexUUID primuuid(params[0]);
-    // Rest of parameters: free data in pieces
-    std::string freedata;
-    for (uint i = 1; i < params.size(); ++i)
-        freedata.append(params[i]);
     
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
-    // If cannot get the entity, put to pending rexfreedata
     if (entity)
-        HandleECRemove(entity->GetId(), freedata);
-    else
-        //pending_rexfreedata_[primuuid] = freedata;
-        */
-    
+        HandleECRemove(entity->GetId(), params);
+
     return false;
 }
 
 void Primitive::HandleECData(entity_id_t entityid, const uint8_t* primdata, const int primdata_size)
 {
-    qDebug() << "Primitive::HandleECData(ProtocolUtilities::NetworkEventInboundData* data)";
+    int idx = 0;
+
+    std::string comp_type = ReadNullTerminatedStringFromBytes(primdata, idx);
+    std::string comp_name = ReadNullTerminatedStringFromBytes(primdata, idx);
+    std::string data = ReadNullTerminatedStringFromBytes(primdata, idx);
+
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity)
+        return;
+
+    QDomDocument temp_doc;
+    if (temp_doc.setContent(QByteArray::fromRawData(data.c_str(), data.size())))
+    {
+        DeserializeECsFromFreeData(entity, temp_doc);
+        Scene::Events::SceneEventData event_data(entity->GetId());
+        EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+        event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_ECS_RECEIVED, &event_data);
+    }
 }
 
-void Primitive::HandleECRemove(entity_id_t entityid, const std::string& freedata)
+void Primitive::HandleECRemove(entity_id_t entityid, StringVector params)
 {
-    qDebug() << "Primitive::HandleECRemove(ProtocolUtilities::NetworkEventInboundData* data)";
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+
+    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
+    for (uint i = 0; i < all_components.size(); ++i)
+    {
+        if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
+        {
+            bool found = false;
+            if (params[2].c_str() == all_components[i]->TypeName().toStdString() && params[3].c_str() == all_components[i]->Name().toStdString())
+            {
+                found = true;
+                break;
+            }
+            if (!found)
+                entity->RemoveComponent(all_components[i], AttributeChange::LocalOnly);
+        }
+    }
+
 }
 
 void Primitive::CheckPendingRexPrimData(entity_id_t entityid)
@@ -795,13 +815,8 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
         return;
     }
     
-    /////////////////////////**********************************///////////////////////////
     EC_OpenSimPrim* prim = entity->GetComponent<EC_OpenSimPrim>().get();
     if (!prim )
-        return;
-
-    WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
-    if (!conn)
         return;
 
     RexUUID fullid = prim->FullId;
@@ -813,17 +828,23 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
     bool send_asset_urls = false;
 
     strings.push_back(fullid.ToString());
-    strings.push_back(component->TypeName().toStdString());
-    strings.push_back(component->Name().toStdString());
     
-    WriteUUIDToBytes(fullid, &buffer[0], idx);
     WriteNullTerminatedStringToBytes(component->TypeName().toStdString(), &buffer[0], idx);
     WriteNullTerminatedStringToBytes(component->Name().toStdString(), &buffer[0], idx);
 
     const std::string& freedata = std::string(bytes.data(), bytes.size());
 
     WriteNullTerminatedStringToBytes(freedata, &buffer[0], idx);
+    WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
+    if (!conn)
+        return;
+
+    buffer.resize(idx);
+
+    conn->SendGenericMessageBinary("ECSync", strings, buffer);
     
+    strings.push_back(component->TypeName().toStdString());
+    strings.push_back(component->Name().toStdString());
     // Split freedata into chunks of 200
     for (uint i = 0; i < freedata.length(); i += 200)
     {
@@ -833,7 +854,7 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
         strings.push_back(freedata.substr(i, j-i));
     }
     conn->SendGenericMessage("ECString", strings);
-    conn->SendGenericMessageBinary("ECSync", strings, buffer);
+    
 }
 
 void Primitive::SendECRemove(entity_id_t entityid, IComponent * component)
@@ -842,7 +863,6 @@ void Primitive::SendECRemove(entity_id_t entityid, IComponent * component)
     if (!entity)
         return;
 
-    /////////////////////////**********************************///////////////////////////
     EC_OpenSimPrim* prim = entity->GetComponent<EC_OpenSimPrim>().get();
     if (!prim )
         return;
@@ -2229,14 +2249,30 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, IComponent* comp, Attribu
 
 void Primitive::OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
-    entity_id_t entityid = entity->GetId();
-    SendECData(entityid, comp);
+    if ((!comp) || (!comp->IsSerializable()) || (!comp->GetNetworkSyncEnabled()))
+        return;
+    if (!entity)
+        return;
+
+    if (change == AttributeChange::Replicate)
+    {
+        entity_id_t entityid = entity->GetId();
+        SendECData(entityid, comp);
+    }
 }
 
 void Primitive::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
-    entity_id_t entityid = entity->GetId();
-    SendECRemove(entityid, comp);
+    if ((!comp) || (!comp->IsSerializable()) || (!comp->GetNetworkSyncEnabled()))
+        return;
+    if (!entity)
+        return;
+
+    if (change == AttributeChange::Replicate)
+    {
+        entity_id_t entityid = entity->GetId();
+        SendECRemove(entityid, comp);
+    }
 }
 
 void Primitive::OnRexPrimDataChanged(Scene::Entity* entity)
@@ -2340,6 +2376,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             std::string name = comp_elem.attribute("name").toStdString();
             type_names.push_back(type_name);
             names.push_back(name);
+
             // Signal the add of component right away
             ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str(), AttributeChange::LocalOnly);
             // If it's an existing component, and has network sync disabled, skip
@@ -2380,7 +2417,9 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
     //! \todo All attributes will reflect a change, even if they had the same value as before. Optimize this away.
     //! \todo ComponentChanged() currently triggers deprecated OnChanged() signal. This will be removed. Do not rely on it!
     for (uint i = 0; i < deserialized.size(); ++i)
+    {
         deserialized[i]->ComponentChanged(AttributeChange::LocalOnly);
+    }
 }
 
 } // namespace RexLogic

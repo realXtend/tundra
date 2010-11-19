@@ -409,14 +409,6 @@ namespace ProtocolUtilities
 
         //! Sends a generic message with binary data packed to the end
         /*! \param method Method name
-            \param binary Vector of binary data. Will be split into smaller chunks as necessary
-         */
-        void SendECGenericMessageBinary(
-            const std::string& method,
-            const std::vector<uint8_t>& binary);
-
-        //! Sends a generic message with binary data packed to the end
-        /*! \param method Method name
             \param strings Vector of data strings to be sent
             \param binary Vector of binary data. Will be split into smaller chunks as necessary
          */
