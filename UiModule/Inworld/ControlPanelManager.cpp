@@ -216,10 +216,9 @@ namespace CoreUi
 	//$ BEGIN_MOD $
 	    void ControlPanelManager::CreateOptionalControls()
     {
-#ifdef PLAYER_VIEWER
-		//If player_viewer is defined, the buttons are placed above
-#else
-        QList<UiServices::ControlButtonType> buttons;
+#ifndef PLAYER_VIEWER
+
+		QList<UiServices::ControlButtonType> buttons;
         buttons  << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;

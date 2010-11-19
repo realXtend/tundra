@@ -22,9 +22,7 @@ namespace CoreUi
         connect(avatarToggle, SIGNAL(clicked()), SLOT(AvatarToggle()));
 		//$ BEGIN_MOD $
 		//Deleted from ui to check behaviour
-#ifdef PLAYER_VIEWER
-		//Dont create inventory item...
-#else
+#ifndef PLAYER_VIEWER
         connect(inventoryToggle, SIGNAL(clicked()), SLOT(InventoryToggle()));
 #endif
 		//$ END_MOD $
@@ -32,9 +30,7 @@ namespace CoreUi
 
         CheckStyle(false, "avatarToggle");
 		//$ BEGIN_MOD $
-#ifdef PLAYER_VIEWER
-		//Dont create inventory item...
-#else
+#ifndef PLAYER_VIEWER
         CheckStyle(false, "inventoryToggle");
 #endif
 		//$ END_MOD $

@@ -81,9 +81,7 @@ namespace Environment
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
-#ifdef PLAYER_VIEWER
-		//DONT CREATE POST-PROCESSING WINDOWS..
-#else
+#ifndef PLAYER_VIEWER
         OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
         {

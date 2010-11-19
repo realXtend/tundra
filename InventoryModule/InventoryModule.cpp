@@ -479,9 +479,8 @@ void InventoryModule::CreateInventoryWindow()
     SAFE_DELETE(inventoryWindow_); 
     inventoryWindow_ = new InventoryWindow;
 //$ BEGIN_MOD $
-#ifdef PLAYER_VIEWER
-	//Dont create inventory..
-#else
+#ifndef PLAYER_VIEWER
+
 	//$ BEGIN_MOD $
 	inventoryWindow_->setWindowTitle("Inventory");
 	//$ END_MOD $

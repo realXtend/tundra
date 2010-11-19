@@ -266,8 +266,13 @@ namespace OgreRenderer
         int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_height", 600);
         int window_left = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_left", -1);
         int window_top = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_top", -1);
-        bool maximized = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_maximized", false); 
-        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
+#ifdef PLAYER_VIEWER
+        bool maximized = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", true);
+		bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", true);
+#else
+		bool maximized = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", false);
+        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", false);
+#endif
         view_distance_ = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "view_distance", 500.0);
 
         // Be sure that window is not out of boundaries.
