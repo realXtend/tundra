@@ -75,9 +75,10 @@ namespace RexLogic
         ///\todo Move to WorldStream?
         void SendRexFreeData(entity_id_t entityid);
 
-        // Send EC data of an entity (if exists) to server
+        // Send EC data of an entity to server
         void SendECData(entity_id_t entityid, IComponent * component);
 
+        // Send EC data to server when an entity is removed
         void SendECRemove(entity_id_t entityid, IComponent * component);
 
         // Start listening to Scene's EC notification signals
@@ -100,9 +101,9 @@ namespace RexLogic
         //! When prim description has changed
         void OnPrimDescriptionChanged(const EC_OpenSimPrim& prim);
 
-        //! New component added
+        //! When new component is added
         void OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
-        //! Component removed
+        //! When component is removed
         void OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     private:
@@ -139,7 +140,7 @@ namespace RexLogic
         void HandleECData(entity_id_t entityid, const uint8_t* primdata, const int primdata_size);
 
         //! handle ECRemove data
-        void HandleECRemove(entity_id_t entityid, const std::string& freedata);
+        void HandleECRemove(entity_id_t entityid, StringVector freedata);
         
         //! handles changes in rex ambient sound parameters.
         void HandleAmbientSound(entity_id_t entityid);
