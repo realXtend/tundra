@@ -72,6 +72,8 @@ namespace Asset
         void AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive);
 
         virtual std::vector<IAssetStorage*> GetStorages();
+
+        virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
     private:
 
         //! Get a path for asset, using all the search directories
@@ -87,6 +89,15 @@ namespace Asset
 
         //! Asset directories to search, may be recursive or not
         std::vector<LocalAssetStoragePtr> storages;
+
+        typedef boost::shared_ptr<IAssetUploadTransfer> AssetUploadTransferPtr;
+
+        //! The following asset uploads are pending to be completed by this provider.
+        std::vector<AssetUploadTransferPtr > pendingUploads;
+
+        //! Takes all the pending file upload transfers and finishes them.
+        void CompletePendingFileUploads();
+
     };
 }
 
