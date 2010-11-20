@@ -99,7 +99,7 @@ signals:
     void Updated(float frametime);
 
 private:
-    /// Constuctor. Framework takes ownership of this object.
+    /// Constructor. Framework takes ownership of this object.
     /** @param framework Framework
     */
     explicit Frame(Foundation::Framework *framework);
