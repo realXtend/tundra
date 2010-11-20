@@ -41,7 +41,7 @@ namespace CommunicationUI
                 Scene::Entity &entity = *iter->second;
                 EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
                 if (presence_component)
-                    id_to_name.insert(presence_component->agentId.ToQString(), presence_component->GetFullName().c_str());
+                    id_to_name.insert(presence_component->agentId.ToQString(), presence_component->GetFullName());
             }
             return id_to_name;
         }
