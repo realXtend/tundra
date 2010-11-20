@@ -6,9 +6,9 @@ boost::shared_ptr<T> AssetAPI::GetAssetProvider()
     std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
     for(size_t i = 0; i < providers.size(); ++i)
     {
-        T *provider = dynamic_cast<T*>(providers[i].get());
-        if (provider)
-            return boost::shared_ptr<T>(provider);
+        boost::shared_ptr<T> provider = boost::dynamic_pointer_cast<T>(providers[i]);
+        if (provider.get())
+            return provider;
     }
     return boost::shared_ptr<T>();
 }

@@ -38,58 +38,39 @@ void IAssetTransfer::EmitAssetLoaded()
 
 namespace
 {
-    std::string GetResourceTypeFromResourceName(const std::string &name)
+    bool IsFileOfType(const QString &filename, const char **suffixes, int numSuffixes)
     {
-        if (name.find(".mesh") != std::string::npos)
+        for(int i = 0;i < numSuffixes; ++i)
+            if (filename.endsWith(suffixes[i]))
+                return true;
+
+        return false;
+    }
+
+    std::string GetResourceTypeFromResourceName(const char *name)
+    {
+        QString file(name);
+        file = file.trimmed();
+        if (file.endsWith(".mesh"))
             return "OgreMesh";
-        if (name.find(".skeleton") != std::string::npos)
+        if (file.endsWith(".skeleton"))
             return "OgreSkeleton";
-        if (name.find(".material") != std::string::npos)
+        if (file.endsWith(".material"))
             return "OgreMaterial";
-        if (name.find(".jpg") != std::string::npos || name.find(".png") != std::string::npos || name.find(".tga") != std::string::npos
-            || name.find(".bmp") != std::string::npos || name.find(".dds") != std::string::npos)
-            return "OgreTexture";
-        if (name.find(".particle") != std::string::npos)
+        if (file.endsWith(".particle"))
             return "OgreParticle";
-        
-        if (name.find("3d") != std::string::npos ||
-            name.find("b3d") != std::string::npos ||
-            name.find("dae") != std::string::npos ||
-            name.find("bvh") != std::string::npos ||
-            name.find("3ds") != std::string::npos ||
-            name.find("ase") != std::string::npos ||
-            name.find("obj") != std::string::npos ||
-            name.find("ply") != std::string::npos ||
-            name.find("dxf") != std::string::npos ||
-            name.find("nff") != std::string::npos ||
-            name.find("smd") != std::string::npos ||
-            name.find("vta") != std::string::npos ||
-            name.find("mdl") != std::string::npos ||
-            name.find("md2") != std::string::npos ||
-            name.find("md3") != std::string::npos ||
-            name.find("mdc") != std::string::npos ||
-            name.find("md5mesh") != std::string::npos ||
-            name.find("x") != std::string::npos ||
-            name.find("q3o") != std::string::npos ||
-            name.find("q3s") != std::string::npos ||
-            name.find("raw") != std::string::npos ||
-            name.find("ac") != std::string::npos ||
-            name.find("stl") != std::string::npos ||
-            name.find("irrmesh") != std::string::npos ||
-            name.find("irr") != std::string::npos ||
-            name.find("off") != std::string::npos ||
-            name.find("ter") != std::string::npos ||
-            name.find("mdl") != std::string::npos ||
-            name.find("hmp") != std::string::npos ||
-            name.find("ms3d") != std::string::npos ||
-            name.find("lwo") != std::string::npos ||
-            name.find("lws") != std::string::npos ||
-            name.find("lxo") != std::string::npos ||
-            name.find("csm") != std::string::npos ||
-            name.find("ply") != std::string::npos ||
-            name.find("cob") != std::string::npos ||
-            name.find("scn") != std::string::npos )
-            return "OgreMesh";
+
+        const char *textureFileTypes[] = { ".jpg", ".png", ".tga", ".bmp", ".dds" };
+        if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
+            return "OgreTexture";
+
+        const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
+            ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",
+            ".stl", ".irrmesh", ".irr", ".off", ".ter", ".mdl", ".hmp", ".ms3d", ".lwo", ".lws", ".lxo", ".csm",
+            ".ply", ".cob", ".scn" };
+
+        if (IsFileOfType(file, openAssImpFileTypes, NUMELEMS(openAssImpFileTypes)))
+            return "OgreMesh"; // We use the OgreMeshResource type for mesh files opened using the Open Asset Import Library.
 
         return "";
         // Note: There's a separate OgreImageTextureResource which isn't handled above.
@@ -149,7 +130,7 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
     // Depending on the asset type, we must request the asset from the Renderer or from the asset service.
 
-    std::string foundAssetType = GetResourceTypeFromResourceName(assetRef.toLower().toStdString());
+    std::string foundAssetType = GetResourceTypeFromResourceName(assetRef.toLower().toStdString().c_str());
     if (foundAssetType != "")
         tag = renderer->RequestResource(assetRef.toStdString(), foundAssetType);
     else
