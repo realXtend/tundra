@@ -51,7 +51,7 @@ namespace Asset
         // Add localassethandler, with a hardcoded dir for now
         // Note: this directory is a different concept than the "pre-warmed assetcache"
         LocalAssetProvider* local = new LocalAssetProvider(framework_);
-        local->AddDirectory("./data/assets", true);
+        local->AddStorageDirectory("./data/assets", "System", true);
         local_asset_provider_ = Foundation::AssetProviderPtr(local);
         manager_->RegisterAssetProvider(local_asset_provider_);
 

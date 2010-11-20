@@ -9,6 +9,7 @@
 #include "LoggingFunctions.h"
 #include "EventManager.h"
 #include "ResourceInterface.h"
+#include "CoreException.h"
 #include "../AssetModule/AssetEvents.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
@@ -22,17 +23,17 @@ AssetAPI::AssetAPI(Foundation::Framework *owner)
 
 void IAssetTransfer::EmitAssetDownloaded()
 {
-    emit Downloaded();
+    emit Downloaded(this);
 }
 
 void IAssetTransfer::EmitAssetDecoded()
 {
-    emit Decoded();
+    emit Decoded(this);
 }
 
 void IAssetTransfer::EmitAssetLoaded()
 {
-    emit Loaded();
+    emit Loaded(this);
 }
 
 namespace
@@ -93,6 +94,33 @@ namespace
         return "";
         // Note: There's a separate OgreImageTextureResource which isn't handled above.
     }
+}
+
+std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders()
+{
+    ServiceManagerPtr service_manager = framework->GetServiceManager();
+    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
+        service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
+    if (!asset_service)
+        throw Exception("Unagle to get AssetServiceInterface!");
+
+    std::vector<Foundation::AssetProviderPtr> providers = asset_service->Providers();
+    return providers;
+}
+
+std::vector<IAssetStorage*> AssetAPI::GetAssetStorages()
+{
+    std::vector<IAssetStorage*> storages;
+
+    std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
+
+    for(size_t i = 0; i < providers.size(); ++i)
+    {
+        std::vector<IAssetStorage*> stores = providers[i]->GetStorages();
+        storages.insert(storages.end(), stores.begin(), stores.end());
+    }
+
+    return storages;
 }
 
 IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
