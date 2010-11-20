@@ -3,6 +3,7 @@
 #ifndef incl_OgreRenderer_EC_RttTarget_h
 #define incl_OgreRenderer_EC_RttTarget_h
 
+#include "StableHeaders.h"
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "Core.h"
@@ -53,8 +54,8 @@ public:
     //Q_PROPERTY(QString compositorref READ getcompositorref WRITE setcompositorref);
     //DEFINE_QPROPERTY_ATTRIBUTE(QString, compositorref);
 
-    //Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
-    //DEFINE_QPROPERTY_ATTRIBUTE(QString, targettexture);
+    Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, targettexture);
 
     virtual ~EC_RttTarget();
 
@@ -63,7 +64,8 @@ public:
 
 private slots:
     void AttributeUpdated(IAttribute* attribute);
-    void UpdateRtt();
+    //void UpdateRtt();
+    void SetupRtt();
 
 private:
     //! constructor
@@ -74,7 +76,8 @@ private:
     //! Owner module of this component
     //OgreRenderer::OgreRenderingModule *owner_;
 
-    void ScheduleRender();
+    Ogre::TexturePtr tex;
+    //void ScheduleRender();
 };
 
 #endif
