@@ -15,6 +15,7 @@
 #include "EC_OgreEnvironment.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreCompositor.h"
+#include "EC_RttTarget.h"
 
 #include "InputEvents.h"
 #include "SceneEvents.h"
@@ -57,6 +58,7 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreEnvironment);
         DECLARE_MODULE_EC(EC_OgreCamera);
         DECLARE_MODULE_EC(EC_OgreCompositor);
+        DECLARE_MODULE_EC(EC_RttTarget);
     }
 
     // virtual
