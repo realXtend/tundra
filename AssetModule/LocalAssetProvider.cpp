@@ -13,6 +13,7 @@
 #include "ServiceManager.h"
 #include "ConfigurationManager.h"
 #include "LocalAssetStorage.h"
+#include "IAssetUploadTransfer.h"
 #include <QByteArray>
 #include <QFile>
 
@@ -141,6 +142,7 @@ bool LocalAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& siz
 
 void LocalAssetProvider::Update(f64 frametime)
 {
+    CompletePendingFileUploads();
 }
 
 void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
@@ -163,5 +165,87 @@ std::vector<IAssetStorage*> LocalAssetProvider::GetStorages()
     return stores;
 }
 
+IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
+{
+    LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(destination.get());
+    if (!storage)
+    {
+        AssetModule::LogError("LocalAssetProvider::UploadAssetFromFile: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
+        return 0;
+    }
 
+    AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
+    transfer->sourceFilename = filename;
+    transfer->destinationName = assetName;
+    transfer->destinationStorage = destination;
+
+    pendingUploads.push_back(transfer);
+
+    return transfer.get();
 }
+
+namespace
+{
+bool CopyAsset(const char *sourceFile, const char *destFile)
+{
+    assert(sourceFile);
+    assert(destFile);
+
+    QFile asset_in(sourceFile);
+    if (!asset_in.open(QFile::ReadOnly))
+    {
+        AssetModule::LogError("Could not open input asset file " + std::string(sourceFile));
+        return false;
+    }
+    else
+    {
+        QByteArray bytes = asset_in.readAll();
+        asset_in.close();
+        
+        QFile asset_out(destFile);
+        if (!asset_out.open(QFile::WriteOnly))
+        {
+            AssetModule::LogError("Could not open output asset file " + std::string(destFile));
+            return false;
+        }
+        else
+        {
+            asset_out.write(bytes);
+            asset_out.close();
+        }
+    }
+    
+    return true;
+}
+
+} // ~unnamed namespace
+
+void LocalAssetProvider::CompletePendingFileUploads()
+{
+    while(pendingUploads.size() > 0)
+    {
+        AssetUploadTransferPtr transfer = pendingUploads.back();
+        pendingUploads.pop_back();
+
+        LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage *>(transfer->destinationStorage.lock().get());
+        if (!storage)
+        {
+            AssetModule::LogError("Invalid IAssetStorage specified for file upload in LocalAssetProvider!");
+            transfer->EmitTransferFailed();
+            continue;
+        }
+        
+        std::string fromFile = transfer->sourceFilename.toStdString();
+        std::string toFile = storage->directory + transfer->destinationName.toStdString();
+        bool success = CopyAsset(fromFile.c_str(), toFile.c_str());
+        if (!success)
+        {
+            AssetModule::LogError("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!");
+            transfer->EmitTransferFailed();
+        }
+        else
+            transfer->EmitTransferCompleted();
+    }
+}
+
+} // ~Asset

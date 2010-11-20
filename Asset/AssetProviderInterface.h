@@ -106,6 +106,8 @@ namespace Foundation
 
         //! Returns the list of all asset storages registered into this asset provider.
         virtual std::vector<IAssetStorage*> GetStorages() { return std::vector<IAssetStorage*>(); }
+
+        virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, IAssetStorage *destination, const char *assetName) { return 0; }
     };
 }
 
