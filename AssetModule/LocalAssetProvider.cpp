@@ -12,7 +12,7 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "ConfigurationManager.h"
-
+#include "LocalAssetStorage.h"
 #include <QByteArray>
 #include <QFile>
 
@@ -61,7 +61,7 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     if (lastSlash != std::string::npos)
         filename = filename.substr(0, lastSlash);
     
-    std::string assetpath = GetPathForAsset(filename);
+    std::string assetpath = GetPathForAsset(filename); // Look up all known local file asset storages for this asset.
     if (assetpath.empty())
     {
         AssetModule::LogInfo("Failed to load local asset " + filename);
@@ -105,36 +105,21 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
 std::string LocalAssetProvider::GetPathForAsset(const std::string& assetname)
 {
     // Check first all subdirs without recursion, because recursion is potentially slow
-    for (uint i = 0; i < directories_.size(); ++i)
+    for(size_t i = 0; i < storages.size(); ++i)
     {
-        if (boost::filesystem::exists(directories_[i].dir_ + "/" + assetname))
-            return directories_[i].dir_;
+        std::string path = storages[i]->GetFullPathForAsset(assetname, false);
+        if (path != "")
+            return path;
+    }
+
+    for(size_t i = 0; i < storages.size(); ++i)
+    {
+        std::string path = storages[i]->GetFullPathForAsset(assetname, true);
+        if (path != "")
+            return path;
     }
     
-    // Now check recursively if not yet found
-    for (uint i = 0; i < directories_.size(); ++i)
-    {
-        if (directories_[i].recursive_)
-        {
-            try
-            {
-                boost::filesystem::recursive_directory_iterator iter(directories_[i].dir_);
-                boost::filesystem::recursive_directory_iterator end_iter;
-                for(; iter != end_iter; ++iter )
-                    if (!fs::is_regular_file(iter->status()))
-                {
-                    // Check the subdir
-                    if (boost::filesystem::exists(iter->path().string() + "/" + assetname))
-                        return iter->path().string();
-                }
-            }
-            catch (...)
-            {
-            }
-        }
-    }
-    
-    return std::string();
+    return "";
 }
 
 bool LocalAssetProvider::InProgress(const std::string& asset_id)
@@ -158,30 +143,25 @@ void LocalAssetProvider::Update(f64 frametime)
 {
 }
 
-void LocalAssetProvider::AddDirectory(const std::string& dir, bool recursive)
+void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
 {
-    if (dir.empty())
-        return;
-    
-    // Remove in case it exists already
-    RemoveDirectory(dir);
-    
-    AssetDirectory newdir;
-    newdir.dir_ = dir;
-    newdir.recursive_ = recursive;
-    directories_.push_back(newdir);
+    ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
+
+    LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
+    storage->directory = directory;
+    storage->name = storageName;
+    storage->recursive = recursive;
+
+    storages.push_back(storage);
 }
 
-void LocalAssetProvider::RemoveDirectory(const std::string& dir)
+std::vector<IAssetStorage*> LocalAssetProvider::GetStorages()
 {
-    for (uint i = 0; i < directories_.size(); ++i)
-    {
-        if (directories_[i].dir_ == dir)
-        {
-            directories_.erase(directories_.begin() + i);
-            break;
-        }
-    }
+    std::vector<IAssetStorage*> stores;
+    for(size_t i = 0; i < storages.size(); ++i)
+        stores.push_back(storages[i].get());
+    return stores;
 }
+
 
 }

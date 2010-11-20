@@ -17,6 +17,8 @@
 #include "TundraEvents.h"
 #include "SceneImporter.h"
 #include "AssetServiceInterface.h"
+#include "LocalAssetProvider.h"
+#include "AssetAPI.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -153,17 +155,16 @@ void TundraLogicModule::LoadStartupScene()
     std::string dirname = scenepath.branch_path().string();
     if (!dirname.empty())
     {
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-            framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
-        if (asset_service)
-            asset_service->AddLocalAssetDirectory(dirname, true);
+        boost::shared_ptr<Asset::LocalAssetProvider> localProvider = GetFramework()->Asset()->GetAssetProvider<Asset::LocalAssetProvider>();
+        if (localProvider)
+            localProvider->AddStorageDirectory(dirname, "Scene Local", true);
     }
     
     bool useBinary = startup_scene_.find(".tbin") != std::string::npos;
     if (!useBinary)
-        scene->LoadSceneXML(startup_scene_, true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
+        scene->LoadSceneXML(startup_scene_, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
     else
-        scene->LoadSceneBinary(startup_scene_, true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
+        scene->LoadSceneBinary(startup_scene_, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
 }
 
 Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)

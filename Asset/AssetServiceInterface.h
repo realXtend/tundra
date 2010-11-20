@@ -114,15 +114,7 @@ namespace Foundation
          */
         virtual void StoreAsset(AssetPtr asset, bool store_to_disk = true) = 0;
         
-        //! Add a localassetprovider directory
-        /*! \todo Will be removed when the concept of assetstorages exists
-         */
-        virtual void AddLocalAssetDirectory(const std::string& dir, bool recursive) = 0;
-        
-        //! Remove a localassetprovider directory
-        /*! \todo Will be removed when the concept of assetstorages exists
-         */
-        virtual void RemoveLocalAssetDirectory(const std::string& dir) = 0;
+        virtual std::vector<Foundation::AssetProviderPtr> Providers() { return std::vector<Foundation::AssetProviderPtr>(); }
     };
 }
 

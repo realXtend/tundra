@@ -4,6 +4,7 @@
 #define incl_Asset_QtHttpAssetProvider_h
 
 #include "Foundation.h"
+#include "AssetModuleApi.h"
 #include "AssetProviderInterface.h"
 #include "QtHttpAssetTransfer.h"
 
@@ -15,7 +16,7 @@
 
 namespace Asset
 {
-    class QtHttpAssetProvider : public QObject, public Foundation::AssetProviderInterface
+    class ASSET_MODULE_API QtHttpAssetProvider : public QObject, public Foundation::AssetProviderInterface
     {
 
     Q_OBJECT

@@ -107,17 +107,9 @@ namespace Asset
             \param frametime Seconds since last frame
          */
         void Update(f64 frametime);
-        
-        //! Add a localassetprovider directory
-        /*! \todo Will be removed when the concept of assetstorages exists
-         */
-        virtual void AddLocalAssetDirectory(const std::string& dir, bool recursive);
-        
-        //! Remove a localassetprovider directory
-        /*! \todo Will be removed when the concept of assetstorages exists
-         */
-        virtual void RemoveLocalAssetDirectory(const std::string& dir);
-        
+                
+        virtual std::vector<Foundation::AssetProviderPtr> Providers() { return providers_; }
+
     private:
         //! Gets new request tag
         request_tag_t GetNextTag();

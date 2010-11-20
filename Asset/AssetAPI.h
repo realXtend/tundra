@@ -18,26 +18,6 @@ class IAssetProvider
 //class HttpAssetProvider : public IAssetProvider;
 //class KNetAssetProvider : public IAssetProvider;
 
-/*
-class IAssetStorage : public QObject
-{
-    Q_OBJECT
-public:
-
-    /// Returns all assets saved in this asset storage.
-    std::vector<IAsset*> GetAllAssets() const;
-
-    /// Starts a new asset upload to this storage. If the given asset exists already in the storage, it is replaced.
-    /// @param url The desired name for the asset.
-    /// @return A pointer to the newly created transfer.
-    QPointer<IAssetTransfer> UploadAsset(const char *data, size_t numBytes, QString url);
-
-    /// Returns the address of this storage.
-    QString BaseURL() const;
-};
-
-*/
-
 class AssetAPI : public QObject
 {
     Q_OBJECT
@@ -56,22 +36,35 @@ public:
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     IAsset *GetAsset(QString assetRef);
-
+    
     /// Queries if any existing Asset Storage contains an asset with the given name, and returns it.
 //    IAsset *GetAssetByName(QString assetRef);
 
     /// Returns all assets known to the asset system.
 //    std::vector<IAsset*> GetAllAssets() const;
 
+    /// Returns the asset provider of the given type.
+    template<typename T>
+    boost::shared_ptr<T> GetAssetProvider();
+
+    /// Returns all the asset providers that are registered to the Asset API.
+    std::vector<Foundation::AssetProviderPtr> GetAssetProviders();
+
     /// Returns the known asset storage instances in the system.
-//    std::vector<IAssetStorage*> GetAssetStorages() const;
+    std::vector<IAssetStorage*> GetAssetStorages();
 
     /// Creates a new empty asset of the given type and with the given name.
-    IAsset *CreateAsset(QString assetType, QString assetRef);
+//    IAsset *CreateAsset(QString assetType, QString assetRef);
 
     /// Removes the given asset from the system and frees up all resources related to it. The asset will
     /// stay in the disk cache for later access.
-    void DeleteAsset(IAsset *asset);
+//    void DeleteAsset(IAsset *asset);
+
+    /// Uploads an asset to an asset storage.
+    /// @param filename The source file to load the asset from.
+    /// @param destination The asset storage to upload the asset to.
+    /// @param assetName The name to give to the asset in the storage.
+    IAssetUploadTransfer *UploadAssetFromFile(const char *filename, IAssetStorage *destination, const char *assetName);
 
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<IAssetTransfer*> PendingTransfers() const;
@@ -86,6 +79,13 @@ private:
 
     Foundation::Framework *framework;
 
+    std::vector<boost::shared_ptr<IAssetStorage> > storages;
+
+    /// For now, the Asset API holds a weak reference to each provider.
+//    std::vector<AssetProviderInterface*> providers;
+
 };
+
+#include "AssetAPI.inl"
 
 #endif
