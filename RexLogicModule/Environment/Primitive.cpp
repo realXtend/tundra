@@ -54,6 +54,9 @@
 #include <QColor>
 #include <QDomDocument>
 
+
+#define SEND_EC_AS_BINARY
+
 namespace RexLogic
 {
 
@@ -67,7 +70,8 @@ Primitive::~Primitive()
 
 void Primitive::Update(f64 frametime)
 {
-    SerializeECsToNetwork();
+    // Comment line to disable old freedata messaging system
+    // SerializeECsToNetwork();
 }
 
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *created)
@@ -827,22 +831,26 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
     int idx = 0;
     bool send_asset_urls = false;
 
-    strings.push_back(fullid.ToString());
-    
-    WriteNullTerminatedStringToBytes(component->TypeName().toStdString(), &buffer[0], idx);
-    WriteNullTerminatedStringToBytes(component->Name().toStdString(), &buffer[0], idx);
-
-    const std::string& freedata = std::string(bytes.data(), bytes.size());
-
-    WriteNullTerminatedStringToBytes(freedata, &buffer[0], idx);
     WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
     if (!conn)
         return;
 
+    strings.push_back(fullid.ToString());
+
+    const std::string& freedata = std::string(bytes.data(), bytes.size());
+
+#ifdef SEND_EC_AS_BINARY
+    WriteNullTerminatedStringToBytes(component->TypeName().toStdString(), &buffer[0], idx);
+    WriteNullTerminatedStringToBytes(component->Name().toStdString(), &buffer[0], idx);
+
+    WriteNullTerminatedStringToBytes(freedata, &buffer[0], idx);
+
     buffer.resize(idx);
 
+    qDebug() << "BINARY MESSAGE MACRO DEFINED";
+
     conn->SendGenericMessageBinary("ECSync", strings, buffer);
-    
+#else
     strings.push_back(component->TypeName().toStdString());
     strings.push_back(component->Name().toStdString());
     // Split freedata into chunks of 200
@@ -853,8 +861,11 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
             j = freedata.length();
         strings.push_back(freedata.substr(i, j-i));
     }
+
+    qDebug() << "BINARY MESSAGE MACRO DEFINED";
+
     conn->SendGenericMessage("ECString", strings);
-    
+#endif    
 }
 
 void Primitive::SendECRemove(entity_id_t entityid, IComponent * component)
