@@ -206,13 +206,31 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
                 scene->EmitAttributeRemoved(this, *iter, change);
             
             // Trigger internal signal(s)
-            // AttributeChanged(*iter, change);
             emit AttributeAboutToBeRemoved(*iter);
             SAFE_DELETE(*iter);
             attributes_.erase(iter);
             emit AttributeRemoved(name);
             break;
         }
+    }
+}
+
+void EC_DynamicComponent::RemoveAllAttributes(AttributeChange::Type change)
+{
+    for(unsigned i = attributes_.size() - 1; i < attributes_.size(); --i)
+    {
+        // Trigger scenemanager signal
+        Scene::SceneManager* scene = GetParentScene();
+        if (scene)
+            scene->EmitAttributeRemoved(this, attributes_[i], change);
+        
+        QString name = QString::fromStdString(attributes_[i]->GetNameString());
+        
+        // Trigger internal signal(s)
+        emit AttributeAboutToBeRemoved(attributes_[i]);
+        SAFE_DELETE(attributes_[i]);
+        attributes_.erase(attributes_.begin() + i);
+        emit AttributeRemoved(name);
     }
 }
 
