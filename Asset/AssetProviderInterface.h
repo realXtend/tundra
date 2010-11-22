@@ -3,6 +3,8 @@
 #ifndef incl_Interfaces_AssetProviderInterface_h
 #define incl_Interfaces_AssetProviderInterface_h
 
+#include "AssetFwd.h"
+
 namespace ProtocolUtilities
 {
     class ProtocolModuleInterface;
@@ -11,11 +13,6 @@ namespace ProtocolUtilities
 
 namespace Foundation
 {
-    class AssetProviderInterface;
-    typedef boost::shared_ptr<AssetProviderInterface> AssetProviderPtr;
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetPtr;
- 
     //! Asset transfer info
     struct AssetTransferInfo
     {
@@ -98,14 +95,19 @@ namespace Foundation
         virtual AssetTransferInfoVector GetTransferInfo() = 0;
 
         //! Sets current protocolmodule
-        virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule) {};
+        virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule) {}
 
         //! Performs time-based update of asset provider, to for example handle timeouts
         /*! The asset service will call this periodically for all registered asset providers, so
             it does not need to be called manually.
             \param frametime Seconds since last frame
          */
-        virtual void Update(f64 frametime) {};
+        virtual void Update(f64 frametime) {}
+
+        //! Returns the list of all asset storages registered into this asset provider.
+        virtual std::vector<IAssetStorage*> GetStorages() { return std::vector<IAssetStorage*>(); }
+
+        virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, IAssetStorage *destination, const char *assetName) { return 0; }
     };
 }
 

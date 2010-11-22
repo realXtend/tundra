@@ -35,15 +35,18 @@ public:
 
     void EmitAssetLoaded();
 
+    /// Returns the current transfer progress in the range [0, 1].
+    // float Progress() const;
+
 signals:
     /// Emitted when the raw byte download of this asset finishes.
-    void Downloaded();
+    void Downloaded(IAssetTransfer *transfer);
 
     /// Emitted when a decoder plugin has decoded this asset.
-    void Decoded();
+    void Decoded(IAssetTransfer *transfer);
 
     /// Emitted when this asset is ready to be used in the system.
-    void Loaded();
+    void Loaded(IAssetTransfer *transfer);
 };
 
 //class LocalAssetTransfer : public IAssetTransfer;

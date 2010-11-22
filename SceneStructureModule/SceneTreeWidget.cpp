@@ -1430,7 +1430,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         }
 
         filesaves_.insert(transfer, filename);
-        connect(transfer, SIGNAL(Loaded()), this, SLOT(AssetLoaded()));
+        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded()));
     }
 }
 
