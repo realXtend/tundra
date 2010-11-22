@@ -8,6 +8,10 @@
 class IAsset;
 class IAssetTransfer;
 class IAssetProvider;
+class IAssetStorage;
+typedef boost::shared_ptr<IAssetStorage> AssetStoragePtr;
+
+class IAssetUploadTransfer;
 struct AssetReference;
 
 class IEventData;

@@ -1160,7 +1160,7 @@ bool SceneImporter::CopyAsset(const std::string& name, const std::string& in_ass
     QFile asset_in((in_asset_dir + name).c_str());
     if (!asset_in.open(QFile::ReadOnly))
     {
-        TundraLogicModule::LogError("Could not open input asset file " + name);
+        TundraLogicModule::LogError("Could not open input asset file " + (in_asset_dir + name));
         return false;
     }
     else
@@ -1171,7 +1171,7 @@ bool SceneImporter::CopyAsset(const std::string& name, const std::string& in_ass
         QFile asset_out((out_asset_dir + name).c_str());
         if (!asset_out.open(QFile::WriteOnly))
         {
-            TundraLogicModule::LogError("Could not open output asset file " + name);
+            TundraLogicModule::LogError("Could not open output asset file " + (out_asset_dir + name));
             return false;
         }
         else

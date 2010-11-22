@@ -622,7 +622,7 @@ void EC_RigidBody::RequestMesh()
         // Do not create shape right now, but request the mesh resource
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(collisionMeshRef.Get().ref);
         if (transfer)
-            connect(transfer, SIGNAL(Loaded()), SLOT(OnCollisionMeshAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnCollisionMeshAssetLoaded()), Qt::UniqueConnection);
     }
 }
 

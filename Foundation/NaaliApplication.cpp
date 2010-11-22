@@ -30,6 +30,7 @@ namespace Foundation
 #ifdef Q_WS_WIN
         // If under windows, add installdirectory/plugins as library path
         // unix users will get plugins from their OS Qt installation folder automatically
+
         QString run_directory = QString::fromStdString(ReplaceChar(framework_->GetPlatform()->GetInstallDirectory(), '\\', '/'));
         run_directory += "/qtplugins";
         addLibraryPath(run_directory);
