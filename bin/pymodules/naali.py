@@ -9,10 +9,15 @@ import sys #for stdout redirecting
 #\todo: do we have version num info somewhere?
 #version = XXX
 
-#XXX \todo add buffering so don't get extra newlines
 class Logger:
+    def __init__(self):
+        self.buf = ""
+
     def write(self, msg):
-        r.logInfo(msg)
+        self.buf += msg
+        while '\n' in self.buf:
+            line, self.buf = self.buf.split("\n", 1)
+            r.logInfo(line)
 
 sys.stdout = Logger()
 
