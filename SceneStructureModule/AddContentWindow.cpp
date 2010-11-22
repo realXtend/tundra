@@ -256,7 +256,7 @@ void AddContentWindow::AddContent()
     switch(newDesc.type)
     {
     case SceneDesc::Naali:
-        destScene->CreateContentFromSceneDescription(newDesc, false, AttributeChange::Default);
+        entities = destScene->CreateContentFromSceneDescription(newDesc, false, AttributeChange::Default);
         break;
     case SceneDesc::OgreMesh:
     {
@@ -286,7 +286,9 @@ void AddContentWindow::AddContent()
 
     if (entities.size())
     {
-        //SceneStructureModule::CentralizeEntitiesTo(Vector3df(), entities);
+        if (position != Vector3df())
+            SceneStructureModule::CentralizeEntitiesTo(position, entities);
+
         addContentButton->setEnabled(false);
         cancelButton->setText(tr("Close"));
     }

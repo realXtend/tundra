@@ -172,6 +172,8 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
 
     AddContentWindow *addContent = new AddContentWindow(scene);
     addContent->AddDescription(sceneDesc);
+    if (worldPos != Vector3df())
+        addContent->AddPosition(worldPos);
     addContent->move((framework_->Ui()->MainWindow()->pos()) + QPoint(400, 200));
     addContent->show();
 
@@ -331,12 +333,12 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            importedEntities.append(InstantiateContent(filename, Vector3df(), false));
+            importedEntities.append(InstantiateContent(filename, worldPos/*Vector3df()*/, false));
         }
 
         // Calculate import pivot and offset for new content
-        if (importedEntities.size())
-            CentralizeEntitiesTo(worldPos, importedEntities);
+        //if (importedEntities.size())
+        //    CentralizeEntitiesTo(worldPos, importedEntities);
 
         e->acceptProposedAction();
     }
