@@ -103,7 +103,7 @@ namespace ECEditor
                                                                        this, 
                                                                        component, 
                                                                        QString::fromStdString(attributes[i]->GetNameString()),
-                                                                       QString::fromStdString(attributes[i]->TypenameToString()));
+                                                                       QString::fromStdString(attributes[i]->TypeName()));
             if(!attributeEditor)
                 continue;
             attributeEditors_[attributes[i]->GetName()] = attributeEditor;

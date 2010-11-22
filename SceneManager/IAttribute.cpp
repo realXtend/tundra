@@ -157,67 +157,67 @@ template<> std::string Attribute<QVector3D>::ToString() const
 
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
 
-template<> std::string Attribute<int>::TypenameToString() const
+template<> std::string Attribute<int>::TypeName() const
 {
     return "int";
 }
 
-template<> std::string Attribute<uint>::TypenameToString() const
+template<> std::string Attribute<uint>::TypeName() const
 {
     return "uint";
 }
 
-template<> std::string Attribute<float>::TypenameToString() const
+template<> std::string Attribute<float>::TypeName() const
 {
     return "real";
 }
 
-template<> std::string Attribute<QString>::TypenameToString() const
+template<> std::string Attribute<QString>::TypeName() const
 {
     return "string";
 }
 
-template<> std::string Attribute<bool>::TypenameToString() const
+template<> std::string Attribute<bool>::TypeName() const
 {
     return "bool";
 }
 
-template<> std::string Attribute<Vector3df>::TypenameToString() const
+template<> std::string Attribute<Vector3df>::TypeName() const
 {
     return "vector3df";
 }
 
-template<> std::string Attribute<Quaternion>::TypenameToString() const
+template<> std::string Attribute<Quaternion>::TypeName() const
 {
     return "quaternion";
 }
 
-template<> std::string Attribute<Color>::TypenameToString() const
+template<> std::string Attribute<Color>::TypeName() const
 {
     return "color";
 }
 
-template<> std::string Attribute<AssetReference>::TypenameToString() const
+template<> std::string Attribute<AssetReference>::TypeName() const
 {
     return "assetreference";
 }
 
-template<> std::string Attribute<QVariant>::TypenameToString() const
+template<> std::string Attribute<QVariant>::TypeName() const
 {
     return "qvariant";
 }
 
-template<> std::string Attribute<QVariantList >::TypenameToString() const
+template<> std::string Attribute<QVariantList >::TypeName() const
 {
     return "qvariantlist";
 }
 
-template<> std::string Attribute<Transform>::TypenameToString() const
+template<> std::string Attribute<Transform>::TypeName() const
 {
     return "transform";
 }
 
-template<> std::string Attribute<QVector3D>::TypenameToString() const
+template<> std::string Attribute<QVector3D>::TypeName() const
 {
     return "qvector3d";
 }

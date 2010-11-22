@@ -19,18 +19,19 @@
 class IComponent;
 class QScriptValue;
 
-//! Attribute metadata contains information about the attribute: description (e.g. "color" or "direction",
-/*! possible min and max values mapping of enumeration signatures and values.
- *
- *  Usage example (we're assuming that you have attribute "Attribute<float> range" as member variable):
- *
- *  EC_Example() : range(this, "example attribute", -1.f);
- *  {
- *      static AttributeMetadata metadata("this attribute is used as an example", "-128.3", "256.7")
- *      range.SetMetadata(&metadata);
- *  }
- *
- */
+//! Attribute metadata contains information about the attribute.
+/*! The metadata includes information such as description (e.g. "color" or "direction",
+    possible min and max values and mapping of enumeration signatures and values.
+
+    Usage example (we're assuming that you have attribute "Attribute<float> range" as member variable):
+    @code
+    EC_Example() : range(this, "example attribute", -1.f);
+    {
+        static AttributeMetadata metadata("this attribute is used as an example", "-128.3", "256.7")
+        range.SetMetadata(&metadata);
+    }
+    @endcode
+*/
 class AttributeMetadata
 {
 public:
@@ -109,8 +110,8 @@ public:
     //! Convert attribute from string for XML deserialization
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
 
-    //! Returns the type of the data stored in this attribute.
-    virtual std::string TypenameToString() const = 0;
+    //! Returns the type name of the data stored in this attribute.
+    virtual std::string TypeName() const = 0;
 
     //! Returns the value as QVariant (For scripts).
     virtual QVariant ToQVariant() const = 0;
@@ -200,7 +201,7 @@ public:
     virtual void FromString(const std::string& str, AttributeChange::Type change);
 
     //! Returns the type of the data stored in this attribute.
-    virtual std::string TypenameToString() const;
+    virtual std::string TypeName() const;
 
     //! Returns the value as QVariant (For scripts).
     virtual QVariant ToQVariant() const;
