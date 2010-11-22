@@ -875,7 +875,7 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
         if (transfer)
         {
-            connect(transfer, SIGNAL(Loaded()), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
         }
         else
         {
@@ -898,7 +898,7 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(materials[i].toString());
             if (transfer)
             {
-                connect(transfer, SIGNAL(Loaded()), SLOT(OnMaterialAssetLoaded()), Qt::UniqueConnection);
+                connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMaterialAssetLoaded()), Qt::UniqueConnection);
                 materialRequests[i] = materials[i].toString();
             }
         }
@@ -914,7 +914,7 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
         if (transfer)
-            connect(transfer, SIGNAL(Loaded()), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
     }
 }
 

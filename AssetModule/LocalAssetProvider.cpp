@@ -12,7 +12,8 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "ConfigurationManager.h"
-
+#include "LocalAssetStorage.h"
+#include "IAssetUploadTransfer.h"
 #include <QByteArray>
 #include <QFile>
 
@@ -61,7 +62,7 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     if (lastSlash != std::string::npos)
         filename = filename.substr(0, lastSlash);
     
-    std::string assetpath = GetPathForAsset(filename);
+    std::string assetpath = GetPathForAsset(filename); // Look up all known local file asset storages for this asset.
     if (assetpath.empty())
     {
         AssetModule::LogInfo("Failed to load local asset " + filename);
@@ -105,36 +106,21 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
 std::string LocalAssetProvider::GetPathForAsset(const std::string& assetname)
 {
     // Check first all subdirs without recursion, because recursion is potentially slow
-    for (uint i = 0; i < directories_.size(); ++i)
+    for(size_t i = 0; i < storages.size(); ++i)
     {
-        if (boost::filesystem::exists(directories_[i].dir_ + "/" + assetname))
-            return directories_[i].dir_;
+        std::string path = storages[i]->GetFullPathForAsset(assetname, false);
+        if (path != "")
+            return path;
+    }
+
+    for(size_t i = 0; i < storages.size(); ++i)
+    {
+        std::string path = storages[i]->GetFullPathForAsset(assetname, true);
+        if (path != "")
+            return path;
     }
     
-    // Now check recursively if not yet found
-    for (uint i = 0; i < directories_.size(); ++i)
-    {
-        if (directories_[i].recursive_)
-        {
-            try
-            {
-                boost::filesystem::recursive_directory_iterator iter(directories_[i].dir_);
-                boost::filesystem::recursive_directory_iterator end_iter;
-                for(; iter != end_iter; ++iter )
-                    if (!fs::is_regular_file(iter->status()))
-                {
-                    // Check the subdir
-                    if (boost::filesystem::exists(iter->path().string() + "/" + assetname))
-                        return iter->path().string();
-                }
-            }
-            catch (...)
-            {
-            }
-        }
-    }
-    
-    return std::string();
+    return "";
 }
 
 bool LocalAssetProvider::InProgress(const std::string& asset_id)
@@ -156,32 +142,110 @@ bool LocalAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& siz
 
 void LocalAssetProvider::Update(f64 frametime)
 {
+    CompletePendingFileUploads();
 }
 
-void LocalAssetProvider::AddDirectory(const std::string& dir, bool recursive)
+void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
 {
-    if (dir.empty())
-        return;
-    
-    // Remove in case it exists already
-    RemoveDirectory(dir);
-    
-    AssetDirectory newdir;
-    newdir.dir_ = dir;
-    newdir.recursive_ = recursive;
-    directories_.push_back(newdir);
+    ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
+
+    LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
+    storage->directory = directory;
+    storage->name = storageName;
+    storage->recursive = recursive;
+
+    storages.push_back(storage);
 }
 
-void LocalAssetProvider::RemoveDirectory(const std::string& dir)
+std::vector<IAssetStorage*> LocalAssetProvider::GetStorages()
 {
-    for (uint i = 0; i < directories_.size(); ++i)
+    std::vector<IAssetStorage*> stores;
+    for(size_t i = 0; i < storages.size(); ++i)
+        stores.push_back(storages[i].get());
+    return stores;
+}
+
+IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
+{
+    LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(destination.get());
+    if (!storage)
     {
-        if (directories_[i].dir_ == dir)
+        AssetModule::LogError("LocalAssetProvider::UploadAssetFromFile: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
+        return 0;
+    }
+
+    AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
+    transfer->sourceFilename = filename;
+    transfer->destinationName = assetName;
+    transfer->destinationStorage = destination;
+
+    pendingUploads.push_back(transfer);
+
+    return transfer.get();
+}
+
+namespace
+{
+bool CopyAsset(const char *sourceFile, const char *destFile)
+{
+    assert(sourceFile);
+    assert(destFile);
+
+    QFile asset_in(sourceFile);
+    if (!asset_in.open(QFile::ReadOnly))
+    {
+        AssetModule::LogError("Could not open input asset file " + std::string(sourceFile));
+        return false;
+    }
+    else
+    {
+        QByteArray bytes = asset_in.readAll();
+        asset_in.close();
+        
+        QFile asset_out(destFile);
+        if (!asset_out.open(QFile::WriteOnly))
         {
-            directories_.erase(directories_.begin() + i);
-            break;
+            AssetModule::LogError("Could not open output asset file " + std::string(destFile));
+            return false;
         }
+        else
+        {
+            asset_out.write(bytes);
+            asset_out.close();
+        }
+    }
+    
+    return true;
+}
+
+} // ~unnamed namespace
+
+void LocalAssetProvider::CompletePendingFileUploads()
+{
+    while(pendingUploads.size() > 0)
+    {
+        AssetUploadTransferPtr transfer = pendingUploads.back();
+        pendingUploads.pop_back();
+
+        LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage *>(transfer->destinationStorage.lock().get());
+        if (!storage)
+        {
+            AssetModule::LogError("Invalid IAssetStorage specified for file upload in LocalAssetProvider!");
+            transfer->EmitTransferFailed();
+            continue;
+        }
+        
+        std::string fromFile = transfer->sourceFilename.toStdString();
+        std::string toFile = storage->directory + transfer->destinationName.toStdString();
+        bool success = CopyAsset(fromFile.c_str(), toFile.c_str());
+        if (!success)
+        {
+            AssetModule::LogError("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!");
+            transfer->EmitTransferFailed();
+        }
+        else
+            transfer->EmitTransferCompleted();
     }
 }
 
-}
+} // ~Asset

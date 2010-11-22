@@ -252,36 +252,4 @@ namespace Asset
         }
         return ret;
     }
-    
-    void AssetManager::AddLocalAssetDirectory(const std::string& dir, bool recursive)
-    {
-        //! \todo This is not a nice way to do this. Will be removed
-        AssetProviderVector::iterator i = providers_.begin();
-        while (i != providers_.end())
-        {
-            LocalAssetProvider* local = dynamic_cast<LocalAssetProvider*>((*i).get());
-            if (local)
-            {
-                local->AddDirectory(dir, recursive);
-                break;
-            }
-            ++i;
-        }
-    }
-    
-    void AssetManager::RemoveLocalAssetDirectory(const std::string& dir)
-    {
-        //! \todo This is not a nice way to do this. Will be removed
-        AssetProviderVector::iterator i = providers_.begin();
-        while (i != providers_.end())
-        {
-            LocalAssetProvider* local = dynamic_cast<LocalAssetProvider*>((*i).get());
-            if (local)
-            {
-                local->RemoveDirectory(dir);
-                break;
-            }
-            ++i;
-        }
-    }
 }
