@@ -7,13 +7,41 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "AddContentWindow.h"
+#include "SceneStructureModule.h"
 
 #include "SceneDesc.h"
+#include "SceneManager.h"
+#include "SceneImporter.h"
 
 #include "MemoryLeakCheck.h"
 
-AddContentWindow::AddContentWindow(QWidget *parent) : QWidget(parent)
+class EntityWidgetItem : public QTreeWidgetItem
+{
+public:
+    explicit EntityWidgetItem(const EntityDesc &edesc) : desc(edesc)
+    {
+        setText(0, desc.id.isEmpty() ? desc.name : desc.id + ": " + desc.name);
+        setCheckState(0, Qt::Checked);
+    }
+    EntityDesc desc;
+};
+
+class AssetWidgetItem : public QTreeWidgetItem
+{
+public:
+    explicit AssetWidgetItem(const AttributeDesc &adesc) : desc(adesc)
+    {
+        setText(0, desc.name + ": " + desc.value);
+        setCheckState(0, Qt::Checked);
+    }
+    AttributeDesc desc;
+};
+
+AddContentWindow::AddContentWindow(const Scene::ScenePtr &dest, QWidget *parent) :
+    QWidget(parent),
+    scene(dest)
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -47,8 +75,9 @@ AddContentWindow::AddContentWindow(QWidget *parent) : QWidget(parent)
     QHBoxLayout *assetButtonsLayout = new QHBoxLayout;
     QSpacerItem *assetButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     QLabel *storageLabel = new QLabel("Asset storage:");
-    QComboBox *storageComboBox = new QComboBox;
+    storageComboBox = new QComboBox;
     storageComboBox->addItem("knet://127.0.0.1:2345");
+    storageComboBox->setDisabled(true);
 
     layout->addWidget(assetLabel);
     layout->addWidget(assetTreeWidget);
@@ -59,8 +88,8 @@ AddContentWindow::AddContentWindow(QWidget *parent) : QWidget(parent)
     assetButtonsLayout->addWidget(storageComboBox);
     layout->insertLayout(-1, assetButtonsLayout);
 
-    QPushButton *addContentButton = new QPushButton(tr("Add content"));
-    QPushButton *cancelButton = new QPushButton(tr("Cancel"));
+    addContentButton = new QPushButton(tr("Add content"));
+    cancelButton = new QPushButton(tr("Cancel"));
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout;
     QSpacerItem *buttonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -103,9 +132,7 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
 
     foreach(EntityDesc e, desc.entities)
     {
-        QTreeWidgetItem *eItem = new QTreeWidgetItem;
-        eItem->setText(0, e.id + " " + e.name);
-        eItem->setCheckState(0, Qt::Checked);
+        EntityWidgetItem *eItem = new EntityWidgetItem(e);
         entityTreeWidget->addTopLevelItem(eItem);
 
         foreach(ComponentDesc c, e.components)
@@ -117,9 +144,9 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
             eItem->addChild(cItem);
             */
 
-            // Gather asset references. They're shown in their own tree widget.
+            // Gather non-empty asset references. They're shown in their own tree widget.
             foreach(AttributeDesc a, c.attributes)
-                if (a.typeName == "assetreference")
+                if (a.typeName == "assetreference" && !a.value.isEmpty())
                     assetRefs.insert(a);
         }
     }
@@ -127,9 +154,7 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
     // Add asset references. Do not show duplicates.
     foreach(AttributeDesc a, assetRefs)
     {
-        QTreeWidgetItem *aItem = new QTreeWidgetItem;
-        aItem->setText(0, a.name + ": " + a.value);
-        aItem->setCheckState(0, Qt::Checked);
+        AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
     }
 }
@@ -177,25 +202,97 @@ void AddContentWindow::DeselectAllAssets()
 void AddContentWindow::AddContent()
 {
     SceneDesc newDesc = sceneDesc;
-    QTreeWidgetItemIterator it(entityTreeWidget);
-    while(*it)
+    QTreeWidgetItemIterator eit(entityTreeWidget);
+    while(*eit)
     {
-        if ((*it)->checkState(0) == Qt::Unchecked)
+        EntityWidgetItem *eitem = dynamic_cast<EntityWidgetItem *>(*eit);
+        if (eitem && eitem->checkState(0) == Qt::Unchecked)
         {
-            QStringList params = (*it)->text(0).split(" ");
-            EntityDesc ed = { params[0], params.size() > 1 ? params[1] : "" };
-            QList<EntityDesc>::const_iterator eit = qFind(newDesc.entities, ed);
+            QList<EntityDesc>::const_iterator eit = qFind(newDesc.entities, eitem->desc);
             if (eit != newDesc.entities.end())
                 newDesc.entities.removeOne(*eit);
         }
 
-        ++it;
+        ++eit;
+    }
+
+    QTreeWidgetItemIterator ait(assetTreeWidget);
+    while(*ait)
+    {
+        AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*ait);
+        if (aitem && aitem->checkState(0) == Qt::Unchecked)
+            foreach(EntityDesc ed, newDesc.entities)
+                foreach(ComponentDesc cd, ed.components)
+                {
+                    QList<AttributeDesc>::const_iterator ait = qFind(cd.attributes, aitem->desc);
+                    if (ait != cd.attributes.end())
+                    {
+                        std::cout << cd.attributes.size() << std::endl;
+                        cd.attributes.removeOne(*ait);
+                        std::cout << cd.attributes.size() << std::endl;
+                        break;
+                    }
+                }
+
+        ++ait;
     }
 
     foreach(EntityDesc ed, newDesc.entities)
+    {
         std::cout << ed.id.toStdString() << " " << ed.name.toStdString() << std::endl;
+        foreach(ComponentDesc cd, ed.components)
+            foreach(AttributeDesc ad, cd.attributes)
+                std::cout << ad.name.toStdString() << " " << ad.value.toStdString() << std::endl;
+    }
 
     //close();
+
+    // get asset storage storageComboBox->
+    // rewrite asset refs.
+
+    Scene::ScenePtr destScene = scene.lock();
+    if (!destScene)
+        return;
+
+    QList<Scene::Entity *> entities;
+
+    switch(newDesc.type)
+    {
+    case SceneDesc::Naali:
+        destScene->CreateContentFromSceneDescription(newDesc, false, AttributeChange::Default);
+        break;
+    case SceneDesc::OgreMesh:
+    {
+        boost::filesystem::path path(newDesc.filename.toStdString());
+        std::string dirname = path.branch_path().string();
+
+        TundraLogic::SceneImporter importer(destScene);
+        Scene::EntityPtr entity = importer.ImportMesh(newDesc.filename.toStdString(), dirname, "./data/assets",
+            Transform(),std::string(), AttributeChange::Default, true, true, std::string(), newDesc);
+        if (entity)
+            entities << entity.get();
+        break;
+    }
+    case SceneDesc::OgreScene:
+    {
+        boost::filesystem::path path(newDesc.filename.toStdString());
+        std::string dirname = path.branch_path().string();
+
+        TundraLogic::SceneImporter importer(destScene);
+        entities = importer.Import(newDesc.filename.toStdString(), dirname, "./data/assets", Transform(),
+            AttributeChange::Default, false/*clearScene*/, true, false, newDesc);
+    }
+    default:
+        //LogError("");
+        break;
+    }
+
+    if (entities.size())
+    {
+//    SceneStructureModule::CentralizeEntitiesTo(Vector3df(), entities);
+        addContentButton->setEnabled(false);
+        cancelButton->setText(tr("Close"));
+    }
 }
 
 void AddContentWindow::Close()

@@ -10,9 +10,12 @@
 
 #include <QWidget>
 
+#include "ForwardDefines.h"
 #include "SceneDesc.h"
 
 class QTreeWidget;
+class QPushButton;
+class QComboBox;
 
 /// Window for adding new content and assets.
 /** The window is modal and is deleted when it's closed.
@@ -23,9 +26,10 @@ class AddContentWindow : public QWidget
 
 public:
     /// Constructs the window.
-    /** @param parent Parent widget.
+    /** @param dest Destination scene.
+        @param parent Parent widget.
     */
-    explicit AddContentWindow(QWidget *parent = 0);
+    explicit AddContentWindow(const Scene::ScenePtr &dest, QWidget *parent = 0);
 
     ///
     ~AddContentWindow();
@@ -39,7 +43,11 @@ private:
     Q_DISABLE_COPY(AddContentWindow)
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
+    Scene::SceneWeakPtr scene; ///< Destination scene.
     SceneDesc sceneDesc; ///< Current scene description shown on the window.
+    QPushButton *addContentButton; ///< Add content button.
+    QPushButton *cancelButton; ///< Cancel/close button.
+    QComboBox *storageComboBox; ///< Asset storage combo box.
 
 private slots:
     /// Checks all entity check boxes.

@@ -16,12 +16,11 @@
 #include "SceneManager.h"
 #include "IAttribute.h"
 #include "Transform.h"
+#include "SceneDesc.h"
 
 #include <map>
 
 class QDomElement;
-
-struct SceneDesc;
 
 namespace Foundation
 {
@@ -43,8 +42,9 @@ public:
     //! Destroys the importer.
     ~SceneImporter();
     
-    //! Import a single mesh. Scans the mesh for needed skeleton & materials
-    /*! \param meshname Filename of mesh
+    //! Import a single mesh. Scans the mesh for needed skeleton & materials.
+    /*! It's possible to filter the created content by passing scene description (@c desc).
+        \param meshname Filename of mesh
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param worldtransform Transform to use for the entity's placeable. You can use Transform's default ctor if you don't want to spesify custom Transform.
@@ -53,14 +53,16 @@ public:
         \param localassets Whether to put file:// prefix into all asset references
         \param inspect Load and inspect mesh for materials and skeleton
         \param meshName Name of mesh inside the file
+        \param desc Scene description.
         \return Entity pointer if successful (null if failed)
      */
     Scene::EntityPtr ImportMesh(const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
         const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets,
-        bool inspect = true, const std::string &meshName = std::string());
+        bool inspect = true, const std::string &meshName = std::string(), const SceneDesc &desc = SceneDesc());
     
-    //! Import a dotscene
-    /*! \param filename Input filename
+    //! Imports a dotscene.
+    /*! It's possible to filter the created content by passing scene description (@c desc).
+        \param filename Input filename
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param worldtransform Transform to use for the entity's placeable
@@ -69,17 +71,18 @@ public:
         \param localassets Whether to put file:// prefix into all asset references
         \param replace Whether to search for entities by name and replace just the visual components (placeable, mesh) if an existing entity is found.
                Default true. If this is false, all entities will be created as new
+        \param desc Scene description.
         \return List of created entities, of empty list if import failed.
      */
     QList<Scene::Entity *> Import(const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, const Transform &worldtransform,
-        AttributeChange::Type change, bool clearscene = false, bool localassets = true, bool replace = true);
+        AttributeChange::Type change, bool clearscene = false, bool localassets = true, bool replace = true, const SceneDesc &desc = SceneDesc());
     
     //! Parse a mesh for materials & skeleton ref
     /*! \param meshname Full path & filename of mesh
         \param material_names Return vector for material names
         \param skeleton_name Return value for skeleton ref
      */
-    bool ParseMeshForMaterialsAndSkeleton(const std::string& meshname, std::vector<std::string>& material_names, std::string& skeleton_name);
+    bool ParseMeshForMaterialsAndSkeleton(const std::string& meshname, std::vector<std::string>& material_names, std::string& skeleton_name) const;
 
     /// Inspects file and returns a scene description structure of the contents of the file.
     /** @param filename File name.
@@ -155,6 +158,9 @@ private:
 
     //! Destination scene.
     Scene::ScenePtr scene_;
+
+    //! Optional scene description used for filtering
+    SceneDesc scene_desc_;
 };
 
 }
