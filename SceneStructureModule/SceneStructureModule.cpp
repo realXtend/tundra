@@ -23,6 +23,7 @@
 #include "EC_Placeable.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
+#include "NaaliMainWindow.h"
 #include "LoggingFunctions.h"
 #include "SceneDesc.h"
 
@@ -128,10 +129,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
         if (entity)
-        {
-            scene->EmitEntityCreated(entity, AttributeChange::Default);
             ret << entity.get();
-        }
 
         return ret;
 */
@@ -164,10 +162,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
                 Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, "./data/assets",
                     meshNames[i].transform_, std::string(), AttributeChange::Default, true, false, meshNames[i].name_.toStdString());
                 if (entity)
-                {
-                    scene->EmitEntityCreated(entity, AttributeChange::Default);
                     ret.append(entity.get());
-                }
             }
 
             return ret;
@@ -177,6 +172,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
 
     AddContentWindow *addContent = new AddContentWindow(scene);
     addContent->AddDescription(sceneDesc);
+    addContent->move((framework_->Ui()->MainWindow()->pos()) + QPoint(400, 200));
     addContent->show();
 
     return ret;
