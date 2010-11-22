@@ -650,12 +650,82 @@ namespace Scene
         return ret;
     }
 
+    QList<Entity *> SceneManager::CreateContentFromSceneDescription(const SceneDesc &desc, bool replaceOnConflict, AttributeChange::Type change)
+    {
+        QList<Entity *> ret;
+
+        if (desc.entities.empty())
+        {
+            LogError("Empty scene descrition.");
+            return ret;
+        }
+
+        foreach(EntityDesc e, desc.entities)
+        {
+            if (e.id.isEmpty())
+                continue;
+
+            entity_id_t id = ParseString<entity_id_t>(e.id.toStdString());
+            if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
+            {
+                if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
+                    RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+                else // Create a new ID for the new entity.
+                {
+                    if ((id & LocalEntity) != 0) // Check if the ID is local
+                        id = GetNextFreeIdLocal();
+                    else
+                        id = GetNextFreeId();
+                }
+            }
+
+            EntityPtr entity = CreateEntity(id);
+            assert(entity.get());
+            if (entity)
+            {
+                foreach(ComponentDesc c, e.components)
+                {
+                    if (c.typeName.isNull())
+                        continue;
+
+                    ComponentPtr comp = entity->GetOrCreateComponent(c.typeName, c.name);
+                    assert(comp.get());
+                    if (!comp)
+                        continue;
+
+                    foreach(IAttribute *attr, comp->GetAttributes())
+                    {
+                        foreach(AttributeDesc a, c.attributes)
+                            if (attr->TypenameToString().c_str() == a.typeName && attr->GetName() == a.name)
+                                // Trigger no signal yet when scene is in incoherent state
+                                attr->FromString(a.value.toStdString(), AttributeChange::Disconnected);
+                        else
+                            LogWarning("Could not find attribute " + attr->TypenameToString() + " : "+ attr->GetNameString() + " from scene description.");
+                    }
+                }
+
+                ret.append(entity.get());
+            }
+        }
+
+        // All entities & components have been loaded. Trigger change for them now.
+        foreach(Entity *entity, ret)
+        {
+            EmitEntityCreated(entity, change);
+            foreach(ComponentPtr component, entity->GetComponentVector())
+                component->ComponentChanged(change);
+        }
+
+        return ret;
+    }
+
     SceneDesc SceneManager::GetSceneDescription(const QString &filename) const
     {
         ///\todo Maybe refine and break this function into more logical and/or smaller parts?
         SceneDesc sceneDesc;
-        QDomDocument scene_doc("Scene");
-        
+        sceneDesc.type = SceneDesc::Naali;
+        sceneDesc.filename = filename;
+
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
         {
@@ -663,6 +733,7 @@ namespace Scene
             return sceneDesc;
         }
 
+        QDomDocument scene_doc("Scene");
         if (filename.toLower().indexOf(".txml") != -1)
         {
             if (!scene_doc.setContent(&file))
@@ -730,11 +801,10 @@ namespace Scene
                             ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
                             comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                             foreach(IAttribute *a,comp->GetAttributes())
-                                if (a->TypenameToString() == "assetreference" && !a->ToString().empty())
-                                {
-                                    AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
-                                    compDesc.attributes.append(attrDesc);
-                                }
+                            {
+                                AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                                compDesc.attributes.append(attrDesc);
+                            }
 
                             entityDesc.components.append(compDesc);
 
