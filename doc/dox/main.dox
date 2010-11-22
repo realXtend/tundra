@@ -48,7 +48,7 @@ See the following pages for help on working on the Naali codebase.
 <li><a href="http://doc.qt.nokia.com/">Qt documentation</a>.
 <li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.
 <li>\ref component_base "Entity-Component reference."
-<li>\ref ScriptSamples "Scripting samples."
+<li>\ref NaaliScriptReference "Naali scripting reference."
 <li>\ref TundraDocumentfiles "Working with Tundra document files."
 </ul>
 </td>
@@ -63,7 +63,8 @@ The root object for accessing all Naali features is the Framework object. This o
 - \ref Foundation::Framework "the Framework class".
 - \ref FrameAPI "Naali Frame API."
 
-<h2>Core</h2>
+\section CoreAPIList Core
+
 The Naali SDK consists of the following set of core APIs that are accessible from client modules, components and scripts.
 <table style="margin: 20px;">
 <tr>

@@ -31,12 +31,12 @@ function ClientHandleToggleCamera()
     var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if ((freelookcameraentity == null) || (avatarcameraentity == null))
         return;
-    var freelookcamera = freelookcameraentity.GetComponentRaw("EC_OgreCamera");
-    var avatarcamera = avatarcameraentity.GetComponentRaw("EC_OgreCamera");
+    var freelookcamera = freelookcameraentity.ogrecamera;
+    var avatarcamera = avatarcameraentity.ogrecamera;
 
     if (avatarcamera.IsActive())
     {
-        freelookcameraentity.GetComponentRaw("EC_Placeable").transform = avatarcameraentity.GetComponentRaw("EC_Placeable").transform
+        freelookcameraentity.placeable.transform = avatarcameraentity.placeable.transform;
         freelookcamera.SetActive();
     }
     else
@@ -52,14 +52,14 @@ function ServerHandleUserConnected(connectionID, username)
     avatarEntity.SetName(avatarEntityName);
     avatarEntity.SetDescription(username);
 
-    var script = avatarEntity.GetComponentRaw("EC_Script");
+    var script = avatarEntity.script;
     script.type = "js";
     script.runOnLoad = true;
     var r = script.scriptRef;
     r.ref = "./jsmodules/avatar/simpleavatar.js";
     script.scriptRef = r;
 
-    var placeable = avatarEntity.GetComponentRaw("EC_Placeable");
+    var placeable = avatarEntity.placeable;
     // Set random starting position for avatar
     var transform = placeable.transform;
     transform.pos.x = (Math.random() - 0.5) * avatar_area_size + avatar_area_x;

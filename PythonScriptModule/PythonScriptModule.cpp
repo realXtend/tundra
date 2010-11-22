@@ -58,8 +58,8 @@
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
 
-#include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarControllable.h"
+//#include "Avatar/AvatarHandler.h"
+//#include "Avatar/AvatarControllable.h"
 
 #include "RexLogicModule.h" //much of the api is here
 #include "Camera/CameraControllable.h"

@@ -3,13 +3,14 @@
 #ifndef incl_Asset_OgreAssetProvider_h
 #define incl_Asset_OgreAssetProvider_h
 
+#include "AssetModuleApi.h"
 
 namespace Asset
 {
     //! Ogre asset provider
     /*! Provides assets from Ogre resource managers. Currently only handles meshes.
      */
-    class OgreAssetProvider : public Foundation::AssetProviderInterface
+    class ASSET_MODULE_API OgreAssetProvider : public Foundation::AssetProviderInterface
     {
     public:  
         //! Constructor

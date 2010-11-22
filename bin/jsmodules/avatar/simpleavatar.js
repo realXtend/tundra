@@ -43,7 +43,7 @@ function ServerInitialize()
 
     // Hook to physics update
     rigidbody.GetPhysicsWorld().Updated.connect(ServerUpdatePhysics);
-    
+
     // Hook to tick update for continuous rotation update
     frame.Updated.connect(ServerUpdate);
 
@@ -57,22 +57,20 @@ function ServerInitialize()
 
 function ServerUpdate(frametime)
 {
-    var rigidbody = me.GetComponentRaw("EC_RigidBody");
-
     if (rotate != 0)
     {
         var rotateVec = new Vector3df();
         rotateVec.z = -rotate_speed * rotate * frametime;
-        rigidbody.Rotate(rotateVec);
+        me.rigidbody.Rotate(rotateVec);
     }
-    
+
     CommonUpdateAnimation(frametime);
 }
 
 function ServerUpdatePhysics(frametime)
 {
-    var placeable = me.GetComponentRaw("EC_Placeable");
-    var rigidbody = me.GetComponentRaw("EC_RigidBody");
+    var placeable = me.placeable;
+    var rigidbody = me.rigidbody;
 
     // Apply motion force
     // If diagonal motion, normalize
@@ -108,7 +106,7 @@ function ServerHandleMove(param)
         motion_y = 1;
     if (param == "left")
         motion_y = -1;
-        
+
     ServerSetAnimationState();
 }
 
@@ -145,10 +143,9 @@ function ServerHandleStopRotate(param)
 function ServerHandleMouseLookX(param)
 {
     var move = parseInt(param);
-    var rigidbody = me.GetComponentRaw("EC_RigidBody");
     var rotateVec = new Vector3df();
     rotateVec.z = -mouse_rotate_sensitivity * move;
-    rigidbody.Rotate(rotateVec);
+    me.rigidbody.Rotate(rotateVec);
 }
 
 function ServerSetAnimationState()
@@ -156,7 +153,7 @@ function ServerSetAnimationState()
     var animname = "Stand";
     if ((motion_x != 0) || (motion_y != 0))
         animname = "Walk";
-    var animcontroller = me.GetComponentRaw("EC_AnimationController");
+    var animcontroller = me.animationcontroller;
     if (animcontroller != null)
         animcontroller.animationState = animname;
 }
@@ -183,10 +180,10 @@ function ClientUpdate(frametime)
     if (own_avatar)
     {
         var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-        var inputmapper = me.GetComponentRaw("EC_InputMapper");
+        var inputmapper = me.inputmapper;
         if ((avatarcameraentity != null) && (inputmapper != null))
         {
-            var active = avatarcameraentity.GetComponentRaw("EC_OgreCamera").IsActive();
+            var active = avatarcameraentity.ogrecamera.IsActive();
             if (inputmapper.enabled != active)
                 inputmapper.enabled = active;
         }
@@ -230,7 +227,7 @@ function ClientCreateAvatarCamera()
     var cameraentity = scene.CreateEntityRaw(scene.NextFreeIdLocal());
     cameraentity.SetName("AvatarCamera");
     cameraentity.SetTemporary(true);
-    
+
     var camera = cameraentity.GetOrCreateComponentRaw("EC_OgreCamera");
     var placeable = cameraentity.GetOrCreateComponentRaw("EC_Placeable");
 
@@ -246,8 +243,8 @@ function ClientUpdateAvatarCamera()
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (cameraentity == null)
         return;
-    var cameraplaceable = cameraentity.GetComponentRaw("EC_Placeable");
-    var avatarplaceable = me.GetComponentRaw("EC_Placeable");
+    var cameraplaceable = cameraentity.placeable;
+    var avatarplaceable = me.placeable;
 
     var cameratransform = cameraplaceable.transform;
     var avatartransform = avatarplaceable.transform;
@@ -267,8 +264,8 @@ function ClientUpdateAvatarCamera()
 
 function CommonUpdateAnimation(frametime)
 {
-    var animcontroller = me.GetComponentRaw("EC_AnimationController");
-    var rigidbody = me.GetComponentRaw("EC_RigidBody");
+    var animcontroller = me.animationcontroller;
+    var rigidbody = me.rigidbody;
     if ((animcontroller == null) || (rigidbody == null))
         return;
     var animname = animcontroller.animationState;
