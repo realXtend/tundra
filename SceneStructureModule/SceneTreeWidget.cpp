@@ -352,10 +352,14 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     // "Save scene as..." action is possible if we have at least one entity in the scene.
     bool saveSceneAsPossible = (topLevelItemCount() > 0);
     QAction *saveSceneAsAction = 0;
+    QAction *exportAllAction = 0;
     if (saveSceneAsPossible)
     {
         saveSceneAsAction = new QAction(tr("Save scene as..."), menu);
         connect(saveSceneAsAction, SIGNAL(triggered()), SLOT(SaveSceneAs()));
+
+        exportAllAction = new QAction(tr("Export all..."), menu);
+        connect(exportAllAction, SIGNAL(triggered()), SLOT(ExportAll()));
     }
 
     // "Edit", "Edit in new", "New component...", "Delete", "Copy", "Actions..." and "Functions..."
@@ -400,6 +404,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     {
         menu->addAction(editAction);
         menu->setDefaultAction(editAction);
+        menu->setDefaultAction(editAction);
         menu->addAction(editInNewAction);
     }
 
@@ -422,6 +427,9 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
 
     if (saveSceneAsPossible)
         menu->addAction(saveSceneAsAction);
+
+    if (exportAllAction)
+        menu->addAction(exportAllAction);
 
     menu->addAction(importAction);
     menu->addAction(openNewSceneAction);
@@ -955,6 +963,16 @@ void SceneTreeWidget::SaveSceneAs()
         tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
+void SceneTreeWidget::ExportAll()
+{
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+        tr("Export all"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
+
+    connect(fileDialog, SIGNAL(finished(int)), this, SLOT(ExportAllDialogClosed(int)));
+}
+
 void SceneTreeWidget::Import()
 {
     if (fileDialog)
@@ -1268,6 +1286,46 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
         scene.lock()->SaveSceneBinary(files[0].toStdString());
     else
         scene.lock()->SaveSceneXML(files[0].toStdString());
+}
+
+void SceneTreeWidget::ExportAllDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+
+    if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().size() != 1 || scene.expired())
+        return;
+
+    // separate path from filename
+    QFileInfo fi(dialog->selectedFiles()[0]);
+    QDir directory = fi.absoluteDir();
+    if (!directory.exists())
+        return;
+
+
+    QSet<QString> assets;
+    QTreeWidgetItemIterator it(this);
+    while (*it)
+    {
+        AssetItem *aItem = dynamic_cast<AssetItem*>((*it));
+        if (aItem)
+        {
+            assets.insert(aItem->id);
+        }
+        ++it;
+    }
+
+    foreach(const QString &assetid, assets)
+    {
+        IAssetTransfer *transfer = framework->Asset()->RequestAsset(assetid);
+
+        QString filename = directory.absolutePath();
+        QString assetName = assetid.right(assetid.size() - assetid.lastIndexOf("://") - 3);
+        filename += QDir::separator() + assetName;
+
+        filesaves_.insert(transfer, filename);
+        connect(transfer, SIGNAL(Loaded()), this, SLOT(AssetLoaded()));
+    }
 }
 
 void SceneTreeWidget::OpenFileDialogClosed(int result)

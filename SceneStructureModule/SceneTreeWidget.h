@@ -268,6 +268,9 @@ private slots:
     /// Saves entire scene as XML or binary file.
     void SaveSceneAs();
 
+    /// Exports the entire scene, entities as either XML or binary, assets in their default (import) format.
+    void ExportAll();
+
     /// Imports OGRE or Naali scene file.
     void Import();
 
@@ -299,6 +302,11 @@ private slots:
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */
     void SaveSceneDialogClosed(int result);
+
+    //! Called by "Export all" file dialog when it's closed
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
+    */
+    void ExportAllDialogClosed(int result);
 
     /// Called by open file dialog when it's closed.
     /** @param result Result of dialog closure. Open is 1, Cancel is 0.
