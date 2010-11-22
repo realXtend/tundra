@@ -1,14 +1,14 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   EC_3DGizmo.h
- *  @brief  EC_3DGizmo enables manipulators for values
+ *  @file   EC_Gizmo.cpp
+ *  @brief  EC_Gizmo enables manipulators for values
  *  @author Nathan Letwory | http://www.letworyinteractive.com
  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "EC_3DGizmo.h"
+#include "EC_Gizmo.h"
 #include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
@@ -16,16 +16,15 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
-#include "EC_OpenSimPrim.h"
 #include "LoggingFunctions.h"
 #include "RexUUID.h"
 #include <Ogre.h>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DGizmo")
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Gizmo")
 
 #include "MemoryLeakCheck.h"
 
-EC_3DGizmo::EC_3DGizmo(IModule *module) :
+EC_Gizmo::EC_Gizmo(IModule *module) :
     IComponent(module->GetFramework())
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
@@ -35,13 +34,13 @@ EC_3DGizmo::EC_3DGizmo(IModule *module) :
     attribute_ = QString();
 }
 
-EC_3DGizmo::~EC_3DGizmo()
+EC_Gizmo::~EC_Gizmo()
 {
     attributes_.clear();
     subproperties_.clear();
 }
 
-void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString attribute_name, QString subprop)
+void EC_Gizmo::AddEditableAttribute(IComponent* component, const QString &attribute_name, const QString &subprop)
 {
     if(attribute_.isEmpty())
         attribute_ = attribute_name;
@@ -55,7 +54,7 @@ void EC_3DGizmo::AddEditableAttribute(IComponent* component, QString attribute_n
     }
 }
 
-void EC_3DGizmo::RemoveEditableAttribute(IComponent* component, QString &attribute_name)
+void EC_Gizmo::RemoveEditableAttribute(IComponent* component, const QString &attribute_name)
 {
     int remove_idx = -1;
     IAttribute* attribute = component->GetAttribute(attribute_name);
@@ -75,14 +74,14 @@ void EC_3DGizmo::RemoveEditableAttribute(IComponent* component, QString &attribu
     }
 }
 
-void EC_3DGizmo::ClearEditableAttributes()
+void EC_Gizmo::ClearEditableAttributes()
 {
     attributes_.clear();
     subproperties_.clear();
     attribute_.clear();
 }
 
-void EC_3DGizmo::Manipulate(QVariant datum)
+void EC_Gizmo::Manipulate(const QVariant &datum)
 {
     for(int i = 0; i < attributes_.size(); i++) {
         IAttribute * attr = attributes_.at(i);
