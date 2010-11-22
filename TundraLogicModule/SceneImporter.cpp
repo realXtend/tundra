@@ -102,11 +102,9 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& meshname, std::str
     std::vector<std::string> material_names;
     std::string skeleton_name;
     if (inspect)
-    {
         if (!ParseMeshForMaterialsAndSkeleton(meshname, material_names, skeleton_name))
             return Scene::EntityPtr();
-    }
-    
+
     std::set<std::string> material_names_set;
     for (uint i = 0; i < material_names.size(); ++i)
     {
@@ -159,7 +157,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& meshname, std::str
     for (uint i = 0; i < material_files.size(); ++i)
     {
         std::set<std::string> textures;
-        textures = ProcessMaterialFile(material_files[i], material_names_set, out_asset_dir, localassets);
+        //textures = ProcessMaterialFile(material_files[i], material_names_set, out_asset_dir, localassets);
         all_textures.insert(textures.begin(), textures.end());
     }
     
@@ -174,7 +172,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& meshname, std::str
         foreach(EntityDesc e, scene_desc_.entities)
             foreach(ComponentDesc c, e.components)
                 foreach(AttributeDesc a, c.attributes)
-                    if (a.value == meshname.c_str()/*meshleafname.c_str()*/)
+                    if (a.value == /*meshname.c_str()*/QString::fromStdString(prefix + meshleafname))
                     {
                         createMesh = true;
                         break;
@@ -234,9 +232,8 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& meshname, std::str
                 newcomp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
             comp_elem = comp_elem.nextSiblingElement("component");
         }
-        scene_->EmitEntityCreated(newentity, change);
     }
-    
+
     // Fill the placeable attributes
     EC_Placeable* placeablePtr = checked_static_cast<EC_Placeable*>(newentity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change).get());
     if (placeablePtr)
@@ -268,6 +265,8 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& meshname, std::str
     // All components have been loaded/modified. Trigger change for them now.
     foreach(ComponentPtr c, newentity->GetComponentVector())
         c->ComponentChanged(change);
+
+    scene_->EmitEntityCreated(newentity, change);
 
     return newentity;
 }
@@ -477,7 +476,7 @@ SceneDesc SceneImporter::GetSceneDescription(const QString &filename) const
 
     if (!filename.endsWith(".mesh", Qt::CaseInsensitive) && !filename.endsWith(".scene", Qt::CaseInsensitive))
     {
-        TundraLogicModule::LogError("Unsupported file type: " + filename.toStdString());
+        TundraLogicModule::LogError("Unsupported file type for scene description creation: " + filename.toStdString());
         return sceneDesc;
     }
 
@@ -532,6 +531,7 @@ SceneDesc SceneImporter::GetSceneDescription(const QString &filename) const
         for (uint i = 0; i < material_files.size(); ++i)
         {
             std::set<std::string> textures;
+            ///\todo ProcessMaterialFile() without copying textures
             //textures = ProcessMaterialFile(material_files[i], material_names_set, out_asset_dir, localassets);
             all_textures.insert(textures.begin(), textures.end());
         }

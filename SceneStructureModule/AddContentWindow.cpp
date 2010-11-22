@@ -14,6 +14,9 @@
 #include "SceneDesc.h"
 #include "SceneManager.h"
 #include "SceneImporter.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
 
 #include "MemoryLeakCheck.h"
 
@@ -76,7 +79,7 @@ AddContentWindow::AddContentWindow(const Scene::ScenePtr &dest, QWidget *parent)
     QSpacerItem *assetButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     QLabel *storageLabel = new QLabel("Asset storage:");
     storageComboBox = new QComboBox;
-    storageComboBox->addItem("knet://127.0.0.1:2345");
+    storageComboBox->addItem("Local");
     storageComboBox->setDisabled(true);
 
     layout->addWidget(assetLabel);
@@ -221,22 +224,18 @@ void AddContentWindow::AddContent()
     {
         AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*ait);
         if (aitem && aitem->checkState(0) == Qt::Unchecked)
-            foreach(EntityDesc ed, newDesc.entities)
-                foreach(ComponentDesc cd, ed.components)
+            for(int i = 0; i < newDesc.entities.size(); ++i)
+                for(int j = 0; j < newDesc.entities[i].components.size(); ++j)
                 {
-                    QList<AttributeDesc>::const_iterator ait = qFind(cd.attributes, aitem->desc);
-                    if (ait != cd.attributes.end())
-                    {
-                        std::cout << cd.attributes.size() << std::endl;
-                        cd.attributes.removeOne(*ait);
-                        std::cout << cd.attributes.size() << std::endl;
-                        break;
-                    }
+                    QMutableListIterator<AttributeDesc> it(newDesc.entities[i].components[j].attributes);
+                    while(it.hasNext())
+                        if (it.next() == aitem->desc)
+                            it.remove();
                 }
 
         ++ait;
     }
-
+/*
     foreach(EntityDesc ed, newDesc.entities)
     {
         std::cout << ed.id.toStdString() << " " << ed.name.toStdString() << std::endl;
@@ -244,9 +243,7 @@ void AddContentWindow::AddContent()
             foreach(AttributeDesc ad, cd.attributes)
                 std::cout << ad.name.toStdString() << " " << ad.value.toStdString() << std::endl;
     }
-
-    //close();
-
+*/
     // get asset storage storageComboBox->
     // rewrite asset refs.
 
@@ -283,13 +280,13 @@ void AddContentWindow::AddContent()
             AttributeChange::Default, false/*clearScene*/, true, false, newDesc);
     }
     default:
-        //LogError("");
+        LogError("Invalid scene description type.");
         break;
     }
 
     if (entities.size())
     {
-//    SceneStructureModule::CentralizeEntitiesTo(Vector3df(), entities);
+        //SceneStructureModule::CentralizeEntitiesTo(Vector3df(), entities);
         addContentButton->setEnabled(false);
         cancelButton->setText(tr("Close"));
     }
