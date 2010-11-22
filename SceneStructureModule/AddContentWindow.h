@@ -12,6 +12,7 @@
 
 #include "ForwardDefines.h"
 #include "SceneDesc.h"
+#include "Vector3D.h"
 
 class QTreeWidget;
 class QPushButton;
@@ -39,6 +40,11 @@ public:
     */
     void AddDescription(const SceneDesc &desc);
 
+    /// 
+    /** @param pos
+    */
+    void AddPosition(const Vector3df &pos) { position = pos; }
+
 private:
     Q_DISABLE_COPY(AddContentWindow)
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
@@ -48,6 +54,7 @@ private:
     QPushButton *addContentButton; ///< Add content button.
     QPushButton *cancelButton; ///< Cancel/close button.
     QComboBox *storageComboBox; ///< Asset storage combo box.
+    Vector3df position; ///< Centralization position for instantiated context (if used).
 
 private slots:
     /// Checks all entity check boxes.
