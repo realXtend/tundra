@@ -173,7 +173,7 @@ namespace ECEditor
         {
             assert(ui_);
             // Make sure that the attribute is right type.
-            if(attribute->GetNameString() == name_.toStdString() && attribute->TypenameToString() == typename_.toStdString())
+            if(attribute->GetNameString() == name_.toStdString() && attribute->TypeName() == typename_.toStdString())
                 ui_->UpdateUi();
         }
 
