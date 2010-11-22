@@ -100,7 +100,7 @@ class Manipulator:
     def createManipulator(self):
         if self.manipulator is None and self.usesManipulator:
             ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
-            gizmo = ent.GetOrCreateComponentRaw("EC_3DGizmo")
+            gizmo = ent.GetOrCreateComponentRaw("EC_Gizmo")
             ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
             ruler.SetVisible(False)
             #r.logInfo("hide ruler createManipulator")
