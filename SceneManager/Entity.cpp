@@ -67,7 +67,7 @@ namespace Scene
             components_.push_back(component);
             
             if (change != AttributeChange::Disconnected)
-                emit ComponentAdded(component.get(), change);
+                emit ComponentAdded(component.get(), change == AttributeChange::Default ? component->GetUpdateMode() : change);
             if (scene_)
                 scene_->EmitComponentAdded(this, component.get(), change);
         }
@@ -96,7 +96,7 @@ namespace Scene
                 }
 
                 if (change != AttributeChange::Disconnected)
-                    emit ComponentRemoved((*iter).get(), change);
+                    emit ComponentRemoved((*iter).get(), change == AttributeChange::Default ? component->GetUpdateMode() : change);
                 if (scene_)
                     scene_->EmitComponentRemoved(this, (*iter).get(), change);
 
