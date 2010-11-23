@@ -52,7 +52,8 @@ public:
 
 public slots:
     /// Loads a given script in engine. This function can be used to create a property as you could include js-files.
-    /** @param path is relative path from bin/ to file. Example jsmodules/apitest/myscript.js */
+    /** Multiple inclusion of same file is prevented. (by using simple string compare)
+        @param path is relative path from bin/ to file. Example jsmodules/apitest/myscript.js */
     void IncludeFile(const QString &file);
 
     /// Imports the given QtScript extension plugin into the current script instance.
@@ -75,6 +76,9 @@ private:
     JavascriptModule *module_; ///< Javascript module.
     bool evaluated; ///< Has the script program been evaluated.
 
+    /// Already included files for preventing multi-inclusion
+    std::vector<QString> included_files_; 
+    
 private slots:
     void OnSignalHandlerException(const QScriptValue& exception);
 };
