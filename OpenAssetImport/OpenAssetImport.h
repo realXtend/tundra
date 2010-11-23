@@ -7,9 +7,9 @@
 #include <LogStream.h>
 #include <aiScene.h>
 #include "Transform.h"
-namespace OgreRenderer { class Renderer; }
 
-//! Open Asset Import, a wrapper for Open Asset Import library that is used for loading model formats other than Ogre .mesh.
+struct SceneDesc;
+
 namespace AssImp
 {
     //! Contains mesh data information about a file that can be imported with OpenAssetImport.
@@ -18,15 +18,14 @@ namespace AssImp
     */
     struct MeshData
     {
-        QString file_;          //! file path, same for each individual mesh in the file.
-        QString name_;          //! name of an individual mesh inside the file. May be empty if file contains only one mesh.
-        Transform transform_;   //! transforms in global space for an individual mesh.
+        QString file_;          //!< file path, same for each individual mesh in the file.
+        QString name_;          //!< name of an individual mesh inside the file. May be empty if file contains only one mesh.
+        Transform transform_;   //!< transforms in global space for an individual mesh.
     };
 
-    /*! Imports an Ogre mesh from various different model formats.
-        The Ogre mesh is created to Ogre::MeshManager. This class
-        doesn't create any entities or components, the caller is
-        responsible for this.
+    //! Open Asset Import, a wrapper for Open Asset Import library that is used for loading model formats other than Ogre .mesh.
+    /*! Imports an Ogre mesh from various different model formats. The Ogre mesh is created to Ogre::MeshManager. This class
+        doesn't create any entities or components, the caller is responsible for this.
     */
     class OpenAssetImport
     {
@@ -61,8 +60,7 @@ namespace AssImp
             \param file path to file where to import meshes from
             \param outMeshData Out string vector of mesh names
         */
-        void GetMeshData(const QString& file, std::vector<MeshData> &outMeshData);
-
+        void GetMeshData(const QString& file, std::vector<MeshData> &outMeshData) const;
 
         //! Generates Ogre meshes from memory buffer.
         /*! The meshes are generated directly to Ogre::MeshManager and names of the meshes are
@@ -77,6 +75,11 @@ namespace AssImp
         */
         void Import(const void *data, size_t length, const QString &name, const char* hint, const QString &nodeName, std::vector<std::string> &outMeshNames);
 
+        //! Inspects file and returns a scene description structure of the contents of the file.
+        /*! \param filename File name.
+        */
+        SceneDesc GetSceneDescription(const QString &filename) const;
+
     private:
         class AssImpLogStream : public Assimp::LogStream
         {
@@ -88,7 +91,7 @@ namespace AssImp
         };
 
         void GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
-            const aiMatrix4x4 &parentTransform, std::vector<MeshData> &outMeshNames);
+            const aiMatrix4x4 &parentTransform, std::vector<MeshData> &outMeshNames) const;
         
         void ImportNode(const struct aiScene *scene, const struct aiNode *node, const QString& file, const QString &nodeName, 
             std::vector<std::string> &outMeshNames);

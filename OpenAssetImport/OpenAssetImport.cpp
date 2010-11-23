@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "OpenAssetImport.h"
+#include "SceneDesc.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport")
 
@@ -90,7 +91,7 @@ namespace AssImp
         return importer_->IsExtensionSupported(extension.toStdString());
     }
 
-    void OpenAssetImport::GetMeshData(const QString& file, std::vector<MeshData> &outMeshData)
+    void OpenAssetImport::GetMeshData(const QString& file, std::vector<MeshData> &outMeshData) const
     {
         const aiScene *scene = importer_->ReadFile(file.toStdString(), default_flags_);
 
@@ -123,8 +124,21 @@ namespace AssImp
         }
     }
 
+    SceneDesc OpenAssetImport::GetSceneDescription(const QString &filename) const
+    {
+        ///\todo Implement
+        /*
+        std::vector<MeshData> meshNames;
+        GetMeshData(filename, meshNames);
+        foreach(MeshData mdata, meshNames)
+        {
+        }
+        */
+        return SceneDesc();
+    }
+
     void OpenAssetImport::GetNodeData(const aiScene *scene, const aiNode *node, const QString& file,
-        const aiMatrix4x4 &parentTransform, std::vector<MeshData> &outMeshNames)
+        const aiMatrix4x4 &parentTransform, std::vector<MeshData> &outMeshNames) const
     {
         aiMatrix4x4 aiTransform = node->mTransformation;
 
@@ -139,7 +153,6 @@ namespace AssImp
         
         quat.toEuler(rote);
         rote *= RADTODEG;
-
 
         if (node->mNumMeshes > 0)
         {

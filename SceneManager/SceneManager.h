@@ -329,6 +329,14 @@ namespace Scene
          */
         QList<Entity *> CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
 
+        //! Creates scene content from scene description.
+        /*! \param desc Scene description.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+            \return List of created entities.
+         */
+        QList<Entity *> CreateContentFromSceneDescription(const SceneDesc &desc, bool replaceOnConflict, AttributeChange::Type change);
+
         //! Starts an attribute interpolation
         /*! \param attr Attribute inside a static-structured component.
             \param endvalue Same kind of attribute holding the endpoint value. You must dynamically allocate this yourself, but SceneManager

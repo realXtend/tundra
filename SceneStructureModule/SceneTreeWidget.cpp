@@ -219,16 +219,8 @@ void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
     if (e->mimeData()->hasUrls())
     {
         foreach (QUrl url, e->mimeData()->urls())
-        {
-            QString filename = url.path();
-#ifdef _WINDOWS
-            // We have '/' as the first char on windows and the filename
-            // is not identified as a file properly. But on other platforms the '/' is valid/required.
-            filename = filename.mid(1);
-#endif
-            if (SceneStructureModule::IsSupportedFileType(filename))
+            if (SceneStructureModule::IsSupportedFileType(url.path()))
                 e->accept();
-        }
     }
     else
         QWidget::dragEnterEvent(e);
@@ -238,17 +230,9 @@ void SceneTreeWidget::dragMoveEvent(QDragMoveEvent *e)
 {
     if (e->mimeData()->hasUrls())
     {
-        foreach (QUrl url, e->mimeData()->urls())
-        {
-            QString filename = url.path();
-#ifdef _WINDOWS
-            // We have '/' as the first char on windows and the filename
-            // is not identified as a file properly. But on other platforms the '/' is valid/required.
-            filename = filename.mid(1);
-#endif
-            if (SceneStructureModule::IsSupportedFileType(filename))
+        foreach(QUrl url, e->mimeData()->urls())
+            if (SceneStructureModule::IsSupportedFileType(url.path()))
                 e->accept();
-        }
     }
     else
         QWidget::dragMoveEvent(e);
@@ -310,7 +294,6 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
 
     if (sel.assets.size() > 0)
     {
-        
         if (sel.assets.size() > 1)
             action = new QAction(tr("Save selected assets..."), menu);
         else
@@ -320,7 +303,7 @@ void SceneTreeWidget::AddAvailableAssetActions(QMenu *menu)
         }
         connect(action, SIGNAL(triggered()), SLOT(SaveAssetAs()));
         menu->addAction(action);
-    } 
+    }
 }
 
 void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
