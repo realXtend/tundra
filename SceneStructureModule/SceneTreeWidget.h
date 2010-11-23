@@ -223,7 +223,16 @@ private:
     /// Context menu.
     QPointer<Menu> contextMenu;
 
+    //! Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
     QMap<IAssetTransfer*, QString> filesaves_;
+
+    //! Used by 'Export all', a list of assets that have already been saved, so assets are not saved multiple times.
+    //! Multiple assets can reference reference another asset, so each asset must be saved only once.
+    //! This must be cleared before starting any assets saving operations
+    QSet<QString> saved_assets_;
+
+    //! if true, when saving assets, also saves references
+    bool fetch_references_;
 
 private slots:
     /// Opens selected entities in EC editor window. An existing editor window is used if possible.
