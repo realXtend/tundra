@@ -21,7 +21,7 @@ struct AttributeDesc
         return typeName < rhs.typeName || name < rhs.name || value < rhs.value;
     }
 
-    /// Equality operator. Compares all values.
+    /// Equality operator. Returns true if all values match, false otherwise.
     bool operator ==(const AttributeDesc &rhs) const
     {
         return typeName == rhs.typeName && name == rhs.name && value  == rhs.value;
@@ -35,7 +35,7 @@ struct ComponentDesc
     QString name; ///< Name (if applicable).
     QList<AttributeDesc> attributes; ///< List of attributes the component has.
 
-    /// Equality operator. Compares all values.
+    /// Equality operator. Returns true if all values match, false otherwise.
     bool operator ==(const ComponentDesc &rhs) const
     {
         return typeName == rhs.typeName && name == rhs.name && attributes == rhs.attributes;
@@ -51,7 +51,7 @@ struct EntityDesc
     bool temporary; ///< Is entity temporary.
     QList<ComponentDesc> components; ///< List of components the entity has.
 
-    /// Equality operator. Compares all values.
+    /// Equality operator. Returns true if ID and name match, false otherwise.
     bool operator ==(const EntityDesc &rhs) const
     {
         return id == rhs.id && name == rhs.name /*&& local == rhs.local && temporary == rhs.temporary && components == rhs.components*/;
@@ -61,10 +61,25 @@ struct EntityDesc
 /// Description of scene.
 struct SceneDesc
 {
+    /// Origin file type
+    enum Type
+    {
+        Naali, ///< Naali XML or binary scene
+        OgreScene, ///< OGRE .scene
+        OgreMesh, ///< OGRE .mesh
+        OpenAsset ///< OpenAsset
+    };
+
+    QString filename; ///< Name of the file from which the description was created.
+    Type type; ///< Type
     QString name; ///< Name.
     bool viewEnabled; ///< Is scene view enabled (ie. rendering-related components actually create stuff)
     QList<EntityDesc> entities; ///< List of entities the entity has.
-    /// Equality operator. Compares all values.
+
+    /// Returns true if the scene description has no entities, false otherwise.
+    bool IsEmpty() const { return entities.isEmpty(); }
+
+    /// Equality operator. Returns true if all values match, false otherwise.
     bool operator ==(const SceneDesc &rhs) const
     {
         return name == rhs.name && viewEnabled == rhs.viewEnabled && entities == rhs.entities;

@@ -3,7 +3,7 @@
  *
  *  @file   SceneStructureModule.cpp
  *  @brief  Provides Scene Structure window and raycast drag-and-drop import of
- *          mesh, .scene, .xml and .nbf files to the main window.
+ *          .mesh, .scene, .xml and .nbf files to the main window.
  */
 
 #include "StableHeaders.h"
@@ -23,6 +23,7 @@
 #include "EC_Placeable.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
+#include "NaaliMainWindow.h"
 #include "LoggingFunctions.h"
 #include "SceneDesc.h"
 
@@ -61,8 +62,20 @@ void SceneStructureModule::PostInitialize()
 
 QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene, bool queryPosition)
 {
+    return InstantiateContent(filename, worldPos, SceneDesc(), clearScene, queryPosition);
+}
+
+QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc,
+    bool clearScene, bool queryPosition)
+{
     QList<Scene::Entity *> ret;
-//    SceneDesc sceneDesc;
+    SceneDesc sceneDesc;
+
+    if (!IsSupportedFileType(filename))
+    {
+        LogError("Unsupported file extension: " + filename.toStdString());
+        return ret;
+    }
 
     const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -88,20 +101,22 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             worldPos.z = pos[2].toFloat();
     }
 
-    if (filename.toLower().indexOf(cOgreSceneFileExtension) != -1)
+    if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
     {
-        boost::filesystem::path path(filename.toStdString());
-        std::string dirname = path.branch_path().string();
+        //boost::filesystem::path path(filename.toStdString());
+        //std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(scene);
-//        sceneDesc = importer.GetSceneDescription(filename);
+        sceneDesc = importer.GetSceneDescription(filename);
         ///\todo Take into account asset sources.
+        /*
         ret = importer.Import(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
         if (ret.empty())
             LogError("Import failed");
         else
             LogInfo("Import successful. " + ToString(ret.size()) + " entities created.");
+        */
     }
     else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
     {
@@ -109,19 +124,20 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(scene);
-//        sceneDesc = importer.GetSceneDescription(filename);
+        sceneDesc = importer.GetSceneDescription(filename);
+/*
         Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
         if (entity)
-        {
-            scene->EmitEntityCreated(entity, AttributeChange::Default);
             ret << entity.get();
-        }
+
+        return ret;
+*/
     }
     else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
     {
-        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
-//        sceneDesc = scene->GetSceneDescription(filename);
+        //ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
+        sceneDesc = scene->GetSceneDescription(filename);
     }
     else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
     {
@@ -146,22 +162,21 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
                 Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, "./data/assets",
                     meshNames[i].transform_, std::string(), AttributeChange::Default, true, false, meshNames[i].name_.toStdString());
                 if (entity)
-                {
-                    scene->EmitEntityCreated(entity, AttributeChange::Default);
                     ret.append(entity.get());
-                }
             }
-        } else
-#endif
-        {
-            LogError("Unsupported file extension: " + filename.toStdString());
+
+            return ret;
         }
+#endif
     }
-/*
-    AddContentWindow *addContent = new AddContentWindow;
+
+    AddContentWindow *addContent = new AddContentWindow(scene);
     addContent->AddDescription(sceneDesc);
+    if (worldPos != Vector3df())
+        addContent->AddPosition(worldPos);
+    addContent->move((framework_->Ui()->MainWindow()->pos()) + QPoint(400, 200));
     addContent->show();
-*/
+
     return ret;
 }
 
@@ -203,10 +218,10 @@ void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QLis
 
 bool SceneStructureModule::IsSupportedFileType(const QString &filename)
 {
-    if ((filename.toLower().indexOf(cTundraXmlFileExtension) != -1) ||
-        (filename.toLower().indexOf(cTundraBinFileExtension) != -1) ||
-        (filename.toLower().indexOf(cOgreMeshFileExtension) != -1) ||
-        (filename.toLower().indexOf(cOgreSceneFileExtension) != -1))
+    if (filename.endsWith(cTundraXmlFileExtension, Qt::CaseInsensitive) ||
+        filename.endsWith(cTundraBinFileExtension, Qt::CaseInsensitive) ||
+        filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive) ||
+        filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
     {
         return true;
     }
@@ -318,12 +333,12 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            importedEntities.append(InstantiateContent(filename, Vector3df(), false));
+            importedEntities.append(InstantiateContent(filename, worldPos/*Vector3df()*/, false));
         }
 
         // Calculate import pivot and offset for new content
-        if (importedEntities.size())
-            CentralizeEntitiesTo(worldPos, importedEntities);
+        //if (importedEntities.size())
+        //    CentralizeEntitiesTo(worldPos, importedEntities);
 
         e->acceptProposedAction();
     }

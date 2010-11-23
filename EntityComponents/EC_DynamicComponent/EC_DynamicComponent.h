@@ -188,6 +188,9 @@ public slots:
     */
     bool ContainsAttribute(const QString &name) const;
 
+    /// Removes all attributes from the component
+    void RemoveAllAttributes(AttributeChange::Type change = AttributeChange::Default);
+    
 signals:
     /// Emitted when a new attribute is added to this component.
     /** @param attr New attribute.
