@@ -16,18 +16,21 @@ public:
     virtual ~IAssetStorage() {}
 
     /// Returns all assets saved in this asset storage.
-    std::vector<IAsset*> GetAllAssets() const;
+    virtual std::vector<IAsset*> GetAllAssets() const { return std::vector<IAsset*>(); }
 
     /// Starts a new asset upload to this storage. If the given asset exists already in the storage, it is replaced.
     /// @param url The desired name for the asset.
     /// @return A pointer to the newly created transfer.
-    IAssetTransfer *UploadAsset(const char *data, size_t numBytes, QString url);
+//    virtual IAssetTransfer *UploadAsset(const char *data, size_t numBytes, QString url) { return 0; }
 
     /// Returns a human-readable name for this storage. This name is not used as an ID, and may be an empty string.
-    QString Name() const;
+    virtual QString Name() const { return ""; }
 
     /// Returns the address of this storage.
-    QString BaseURL() const;
+    virtual QString BaseURL() const { return ""; }
+   
+    /// Points to the asset provider that is used to communicate with this storage.
+    Foundation::AssetProviderWeakPtr provider;
 };
 
 #endif
