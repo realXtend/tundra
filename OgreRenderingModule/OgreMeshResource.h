@@ -61,6 +61,9 @@ namespace OgreRenderer
         
         //! returns original material names
         const StringVector& GetOriginalMaterialNames() const { return original_materials_; }
+
+        //! Resets asset references to what the mesh currently has
+        void ResetReferences();
         
     private:
         //! Set default material for the mesh that won't complain

@@ -31,7 +31,6 @@
 #include "AssetEvents.h"
 #include "RexTypes.h"
 #include "OgreConversionUtils.h"
-//#include "Inventory/InventoryEvents.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
@@ -151,7 +150,8 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     framework(fw),
     showComponents(false),
     historyMaxItemCount(100),
-    numberOfInvokeItemsVisible(5)
+    numberOfInvokeItemsVisible(5),
+    fetch_references_(false)
 {
     setEditTriggers(/*QAbstractItemView::EditKeyPressed*/QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
@@ -336,10 +336,14 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     // "Save scene as..." action is possible if we have at least one entity in the scene.
     bool saveSceneAsPossible = (topLevelItemCount() > 0);
     QAction *saveSceneAsAction = 0;
+    QAction *exportAllAction = 0;
     if (saveSceneAsPossible)
     {
         saveSceneAsAction = new QAction(tr("Save scene as..."), menu);
         connect(saveSceneAsAction, SIGNAL(triggered()), SLOT(SaveSceneAs()));
+
+        exportAllAction = new QAction(tr("Export all..."), menu);
+        connect(exportAllAction, SIGNAL(triggered()), SLOT(ExportAll()));
     }
 
     // "Edit", "Edit in new", "New component...", "Delete", "Copy", "Actions..." and "Functions..."
@@ -384,6 +388,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
     {
         menu->addAction(editAction);
         menu->setDefaultAction(editAction);
+        menu->setDefaultAction(editAction);
         menu->addAction(editInNewAction);
     }
 
@@ -406,6 +411,9 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
 
     if (saveSceneAsPossible)
         menu->addAction(saveSceneAsAction);
+
+    if (exportAllAction)
+        menu->addAction(exportAllAction);
 
     menu->addAction(importAction);
     menu->addAction(openNewSceneAction);
@@ -939,6 +947,16 @@ void SceneTreeWidget::SaveSceneAs()
         tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
+void SceneTreeWidget::ExportAll()
+{
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+        tr("Export all"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
+
+    connect(fileDialog, SIGNAL(finished(int)), this, SLOT(ExportAllDialogClosed(int)));
+}
+
 void SceneTreeWidget::Import()
 {
     if (fileDialog)
@@ -1254,6 +1272,82 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
         scene.lock()->SaveSceneXML(files[0].toStdString());
 }
 
+void SceneTreeWidget::ExportAllDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+
+    if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().size() != 1 || scene.expired())
+        return;
+
+    // separate path from filename
+    QFileInfo fi(dialog->selectedFiles()[0]);
+    QDir directory = fi.absoluteDir();
+    if (!directory.exists())
+        return;
+
+
+    QSet<QString> assets;
+    for (int i = 0; i < topLevelItemCount(); ++i)
+    {
+        EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(i));
+        if (!eItem)
+            continue;
+
+        Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
+        if (!entity)
+            continue;
+
+        int entityChildCount = eItem->childCount();
+        for(int j = 0; j < entityChildCount; ++j)
+        {
+            ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
+            if (!cItem)
+                continue;
+
+            ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
+            if (!comp)
+                continue;
+
+            foreach(ComponentPtr comp, entity->GetComponentVector())
+                foreach(IAttribute *attr, comp->GetAttributes())
+                    if (attr->TypenameToString() == "assetreference")
+                    {
+                        Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
+                        if (assetRef)
+                            assets.insert(assetRef->Get().ref);
+                    }
+        }
+    }
+    saved_assets_.clear();
+    fetch_references_ = true;
+    //! \todo This is in theory a better way to get all assets in a sceene, but not all assets are currently available with this method
+    //!       Once all assets are properly shown in this widget, it would be better to do it this way
+    /*QTreeWidgetItemIterator it(this);
+    while (*it)
+    {
+        AssetItem *aItem = dynamic_cast<AssetItem*>((*it));
+        if (aItem)
+        {
+            assets.insert(aItem->id);
+        }
+        ++it;
+    }*/
+
+
+    foreach(const QString &assetid, assets)
+    {
+        IAssetTransfer *transfer = framework->Asset()->RequestAsset(assetid);
+
+        QString filename = directory.absolutePath();
+        QString assetName = assetid.right(assetid.size() - assetid.lastIndexOf("://") - 3);
+        filename += QDir::separator() + assetName;
+
+        filesaves_.insert(transfer, filename);
+        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded()));
+    }
+}
+
 void SceneTreeWidget::OpenFileDialogClosed(int result)
 {
     QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
@@ -1400,6 +1494,8 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         return;
     }
 
+    saved_assets_.clear();
+    fetch_references_ = false;
     foreach(AssetItem *aItem, sel.assets)
     {
         IAssetTransfer *transfer = framework->Asset()->RequestAsset(aItem->id);
@@ -1425,11 +1521,31 @@ void SceneTreeWidget::AssetLoaded()
     assert (filesaves_.contains(transfer));
 
     QString filename = filesaves_.take(transfer);
-    if (!transfer->resourcePtr->Export(filename.toStdString()))
+    if (!saved_assets_.contains(filename))
     {
-        LogError("Could not save asset to file " + filename.toStdString() + ".");
-        QMessageBox box(QMessageBox::Warning, tr("Save asset"), tr("Failed to save asset."), QMessageBox::Ok);
-        box.setInformativeText(tr("Please check the selected storage device can be written to."));
-        box.exec();
+        saved_assets_.insert(filename);
+        if (!transfer->resourcePtr->Export(filename.toStdString()))
+        {
+            LogError("Could not save asset to file " + filename.toStdString() + ".");
+            QMessageBox box(QMessageBox::Warning, tr("Save asset"), tr("Failed to save asset."), QMessageBox::Ok);
+            box.setInformativeText(tr("Please check the selected storage device can be written to."));
+            box.exec();
+        }
+
+        if (fetch_references_)
+        {
+            const Foundation::ResourceReferenceVector &refs = transfer->resourcePtr->GetReferences();
+            Foundation::ResourceReferenceVector::const_iterator i = refs.begin();
+            for ( ; i != refs.end() ; ++i)
+            {
+                QString id = QString(i->id_.c_str());
+                if (!saved_assets_.contains(id))
+                {
+                    IAssetTransfer *transfer = framework->Asset()->RequestAsset(id, QString(i->type_.c_str()));
+                    filesaves_.insert(transfer, filename);
+                    connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded()));
+                }
+            }
+        }
     }
 }
