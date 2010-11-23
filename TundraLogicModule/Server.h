@@ -9,6 +9,7 @@
 #include "kNet.h"
 
 #include <QObject>
+#include <QVariant>
 
 struct MsgLogin;
 class MessageConnection;
@@ -75,8 +76,25 @@ public slots:
     //! Get whether server is running
     bool IsRunning() const;
     
+    //! Get connected users' connection ID's
+    QVariantList GetConnectionIDs() const;
+    
     //! Get username for connection ID, or empty if no such connection
-    QString GetUserNameForConnectionID(int connectionID);
+    QString GetUsername(int connectionID);
+    
+    //! Get user property for connection ID
+    /*! Note: this is not (yet) profile data ie. it does not persist over separate connections!
+        \param connectionID connection id
+        \param key Property key
+     */
+    QString GetUserProperty(int connectionID, const QString& key);
+    
+    //! Set user property for connection ID
+    /*! \param connectionID connection id
+        \param key Property key
+        \param value Property value
+     */
+    void SetUserProperty(int connectionID, const QString& key, const QString& value);
     
 private:
     /// Handle a Kristalli protocol message

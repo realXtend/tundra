@@ -169,10 +169,10 @@ void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
     
     // If user does not have replication state, create it, then mark all non-local entities dirty
     // so we will send them during the coming updates
-    if (!user->userData)
-        user->userData = boost::shared_ptr<IUserData>(new SceneSyncState());
+    if (!user->syncState)
+        user->syncState = boost::shared_ptr<ISyncState>(new SceneSyncState());
     
-    SceneSyncState* state = checked_static_cast<SceneSyncState*>(user->userData.get());
+    SceneSyncState* state = checked_static_cast<SceneSyncState*>(user->syncState.get());
     
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
@@ -221,7 +221,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
                 continue;
             #endif
             
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->syncState.get());
             if (state)
             {
                 if (!dynamic)
@@ -259,7 +259,7 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->syncState.get());
             if (state)
                 state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
         }
@@ -285,7 +285,7 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->syncState.get());
             if (state)
                 state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
         }
@@ -307,7 +307,7 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->syncState.get());
             if (state)
                 state->OnEntityChanged(entity->GetId());
         }
@@ -331,7 +331,7 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->syncState.get());
             if (state)
                 state->OnEntityRemoved(entity->GetId());
         }
@@ -408,7 +408,7 @@ void SyncManager::Update(f64 frametime)
         KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->syncState.get());
             if (state)
                 ProcessSyncState(i->connection, state);
         }
@@ -1183,7 +1183,7 @@ SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connecti
     for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
     {
         if (i->connection == connection)
-            return checked_static_cast<SceneSyncState*>(i->userData.get());
+            return checked_static_cast<SceneSyncState*>(i->syncState.get());
     }
     return 0;
 }

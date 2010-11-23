@@ -94,7 +94,18 @@ bool Server::IsRunning() const
     return owner_->IsServer();
 }
 
-QString Server::GetUserNameForConnectionID(int connectionID)
+QVariantList Server::GetConnectionIDs() const
+{
+    QVariantList ret;
+    
+    KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
+    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+        ret.push_back(QVariant(iter->userID));
+    
+    return ret;
+}
+
+QString Server::GetUsername(int connectionID)
 {
     KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
     for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
@@ -104,6 +115,37 @@ QString Server::GetUserNameForConnectionID(int connectionID)
     }
     
     return QString();
+}
+
+QString Server::GetUserProperty(int connectionID, const QString& key)
+{
+    KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
+    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    {
+        if (iter->userID == connectionID)
+        {
+            std::map<std::string, std::string>::const_iterator i = iter->properties.find(key.toStdString());
+            if (i == iter->properties.end())
+                return QString();
+            return QString::fromStdString(i->second);
+        }
+    }
+    
+    return QString();
+}
+
+void Server::SetUserProperty(int connectionID, const QString& key, const QString& value)
+{
+    // Note: must get all connections, because the "authenticated connections" subset is only a copy
+    KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+    for (KristalliProtocol::UserConnectionList::iterator iter = users.begin(); iter != users.end(); ++iter)
+    {
+        if ((iter->userID == connectionID) && (iter->authenticated == true))
+        {
+            iter->properties[key.toStdString()] = value.toStdString();
+            break;
+        }
+    }
 }
 
 KristalliProtocol::UserConnectionList& Server::GetUserConnections()
@@ -175,7 +217,12 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     }
     
     user->userName = BufferToString(msg.userName);
+    user->properties["password"] = BufferToString(msg.password);
+    
+    //! \todo authentication check here as necessary
+    
     user->authenticated = true;
+    
     TundraLogicModule::LogInfo("User " + user->userName + " logging in, connection ID " + ToString<int>(user->userID));
     
     MsgLoginReply reply;
