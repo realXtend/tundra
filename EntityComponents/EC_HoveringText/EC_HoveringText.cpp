@@ -117,6 +117,11 @@ void EC_HoveringText::SetPosition(const Vector3df& position)
         billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
 }
 
+void EC_HoveringText::SetPosition(const QVector3D &position)
+{
+    SetPosition(Vector3df(position.x(), position.y(), position.z()));
+}
+
 void EC_HoveringText::SetFont(const QFont &font)
 {
     font_ = font;
