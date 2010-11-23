@@ -24,6 +24,36 @@
 
 #include "MemoryLeakCheck.h"
 
+#include <QtScript>
+
+Q_DECLARE_METATYPE(UserConnection*);
+
+// The following functions help register a custom QObject-derived class to a QScriptEngine.
+// See http://lists.trolltech.com/qt-interest/2007-12/thread00158-0.html .
+template <typename Tp>
+QScriptValue qScriptValueFromQObject(QScriptEngine *engine, Tp const &qobject)
+{
+    return engine->newQObject(qobject);
+}
+
+template <typename Tp>
+void qScriptValueToQObject(const QScriptValue &value, Tp &qobject)
+{   
+    qobject = qobject_cast<Tp>(value.toQObject());
+}
+
+template <typename Tp>
+int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &prototype = QScriptValue()
+#ifndef qdoc
+    , Tp * = 0
+#endif
+    )
+{
+    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject,
+                                       qScriptValueToQObject, prototype);
+}
+
+
 using namespace kNet;
 using namespace RexTypes;
 
@@ -94,66 +124,49 @@ bool Server::IsRunning() const
     return owner_->IsServer();
 }
 
-QVariantList Server::GetConnectionIDs() const
+UserConnectionList Server::GetAuthenticatedUsers() const
 {
-    QVariantList ret;
+    UserConnectionList ret;
     
-    KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
-    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
-        ret.push_back(QVariant(iter->userID));
+    UserConnectionList& all = owner_->GetKristalliModule()->GetUserConnections();
+    for (UserConnectionList::const_iterator iter = all.begin(); iter != all.end(); ++iter)
+    {
+        if ((*iter)->properties["authenticated"] == "true")
+            ret.push_back(*iter);
+    }
     
     return ret;
 }
 
-QString Server::GetUsername(int connectionID)
+QVariantList Server::GetConnectionIDs() const
 {
-    KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
-    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    QVariantList ret;
+    
+    UserConnectionList users = GetAuthenticatedUsers();
+    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+        ret.push_back(QVariant((*iter)->userID));
+    
+    return ret;
+}
+
+UserConnection* Server::GetUserConnection(int connectionID) const
+{
+    UserConnectionList users = GetAuthenticatedUsers();
+    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {
-        if (iter->userID == connectionID)
-            return QString::fromStdString(iter->userName);
+        if ((*iter)->userID == connectionID)
+            return (*iter);
     }
     
-    return QString();
+    return 0;
 }
 
-QString Server::GetUserProperty(int connectionID, const QString& key)
-{
-    KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
-    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
-    {
-        if (iter->userID == connectionID)
-        {
-            std::map<std::string, std::string>::const_iterator i = iter->properties.find(key.toStdString());
-            if (i == iter->properties.end())
-                return QString();
-            return QString::fromStdString(i->second);
-        }
-    }
-    
-    return QString();
-}
-
-void Server::SetUserProperty(int connectionID, const QString& key, const QString& value)
-{
-    // Note: must get all connections, because the "authenticated connections" subset is only a copy
-    KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-    for (KristalliProtocol::UserConnectionList::iterator iter = users.begin(); iter != users.end(); ++iter)
-    {
-        if ((iter->userID == connectionID) && (iter->authenticated == true))
-        {
-            iter->properties[key.toStdString()] = value.toStdString();
-            break;
-        }
-    }
-}
-
-KristalliProtocol::UserConnectionList& Server::GetUserConnections()
+UserConnectionList& Server::GetUserConnections() const
 {
     return owner_->GetKristalliModule()->GetUserConnections();
 }
 
-KristalliProtocol::UserConnection* Server::GetUserConnection(kNet::MessageConnection* source)
+UserConnection* Server::GetUserConnection(kNet::MessageConnection* source) const
 {
     return owner_->GetKristalliModule()->GetUserConnection(source);
 }
@@ -171,7 +184,7 @@ void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
     if (event_id == KristalliProtocol::Events::USER_DISCONNECTED)
     {
         KristalliProtocol::Events::KristalliUserDisconnected* eventData = checked_static_cast<KristalliProtocol::Events::KristalliUserDisconnected*>(data);
-        KristalliProtocol::UserConnection* user = eventData->connection;
+        UserConnection* user = eventData->connection;
         if (user)
             HandleUserDisconnected(user);
     }
@@ -185,8 +198,8 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::messa
     // If we are server, only allow the login message from an unauthenticated user
     if (id != cLoginMessage)
     {
-        KristalliProtocol::UserConnection* user = GetUserConnection(source);
-        if ((!user) || (!user->authenticated))
+        UserConnection* user = GetUserConnection(source);
+        if ((!user) || (user->properties["authenticated"] != "true"))
         {
             TundraLogicModule::LogWarning("Server: dropping message " + ToString(id) + " from unauthenticated user");
             //! \todo something more severe, like disconnecting the user
@@ -209,21 +222,20 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::messa
 void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
 {
     // For now, automatically accept the connection if it's from a known user
-    KristalliProtocol::UserConnection* user = GetUserConnection(source);
+    UserConnection* user = GetUserConnection(source);
     if (!user)
     {
         TundraLogicModule::LogWarning("Login message from unknown user");
         return;
     }
     
-    user->userName = BufferToString(msg.userName);
-    user->properties["password"] = BufferToString(msg.password);
-    
     //! \todo authentication check here as necessary
     
-    user->authenticated = true;
+    user->userName = QString::fromStdString(BufferToString(msg.userName));
+    user->properties["password"] = QString::fromStdString(BufferToString(msg.password));
+    user->properties["authenticated"] = "true";
     
-    TundraLogicModule::LogInfo("User " + user->userName + " logging in, connection ID " + ToString<int>(user->userID));
+    TundraLogicModule::LogInfo("User " + user->userName.toStdString() + " logging in, connection ID " + ToString<int>(user->userID));
     
     MsgLoginReply reply;
     reply.success = 1;
@@ -231,21 +243,21 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     user->connection->Send(reply);
     
     // Tell everyone of the client joining (also the user who joined)
-    KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
+    UserConnectionList users = GetAuthenticatedUsers();
     MsgClientJoined joined;
     joined.userID = user->userID;
     joined.userName = msg.userName;
-    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
-        iter->connection->Send(joined);
+    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+        (*iter)->connection->Send(joined);
     
     // Advertise the users who already are in the world, to the new user
-    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {
-        if (iter->userID != user->userID)
+        if ((*iter)->userID != user->userID)
         {
             MsgClientJoined joined;
-            joined.userID = iter->userID;
-            joined.userName = StringToBuffer(iter->userName);
+            joined.userID = (*iter)->userID;
+            joined.userName = StringToBuffer((*iter)->userName.toStdString());
             user->connection->Send(joined);
         }
     }
@@ -253,23 +265,28 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     // Tell syncmanager of the new user
     owner_->GetSyncManager()->NewUserConnected(user);
     
-    emit UserConnected(user->userID, QString::fromStdString(user->userName));
+    emit UserConnected(user->userID, user->userName);
 }
 
-void Server::HandleUserDisconnected(KristalliProtocol::UserConnection* user)
+void Server::HandleUserDisconnected(UserConnection* user)
 {
     // Tell everyone of the client leaving
     MsgClientLeft left;
     left.userID = user->userID;
-    left.userName = StringToBuffer(user->userName);
-    KristalliProtocol::UserConnectionList users = owner_->GetKristalliModule()->GetAuthenticatedUsers();
-    for (KristalliProtocol::UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    left.userName = StringToBuffer(user->userName.toStdString());
+    UserConnectionList users = GetAuthenticatedUsers();
+    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {
-        if (iter->userID != user->userID)
-            iter->connection->Send(left);
+        if ((*iter)->userID != user->userID)
+            (*iter)->connection->Send(left);
     }
     
-    emit UserDisconnected(user->userID, QString::fromStdString(user->userName));
+    emit UserDisconnected(user->userID, user->userName);
+}
+
+void Server::OnScriptEngineCreated(QScriptEngine* engine)
+{
+    qScriptRegisterQObjectMetaType<UserConnection*>(engine);
 }
 
 }

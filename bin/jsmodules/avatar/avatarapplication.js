@@ -52,6 +52,9 @@ function ServerHandleUserConnected(connectionID, username)
     avatarEntity.SetName(avatarEntityName);
     avatarEntity.SetDescription(username);
 
+    var user = server.GetUserConnection(connectionID);
+    print("Hai. Ur name is " + user.GetName());
+
     var script = avatarEntity.script;
     script.type = "js";
     script.runOnLoad = true;
@@ -75,5 +78,8 @@ function ServerHandleUserDisconnected(connectionID)
     var avatarEntityName = "Avatar" + connectionID;
     var entityID = scene.GetEntityByNameRaw(avatarEntityName).Id;
     scene.RemoveEntityRaw(entityID);
+    
+    var user = server.GetUserConnection(connectionID);
+    print("Kthxbye, " + user.GetName());
 }
 

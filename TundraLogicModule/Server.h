@@ -18,10 +18,13 @@ typedef unsigned long message_id_t;
 
 namespace KristalliProtocol
 {
-    struct UserConnection;
     class KristalliProtocolModule;
-    typedef std::list<UserConnection> UserConnectionList;
 }
+
+class UserConnection;
+typedef std::list<UserConnection*> UserConnectionList;
+
+class QScriptEngine;
 
 namespace TundraLogic
 {
@@ -51,20 +54,23 @@ public:
     void Stop();
     
     //! Get matching userconnection from a messageconnection, or null if unknown
-    KristalliProtocol::UserConnection* GetUserConnection(kNet::MessageConnection* source);
+    UserConnection* GetUserConnection(kNet::MessageConnection* source) const;
     
     //! Get all connected users
-    KristalliProtocol::UserConnectionList& GetUserConnections();
+    UserConnectionList& GetUserConnections() const;
+    
+    //! Get all authenticated users
+    UserConnectionList GetAuthenticatedUsers() const;
     
     //! Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
     
 signals:
     //! A user has connected (and authenticated)
-    void UserConnected(int connectionId, const QString& userName);
+    void UserConnected(int connectionID, const QString& userName);
     
     //! A user has disconnected
-    void UserDisconnected(int connectionId, const QString& userName);
+    void UserDisconnected(int connectionID, const QString& userName);
     
     //! The server has been started
     void ServerStarted();
@@ -79,29 +85,18 @@ public slots:
     //! Get connected users' connection ID's
     QVariantList GetConnectionIDs() const;
     
-    //! Get username for connection ID, or empty if no such connection
-    QString GetUsername(int connectionID);
+    //! Get userconnection structure corresponding to connection ID
+    UserConnection* GetUserConnection(int connectionID) const;
     
-    //! Get user property for connection ID
-    /*! Note: this is not (yet) profile data ie. it does not persist over separate connections!
-        \param connectionID connection id
-        \param key Property key
-     */
-    QString GetUserProperty(int connectionID, const QString& key);
-    
-    //! Set user property for connection ID
-    /*! \param connectionID connection id
-        \param key Property key
-        \param value Property value
-     */
-    void SetUserProperty(int connectionID, const QString& key, const QString& value);
+    //! Initialize server datatypes for a script engine
+    void OnScriptEngineCreated(QScriptEngine* engine);
     
 private:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
     /// Handle a user disconnecting
-    void HandleUserDisconnected(KristalliProtocol::UserConnection* user);
+    void HandleUserDisconnected(UserConnection* user);
     
     /// Handle a login message
     void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);

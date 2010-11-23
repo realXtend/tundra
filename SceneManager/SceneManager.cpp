@@ -299,6 +299,8 @@ namespace Scene
     {
         if (change == AttributeChange::Disconnected)
             return;
+        if (change == AttributeChange::Default)
+            change = AttributeChange::Replicate;
         if (entity)
             emit EntityCreated(entity, change);
     }
@@ -307,6 +309,8 @@ namespace Scene
     {
         if (change == AttributeChange::Disconnected)
             return;
+        if (change == AttributeChange::Default)
+            change = AttributeChange::Replicate;
         emit EntityCreated(entity.get(), change);
     }
     
@@ -314,6 +318,8 @@ namespace Scene
     {
         if (change == AttributeChange::Disconnected)
             return;
+        if (change == AttributeChange::Default)
+            change = AttributeChange::Replicate;
         emit EntityRemoved(entity, change);
         entity->EmitEntityRemoved(change);
     }
