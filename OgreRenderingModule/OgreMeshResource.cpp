@@ -114,7 +114,8 @@ namespace OgreRenderer
             
             // Assign default materials that won't complain
             SetDefaultMaterial();
-            
+            // Set asset references the mesh has
+            ResetReferences();
         }
         catch (Ogre::Exception &e)
         {
@@ -153,6 +154,19 @@ namespace OgreRenderer
                     original_materials_.push_back(submesh->getMaterialName());
                     submesh->setMaterialName("LitTextured");
                 }
+            }
+        }
+    }
+
+    void OgreMeshResource::ResetReferences()
+    {
+        references_.clear();
+        if (!ogre_mesh_.isNull())
+        {
+            for (int i=0 ; i<ogre_mesh_->getNumSubMeshes() ; ++i)
+            {
+                Ogre::SubMesh *submesh = ogre_mesh_->getSubMesh(i);
+                references_.push_back(Foundation::ResourceReference(submesh->getMaterialName(), "OgreMaterial"));
             }
         }
     }
