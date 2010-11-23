@@ -10,10 +10,10 @@ namespace kNet
 class MessageConnection;
 }
 
-//! Class for holding complex connection-related info, such as currently replicated scene state
-struct IUserData
+//! Interface class for user's currently replicated scene state
+struct ISyncState
 {
-    virtual ~IUserData() {}
+    virtual ~ISyncState() {}
 };
 
 namespace KristalliProtocol
@@ -32,7 +32,9 @@ namespace KristalliProtocol
         u8 userID;
         bool authenticated;
         std::string userName;
-        boost::shared_ptr<IUserData> userData;
+        /// Extra properties such as password
+        std::map<std::string, std::string> properties;
+        boost::shared_ptr<ISyncState> syncState;
     };
 }
 
