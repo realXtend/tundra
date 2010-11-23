@@ -4,6 +4,7 @@
 #include "Framework.h"
 #include "IAssetTransfer.h"
 #include "IAsset.h"
+#include "IAssetStorage.h"
 #include "AssetServiceInterface.h"
 #include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
@@ -102,6 +103,44 @@ std::vector<IAssetStorage*> AssetAPI::GetAssetStorages()
     }
 
     return storages;
+}
+
+IAssetUploadTransfer *AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
+{
+    if (!filename || strlen(filename) == 0)
+        throw Exception("AssetAPI::UploadAssetFromFile failed! No source filename given!");
+
+    if (!assetName || strlen(assetName) == 0)
+        throw Exception("AssetAPI::UploadAssetFromFile failed! No destination asset name given!");
+
+    if (!destination.get())
+        throw Exception("AssetAPI::UploadAssetFromFile failed! The passed destination asset storage was null!");
+
+    AssetProviderPtr provider = destination->provider.lock();
+    if (!provider.get())
+        throw Exception("AssetAPI::UploadAssetFromFile failed! The passed destination asset storage was null!");
+
+    return provider->UploadAssetFromFile(filename, destination, assetName);
+    /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
+}
+
+IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+{
+    if (!data || numBytes == 0)
+        throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! Null source data passed!");
+
+    if (!assetName || strlen(assetName) == 0)
+        throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! No destination asset name given!");
+
+    if (!destination.get())
+        throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The passed destination asset storage was null!");
+
+    AssetProviderPtr provider = destination->provider.lock();
+    if (!provider.get())
+        throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The passed destination asset storage was null!");
+
+    return provider->UploadAssetFromFileInMemory(data, numBytes, destination, assetName);    
+    /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
 }
 
 IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
