@@ -44,7 +44,7 @@ public:
 
 private:
     /// Specifies the provider this asset was downloaded from.
-    IAssetProvider *provider;
+    Foundation::AssetProviderWeakPtr provider;
 };
 
 #endif

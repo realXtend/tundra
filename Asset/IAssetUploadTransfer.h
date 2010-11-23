@@ -21,15 +21,15 @@ public:
     /// Specifies the source file of the upload transfer, or none if this upload does not originate from a file in the system.
     QString sourceFilename;
 
+    /// Contains the raw asset data to upload. If sourceFilename=="", the data is taken from this array instead.
+    std::vector<u8> assetData;
+
     /// Specifies the destination name for the asset.
     QString destinationName;
 
-    /// Contains the raw asset data to upload.
-    std::vector<u8> assetData;
-
     boost::weak_ptr<IAssetStorage> destinationStorage;
 
-    boost::weak_ptr<IAssetProvider> destinationProvider;
+    Foundation::AssetProviderWeakPtr destinationProvider;
 
     void EmitTransferCompleted();
     void EmitTransferFailed();

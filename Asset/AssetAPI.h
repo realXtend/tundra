@@ -9,11 +9,11 @@
 
 #include "CoreTypes.h"
 #include "AssetFwd.h"
-
+/*
 class IAssetProvider
 {
 };
-
+*/
 //class LocalAssetProvider : public IAssetProvider;
 //class HttpAssetProvider : public IAssetProvider;
 //class KNetAssetProvider : public IAssetProvider;
@@ -27,7 +27,7 @@ public:
 
     /// Requests the given asset to be downloaded. The transfer will go to the pending transfers queue
     /// and will be processed when possible.
-    /// @param assetRef The asset ID, or URL to request.
+    /// @param assetRef The asset ID, or full URL to request.
     /// @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
     IAssetTransfer *RequestAsset(QString assetRef, QString assetType = "");
 
@@ -64,7 +64,18 @@ public:
     /// @param filename The source file to load the asset from.
     /// @param destination The asset storage to upload the asset to.
     /// @param assetName The name to give to the asset in the storage.
-    IAssetUploadTransfer *UploadAssetFromFile(const char *filename, IAssetStorage *destination, const char *assetName);
+    /// @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process. \note This function will never return 0, but
+    ///        throws an Exception if the data that was passed in was bad.
+    IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
+
+    /// Uploads an asset from the given data pointer in memory to an asset storage.
+    /// @param data A pointer to raw source data in memory.
+    /// @param numBytes The amount of data in the data array.
+    /// @param destination The asset storage to upload the asset to.
+    /// @param assetName The name to give to the asset in the storage.
+    /// @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process. \note This function will never return 0, but
+    ///        throws an Exception if the data that was passed in was bad.
+    IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<IAssetTransfer*> PendingTransfers() const;
