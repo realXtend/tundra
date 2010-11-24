@@ -36,7 +36,9 @@
 #include "IAssetTransfer.h"
 #include "ResourceInterface.h"
 #ifdef OGREASSETEDITOR_ENABLED
-#  include "TexturePreviewEditor.h"
+#   include "MeshPreviewEditor.h"
+#   include "TexturePreviewEditor.h"
+#   include "OgreScriptEditor.h"
 #endif
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
@@ -625,18 +627,18 @@ void SceneTreeWidget::Edit()
 #ifdef OGREASSETEDITOR_ENABLED
         foreach(AssetItem *aItem, selection.assets)
         {
-            int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
+            //int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
+            std::string type = AssetAPI::GetResourceTypeFromName(aItem->id.toLatin1());
 
-            if (itype == RexTypes::RexAT_Mesh)
+            if (type == "OgreMesh")
             {
-       //         Asset::Events::AssetOpen event_data(QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), QString::number(itype));
-                Asset::Events::AssetOpen event_data(aItem->id, QString::number(itype));
-
-                //Inventory::InventoryItemOpenEventData event_data(
-                framework->GetEventManager()->SendEvent(framework->GetEventManager()->QueryEventCategory("Asset"), Asset::Events::ASSET_OPEN, &event_data);
-            } else
+                MeshPreviewEditor::OpenMeshPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), aItem->type);
+            } else if (type ==  "OgreTexture")
             {
-                TexturePreviewEditor::CreatePreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
+                TexturePreviewEditor::OpenPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
+            } else if (type == "OgreMaterial")
+            {
+                OgreScriptEditor::OpenOgreScriptEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), RexTypes::RexAT_MaterialScript);
             }
         }
 #endif

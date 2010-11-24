@@ -119,9 +119,23 @@ void MeshPreviewEditor::Open(const QString &asset_id, const QString &type)
     mesh_id_ = asset_id;
      // Add widget to UI via ui services module
     setWindowTitle((tr("Mesh: ")) + asset_id);
-    Update();
-
+    try
+    {
+        Update();
+    } catch (Ogre::Exception &e)
+    {
+        OgreAssetEditorModule::LogError("Exception while opening mesh " + asset_id.toStdString() + " for editing.");
+        OgreAssetEditorModule::LogError(e.what());
+    }
  }
+
+void MeshPreviewEditor::OpenMeshPreviewEditor(Foundation::Framework *framework, const QString &asset_id, const QString &asset_type, QWidget* parent)
+{
+    MeshPreviewEditor *editor = new MeshPreviewEditor(framework, parent);
+    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)), editor, SLOT(Deleted()), Qt::QueuedConnection);
+    editor->Open(asset_id, asset_type);
+    editor->show();
+}
 
 MeshPreviewEditor::~MeshPreviewEditor()
 {

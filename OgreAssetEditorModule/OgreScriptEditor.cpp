@@ -18,6 +18,7 @@
 #include "Framework.h"
 #include "AssetEvents.h"
 #include "Inventory/InventoryEvents.h"
+#include "UiServiceInterface.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -91,6 +92,42 @@ OgreScriptEditor::~OgreScriptEditor()
     SAFE_DELETE(mainWidget_);
 }
 
+void OgreScriptEditor::OpenOgreScriptEditor(Foundation::Framework *framework, const QString &asset_id, asset_type_t asset_type, QWidget* parent)
+{
+    OgreScriptEditor *editor = new OgreScriptEditor(QString(), asset_type, asset_id, parent);
+    QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)), editor, SLOT(Deleted()), Qt::QueuedConnection);
+//    editor->HandleAssetReady();
+    editor->Open();
+//    editor->show();
+
+    boost::shared_ptr<UiServiceInterface> uiService = framework->GetServiceManager()->GetService<UiServiceInterface>(Service::ST_Gui).lock();
+    if (uiService)
+    {
+        uiService->AddWidgetToScene(editor);
+        uiService->ShowWidget(editor);
+        uiService->BringWidgetToFront(editor);
+    }
+}
+
+void OgreScriptEditor::Open()
+{
+    if (assetType_ == RexTypes::RexAT_MaterialScript)
+    {
+        Ogre::MaterialSerializer serializer;
+        Ogre::MaterialPtr material = Ogre::MaterialManager::getSingleton().getByName(name_.toStdString());
+        if (material.get())
+        {
+            serializer.queueForExport(material);
+            QString script = QString(serializer.getQueuedAsString().c_str());
+            script = script.trimmed();
+            script.replace(QChar(9), "    ");
+
+            CreateTextEdit();
+            textEdit_->setText(script);
+        }
+    }
+}
+
 void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
 {
     bool edit_raw = false;
@@ -145,7 +182,7 @@ void OgreScriptEditor::SaveAs()
         }
     }
 
-    if (assetType_ == RexTypes::RexAT_MaterialScript)
+    if (assetType_ == RexTypes::RexAT_MaterialScript && materialProperties_)
         script = materialProperties_->ToString();
 
     // Get the name.

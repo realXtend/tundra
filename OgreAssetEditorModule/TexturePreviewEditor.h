@@ -80,14 +80,7 @@ public:
         \param texture texture name to open
         \param parent parent widget
     */
-    static void CreatePreviewEditor(Foundation::Framework *framework, const QString &texture, QWidget* parent = 0)
-    {
-        TexturePreviewEditor *editor = new TexturePreviewEditor(framework, parent);
-        QObject::connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
-        editor->OpenOgreTexture(texture);
-        editor->show();
-    }
-
+    static void OpenPreviewEditor(Foundation::Framework *framework, const QString &texture, QWidget* parent = 0);
      
 public slots:
     /// Close the window.

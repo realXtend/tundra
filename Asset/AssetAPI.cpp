@@ -77,6 +77,11 @@ namespace
     }
 }
 
+std::string AssetAPI::GetResourceTypeFromName(const char *name)
+{
+    return GetResourceTypeFromResourceName(name);
+}
+
 std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders()
 {
     ServiceManagerPtr service_manager = framework->GetServiceManager();
