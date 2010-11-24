@@ -84,7 +84,11 @@ public:
     //! Show debug bounding box -attribute
     Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, drawDebug);
-    
+
+    //! Specifies whether any objects attached to the scene node of this placeable are visible or not.
+    Q_PROPERTY(bool visible READ getvisible WRITE setvisible);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, visible);
+
     virtual ~EC_Placeable();
     
     //! Set component as serializable.
