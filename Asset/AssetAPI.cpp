@@ -78,7 +78,7 @@ namespace
     }
 }
 
-std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders()
+std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders() const
 {
     ServiceManagerPtr service_manager = framework->GetServiceManager();
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
@@ -89,6 +89,18 @@ std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders()
     std::vector<Foundation::AssetProviderPtr> providers = asset_service->Providers();
     return providers;
 }
+
+/*
+AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name)
+{
+    foreach(Foundation::AssetProviderPtr provider, GetAssetProviders())
+        foreach(AssetStoragePtr storage, provider->GetStorages())
+            if (storage->Name() == name)
+                return storage;
+
+    return AssetStoragePtr();
+}
+*/
 
 std::vector<IAssetStorage*> AssetAPI::GetAssetStorages()
 {

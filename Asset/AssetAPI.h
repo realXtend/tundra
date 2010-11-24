@@ -48,7 +48,10 @@ public:
     boost::shared_ptr<T> GetAssetProvider();
 
     /// Returns all the asset providers that are registered to the Asset API.
-    std::vector<Foundation::AssetProviderPtr> GetAssetProviders();
+    std::vector<Foundation::AssetProviderPtr> GetAssetProviders() const;
+
+    /// Returns the asset storage of the given @c name
+//    AssetStoragePtr GetAssetStorage(const QString &name) const;
 
     /// Returns the known asset storage instances in the system.
     std::vector<IAssetStorage*> GetAssetStorages();
@@ -61,20 +64,24 @@ public:
 //    void DeleteAsset(IAsset *asset);
 
     /// Uploads an asset to an asset storage.
-    /// @param filename The source file to load the asset from.
-    /// @param destination The asset storage to upload the asset to.
-    /// @param assetName The name to give to the asset in the storage.
-    /// @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process. \note This function will never return 0, but
-    ///        throws an Exception if the data that was passed in was bad.
+    /** @param filename The source file to load the asset from.
+        @param destination The asset storage to upload the asset to.
+        @param assetName The name to give to the asset in the storage.
+        @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
+
+        @note This function will never return 0, but throws an Exception if the data that was passed in was bad.
+    */
     IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
 
     /// Uploads an asset from the given data pointer in memory to an asset storage.
-    /// @param data A pointer to raw source data in memory.
-    /// @param numBytes The amount of data in the data array.
-    /// @param destination The asset storage to upload the asset to.
-    /// @param assetName The name to give to the asset in the storage.
-    /// @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process. \note This function will never return 0, but
-    ///        throws an Exception if the data that was passed in was bad.
+    /** @param data A pointer to raw source data in memory.
+        @param numBytes The amount of data in the data array.
+        @param destination The asset storage to upload the asset to.
+        @param assetName The name to give to the asset in the storage.
+        @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
+
+        @note This function will never return 0, but throws an Exception if the data that was passed in was bad.
+    */
     IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     /// Returns all the currently ongoing or waiting asset transfers.
