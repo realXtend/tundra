@@ -15,11 +15,6 @@ void mainVS(float4 pos    : POSITION,
           
           uniform float4x4 worldViewProjMatrix,
           uniform float4x4 worldMatrix,
-		      uniform float2 scale0,
-          uniform float2 scale1,
-          uniform float2 scale2,
-          uniform float2 scale3,
-          uniform float2 scale4,
 
           //Directional light
           uniform float4 lightDir0,
@@ -41,30 +36,26 @@ void mainVS(float4 pos    : POSITION,
           
           out float4 oPos      : POSITION,
           out float3 oColor    : COLOR,
-          out float4 oDirectionalColor : TEXCOORD7, // Dynamic color based on the single sun directional light. the w value is just the z-coordinate of the vertex, packed here.
-          out float4 oTex12     : TEXCOORD0,
-          out float4 oTex34     : TEXCOORD1, //needed to pack "oTex3" to the same variable as oTex2
-          out float2 oTex0   : TEXCOORD2,//blendtexture uvs
-          out float4 oFog      : TEXCOORD3
+          out float4 oDirectionalColor : TEXCOORD6, // Dynamic color based on the single sun directional light. the w value is just the z-coordinate of the vertex, packed here.
+          out float2 oTex0     : TEXCOORD0, // Diffuse texture channel.
+          out float2 oTex1     : TEXCOORD1, // Blend texture channel.
+          out float4 oFog      : TEXCOORD2
 #ifdef SHADOW_MAPPING
-         ,out float4 oShadowTex0 : TEXCOORD4
+         ,out float4 oShadowTex0 : TEXCOORD3
 #ifdef PSSM_SHADOWS
-         ,out float4 oShadowTex1 : TEXCOORD5
-         ,out float4 oShadowTex2 : TEXCOORD6 // Stores the generated texcoords for the shadow map. We support only one dynamic light at a time.
+         ,out float4 oShadowTex1 : TEXCOORD4
+         ,out float4 oShadowTex2 : TEXCOORD5 // Stores the generated texcoords for the shadow map. We support only one dynamic light at a time.
 #endif
 #endif
     )
 {
-	oPos = mul(worldViewProjMatrix, pos);
-	
-    oTex12.xy = tex0 / scale1;
-    oTex12.zw = tex0 / scale2;
-    oTex34.xy = tex0 / scale3;
-    oTex34.zw = tex0 / scale4;
-	  oTex0 = tex1 / scale0;
+    oPos = mul(worldViewProjMatrix, pos);
+
+    oTex0 = tex0;
+    oTex1 = tex1;
         
     float4 worldPos = mul(worldMatrix, pos);
-	
+
     // Calculate point light directions and distances    
     float3 lightVec1 = lightPos1.xyz - (pos.xyz * lightPos1.w);
     float dist1 = length(lightVec1);
@@ -81,7 +72,7 @@ void mainVS(float4 pos    : POSITION,
     oColor = ambient + (saturate(dot(lightDir1, normal)) * lightDiffuseColor1) * lightAtten1 +
                        (saturate(dot(lightDir2, normal)) * lightDiffuseColor2) * lightAtten2;
                        
-	oDirectionalColor = (saturate(dot(lightDir0.xyz, normal)) * lightDiffuseColor0);
+    oDirectionalColor = (saturate(dot(lightDir0.xyz, normal)) * lightDiffuseColor0);
                        
     //Fog params packed as: exp_density, linear_start, linear_end, 1.0 / (linear_end - linear_start)
     //Store fog density to w
@@ -102,16 +93,15 @@ void mainVS(float4 pos    : POSITION,
 
 void mainPS(float4 pos    : POSITION,
           float3 color  : COLOR,
-          float4 directionalColor : TEXCOORD7,
-          float4 tex12   : TEXCOORD0,
-          float4 tex34   : TEXCOORD1,
-          float2 tex0 : TEXCOORD2, //Weights for blending the texture
-          float4 fog    : TEXCOORD3,
+          float4 directionalColor : TEXCOORD6,
+          float2 tex0   : TEXCOORD0, // Diffuse texture channel.
+          float2 tex1   : TEXCOORD1, // Blend texture channel.
+          float4 fog    : TEXCOORD2,
 #ifdef SHADOW_MAPPING
-          float4 shadowTex0 : TEXCOORD4,
+          float4 shadowTex0 : TEXCOORD3,
 #ifdef PSSM_SHADOWS
-	  float4 shadowTex1 : TEXCOORD5,
-	  float4 shadowTex2 : TEXCOORD6,
+	  float4 shadowTex1 : TEXCOORD4,
+	  float4 shadowTex2 : TEXCOORD5,
 #endif
 #endif
           uniform sampler2D map0 : register(s0), //weigths
@@ -127,11 +117,11 @@ void mainPS(float4 pos    : POSITION,
           out float4 col: COLOR)
 {
     //Get texture and their weights
-	float4 weights = tex2D(map0, tex0);
-    float4 c1 = tex2D(map1, tex12.xy) * weights.x;
-    float4 c2 = tex2D(map2, tex12.zw) * weights.y;
-    float4 c3 = tex2D(map3, tex34.xy) * weights.z;
-    float4 c4 = tex2D(map4, tex34.zw) * weights.w;
+	float4 weights = tex2D(map0, tex1);
+    float4 c1 = tex2D(map1, tex0) * weights.x;
+    float4 c2 = tex2D(map2, tex0) * weights.y;
+    float4 c3 = tex2D(map3, tex0) * weights.z;
+    float4 c4 = tex2D(map4, tex0) * weights.w;
 
     float lightness = 1.f;
 #ifdef SHADOW_MAPPING

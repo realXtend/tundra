@@ -71,7 +71,7 @@ bool UiService::AddWidgetToScene(UiProxyWidget *widget)
 
     // If no position has been set for Qt::Dialog widget, use default one so that the window's title
     // bar - or any other critical part, doesn't go outside the view.
-    if ((widget->windowFlags() & Qt::Dialog) && widget->pos() == QPointF())
+    if ((widget->windowFlags() & Qt::Dialog) && widget->pos() == QPointF() && !(widget->widget()->windowState() & Qt::WindowFullScreen))
         widget->setPos(10.0, 200.0);
 
     // Resize full screen widgets to fit the scene rect.
