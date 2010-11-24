@@ -15,7 +15,6 @@
 #include <Ogre.h>
 #include <OgreTagPoint.h>
 
-#include <QDebug>
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
