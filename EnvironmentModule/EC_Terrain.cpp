@@ -1219,6 +1219,14 @@ void EC_Terrain::UpdateRootNodeTransform()
     rootNode->setOrientation(Ogre::Quaternion(rot_new));
     rootNode->setPosition(tm.position.x, tm.position.y, tm.position.z);
     rootNode->setScale(tm.scale.x, tm.scale.y, tm.scale.z);
+
+    // If this entity has an EC_Placeable, make sure it is the parent of this terrain component.
+    EC_Placeable *pos = GetParentEntity()->GetComponent<EC_Placeable>();
+    if (pos)
+    {
+        Ogre::SceneNode *parent = pos->GetSceneNode();
+        parent->addChild(rootNode);
+    }
 }
 
 /// Creates Ogre geometry data for the single given patch, or updates the geometry for an existing
