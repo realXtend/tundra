@@ -33,7 +33,8 @@ EC_Placeable::EC_Placeable(IModule* module) :
     attached_(false),
     select_priority_(0),
     transform(this, "Transform"),
-    drawDebug(this, "Show bounding box", false)
+    drawDebug(this, "Show bounding box", false),
+    visible(this, "Visible", true)
 {
     // Enable network interpolation for the transform
     static AttributeMetadata transAttrData;
@@ -374,6 +375,8 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
     {
         SetShowBoundingBoxRecursive(link_scene_node_, drawDebug.Get());
     }
+    else if (attribute == &visible && link_scene_node_)
+        link_scene_node_->setVisible(visible.Get());
 }
 
 Vector3df  EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df& to)
@@ -388,18 +391,18 @@ Vector3df  EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3d
 
 void EC_Placeable::Show()
 {
-	if (!link_scene_node_)
+    if (!link_scene_node_)
         return;
 
-link_scene_node_->setVisible(true);
+    link_scene_node_->setVisible(true);
 }
 
 void EC_Placeable::Hide()
 {
-		if (!link_scene_node_)
-			return;	
-		
-		link_scene_node_->setVisible(false);
+    if (!link_scene_node_)
+        return;	
+
+    link_scene_node_->setVisible(false);
 }
 
 void EC_Placeable::ToggleVisibility()
