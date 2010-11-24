@@ -36,6 +36,8 @@ public:
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     IAsset *GetAsset(QString assetRef);
+
+    static std::string GetResourceTypeFromName(const char *name);
     
     /// Queries if any existing Asset Storage contains an asset with the given name, and returns it.
 //    IAsset *GetAssetByName(QString assetRef);

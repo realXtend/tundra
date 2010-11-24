@@ -10,6 +10,7 @@
 #define incl_OgreAssetEditorModule_OgreScriptEditor_h
 
 #include "RexTypes.h"
+#include "OgreAssetEditorModuleApi.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -26,6 +27,7 @@ namespace Foundation
 {
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
+    class Framework;
 }
 
 namespace Inventory
@@ -36,7 +38,7 @@ namespace Inventory
 class OgreMaterialProperties;
 class PropertyTableWidget;
 
-class OgreScriptEditor : public QWidget
+class ASSET_EDITOR_MODULE_API OgreScriptEditor : public QWidget
 {
     Q_OBJECT
 
@@ -56,7 +58,11 @@ public:
     /// Destructor.
     virtual ~OgreScriptEditor();
 
+    static void OpenOgreScriptEditor(Foundation::Framework *framework, const QString &asset_id, asset_type_t asset_type, QWidget* parent = 0);
+
 public slots:
+    void Open();
+
     /// Handles the asset data for script.
     void HandleAssetReady(Foundation::AssetPtr asset);
 
@@ -82,6 +88,9 @@ private slots:
     /// @param row Row of the cell.
     /// @param column Column of the cell.
     void PropertyChanged(int row, int column);
+
+    //! Delete this object.
+    void Deleted() { delete this; }
 
 private:
     Q_DISABLE_COPY(OgreScriptEditor);

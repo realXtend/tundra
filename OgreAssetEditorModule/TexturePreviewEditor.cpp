@@ -326,6 +326,14 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
 
 }
 
+void TexturePreviewEditor::OpenPreviewEditor(Foundation::Framework *framework, const QString &texture, QWidget* parent)
+{
+    TexturePreviewEditor *editor = new TexturePreviewEditor(framework, parent);
+    QObject::connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
+    editor->OpenOgreTexture(texture);
+    editor->show();
+}
+
 void TexturePreviewEditor::UseTextureOriginalSize(bool use)
 {
     if(use) //Set texture to it's real size.

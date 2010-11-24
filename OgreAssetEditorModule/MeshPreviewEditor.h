@@ -7,6 +7,7 @@
 #include "Input.h"
 #include "MouseEvent.h"
 #include "OgreMeshResource.h"
+#include "OgreAssetEditorModuleApi.h"
 
 #include <QWidget>
 #include <QLabel>
@@ -62,7 +63,7 @@ protected:
 };
 
 //! MeshPrevieEditor is used to view meshes
-class MeshPreviewEditor: public QWidget
+class ASSET_EDITOR_MODULE_API MeshPreviewEditor: public QWidget
 {
     Q_OBJECT
 public:
@@ -83,6 +84,8 @@ public:
     QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels);
     void Open(const QString& asset_id, const QString& type);
 
+    static void OpenMeshPreviewEditor(Foundation::Framework *framework, const QString &asset_id, const QString &asset_type, QWidget* parent = 0);
+
 public slots:
     /// Close the window.
     void Closed();
@@ -94,6 +97,10 @@ public slots:
 signals:
     /// This signal is emitted when the editor is closed.
     void Closed(const QString &inventory_id, asset_type_t asset_type);
+
+private slots:
+    //! Delete this object.
+    void Deleted() { delete this; }
 
 private:
    
