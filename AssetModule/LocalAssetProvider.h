@@ -75,7 +75,7 @@ namespace Asset
             \param recursive If true, all the subfolders of the given folder are added as well. */
         void AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive);
 
-        virtual std::vector<IAssetStorage*> GetStorages();
+        virtual std::vector<Foundation::AssetProviderPtr> GetStorages();
 
         virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
 
