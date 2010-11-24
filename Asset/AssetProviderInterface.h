@@ -105,7 +105,7 @@ namespace Foundation
         virtual void Update(f64 frametime) {}
 
         //! Returns the list of all asset storages registered into this asset provider.
-        virtual std::vector<IAssetStorage*> GetStorages() { return std::vector<IAssetStorage*>(); }
+        virtual std::vector<Foundation::AssetProviderPtr> GetStorages() { return std::vector<Foundation::AssetProviderPtr>(); }
 
         virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName) { return 0; }
 

@@ -90,15 +90,15 @@ std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders()
     return providers;
 }
 
-std::vector<IAssetStorage*> AssetAPI::GetAssetStorages()
+std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetStorages()
 {
-    std::vector<IAssetStorage*> storages;
+    std::vector<Foundation::AssetProviderPtr> storages;
 
     std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
 
     for(size_t i = 0; i < providers.size(); ++i)
     {
-        std::vector<IAssetStorage*> stores = providers[i]->GetStorages();
+        std::vector<Foundation::AssetProviderPtr> stores = providers[i]->GetStorages();
         storages.insert(storages.end(), stores.begin(), stores.end());
     }
 
