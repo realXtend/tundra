@@ -6,6 +6,11 @@
 
 #include "DebugOperatorNew.h"
 
+int UserConnection::GetConnectionID() const
+{
+    return userID;
+}
+
 QString UserConnection::GetName() const
 {
     return userName;
