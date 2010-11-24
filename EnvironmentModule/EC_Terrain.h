@@ -367,6 +367,10 @@ private slots:
     void TextureAssetLoaded();
     void TerrainAssetLoaded();
 
+    /// (Re)checks whether this entity has EC_Placeable (or if it was just added or removed), and reparents the rootNode of this component to it or the scene root.
+    /// Additionally re-applies the visibility of each terrain patch that is currently attached to the terrain node.s
+    void AttachTerrainRootNode();
+
 private:
     explicit EC_Terrain(IModule* module);
 

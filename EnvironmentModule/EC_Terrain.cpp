@@ -59,13 +59,12 @@ EC_Terrain::EC_Terrain(IModule* module) :
     MakePatchFlat(0, 0, 0.f);
     uScale.Set(0.13f, AttributeChange::Disconnected);
     vScale.Set(0.13f, AttributeChange::Disconnected);
-    texture0.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
-    texture1.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
-    texture2.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
-    texture3.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
-    texture4.Set(AssetReference("ogre://terr_dirt-grass.jpg"/*, "OgreTexture"*/), AttributeChange::Disconnected);
-    material.Set(AssetReference("ogre://Rex/TerrainPCF"/*, "OgreMaterial"*/), AttributeChange::Disconnected);
-//    heightMap.Set("media/samples/terrain.ntf", AttributeChange::Disconnected);
+    texture0.Set(AssetReference(""), AttributeChange::Disconnected);
+    texture1.Set(AssetReference(""), AttributeChange::Disconnected);
+    texture2.Set(AssetReference(""), AttributeChange::Disconnected);
+    texture3.Set(AssetReference(""), AttributeChange::Disconnected);
+    texture4.Set(AssetReference(""), AttributeChange::Disconnected);
+    material.Set(AssetReference("file://RexTerrainPCF.material"), AttributeChange::Disconnected);
 }
 
 EC_Terrain::~EC_Terrain()
@@ -78,26 +77,14 @@ void EC_Terrain::UpdateSignals()
     disconnect(this, SLOT(AttributeUpdated(IAttribute *)));
 
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            this, SLOT(AttributeUpdated(IAttribute*)));
-/*
-    // Manually signal the resource-requiring attributes to have been changed. This guarantees that if we are using
-    // the default values from ctor, these resources will be loaded in.
-    texture0.Changed(AttributeChange::LocalOnly);
-    texture1.Changed(AttributeChange::LocalOnly);
-    texture2.Changed(AttributeChange::LocalOnly);
-    texture3.Changed(AttributeChange::LocalOnly);
-    texture4.Changed(AttributeChange::LocalOnly);
-    material.Changed(AttributeChange::LocalOnly);
-    heightMap.Changed(AttributeChange::LocalOnly);
+        this, SLOT(AttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 
-*/
-/*
-    if (scene.viewEnabled)
-    {
-    material.RegisterForAutomaticAssetUpdates(framework->Asset(), ParentEntity());
-    connect(material, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialUpdated()), Qt::UniqueConnection);
+    Scene::Entity *parent = GetParentEntity();
+    if (parent)
+    {    
+        connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection);
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection);
     }
-*/
 }
 
 void EC_Terrain::MakePatchFlat(int x, int y, float heightValue)
@@ -1219,13 +1206,37 @@ void EC_Terrain::UpdateRootNodeTransform()
     rootNode->setOrientation(Ogre::Quaternion(rot_new));
     rootNode->setPosition(tm.position.x, tm.position.y, tm.position.z);
     rootNode->setScale(tm.scale.x, tm.scale.y, tm.scale.z);
+}
+
+void EC_Terrain::AttachTerrainRootNode()
+{
+    if (!rootNode)
+        return;
+
+    OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+    if (!renderer)
+        return;
+
+    Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+    if (!sceneMgr)
+        return;
+
+    // Detach the terrain root node from any previous EC_Placeable scenenode.
+    if (rootNode->getParentSceneNode())
+        rootNode->getParentSceneNode()->removeChild(rootNode);
 
     // If this entity has an EC_Placeable, make sure it is the parent of this terrain component.
-    EC_Placeable *pos = GetParentEntity()->GetComponent<EC_Placeable>();
-    if (pos)
+    boost::shared_ptr<EC_Placeable> pos = GetParentEntity()->GetComponent<EC_Placeable>();
+    if (pos.get())
     {
         Ogre::SceneNode *parent = pos->GetSceneNode();
         parent->addChild(rootNode);
+        rootNode->setVisible(pos->visible.Get()); // Re-apply visibility on all the geometry.
+    }
+    else
+    {
+        // No EC_Placeable: the root node is attached to the scene directly.
+        sceneMgr->getRootSceneNode()->addChild(rootNode);
     }
 }
 
@@ -1410,7 +1421,9 @@ void EC_Terrain::CreateRootNode()
         return;
 
     rootNode = sceneMgr->createSceneNode();
-    sceneMgr->getRootSceneNode()->addChild(rootNode);
+
+    // Add the newly created node to scene or to a parent EC_Placeable.
+    AttachTerrainRootNode();
 
     UpdateRootNodeTransform();
 }
@@ -1516,7 +1529,13 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
             if (neighborsLoaded)
                 GenerateTerrainGeometryForOnePatch(x, y);
         }
-        
+    
+    // All the new geometry we created will be visible for Ogre by default. If the EC_Placeable's visible attribute is false,
+    // we need to hide all newly created geometry.
+    AttachTerrainRootNode();
+
+    ///\todo If this terrain only exists for physics heightfield purposes, don't create GPU resources for it at all.
+
     emit TerrainRegenerated();
 }
 
