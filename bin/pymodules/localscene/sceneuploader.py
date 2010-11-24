@@ -403,6 +403,10 @@ class SceneSaver:
                 entity = newdoc.createElement('entity')
                 entity.setAttribute("name", oNode.entityNode.getAttribute("name"))
                 entity.setAttribute("meshFile", oNode.entityNode.getAttribute("meshFile"))
+                if oNode.entityNode.hasAttribute("collisionFile"):
+                    entity.setAttribute("collisionFile", oNode.entityNode.getAttribute("collisionFile"))
+                if oNode.entityNode.hasAttribute("collisionPrim"):
+                    entity.setAttribute("collisionPrim", oNode.entityNode.getAttribute("collisionPrim"))
                 entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
                 nodeNode.appendChild(entity)
                 nodesNode.appendChild(nodeNode)
