@@ -15,6 +15,7 @@
 #include <Ogre.h>
 #include <OgreTagPoint.h>
 
+#include <QDebug>
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
@@ -272,7 +273,6 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     }
     
     AttachEntity();
-    
     emit OnMeshChanged();
     
     return true;
@@ -713,6 +713,21 @@ void EC_Mesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
     
     min = Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
     max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
+}
+
+QVector3D EC_Mesh::GetWorldSize() const
+{
+    QVector3D size(0,0,0);
+    if (!entity_ || !adjustment_node_)
+        return size;
+
+    Ogre::AxisAlignedBox bbox = entity_->getMesh()->getBounds();
+    bbox.scale(adjustment_node_->getScale());
+
+    const Ogre::Vector3& bboxmin = bbox.getMinimum();
+    const Ogre::Vector3& bboxmax = bbox.getMaximum();
+    size = QVector3D(bboxmax.x-bboxmin.x, bboxmax.z-bboxmin.z, bboxmax.y-bboxmin.y);
+    return size;
 }
 
 void EC_Mesh::DetachEntity()
