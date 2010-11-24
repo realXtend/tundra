@@ -265,7 +265,7 @@ class Manipulator:
             changevec = rightvec - upvec
 
             # group rotation
-            if self.NAME=="RotationManipulator" and len(ents)>1: # and self.grabbed_axis == self.AXIS_BLUE:
+            if self.NAME=="RotationManipulator" and len(ents)>1:
                 self.setCenterPointAndCenterVectors(ents)
                 self._manipulate2(ents, amountx, amounty, changevec, self.entCenterVectors, self.centerPoint)
             else:            

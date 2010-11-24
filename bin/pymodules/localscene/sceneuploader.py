@@ -223,6 +223,15 @@ class SceneUploader:
                 dstFile = self.appDataUploadFolder + os.sep + oNode.entityMeshFile[:-5] + ".material"
                 shutil.copyfile(materialfile2, dstFile)
                 self.copyTextures(materialfile2, MATERIAL_FOLDER)
+                
+            #copy collision mesh if specified
+            if(oNode.entityCollisionFile!=None and oNode.entityCollisionFile!=""):
+                collisionPath = os.path.dirname(materialfile) + os.sep + oNode.entityCollisionFile
+                if(self.fileExists(collisionPath)):
+                    dstFile = self.appDataUploadFolder + os.sep + oNode.entityCollisionFile
+                    shutil.copyfile(collisionPath, dstFile)
+                else:
+                    print "Collision file specified, but not found"
 
     def copyTextures(self, matfile, folder):
         list = self.getTexturesFromMaterialFile(matfile)
