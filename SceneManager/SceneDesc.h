@@ -33,6 +33,7 @@ struct ComponentDesc
 {
     QString typeName; ///< Type name.
     QString name; ///< Name (if applicable).
+    QString sync; ///< Synchronize component.
     QList<AttributeDesc> attributes; ///< List of attributes the component has.
 
     /// Equality operator. Returns true if all values match, false otherwise.
