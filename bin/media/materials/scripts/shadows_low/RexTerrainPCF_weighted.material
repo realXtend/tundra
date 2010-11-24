@@ -64,20 +64,6 @@ material Rex/TerrainPCF_weighted
 
 			vertex_program_ref Rex/TerrainPCFVS_weighted
 			{
-				//For weighted texunit
-				param_named scale0 float2 20.0 20.0
-				
-				//For 1st texunit (detail0)
-				param_named scale1 float2 1.00 1.00
-
-				//For 2nd texunit (detail1)
-				param_named scale2 float2 1.00 1.00
-
-				//For 3rd texunit (detail2)
-				param_named scale3 float2 1.00 1.00
-
-				//For 4th texunit (detail3)
-				param_named scale4 float2 1.00 1.00
 			}
 
 			//Weights
