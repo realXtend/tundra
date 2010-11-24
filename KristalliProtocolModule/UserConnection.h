@@ -54,6 +54,9 @@ public slots:
     /// Execute an action on an entity, sent only to the specific user
     void Exec(QObject* entity, const QString &action, const QStringList &params);
     
+    /// Get connectionid
+    int GetConnectionID() const;
+    
     /// Get username
     QString GetName() const;
     

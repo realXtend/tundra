@@ -45,14 +45,13 @@ function ClientHandleToggleCamera()
     }
 }
 
-function ServerHandleUserConnected(connectionID, username)
+function ServerHandleUserConnected(connectionID, user)
 {
     var avatarEntityName = "Avatar" + connectionID;
     var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController"]);
     avatarEntity.SetName(avatarEntityName);
-    avatarEntity.SetDescription(username);
+    avatarEntity.SetDescription(user.GetName());
 
-    var user = server.GetUserConnection(connectionID);
     print("Hai. Ur name is " + user.GetName());
 
     var script = avatarEntity.script;
@@ -73,13 +72,11 @@ function ServerHandleUserConnected(connectionID, username)
     scene.EmitEntityCreatedRaw(avatarEntity);
 }
 
-function ServerHandleUserDisconnected(connectionID)
+function ServerHandleUserDisconnected(connectionID, user)
 {
     var avatarEntityName = "Avatar" + connectionID;
     var entityID = scene.GetEntityByNameRaw(avatarEntityName).Id;
     scene.RemoveEntityRaw(entityID);
-    
-    var user = server.GetUserConnection(connectionID);
+
     print("Kthxbye, " + user.GetName());
 }
-
