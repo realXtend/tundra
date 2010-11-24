@@ -90,8 +90,7 @@ std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders() const
     return providers;
 }
 
-/*
-AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name)
+AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
 {
     foreach(Foundation::AssetProviderPtr provider, GetAssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
@@ -100,17 +99,16 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name)
 
     return AssetStoragePtr();
 }
-*/
 
-std::vector<IAssetStorage*> AssetAPI::GetAssetStorages()
+std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
 {
-    std::vector<IAssetStorage*> storages;
+    std::vector<AssetStoragePtr> storages;
 
     std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
 
     for(size_t i = 0; i < providers.size(); ++i)
     {
-        std::vector<IAssetStorage*> stores = providers[i]->GetStorages();
+        std::vector<AssetStoragePtr> stores = providers[i]->GetStorages();
         storages.insert(storages.end(), stores.begin(), stores.end());
     }
 

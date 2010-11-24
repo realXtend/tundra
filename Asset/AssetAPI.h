@@ -51,10 +51,10 @@ public:
     std::vector<Foundation::AssetProviderPtr> GetAssetProviders() const;
 
     /// Returns the asset storage of the given @c name
-//    AssetStoragePtr GetAssetStorage(const QString &name) const;
+    AssetStoragePtr GetAssetStorage(const QString &name) const;
 
     /// Returns the known asset storage instances in the system.
-    std::vector<IAssetStorage*> GetAssetStorages();
+    std::vector<AssetStoragePtr> GetAssetStorages() const;
 
     /// Creates a new empty asset of the given type and with the given name.
 //    IAsset *CreateAsset(QString assetType, QString assetRef);

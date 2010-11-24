@@ -699,14 +699,34 @@ namespace Scene
                     if (!comp)
                         continue;
 
-                    foreach(IAttribute *attr, comp->GetAttributes())
+                    if (comp->TypeName() == "EC_DynamicComponent")
                     {
+                        QDomDocument temp_doc;
+                        QDomElement root_elem = temp_doc.createElement("component");
+                        root_elem.setAttribute("type", c.typeName);
+                        root_elem.setAttribute("name", c.name);
+                        root_elem.setAttribute("sync", c.sync);
                         foreach(AttributeDesc a, c.attributes)
-                            if (attr->TypenameToString().c_str() == a.typeName && attr->GetName() == a.name)
-                                // Trigger no signal yet when scene is in incoherent state
-                                attr->FromString(a.value.toStdString(), AttributeChange::Disconnected);
-                        else
-                            LogWarning("Could not find attribute " + attr->TypenameToString() + " : "+ attr->GetNameString() + " from scene description.");
+                        {
+                            QDomElement child_elem = temp_doc.createElement("attribute");
+                            child_elem.setAttribute("value", a.value);
+                            child_elem.setAttribute("type", a.typeName);
+                            child_elem.setAttribute("name", a.name);
+                            root_elem.appendChild(child_elem);
+                        }
+                        comp->DeserializeFrom(root_elem, AttributeChange::Default);
+                    }
+                    else
+                    {
+                        foreach(IAttribute *attr, comp->GetAttributes())
+                        {
+                            foreach(AttributeDesc a, c.attributes)
+                                if (attr->TypenameToString().c_str() == a.typeName && attr->GetName() == a.name)
+                                    // Trigger no signal yet when scene is in incoherent state
+                                    attr->FromString(a.value.toStdString(), AttributeChange::Disconnected);
+                            else
+                                LogWarning("Could not find attribute " + attr->TypenameToString() + " : "+ attr->GetNameString() + " from scene description.");
+                        }
                     }
                 }
 
@@ -790,9 +810,11 @@ namespace Scene
                         {
                             QString type_name = comp_elem.attribute("type");
                             QString name = comp_elem.attribute("name");
+                            QString sync = comp_elem.attribute("sync");
                             ComponentDesc compDesc;
                             compDesc.typeName = type_name;
                             compDesc.name = name;
+                            compDesc.sync = sync;
 
                             // A bit of a hack to get the name from EC_Name.
                             if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())

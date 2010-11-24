@@ -162,11 +162,11 @@ void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const
     storages.push_back(storage);
 }
 
-std::vector<IAssetStorage*> LocalAssetProvider::GetStorages()
+std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
 {
-    std::vector<IAssetStorage*> stores;
+    std::vector<AssetStoragePtr> stores;
     for(size_t i = 0; i < storages.size(); ++i)
-        stores.push_back(storages[i].get());
+        stores.push_back(storages[i]);
     return stores;
 }
 

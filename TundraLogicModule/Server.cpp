@@ -171,6 +171,16 @@ UserConnection* Server::GetUserConnection(kNet::MessageConnection* source) const
     return owner_->GetKristalliModule()->GetUserConnection(source);
 }
 
+void Server::SetActionSender(UserConnection* user)
+{
+    actionsender_ = user;
+}
+
+UserConnection* Server::GetActionSender() const
+{
+    return actionsender_;
+}
+
 void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
@@ -265,7 +275,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     // Tell syncmanager of the new user
     owner_->GetSyncManager()->NewUserConnected(user);
     
-    emit UserConnected(user->userID, user->userName);
+    emit UserConnected(user->userID, user);
 }
 
 void Server::HandleUserDisconnected(UserConnection* user)
@@ -281,7 +291,7 @@ void Server::HandleUserDisconnected(UserConnection* user)
             (*iter)->connection->Send(left);
     }
     
-    emit UserDisconnected(user->userID, user->userName);
+    emit UserDisconnected(user->userID, user);
 }
 
 void Server::OnScriptEngineCreated(QScriptEngine* engine)

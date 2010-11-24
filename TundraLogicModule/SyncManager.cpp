@@ -11,6 +11,7 @@
 #include "Entity.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
+#include "Server.h"
 #include "TundraMessages.h"
 #include "MsgCreateEntity.h"
 #include "MsgCreateComponents.h"
@@ -1161,6 +1162,8 @@ void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const
 
 void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg)
 {
+    bool isServer = owner_->IsServer();
+    
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return;
@@ -1173,6 +1176,17 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
         return;
     }
 
+    // If we are server, get the user who sent the action, so it can be queried
+    if (isServer)
+    {
+        Server* server = owner_->GetServer().get();
+        if (server)
+        {
+            UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+            server->SetActionSender(user);
+        }
+    }
+    
     QString action = BufferToString(msg.name).c_str();
     QStringList params;
     for (uint i = 0; i < msg.parameters.size(); ++i)
@@ -1182,7 +1196,6 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
 
     EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
 
-    bool isServer = owner_->IsServer();
     if ((type & EntityAction::Local) != 0 || (isServer && (type & EntityAction::Server) != 0))
         entity->Exec(EntityAction::Local, action, params); // Execute the action locally, so that it doesn't immediately propagate back to network for sending.
 
@@ -1193,6 +1206,14 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
         foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
             if (userConn->connection != source) // The EC action will not be sent to the machine that originated the request to send an action to all peers.
                 userConn->connection->Send(msg);
+    }
+    
+    // Clear the action sender after action handling
+    if (isServer)
+    {
+        Server* server = owner_->GetServer().get();
+        if (server)
+            server->SetActionSender(0);
     }
 }
 

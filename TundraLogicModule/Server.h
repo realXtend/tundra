@@ -65,12 +65,15 @@ public:
     //! Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
     
+    //! Set current action sender. Called by SyncManager
+    void SetActionSender(UserConnection* user);
+    
 signals:
     //! A user has connected (and authenticated)
-    void UserConnected(int connectionID, const QString& userName);
+    void UserConnected(int connectionID, UserConnection* connection);
     
     //! A user has disconnected
-    void UserDisconnected(int connectionID, const QString& userName);
+    void UserDisconnected(int connectionID, UserConnection* connection);
     
     //! The server has been started
     void ServerStarted();
@@ -87,6 +90,9 @@ public slots:
     
     //! Get userconnection structure corresponding to connection ID
     UserConnection* GetUserConnection(int connectionID) const;
+    
+    //! Get current sender of an action. Valid (non-null) only while an action packet is being handled. Null if it was invoked by server
+    UserConnection* GetActionSender() const;
     
     //! Initialize server datatypes for a script engine
     void OnScriptEngineCreated(QScriptEngine* engine);
@@ -105,6 +111,9 @@ private:
     event_category_id_t kristalliEventCategory_;
     /// Tundra event category
     event_category_id_t tundraEventCategory_;
+    
+    //! Current action sender
+    UserConnection* actionsender_;
     
     //! Owning module
     TundraLogicModule* owner_;
