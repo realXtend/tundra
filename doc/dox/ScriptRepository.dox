@@ -64,6 +64,14 @@ The extensions themselves are stored in the folder /bin/qtplugins/script. The fo
 Extensions cannot be loaded over the network, but are fixed to the installation.
 </td></tr></table>
 
+\section QtWidgetChildren The findChild function
+
+When using the qt.gui extension to operate on hierarchies of QObjects, you'll quickly notice that the function QObject::findChild is a template function and cannot be accessed from QtScript. To work around this, Naali exposes the following global scope function
+
+<span style="font-weight: bold; padding-left: 20px;">QObject findChild(QObject object, QString childName)</span>
+
+This function looks at all the (grand)children of object, and returns the first one found that has the name 'childName'.   
+
 \section CoreAPIObjects The Core API Objects.
 
 The whole \ref CoreAPIList "Naali Core API" is exposed to QtScript through the following variable names:
@@ -95,7 +103,7 @@ For conveniency, when embedding scripts into scene entities using EC_Script, Jav
 <span style="font-weight: bold; font-size: 1.15em;">scene: A pointer to the current Scene.</span>
 
 <b>scene</b> is a special name that refers to the SceneManager instance that the current script component is part of. Use this name to access the whole scene.
-</td></tr></table>
+</td></tr></table>  
 
 \section ScriptSamples Script Samples 
  
