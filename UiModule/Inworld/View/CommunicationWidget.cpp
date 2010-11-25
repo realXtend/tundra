@@ -28,7 +28,6 @@
 
 //$ BEGIN_MOD $
 #include "TtsServiceInterface.h"
-#include "UiServiceInterface.h"
 #include "TtsModule.h"
 
 
@@ -524,7 +523,6 @@ namespace CoreUi
 		// Pick up the EC_TtsVoice of the avatar entity
 		//GetAvatarVoiceComponent();
 
-		//Inicialización de la ventana gráfica del Tts
 		ShowTtsChatControls();
 
 		if (Tts_chat_widget)

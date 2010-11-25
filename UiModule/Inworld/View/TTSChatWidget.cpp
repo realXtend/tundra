@@ -185,17 +185,17 @@ namespace Communications //Needed
 
 		void TtsChatWidget::demoButtonPressed()
 		{
-			media_object_ = new Phonon::MediaObject(this);
-			audio_output_ = new Phonon::AudioOutput(Phonon::MusicCategory, this);
-			
-		
-			media_object_->setCurrentSource(fileName);
-			
-			Phonon::createPath(media_object_, audio_output_);
+	
+			Phonon::MediaObject *mediaObject = new Phonon::MediaObject(this);
+			Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
 
-			media_object_->play();
+			mediaObject->setCurrentSource(fileName);
 
+			Phonon::createPath(mediaObject, audioOutput);
+	 
+			mediaObject->play();
 		}
+
 		void TtsChatWidget::sendTtsStateChanged()
 		{
 			emit TtsstateChanged();

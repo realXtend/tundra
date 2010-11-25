@@ -172,10 +172,7 @@ link_directories(Ui)
 link_directories(Asset)
 link_directories(SceneManager) # This will be renamed to Scene.
 
-# Add EC's declared by other modules here:
-#$ BEGIN_MOD $
-add_subdirectory (EntityComponents/EC_TtsVoice) 
-#$ END_MOD $
+
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.
 if (NOT EXISTS CMakeBuildConfig.txt)
