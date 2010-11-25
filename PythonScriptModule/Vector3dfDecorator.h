@@ -46,6 +46,13 @@ namespace PythonScript
         void rotateXZBy(Vector3df* self, float degrees, const Vector3df& center);
         void rotateXYBy(Vector3df* self, float degrees, const Vector3df& center);
         void rotateYZBy(Vector3df* self, float degrees, const Vector3df& center);
+        
+        Vector3df getInterpolated(Vector3df* self, const Vector3df& vec, float factor);
+        Vector3df getInterpolated_quadratic(Vector3df* self, const Vector3df& vec2, const Vector3df& vec3, float factor);
+        void interpolate(Vector3df* self, const Vector3df& vec1, const Vector3df& vec2, float factor);
+        
+        Vector3df getHorizontalAngle(Vector3df* self);
+        Vector3df rotationToDirection(Vector3df* self, const Vector3df& vec = Vector3df(0,0,1));
     };
 }
 
