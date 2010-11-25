@@ -90,7 +90,6 @@
 
 #include <PythonQt.h>
 
-#include "Matrix4Decorator.h"
 #include "Vector3dfDecorator.h"
 #include "QuaternionDecorator.h"
 
@@ -1821,8 +1820,6 @@ namespace PythonScript
             PythonQt::self()->registerCPPClass("Vector3df");
             PythonQt::self()->addDecorators(new QuaternionDecorator());
             PythonQt::self()->registerCPPClass("Quaternion");
-            PythonQt::self()->addDecorators(new Matrix4Decorator());
-            PythonQt::self()->registerCPPClass("Matrix4");
 
             pythonqt_inited = true;
         }
