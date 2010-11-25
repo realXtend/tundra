@@ -109,16 +109,16 @@ std::string LocalAssetProvider::GetPathForAsset(const std::string& assetname)
     // Check first all subdirs without recursion, because recursion is potentially slow
     for(size_t i = 0; i < storages.size(); ++i)
     {
-        std::string path = storages[i]->GetFullPathForAsset(assetname, false);
+        QString path = storages[i]->GetFullPathForAsset(assetname.c_str(), false);
         if (path != "")
-            return path;
+            return path.toStdString();
     }
 
     for(size_t i = 0; i < storages.size(); ++i)
     {
-        std::string path = storages[i]->GetFullPathForAsset(assetname, true);
+        QString path = storages[i]->GetFullPathForAsset(assetname.c_str(), true);
         if (path != "")
-            return path;
+            return path.toStdString();
     }
     
     return "";
@@ -151,8 +151,8 @@ void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const
     ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
 
     LocalAssetStoragePtr storage = LocalAssetStoragePtr(new LocalAssetStorage());
-    storage->directory = directory;
-    storage->name = storageName;
+    storage->directory = directory.c_str();
+    storage->name = storageName.c_str();
     storage->recursive = recursive;
     storage->provider = shared_from_this();
     storage->SetupWatcher(); // Start listening on file change notifications.
@@ -266,7 +266,6 @@ bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *dest
 
 } // ~unnamed namespace
 
-/// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
 QString GuaranteeTrailingSlash(const QString &source)
 {
     QString s = source.trimmed();
@@ -298,7 +297,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
         }
 
         QString fromFile = transfer->sourceFilename;
-        QString toFile = GuaranteeTrailingSlash(storage->directory.c_str()) + transfer->destinationName;
+        QString toFile = GuaranteeTrailingSlash(storage->directory) + transfer->destinationName;
 
         bool success;
         if (fromFile.length() == 0)

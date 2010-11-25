@@ -23,6 +23,9 @@ public:
     /// @return A pointer to the newly created transfer.
 //    virtual IAssetTransfer *UploadAsset(const char *data, size_t numBytes, QString url) { return 0; }
 
+    /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
+    virtual QString GetFullAssetURL(const QString &localName) { return ""; }
+
     /// Returns a human-readable name for this storage. This name is not used as an ID, and may be an empty string.
     virtual QString Name() const { return ""; }
 

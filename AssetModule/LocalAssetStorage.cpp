@@ -2,9 +2,11 @@
 
 #include "StableHeaders.h"
 #include "LocalAssetStorage.h"
+#include "LocalAssetProvider.h"
 
 #include <QFileSystemWatcher>
 #include <QDir>
+#include <utility>
 
 namespace Asset
 {
@@ -19,9 +21,9 @@ LocalAssetStorage::~LocalAssetStorage()
     RemoveWatcher();
 }
 
-std::string LocalAssetStorage::GetFullPathForAsset(const std::string &assetname, bool recursiveLookup)
+QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)
 {
-    if (boost::filesystem::exists(directory + "/" + assetname))
+    if (boost::filesystem::exists((GuaranteeTrailingSlash(directory) + assetname).toStdString()))
         return directory;
 
     if (!recursive || !recursiveLookup)
@@ -29,18 +31,29 @@ std::string LocalAssetStorage::GetFullPathForAsset(const std::string &assetname,
 
     try
     {
-        boost::filesystem::recursive_directory_iterator iter(directory);
+        boost::filesystem::recursive_directory_iterator iter(directory.toStdString());
         boost::filesystem::recursive_directory_iterator end_iter;
         // Check the subdir
         for(; iter != end_iter; ++iter)
-            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(iter->path().string() + "/" + assetname))
-                return iter->path().string();
+            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists((GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname).toStdString()))
+                return iter->path().string().c_str();
     }
     catch (...)
     {
     }
 
     return "";
+}
+
+QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
+{    
+    using namespace std;
+
+    QString s = localName.trimmed();
+    int end = 0;
+    end = max(end, s.lastIndexOf('/')+1);
+    end = max(end, s.lastIndexOf('\\')+1);
+    return BaseURL() + localName.mid(end);
 }
 
 void LocalAssetStorage::SetupWatcher()
@@ -51,10 +64,10 @@ void LocalAssetStorage::SetupWatcher()
     changeWatcher = new QFileSystemWatcher();
 
     // Add a watcher to listen to if the directory contents change.
-    changeWatcher->addPath(directory.c_str());
+    changeWatcher->addPath(directory);
 
     // Add a watcher to each file in the directory.
-    QDir dir(directory.c_str());
+    QDir dir(directory);
     QFileInfoList files = dir.entryInfoList(QDir::Files);
     foreach(QFileInfo i, files)
         changeWatcher->addPath(i.absoluteFilePath());
