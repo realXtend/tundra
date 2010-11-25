@@ -45,6 +45,8 @@ namespace Asset
             \return true if asset ID was valid and file could be found (ASSET_READY will be sent in that case) */
         virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
         
+//        virtual IAssetTransfer *RequestAsset(QString assetRef);
+
         //! Returns whether a certain asset is already being "downloaded". Returns always false.
         virtual bool InProgress(const std::string& asset_id);
         
