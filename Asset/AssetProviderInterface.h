@@ -64,6 +64,8 @@ namespace Foundation
          */
         virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag) = 0;
 
+        virtual IAssetTransfer *RequestAsset(QString assetRef) { return 0; }
+
         //! Returns whether a certain asset is already being downloaded
         /*! \param asset_id Asset ID
          */           
