@@ -3,8 +3,10 @@
 #ifndef incl_Asset_LocalAssetProvider_h
 #define incl_Asset_LocalAssetProvider_h
 
+#include <boost/enable_shared_from_this.hpp>
 #include "ThreadTaskManager.h"
 #include "AssetModuleApi.h"
+#include "AssetProviderInterface.h"
 #include "AssetFwd.h"
 
 namespace HttpUtilities
@@ -17,8 +19,10 @@ namespace Asset
     class LocalAssetStorage;
 
     /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'file://' reference.
-    class ASSET_MODULE_API LocalAssetProvider : public Foundation::AssetProviderInterface
-    {        
+    class ASSET_MODULE_API LocalAssetProvider : public QObject, public Foundation::AssetProviderInterface, public boost::enable_shared_from_this<LocalAssetProvider>
+    {
+            Q_OBJECT;
+
     public:
         explicit LocalAssetProvider(Foundation::Framework* framework);
         
@@ -71,9 +75,12 @@ namespace Asset
             \param recursive If true, all the subfolders of the given folder are added as well. */
         void AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive);
 
-        virtual std::vector<IAssetStorage*> GetStorages();
+        virtual std::vector<AssetStoragePtr> GetStorages() const;
 
         virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
+
+        virtual IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
+
     private:
 
         //! Get a path for asset, using all the search directories
@@ -97,6 +104,9 @@ namespace Asset
 
         //! Takes all the pending file upload transfers and finishes them.
         void CompletePendingFileUploads();
+
+    private slots:
+        void FileChanged(const QString &path);
 
     };
 }

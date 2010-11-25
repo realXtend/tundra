@@ -21,10 +21,11 @@ typedef unsigned long message_id_t;
 
 namespace KristalliProtocol
 {
-    struct UserConnection;
     class KristalliProtocolModule;
-    typedef std::list<UserConnection> UserConnectionList;
 }
+
+class UserConnection;
+typedef std::list<UserConnection*> UserConnectionList;
 
 namespace TundraLogic
 {

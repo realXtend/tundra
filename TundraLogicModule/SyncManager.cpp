@@ -11,6 +11,7 @@
 #include "Entity.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
+#include "Server.h"
 #include "TundraMessages.h"
 #include "MsgCreateEntity.h"
 #include "MsgCreateComponents.h"
@@ -159,7 +160,7 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
     currentSender = 0;
 }
 
-void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
+void SyncManager::NewUserConnected(UserConnection* user)
 {
     PROFILE(SyncManager_NewUserConnected);
 
@@ -167,12 +168,15 @@ void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
     if (!scene)
         return;
     
+    // Connect to actions sent to specifically to this user
+    connect(user, SIGNAL(ActionTriggered(UserConnection*, Scene::Entity*, const QString&, const QStringList&)), this, SLOT(OnUserActionTriggered(UserConnection*, Scene::Entity*, const QString&, const QStringList&)));
+    
     // If user does not have replication state, create it, then mark all non-local entities dirty
     // so we will send them during the coming updates
-    if (!user->userData)
-        user->userData = boost::shared_ptr<IUserData>(new SceneSyncState());
+    if (!user->syncState)
+        user->syncState = boost::shared_ptr<ISyncState>(new SceneSyncState());
     
-    SceneSyncState* state = checked_static_cast<SceneSyncState*>(user->userData.get());
+    SceneSyncState* state = checked_static_cast<SceneSyncState*>(user->syncState.get());
     
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
@@ -213,15 +217,15 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     
     if (isServer)
     {
-        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             #ifndef ECHO_CHANGES_TO_SENDER
-            if ((*i).connection == currentSender)
+            if ((*i)->connection == currentSender)
                 continue;
             #endif
             
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
             {
                 if (!dynamic)
@@ -256,10 +260,10 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
     
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
                 state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
         }
@@ -282,10 +286,10 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
     
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
                 state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
         }
@@ -304,10 +308,10 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
     
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
                 state->OnEntityChanged(entity->GetId());
         }
@@ -325,13 +329,12 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
         return;
     if (entity->IsLocal())
         return;
-    
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
                 state->OnEntityRemoved(entity->GetId());
         }
@@ -345,8 +348,8 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
 
 void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
 {
-    Scene::SceneManager* scene = scene_.lock().get();
-    assert(scene);
+    //Scene::SceneManager* scene = scene_.lock().get();
+    //assert(scene);
 
     // If we are the server and the local script on this machine has requested a script to be executed on the server, it
     // means we just execute the action locally here, without sending to network.
@@ -379,12 +382,33 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     if (isServer && (type & EntityAction::Peers) != 0)
     {
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
-        foreach(KristalliProtocol::UserConnection c, owner_->GetKristalliModule()->GetUserConnections())
+        foreach(UserConnection* c, owner_->GetKristalliModule()->GetUserConnections())
         {
             //TundraLogicModule::LogInfo("peer " + action.toStdString());
-            c.connection->Send(msg);
+            c->connection->Send(msg);
         }
     }
+}
+
+void SyncManager::OnUserActionTriggered(UserConnection* user, Scene::Entity *entity, const QString &action, const QStringList &params)
+{
+    bool isServer = owner_->IsServer();
+    if (!isServer)
+        return; // Should never happen
+    if ((!entity) || (!user))
+        return;
+        
+    // Craft EntityAction message.
+    MsgEntityAction msg;
+    msg.entityId = entity->GetId();
+    msg.name = StringToBuffer(action.toStdString());
+    msg.executionType = (u8)EntityAction::Local; // Propagate as local action.
+    for(int i = 0; i < params.size(); ++i)
+    {
+        MsgEntityAction::S_parameters p = { StringToBuffer(params[i].toStdString()) };
+        msg.parameters.push_back(p);
+    }
+    user->connection->Send(msg);
 }
 
 void SyncManager::Update(f64 frametime)
@@ -405,12 +429,12 @@ void SyncManager::Update(f64 frametime)
     if (owner_->IsServer())
     {
         // If we are server, process all users
-        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
-                ProcessSyncState(i->connection, state);
+                ProcessSyncState((*i)->connection, state);
         }
     }
     else
@@ -648,8 +672,8 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
         return true;
     
     // And for now, always also trust scene actions from clients, if they are known and authenticated
-    KristalliProtocol::UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
-    if ((!user) || (!user->authenticated))
+    UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+    if ((!user) || (user->properties["authenticated"] != "true"))
         return false;
     
     return true;
@@ -1138,11 +1162,12 @@ void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const
 
 void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg)
 {
+    bool isServer = owner_->IsServer();
+    
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return;
-
-    // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
+    
     entity_id_t entityId = msg.entityId;
     Scene::EntityPtr entity = scene->GetEntity(entityId);
     if (!entity)
@@ -1151,6 +1176,17 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
         return;
     }
 
+    // If we are server, get the user who sent the action, so it can be queried
+    if (isServer)
+    {
+        Server* server = owner_->GetServer().get();
+        if (server)
+        {
+            UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
+            server->SetActionSender(user);
+        }
+    }
+    
     QString action = BufferToString(msg.name).c_str();
     QStringList params;
     for (uint i = 0; i < msg.parameters.size(); ++i)
@@ -1160,7 +1196,6 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
 
     EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
 
-    bool isServer = owner_->IsServer();
     if ((type & EntityAction::Local) != 0 || (isServer && (type & EntityAction::Server) != 0))
         entity->Exec(EntityAction::Local, action, params); // Execute the action locally, so that it doesn't immediately propagate back to network for sending.
 
@@ -1168,9 +1203,17 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     if (isServer && type & EntityAction::Peers)
     {
         msg.executionType = (u8)EntityAction::Local;
-        foreach(KristalliProtocol::UserConnection userConn, owner_->GetKristalliModule()->GetUserConnections())
-            if (userConn.connection != source) // The EC action will not be sent to the machine that originated the request to send an action to all peers.
-                userConn.connection->Send(msg);
+        foreach(UserConnection* userConn, owner_->GetKristalliModule()->GetUserConnections())
+            if (userConn->connection != source) // The EC action will not be sent to the machine that originated the request to send an action to all peers.
+                userConn->connection->Send(msg);
+    }
+    
+    // Clear the action sender after action handling
+    if (isServer)
+    {
+        Server* server = owner_->GetServer().get();
+        if (server)
+            server->SetActionSender(0);
     }
 }
 
@@ -1179,11 +1222,11 @@ SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connecti
     if (!owner_->IsServer())
         return &server_syncstate_;
     
-    KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-    for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+    UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
+    for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
     {
-        if (i->connection == connection)
-            return checked_static_cast<SceneSyncState*>(i->userData.get());
+        if ((*i)->connection == connection)
+            return checked_static_cast<SceneSyncState*>((*i)->syncState.get());
     }
     return 0;
 }

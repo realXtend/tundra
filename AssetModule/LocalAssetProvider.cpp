@@ -16,6 +16,7 @@
 #include "IAssetUploadTransfer.h"
 #include <QByteArray>
 #include <QFile>
+#include <QFileSystemWatcher>
 
 namespace Asset
 {
@@ -153,15 +154,19 @@ void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const
     storage->directory = directory;
     storage->name = storageName;
     storage->recursive = recursive;
+    storage->provider = shared_from_this();
+    storage->SetupWatcher(); // Start listening on file change notifications.
+//    connect(storage->changeWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(FileChanged(QString)));
+    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
 
     storages.push_back(storage);
 }
 
-std::vector<IAssetStorage*> LocalAssetProvider::GetStorages()
+std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
 {
-    std::vector<IAssetStorage*> stores;
+    std::vector<AssetStoragePtr> stores;
     for(size_t i = 0; i < storages.size(); ++i)
-        stores.push_back(storages[i].get());
+        stores.push_back(storages[i]);
     return stores;
 }
 
@@ -184,6 +189,33 @@ IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFile(const char *filena
     return transfer.get();
 }
 
+IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+{
+    assert(data);
+    if (!data)
+    {
+        AssetModule::LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Null source data pointer passed to function!");
+        return 0;
+    }
+
+    LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(destination.get());
+    if (!storage)
+    {
+        AssetModule::LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
+        return 0;
+    }
+
+    AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
+    transfer->sourceFilename = "";
+    transfer->destinationName = assetName;
+    transfer->destinationStorage = destination;
+    transfer->assetData.insert(transfer->assetData.end(), data, data + numBytes);
+
+    pendingUploads.push_back(transfer);
+
+    return transfer.get();
+}
+
 namespace
 {
 bool CopyAsset(const char *sourceFile, const char *destFile)
@@ -197,23 +229,37 @@ bool CopyAsset(const char *sourceFile, const char *destFile)
         AssetModule::LogError("Could not open input asset file " + std::string(sourceFile));
         return false;
     }
-    else
+
+    QByteArray bytes = asset_in.readAll();
+    asset_in.close();
+    
+    QFile asset_out(destFile);
+    if (!asset_out.open(QFile::WriteOnly))
     {
-        QByteArray bytes = asset_in.readAll();
-        asset_in.close();
-        
-        QFile asset_out(destFile);
-        if (!asset_out.open(QFile::WriteOnly))
-        {
-            AssetModule::LogError("Could not open output asset file " + std::string(destFile));
-            return false;
-        }
-        else
-        {
-            asset_out.write(bytes);
-            asset_out.close();
-        }
+        AssetModule::LogError("Could not open output asset file " + std::string(destFile));
+        return false;
     }
+
+    asset_out.write(bytes);
+    asset_out.close();
+    
+    return true;
+}
+
+bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile)
+{
+    assert(data);
+    assert(destFile);
+
+    QFile asset_out(destFile);
+    if (!asset_out.open(QFile::WriteOnly))
+    {
+        AssetModule::LogError("Could not open output asset file " + std::string(destFile));
+        return false;
+    }
+
+    asset_out.write((const char *)data, numBytes);
+    asset_out.close();
     
     return true;
 }
@@ -234,10 +280,22 @@ void LocalAssetProvider::CompletePendingFileUploads()
             transfer->EmitTransferFailed();
             continue;
         }
-        
+
+        if (transfer->sourceFilename.length() == 0 && transfer->assetData.size() == 0)
+        {
+            AssetModule::LogError("No source data present when trying to upload asset to LocalAssetProvider!");
+            continue;
+        }
+
         std::string fromFile = transfer->sourceFilename.toStdString();
         std::string toFile = storage->directory + transfer->destinationName.toStdString();
-        bool success = CopyAsset(fromFile.c_str(), toFile.c_str());
+
+        bool success;
+        if (fromFile.length() == 0)
+            success = SaveAssetFromMemoryToFile(&transfer->assetData[0], transfer->assetData.size(), toFile.c_str());
+        else
+            success = CopyAsset(fromFile.c_str(), toFile.c_str());
+
         if (!success)
         {
             AssetModule::LogError("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!");
@@ -246,6 +304,11 @@ void LocalAssetProvider::CompletePendingFileUploads()
         else
             transfer->EmitTransferCompleted();
     }
+}
+
+void LocalAssetProvider::FileChanged(const QString &path)
+{
+    AssetModule::LogInfo(("File " + path + " changed.").toStdString());
 }
 
 } // ~Asset

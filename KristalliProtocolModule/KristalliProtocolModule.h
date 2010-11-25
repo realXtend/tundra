@@ -13,8 +13,6 @@
 
 namespace KristalliProtocol
 {
-    typedef std::list<UserConnection> UserConnectionList;
-    
     //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocolModule'
     // Tämän voi ignoroida, koska base classiin ei tarvitse kajota ulkopuolelta - restrukturoin jos/kun on tarvetta.
     class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public IModule, public kNet::IMessageHandler, public kNet::INetworkServerListener
@@ -76,9 +74,6 @@ namespace KristalliProtocol
         
         /// Returns all user connections for a server
         UserConnectionList& GetUserConnections() { return connections; }
-        
-        /// Returns authenticated user connections for a server. Note: this is a partial copy and changing it does not change the actual userlist
-        UserConnectionList GetAuthenticatedUsers() const;
         
         /// Gets user by message connection. Returns null if no such connection
         UserConnection* GetUserConnection(kNet::MessageConnection* source);

@@ -12,7 +12,6 @@ typedef unsigned long message_id_t;
 
 namespace KristalliProtocol
 {
-    struct UserConnection;
 
 namespace Events
 {

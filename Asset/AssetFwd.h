@@ -4,10 +4,11 @@
 #define incl_Asset_AssetFwd_h
 
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 class IAsset;
 class IAssetTransfer;
-class IAssetProvider;
+//class IAssetProvider;
 class IAssetStorage;
 typedef boost::shared_ptr<IAssetStorage> AssetStoragePtr;
 
@@ -28,6 +29,8 @@ namespace Foundation
 
     class AssetProviderInterface;
     typedef boost::shared_ptr<AssetProviderInterface> AssetProviderPtr;    
+
+    typedef boost::weak_ptr<AssetProviderInterface> AssetProviderWeakPtr;
 }
 
 #endif

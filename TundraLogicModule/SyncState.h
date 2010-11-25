@@ -123,7 +123,7 @@ struct EntitySyncState
 };
 
 //! State of scene replication for a specific user
-struct SceneSyncState : public IUserData
+struct SceneSyncState : public ISyncState
 {
     //! Entities that this client is already aware of
     std::map<entity_id_t, EntitySyncState> entities_;

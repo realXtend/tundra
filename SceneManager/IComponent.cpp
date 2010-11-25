@@ -230,6 +230,22 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
         WriteAttribute(doc, comp_element, attributes_[i]->GetNameString().c_str(), attributes_[i]->ToString().c_str());
 }
 
+/// Returns true if the given XML element has the given child attribute.
+bool HasAttribute(QDomElement &comp_element, const QString &name)
+{
+    QDomElement attribute_element = comp_element.firstChildElement("attribute");
+    while(!attribute_element.isNull())
+    {
+        if (attribute_element.attribute("name") == name)
+            return true;
+        
+        attribute_element = attribute_element.nextSiblingElement("attribute");
+    }
+    
+    return false;
+}
+
+
 void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type change)
 {
     if (!IsSerializable())
@@ -238,10 +254,18 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     if (!BeginDeserialization(element))
         return;
 
+    // When we are deserializing the component from XML, only apply those attribute values which are present in that XML element.
+    // For all other elements, use the current value in the attribute (if this is a newly allocated component, the current value
+    // is the default value for that attribute specified in ctor. If this is an existing component, the DeserializeFrom can be 
+    // thought of applying the given "delta modifications" from the XML element).
+
     for (uint i = 0; i < attributes_.size(); ++i)
     {
-        std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString().c_str()).toStdString();
-        attributes_[i]->FromString(attr_str, change);
+        if (HasAttribute(element, attributes_[i]->GetNameString().c_str()))
+        {
+            std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString().c_str()).toStdString();
+            attributes_[i]->FromString(attr_str, change);
+        }
     }
 }
 
