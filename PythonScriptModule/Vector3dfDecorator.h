@@ -42,6 +42,10 @@ namespace PythonScript
         void normalize(Vector3df* self);
         
         void invert(Vector3df* self);
+        
+        void rotateXZBy(Vector3df* self, float degrees, const Vector3df& center);
+        void rotateXYBy(Vector3df* self, float degrees, const Vector3df& center);
+        void rotateYZBy(Vector3df* self, float degrees, const Vector3df& center);
     };
 }
 
