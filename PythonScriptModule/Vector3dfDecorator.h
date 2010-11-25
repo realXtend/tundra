@@ -24,7 +24,24 @@ namespace PythonScript
         void setx(Vector3df* self, float value);
         void sety(Vector3df* self, float value);
         void setz(Vector3df* self, float value);
-        float getDistanceFrom(const Vector3df* first, const Vector3df& second);
+        
+        float getLength(const Vector3df* self);
+        float getLengthSQ(const Vector3df* self);
+        
+        void setLength(Vector3df* self, float length);
+        
+        float dotProduct(const Vector3df* self, const Vector3df& other);
+        
+        float getDistanceFrom(const Vector3df* self, const Vector3df& second);
+        float getDistanceFromSQ(const Vector3df* self, const Vector3df& second);
+        
+        Vector3df crossProduct(const Vector3df* self, const Vector3df& other);
+        
+        bool isBetweenPoints(const Vector3df* self, const Vector3df& begin, const Vector3df& end);
+        
+        void normalize(Vector3df* self);
+        
+        void invert(Vector3df* self);
     };
 }
 
