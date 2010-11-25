@@ -34,6 +34,12 @@ public:
     /// Same as RequestAsset(QString assetRef, QString assetType), but provided for convenience with AssetReference type.
     IAssetTransfer *RequestAsset(const AssetReference &ref);
 
+    /// Registers a type factory for creating assets of the type governed by the factory.
+    void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
+
+    /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
+    AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
+
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     IAsset *GetAsset(QString assetRef);
 
@@ -93,13 +99,14 @@ public:
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
 private:
-
     /// This is implemented for legacy purposes to help transition period to new Asset API. Will be removed. -jj
     std::map<request_tag_t, IAssetTransfer*> currentTransfers;
 
     Foundation::Framework *framework;
 
     std::vector<boost::shared_ptr<IAssetStorage> > storages;
+
+    std::vector<AssetTypeFactoryPtr> assetTypeFactories;
 
     /// For now, the Asset API holds a weak reference to each provider.
 //    std::vector<AssetProviderInterface*> providers;
