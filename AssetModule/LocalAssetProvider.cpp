@@ -266,6 +266,16 @@ bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *dest
 
 } // ~unnamed namespace
 
+/// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
+QString GuaranteeTrailingSlash(const QString &source)
+{
+    QString s = source.trimmed();
+    if (s[s.length()-1] != '/' && s[s.length()-1] != '\\')
+        s = s + "/";
+
+    return s;
+}
+
 void LocalAssetProvider::CompletePendingFileUploads()
 {
     while(pendingUploads.size() > 0)
@@ -287,18 +297,18 @@ void LocalAssetProvider::CompletePendingFileUploads()
             continue;
         }
 
-        std::string fromFile = transfer->sourceFilename.toStdString();
-        std::string toFile = storage->directory + transfer->destinationName.toStdString();
+        QString fromFile = transfer->sourceFilename;
+        QString toFile = GuaranteeTrailingSlash(storage->directory.c_str()) + transfer->destinationName;
 
         bool success;
         if (fromFile.length() == 0)
-            success = SaveAssetFromMemoryToFile(&transfer->assetData[0], transfer->assetData.size(), toFile.c_str());
+            success = SaveAssetFromMemoryToFile(&transfer->assetData[0], transfer->assetData.size(), toFile.toStdString().c_str());
         else
-            success = CopyAsset(fromFile.c_str(), toFile.c_str());
+            success = CopyAsset(fromFile.toStdString().c_str(), toFile.toStdString().c_str());
 
         if (!success)
         {
-            AssetModule::LogError("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!");
+            AssetModule::LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
             transfer->EmitTransferFailed();
         }
         else
