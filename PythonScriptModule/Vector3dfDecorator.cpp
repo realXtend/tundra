@@ -98,4 +98,19 @@ namespace PythonScript {
     {
         self->invert();
     }
+    
+    void Vector3dfDecorator::rotateXZBy(Vector3df* self, float degrees, const Vector3df& center)
+    {
+        self->rotateXZBy(degrees, center);
+    }
+    
+    void Vector3dfDecorator::rotateXYBy(Vector3df* self, float degrees, const Vector3df& center)
+    {
+        self->rotateXYBy(degrees, center);
+    }
+    
+    void Vector3dfDecorator::rotateYZBy(Vector3df* self, float degrees, const Vector3df& center)
+    {
+        self->rotateYZBy(degrees, center);
+    }
 }
