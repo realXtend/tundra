@@ -28,10 +28,7 @@ class MessageConnection;
 typedef unsigned long message_id_t;
 }
 
-namespace KristalliProtocol
-{
-    struct UserConnection;
-}
+class UserConnection;
 
 namespace TundraLogic
 {
@@ -62,7 +59,7 @@ public:
     void Update(f64 frametime);
     
     //! Create new replication state for user and dirty it (server operation only)
-    void NewUserConnected(KristalliProtocol::UserConnection* user);
+    void NewUserConnected(UserConnection* user);
     
     //! Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
@@ -92,6 +89,9 @@ private slots:
 
     //! Trigger sync of entity action.
     void OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
+
+    //! Trigger sync of entity action to specific user
+    void OnUserActionTriggered(UserConnection* user, Scene::Entity *entity, const QString &action, const QStringList &params);
 
 private:
     /// Handle a Kristalli protocol message

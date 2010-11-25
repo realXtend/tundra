@@ -743,6 +743,10 @@ void EC_Mesh::AttachEntity()
     Ogre::SceneNode* node = placeable->GetSceneNode();
     node->addChild(adjustment_node_);
     adjustment_node_->attachObject(entity_);
+
+    // Honor the EC_Placeable's isVisible attribute by enforcing its values on this mesh.
+    adjustment_node_->setVisible(placeable->visible.Get());
+
     attached_ = true;
 }
 

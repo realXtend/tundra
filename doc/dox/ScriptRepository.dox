@@ -43,6 +43,8 @@ Includes the given .js file and executes it in the current engine context.
  
 QtScript (or ECMAScript/JavaScript) does not have a built-in <b>include</b> keyword. In Naali, you can however use the <b>engine.IncludeFile(filename.js)</b> function to execute another .js file at the point where engine.IncludeFile is called.
 
+Note that inclusion of the same file multiple times during script execution is automatically prevented.
+
 \todo Currently, the filename that is specified into IncludeFile is interpreted locally, relative to the current working directory (the bin/ directory), but in the future, the Naali asset system will be used.
 
 </td></tr></table>

@@ -304,7 +304,8 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     }
 
     instance->RegisterService(framework_, "framework");
-
+    instance->RegisterService(instance, "engine");
+    
     for(uint i = 0; i < properties.size(); ++i)
         instance->RegisterService(framework_->property(properties[i]).value<QObject*>(), properties[i]);
 
@@ -313,7 +314,6 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
         // Set entity and scene that own the EC_Script component.
         instance->RegisterService(comp->GetParentEntity(), "me");
         instance->RegisterService(comp->GetParentEntity()->GetScene(), "scene");
-        instance->RegisterService(instance, "engine");
     }
 
     emit ScriptEngineCreated(instance->GetEngine());

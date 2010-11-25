@@ -65,6 +65,7 @@ void JavascriptInstance::Run()
 
     if (!program_.isEmpty())
     {
+        included_files_.clear();
         QScriptValue result = engine_->evaluate(program_, scriptRef_);
         if (engine_->hasUncaughtException())
             LogError(result.toString().toStdString());
@@ -77,7 +78,7 @@ void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &
 {
     if (!engine_)
     {
-        LogError("No Qt script engine created when tyring to register service to js script instance.");
+        LogError("No Qt script engine created when trying to register service to js script instance.");
         return;
     }
 
@@ -104,6 +105,15 @@ QString JavascriptInstance::LoadScript() const
 
 void JavascriptInstance::IncludeFile(const QString &path)
 {
+    for (uint i = 0; i < included_files_.size(); ++i)
+    {
+        if (included_files_[i].toLower() == path.toLower())
+        {
+            LogDebug("JavascriptInstance::IncludeFile: Not including already included file " + path.toStdString());
+            return;
+        }
+    }
+    
     QFile scriptFile(path);
     if (!scriptFile.open(QIODevice::ReadOnly))
     {
@@ -142,6 +152,8 @@ void JavascriptInstance::IncludeFile(const QString &path)
 
     QScriptValue result = engine_->evaluate(script);
 
+    included_files_.push_back(path);
+    
     if (engine_->hasUncaughtException())
         LogError(result.toString().toStdString());
 }

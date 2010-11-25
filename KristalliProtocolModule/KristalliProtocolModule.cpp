@@ -251,14 +251,14 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     ///\todo Regression. Re-enable. -jj.
 //    source->SetDatagramInFlowRatePerSecond(200);
     
-    UserConnection connection;
-    connection.userID = AllocateNewConnectionID();
-    connection.connection = source;
+    UserConnection* connection = new UserConnection();
+    connection->userID = AllocateNewConnectionID();
+    connection->connection = source;
     connections.push_back(connection);
     
-    LogInfo("User connected from " + source->GetEndPoint().ToString() + ", connection ID " + ToString((int)connection.userID));
+    LogInfo("User connected from " + source->GetEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
-    Events::KristalliUserConnected msg(&connection);
+    Events::KristalliUserConnected msg(connection);
     framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
 }
 
@@ -266,12 +266,13 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
 {
     // Delete from connection list if it was a known user
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        if (iter->connection == source)
+        if ((*iter)->connection == source)
         {
-            Events::KristalliUserDisconnected msg(&(*iter));
+            Events::KristalliUserDisconnected msg((*iter));
             framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
             
-            LogInfo("User disconnected, connection ID " + ToString((int)iter->userID));
+            LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
+            delete(*iter);
             connections.erase(iter);
             return;
         }
@@ -305,7 +306,7 @@ u8 KristalliProtocolModule::AllocateNewConnectionID() const
 {
     u8 newID = 1;
     for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        newID = std::max((int)newID, (int)(iter->userID+1));
+        newID = std::max((int)newID, (int)((*iter)->userID+1));
     
     return newID;
 }
@@ -313,8 +314,8 @@ u8 KristalliProtocolModule::AllocateNewConnectionID() const
 UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* source)
 {
     for (UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        if (iter->connection == source)
-            return &(*iter);
+        if ((*iter)->connection == source)
+            return (*iter);
 
     return 0;
 }
@@ -322,20 +323,10 @@ UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* so
 UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 {
     for (UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        if (iter->userID == id)
-            return &(*iter);
+        if ((*iter)->userID == id)
+            return (*iter);
 
     return 0;
-}
-
-UserConnectionList KristalliProtocolModule::GetAuthenticatedUsers() const
-{
-    UserConnectionList ret;
-    for (UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-        if (iter->authenticated)
-            ret.push_back(*iter);
-
-    return ret;
 }
 
 } // ~KristalliProtocolModule namespace

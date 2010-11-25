@@ -98,6 +98,11 @@ function ServerUpdatePhysics(frametime)
 
 function ServerHandleMove(param)
 {
+    // It is possible to query from whom the action did come from
+    //var sender = server.GetActionSender();
+    //if (sender)
+    //    print("Move action from " + sender.GetName());
+
     if (param == "forward")
         motion_x = 1;
     if (param == "back")

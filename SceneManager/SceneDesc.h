@@ -8,6 +8,14 @@
 #ifndef incl_SceneManager_SceneDesc_h
 #define incl_SceneManager_SceneDesc_h
 
+/// Description of asset.
+struct AssetDesc
+{
+    QString filename; ///< File name, not used for material files.
+    QString name; ///< Name for the asset.
+    QByteArray data; ///< Data for the asset, currently used for material files only.
+};
+
 /// Description of attribute.
 struct AttributeDesc
 {
@@ -33,6 +41,7 @@ struct ComponentDesc
 {
     QString typeName; ///< Type name.
     QString name; ///< Name (if applicable).
+    QString sync; ///< Synchronize component.
     QList<AttributeDesc> attributes; ///< List of attributes the component has.
 
     /// Equality operator. Returns true if all values match, false otherwise.
@@ -74,7 +83,8 @@ struct SceneDesc
     Type type; ///< Type
     QString name; ///< Name.
     bool viewEnabled; ///< Is scene view enabled (ie. rendering-related components actually create stuff)
-    QList<EntityDesc> entities; ///< List of entities the entity has.
+    QList<EntityDesc> entities; ///< List of entities the scene has.
+    QList<AssetDesc> assets; ///< List of assets the scene refers to.
 
     /// Returns true if the scene description has no entities, false otherwise.
     bool IsEmpty() const { return entities.isEmpty(); }
