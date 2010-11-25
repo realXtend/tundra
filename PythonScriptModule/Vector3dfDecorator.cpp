@@ -113,4 +113,29 @@ namespace PythonScript {
     {
         self->rotateYZBy(degrees, center);
     }
+    
+    Vector3df Vector3dfDecorator::getInterpolated(Vector3df* self, const Vector3df& vec, float factor)
+    {
+        return self->getInterpolated(vec, factor);
+    }
+    
+    Vector3df Vector3dfDecorator::getInterpolated_quadratic(Vector3df* self, const Vector3df& vec2, const Vector3df& vec3, float factor)
+    {
+        return self->getInterpolated_quadratic(vec2, vec3, factor);
+    }
+    
+    void Vector3dfDecorator::interpolate(Vector3df* self, const Vector3df& vec1, const Vector3df& vec2, float factor)
+    {
+        self->interpolate(vec1, vec2, factor);
+    }
+    
+    Vector3df Vector3dfDecorator::getHorizontalAngle(Vector3df* self)
+    {
+        return self->getHorizontalAngle();
+    }
+    
+    Vector3df Vector3dfDecorator::rotationToDirection(Vector3df* self, const Vector3df& vec)
+    {
+        return self->rotationToDirection(vec);
+    }
 }
