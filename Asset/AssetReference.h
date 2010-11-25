@@ -3,12 +3,14 @@
 #ifndef incl_Asset_AssetReference_h
 #define incl_Asset_AssetReference_h
 
+#include <QObject>
 #include <QString>
 #include <QMetaType>
 
 /// Represents a reference to an asset. This structure can be used as a parameter type to an EC attribute.
-struct AssetReference// : public QObject
+struct AssetReference
 {
+public:
     /// Default constructor
     AssetReference() {}
 
@@ -31,12 +33,8 @@ struct AssetReference// : public QObject
     /// Specifies the URL of the asset that is being pointed to.
     QString ref;
 
-    /// Specifies the data type of the asset, like "Mesh", "Texture", or "Script". If the URL specifies the type, this field may be left blank.
-//    QString type;
-
-//signals:
-
-//    void Loaded();
+signals:
+    void Loaded();
 };
 
 Q_DECLARE_METATYPE(AssetReference)

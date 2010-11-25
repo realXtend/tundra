@@ -20,15 +20,22 @@ public:
     ~LocalAssetStorage();
 
     /// Specifies the absolute path of the storage.
-    std::string directory;
+    QString directory;
 
     /// Specifies a human-readable name for this storage.
-    std::string name;
+    QString name;
 
     /// If true, all subdirectories of the storage directory are automatically looked in when loading an asset.
     bool recursive;
 
-    std::string GetFullPathForAsset(const std::string &assetname, bool recursive);
+    /// Returns the full local filesystem path name of the given asset in this storage, if it exists.
+    /// Example: GetFullPathForAsset("my.mesh", true) might return "C:\Projects\Tundra\bin\data\assets".
+    QString GetFullPathForAsset(const QString &assetname, bool recursive);
+
+    /// Returns the URL that should be used in a scene asset reference attribute to refer to the asset with the given localName.
+    /// Example: GetFullAssetURL("my.mesh") might return "file://my.mesh".
+    /// \note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "file://my.mesh".
+    QString GetFullAssetURL(const QString &localName);
 
     /// Starts listening on the local directory this asset storage points to.
     void SetupWatcher();
@@ -38,7 +45,7 @@ public:
 
     QFileSystemWatcher *changeWatcher;
 
-    QString Name() const { return name.c_str(); }
+    QString Name() const { return name; }
 
     QString BaseURL() const { return "file://"; }
 
