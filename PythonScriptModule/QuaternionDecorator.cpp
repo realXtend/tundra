@@ -90,7 +90,7 @@ namespace PythonScript {
         self->set(x, y, z, w);
     }
     
-    void QuaternionDecorator::set(Quaternion* self, float x, float y, float z, float w)
+    void QuaternionDecorator::set(Quaternion* self, float x, float y, float z)
     {
         self->set(x, y, z);
     }
