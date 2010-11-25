@@ -290,15 +290,15 @@ namespace CoreUi
 //$ BEGIN_MOD $
 		if (tts_service_)
 		{
-			//QString voice;
-			//Tts::Voice ownVoice_ = tts_config_->getOwnVoice();
-			//QString oVoice_ = ownVoice_.c_str();
-
-			if(!avatar_voice_)
-				GetAvatarVoiceComponent();
-			
 			QString voice;
-			Tts::Voice ownVoice_ = avatar_voice_->GetMyVoice();
+			Tts::Voice ownVoice_ = tts_config_->getOwnVoice();
+			QString oVoice_ = ownVoice_.c_str();
+
+			/*if(!avatar_voice_)
+				GetAvatarVoiceComponent();*/
+			
+			/*QString voice;
+			Tts::Voice ownVoice_ = avatar_voice_->GetMyVoice();*/
 
 			QTextStream(&voice) << "<voice>" << ownVoice_.c_str() << "</voice>";
 			message =voice+message;
@@ -331,10 +331,10 @@ namespace CoreUi
 			
 			voice=Qvoice.toStdString();
 			
-			if(!avatar_voice_)
-				GetAvatarVoiceComponent();
+			/*if(!avatar_voice_)
+				GetAvatarVoiceComponent();*/
 
-			avatar_voice_->SpeakMessage(msg,voice);
+			//avatar_voice_->SpeakMessage(msg,voice);
 
 			//Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
 			//boost::shared_ptr<EC_TtsVoice> other_voice;
@@ -360,7 +360,7 @@ namespace CoreUi
 			//else
 			//	avatar_voice_->SpeakMessage(msg);
 
-			//tts_service_->text2Speech(msg, voice);
+			tts_service_->Text2Speech(msg, voice);
 			//QString fileName1("\"./festival/audio\"");
 			//QString fileName2("\"./festival/phonetic\"");
 			//tts_service_->text2WAV(msg, fileName1,voice);
@@ -368,7 +368,7 @@ namespace CoreUi
 		}
 	}
 
-	void CommunicationWidget::GetAvatarVoiceComponent()
+	/*void CommunicationWidget::GetAvatarVoiceComponent()
 	{
 		// Pick up the EC_TtsVoice of the avatar entity
 		boost::shared_ptr<Foundation::WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<Foundation::WorldLogicInterface>(Foundation::Service::ST_WorldLogic).lock();
@@ -385,7 +385,7 @@ namespace CoreUi
 		if(!avatar_voice_)
 				GetAvatarVoiceComponent();
 		avatar_voice_->SetMyVoice(voice);
-	}
+	}*/
 //$ END_MOD $
     void CommunicationWidget::hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event)
     {
@@ -522,7 +522,7 @@ namespace CoreUi
 		connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)), SLOT(SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
 		
 		// Pick up the EC_TtsVoice of the avatar entity
-		GetAvatarVoiceComponent();
+		//GetAvatarVoiceComponent();
 
 		//Inicialización de la ventana gráfica del Tts
 		ShowTtsChatControls();
@@ -536,7 +536,7 @@ namespace CoreUi
 		Tts_chat_widget->ConfigureInterface(tts_config_);
 		connect(ttsButton, SIGNAL(clicked()), SLOT(ToggleTtsChatWidget()));
 		connect(Tts_chat_widget, SIGNAL(TtsstateChanged()),SLOT(UpdateTtsChatControls()));
-		connect(Tts_chat_widget,SIGNAL(TtsVoiceChanged(Tts::Voice)),SLOT(UpdateAvatarVoice(Tts::Voice)));
+		//connect(Tts_chat_widget,SIGNAL(TtsVoiceChanged(Tts::Voice)),SLOT(UpdateAvatarVoice(Tts::Voice)));
 
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
 		if (ui)

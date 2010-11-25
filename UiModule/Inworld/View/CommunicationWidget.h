@@ -107,8 +107,8 @@ namespace CoreUi
 		\param from_uuid
 		\todo Redefine with components. */
 		void SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface &message, const QString& from_uuid);
-		void GetAvatarVoiceComponent();
-		void UpdateAvatarVoice(Tts::Voice voice);
+		//void GetAvatarVoiceComponent();
+		//void UpdateAvatarVoice(Tts::Voice voice);
 //$ END_MOD $
 
 

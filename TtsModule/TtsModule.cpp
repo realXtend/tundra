@@ -56,7 +56,7 @@ namespace Tts
 	void TtsModule::Initialize()
 	{
 		tts_service_ = TtsServicePtr(new TtsService(framework_));
-		framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Tts, tts_service_);
+		framework_->GetServiceManager()->RegisterService(Service::ST_Tts, tts_service_);
 	}
 	void TtsModule::PostInitialize()
 	{

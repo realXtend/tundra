@@ -18,7 +18,7 @@
 #ifndef incl_Interfaces_TtsServiceInterface_h
 #define incl_Interfaces_TtsServiceInterface_h
 
-#include "ServiceInterface.h"
+#include "IService.h"
 
 #include <QObject>
 #include <Vector3D.h>
@@ -54,7 +54,7 @@ namespace Tts
 	/// TTS Service Interface
 	/// Available methods are Text or File to Speech, WAV or PHO.
 	/// \todo Implement GetVoice GetVoice throw components
-	class TtsServiceInterface : public QObject, public Foundation::ServiceInterface
+	class TtsServiceInterface : public QObject, public IService 
 	{
 		Q_OBJECT
 
