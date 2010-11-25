@@ -1816,15 +1816,15 @@ namespace PythonScript
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Ruler::staticMetaObject);
-
-            pythonqt_inited = true;
-
+            
             PythonQt::self()->addDecorators(new Vector3dfDecorator());
             PythonQt::self()->registerCPPClass("Vector3df");
             PythonQt::self()->addDecorators(new QuaternionDecorator());
             PythonQt::self()->registerCPPClass("Quaternion");
             PythonQt::self()->addDecorators(new Matrix4Decorator());
             PythonQt::self()->registerCPPClass("Matrix4");
+
+            pythonqt_inited = true;
         }
 
         //load the py written module manager using the py c api directly
