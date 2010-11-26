@@ -278,7 +278,9 @@ void RexLogicModule::Initialize()
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
     obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
-    camera_control_widget_ = CameraControlPtr(new CameraControl(this));
+	//$ BEGIN_MOD $
+	//camera_control_widget_ = CameraControlPtr(new CameraControl(this)); //Done in PostInitialize, when UiExternalModule is available
+	//$ END_MOD $
     
     SceneInteract *sceneInteract = new SceneInteract(framework_);
     QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
@@ -309,6 +311,10 @@ void RexLogicModule::Initialize()
 // virtual
 void RexLogicModule::PostInitialize()
 {
+	//$ BEGIN_MOD $
+	camera_control_widget_ = CameraControlPtr(new CameraControl(this)); //Done here when UiExternalModule is available
+	//$ END_MOD $
+
     EventManagerPtr eventMgr = framework_->GetEventManager();
     eventMgr->RegisterEventSubscriber(this, 104);
 

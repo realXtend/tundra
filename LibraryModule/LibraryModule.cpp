@@ -88,7 +88,10 @@ namespace Library
             library_widget_ = new LibraryWidget(ui_view);
 
             UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();                
-            UiProxyWidget *lib_proxy = ui->AddWidgetToScene(library_widget_);
+            UiProxyWidget *lib_proxy = ui->AddWidgetToScene(library_widget_, true, true);
+			//$ BEGIN_MOD $
+			ui->AddWidgetToMenu(lib_proxy, tr("Library"), tr("Create"), "./data/ui/images/menus/edbutton_OBJED_normal.png");	
+			//$ END_MOD $
             ui->RegisterUniversalWidget("Library", lib_proxy);
 
             connect(ui_view, SIGNAL(DropEvent(QDropEvent *)), SLOT(DropEvent(QDropEvent *) ));

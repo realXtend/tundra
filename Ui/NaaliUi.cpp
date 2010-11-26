@@ -63,11 +63,11 @@ NaaliUi::NaaliUi(Foundation::Framework *owner_)
 {
     mainWindow = new NaaliMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
-//    mainWindow->setUpdatesEnabled(false);
+    mainWindow->setUpdatesEnabled(false);
 
     // Apply the Naali main window icon. \todo use .ico file type
     QIcon icon("./data/ui/images/naali_icon.png");
-    mainWindow->setWindowIcon(icon);
+	mainWindow->parentWidget()->setWindowIcon(icon);
 
     graphicsView = new NaaliGraphicsView(mainWindow);
 
@@ -77,6 +77,7 @@ NaaliUi::NaaliUi(Foundation::Framework *owner_)
     mainWindow->layout()->setMargin(0);
     layout->setContentsMargins(0,0,0,0);
     mainWindow->layout()->addWidget(graphicsView);
+
 
     QWidget *viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
@@ -113,7 +114,8 @@ NaaliUi::NaaliUi(Foundation::Framework *owner_)
     graphicsView->Resize(mainWindow->width(), mainWindow->height());
 
     graphicsView->show();
-    mainWindow->show();
+	//Show fullscreen if neccesary??
+	mainWindow->parentWidget()->show();
     viewportWidget->show();
 
     /// Do a full repaint of the view now that we've shown it.
@@ -124,9 +126,14 @@ NaaliUi::~NaaliUi()
 {
 }
 
-NaaliMainWindow *NaaliUi::MainWindow() const
+QWidget *NaaliUi::MainWindow() const
 {
-    return mainWindow;
+    return mainWindow->parentWidget();
+}
+
+NaaliMainWindow *NaaliUi::CentralWindow() const
+{
+	return mainWindow;
 }
 
 NaaliGraphicsView *NaaliUi::GraphicsView() const

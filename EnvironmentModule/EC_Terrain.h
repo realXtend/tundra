@@ -202,7 +202,7 @@ public slots:
     void LoadFromFile(QString filename);
 
 public:
-    Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation NOTIFY TransformChanged);
+    Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation /*ENNE NOTIFY TransformChanged*/);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
     Q_PROPERTY(int xPatches READ getxPatches WRITE setxPatches NOTIFY TerrainSizeChanged);
@@ -235,7 +235,7 @@ public:
     Q_PROPERTY(QString texture4 READ gettexture4 WRITE settexture4 NOTIFY TextureChanged);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, texture4);
 
-    Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap NOTIFY HeightMapChanged);
+    Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap /*ENNE NOTIFY HeightMapChanged*/);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, heightMap);
 
     /// Marks all terrain patches dirty.

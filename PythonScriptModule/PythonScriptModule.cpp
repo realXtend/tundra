@@ -762,6 +762,9 @@ namespace PythonScript
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
         PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule());
+		//$ BEGIN_MOD $
+
+		//$ END_MOD $
         return pythonqtconsole;
     }
 }

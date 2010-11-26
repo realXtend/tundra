@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 #include "StableHeaders.h"
 #include "TerrainWeightEditor.h"
 #include "EnvironmentModule.h"
@@ -54,10 +55,17 @@ namespace Environment
         editor_widget_ = loader.load(&file, this);
         if (editor_widget_ == 0)
             return;
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
+		//$ BEGIN_MOD $
+        //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
+		setWindowTitle("TerrainTexture Weightmap Editor");
+		UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, false);
+		//$ END_MOD $
         if(editor_proxy == 0)
             return;
-        ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"),"Server Tools", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+		//$ BEGIN_MOD $
+        //ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"),"Server Tools", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+		ui->AddWidgetToMenu(this, tr("TerrainTexture Weightmap Editor"), "Create", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+		//$ END_MOD $
         ui->RegisterUniversalWidget("Weights", editor_proxy);
 
 

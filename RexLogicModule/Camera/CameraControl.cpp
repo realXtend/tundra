@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -106,10 +107,17 @@ namespace RexLogic
         UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
         if (ui_service)
 		{
-			proxy_widget_ = ui_service->AddWidgetToScene(this);
+			//$ BEGIN_MOD $
+			//proxy_widget_ = ui_service->AddWidgetToScene(this);
+			setWindowTitle("Camera Controls");
+			proxy_widget_ = ui_service->AddWidgetToScene(this, true, true);
+			//$ END_MOD $
             proxy_widget_->setMaximumHeight(800);
             proxy_widget_->setMaximumWidth(600);
-			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
+			//$ BEGIN_MOD $
+			//ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
+			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "Panels", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
+			//$ END_MOD $
 		}
         connect(proxy_widget_, SIGNAL(Visible(bool)), this, SLOT(Visible(bool)));
 	}

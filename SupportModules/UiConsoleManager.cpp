@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -39,15 +40,22 @@ namespace Console
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (ui)
         {
-            proxy_widget_ = ui->AddWidgetToScene(console_widget_);
+//$ BEGIN_MOD $
+            proxy_widget_ = ui->AddWidgetToScene(console_widget_,true,true);
+//$ END_MOD $
             proxy_widget_->setMinimumHeight(0);
             proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
             proxy_widget_->setOpacity(opacity_);
             proxy_widget_->setZValue(100);
+			proxy_widget_->hide();
             ui->RegisterUniversalWidget("Console", proxy_widget_);
+//$ BEGIN_MOD $
+			//ui->TransferWidgetOut("ConsoleWidget",false);
+			ui->AddWidgetToMenu(console_widget_, "Console", tr("Panels"),"./data/ui/images/menus/edbutton_ENVED_normal");
+//$ END_MOD $  
         }
 
-        // Init animation
+        //// Init animation
         animation_.setTargetObject(proxy_widget_);
         animation_.setPropertyName("geometry");
         animation_.setDuration(300);

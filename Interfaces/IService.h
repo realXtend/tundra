@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_Interfaces_ServiceInterface_h
@@ -49,7 +50,10 @@ namespace Service
         ST_WorldBuilding,
         ST_Login,
         ST_OpenSimScene,
-        ST_Unknown
+        ST_Unknown,
+		//BEGIN_MOD
+		ST_ExternalUi
+		//END_MOD
     };
 }
 

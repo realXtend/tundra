@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_WorldBuildingModule_BuildSceneManager_h
@@ -21,7 +22,9 @@
 #include <QObject>
 #include <QTimer>
 #include <QPair>
-
+//$ BEGIN_MOD $
+#include <QToolBar>
+//$ END_MOD $
 class QtAbstractPropertyBrowser;
 class QtProperty;
 
@@ -88,8 +91,13 @@ namespace WorldBuilding
 
         // WorldBuildingServiceInterface
         virtual QObject *GetPythonHandler() const;
-
-    private slots:
+//$ BEGIN_MOD $
+		/*! Gets the current entity clicked and update the property widget with this
+		 *	\param entity clicked entity
+		 */
+		void GetSelectedEntity(Scene::Entity *entity);
+//$ END_MOD $
+	private slots:
         void InitScene();
         void SceneChangedNotification(const QString &old_name, const QString &new_name);
         void ObjectSelected(bool selected);
@@ -100,7 +108,19 @@ namespace WorldBuilding
         void NewObjectClicked();
         void DuplicateObjectClicked();
         void DeleteObjectClicked();
+//$ BEGIN_MOD $
+		/*! To toggle move mode when the widget is not in Build
+		 */
+		void ExternalToggleMove();
 
+		/*! To toggle scale mode when the widget is not in Build
+		 */
+		void ExternalToggleScale();
+
+		/*! To toggle rotate mode when the widget is not in Build
+		 */
+		void ExternalToggleRotate();
+//$ END_MOD $
         void ManipModeChanged(PythonParams::ManipulationMode mode);
 
         void HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget);
@@ -108,6 +128,54 @@ namespace WorldBuilding
         void HandlePythonWidget(const QString &type, QWidget *widget);
 
         void ToggleLights();
+//$ BEGIN_MOD $
+		/*! Creates the content of edit toolbar, the Asset widget and the Properties widget
+		 */
+		void CreateEditContent();
+
+		/*! Action for toggle the mode move
+		 */
+		void ActionToolBarMove();
+
+		/*! Action for toggle the scale move
+		 */
+        void ActionToolBarScale();
+
+		/*! Action for toggle the rotate move
+		 */
+        void ActionToolBarRotate();
+
+		/*! Action for create a cube
+		 */
+		void ActionToolBarCreate();
+
+		/*! Action for show the properties widget
+		 */
+		void ActionToolBarProperties();
+
+		/*! Action for show the asset widget
+		 */
+		void ActionToolBarAsset();
+
+		/*! Checks if the edit mode is active and if it is true, enable the edit 
+		 *	bar and the editing, if not, disable all.
+		 */
+		void ActiveEditMode(bool active);
+
+		/*! If build scene is nor active, active it and creates an object
+		 */
+		void ChangeAndCreateObject();
+
+		/*! Transfer the widget into build or Asset widget
+		 */
+		void TransferAssetWidget(bool inside);
+		
+		/*! Change the mode os manipulation object when uses the Asset Widget
+		 */
+		void ManipExternalModeChanged(PythonParams::ManipulationMode mode);
+
+		void ShowBuildPanels();
+//$ END_MOD $
 
     private:
         Foundation::Framework *framework_;
@@ -135,12 +203,24 @@ namespace WorldBuilding
 
         QList<QWidget*> toggle_visibility_widgets_;
         QList<QWidget*> python_deleted_widgets_;
+		QList<QWidget*> panel_widgets_;
 
-        QTimer *viewport_poller_;
+		QTimer *viewport_poller_;
         bool override_server_time_;
         bool prim_selected_;
 
         QMap<QString, TransferPair > tranfer_widgets_;
+//$ BEGIN_MOD $
+		//! Pointer to edit toolbar.
+		QToolBar* editToolbar_;
+		//! Properties asset widgets
+		QWidget* propertyWidget_;
+		QWidget* assignWidget_;
+		//! Elements of assignWidget
+		Ui_ObjectManipulationsWidget asset_ui_;
+		//! The elements os Asset widget is inside or outside of build 
+		bool inside_;
+//$ END_MOD $
     };
 }
 

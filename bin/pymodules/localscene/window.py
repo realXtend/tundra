@@ -39,7 +39,10 @@ class ToolBarWindow():
         if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
 
-        uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
+		#$ BEGIN_MOD $
+		#uism.AddWidgetToMenu(self.proxywidget, "Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
+        uism.AddWidgetToMenu(self.proxywidget, "Scene", "Panels", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
+		#$ END_MOD $
 
         self.inputQueue = queue
         self.endApplication = endApplication

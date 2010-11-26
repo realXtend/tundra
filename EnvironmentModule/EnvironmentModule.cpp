@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *  @file   EnvironmentModule.cpp
@@ -89,19 +90,21 @@ namespace Environment
     {
         event_manager_ = framework_->GetEventManager();
         
-        // Depends on rexlogic etc. handling messages first to create the scene, so lower priority
+        // Depends on rexlogic etc. handling messages first to create the scene, so lower priority 
         event_manager_->RegisterEventSubscriber(this, 99);
 
         resource_event_category_ = event_manager_->QueryEventCategory("Resource");
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
-
+#ifndef PLAYER_VIEWER
         OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
         {
             // Initialize post-process dialog.
+
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
+			postprocess_dialog_->setWindowTitle("Post-processing");
 
             // Add to scene.
             UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
@@ -109,8 +112,11 @@ namespace Environment
                 return;
 
             ui->AddWidgetToScene(postprocess_dialog_);
-            ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
-                "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+			//$ BEGIN_MOD $
+			//ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+			ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("Panels"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+			//$ END_MOD $
+           
         }
 
         environment_editor_ = new EnvironmentEditor(this);
@@ -126,6 +132,7 @@ namespace Environment
         RegisterConsoleCommand(Console::CreateCommand("TerrainTextureEditor",
             "Shows the terrain texture weight editor.",
             Console::Bind(w_editor_, &TerrainWeightEditor::ShowWindow)));
+#endif
     }
 
     void EnvironmentModule::Uninitialize()

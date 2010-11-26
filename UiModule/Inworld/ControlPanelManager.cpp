@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $ 
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -81,7 +82,12 @@ namespace CoreUi
     void ControlPanelManager::CreateBasicControls()
     {
         QList<UiServices::ControlButtonType> buttons;
-        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION We want to disable Quit and Ether options $
+
+		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
+		//buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
+		//$ END_MOD $
 
         ControlPanelButton *button = 0;
         ControlPanelButton *previous_button = 0;
@@ -206,5 +212,37 @@ namespace CoreUi
     { 
         return backdrop_widget_->GetContentWidth();
     }
+
+	//$ BEGIN_MOD $
+	    void ControlPanelManager::CreateOptionalControls()
+    {
+#ifndef PLAYER_VIEWER
+
+		QList<UiServices::ControlButtonType> buttons;
+        buttons  << UiServices::Build << UiServices::Ether;
+
+        ControlPanelButton *button = 0;
+        ControlPanelButton *previous_button = 0;
+        foreach(UiServices::ControlButtonType button_type, buttons)
+        {
+            // Create the button and anchor in scene
+            button = new ControlPanelButton(button_type); 
+            if (previous_button)
+                layout_manager_->AnchorWidgetsHorizontally(previous_button, button);
+            else
+                layout_manager_->AddCornerAnchor(button, Qt::TopRightCorner, Qt::TopRightCorner);
+
+            // Add to internal lists
+            control_buttons_.append(button);
+            if (button_type == UiServices::Notifications || button_type == UiServices::Settings || button_type == UiServices::Teleport)
+                backdrop_area_buttons_map_[button_type] = button;
+
+            connect(button, SIGNAL(ControlButtonClicked(UiServices::ControlButtonType)), SLOT(ControlButtonClicked(UiServices::ControlButtonType)));
+            previous_button = button;
+        }
+        UpdateBackdrop();
+#endif
+    }
+	//$ END_MOD $
 
 }
