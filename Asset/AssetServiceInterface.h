@@ -45,7 +45,7 @@ namespace Foundation
             \param asset_type Asset type
             \return Pointer to asset           
          */
-        virtual AssetPtr GetAsset(const std::string& asset_id, const std::string& asset_type) = 0;
+        virtual AssetInterfacePtr GetAsset(const std::string& asset_id, const std::string& asset_type) = 0;
         
         //! Gets incomplete asset
         /*! If not enough bytes received, will return empty pointer
@@ -56,7 +56,7 @@ namespace Foundation
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received) = 0;
+        virtual AssetInterfacePtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received) = 0;
         
         //! Requests an asset download
         /*! Events will be sent when download progresses, and when asset is ready.
@@ -71,7 +71,7 @@ namespace Foundation
         //! Checks asset id for validity
         /*! \return true if asset id is valid
          */
-        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type) = 0;
+        virtual bool IsValidRef(const std::string& asset_id, const std::string& asset_type) = 0;
 
         //! Queries status of asset download
         /*! If asset has been already fully received, size, received & received_continuous will be the same
@@ -112,7 +112,7 @@ namespace Foundation
             \param asset Asset to store
             \param store_to_disk Whether to store to disk cache. Default true, but makes no sense for local assets
          */
-        virtual void StoreAsset(AssetPtr asset, bool store_to_disk = true) = 0;
+        virtual void StoreAsset(AssetInterfacePtr asset, bool store_to_disk = true) = 0;
         
         virtual std::vector<Foundation::AssetProviderPtr> Providers() { return std::vector<Foundation::AssetProviderPtr>(); }
     };

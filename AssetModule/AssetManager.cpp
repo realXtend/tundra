@@ -33,18 +33,18 @@ namespace Asset
         providers_.clear();
     }
 
-    Foundation::AssetPtr AssetManager::GetAsset(const std::string& asset_id, const std::string& asset_type)
+    Foundation::AssetInterfacePtr AssetManager::GetAsset(const std::string& asset_id, const std::string& asset_type)
     {
         return GetFromCache(asset_id, asset_type);
     }
 
-    bool AssetManager::IsValidId(const std::string& asset_id, const std::string& asset_type)
+    bool AssetManager::IsValidRef(const std::string& asset_id, const std::string& asset_type)
     {
         AssetProviderVector::iterator i = providers_.begin();
         while (i != providers_.end())
         {
             // See if a provider can handle request
-            if ((*i)->IsValidId(asset_id, asset_type))
+            if ((*i)->IsValidRef(asset_id, asset_type))
                 return true;
             ++i;
         }
@@ -56,7 +56,7 @@ namespace Asset
     {
         request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
 
-        Foundation::AssetPtr asset = GetFromCache(asset_id, asset_type);
+        Foundation::AssetInterfacePtr asset = GetFromCache(asset_id, asset_type);
         if (asset)
         {
             Events::AssetReady* event_data = new Events::AssetReady(asset->GetId(), asset->GetType(), asset, tag);
@@ -77,10 +77,10 @@ namespace Asset
         return 0;
     }
 
-    Foundation::AssetPtr AssetManager::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
+    Foundation::AssetInterfacePtr AssetManager::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
         if (!received)
-            return Foundation::AssetPtr();
+            return Foundation::AssetInterfacePtr();
 
         // See if any provider has ongoing transfer for this asset
         AssetProviderVector::iterator i = providers_.begin();
@@ -95,7 +95,7 @@ namespace Asset
         return GetAsset(asset_id, asset_type);
 
         // Not enough bytes
-        return Foundation::AssetPtr();
+        return Foundation::AssetInterfacePtr();
     }
 
     bool AssetManager::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)
@@ -110,7 +110,7 @@ namespace Asset
         }
 
         // If not ongoing, check cache
-        Foundation::AssetPtr asset = GetFromCache(asset_id);
+        Foundation::AssetInterfacePtr asset = GetFromCache(asset_id);
         if (asset)
         {
             size = asset->GetSize();
@@ -122,7 +122,7 @@ namespace Asset
         return false;
     }
 
-    void AssetManager::StoreAsset(Foundation::AssetPtr asset, bool store_to_disk)
+    void AssetManager::StoreAsset(Foundation::AssetInterfacePtr asset, bool store_to_disk)
     {
         cache_->StoreAsset(asset, store_to_disk);
     }
@@ -189,10 +189,10 @@ namespace Asset
         cache_->Update(frametime);
     }
 
-    Foundation::AssetPtr AssetManager::GetFromCache(const std::string& asset_id, const std::string& asset_type)
+    Foundation::AssetInterfacePtr AssetManager::GetFromCache(const std::string& asset_id, const std::string& asset_type)
     {
         // First check memory cache
-        Foundation::AssetPtr asset = cache_->GetAsset(asset_id, true, false, asset_type);
+        Foundation::AssetInterfacePtr asset = cache_->GetAsset(asset_id, true, false, asset_type);
         if (asset)
             return asset;
 
@@ -201,7 +201,7 @@ namespace Asset
         while (i != providers_.end())
         {
             if ((*i)->InProgress(asset_id))
-                return Foundation::AssetPtr();
+                return Foundation::AssetInterfacePtr();
             ++i;
         }
 

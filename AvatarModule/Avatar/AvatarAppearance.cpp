@@ -1001,7 +1001,7 @@ namespace Avatar
         if (!entity)
             return true;
 
-        Foundation::AssetPtr asset = event_data->asset_;
+        Foundation::AssetInterfacePtr asset = event_data->asset_;
         if (!asset) 
             return true;
 
@@ -1846,7 +1846,7 @@ namespace Avatar
                 return false;
             }
             // The assettype doesn't matter here
-            Foundation::AssetPtr raw_asset = asset_service->GetAsset(asset.resource_id_, std::string());
+            Foundation::AssetInterfacePtr raw_asset = asset_service->GetAsset(asset.resource_id_, std::string());
             if (!raw_asset)
             {
                 AvatarModule::LogError("Could not get raw asset data for resource " + asset.resource_id_);

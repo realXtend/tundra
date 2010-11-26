@@ -17,7 +17,7 @@ namespace Asset
         Q_OBJECT
 
     public:
-        typedef std::map<std::string, Foundation::AssetPtr> AssetMap;
+        typedef std::map<std::string, Foundation::AssetInterfacePtr> AssetMap;
 
         //! Constructor
         /*! \param framework Framework
@@ -34,7 +34,7 @@ namespace Asset
             \param type Optional type (empty to match any)
             \return Pointer to asset if found, or null if not
          */
-        Foundation::AssetPtr GetAsset(
+        Foundation::AssetInterfacePtr GetAsset(
             const std::string& asset_id,
             bool check_memory = true,
             bool check_disk = true,
@@ -44,10 +44,10 @@ namespace Asset
         /*! \param asset Asset
             \param store_to_disk Whether to store to disk cache in addition to memory cache
          */
-        void StoreAsset(Foundation::AssetPtr asset, bool store_to_disk);
+        void StoreAsset(Foundation::AssetInterfacePtr asset, bool store_to_disk);
 
         //! Deletes the memory asset
-        bool DeleteAsset(Foundation::AssetPtr asset);
+        bool DeleteAsset(Foundation::AssetInterfacePtr asset);
 
         //! Returns all assets
         const AssetMap& GetAssets() const { return assets_; }

@@ -45,14 +45,14 @@ namespace Asset
         return name;
     }
 
-    bool UDPAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
+    bool UDPAssetProvider::IsValidRef(const std::string& asset_id, const std::string& asset_type)
     {
         return RexUUID::IsValid(asset_id);
     }
 
     bool UDPAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
-        if (!IsValidId(asset_id, asset_type))
+        if (!IsValidRef(asset_id, asset_type))
             return false;
 
         RexUUID uuid(asset_id);
@@ -80,7 +80,7 @@ namespace Asset
         return (transfer != 0);
     }
 
-    Foundation::AssetPtr UDPAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
+    Foundation::AssetInterfacePtr UDPAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
         UDPAssetTransfer* transfer = GetTransfer(asset_id);
 
@@ -88,7 +88,7 @@ namespace Asset
         {
             // Make new temporary asset for the incomplete data
             RexAsset* new_asset = new RexAsset(transfer->GetAssetId(), GetTypeNameFromAssetType(transfer->GetAssetType()));
-            Foundation::AssetPtr asset_ptr(new_asset);
+            Foundation::AssetInterfacePtr asset_ptr(new_asset);
             
             RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
             data.resize(transfer->GetReceivedContinuous());
@@ -97,7 +97,7 @@ namespace Asset
             return asset_ptr;
         }
 
-        return Foundation::AssetPtr();
+        return Foundation::AssetInterfacePtr();
     }
 
     void UDPAssetProvider::SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule)
@@ -622,7 +622,7 @@ namespace Asset
         {
             const std::string& asset_id = transfer.GetAssetId();
 
-            Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(asset_id, GetTypeNameFromAssetType(transfer.GetAssetType())));
+            Foundation::AssetInterfacePtr new_asset = Foundation::AssetInterfacePtr(new RexAsset(asset_id, GetTypeNameFromAssetType(transfer.GetAssetType())));
             RexAsset::AssetDataVector& data = checked_static_cast<RexAsset*>(new_asset.get())->GetDataInternal();
             data.resize(transfer.GetReceived());
             transfer.AssembleData(&data[0]);

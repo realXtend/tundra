@@ -11,6 +11,7 @@
 
 #include "RexTypes.h"
 #include "OgreAssetEditorModuleApi.h"
+#include "AssetFwd.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -25,8 +26,6 @@ QT_END_NAMESPACE
 
 namespace Foundation
 {
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetPtr;
     class Framework;
 }
 
@@ -64,7 +63,7 @@ public slots:
     void Open();
 
     /// Handles the asset data for script.
-    void HandleAssetReady(Foundation::AssetPtr asset);
+    void HandleAssetReady(Foundation::AssetInterfacePtr asset);
 
     /// Closes the window.
     void Close();

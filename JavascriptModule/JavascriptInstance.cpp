@@ -90,7 +90,7 @@ QString JavascriptInstance::LoadScript() const
 {
     QString filename = scriptRef_.trimmed();
     ///\todo Now all strings are evaluated as being relative filenames to the current working directory.
-    ///Scripts are all loaded locally. Support here fetching from the asset store, i.e. file://, or knet://, or http://.
+    ///Scripts are all loaded locally. Support here fetching from the asset store, i.e. local://, or knet://, or http://.
     QFile scriptFile(filename);
     if (!scriptFile.open(QIODevice::ReadOnly))
     {

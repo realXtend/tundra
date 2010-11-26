@@ -18,6 +18,13 @@ class IAssetProvider
 //class HttpAssetProvider : public IAssetProvider;
 //class KNetAssetProvider : public IAssetProvider;
 
+/// Loads the given local file into the specified vector. Clears all data previously in the vector.
+/// Returns true on success.
+bool LoadFileToVector(const char *filename, std::vector<u8> &dst);
+
+/// Returns an asset type name of the given asset file name.
+QString GetResourceTypeFromResourceFileName(const char *name);
+
 class AssetAPI : public QObject
 {
     Q_OBJECT
@@ -29,21 +36,30 @@ public:
     /// and will be processed when possible.
     /// @param assetRef The asset ID, or full URL to request.
     /// @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
-    IAssetTransfer *RequestAsset(QString assetRef, QString assetType = "");
+    AssetTransferPtr RequestAsset(QString assetRef, QString assetType = "");
 
     /// Same as RequestAsset(QString assetRef, QString assetType), but provided for convenience with AssetReference type.
-    IAssetTransfer *RequestAsset(const AssetReference &ref);
+    AssetTransferPtr RequestAsset(const AssetReference &ref);
+
+    /// Returns the asset provider that is used to fetch assets from the given full URL.
+    /// Example: GetProviderForAssetRef("local://my.mesh") will return an instance of LocalAssetProvider.
+    /// @param assetRef The asset reference name to query a provider for.
+    /// @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
+    ///                  used to more completely specify the type.
+    Foundation::AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
 
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
+
+    /// Creates a new empty unloaded asset of the given type and name.
+    /// This function uses the Asset type factories to create an instance of the proper asset class.
+    AssetPtr CreateNewAsset(QString type, QString name);
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
-    IAsset *GetAsset(QString assetRef);
-
-    static std::string GetResourceTypeFromName(const char *name);
+    AssetPtr GetAsset(QString assetRef);
     
     /// Queries if any existing Asset Storage contains an asset with the given name, and returns it.
 //    IAsset *GetAssetByName(QString assetRef);
@@ -93,7 +109,7 @@ public:
     IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     /// Returns all the currently ongoing or waiting asset transfers.
-    std::vector<IAssetTransfer*> PendingTransfers() const;
+    std::vector<AssetTransferPtr> PendingTransfers() const;
 
     /// This function is implemented for legacy purposes to help transition period to new Asset API. Will be removed. Do NOT call this. -jj
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
@@ -101,15 +117,23 @@ public:
     /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
     static QString GuaranteeTrailingSlash(const QString &source);
 
+private slots:
+    void AssetDownloaded(IAssetTransfer *transfer);
+
 private:
     /// This is implemented for legacy purposes to help transition period to new Asset API. Will be removed. -jj
-    std::map<request_tag_t, IAssetTransfer*> currentTransfers;
+    std::map<request_tag_t, AssetTransferPtr> currentTransfers;
 
     Foundation::Framework *framework;
 
+    /// Contains all known asset storages in the system.
     std::vector<boost::shared_ptr<IAssetStorage> > storages;
 
+    /// Stores all the registered asset type factories in the system.
     std::vector<AssetTypeFactoryPtr> assetTypeFactories;
+
+    /// Stores all the assets in the system.
+    std::vector<AssetPtr> assets;
 
     /// For now, the Asset API holds a weak reference to each provider.
 //    std::vector<AssetProviderInterface*> providers;

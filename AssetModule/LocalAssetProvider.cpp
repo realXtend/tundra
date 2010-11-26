@@ -14,6 +14,7 @@
 #include "ConfigurationManager.h"
 #include "LocalAssetStorage.h"
 #include "IAssetUploadTransfer.h"
+#include "IAssetTransfer.h"
 #include "AssetAPI.h"
 #include <QByteArray>
 #include <QFile>
@@ -40,9 +41,22 @@ const std::string& LocalAssetProvider::Name()
     return name;
 }
 
-bool LocalAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
+bool LocalAssetProvider::IsValidRef(const std::string& asset_id, const std::string& asset_type)
 {
-    return (asset_id.find("file://") == 0);
+    QString ref = asset_id.c_str();
+    ref = ref.trimmed();
+    if (ref.length() == 0)
+        return false;
+    if (ref.startsWith("file://") || ref.startsWith("local://"))
+        return true;
+
+    if (!ref.contains("://")) // If the ref doesn't contain a protocol specifier (we do this simple check for it), try to directly find the given local file.
+    {
+        QString path = GetPathForAsset(ref);
+        return path.length() > 0;
+    }
+    else
+        return false;
 }
 
 bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
@@ -66,7 +80,7 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     if (lastSlash != std::string::npos)
         filename = filename.substr(0, lastSlash);
     
-    std::string assetpath = GetPathForAsset(filename); // Look up all known local file asset storages for this asset.
+    std::string assetpath = GetPathForAsset(filename.c_str()).toStdString(); // Look up all known local file asset storages for this asset.
     if (assetpath.empty())
     {
         AssetModule::LogInfo("Failed to load local asset " + filename);
@@ -84,7 +98,7 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
         if (length > 0)
         {
             RexAsset* new_asset = new RexAsset(asset_id, asset_type);
-            Foundation::AssetPtr asset_ptr(new_asset);
+            Foundation::AssetInterfacePtr asset_ptr(new_asset);
             
             RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
             data.resize(length);
@@ -106,29 +120,33 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     AssetModule::LogInfo("Failed to load local asset " + filename);
     return true;
 }
-/*
-virtual IAssetTransfer *LocalAssetProvider::RequestAsset(QString assetRef)
+
+AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
-    IAssetTransfer *transfer = new IAssetTransfer();
-    transfer->source.ref = assetRef;
-    transfer->
+    AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
+    transfer->source.ref = assetRef.trimmed();
+    transfer->assetType = assetType;
+
+    pendingDownloads.push_back(transfer);
+
+    return transfer;
 }
-*/
-std::string LocalAssetProvider::GetPathForAsset(const std::string& assetname)
+
+QString LocalAssetProvider::GetPathForAsset(const QString &assetname)
 {
     // Check first all subdirs without recursion, because recursion is potentially slow
     for(size_t i = 0; i < storages.size(); ++i)
     {
-        QString path = storages[i]->GetFullPathForAsset(assetname.c_str(), false);
+        QString path = storages[i]->GetFullPathForAsset(assetname.toStdString().c_str(), false);
         if (path != "")
-            return path.toStdString();
+            return path;
     }
 
     for(size_t i = 0; i < storages.size(); ++i)
     {
-        QString path = storages[i]->GetFullPathForAsset(assetname.c_str(), true);
+        QString path = storages[i]->GetFullPathForAsset(assetname.toStdString().c_str(), true);
         if (path != "")
-            return path.toStdString();
+            return path;
     }
     
     return "";
@@ -139,10 +157,10 @@ bool LocalAssetProvider::InProgress(const std::string& asset_id)
     return false;
 }
 
-Foundation::AssetPtr LocalAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
+Foundation::AssetInterfacePtr LocalAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
 {
     // Not supported
-    return Foundation::AssetPtr();
+    return Foundation::AssetInterfacePtr();
 }
 
 bool LocalAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)
@@ -153,6 +171,7 @@ bool LocalAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& siz
 
 void LocalAssetProvider::Update(f64 frametime)
 {
+    CompletePendingFileDownloads();
     CompletePendingFileUploads();
 }
 
@@ -275,6 +294,47 @@ bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *dest
 }
 
 } // ~unnamed namespace
+
+void LocalAssetProvider::CompletePendingFileDownloads()
+{
+    while(pendingDownloads.size() > 0)
+    {
+        AssetTransferPtr transfer = pendingDownloads.back();
+        pendingDownloads.pop_back();
+
+        QString ref = transfer->source.ref;
+
+        AssetModule::LogDebug("New local asset request: " + ref.toStdString());
+
+        // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
+        if (ref.startsWith("file://"))
+            ref = ref.mid(7);
+        if (ref.startsWith("local://"))
+            ref = ref.mid(8);
+
+        int lastSlash = ref.lastIndexOf('/');
+        if (lastSlash != -1)
+            ref = ref.left(lastSlash);
+
+        QString path = GetPathForAsset(ref);
+        if (path.isEmpty())
+        {
+            AssetModule::LogWarning("Failed to find local asset with filename \"" + ref.toStdString() + "\"!");
+            continue;
+        }
+    
+        QString absoluteFilename = GuaranteeTrailingSlash(path) + ref;
+        bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);
+        if (!success)
+        {
+            AssetModule::LogError("Failed to read asset data from file " + absoluteFilename.toStdString());
+            continue;
+        }
+        
+        AssetModule::LogInfo("Loaded asset " + absoluteFilename.toStdString());
+        transfer->EmitAssetDownloaded();
+    }
+}
 
 void LocalAssetProvider::CompletePendingFileUploads()
 {

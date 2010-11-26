@@ -32,7 +32,7 @@ namespace OgreRenderer
             \param shadowquality Shadow quality setting in effect on the renderer
             \param source asset data to construct material from
         */
-        OgreMaterialResource(const std::string& id, ShadowQuality shadowquality, Foundation::AssetPtr source);
+        OgreMaterialResource(const std::string& id, ShadowQuality shadowquality, Foundation::AssetInterfacePtr source);
 
         //! destructor
         virtual ~OgreMaterialResource();
@@ -52,7 +52,7 @@ namespace OgreRenderer
         /*! \param source asset data to construct the material from
             \return true if successful
         */
-        bool SetData(Foundation::AssetPtr source);
+        bool SetData(Foundation::AssetInterfacePtr source);
 
         //! Save material to a file
         /*! \param filename full path to file

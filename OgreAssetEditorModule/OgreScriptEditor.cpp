@@ -128,7 +128,7 @@ void OgreScriptEditor::Open()
     }
 }
 
-void OgreScriptEditor::HandleAssetReady(Foundation::AssetPtr asset)
+void OgreScriptEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
 {
     bool edit_raw = false;
 

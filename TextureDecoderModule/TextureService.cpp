@@ -174,7 +174,7 @@ namespace TextureDecoder
         if (request.HasEnoughData())
         {
             // Queue decode request to decode thread
-            Foundation::AssetPtr asset = asset_service->GetIncompleteAsset(request.GetId(), RexTypes::ASSETTYPENAME_TEXTURE, request.GetReceived());
+            Foundation::AssetInterfacePtr asset = asset_service->GetIncompleteAsset(request.GetId(), RexTypes::ASSETTYPENAME_TEXTURE, request.GetReceived());
             if (asset)
             {
                 DecodeRequestPtr new_decode_request(new DecodeRequest());

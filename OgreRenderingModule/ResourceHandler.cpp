@@ -246,7 +246,7 @@ namespace OgreRenderer
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         
         // Hack: if the texture indicates a local asset, do not go through the J2K pipe, but request as an image asset
-        if ((id.find("file://") == 0) && (asset_service))
+        if ((id.find("file://") == 0 || id.find("local://") == 0) && asset_service)
         {
             // This request tag is unnecessary... as the asset should be loaded immediately if it exists
             request_tag_t source_tag = asset_service->RequestAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
@@ -256,7 +256,7 @@ namespace OgreRenderer
         // See if already have in the cache with a superior (non-J2K) format
         if (asset_service)
         {
-            Foundation::AssetPtr imageasset = asset_service->GetAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
+            Foundation::AssetInterfacePtr imageasset = asset_service->GetAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
             if (imageasset)
             {
                 // If not found, prepare new
@@ -390,7 +390,7 @@ namespace OgreRenderer
         return 0;
     }
 
-    bool ResourceHandler::UpdateMesh(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateMesh(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -416,7 +416,7 @@ namespace OgreRenderer
         return success;
     }
 
-    bool ResourceHandler::UpdateImageTexture(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateImageTexture(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -442,7 +442,7 @@ namespace OgreRenderer
         return success;
     }
 
-    bool ResourceHandler::UpdateMaterial(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateMaterial(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -469,7 +469,7 @@ namespace OgreRenderer
         return success;
     }
     
-    bool ResourceHandler::UpdateParticles(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateParticles(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {
         expected_request_tags_.erase(tag);
         
@@ -496,7 +496,7 @@ namespace OgreRenderer
         return success;
     }
     
-    bool ResourceHandler::UpdateSkeleton(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateSkeleton(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -538,7 +538,7 @@ namespace OgreRenderer
             if (asset_service)
             {
                 // Check that the dependency is asset based
-                if (asset_service->IsValidId(references[i].id_, references[i].type_))
+                if (asset_service->IsValidRef(references[i].id_, references[i].type_))
                 {
                     // If can get the depended resource directly, OK
                     Foundation::ResourcePtr res = GetResourceInternal(references[i].id_, references[i].type_);
