@@ -59,11 +59,14 @@ bool LocalAssetProvider::IsValidRef(const std::string& asset_id, const std::stri
         return false;
 }
 
+///\todo This function call is deprecated, and used in conjunction with the old code flow for asset requests. Use the AssetAPI and
+/// AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString assetType) instead.
 bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
 {
+    // Complete any file uploads before processing any download requests. (a total hack, but this function will be removed in the future)
     CompletePendingFileUploads();
 
-    if (!IsValidId(asset_id, asset_type))
+    if (!IsValidRef(asset_id, asset_type))
         return false;
     
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
@@ -171,8 +174,13 @@ bool LocalAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& siz
 
 void LocalAssetProvider::Update(f64 frametime)
 {
-    CompletePendingFileDownloads();
+    ///\note It is *very* important that below we first complete all uploads, and then the downloads.
+    /// This is because it is a rather common code flow to upload an asset for an entity, and immediately after that
+    /// generate a entity in the scene that refers to that asset, which means we do both an upload and a download of the
+    /// asset into the same asset storage. If the download request was processed before the upload request, the download
+    /// request would fail on missing file, and the entity would erroneously get an "asset not found" result.
     CompletePendingFileUploads();
+    CompletePendingFileDownloads();
 }
 
 void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
@@ -323,7 +331,9 @@ void LocalAssetProvider::CompletePendingFileDownloads()
             continue;
         }
     
-        QString absoluteFilename = GuaranteeTrailingSlash(path) + ref;
+        QFileInfo file(GuaranteeTrailingSlash(path) + ref);
+        QString absoluteFilename = file.absoluteFilePath();
+
         bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
         {
