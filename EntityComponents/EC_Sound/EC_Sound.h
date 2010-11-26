@@ -29,8 +29,6 @@ Registered by RexLogic::RexLogicModule.
 <ul>
 <li>AssetReference: soundRef
 <div>Sound asset reference that is used to request a sound from sound service.</div> 
-<li>QString: soundId
-<div>Sound asset reference that is used to request a sound from sound service.</div> 
 <li>float: soundInnerRadius
 <div>Sound inner radius tell the distance where sound gain value is in it's maximum.</div> 
 <li>float: soundOuterRadius
@@ -43,15 +41,15 @@ Registered by RexLogic::RexLogicModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"PlaySound": 
-<li>"StopSound":
+<li>"PlaySound": Starts playing the sound.
+<li>"StopSound": Stops playing the sound.
 <li>"UpdateSoundSettings": Get each attribute value and send them over to sound service.
 </ul>
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>"PlaySound": 
-<li>"StopSound":
+<li>"PlaySound": Starts playing the sound.
+<li>"StopSound": Stops playing the sound.
 </ul>
 </td>
 </tr>
@@ -73,10 +71,6 @@ public:
     //! Sound asset reference.
     Q_PROPERTY(AssetReference soundRef READ getsoundRef WRITE setsoundRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, soundRef);
-
-    /// Sound asset reference that is used to request a sound from sound service.
-//    Q_PROPERTY(QString soundId READ getsoundId WRITE setsoundId);
-//    DEFINE_QPROPERTY_ATTRIBUTE(QString, soundId);
 
     /// Sound inner radius tell the distance where sound gain value is in it's maximum.
     Q_PROPERTY(float soundInnerRadius READ getsoundInnerRadius WRITE setsoundInnerRadius);

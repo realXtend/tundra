@@ -98,6 +98,9 @@ public:
     /// This function is implemented for legacy purposes to help transition period to new Asset API. Will be removed. Do NOT call this. -jj
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
+    /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
+    static QString GuaranteeTrailingSlash(const QString &source);
+
 private:
     /// This is implemented for legacy purposes to help transition period to new Asset API. Will be removed. -jj
     std::map<request_tag_t, IAssetTransfer*> currentTransfers;

@@ -18,9 +18,6 @@ namespace Asset
 {
     class LocalAssetStorage;
 
-    /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
-    QString GuaranteeTrailingSlash(const QString &source);
-
     /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'file://' reference.
     class ASSET_MODULE_API LocalAssetProvider : public QObject, public Foundation::AssetProviderInterface, public boost::enable_shared_from_this<LocalAssetProvider>
     {
