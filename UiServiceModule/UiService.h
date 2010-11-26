@@ -115,7 +115,7 @@ private:
 
 private slots:
     /// Remove proxywidget from internally maintained lists upon destruction.
-    void OnProxyDestroyed();
+    void OnProxyDestroyed(QObject *obj);
 
     /** Performs different operations for proxy widgets when scene rectangle is changed, f.ex. resizes
      *  full screen widgets to fit the screen.
