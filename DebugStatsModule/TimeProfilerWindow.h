@@ -91,8 +91,13 @@ namespace DebugStats
         void ShowMeshAsset(QTreeWidgetItem* item, int column);
         void ShowTextureAsset(QTreeWidgetItem* item, int column);
 
+    signals:
+        void Visible(bool visible);
+
     protected:
         void resizeEvent(QResizeEvent *event);
+        void showEvent(QShowEvent *event);
+        void hideEvent(QHideEvent *event);
 
     private slots:
         void CopyTextureAssetName();
