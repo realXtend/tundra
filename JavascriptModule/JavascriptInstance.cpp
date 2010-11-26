@@ -199,6 +199,7 @@ void JavascriptInstance::DeleteEngine()
     // As a convention, we call a function 'OnScriptDestroyed' for each JS script
     // so that they can clean up their data before the script is removed from the object,
     // or when the system is unloading.
+    
     QScriptValue destructor = engine_->globalObject().property("OnScriptDestroyed");
     if (!destructor.isUndefined())
         destructor.call();
