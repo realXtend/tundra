@@ -35,6 +35,8 @@
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "ResourceInterface.h"
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 #ifdef OGREASSETEDITOR_ENABLED
 #   include "MeshPreviewEditor.h"
 #   include "TexturePreviewEditor.h"
@@ -597,8 +599,8 @@ void SceneTreeWidget::Edit()
 
     if (selection.HasComponents() || selection.HasEntities())
     {
-        UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-        assert(ui);
+        //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
+        //assert(ui);
 
         // If we have an existing editor instance, use it.
         if (ecEditor)
@@ -606,7 +608,8 @@ void SceneTreeWidget::Edit()
             foreach(entity_id_t id, selection.EntityIds())
                 ecEditor->AddEntity(id);
             ecEditor->SetSelectedEntities(selection.EntityIds());
-            ui->BringWidgetToFront(ecEditor);
+            ecEditor->show();
+            //ui->BringWidgetToFront(ecEditor);
             return;
         }
 
@@ -619,9 +622,16 @@ void SceneTreeWidget::Edit()
             ecEditor->AddEntity(id);
         ecEditor->SetSelectedEntities(selection.EntityIds());
 
-        ui->AddWidgetToScene(ecEditor);
+        NaaliUi *ui = framework->Ui();
+        if (!ui)
+            return;
+        ecEditor->setParent(ui->MainWindow());
+        ecEditor->setWindowFlags(Qt::Tool);
+        ecEditor->show();
+
+        /*ui->AddWidgetToScene(ecEditor);
         ui->ShowWidget(ecEditor);
-        ui->BringWidgetToFront(ecEditor);
+        ui->BringWidgetToFront(ecEditor);*/ 
     } else
     {
 #ifdef OGREASSETEDITOR_ENABLED
@@ -652,23 +662,30 @@ void SceneTreeWidget::EditInNew()
         return;
 
     // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
-    UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-    assert(ui);
+    //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
+    //assert(ui);
 
     ECEditor::ECEditorWindow *editor = new ECEditor::ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
-    editor->move(mapToGlobal(pos()) + QPoint(50, 50));
+    //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
     foreach(entity_id_t id, selection.EntityIds())
         editor->AddEntity(id);
     editor->SetSelectedEntities(selection.EntityIds());
 
+    NaaliUi *ui = framework->Ui();
+    if (!ui)
+        return;
+    editor->setParent(ui->MainWindow());
+    editor->setWindowFlags(Qt::Tool);
+    editor->show();
+
     if (!ecEditor)
         ecEditor = editor;
-
-    ui->AddWidgetToScene(editor);
+    
+    /*ui->AddWidgetToScene(editor); 
     ui->ShowWidget(editor);
-    ui->BringWidgetToFront(editor);
+    ui->BringWidgetToFront(editor);*/
 }
 
 void SceneTreeWidget::Rename()
