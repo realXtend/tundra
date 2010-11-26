@@ -240,22 +240,30 @@ bool SceneStructureModule::IsSupportedFileType(const QString &filename)
 
 void SceneStructureModule::ShowSceneStructureWindow()
 {
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
-        return;
+        return;*/
 
     if (sceneWindow)
     {
-        ui->ShowWidget(sceneWindow);
+        //ui->ShowWidget(sceneWindow);
+        sceneWindow->show();
         return;
     }
 
-    sceneWindow = new SceneStructureWindow(framework_);
-    sceneWindow->move(200,200);
-    sceneWindow->SetScene(framework_->GetDefaultWorldScene());
+    NaaliUi *ui = GetFramework()->Ui();
+    if (!ui)
+        return;
 
-    ui->AddWidgetToScene(sceneWindow);
-    ui->ShowWidget(sceneWindow);
+    sceneWindow = new SceneStructureWindow(framework_);
+    //sceneWindow->move(200,200);
+    sceneWindow->SetScene(framework_->GetDefaultWorldScene());
+    sceneWindow->setParent(ui->MainWindow());
+    sceneWindow->setWindowFlags(Qt::Tool);
+    sceneWindow->show();
+
+    //ui->AddWidgetToScene(sceneWindow);
+    //ui->ShowWidget(sceneWindow);
 }
 
 void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
