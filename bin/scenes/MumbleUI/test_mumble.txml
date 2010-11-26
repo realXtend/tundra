@@ -1,0 +1,44 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="4"> 
+  <component type="EC_VoiceChannel" sync="1">
+   <attribute value="mumble" name="protocol"/>
+   <attribute value="1.2.2" name="version"/>
+   <attribute value="world.realxtend.org:6009" name="serveraddress"/>
+   <attribute value="server123" name="serverpassword"/>
+   <attribute value="boban" name="username"/>
+   <attribute value="Public" name="channelname"/>
+   <attribute value="voip/jsdemo" name="channelid"/>
+   <attribute value="true" name="enabled"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="VoiceChannel" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+ <entity id="5">
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="./jsmodules/avatar/avatarapplication.js" name="Script ref"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="AvatarScript" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  </entity>
+  <entity id="6">
+  <component type="EC_Script" sync="1">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="./scenes/MumbleUI/MumbleApplication.js" name="Script ref"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="AudioCommScript" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+</scene>
