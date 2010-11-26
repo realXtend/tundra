@@ -10,6 +10,8 @@
 #include "EventManager.h"
 #include "CoreStringUtils.h"
 
+#include "kNet.h"
+
 #include <algorithm>
 
 using namespace kNet;
@@ -106,6 +108,7 @@ void KristalliProtocolModule::Unload()
 
 void KristalliProtocolModule::PreInitialize()
 {
+    kNet::SetLogChannels(kNet::LogInfo | kNet::LogError | kNet::LogUser); // Enable all log channels.
 }
 
 void KristalliProtocolModule::Initialize()
@@ -130,7 +133,15 @@ void KristalliProtocolModule::Update(f64 frametime)
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
     if (serverConnection)
+    {
         serverConnection->Process();
+
+        // Our client->server connection is never kept partially open.
+        // That is, at the moment the server write-closes the connection, we also write-close the connection.
+        // Check here if the server has write-closed, and also write-close our end if so.
+        if (!serverConnection->IsReadOpen() && serverConnection->IsWriteOpen())
+            serverConnection->Disconnect(0);
+    }
     
     // Process server incoming connections & messages if server up
     if (server)
