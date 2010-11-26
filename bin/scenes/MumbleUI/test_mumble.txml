@@ -21,18 +21,6 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value="./jsmodules/avatar/avatarapplication.js" name="Script ref"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="AvatarScript" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  </entity>
-  <entity id="6">
-  <component type="EC_Script" sync="1">
-   <attribute value="js" name="Type"/>
-   <attribute value="true" name="Run on load"/>
    <attribute value="./scenes/MumbleUI/MumbleApplication.js" name="Script ref"/>
   </component>
   <component type="EC_Name" sync="1">
