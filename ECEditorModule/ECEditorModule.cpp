@@ -17,8 +17,10 @@
 #include "ModuleManager.h"
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
-#include "UiProxyWidget.h"
+//#include "UiProxyWidget.h"
 #include "Input.h"
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -138,22 +140,30 @@ namespace ECEditor
     void ECEditorModule::AddEditorWindowToUI()
     {
         if (editor_window_)
+        {
+            editor_window_->setVisible(!(editor_window_->isVisible()));
             return;
+        }
 
-        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        //UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        //if (!ui)
+        //    return;
+        NaaliUi *ui = GetFramework()->Ui();
         if (!ui)
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
+        editor_window_->setParent(ui->MainWindow());
+        editor_window_->setWindowFlags(Qt::Tool);
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
+        //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
         // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
         // it's attached to QGraphicsProxyWidget.
-        connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
+        //connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
 
         // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly.
-        ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
-        ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
+        //ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+        //ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
     }
 
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)

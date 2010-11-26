@@ -114,6 +114,9 @@ private:
     QList<QGraphicsProxyWidget *> fullScreenWidgets_;
 
 private slots:
+    /// Remove proxywidget from internally maintained lists upon destruction.
+    void OnProxyDestroyed();
+
     /** Performs different operations for proxy widgets when scene rectangle is changed, f.ex. resizes
      *  full screen widgets to fit the screen.
      *  @param rect New scene rectangle.

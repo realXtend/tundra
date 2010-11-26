@@ -30,11 +30,18 @@ struct AttributeDesc
     QString name; ///< Name.
     QString value; ///< Value.
 
+#define LEX_CMP(a, b) if ((a) < (b)) return true; else if ((a) > (b)) return false;
+
     /// Less than operator. Compares all values.
     bool operator <(const AttributeDesc &rhs) const
     {
-        return typeName < rhs.typeName || name < rhs.name || value < rhs.value;
+        LEX_CMP(typeName, rhs.typeName);
+        LEX_CMP(name, rhs.name);
+        LEX_CMP(value, rhs.value);
+        return false;
     }
+
+#undef LEX_CMP
 
     /// Equality operator. Returns true if all values match, false otherwise.
     bool operator ==(const AttributeDesc &rhs) const
