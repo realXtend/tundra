@@ -1095,6 +1095,18 @@ void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
 
 }
 
+void TimeProfilerWindow::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    emit Visible(true);
+}
+
+void TimeProfilerWindow::hideEvent(QHideEvent  *event)
+{
+    QWidget::hideEvent(event);
+    emit Visible(false);
+}
+
 int TimeProfilerWindow::ReadProfilingRefreshInterval()
 {
     assert(combo_timing_refresh_interval_);

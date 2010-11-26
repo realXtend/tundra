@@ -32,6 +32,8 @@
 #include "EC_OpenSimPresence.h"
 #include "Console.h"
 #include "Input.h"
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 
 #include <utility>
 #include <QDebug>
@@ -142,20 +144,27 @@ void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
 void DebugStatsModule::AddProfilerWidgetToUi()
 {
     if (profilerWindow_)
+    {
+        profilerWindow_->setVisible(!(profilerWindow_->isVisible()));
         return;
+    }
 
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    if (!ui)
+        return;*/
+    NaaliUi *ui = GetFramework()->Ui();
     if (!ui)
         return;
 
     profilerWindow_ = new TimeProfilerWindow(framework_);
-    profilerWindow_->move(100, 100);
-
+    profilerWindow_->setParent(ui->MainWindow());
+    profilerWindow_->setWindowFlags(Qt::Tool);
+    //profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);
-    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
-    connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+    //UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
+    connect(profilerWindow_, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
-    ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+    //ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }
 
 void DebugStatsModule::StartProfiling(bool visible)
