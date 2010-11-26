@@ -719,14 +719,10 @@ namespace Scene
                     else
                     {
                         foreach(IAttribute *attr, comp->GetAttributes())
-                        {
                             foreach(AttributeDesc a, c.attributes)
                                 if (attr->TypenameToString().c_str() == a.typeName && attr->GetName() == a.name)
                                     // Trigger no signal yet when scene is in incoherent state
                                     attr->FromString(a.value.toStdString(), AttributeChange::Disconnected);
-                            else
-                                LogWarning("Could not find attribute " + attr->TypenameToString() + " : "+ attr->GetNameString() + " from scene description.");
-                        }
                     }
                 }
 
