@@ -11,6 +11,10 @@
 #include "AddContentWindow.h"
 #include "SceneStructureModule.h"
 
+#include "Framework.h"
+#include "AssetAPI.h"
+#include "IAssetStorage.h"
+#include "IAssetUploadTransfer.h"
 #include "SceneDesc.h"
 #include "SceneManager.h"
 #include "SceneImporter.h"
@@ -31,7 +35,7 @@ public:
     EntityDesc desc;
 };
 
-class AssetWidgetItem : public QTreeWidgetItem
+/*class AssetWidgetItem : public QTreeWidgetItem
 {
 public:
     explicit AssetWidgetItem(const AttributeDesc &adesc) : desc(adesc)
@@ -40,16 +44,31 @@ public:
         setCheckState(0, Qt::Checked);
     }
     AttributeDesc desc;
+};*/
+
+class AssetWidgetItem : public QTreeWidgetItem
+{
+public:
+    explicit AssetWidgetItem(const AssetDesc &adesc) : desc(adesc)
+    {
+        setCheckState(0, Qt::Checked);
+        setText(1, desc.typeName);
+        setText(2, desc.filename);
+        setText(3, desc.destinationName);
+        setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+    }
+    AssetDesc desc;
 };
 
-AddContentWindow::AddContentWindow(const Scene::ScenePtr &dest, QWidget *parent) :
+AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
+    framework(fw),
     scene(dest)
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(tr("Add Content"));
-    resize(400,500);
+    resize(600,500);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -72,15 +91,19 @@ AddContentWindow::AddContentWindow(const Scene::ScenePtr &dest, QWidget *parent)
 
     QLabel *assetLabel = new QLabel("The following assets will be uploaded:");
     assetTreeWidget = new QTreeWidget;
-    assetTreeWidget->setHeaderHidden(true);
+    assetTreeWidget->setColumnCount(4);
+    QStringList labels(QStringList() << tr("Upload") << tr("Type") << tr("Source name") << tr("Destination name"));
+    assetTreeWidget->setHeaderLabels(labels);
+//    assetTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
     QPushButton *selectAllAssetsButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllAssetsButton = new QPushButton(tr("Deselect All"));
     QHBoxLayout *assetButtonsLayout = new QHBoxLayout;
     QSpacerItem *assetButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     QLabel *storageLabel = new QLabel("Asset storage:");
     storageComboBox = new QComboBox;
-    storageComboBox->addItem("Local");
-    storageComboBox->setDisabled(true);
+    // Get available asset storages.
+    foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+        storageComboBox->addItem(storage->Name());
 
     layout->addWidget(assetLabel);
     layout->addWidget(assetTreeWidget);
@@ -148,17 +171,37 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
             */
 
             // Gather non-empty asset references. They're shown in their own tree widget.
+            /*
             foreach(AttributeDesc a, c.attributes)
                 if (a.typeName == "assetreference" && !a.value.isEmpty())
                     assetRefs.insert(a);
+            */
         }
     }
 
     // Add asset references. Do not show duplicates.
+    /*
     foreach(AttributeDesc a, assetRefs)
     {
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
+    }
+    */
+
+    // Add asset references. Do not show duplicates.
+    std::set<AssetDesc> assets;
+    foreach(AssetDesc a, desc.assets)
+        assets.insert(a);
+
+    foreach(AssetDesc a, assets)
+    {
+        AssetWidgetItem *aItem = new AssetWidgetItem(a);
+        assetTreeWidget->addTopLevelItem(aItem);
+        if ((a.typeName == "material" && a.data.isEmpty()) || (a.typeName != "material" && !QFile::exists(a.filename)))
+        {
+            aItem->setBackgroundColor(2, Qt::red);
+            aItem->setCheckState(0, Qt::Unchecked);
+        }
     }
 }
 
@@ -204,6 +247,14 @@ void AddContentWindow::DeselectAllAssets()
 
 void AddContentWindow::AddContent()
 {
+    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageComboBox->currentText());
+    if (!dest)
+    {
+        LogError("Could not retrieve asset storage " + storageComboBox->currentText().toStdString() + ".");
+        return;
+    }
+
+    // Filter which entities will be created and which assets will be uploaded.
     SceneDesc newDesc = sceneDesc;
     QTreeWidgetItemIterator eit(entityTreeWidget);
     while(*eit)
@@ -211,9 +262,9 @@ void AddContentWindow::AddContent()
         EntityWidgetItem *eitem = dynamic_cast<EntityWidgetItem *>(*eit);
         if (eitem && eitem->checkState(0) == Qt::Unchecked)
         {
-            QList<EntityDesc>::const_iterator eit = qFind(newDesc.entities, eitem->desc);
-            if (eit != newDesc.entities.end())
-                newDesc.entities.removeOne(*eit);
+            QList<EntityDesc>::const_iterator ei = qFind(newDesc.entities, eitem->desc);
+            if (ei != newDesc.entities.end())
+                newDesc.entities.removeOne(*ei);
         }
 
         ++eit;
@@ -222,37 +273,31 @@ void AddContentWindow::AddContent()
     QTreeWidgetItemIterator ait(assetTreeWidget);
     while(*ait)
     {
-        AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*ait);
-        if (aitem && aitem->checkState(0) == Qt::Unchecked)
-            for(int i = 0; i < newDesc.entities.size(); ++i)
-                for(int j = 0; j < newDesc.entities[i].components.size(); ++j)
-                {
-                    QMutableListIterator<AttributeDesc> it(newDesc.entities[i].components[j].attributes);
-                    while(it.hasNext())
-                        if (it.next() == aitem->desc)
-                            it.remove();
-                }
+        AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*eit);
+        if (aitem  && aitem ->checkState(0) == Qt::Unchecked)
+        {
+            QList<AssetDesc>::const_iterator ai = qFind(newDesc.assets, aitem->desc);
+            if (ai != newDesc.assets.end())
+                newDesc.assets.removeOne(*ai);
+        }
 
         ++ait;
     }
-/*
-    foreach(EntityDesc ed, newDesc.entities)
+
+    // Rewrite asset refs
+    QMutableListIterator<AssetDesc> rewriteIt(newDesc.assets);
+    while(rewriteIt.hasNext())
     {
-        std::cout << ed.id.toStdString() << " " << ed.name.toStdString() << std::endl;
-        foreach(ComponentDesc cd, ed.components)
-            foreach(AttributeDesc ad, cd.attributes)
-                std::cout << ad.name.toStdString() << " " << ad.value.toStdString() << std::endl;
+        QString destName = rewriteIt.next().destinationName;
+        rewriteIt.value().destinationName = dest->GetFullAssetURL(destName);
     }
-*/
-    // get asset storage storageComboBox->
-    // rewrite asset refs.
 
     Scene::ScenePtr destScene = scene.lock();
     if (!destScene)
         return;
 
+    // Create entities.
     QList<Scene::Entity *> entities;
-
     switch(newDesc.type)
     {
     case SceneDesc::Naali:
@@ -284,7 +329,45 @@ void AddContentWindow::AddContent()
         break;
     }
 
-    if (entities.size())
+    if (!newDesc.assets.empty())
+        LogDebug("Starting uploading of " + ToString(newDesc.assets.size()) + " asset(s).");
+
+    foreach(AssetDesc ad, newDesc.assets)
+    {
+        try
+        {
+            IAssetUploadTransfer *transfer = 0;
+
+            QString assetName;
+
+            if (!ad.filename.isEmpty() && ad.data.isEmpty())
+            {
+//                LogDebug("Starting upload of ."+ ad.filename.toStdString());
+                transfer = framework->Asset()->UploadAssetFromFile(ad.filename.toStdString().c_str(),
+                    dest, ad.destinationName.toStdString().c_str());
+            }
+            else if (/*ad.filename.isEmpty() && */!ad.data.isEmpty())
+            {
+//                LogDebug("Starting upload of ."+ ad.destinationName.toStdString());
+                transfer = framework->Asset()->UploadAssetFromFileInMemory((const u8*)QString(ad.data).toStdString().c_str(),
+                    ad.data.size(), dest, ad.destinationName.toStdString().c_str());
+            }
+            else
+                LogError("Could not upload.");
+
+            if (transfer)
+            {
+                connect(transfer, SIGNAL(Completed(IAssetUploadTransfer *)), SLOT(HandleUploadCompleted(IAssetUploadTransfer *)));
+                connect(transfer, SIGNAL(Failed(IAssetUploadTransfer *)), SLOT(HandleUploadFailed(IAssetUploadTransfer *)));
+            }
+        }
+        catch(const Exception &e)
+        {
+            LogError(std::string(e.what()));
+        }
+    }
+
+    if (entities.size() || newDesc.assets.size())
     {
         if (position != Vector3df())
             SceneStructureModule::CentralizeEntitiesTo(position, entities);
@@ -297,5 +380,17 @@ void AddContentWindow::AddContent()
 void AddContentWindow::Close()
 {
     close();
+}
+
+void AddContentWindow::HandleUploadCompleted(IAssetUploadTransfer *transfer)
+{
+    assert(transfer);
+//    LogDebug("Upload completed, " + transfer->sourceFilename.toStdString() + " -> " + transfer->destinationName.toStdString());
+}
+
+void AddContentWindow::HandleUploadFailed(IAssetUploadTransfer *transfer)
+{
+    assert(transfer);
+//    LogDebug("Upload failed for " + transfer->sourceFilename.toStdString() + "/" + transfer->destinationName.toStdString());
 }
 
