@@ -18,7 +18,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
 EC_Sound::EC_Sound(IModule *module):
     IComponent(module->GetFramework()),
     soundRef(this, "Sound ref"),
-//    soundId(this, "Sound ref"),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
     loopSound(this, "Loop sound", false),
@@ -39,11 +38,10 @@ EC_Sound::~EC_Sound()
 
 void EC_Sound::AttributeUpdated(IAttribute *attribute)
 {
-//    if(attribute->GetNameString() == soundId.GetNameString())
     if(attribute->GetNameString() == soundRef.GetNameString())
     {
         ISoundService *soundService = framework_->GetService<ISoundService>();
-        if (soundService && soundService->GetSoundName(sound_id_) != soundRef.Get().ref)//soundId.Get())
+        if (soundService && soundService->GetSoundName(sound_id_) != soundRef.Get().ref)
             StopSound();
     }
 
@@ -91,14 +89,14 @@ void EC_Sound::PlaySound()
     EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
     if(placeable)
     {
-        sound_id_ = soundService->PlaySound3D(soundRef.Get().ref/*soundId.Get()*/, ISoundService::Triggered, false, placeable->GetPosition());
+        sound_id_ = soundService->PlaySound3D(soundRef.Get().ref, ISoundService::Triggered, false, placeable->GetPosition());
         soundService->SetGain(sound_id_, soundGain.Get());
         soundService->SetLooped(sound_id_, loopSound.Get());
         soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
     else // If entity isn't holding placeable component treat sound as ambient sound.
     {
-        sound_id_ = soundService->PlaySound(soundRef.Get().ref/*soundId.Get()*/, ISoundService::Ambient);
+        sound_id_ = soundService->PlaySound(soundRef.Get().ref, ISoundService::Ambient);
         soundService->SetGain(sound_id_, soundGain.Get());
     }
 }

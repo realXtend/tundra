@@ -14,6 +14,7 @@
 #include "ConfigurationManager.h"
 #include "LocalAssetStorage.h"
 #include "IAssetUploadTransfer.h"
+#include "AssetAPI.h"
 #include <QByteArray>
 #include <QFile>
 #include <QFileSystemWatcher>
@@ -273,15 +274,6 @@ bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *dest
 
 } // ~unnamed namespace
 
-QString GuaranteeTrailingSlash(const QString &source)
-{
-    QString s = source.trimmed();
-    if (s[s.length()-1] != '/' && s[s.length()-1] != '\\')
-        s = s + "/";
-
-    return s;
-}
-
 void LocalAssetProvider::CompletePendingFileUploads()
 {
     while(pendingUploads.size() > 0)
@@ -304,7 +296,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
         }
 
         QString fromFile = transfer->sourceFilename;
-        QString toFile = GuaranteeTrailingSlash(storage->directory) + transfer->destinationName;
+        QString toFile = AssetAPI::GuaranteeTrailingSlash(storage->directory) + transfer->destinationName;
 
         bool success;
         if (fromFile.length() == 0)

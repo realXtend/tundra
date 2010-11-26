@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "LocalAssetStorage.h"
 #include "LocalAssetProvider.h"
+#include "AssetAPI.h"
 
 #include <QFileSystemWatcher>
 #include <QDir>
@@ -23,7 +24,7 @@ LocalAssetStorage::~LocalAssetStorage()
 
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)
 {
-    if (boost::filesystem::exists((GuaranteeTrailingSlash(directory) + assetname).toStdString()))
+    if (boost::filesystem::exists((AssetAPI::GuaranteeTrailingSlash(directory) + assetname).toStdString()))
         return directory;
 
     if (!recursive || !recursiveLookup)
@@ -35,7 +36,8 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
         boost::filesystem::recursive_directory_iterator end_iter;
         // Check the subdir
         for(; iter != end_iter; ++iter)
-            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists((GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname).toStdString()))
+            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(
+                (AssetAPI::GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname).toStdString()))
                 return iter->path().string().c_str();
     }
     catch (...)

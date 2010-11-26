@@ -257,3 +257,13 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
 
     return false;
 }
+
+QString AssetAPI::GuaranteeTrailingSlash(const QString &source)
+{
+    QString s = source.trimmed();
+    if (s[s.length()-1] != '/' && s[s.length()-1] != '\\')
+        s = s + "/";
+
+    return s;
+}
+
