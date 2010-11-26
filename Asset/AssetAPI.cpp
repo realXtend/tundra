@@ -11,6 +11,7 @@
 #include "EventManager.h"
 #include "ResourceInterface.h"
 #include "CoreException.h"
+#include "IAssetTypeFactory.h"
 #include "../AssetModule/AssetEvents.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
@@ -198,6 +199,24 @@ IAssetTransfer *AssetAPI::RequestAsset(QString assetRef, QString assetType)
 IAssetTransfer *AssetAPI::RequestAsset(const AssetReference &ref)
 {
     return RequestAsset(ref.ref, ""/*ref.type*/);
+}
+
+void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
+{
+    AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->Type());
+    if (existingFactory.get())
+        return; ///\todo Log out warning.
+
+    assert(factory->Type() == factory->Type().trimmed());
+}
+
+AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
+{
+    for(size_t i = 0; i < assetTypeFactories.size(); ++i)
+        if (assetTypeFactories[i]->Type().toLower() == typeName.toLower())
+            return assetTypeFactories[i];
+
+    return AssetTypeFactoryPtr();
 }
 
 bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)

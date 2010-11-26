@@ -48,6 +48,10 @@ namespace Environment
 #ifdef CAELUM
        caelumSystem_ =  framework_->GetModule<EnvironmentModule >()->GetCaelum();
 #endif 
+
+        static AttributeMetadata currentTimeMetaData("", "0", "100", "0.1");
+        currentTimeAttr.SetMetadata(&currentTimeMetaData);
+
         connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
 

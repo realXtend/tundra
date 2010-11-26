@@ -65,6 +65,9 @@ EC_Terrain::EC_Terrain(IModule* module) :
     texture3.Set(AssetReference(""), AttributeChange::Disconnected);
     texture4.Set(AssetReference(""), AttributeChange::Disconnected);
     material.Set(AssetReference("file://RexTerrainPCF.material"), AttributeChange::Disconnected);
+
+    heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
+    connect(heightMapAsset.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded(IAssetTransfer *)));
 }
 
 EC_Terrain::~EC_Terrain()
@@ -182,37 +185,38 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(material.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture0.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded()), Qt::UniqueConnection);
+        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture1.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture2.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture3.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture4.GetNameString())
     {
         IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded()), Qt::UniqueConnection);
+        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == heightMap.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref/*, "Terrain"*/));
-        connect(transfer, SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
+        heightMapAsset->HandleAssetRefChange(attribute);
+//        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(AssetReference(heightMap.Get().ref/*, "Terrain"*/));
+//        connect(transfer, SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded()), Qt::UniqueConnection);
     }
     else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
     {
@@ -224,9 +228,8 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     ///\todo Delete the old unused textures.
 }
 
-void EC_Terrain::MaterialAssetLoaded()
+void EC_Terrain::MaterialAssetLoaded(IAssetTransfer *transfer)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
     assert(transfer);
     if (!transfer)
         return;
@@ -258,9 +261,8 @@ void EC_Terrain::MaterialAssetLoaded()
 */
 }
 
-void EC_Terrain::TextureAssetLoaded()
+void EC_Terrain::TextureAssetLoaded(IAssetTransfer *transfer)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
     assert(transfer);
     if (!transfer)
         return;
@@ -279,9 +281,8 @@ void EC_Terrain::TextureAssetLoaded()
     else if (transfer->source == texture4.Get()) SetTerrainMaterialTexture(4, texture->getName().c_str());
 }
 
-void EC_Terrain::TerrainAssetLoaded()
+void EC_Terrain::TerrainAssetLoaded(IAssetTransfer *transfer)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
     assert(transfer);
     if (!transfer || !transfer->assetPtr)
         return;

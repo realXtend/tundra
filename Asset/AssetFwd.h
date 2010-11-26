@@ -17,6 +17,9 @@ struct AssetReference;
 
 class IEventData;
 
+class IAssetTypeFactory;
+typedef boost::shared_ptr<IAssetTypeFactory> AssetTypeFactoryPtr;
+
 namespace Foundation
 {
     class Framework;
