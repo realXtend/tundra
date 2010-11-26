@@ -37,6 +37,8 @@ public slots:
     */
     UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
+    UiProxyWidget *AddWidgetToSceneRaw(QWidget *widget, int flags = (int)Qt::Dialog) { return AddWidgetToScene(widget, (Qt::WindowFlags)flags); }
+
     /// UiServiceInterface override.
     bool AddWidgetToScene(UiProxyWidget *widget);
 
