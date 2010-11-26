@@ -35,16 +35,16 @@ class TUNDRALOGIC_MODULE_API SceneImporter
 {
 public:
     //! Constructs the importer.
-    /*! \param dest_scene Destination scene
+    /*! \param scene Destination scene
     */
     explicit SceneImporter(const Scene::ScenePtr &scene);
-    
+
     //! Destroys the importer.
     ~SceneImporter();
-    
+
     //! Import a single mesh. Scans the mesh for needed skeleton & materials.
     /*! It's possible to filter the created content by passing scene description (@c desc).
-        \param meshname Filename of mesh
+        \param filename Filename of mesh
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param worldtransform Transform to use for the entity's placeable. You can use Transform's default ctor if you don't want to spesify custom Transform.
@@ -56,10 +56,10 @@ public:
         \param desc Scene description.
         \return Entity pointer if successful (null if failed)
      */
-    Scene::EntityPtr ImportMesh(const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
+    Scene::EntityPtr ImportMesh(const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
         const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets,
         bool inspect = true, const std::string &meshName = std::string(), const SceneDesc &desc = SceneDesc());
-    
+
     //! Imports a dotscene.
     /*! It's possible to filter the created content by passing scene description (@c desc).
         \param filename Input filename
@@ -76,33 +76,38 @@ public:
      */
     QList<Scene::Entity *> Import(const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, const Transform &worldtransform,
         AttributeChange::Type change, bool clearscene = false, bool localassets = true, bool replace = true, const SceneDesc &desc = SceneDesc());
-    
+
     //! Parse a mesh for materials & skeleton ref
     /*! \param meshname Full path & filename of mesh
         \param material_names Return vector for material names
         \param skeleton_name Return value for skeleton ref
      */
-    bool ParseMeshForMaterialsAndSkeleton(const std::string& meshname, std::vector<std::string>& material_names, std::string& skeleton_name) const;
+    bool ParseMeshForMaterialsAndSkeleton(const QString& meshname, QStringList& material_names, QString& skeleton_name) const;
 
-    /// Inspects file and returns a scene description structure of the contents of the file.
+    /// Inspects OGRE .mesh file and returns a scene description structure of the contents of the file.
     /** @param filename File name.
     */
-    SceneDesc GetSceneDescription(const QString &filename) const;
+    SceneDesc GetSceneDescForMesh(const QString &filename) const;
+
+    /// Inspects OGRE .scene file and returns a scene description structure of the contents of the file.
+    /** @param filename File name.
+    */
+    SceneDesc GetSceneDescForScene(const QString &filename) const;
 
 private:
     //! Process the asset references of a node, and its child nodes
     /*! \param node_elem Node element
      */
     void ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir);
-    
+
     //! Process assets
     /*! \param matfilename Material file name
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param localassets Whether to put file:// prefix into all asset references
      */
-    void ProcessAssets(const std::string& matfilename, const std::string& in_asset_dir, const std::string& out_asset_dir, bool localassets);
-    
+//    void ProcessAssets(const std::string& matfilename, const std::string& in_asset_dir, const std::string& out_asset_dir, bool localassets);
+
     //! Process node and its child nodes for creation of entities & components. Done after asset pass
     /*! \param [out] entities List of created entities
         \param node_elem Node element
@@ -116,7 +121,7 @@ private:
      */
     void ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, bool localassets, bool flipyz, bool replace);
-    
+
     //! Process a material file, searching for used materials and writing them to separate files if found, and also recording used textures
     /*! \param matfilename Material file name, including full path
         \param used_materials Set of materials that are needed. Any materials in the file that are not listed will be skipped
@@ -124,26 +129,33 @@ private:
         \param localassets Whether to put file:// prefix into all asset references
         \return Set of used textures
      */
-    std::set<std::string> ProcessMaterialFile(const std::string& matfilename, const std::set<std::string>& used_materials,
-        const std::string& out_asset_dir, bool localassets);
-    
+//    std::set<std::string> ProcessMaterialFile(const std::string& matfilename, const std::set<std::string>& used_materials, const std::string& out_asset_dir, bool localassets);
+    QSet<QString> ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials) const;
+
     //! Copy textures to destination asset directory
     /*! \param used_textures Set of texture names
         \param in_asset_dir Directory to copy from
         \param out_asset_dir Directory to copy to
      */
-    void ProcessTextures(const std::set<std::string>& used_textures, const std::string& in_asset_dir, const std::string& out_asset_dir);
-    
+//    void ProcessTextures(const std::set<std::string>& used_textures, const std::string& in_asset_dir, const std::string& out_asset_dir);
+
     //! Copy an asset file from source to destination asset directory.
     /*! \param name Filename
         \param in_asset_dir Directory to copy from
         \param out_asset_dir Directory to copy to
         \return true if successful
      */
-    bool CopyAsset(const std::string& name, const std::string& in_asset_dir, const std::string& out_asset_dir);
+//    bool CopyAsset(const std::string& name, const std::string& in_asset_dir, const std::string& out_asset_dir);
+
+    /// Loads single material script from material file and returns it as a string.
+    /** @param filename File name.
+        @param materialName Material name.
+        @return Material script as a string, or an empty string if material was not found
+    */
+    QString LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const;
 
     //! Materials read from meshes, in case of no subentity elements
-    std::map<std::string, std::vector<std::string> > mesh_default_materials_;
+    QMap<QString, QStringList> mesh_default_materials_;
 
     //! Materials encountered in scene
     std::set<std::string> material_names_;
