@@ -103,7 +103,14 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     AssetModule::LogInfo("Failed to load local asset " + filename);
     return true;
 }
-
+/*
+virtual IAssetTransfer *LocalAssetProvider::RequestAsset(QString assetRef)
+{
+    IAssetTransfer *transfer = new IAssetTransfer();
+    transfer->source.ref = assetRef;
+    transfer->
+}
+*/
 std::string LocalAssetProvider::GetPathForAsset(const std::string& assetname)
 {
     // Check first all subdirs without recursion, because recursion is potentially slow

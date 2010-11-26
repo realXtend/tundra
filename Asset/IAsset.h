@@ -14,28 +14,49 @@ class IAsset : public QObject
     Q_OBJECT
 
 public:
+    IAsset(const QString &type_, const QString &name_)
+    :type(type_), name(name_)
+    {
+    }
+
     virtual ~IAsset() {}
 
-//    QString Type() const;
+public slots:
 
-//    QString Name() const;
+    /// Returns the type of this asset.
+    QString Type() const { return type; }
 
-//    void LoadFromFile(QString filename);
+    /// Returns the unique name of this asset.
+    QString Name() const { return name; }
+
+public:
+    /// Loads this asset from file.
+//    virtual void LoadFromFile(QString filename);
+
+    /// Loads this asset from the specified file data in memory.
+//    virtual void LoadFromFileInMemory(const u8 *data);
 
     /// Stores this asset to disk to the given file.
-    void SaveToFile(QString filename);
+ //   virtual void SaveToFile(const QString &filename);
 
     /// Goes through the contents of this asset and computes a hash that identifies the data.
 //    Hash ComputeContentHash() const;
 
     /// Returns all the assets this asset refers to (but not the references those assets refer to).
-    std::vector<AssetReference> FindReferences() const;
+    virtual std::vector<AssetReference> FindReferences() const;
 
     /// Returns all the assets this asset refers to, and the assets those assets refer to, and so on.
     std::vector<AssetReference> FindReferencesRecursive() const;
 
+//   virtual void LoadGPU();
+//   void UnloadGPU();
+
+//    void UnloadRawData() { rawAssetData.clear(); }
+
+//    void ReloadRawData() { // load from cache; }
+
     /// Stores the raw asset bytes for this asset.
-//    std::vector<char> rawAssetData;
+//    std::vector<u8> rawAssetData;
 
     /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
     /// transition period to new Asset API. Will be removed. -jj
@@ -45,6 +66,9 @@ public:
 private:
     /// Specifies the provider this asset was downloaded from.
     Foundation::AssetProviderWeakPtr provider;
+
+    QString type;
+    QString name;
 };
 
 #endif

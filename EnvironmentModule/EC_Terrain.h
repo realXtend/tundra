@@ -9,6 +9,8 @@
 #include "Vector3D.h"
 #include "Transform.h"
 #include "AssetReference.h"
+#include "AssetFwd.h"
+#include "AssetRefListener.h"
 
 namespace Ogre
 {
@@ -363,9 +365,9 @@ private slots:
     //! Emitted when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
 
-    void MaterialAssetLoaded();
-    void TextureAssetLoaded();
-    void TerrainAssetLoaded();
+    void MaterialAssetLoaded(IAssetTransfer *transfer);
+    void TextureAssetLoaded(IAssetTransfer *transfer);
+    void TerrainAssetLoaded(IAssetTransfer *transfer);
 
     /// (Re)checks whether this entity has EC_Placeable (or if it was just added or removed), and reparents the rootNode of this component to it or the scene root.
     /// Additionally re-applies the visibility of each terrain patch that is currently attached to the terrain node.s
@@ -373,6 +375,8 @@ private slots:
 
 private:
     explicit EC_Terrain(IModule* module);
+
+    boost::shared_ptr<AssetRefListener> heightMapAsset;
 
     /// Creates the patch parent/root node if it does not exist. After this function returns, the 'root' member node will exist, unless
     /// Ogre rendering subsystem fails.
