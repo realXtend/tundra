@@ -18,7 +18,7 @@ namespace OgreRenderer
     {
     }
 
-    OgreMeshResource::OgreMeshResource(const std::string& id, Foundation::AssetPtr source) : 
+    OgreMeshResource::OgreMeshResource(const std::string& id, Foundation::AssetInterfacePtr source) : 
         ResourceInterface(id)
     {
         SetData(source);
@@ -29,7 +29,7 @@ namespace OgreRenderer
         RemoveMesh();
     }
 
-    bool OgreMeshResource::SetData(Foundation::AssetPtr source)
+    bool OgreMeshResource::SetData(Foundation::AssetInterfacePtr source)
     {
         PROFILE(OgreMeshResource_SetData);
         if (!source)

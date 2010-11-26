@@ -12,6 +12,8 @@
 #include <RexTypes.h>
 #include <QWidget>
 
+#include "AssetFwd.h"
+
 #include <boost/shared_ptr.hpp>
 
 QT_BEGIN_NAMESPACE
@@ -22,8 +24,6 @@ QT_END_NAMESPACE
 namespace Foundation
 {
     class Framework;
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
 namespace Resource
@@ -46,7 +46,7 @@ public:
                        QWidget *parent = 0);
     virtual ~AudioPreviewEditor();
 
-    void HandleAssetReady(Foundation::AssetPtr asset);
+    void HandleAssetReady(Foundation::AssetInterfacePtr asset);
 
     void HandleResouceReady(Resource::Events::ResourceReady *res);
 

@@ -24,7 +24,8 @@ LocalAssetStorage::~LocalAssetStorage()
 
 QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool recursiveLookup)
 {
-    if (boost::filesystem::exists((AssetAPI::GuaranteeTrailingSlash(directory) + assetname).toStdString()))
+    QDir dir(GuaranteeTrailingSlash(directory) + assetname);
+    if (boost::filesystem::exists(dir.absolutePath().toStdString()))
         return directory;
 
     if (!recursive || !recursiveLookup)
@@ -36,9 +37,11 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
         boost::filesystem::recursive_directory_iterator end_iter;
         // Check the subdir
         for(; iter != end_iter; ++iter)
-            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(
-                (AssetAPI::GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname).toStdString()))
+        {
+            QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + assetname);
+            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
                 return iter->path().string().c_str();
+        }
     }
     catch (...)
     {

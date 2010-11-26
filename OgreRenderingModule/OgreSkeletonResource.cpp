@@ -14,7 +14,7 @@ namespace OgreRenderer
     {
     }
 
-    OgreSkeletonResource::OgreSkeletonResource(const std::string& id, Foundation::AssetPtr source) :
+    OgreSkeletonResource::OgreSkeletonResource(const std::string& id, Foundation::AssetInterfacePtr source) :
         ResourceInterface(id)
     {
         SetData(source);
@@ -25,7 +25,7 @@ namespace OgreRenderer
         RemoveSkeleton();
     }
 
-    bool OgreSkeletonResource::SetData(Foundation::AssetPtr source)
+    bool OgreSkeletonResource::SetData(Foundation::AssetInterfacePtr source)
     {
         if (!source)
         {

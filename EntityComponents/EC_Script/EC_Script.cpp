@@ -5,8 +5,11 @@
 #include "IScriptInstance.h"
 
 #include "IAttribute.h"
+#include "IAssetTransfer.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
+#include "AssetRefListener.h"
+
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Script")
 
 EC_Script::~EC_Script()
@@ -60,18 +63,29 @@ EC_Script::EC_Script(IModule *module):
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
+
+    scriptAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
+    connect(scriptAsset.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(ScriptAssetLoaded(IAssetTransfer*)));
 }
 
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute == &scriptRef)
     {
+        scriptAsset->HandleAssetRefChange(attribute);
+        /*
         if (scriptRef.Get().ref != lastRef_)
         {
             emit ScriptRefChanged(scriptRef.Get().ref);
             lastRef_ = scriptRef.Get().ref;
         }
+        */
     }
+}
+
+void EC_Script::ScriptAssetLoaded(IAssetTransfer *transfer)
+{
+    emit ScriptAssetChanged(transfer->asset);
 }
 
 void EC_Script::RegisterActions()

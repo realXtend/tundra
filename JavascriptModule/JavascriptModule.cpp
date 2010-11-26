@@ -12,7 +12,9 @@
 #include "ScriptMetaTypeDefines.h"
 #include "JavascriptInstance.h"
 
+#include "AssetAPI.h"
 #include "EC_Script.h"
+#include "ScriptAssetFactory.h"
 #include "EC_DynamicComponent.h"
 #include "EventManager.h"
 #include "SceneManager.h"
@@ -47,6 +49,7 @@ void JavascriptModule::Load()
 {
     DECLARE_MODULE_EC(EC_Script);
     DECLARE_MODULE_EC(EC_DynamicComponent);
+    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory));
 }
 
 void JavascriptModule::PreInitialize()

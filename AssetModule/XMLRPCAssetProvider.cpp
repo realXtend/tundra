@@ -46,7 +46,7 @@ namespace Asset
         return name;
     }
 
-    bool XMLRPCAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
+    bool XMLRPCAssetProvider::IsValidRef(const std::string& asset_id, const std::string& asset_type)
     {
         // Has to be protocol based url
         if (asset_id.find("://") == std::string::npos)
@@ -66,7 +66,7 @@ namespace Asset
     
     bool XMLRPCAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
-        if (!IsValidId(asset_id, asset_type))
+        if (!IsValidRef(asset_id, asset_type))
             return false;
 
         // See if request already exists, just add tag in that case
@@ -111,10 +111,10 @@ namespace Asset
         return true;
     }
     
-    Foundation::AssetPtr XMLRPCAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
+    Foundation::AssetInterfacePtr XMLRPCAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
         // Not supported
-        return Foundation::AssetPtr();
+        return Foundation::AssetInterfacePtr();
     }
     
     bool XMLRPCAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)    
@@ -200,7 +200,7 @@ namespace Asset
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
         {
-            Foundation::AssetPtr new_asset = Foundation::AssetPtr(new RexAsset(request.asset_id_, request.asset_type_));
+            Foundation::AssetInterfacePtr new_asset = Foundation::AssetInterfacePtr(new RexAsset(request.asset_id_, request.asset_type_));
             RexAsset::AssetDataVector& data = checked_static_cast<RexAsset*>(new_asset.get())->GetDataInternal();
             
             Poco::Base64Decoder decoder(base64_data);

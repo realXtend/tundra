@@ -876,10 +876,10 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             if(QString::fromStdString(entity_->getMesh()->getName()) == meshRef.Get().ref/*meshResourceId.Get()*/)
                 return;
 
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
         if (transfer)
         {
-            connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
         }
         else
         {
@@ -899,10 +899,10 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
         materialRequests.clear();
         for(uint i = 0; i < materials.size(); i++)
         {
-            IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(materials[i].toString());
-            if (transfer)
+            AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(materials[i].toString());
+            if (transfer.get())
             {
-                connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMaterialAssetLoaded()), Qt::UniqueConnection);
+                connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMaterialAssetLoaded()), Qt::UniqueConnection);
                 materialRequests[i] = materials[i].toString();
             }
         }
@@ -916,9 +916,9 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
         if (entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonRef.Get().ref/*skeletonId.Get()*/.toStdString())
             return;
 
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
-        if (transfer)
-            connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
+        if (transfer.get())
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
     }
 }
 

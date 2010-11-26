@@ -73,35 +73,35 @@ namespace OgreRenderer
             \param tag Request tag from asset event
             \return true if successful
          */
-        bool UpdateMesh(Foundation::AssetPtr source, request_tag_t tag); 
+        bool UpdateMesh(Foundation::AssetInterfacePtr source, request_tag_t tag); 
 
         //! Creates or updates a skeleton, based on source asset data
         /*! \param source Asset
             \param tag Request tag from asset event
             \return true if successful
          */
-        bool UpdateSkeleton(Foundation::AssetPtr source, request_tag_t tag); 
+        bool UpdateSkeleton(Foundation::AssetInterfacePtr source, request_tag_t tag); 
 
         //! Creates or updates a material, based on source asset data
         /*! \param source The material asset data.
             \param tag Request tag from raw asset resource event
             \return true if successful
          */
-        bool UpdateMaterial(Foundation::AssetPtr source, request_tag_t tag);
+        bool UpdateMaterial(Foundation::AssetInterfacePtr source, request_tag_t tag);
 
         //! Creates or updates particle scripts, based on source asset data
         /*! \param source The particle script asset data.
             \param tag Request tag from raw asset resource event
             \return true if successful
          */
-        bool UpdateParticles(Foundation::AssetPtr source, request_tag_t tag);
+        bool UpdateParticles(Foundation::AssetInterfacePtr source, request_tag_t tag);
 
         //! Creates or updates image based texture, based on source asset data
         /*! \param source The image asset data.
             \param tag Request tag from raw asset resource event
             \return true if successful
          */
-        bool UpdateImageTexture(Foundation::AssetPtr source, request_tag_t tag);
+        bool UpdateImageTexture(Foundation::AssetInterfacePtr source, request_tag_t tag);
 
         //! Processes resource references of a resource once it has been loaded.
         /*! Adds references to outstanding list and makes requests as necessary.

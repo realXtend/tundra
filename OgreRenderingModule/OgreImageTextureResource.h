@@ -32,7 +32,7 @@ namespace OgreRenderer
             \param texturequality texture quality
             \param source source image
         */
-        OgreImageTextureResource(const std::string& id, TextureQuality texturequality, Foundation::AssetPtr source);
+        OgreImageTextureResource(const std::string& id, TextureQuality texturequality, Foundation::AssetInterfacePtr source);
 
         //! destructor
         virtual ~OgreImageTextureResource();
@@ -55,7 +55,7 @@ namespace OgreRenderer
         /*! \param source source raw texture data
             \return true if successful
          */
-        bool SetData(Foundation::AssetPtr source);
+        bool SetData(Foundation::AssetInterfacePtr source);
 
         //! Export texture to a file. 
         /*! Filename extension determines file format, supported extension

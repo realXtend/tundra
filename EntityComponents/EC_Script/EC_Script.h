@@ -6,6 +6,7 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "AssetReference.h"
+#include "AssetFwd.h"
 
 class IScriptInstance;
 
@@ -97,12 +98,17 @@ signals:
     */
     void ScriptRefChanged(const QString &newRef);
 
+    void ScriptAssetChanged(AssetPtr newScript);
+
 private slots:
     /// Handles logic regarding attribute changes of this EC.
     /** @param attribute Attribute that changed.
         @param change Change type.
     */
     void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+
+    /// Called when a new script asset has been loaded.
+    void ScriptAssetLoaded(IAssetTransfer *transfer);
 
     /// Registers the actions this component provides when parent entity is set.
     void RegisterActions();
@@ -112,6 +118,9 @@ private:
     /** @param module Declaring module.
     */
     explicit EC_Script(IModule *module);
+
+    /// Handles the downloading of script assets.
+    boost::shared_ptr<AssetRefListener> scriptAsset;
 
     /// Script instance.
     IScriptInstance *scriptInstance_;

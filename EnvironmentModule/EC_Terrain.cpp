@@ -64,7 +64,7 @@ EC_Terrain::EC_Terrain(IModule* module) :
     texture2.Set(AssetReference(""), AttributeChange::Disconnected);
     texture3.Set(AssetReference(""), AttributeChange::Disconnected);
     texture4.Set(AssetReference(""), AttributeChange::Disconnected);
-    material.Set(AssetReference("file://RexTerrainPCF.material"), AttributeChange::Disconnected);
+    material.Set(AssetReference("local://RexTerrainPCF.material"), AttributeChange::Disconnected);
 
     heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
     connect(heightMapAsset.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded(IAssetTransfer *)));
@@ -184,33 +184,33 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     else if (changedAttribute == material.GetNameString())
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(material.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture0.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture1.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture2.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture3.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture4.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == heightMap.GetNameString())
     {
@@ -673,31 +673,6 @@ bool EC_Terrain::SaveToFile(QString filename)
     fclose(handle);
 
     return true;
-}
-
-bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
-{
-    FILE *handle = fopen(filename, "rb");
-    if (!handle)
-    {
-        LogError("Could not open file " + std::string(filename) + ".");
-        return false;
-    }
-
-    fseek(handle, 0, SEEK_END);
-    long numBytes = ftell(handle);
-    if (numBytes == 0)
-    {
-        fclose(handle);
-        return false;
-    }
-
-    fseek(handle, 0, SEEK_SET);
-    dst.resize(numBytes);
-    size_t numRead = fread(&dst[0], sizeof(u8), numBytes, handle);
-    fclose(handle);
-
-    return (long)numRead == numBytes;
 }
 
 u32 ReadU32(const char *dataPtr, size_t numBytes, int &offset)

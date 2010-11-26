@@ -19,7 +19,7 @@ namespace OgreRenderer
     {
     }
 
-    OgreMaterialResource::OgreMaterialResource(const std::string& id, ShadowQuality shadowquality, Foundation::AssetPtr source) : 
+    OgreMaterialResource::OgreMaterialResource(const std::string& id, ShadowQuality shadowquality, Foundation::AssetInterfacePtr source) : 
         ResourceInterface(id),
         shadowquality_(shadowquality)
     {
@@ -36,7 +36,7 @@ namespace OgreRenderer
         ogre_material_ = material;
     }
     
-    bool OgreMaterialResource::SetData(Foundation::AssetPtr source)
+    bool OgreMaterialResource::SetData(Foundation::AssetInterfacePtr source)
     {
         // Remove old material if any
         RemoveMaterial();

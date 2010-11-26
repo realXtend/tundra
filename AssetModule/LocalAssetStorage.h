@@ -33,8 +33,8 @@ public:
     QString GetFullPathForAsset(const QString &assetname, bool recursive);
 
     /// Returns the URL that should be used in a scene asset reference attribute to refer to the asset with the given localName.
-    /// Example: GetFullAssetURL("my.mesh") might return "file://my.mesh".
-    /// \note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "file://my.mesh".
+    /// Example: GetFullAssetURL("my.mesh") might return "local://my.mesh".
+    /// \note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
     QString GetFullAssetURL(const QString &localName);
 
     /// Starts listening on the local directory this asset storage points to.
@@ -47,7 +47,7 @@ public:
 
     QString Name() const { return name; }
 
-    QString BaseURL() const { return "file://"; }
+    QString BaseURL() const { return "local://"; }
 
 private:
 
