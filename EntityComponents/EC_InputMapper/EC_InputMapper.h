@@ -120,9 +120,9 @@ public:
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
     
-    /// If single shot is enabled, input mapper does not repeat keypressed actions.
-    Q_PROPERTY(bool singleShot READ getsingleShot WRITE setsingleShot)
-    DEFINE_QPROPERTY_ATTRIBUTE(bool, singleShot);
+    /// Trigger on keyrepeats, if it is off input mapper does not repeat keypressed actions. Default is on.
+    Q_PROPERTY(bool keyrepeatTrigger READ getkeyrepeatTrigger WRITE setkeyrepeatTrigger)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, keyrepeatTrigger);
 
     //Attribute<QVariantList > mappings;
 
