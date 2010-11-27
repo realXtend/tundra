@@ -120,6 +120,10 @@ public:
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
     
+    /// If single shot is enabled, input mapper does not repeat keypressed actions.
+    Q_PROPERTY(bool singleShot READ getsingleShot WRITE setsingleShot)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, singleShot);
+
     //Attribute<QVariantList > mappings;
 
     struct ActionInvocation
