@@ -67,7 +67,8 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     mappings(this, "Mappings"),
     executionType(this, "Action execution type", 1),
     modifiersEnabled(this, "Key modifiers enable", true),
-    enabled(this, "Enable actions", true)
+    enabled(this, "Enable actions", true),
+    singleShot(this, "Enable singleshot", false)
 {
     static AttributeMetadata executionAttrData;
     static bool metadataInitialized = false;
@@ -121,6 +122,13 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
     if (!enabled.Get())
         return;
     
+    if ( singleShot.Get() )
+    {
+        // Now we do not repeat keypressed events, if single shot is on.
+        if ( e != 0 && e->eventType == KeyEvent::KeyPressed &&  e->keyPressCount > 1 )
+            return;
+    }
+
     Mappings_t::iterator it;
     if (modifiersEnabled.Get())
         it = mappings_.find(qMakePair(QKeySequence(e->keyCode | e->modifiers), e->eventType));
