@@ -68,7 +68,7 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     executionType(this, "Action execution type", 1),
     modifiersEnabled(this, "Key modifiers enable", true),
     enabled(this, "Enable actions", true),
-    singleShot(this, "Enable singleshot", false)
+    keyrepeatTrigger(this, "Trigger on keyrepeats", true)
 {
     static AttributeMetadata executionAttrData;
     static bool metadataInitialized = false;
@@ -122,9 +122,9 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
     if (!enabled.Get())
         return;
     
-    if ( singleShot.Get() )
+    if ( !keyrepeatTrigger.Get() )
     {
-        // Now we do not repeat keypressed events, if single shot is on.
+        // Now we do not repeat keypressed events.
         if ( e != 0 && e->eventType == KeyEvent::KeyPressed &&  e->keyPressCount > 1 )
             return;
     }
