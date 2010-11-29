@@ -68,35 +68,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     }
 
     scene_desc_ = desc;
-/*
-    std::string prefix;
-    if (localassets)
-        prefix = "file://";
 
-    // Create output asset path if does not exist
-    if (boost::filesystem::exists(out_asset_dir) == false)
-        boost::filesystem::create_directory(out_asset_dir);
-
-    // If in asset dir not specified, use the branch path of the mesh
-    if (in_asset_dir.empty())
-    {
-        boost::filesystem::path path(meshname);
-        in_asset_dir = path.branch_path().string();
-    }
-    
-    if (!in_asset_dir.empty())
-    {
-        char lastchar = in_asset_dir[in_asset_dir.length() - 1];
-        if ((lastchar != '/') && (lastchar != '\\'))
-            in_asset_dir += '/';
-    }
-    if (!out_asset_dir.empty())
-    {
-        char lastchar = out_asset_dir[out_asset_dir.length() - 1];
-        if ((lastchar != '/') && (lastchar != '\\'))
-            out_asset_dir += '/';
-    }
-*/
     boost::filesystem::path path(filename);
     std::string meshleafname = path.leaf();
 
@@ -130,8 +102,9 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
             material_names_set.insert(material_names[i]);
         }
     }
+
     TundraLogicModule::LogDebug("Skeleton ref: " + skeleton_name.toStdString());
-    
+
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     QStringList material_files;
     if (inspect)
@@ -470,7 +443,6 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
 
     fs::path path(filename.toStdString());
     QString meshleafname = path.leaf().c_str();
-//    QString prefix = "file://";
 
     QStringList material_names;
     QString skeleton_name;
@@ -1246,7 +1218,7 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
         matfile.close();
         if (bytes.size() == 0)
         {
-            TundraLogicModule::LogError("Zero byte material file: " + filename.toStdString());
+            TundraLogicModule::LogError("Empty material file: " + filename.toStdString());
             return material;
         }
 
