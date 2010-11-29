@@ -553,6 +553,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
     try
     {
         entity_->getSubEntity(index)->setMaterialName(material_name);
+        emit OnMaterialChanged(index, QString(material_name.c_str()));
     }
     catch (Ogre::Exception& e)
     {
@@ -565,13 +566,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
 
 bool EC_Mesh::SetMaterial(uint index, const QString& material_name) 
 {
-    if (SetMaterial(index, material_name.toStdString()))
-    {
-        emit OnMaterialChanged(index, material_name);
-        return true;
-    }
-    else
-        return false;
+    return SetMaterial(index, material_name.toStdString());
 }
 
 bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name)
