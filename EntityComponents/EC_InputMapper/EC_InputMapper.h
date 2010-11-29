@@ -120,6 +120,10 @@ public:
     Q_PROPERTY(bool enabled READ getenabled WRITE setenabled)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, enabled);
     
+    /// Trigger on keyrepeats, if it is off input mapper does not repeat keypressed actions. Default is on.
+    Q_PROPERTY(bool keyrepeatTrigger READ getkeyrepeatTrigger WRITE setkeyrepeatTrigger)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, keyrepeatTrigger);
+
     //Attribute<QVariantList > mappings;
 
     struct ActionInvocation

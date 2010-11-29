@@ -42,8 +42,6 @@ UiProxyWidget *UiService::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flag
     UiProxyWidget *proxy = new UiProxyWidget(widget, flags);
     assert(proxy->widget());
     
-    QObject::connect(proxy, SIGNAL(destroyed()), this, SLOT(OnProxyDestroyed()));
-    
     // Synchorize windowState flags
     proxy->widget()->setWindowState(widget->windowState());
 
@@ -66,7 +64,7 @@ bool UiService::AddWidgetToScene(UiProxyWidget *widget)
     if (widgets_.contains(widget))
         return false;
 
-    QObject::connect(widget, SIGNAL(destroyed()), this, SLOT(OnProxyDestroyed()));
+    QObject::connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(OnProxyDestroyed(QObject *)));
     
     widgets_.append(widget);
 
@@ -123,10 +121,11 @@ void UiService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
     fullScreenWidgets_.removeOne(widget);
 }
 
-void UiService::OnProxyDestroyed()
+void UiService::OnProxyDestroyed(QObject* obj)
 {
     // Make sure we don't get dangling pointers
-    QGraphicsProxyWidget* proxy = dynamic_cast<QGraphicsProxyWidget*>(sender());
+    // Note: at this point it's a QObject, not a QGraphicsProxyWidget anymore
+    QGraphicsProxyWidget* proxy = static_cast<QGraphicsProxyWidget*>(obj);
     widgets_.removeOne(proxy);
     fullScreenWidgets_.removeOne(proxy);
 }
