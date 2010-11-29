@@ -28,8 +28,6 @@
 
 #include <QtScript>
 
-Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*) ///@todo Remove? This is already done in ScriptMetaTypeDefines.cpp
-
 #include "MemoryLeakCheck.h"
 
 std::string JavascriptModule::type_name_static_ = "Javascript";
@@ -71,13 +69,6 @@ void JavascriptModule::Initialize()
     framework_->GetServiceManager()->RegisterService(Service::ST_JavascriptScripting, service);
 
     engine->globalObject().setProperty("print", engine->newFunction(Print));
-
-    QScriptValue objectbutton= engine->scriptValueFromQMetaObject<QPushButton>();
-    engine->globalObject().setProperty("QPushButton", objectbutton);
-
-    JavascriptModule::RunScript("jsmodules/lib/json2.js");
-
-    RunString("print('Hello from qtscript');");
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 }
@@ -328,12 +319,6 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
 {
     std::cout << "{QtScript} " << context->argument(0).toString().toStdString() << "\n";
-    return QScriptValue();
-}
-
-QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine)
-{
-    JavascriptModule::GetInstance()->RunScript(context->argument(0).toString());
     return QScriptValue();
 }
 
