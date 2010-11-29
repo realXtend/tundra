@@ -39,31 +39,31 @@ material Rex/TerrainPCF
 			//Detail0
 			texture_unit detail0
 			{
-				texture terr_dirt-grass.jpg
+				texture local://terr_dirt-grass.jpg
 			}
 
 			//Detail1
 			texture_unit detail1
 			{
-				texture terr_dirt-grass.jpg
+				texture local://terr_dirt-grass.jpg
 			}
 
 			//Detail2
 			texture_unit detail2
 			{
-				texture terr_dirt-grass.jpg
+				texture local://terr_dirt-grass.jpg
 			}
 
 			//Detail3
 			texture_unit detail3
 			{
-				texture terr_dirt-grass.jpg
+				texture local://terr_dirt-grass.jpg
 			}
 			
 			//Detail4
 			texture_unit detail4
 			{
-				texture terr_dirt-grass.jpg
+				texture local://terr_dirt-grass.jpg
 			}
 
 			texture_unit shadowMap0
@@ -91,7 +91,7 @@ material Rex/TerrainPCF
 		{
 			texture_unit baseMap
 			{
-				texture TextureMissing.png
+				texture local://TextureMissing.png
 			}
 		}
       }	
