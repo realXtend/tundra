@@ -297,19 +297,21 @@ void AddContentWindow::AddContent()
                 if (ai != newDesc.assets.end())
                     newDesc.assets.removeOne(*ai);
             }
-
-            // Set (possibly new) destination names to scene desc.
-            QList<AssetDesc>::iterator ai = qFind(newDesc.assets.begin(), newDesc.assets.end(), aitem->desc);
-            assert(ai != newDesc.assets.end());
-            if (ai != newDesc.assets.end())
+            else
             {
-                (*ai).destinationName = aitem->text(3).trimmed(); //= dest->GetFullAssetURL(aitem->text(3).trimmed());
-
-                // Add textures to special map for later use.
-                if (aitem->desc.typeName == "texture")
+                // Set (possibly new) destination names to scene desc.
+                QList<AssetDesc>::iterator ai = qFind(newDesc.assets.begin(), newDesc.assets.end(), aitem->desc);
+                assert(ai != newDesc.assets.end());
+                if (ai != newDesc.assets.end())
                 {
-                    int idx = aitem->desc.filename.lastIndexOf("/");
-                    refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = dest->GetFullAssetURL(aitem->text(3).trimmed());//aitem->desc.destinationName;
+                    (*ai).destinationName = aitem->text(3).trimmed(); //= dest->GetFullAssetURL(aitem->text(3).trimmed());
+
+                    // Add textures to special map for later use.
+                    if (aitem->desc.typeName == "texture")
+                    {
+                        int idx = aitem->desc.filename.lastIndexOf("/");
+                        refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = dest->GetFullAssetURL(aitem->text(3).trimmed());//aitem->desc.destinationName;
+                    }
                 }
             }
         }
