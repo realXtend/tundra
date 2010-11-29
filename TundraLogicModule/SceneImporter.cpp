@@ -57,9 +57,9 @@ SceneImporter::~SceneImporter()
 {
 }
 
-Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
-    const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets,
-    bool inspect, const std::string &meshName, const SceneDesc &desc)
+Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
+    const std::string& entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect,
+    const std::string &meshName, const SceneDesc &desc)
 {
     if (!scene_)
     {
@@ -68,11 +68,11 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     }
 
     scene_desc_ = desc;
-
+/*
     std::string prefix;
     if (localassets)
         prefix = "file://";
-/*
+
     // Create output asset path if does not exist
     if (boost::filesystem::exists(out_asset_dir) == false)
         boost::filesystem::create_directory(out_asset_dir);
@@ -245,23 +245,32 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     // Fill the mesh attributes
     QVector<QVariant> materials;
     for (uint i = 0; i < material_names.size(); ++i)
-        materials.push_back(QString::fromStdString(prefix + material_names[i].toStdString() + ".material"));
+        materials.push_back(prefix + material_names[i] + ".material");
 
     EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
     if (meshPtr)
     {
-        meshPtr->meshRef.Set(AssetReference(QString::fromStdString(prefix + meshleafname)), AttributeChange::Disconnected);
+        meshPtr->meshRef.Set(AssetReference(prefix + QString(meshleafname.c_str())), AttributeChange::Disconnected);
         if (!skeleton_name.isEmpty())
-            meshPtr->skeletonRef.Set(AssetReference(QString::fromStdString(prefix + skeleton_name.toStdString())), AttributeChange::Disconnected);
+            meshPtr->skeletonRef.Set(AssetReference(prefix + skeleton_name), AttributeChange::Disconnected);
         meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), AttributeChange::Disconnected);
 
         if (inspect)
             meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), AttributeChange::Disconnected);
         else
-            meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(0,0,0), Vector3df(1,1,1)), AttributeChange::Disconnected);
+            meshPtr->nodeTransformation.Set(Transform(), AttributeChange::Disconnected);
     }
     else
         TundraLogicModule::LogError("No EC_Mesh was created!");
+
+    // Fill the name attributes
+    /*
+    EC_Name * namePtr = checked_static_cast<EC_Name *>(newentity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
+    if (namePtr)
+        namePtr->name.Set(name, AttributeChange::Disconnected);
+    else
+        TundraLogicModule::LogError("No EC_Name was created!");
+    */
 
     // All components have been loaded/modified. Trigger change for them now.
     foreach(ComponentPtr c, newentity->GetComponentVector())
@@ -272,8 +281,8 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     return newentity;
 }
 
-QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
-    const Transform &worldtransform, AttributeChange::Type change, bool clearscene, bool localassets, bool replace, const SceneDesc &desc)
+QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
+    const QString &prefix, AttributeChange::Type change, bool clearscene, bool replace, const SceneDesc &desc)
 {
     QList<Scene::Entity *> ret;
     if (!scene_)
@@ -292,6 +301,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
             TundraLogicModule::LogInfo("Importing scene from " + filename);
         
         // Create output asset path if does not exist
+        /*
         if (boost::filesystem::exists(out_asset_dir) == false)
             boost::filesystem::create_directory(out_asset_dir);
         
@@ -314,7 +324,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
             if ((lastchar != '/') && (lastchar != '\\'))
                 out_asset_dir += '/';
         }
-        
+        */
         QFile file(filename.c_str());
         if (!file.open(QFile::ReadOnly))
         {
@@ -391,7 +401,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
 
         Quaternion rot(DEGTORAD * worldtransform.rotation.x, DEGTORAD * worldtransform.rotation.y,
             DEGTORAD * worldtransform.rotation.z);
-        ProcessNodeForCreation(ret, node_elem, worldtransform.position, rot, worldtransform.scale, change, localassets, flipyz, replace);
+        ProcessNodeForCreation(ret, node_elem, worldtransform.position, rot, worldtransform.scale, change, prefix, flipyz, replace);
     }
     catch (Exception& e)
     {
@@ -938,7 +948,7 @@ void SceneImporter::ProcessAssets(const std::string& matfilename, const std::str
 */
 
 void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
-    AttributeChange::Type change, bool localassets, bool flipyz, bool replace)
+    AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace)
 {
     while (!node_elem.isNull())
     {
@@ -947,11 +957,11 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
         QDomElement quat_elem = node_elem.firstChildElement("quaternion");
         QDomElement scale_elem = node_elem.firstChildElement("scale");
         float posx, posy, posz, rotx = 0.0f, roty = 0.0f, rotz = 0.0f, rotw = 1.0f, scalex, scaley, scalez;
-        
+
         posx = ParseString<float>(pos_elem.attribute("x").toStdString(), 0.0f);
         posy = ParseString<float>(pos_elem.attribute("y").toStdString(), 0.0f);
         posz = ParseString<float>(pos_elem.attribute("z").toStdString(), 0.0f);
-        
+
         if (!rot_elem.isNull())
         {
             rotx = ParseString<float>(rot_elem.attribute("qx").toStdString(), 0.0f);
@@ -966,21 +976,21 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
             rotz = ParseString<float>(quat_elem.attribute("z").toStdString(), 0.0f);
             rotw = ParseString<float>(quat_elem.attribute("w").toStdString(), 1.0f);
         }
-        
+
         scalex = ParseString<float>(scale_elem.attribute("x").toStdString(), 1.0f);
         scaley = ParseString<float>(scale_elem.attribute("y").toStdString(), 1.0f);
         scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
-        
+
         Vector3df newpos(posx, posy, posz);
         Quaternion newrot(rotx, roty, rotz, rotw);
         Vector3df newscale(fabsf(scalex), fabsf(scaley), fabsf(scalez));
-        
+
         // Transform by the parent transform
         newrot = rot * newrot;
         newscale = scale * newscale;
         newpos = rot * (scale * newpos);
         newpos += pos;
-        
+
         // Process entity node, if any
         QDomElement entity_elem = node_elem.firstChildElement("entity");
         if (!entity_elem.isNull())
@@ -1003,10 +1013,9 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
             QString mesh_name = QString::fromStdString(mesh_names_[orig_mesh_name]);
             
             bool cast_shadows = ParseBool(entity_elem.attribute("castShadows").toStdString());
-            
-            if (localassets)
-                mesh_name = "file://" + mesh_name;
-            
+
+            mesh_name = prefix + mesh_name;
+
             Scene::EntityPtr entity;
             bool new_entity = false;
             QString node_name_qstr = QString::fromStdString(node_name);
@@ -1039,11 +1048,11 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                 {
                     TundraLogicModule::LogInfo("Updating existing entity " + node_name);
                 }
-                
+
                 EC_Mesh* meshPtr = 0;
                 EC_Name* namePtr = 0;
                 EC_Placeable* placeablePtr = 0;
-                
+
                 if (entity)
                 {
                     meshPtr = checked_static_cast<EC_Mesh*>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
@@ -1065,8 +1074,8 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                                 material_name.replace('/', '_');
                                 
                                 int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
-                                if (localassets)
-                                    material_name = "file://" + material_name;
+                                
+                                material_name = prefix + material_name;
                                 if (index >= materials.size())
                                     materials.resize(index + 1);
                                 materials[index] = material_name;
@@ -1082,8 +1091,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                             for (uint i = 0; i < default_materials.size(); ++i)
                             {
                                 QString material_name = default_materials[i] + ".material";
-                                if (localassets)
-                                    material_name = "file://" + material_name;
+                                material_name = prefix + material_name;
                                 materials[i] = material_name;
                             }
                         }
@@ -1131,12 +1139,12 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                 }
             }
         }
-        
+
         // Process child nodes
         QDomElement childnode_elem = node_elem.firstChildElement("node");
         if (!childnode_elem.isNull())
-            ProcessNodeForCreation(entities, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz, replace);
-        
+            ProcessNodeForCreation(entities, childnode_elem, newpos, newrot, newscale, change, "prefix", flipyz, replace);
+
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
     }
@@ -1199,12 +1207,7 @@ QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfi
                             // Check for textures
                             if (known_material)
                                 if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
-                                {
-                                    std::string texname = line.substr(8);
-                                    used_textures.insert(texname.c_str());
-//                                    if (localassets)
-//                                        line = "texture file://" + texname;
-                                }
+                                    used_textures.insert(line.substr(8).c_str());
                         }
                     }
                     else
@@ -1214,58 +1217,11 @@ QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfi
                     }
                 }
             }
-
-//            matoutfile.close();
         }
     }
     
     return used_textures;
 }
-
-/*
-void SceneImporter::ProcessTextures(const std::set<std::string>& used_textures, const std::string& in_asset_dir, const std::string& out_asset_dir)
-{
-    // Copy textures
-    std::set<std::string>::const_iterator i = used_textures.begin();
-    while (i != used_textures.end())
-    {
-        std::string texname = *i;
-        CopyAsset(texname, in_asset_dir, out_asset_dir);
-        ++i;
-    }
-}
-*/
-
-/*
-bool SceneImporter::CopyAsset(const std::string& name, const std::string& in_asset_dir, const std::string& out_asset_dir)
-{
-    QFile asset_in((in_asset_dir + name).c_str());
-    if (!asset_in.open(QFile::ReadOnly))
-    {
-        TundraLogicModule::LogError("Could not open input asset file " + (in_asset_dir + name));
-        return false;
-    }
-    else
-    {
-        QByteArray bytes = asset_in.readAll();
-        asset_in.close();
-        
-        QFile asset_out((out_asset_dir + name).c_str());
-        if (!asset_out.open(QFile::WriteOnly))
-        {
-            TundraLogicModule::LogError("Could not open output asset file " + (out_asset_dir + name));
-            return false;
-        }
-        else
-        {
-            asset_out.write(bytes);
-            asset_out.close();
-        }
-    }
-    
-    return true;
-}
-*/
 
 QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const
 {
@@ -1316,24 +1272,12 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
                         else
                             right_material = false;
                     }
-                    else
-                    {
-                        // Rewrite texture references.
-                        if (right_material)
-                            if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
-                            {
-                                std::string texname = line.substr(8);
-                                //used_textures.insert(texname);
-                                //if (localassets)
-                                    line = "texture file://" + texname;
-                            }
-                    }
 
                     // Write line to the modified copy
                     if (!skip_until_next && right_material)
                     {
                         // Add indentation.
-                        for(int i =0; i <brace_level; ++i)
+                        for(int i =0; i < brace_level; ++i)
                             material.append("    ");
 
                         material.append(line.c_str());
@@ -1346,7 +1290,7 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
                     if (!skip_until_next && right_material)
                     {
                         // Add indentation.
-                        for(int i =0; i <brace_level; ++i)
+                        for(int i =0; i < brace_level; ++i)
                             material.append("    ");
 
                         material.append(line.c_str());

@@ -22,6 +22,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 #include <QString>
 #include <QDomDocument>
 #include <QFile>
+#include <QDir>
 
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
@@ -828,6 +829,21 @@ namespace Scene
                             {
                                 AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
                                 compDesc.attributes.append(attrDesc);
+
+                                if (attrDesc.typeName == "assetreference")
+                                {
+                                    QString value = a->ToString().c_str();
+                                    AssetDesc ad;
+                                    if (value.contains("://") || QDir::isAbsolutePath(value))
+                                        ad.filename = value;
+                                    else
+                                    {
+                                        QDir dir(filename);
+                                        ad.filename = dir.absolutePath() + value;
+                                    }
+
+                                    sceneDesc.assets << ad;
+                                }
                             }
 
                             entityDesc.components.append(compDesc);

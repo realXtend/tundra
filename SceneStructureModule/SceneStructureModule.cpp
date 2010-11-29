@@ -136,8 +136,8 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
     else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
     {
-        //ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
-        sceneDesc = scene->GetSceneDescription(filename);
+        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
+//        sceneDesc = scene->GetSceneDescription(filename);
     }
     else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
     {
@@ -159,8 +159,8 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             TundraLogic::SceneImporter sceneimporter(scene);
             for (size_t i=0 ; i<meshNames.size() ; ++i)
             {
-                Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, "./data/assets",
-                    meshNames[i].transform_, std::string(), AttributeChange::Default, true, false, meshNames[i].name_.toStdString());
+                Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
+                    std::string(), "file://", AttributeChange::Default, false, meshNames[i].name_.toStdString());
                 if (entity)
                     ret.append(entity.get());
             }
@@ -170,12 +170,15 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
 #endif
     }
 
-    AddContentWindow *addContent = new AddContentWindow(framework_, scene);
-    addContent->AddDescription(sceneDesc);
-    if (worldPos != Vector3df())
-        addContent->AddPosition(worldPos);
-    addContent->move((framework_->Ui()->MainWindow()->pos()) + QPoint(400, 200));
-    addContent->show();
+    if (!sceneDesc.IsEmpty())
+    {
+        AddContentWindow *addContent = new AddContentWindow(framework_, scene);
+        addContent->AddDescription(sceneDesc);
+        if (worldPos != Vector3df())
+            addContent->AddPosition(worldPos);
+        addContent->move((framework_->Ui()->MainWindow()->pos()) + QPoint(400, 200));
+        addContent->show();
+    }
 
     return ret;
 }
