@@ -213,7 +213,8 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
 
     def btnLoadClicked(self, args):
         if(self.controller.bLocalSceneLoaded==False):
-            self.filename=QFileDialog.getOpenFileName(self.widget, "FileDialog")
+            self.filename=QFileDialog.getOpenFileName(self.widget, "Select scene file", "", ("Scene files (*.scene)"))
+            #self.filename=QFileDialog.getOpenFileName(self.widget, "Select scene file", "*.scene")
             if(self.filename!=""):
                 self.controller.loadScene(self.filename)
             else:
