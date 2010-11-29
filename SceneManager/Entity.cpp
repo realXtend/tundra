@@ -43,7 +43,14 @@ namespace Scene
     {
         // If components still alive, they become free-floating
         for (size_t i=0 ; i<components_.size() ; ++i)
+        {
             components_[i]->SetParentEntity(0);
+            // Remove component dynamic properties in case scripts still try to access them
+            QString componentTypeName = components_[i]->TypeName();
+            componentTypeName.replace(0, 3, "");
+            componentTypeName = componentTypeName.toLower();
+            setProperty(componentTypeName.toStdString().c_str(), QVariant());
+        }
         
         components_.clear();
         qDeleteAll(actions_);
@@ -83,6 +90,7 @@ namespace Scene
                 QString componentTypeName = component->TypeName();
                 componentTypeName.replace(0, 3, "");
                 componentTypeName = componentTypeName.toLower();
+                    
                 if(property(componentTypeName.toStdString().c_str()).isValid())
                 {
                     QObject *obj = property(componentTypeName.toStdString().c_str()).value<QObject*>();
@@ -94,6 +102,7 @@ namespace Scene
                             setProperty(componentTypeName.toStdString().c_str(), QVariant());
                     }
                 }
+                
 
                 if (change != AttributeChange::Disconnected)
                     emit ComponentRemoved((*iter).get(), change == AttributeChange::Default ? component->GetUpdateMode() : change);
