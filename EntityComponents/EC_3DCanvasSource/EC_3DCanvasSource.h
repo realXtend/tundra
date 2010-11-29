@@ -12,6 +12,9 @@ class UiProxyWidget;
 class QLineEdit;
 class QWidget;
 class QUrl;
+class QProgressBar;
+class QPushButton;
+class QWebView;
 
 class EC_3DCanvas;
 
@@ -85,26 +88,48 @@ public:
     Q_PROPERTY(bool show2d READ getshow2d WRITE setshow2d);
 	DEFINE_QPROPERTY_ATTRIBUTE(bool, show2d);
 
+    //! Sync url changes from the ui
+    Q_PROPERTY(bool sync2dbrowsing READ getsync2dbrowsing WRITE setsync2dbrowsing);
+	DEFINE_QPROPERTY_ATTRIBUTE(bool, sync2dbrowsing);
+
     //! Refresh rate
     Q_PROPERTY(int refreshRate READ getrefreshRate WRITE setrefreshRate);
 	DEFINE_QPROPERTY_ATTRIBUTE(int, refreshRate);
 
+    //! Width of the rendered widget
+    Q_PROPERTY(int pageWidth READ getpageWidth WRITE setpageWidth);
+	DEFINE_QPROPERTY_ATTRIBUTE(int, pageWidth);
+
+    //! Height of the rendered widget
+    Q_PROPERTY(int pageHeight READ getpageHeight WRITE setpageHeight);
+	DEFINE_QPROPERTY_ATTRIBUTE(int, pageHeight);
 
 public slots:
     void OnClick();
     //! Source text editor modified
     void SourceEdited();
+
     //! Link clicked in the 2D webview UI
     void WebViewLinkClicked(const QUrl& url);
-    
-    void StartPressed();
-    void PrevPressed();
-    void NextPressed();
-    void EndPressed();
+    //! Loading starts, show progress bar and update ui
+    void WebViewLoadStarted();
+    //! Loading progress, update progress bar
+    void WebViewLoadProgress(int progress);
+    //! Loading completed, hide progress bad and upate ui + repaint canvas
+    void WebViewLoadCompleted();
+
+    //! Buttons handler for stop/refresh
+    void RefreshStopPressed();
+    //! Buttons handler for back
+    void BackPressed();
+    //! Buttons handler for forward
+    void ForwardPressed();
+    //! Buttons handler for home (initial component url)
+    void HomePressed();
     
 private slots:
     void UpdateWidgetAndCanvas(IAttribute *attribute, AttributeChange::Type type);
-    void UpdateWidget();
+    void UpdateWidget(QString url = QString());
     void UpdateCanvas();
     void RepaintCanvas();
     void ChangeLanguage();
@@ -114,6 +139,7 @@ private slots:
     void RegisterActions();
 
     EC_3DCanvas *Get3DCanvas();
+    QWebView *GetWebView();
 
 private:
     //! Constuctor.
@@ -138,6 +164,15 @@ private:
 
     //! Source line editor
     QLineEdit* source_edit_;
+
+    //! Progress bar ptr picked from the ui file
+    QProgressBar *progress_bar_;
+
+    //! refresh/stop button ptr picked from the ui file
+    QPushButton *button_refreshstop_;
+    
+    //! Initial component url is marked as the home page
+    QString home_url_;
     
     //! Last set source
     QString last_source_;
