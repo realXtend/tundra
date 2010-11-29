@@ -31,26 +31,35 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
 
 void EC_Script::Run(const QString &name)
 {
+    // This function (EC_Script::Run) is invoked on the Entity Action RunScript(scriptName). To
+    // allow the user to differentiate between multiple instances of EC_Script in the same entity, the first
+    // parameter of RunScript allows the user to specify which EC_Script to run. So, first check
+    // if this Run message is meant for us.
+    if (!name.isEmpty() && name != scriptRef.Get().ref)
+        return; // Not our RunScript invokation - ignore it.
+
     if (!scriptInstance_)
     {
-        LogError("Cannot perform Run(), no script instance set");
+        LogError("EC_Script::Run: No script instance set");
         return;
     }
 
-    if (name.isEmpty() || (name == scriptRef.Get().ref))
-        scriptInstance_->Run();
+    scriptInstance_->Run();
 }
 
+/// Invoked on the Entity Action UnloadScript(scriptName).
 void EC_Script::Unload(const QString &name)
 {
+    if (!name.isEmpty() && name != scriptRef.Get().ref)
+        return; // Not our UnloadScript invokation - ignore it.
+
     if (!scriptInstance_)
     {
         LogError("Cannot perform Unload(), no script instance set");
         return;
     }
 
-    if (name.isEmpty() || (name == scriptRef.Get().ref))
-        scriptInstance_->Unload();
+    scriptInstance_->Unload();
 }
 
 EC_Script::EC_Script(IModule *module):
@@ -65,27 +74,25 @@ EC_Script::EC_Script(IModule *module):
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 
     scriptAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
-    connect(scriptAsset.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(ScriptAssetLoaded(IAssetTransfer*)));
+    connect(scriptAsset.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(ScriptAssetLoaded(IAssetTransfer*)));
 }
 
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute == &scriptRef)
-    {
         scriptAsset->HandleAssetRefChange(attribute);
-        /*
-        if (scriptRef.Get().ref != lastRef_)
-        {
-            emit ScriptRefChanged(scriptRef.Get().ref);
-            lastRef_ = scriptRef.Get().ref;
-        }
-        */
-    }
 }
 
 void EC_Script::ScriptAssetLoaded(IAssetTransfer *transfer)
 {
-    emit ScriptAssetChanged(transfer->asset);
+    ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(transfer->asset);
+    if (!asset.get())
+    {
+        LogError("EC_Script::ScriptAssetLoaded: Loaded asset of type other than ScriptAsset!");
+        return;
+    }
+
+    emit ScriptAssetChanged(asset);
 }
 
 void EC_Script::RegisterActions()

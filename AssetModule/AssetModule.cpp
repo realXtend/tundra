@@ -59,7 +59,7 @@ namespace Asset
         local->AddStorageDirectory(dir.absolutePath().toStdString(), "System", true);
 
         QDir dir2((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "jsmodules").toStdString().c_str());
-        local->AddStorageDirectory(dir2.absolutePath().toStdString(), "Javascript", false);
+        local->AddStorageDirectory(dir2.absolutePath().toStdString(), "Javascript", true);
 
         manager_->RegisterAssetProvider(local_asset_provider_);
 

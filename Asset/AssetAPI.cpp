@@ -110,7 +110,7 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
     if (!provider.get())
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The passed destination asset storage was null!");
 
-    return provider->UploadAssetFromFileInMemory(data, numBytes, destination, assetName);    
+    return provider->UploadAssetFromFileInMemory(data, numBytes, destination, assetName);
     /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
 }
 
@@ -118,6 +118,12 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
     assetType = assetType.trimmed();
     assetRef = assetRef.trimmed();
+
+    if (assetRef.length() == 0)
+    {
+        LogError("AssetAPI::RequestAsset: Request by empty url \"\" of type \"" + assetType.toStdString() + " received!");
+        return AssetTransferPtr();
+    }
 
     if (assetType.length() == 0)
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
@@ -137,6 +143,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
             LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
             return AssetTransferPtr();
         }
+        connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(AssetDownloaded(IAssetTransfer*)));
         return transfer;
     }
     else // OLD PATH: Uses the event-based asset managers.
@@ -205,6 +212,8 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
         return; ///\todo Log out warning.
 
     assert(factory->Type() == factory->Type().trimmed());
+
+    assetTypeFactories.push_back(factory);
 }
 
 AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)

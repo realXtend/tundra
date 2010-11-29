@@ -3,6 +3,7 @@
 #ifndef incl_EC_Script_ScriptAsset_h
 #define incl_EC_Script_ScriptAsset_h
 
+#include <boost/shared_ptr.hpp>
 #include "IAsset.h"
 
 class ScriptAsset : public IAsset
@@ -30,5 +31,7 @@ public:
 
     QString scriptContent;
 };
+
+typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 
 #endif

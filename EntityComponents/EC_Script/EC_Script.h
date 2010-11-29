@@ -7,6 +7,7 @@
 #include "Declare_EC.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
+#include "ScriptAsset.h"
 
 class IScriptInstance;
 
@@ -94,11 +95,7 @@ public slots:
 
 signals:
     /// Emitted when script reference changes.
-    /** @newRef New script reference.
-    */
-    void ScriptRefChanged(const QString &newRef);
-
-    void ScriptAssetChanged(AssetPtr newScript);
+    void ScriptAssetChanged(ScriptAssetPtr newScript);
 
 private slots:
     /// Handles logic regarding attribute changes of this EC.
