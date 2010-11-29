@@ -35,17 +35,6 @@ public:
     EntityDesc desc;
 };
 
-/*class AssetWidgetItem : public QTreeWidgetItem
-{
-public:
-    explicit AssetWidgetItem(const AttributeDesc &adesc) : desc(adesc)
-    {
-        setText(0, desc.name + ": " + desc.value);
-        setCheckState(0, Qt::Checked);
-    }
-    AttributeDesc desc;
-};*/
-
 class AssetWidgetItem : public QTreeWidgetItem
 {
 public:
@@ -56,7 +45,7 @@ public:
         setText(2, desc.filename);
         setText(3, desc.destinationName);
         ///\todo Make just single column editable
-        setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+        setFlags(Qt::ItemIsUserCheckable |Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
     }
     AssetDesc desc;
 };
@@ -309,12 +298,19 @@ void AddContentWindow::AddContent()
                     newDesc.assets.removeOne(*ai);
             }
 
-            // Set destination names to scene desc. Add textures to special map for later use.
-            aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(3).trimmed());
-            if (aitem->desc.typeName == "texture")
+            // Set (possibly new) destination names to scene desc.
+            QList<AssetDesc>::iterator ai = qFind(newDesc.assets.begin(), newDesc.assets.end(), aitem->desc);
+            assert(ai != newDesc.assets.end());
+            if (ai != newDesc.assets.end())
             {
-                int idx = aitem->desc.filename.lastIndexOf("/");
-                refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
+                (*ai).destinationName = aitem->text(3).trimmed(); //= dest->GetFullAssetURL(aitem->text(3).trimmed());
+
+                // Add textures to special map for later use.
+                if (aitem->desc.typeName == "texture")
+                {
+                    int idx = aitem->desc.filename.lastIndexOf("/");
+                    refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = dest->GetFullAssetURL(aitem->text(3).trimmed());//aitem->desc.destinationName;
+                }
             }
         }
 
@@ -334,6 +330,7 @@ void AddContentWindow::AddContent()
     if (!destScene)
         return;
 
+    // Upload
     if (!newDesc.assets.empty())
         LogDebug("Starting uploading of " + ToString(newDesc.assets.size()) + " asset" + "(s).");
 
