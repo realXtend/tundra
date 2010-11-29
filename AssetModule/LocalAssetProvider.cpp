@@ -18,6 +18,7 @@
 #include "AssetAPI.h"
 #include <QByteArray>
 #include <QFile>
+#include <QFileInfo>
 #include <QFileSystemWatcher>
 
 namespace Asset

@@ -193,47 +193,50 @@ void JavascriptModule::SceneAdded(const QString &name)
             SLOT(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)));
 }
 
-void JavascriptModule::ScriptChanged(const QString &scriptRef)
+void JavascriptModule::ScriptAssetChanged(ScriptAssetPtr newScript)
 {
+    PROFILE(JSModule_ScriptAssetChanged);
+
     EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
-    if(!sender)
+    assert(sender && "JavascriptModule::ScriptAssetChanged needs to be invoked from EC_Script!");
+    if (!sender)
         return;
-    
-    if(!scriptRef.endsWith(".js"))
+
+    // First clean up any previous running script from EC_Script, if any exists.
+    // (but only clean up scripts of our script type, other engines can clean up theirs)
+    if (dynamic_cast<JavascriptInstance*>(sender->GetScriptInstance()))
+        sender->SetScriptInstance(0);
+
+    // EC_Script can host scripts of different types, and all script engines listen to asset changes.
+    // First we'll need to validate whether the user even specified a script file that's QtScript.
+    QString scriptType = sender->type.Get().trimmed().toLower();
+    if (scriptType != "js" && scriptType.length() > 0)
+        return; // The user enforced a foreign script type using the EC_Script type field.
+
+    if (newScript->Name().endsWith(".js") || scriptType == "js") // We're positively using QtScript.
     {
-        // If script ref is empty or otherwise invalid we need to destroy the previous script if it's type is javascript.
-        if(dynamic_cast<JavascriptInstance*>(sender->GetScriptInstance()))
-        {
-            JavascriptInstance *jsInstance = new JavascriptInstance("", this);
-            sender->SetScriptInstance(jsInstance);
-        }
-        return;
+        JavascriptInstance *jsInstance = new JavascriptInstance(newScript, this);
+        jsInstance->SetOwnerComponent(sender->GetSharedPtr());
+        sender->SetScriptInstance(jsInstance);
+
+        // Register all core APIs and names to this script engine.
+        PrepareScriptInstance(jsInstance, sender);
+
+        if (sender->runOnLoad.Get())
+            sender->Run();
     }
-    
-    if (sender->type.Get() != "js")
-        return;
-    
-    JavascriptInstance *jsInstance = new JavascriptInstance(scriptRef, this);
-    jsInstance->SetOwnerComponent(sender->GetSharedPtr());
-    sender->SetScriptInstance(jsInstance);
-
-    //Register all services to script engine
-    PrepareScriptInstance(jsInstance, sender);
-
-    if (sender->runOnLoad.Get())
-        sender->Run();
 }
 
 void JavascriptModule::ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
-        connect(comp, SIGNAL(ScriptRefChanged(const QString &)), SLOT(ScriptChanged(const QString &)));
+        connect(comp, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(ScriptAssetChanged(ScriptAssetPtr)), Qt::UniqueConnection);
 }
 
 void JavascriptModule::ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if (comp->TypeName() == EC_Script::TypeNameStatic())
-        disconnect(comp, SIGNAL(ScriptRefChanged(const QString &)), this, SLOT(ScriptChanged(const QString &)));
+        disconnect(comp, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(ScriptAssetChanged(ScriptAssetPtr)));
 }
 
 void JavascriptModule::LoadStartupScripts()
