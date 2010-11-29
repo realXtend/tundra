@@ -1330,30 +1330,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
             if (!eItem)
                 continue;
 
-            Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
-            if (!entity)
-                continue;
-
-            int entityChildCount = eItem->childCount();
-            for(int j = 0; j < entityChildCount; ++j)
-            {
-                ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
-                if (!cItem)
-                    continue;
-
-                ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
-                if (!comp)
-                    continue;
-
-                foreach(ComponentPtr comp, entity->GetComponentVector())
-                    foreach(IAttribute *attr, comp->GetAttributes())
-                        if (attr->TypenameToString() == "assetreference")
-                        {
-                            Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-                            if (assetRef)
-                                assets.insert(assetRef->Get().ref);
-                        }
-            }
+            assets.unite(GetAssetRefs(eItem));
         }
     }
     else
@@ -1361,30 +1338,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         // Export assets for selected entities
         foreach (EntityItem *eItem, sel.entities)
         {
-            Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
-            if (!entity)
-                continue;
-
-            int entityChildCount = eItem->childCount();
-            for(int j = 0; j < entityChildCount; ++j)
-            {
-                ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
-                if (!cItem)
-                    continue;
-
-                ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
-                if (!comp)
-                    continue;
-
-                foreach(ComponentPtr comp, entity->GetComponentVector())
-                    foreach(IAttribute *attr, comp->GetAttributes())
-                        if (attr->TypenameToString() == "assetreference")
-                        {
-                            Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-                            if (assetRef)
-                                assets.insert(assetRef->Get().ref);
-                        }
-            }
+            assets.unite(GetAssetRefs(eItem));
         }
     }
 
@@ -1415,6 +1369,38 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         filesaves_.insert(transfer, filename);
         connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded()));
     }
+}
+
+QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
+{
+    assert(scene.lock());
+    QSet<QString> assets;
+
+    Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
+    if (entity)
+    {
+        int entityChildCount = eItem->childCount();
+        for(int j = 0; j < entityChildCount; ++j)
+        {
+            ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
+            if (!cItem)
+                continue;
+
+            ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
+            if (!comp)
+                continue;
+
+            foreach(ComponentPtr comp, entity->GetComponentVector())
+                foreach(IAttribute *attr, comp->GetAttributes())
+                    if (attr->TypenameToString() == "assetreference")
+                    {
+                        Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
+                        if (assetRef)
+                            assets.insert(assetRef->Get().ref);
+                    }
+        }
+    }
+    return assets;
 }
 
 void SceneTreeWidget::OpenFileDialogClosed(int result)
