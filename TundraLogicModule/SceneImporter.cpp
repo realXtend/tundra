@@ -1147,7 +1147,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
         // Process child nodes
         QDomElement childnode_elem = node_elem.firstChildElement("node");
         if (!childnode_elem.isNull())
-            ProcessNodeForCreation(entities, childnode_elem, newpos, newrot, newscale, change, "prefix", flipyz, replace);
+            ProcessNodeForCreation(entities, childnode_elem, newpos, newrot, newscale, change, prefix, flipyz, replace);
 
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
