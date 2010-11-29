@@ -14,6 +14,7 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "CoreException.h"
+#include "AssetAPI.h"
 
 #include <QDir>
 
