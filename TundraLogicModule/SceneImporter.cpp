@@ -299,32 +299,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
             TundraLogicModule::LogInfo("Importing scene from " + filename + " and clearing the old");
         else
             TundraLogicModule::LogInfo("Importing scene from " + filename);
-        
-        // Create output asset path if does not exist
-        /*
-        if (boost::filesystem::exists(out_asset_dir) == false)
-            boost::filesystem::create_directory(out_asset_dir);
-        
-        // If in asset dir not specified, use the branch path of the scene
-        if (in_asset_dir.empty())
-        {
-            boost::filesystem::path path(filename);
-            in_asset_dir = path.branch_path().string();
-        }
-        
-        if (!in_asset_dir.empty())
-        {
-            char lastchar = in_asset_dir[in_asset_dir.length() - 1];
-            if ((lastchar != '/') && (lastchar != '\\'))
-                in_asset_dir += '/';
-        }
-        if (!out_asset_dir.empty())
-        {
-            char lastchar = out_asset_dir[out_asset_dir.length() - 1];
-            if ((lastchar != '/') && (lastchar != '\\'))
-                out_asset_dir += '/';
-        }
-        */
+
         QFile file(filename.c_str());
         if (!file.open(QFile::ReadOnly))
         {
@@ -658,7 +633,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     return sceneDesc;
 }
 
-SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename) const
+SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 {
     SceneDesc sceneDesc;
 
@@ -709,6 +684,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename) const
     QString materialFileName = filename.mid(0, filename.indexOf(".scene"));
     materialFileName.append(".material");
     QSet<QString> material_names_set;
+    QStringList material_filenames;
 
     QDomElement node_elem = nodes_elem.firstChildElement("node");
     while (!node_elem.isNull())
@@ -778,15 +754,37 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename) const
             }
             else
             {
-                /*
                 // If no subentity element, have to interrogate the mesh.
-                std::vector<std::string> material_names;
-                std::string skeleton_name;
-                ParseMeshForMaterialsAndSkeleton(in_asset_dir + mesh_name, material_names, skeleton_name);
-                for (uint i = 0; i < material_names.size(); ++i)
-                    material_names_.insert(material_names[i]);
+                QStringList material_names;
+//                QSet<QString> material_names_set;
+                QString skeleton_name;
+                ParseMeshForMaterialsAndSkeleton(QString(path.branch_path().string().c_str()) + "/" + mesh_name, material_names, skeleton_name);
+                for(uint i = 0; i < material_names.size(); ++i)
+                {
+                    material_names_set.insert(material_names[i]);
+                    material_names_.insert(material_names[i].toStdString());
+                }
+
                 mesh_default_materials_[mesh_name] = material_names;
-                */
+
+                if (!skeleton_name.isEmpty())
+                {
+                    AssetDesc skeletonAssetDesc;
+                    skeletonAssetDesc.filename = QString(path.branch_path().string().c_str()) + "/" + skeleton_name;
+                    skeletonAssetDesc.typeName = "skeleton";
+                    skeletonAssetDesc.destinationName = skeleton_name;
+                    sceneDesc.assets << skeletonAssetDesc;
+                }
+
+                foreach(QString material_name, material_names_set)
+                {
+                    AssetDesc matDesc;
+                    matDesc.typeName = "material";
+                    matDesc.filename = !materialFileName.isEmpty() ? materialFileName + ", " + material_name : material_name;
+                    matDesc.destinationName = material_name + ".material";
+                    matDesc.data = LoadSingleMaterialFromFile(materialFileName, material_name).toAscii();
+                    sceneDesc.assets.append(matDesc);
+                }
             }
 
             entityDesc.components.append(compDesc);
@@ -799,6 +797,13 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename) const
 
     // Process materials for textures.
     QSet<QString> all_textures = ProcessMaterialFileForTextures(materialFileName, material_names_set);
+    /*
+    for (uint i = 0; i < material_files.size(); ++i)
+    {
+        QSet<QString> textures = ProcessMaterialFileForTextures(material_files[i], material_names_set);
+        all_textures.unite(textures);
+    }
+    */
 
     // Add texture asset descs.
     foreach(QString tex, all_textures)
@@ -809,7 +814,6 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename) const
         textureAssetDesc.destinationName = tex;
         sceneDesc.assets << textureAssetDesc;
     }
-
 
     return sceneDesc;
 }
@@ -857,7 +861,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
                     // If no subentity element, have to interrogate the mesh.
                     QStringList material_names;
                     QString skeleton_name;
-                    ParseMeshForMaterialsAndSkeleton(QString::fromStdString(in_asset_dir + mesh_name), material_names, skeleton_name);
+                    ParseMeshForMaterialsAndSkeleton(QString::fromStdString(in_asset_dir + "/" + mesh_name), material_names, skeleton_name);
                     for (uint i = 0; i < material_names.size(); ++i)
                         material_names_.insert(material_names[i].toStdString());
                     mesh_default_materials_[mesh_name.c_str()] = material_names;
@@ -1290,7 +1294,7 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
                     if (!skip_until_next && right_material)
                     {
                         // Add indentation.
-                        for(int i =0; i < brace_level; ++i)
+                        for(int i = 0; i < brace_level; ++i)
                             material.append("    ");
 
                         material.append(line.c_str());

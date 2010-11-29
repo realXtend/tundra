@@ -830,10 +830,13 @@ namespace Scene
                                 AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
                                 compDesc.attributes.append(attrDesc);
 
-                                if (attrDesc.typeName == "assetreference")
+                                if (attrDesc.typeName == "assetreference" && !a->ToString().empty())
                                 {
                                     QString value = a->ToString().c_str();
                                     AssetDesc ad;
+                                    ad.typeName = a->GetNameString().c_str();
+                                    ad.filename = value;
+                                    /*
                                     if (value.contains("://") || QDir::isAbsolutePath(value))
                                         ad.filename = value;
                                     else
@@ -841,6 +844,11 @@ namespace Scene
                                         QDir dir(filename);
                                         ad.filename = dir.absolutePath() + value;
                                     }
+                                    */
+
+                                    QString filepath = QDir::fromNativeSeparators(value);
+                                    int idx = filepath.lastIndexOf("/");
+                                    ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
 
                                     sceneDesc.assets << ad;
                                 }
