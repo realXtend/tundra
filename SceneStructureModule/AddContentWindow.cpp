@@ -55,10 +55,32 @@ public:
         setText(1, desc.typeName);
         setText(2, desc.filename);
         setText(3, desc.destinationName);
+        ///\todo Make just single column editable
         setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
     }
     AssetDesc desc;
 };
+
+typedef QMap<QString, QString> RefMap;
+
+void ReplaceReferences(QByteArray &material, const RefMap &refs)
+{
+    QString matString(material);
+    QStringList lines = matString.split("\n");
+    for(int i = 0; i < lines.size(); ++i)
+    {
+        int idx = lines[i].indexOf("texture ");
+        if (idx != -1)
+        {
+            QString texName = lines[i].mid(idx + 8).trimmed();
+            RefMap::const_iterator it = refs.find(texName);
+            if (it != refs.end())
+                lines[i].replace(it.key(), it.value());
+        }
+    }
+
+    material = lines.join("\n").toAscii();
+}
 
 AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
@@ -74,7 +96,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     layout->setContentsMargins(5, 5, 5, 5);
     setLayout(layout);
 
-    QLabel *entityLabel = new QLabel("The following entities will be created:");
+    QLabel *entityLabel = new QLabel(tr("The following entities will be created:"));
     entityTreeWidget = new QTreeWidget;
     entityTreeWidget->setHeaderHidden(true);
     QPushButton *selectAllEntitiesButton = new QPushButton(tr("Select All"));
@@ -89,17 +111,19 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     entityButtonsLayout->addSpacerItem(entityButtonSpacer);
     layout->insertLayout(-1, entityButtonsLayout);
 
-    QLabel *assetLabel = new QLabel("The following assets will be uploaded:");
+    QLabel *assetLabel = new QLabel(tr("The following assets will be uploaded:"));
     assetTreeWidget = new QTreeWidget;
     assetTreeWidget->setColumnCount(4);
     QStringList labels(QStringList() << tr("Upload") << tr("Type") << tr("Source name") << tr("Destination name"));
     assetTreeWidget->setHeaderLabels(labels);
 //    assetTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
+//    assetTreeWidget->header()->setResizeMode(0, QHeaderView::ResizeToContents);
+//    assetTreeWidget->header()->setResizeMode(1, QHeaderView::ResizeToContents);
     QPushButton *selectAllAssetsButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllAssetsButton = new QPushButton(tr("Deselect All"));
     QHBoxLayout *assetButtonsLayout = new QHBoxLayout;
     QSpacerItem *assetButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    QLabel *storageLabel = new QLabel("Asset storage:");
+    QLabel *storageLabel = new QLabel(tr("Asset storage:"));
     storageComboBox = new QComboBox;
     // Get available asset storages.
     foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
@@ -270,15 +294,28 @@ void AddContentWindow::AddContent()
         ++eit;
     }
 
+    RefMap refs;
     QTreeWidgetItemIterator ait(assetTreeWidget);
     while(*ait)
     {
-        AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*eit);
-        if (aitem  && aitem ->checkState(0) == Qt::Unchecked)
+        AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*ait);
+        assert(aitem);
+        if (aitem)
         {
-            QList<AssetDesc>::const_iterator ai = qFind(newDesc.assets, aitem->desc);
-            if (ai != newDesc.assets.end())
-                newDesc.assets.removeOne(*ai);
+            if (aitem ->checkState(0) == Qt::Unchecked)
+            {
+                QList<AssetDesc>::const_iterator ai = qFind(newDesc.assets, aitem->desc);
+                if (ai != newDesc.assets.end())
+                    newDesc.assets.removeOne(*ai);
+            }
+
+            // Set destination names to scene desc. Add textures to special map for later use.
+            aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(3).trimmed());
+            if (aitem->desc.typeName == "texture")
+            {
+                int idx = aitem->desc.filename.lastIndexOf("/");
+                refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
+            }
         }
 
         ++ait;
@@ -288,57 +325,23 @@ void AddContentWindow::AddContent()
     QMutableListIterator<AssetDesc> rewriteIt(newDesc.assets);
     while(rewriteIt.hasNext())
     {
-        QString destName = rewriteIt.next().destinationName;
-        rewriteIt.value().destinationName = dest->GetFullAssetURL(destName);
+        rewriteIt.next();
+        if (rewriteIt.value().typeName == "material")
+            ReplaceReferences(rewriteIt.value().data, refs);
     }
 
     Scene::ScenePtr destScene = scene.lock();
     if (!destScene)
         return;
 
-    // Create entities.
-    QList<Scene::Entity *> entities;
-    switch(newDesc.type)
-    {
-    case SceneDesc::Naali:
-        entities = destScene->CreateContentFromSceneDescription(newDesc, false, AttributeChange::Default);
-        break;
-    case SceneDesc::OgreMesh:
-    {
-        boost::filesystem::path path(newDesc.filename.toStdString());
-        std::string dirname = path.branch_path().string();
-
-        TundraLogic::SceneImporter importer(destScene);
-        Scene::EntityPtr entity = importer.ImportMesh(newDesc.filename.toStdString(), dirname, "./data/assets",
-            Transform(),std::string(), AttributeChange::Default, true, true, std::string(), newDesc);
-        if (entity)
-            entities << entity.get();
-        break;
-    }
-    case SceneDesc::OgreScene:
-    {
-        boost::filesystem::path path(newDesc.filename.toStdString());
-        std::string dirname = path.branch_path().string();
-
-        TundraLogic::SceneImporter importer(destScene);
-        entities = importer.Import(newDesc.filename.toStdString(), dirname, "./data/assets", Transform(),
-            AttributeChange::Default, false/*clearScene*/, true, false, newDesc);
-    }
-    default:
-        LogError("Invalid scene description type.");
-        break;
-    }
-
     if (!newDesc.assets.empty())
-        LogDebug("Starting uploading of " + ToString(newDesc.assets.size()) + " asset(s).");
+        LogDebug("Starting uploading of " + ToString(newDesc.assets.size()) + " asset" + "(s).");
 
     foreach(AssetDesc ad, newDesc.assets)
     {
         try
         {
             IAssetUploadTransfer *transfer = 0;
-
-            QString assetName;
 
             if (!ad.filename.isEmpty() && ad.data.isEmpty())
             {
@@ -365,6 +368,40 @@ void AddContentWindow::AddContent()
         {
             LogError(std::string(e.what()));
         }
+    }
+
+    // Create entities.
+    QList<Scene::Entity *> entities;
+    switch(newDesc.type)
+    {
+    case SceneDesc::Naali:
+        entities = destScene->CreateContentFromSceneDescription(newDesc, false, AttributeChange::Default);
+        break;
+    case SceneDesc::OgreMesh:
+    {
+        boost::filesystem::path path(newDesc.filename.toStdString());
+        std::string dirname = path.branch_path().string();
+
+        TundraLogic::SceneImporter importer(destScene);
+        Scene::EntityPtr entity = importer.ImportMesh(newDesc.filename.toStdString(), dirname,
+            Transform(),std::string(), dest->BaseURL(), AttributeChange::Default, true, std::string(), newDesc);
+        if (entity)
+            entities << entity.get();
+        break;
+    }
+    case SceneDesc::OgreScene:
+    {
+        boost::filesystem::path path(newDesc.filename.toStdString());
+        std::string dirname = path.branch_path().string();
+
+        TundraLogic::SceneImporter importer(destScene);
+        entities = importer.Import(newDesc.filename.toStdString(), dirname, Transform(),
+            dest->BaseURL(), AttributeChange::Default, false/*clearScene*/, false, newDesc);
+        break;
+    }
+    default:
+        LogError("Invalid scene description type.");
+        break;
     }
 
     if (entities.size() || newDesc.assets.size())

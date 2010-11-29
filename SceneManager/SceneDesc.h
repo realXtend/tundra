@@ -19,7 +19,7 @@ struct AssetDesc
     /// Less than operator. Compares filename only.
     bool operator <(const AssetDesc &rhs) const { return filename < rhs.filename; }
 
-    /// Equality operator. Returns true if Compares filenames match, false otherwise.
+    /// Equality operator. Returns true if filenames match, false otherwise.
     bool operator ==(const AssetDesc &rhs) const { return filename == rhs.filename; }
 };
 

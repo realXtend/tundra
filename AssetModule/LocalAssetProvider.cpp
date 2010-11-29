@@ -47,6 +47,8 @@ bool LocalAssetProvider::IsValidId(const std::string& asset_id, const std::strin
 
 bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
 {
+    CompletePendingFileUploads();
+
     if (!IsValidId(asset_id, asset_type))
         return false;
     

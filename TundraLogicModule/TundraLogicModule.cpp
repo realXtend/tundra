@@ -292,8 +292,8 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(scene);
-    QList<Scene::Entity *> entities = importer.Import(filename, dirname, "./data/assets", Transform(),
-        AttributeChange::Default, clearscene, true, replace);
+    QList<Scene::Entity *> entities = importer.Import(filename, dirname, Transform(),
+        "file://", AttributeChange::Default, clearscene, replace);
     if (!entities.empty())
     {
         return Console::ResultSuccess();
@@ -337,8 +337,8 @@ Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(scene);
-    Scene::EntityPtr entity = importer.ImportMesh(filename, dirname, "./data/assets", Transform(Vector3df(x,y,z),
-        Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), AttributeChange::Default, true);
+    Scene::EntityPtr entity = importer.ImportMesh(filename, dirname, Transform(Vector3df(x,y,z),
+        Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), "file://", AttributeChange::Default, true);
     
     return Console::ResultSuccess();
 }
@@ -347,7 +347,6 @@ bool TundraLogicModule::IsServer() const
 {
     return kristalliModule_->IsServer();
 }
-
 
 // virtual
 bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
