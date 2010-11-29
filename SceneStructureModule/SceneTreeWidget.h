@@ -199,6 +199,9 @@ private:
     /// Return most recently used InvokeItem.
     InvokeItem *FindMruItem() const;
 
+    /// Returns all asset references for the specified entity item.
+    QSet<QString> GetAssetRefs(const EntityItem *eItem) const;
+
     /// Framework pointer.
     Foundation::Framework *framework;
 
