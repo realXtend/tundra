@@ -1266,7 +1266,10 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
                     if (!skip_until_next && right_material)
                     {
                         // Add indentation.
-                        for(int i = 0; i < brace_level; ++i)
+                        int i = 0;
+                        if (line.find("{") != std::string::npos)
+                            ++i;
+                        for(; i < brace_level; ++i)
                             material.append("    ");
 
                         material.append(line.c_str());
