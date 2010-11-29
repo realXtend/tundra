@@ -13,6 +13,7 @@
 #include "ResourceInterface.h"
 #include "CoreException.h"
 #include "IAssetTypeFactory.h"
+#include "BinaryAssetFactory.h"
 #include "../AssetModule/AssetEvents.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
@@ -22,6 +23,10 @@ using namespace Foundation;
 AssetAPI::AssetAPI(Foundation::Framework *owner)
 :framework(owner)
 {
+    // The Asset API always understands at least this single built-in asset type "Binary".
+    // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
+    // Your module/component can then parse the content in a custom way.
+    RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
 }
 
 void IAssetTransfer::EmitAssetDownloaded()
@@ -135,7 +140,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    if (assetType == "Script") // NEW PATH: Uses asset providers directly.
+    if (assetType == "Script" || assetType == "Terrain") // NEW PATH: Uses asset providers directly.
     {
         AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
         if (!transfer.get())
@@ -289,7 +294,7 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
     return false;
 }
 
-QString AssetAPI::GuaranteeTrailingSlash(const QString &source)
+QString GuaranteeTrailingSlash(const QString &source)
 {
     QString s = source.trimmed();
     if (s[s.length()-1] != '/' && s[s.length()-1] != '\\')
@@ -297,7 +302,6 @@ QString AssetAPI::GuaranteeTrailingSlash(const QString &source)
 
     return s;
 }
-
 
 void AssetAPI::AssetDownloaded(IAssetTransfer *transfer)
 {
@@ -396,6 +400,11 @@ QString GetResourceTypeFromResourceFileName(const char *name)
     if (file.endsWith(".js") || file.endsWith(".py"))
         return "Script";
 
+    if (file.endsWith(".ntf"))
+        return "Terrain";
+
+    // Unknown type.
     return "";
+
     // Note: There's a separate OgreImageTextureResource which isn't handled above.
 }

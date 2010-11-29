@@ -15,8 +15,8 @@ class IAsset : public QObject
     Q_OBJECT
 
 public:
-    IAsset(const QString &type_, const QString &name_)
-    :type(type_), name(name_)
+    IAsset(const QString &type_, const QString &name_)//, const QString &ref_)
+    :type(type_), name(name_)//, ref(ref_)
     {
     }
 
@@ -29,7 +29,13 @@ public slots:
 
     /// Returns the unique name of this asset. The name of an asset cannot change during the lifetime of the instance of an asset.
     QString Name() const { return name; }
+/*
+    /// Returns the AssetRef address that can be used to point to this asset in an asset storage.
+    QString Ref() const { return ref; }
 
+    /// Specifies the source where this asset is loaded from.
+    void SetRef(const QString &newRef) { ref = newRef; }
+*/
 public:
     /// Loads this asset from file.
 //    virtual void LoadFromFile(QString filename);
@@ -71,6 +77,7 @@ private:
 
     QString type;
     QString name;
+//    QString ref;
 };
 
 #endif
