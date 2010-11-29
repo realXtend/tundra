@@ -91,7 +91,7 @@ public:
     /// Inspects OGRE .scene file and returns a scene description structure of the contents of the file.
     /** @param filename File name.
     */
-    SceneDesc GetSceneDescForScene(const QString &filename) const;
+    SceneDesc GetSceneDescForScene(const QString &filename);
 
 private:
     //! Process the asset references of a node, and its child nodes
