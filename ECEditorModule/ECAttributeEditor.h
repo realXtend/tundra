@@ -268,7 +268,6 @@ namespace ECEditor
         //! TODO: Optimize this piece of code.
         void UpdateMultiEditorValue(IAttribute *attribute = 0)
         {
-            PROFILE(ECAttributeEditor_UpdateMultiEditorValue);
             QStringList stringList;
             MultiEditPropertyManager *propertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);
             // If editor's ui isn't initilaized no point to continue.
