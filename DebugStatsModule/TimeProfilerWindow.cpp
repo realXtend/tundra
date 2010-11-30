@@ -2170,6 +2170,52 @@ QTreeWidgetItem *AddNewItem(QTreeWidgetItem *parent, QString name)
     return item;
 }
 
+void AddOgreTUState(QTreeWidgetItem *parent, Ogre::TextureUnitState *node, int idx)
+{
+    QString str = QString("TUState ") + QString::number(idx) + ": " + node->getName().c_str();
+    str += QString(", texture: ") + node->getTextureName().c_str();
+
+    QTreeWidgetItem *item = AddNewItem(parent, str);
+}
+
+void AddOgrePass(QTreeWidgetItem *parent, Ogre::Pass *node, int idx)
+{
+    QString str = QString("Pass ") + QString::number(idx) + ": " + node->getName().c_str();
+
+    QTreeWidgetItem *item = AddNewItem(parent, str);
+
+    for(int i = 0; i < node->getNumTextureUnitStates(); ++i)
+        AddOgreTUState(item, node->getTextureUnitState(i), i);
+}
+
+void AddOgreTechnique(QTreeWidgetItem *parent, Ogre::Technique *node, int idx)
+{
+    QString str = QString("Technique ") + QString::number(idx) + ": " + node->getName().c_str();
+
+    QTreeWidgetItem *item = AddNewItem(parent, str);
+
+    for(int i = 0; i < node->getNumPasses(); ++i)
+        AddOgrePass(item, node->getPass(i), i);
+}
+
+void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
+{
+    QString str = QString("SubEntity ") + QString::number(idx);
+    str += QString(", material: ") + node->getMaterialName().c_str();
+
+    Ogre::MaterialPtr material = node->getMaterial();
+    if (!material.get())
+        str += "(not loaded)";
+
+    QTreeWidgetItem *item = AddNewItem(parent, str);
+
+    if (material.get())
+    {
+        for(int i = 0; i < material->getNumTechniques(); ++i)
+            AddOgreTechnique(item, material->getTechnique(i), i);
+    }
+}
+
 void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
 {
     QString str = (node->getMovableType() + "(MovableObject): ").c_str();
@@ -2180,7 +2226,21 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
     str += ", isInScene: " + QString::number(node->isInScene());
     str += ", visibilityFlags: " + QString::number(node->getVisibilityFlags());
 
+    Ogre::Entity *e = dynamic_cast<Ogre::Entity*>(node);
+    if (e)
+    {
+        Ogre::MeshPtr mesh = e->getMesh();
+        if (mesh.get())
+            str += QString(", mesh: ") + mesh->getName().c_str();
+        else
+            str += ", (null MeshPtr)";
+    }
+
     QTreeWidgetItem *nodeItem = AddNewItem(parent, str);
+
+    if (e)
+        for(int i = 0; i < e->getNumSubEntities(); ++i)
+            AddOgreSubEntity(nodeItem, e->getSubEntity(i), i);
 }
 
 void AddOgreSceneNode(QTreeWidgetItem *parent, Ogre::SceneNode *node);
