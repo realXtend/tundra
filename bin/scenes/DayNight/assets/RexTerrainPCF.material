@@ -91,7 +91,7 @@ material Rex/TerrainPCF
 		{
 			texture_unit baseMap
 			{
-				texture local://TextureMissing.png
+				texture local://terr_dirt-grass.jpg
 			}
 		}
       }	
