@@ -232,7 +232,7 @@ void EC_OgreMovableTextOverlay::SetMaterial(const std::string& new_base_material
     {
         baseMaterialName_ = new_base_material;
         Ogre::MaterialPtr baseMaterial = mm.getByName(baseMaterialName_);
-        materialName_ = renderer_.lock()->GetUniqueObjectName();
+        materialName_ = renderer_.lock()->GetUniqueObjectName("EC_MovableTextOverlay_material");
         material = baseMaterial->clone(materialName_);
 
         //todo Check that the the material alpha channel?
@@ -270,17 +270,17 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Vector3df& offset)
 
     // Create SceneNode
     Ogre::SceneManager *scene_mgr = renderer_.lock()->GetSceneManager();
-    node_ = scene_mgr->createSceneNode();
+    node_ = scene_mgr->createSceneNode(renderer_.lock()->GetUniqueObjectName("EC_OgreMovableTextOverlay"));
 
     // Set the node position to an user-specified offset
     node_->setPosition(ToOgreVector3(offset));
 
     // Overlay
-    overlayName_ = renderer_.lock()->GetUniqueObjectName();
+    overlayName_ = renderer_.lock()->GetUniqueObjectName("EC_MovableTextOverlay_overlay");
     overlay_ = Ogre::OverlayManager::getSingleton().create(overlayName_);
 
     // Container
-    containerName_ = renderer_.lock()->GetUniqueObjectName();
+    containerName_ = renderer_.lock()->GetUniqueObjectName("EC_MovableTextOverlay_container");
     container_ = static_cast<Ogre::OverlayContainer*>
         (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", containerName_));
     overlay_->add2D(container_);

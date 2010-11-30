@@ -10,8 +10,8 @@ class ScriptAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    ScriptAsset(const QString &type_, const QString &name_)
-    :IAsset(type_, name_)
+    ScriptAsset(const QString &type_, const QString &name_)//, const QString &ref_)
+    :IAsset(type_, name_)//, ref_)
     {
     }
 

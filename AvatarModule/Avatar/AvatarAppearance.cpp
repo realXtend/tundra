@@ -1701,7 +1701,7 @@ namespace Avatar
         }
         
         // Create a clone of the material to be messed with during export
-        std::string clonename = renderer->GetUniqueObjectName();
+        std::string clonename = renderer->GetUniqueObjectName("AvatarAppearance_tempclone");
         clone = ogre_mat->clone(clonename);
         
         // Now remove unsupported techniques before exporting, or we will crash inside OGRE
@@ -2135,7 +2135,7 @@ namespace Avatar
                 return false;
             }
             
-            matname = renderer->GetUniqueObjectName();
+            matname = renderer->GetUniqueObjectName("AvatarAppearance_material");
             
             //! \todo this temp material will not be deleted ever. Should delete it
             Ogre::MaterialPtr ogremat = OgreRenderer::GetOrCreateLitTexturedMaterial(matname);

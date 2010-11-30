@@ -43,7 +43,7 @@ EC_Mesh::EC_Mesh(IModule* module) :
 
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    adjustment_node_ = scene_mgr->createSceneNode();
+    adjustment_node_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Mesh_adjustment_node"));
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
@@ -226,7 +226,7 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     
     try
     {
-        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
+        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName("EC_Mesh_entity"), mesh->getName());
         if (!entity_)
         {
             LogError("Could not set mesh " + mesh_name);
@@ -323,7 +323,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     
     try
     {
-        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
+        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName("EC_Mesh_entwithskel"), mesh->getName());
         if (!entity_)
         {
             LogError("Could not set mesh " + mesh_name);
@@ -449,7 +449,8 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
 
     try
     {
-        attachment_entities_[index] = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh->getName());
+        QString entityName = QString("EC_Mesh_attach") + QString::number(index);
+        attachment_entities_[index] = scene_mgr->createEntity(renderer->GetUniqueObjectName(entityName.toStdString()), mesh->getName());
         if (!attachment_entities_[index])
         {
             LogError("Could not set attachment mesh " + mesh_name);
@@ -477,7 +478,8 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         }
         else
         {
-            Ogre::SceneNode* node = scene_mgr->createSceneNode();
+            QString nodeName = QString("EC_Mesh_attachment_") + QString::number(index);
+            Ogre::SceneNode* node = scene_mgr->createSceneNode(renderer->GetUniqueObjectName(nodeName.toStdString()));
             node->attachObject(attachment_entities_[index]);
             adjustment_node_->addChild(node);
             attachment_nodes_[index] = node;
@@ -787,7 +789,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
     {
         try
         {
-            mesh = mesh->clone(renderer->GetUniqueObjectName());
+            mesh = mesh->clone(renderer->GetUniqueObjectName("EC_Mesh_clone"));
             mesh->setAutoBuildEdgeLists(false);
             cloned_mesh_name_ = mesh->getName();
         }
