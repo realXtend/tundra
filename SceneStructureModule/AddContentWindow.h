@@ -79,6 +79,9 @@ private slots:
     /// Closes the window.
     void Close();
 
+    /// Reqrites the destination names of all assets in the UI according to the selected asset storage.
+    void RewriteDestinationNames();
+
     /// Handles completed upload asset transfer.
     /** @param transfer Completed transfer.
     */

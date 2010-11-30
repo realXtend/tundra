@@ -29,8 +29,9 @@ class EntityWidgetItem : public QTreeWidgetItem
 public:
     explicit EntityWidgetItem(const EntityDesc &edesc) : desc(edesc)
     {
-        setText(0, desc.id.isEmpty() ? desc.name : desc.id + ": " + desc.name);
         setCheckState(0, Qt::Checked);
+        setText(1, desc.id);
+        setText(2, desc.name);
     }
     EntityDesc desc;
 };
@@ -43,7 +44,8 @@ public:
         setCheckState(0, Qt::Checked);
         setText(1, desc.typeName);
         setText(2, desc.filename);
-        setText(3, desc.destinationName);
+        setText(3, desc.subname);
+        setText(4, desc.destinationName);
         ///\todo Make just single column editable
         setFlags(Qt::ItemIsUserCheckable |Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
     }
@@ -87,7 +89,10 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 
     QLabel *entityLabel = new QLabel(tr("The following entities will be created:"));
     entityTreeWidget = new QTreeWidget;
-    entityTreeWidget->setHeaderHidden(true);
+    entityTreeWidget->setColumnCount(3);
+    entityTreeWidget->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
+    entityTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
+
     QPushButton *selectAllEntitiesButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllEntitiesButton = new QPushButton(tr("Deselect All"));
     QHBoxLayout *entityButtonsLayout = new QHBoxLayout;
@@ -102,12 +107,11 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 
     QLabel *assetLabel = new QLabel(tr("The following assets will be uploaded:"));
     assetTreeWidget = new QTreeWidget;
-    assetTreeWidget->setColumnCount(4);
-    QStringList labels(QStringList() << tr("Upload") << tr("Type") << tr("Source name") << tr("Destination name"));
+    assetTreeWidget->setColumnCount(5);
+    QStringList labels;
+    labels << tr("Upload") << tr("Type") << tr("Source name") << tr("Source subname") << tr("Destination name");
     assetTreeWidget->setHeaderLabels(labels);
-//    assetTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
-//    assetTreeWidget->header()->setResizeMode(0, QHeaderView::ResizeToContents);
-//    assetTreeWidget->header()->setResizeMode(1, QHeaderView::ResizeToContents);
+
     QPushButton *selectAllAssetsButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllAssetsButton = new QPushButton(tr("Deselect All"));
     QHBoxLayout *assetButtonsLayout = new QHBoxLayout;
@@ -143,10 +147,18 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     connect(deselectAllEntitiesButton, SIGNAL(clicked()), SLOT(DeselectAllEntities()));
     connect(selectAllAssetsButton, SIGNAL(clicked()), SLOT(SelectAllAssets()));
     connect(deselectAllAssetsButton, SIGNAL(clicked()), SLOT(DeselectAllAssets()));
+    connect(storageComboBox, SIGNAL(currentIndexChanged(int)), SLOT(RewriteDestinationNames()));
+
+    RewriteDestinationNames();
 }
 
 AddContentWindow::~AddContentWindow()
 {
+    // Disable ResizeToContents, Qt goes sometimes into eternal loop after
+    // ~AddContentWindow() if we have lots (hudreds or thousands) of items.
+    entityTreeWidget->header()->setResizeMode(QHeaderView::Interactive);
+    assetTreeWidget->header()->setResizeMode(QHeaderView::Interactive);
+
     QTreeWidgetItemIterator it(entityTreeWidget);
     while(*it)
     {
@@ -174,10 +186,10 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
         EntityWidgetItem *eItem = new EntityWidgetItem(e);
         entityTreeWidget->addTopLevelItem(eItem);
 
+        // Not showing components nor attributes in the UI for now.
+/*
         foreach(ComponentDesc c, e.components)
         {
-            // Not showing components in the UI for now.
-            /*
             QTreeWidgetItem *cItem = new QTreeWidgetItem;
             cItem->setText(0, c.typeName + " " + c.name);
             eItem->addChild(cItem);
@@ -188,8 +200,8 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
             foreach(AttributeDesc a, c.attributes)
                 if (a.typeName == "assetreference" && !a.value.isEmpty())
                     assetRefs.insert(a);
-            */
         }
+*/
     }
 
     // Add asset references. Do not show duplicates.
@@ -214,8 +226,18 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
         {
             aItem->setBackgroundColor(2, Qt::red);
             aItem->setCheckState(0, Qt::Unchecked);
+            aItem->setText(4, "");
+            aItem->setDisabled(true);
+
+            /*
+            QList<AssetDesc>::const_iterator ai = qFind(sceneDesc.assets, aitem->desc);
+            if (ai != newDesc.assets.end())
+                sceneDesc.assets.removeOne(*ai);
+            */
         }
     }
+
+    assetTreeWidget->header()->resizeSections(QHeaderView::ResizeToContents);
 }
 
 void AddContentWindow::SelectAllEntities()
@@ -304,13 +326,15 @@ void AddContentWindow::AddContent()
                 assert(ai != newDesc.assets.end());
                 if (ai != newDesc.assets.end())
                 {
-                    (*ai).destinationName = aitem->text(3).trimmed(); //= dest->GetFullAssetURL(aitem->text(3).trimmed());
+                    //(*ai).destinationName = aitem->text(3).trimmed(); //= dest->GetFullAssetURL(aitem->text(3).trimmed());
+                    (*ai).destinationName = dest->GetFullAssetURL(aitem->text(4).trimmed());
 
                     // Add textures to special map for later use.
                     if (aitem->desc.typeName == "texture")
                     {
                         int idx = aitem->desc.filename.lastIndexOf("/");
-                        refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = dest->GetFullAssetURL(aitem->text(3).trimmed());//aitem->desc.destinationName;
+                        //refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = dest->GetFullAssetURL(aitem->text(4).trimmed());//aitem->desc.destinationName;
+                        refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
                     }
                 }
             }
@@ -416,6 +440,29 @@ void AddContentWindow::AddContent()
 void AddContentWindow::Close()
 {
     close();
+}
+
+void AddContentWindow::RewriteDestinationNames()
+{
+    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageComboBox->currentText());
+    if (!dest)
+    {
+        LogError("Could not retrieve asset storage " + storageComboBox->currentText().toStdString() + ".");
+        return;
+    }
+/*
+    QTreeWidgetItemIterator it(assetTreeWidget);
+    while(*it)
+    {
+        // Set (possibly new) destination names to scene desc.
+        QList<AssetDesc>::iterator ai = qFind(newDesc.assets.begin(), newDesc.assets.end(), aitem->desc);
+        assert(ai != newDesc.assets.end());
+        if (ai != newDesc.assets.end())
+            (*ai).destinationName = dest->GetFullAssetURL(aitem->text(4).trimmed());
+
+        ++it;
+    }
+*/
 }
 
 void AddContentWindow::HandleUploadCompleted(IAssetUploadTransfer *transfer)
