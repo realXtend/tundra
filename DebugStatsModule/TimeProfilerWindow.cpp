@@ -2175,7 +2175,7 @@ void AddOgreTUState(QTreeWidgetItem *parent, Ogre::TextureUnitState *node, int i
     QString str = QString("TUState ") + QString::number(idx) + ": " + node->getName().c_str();
     str += QString(", texture: ") + node->getTextureName().c_str();
 
-    QTreeWidgetItem *item = AddNewItem(parent, str);
+    /*QTreeWidgetItem *item = */AddNewItem(parent, str);
 }
 
 void AddOgrePass(QTreeWidgetItem *parent, Ogre::Pass *node, int idx)
@@ -2198,6 +2198,55 @@ void AddOgreTechnique(QTreeWidgetItem *parent, Ogre::Technique *node, int idx)
         AddOgrePass(item, node->getPass(i), i);
 }
 
+QString VertexElementTypeToString(Ogre::VertexElementType type)
+{
+    if (type == Ogre::VET_FLOAT1) return "Float1";
+    if (type == Ogre::VET_FLOAT2) return "Float2";
+    if (type == Ogre::VET_FLOAT3) return "Float3";
+    if (type == Ogre::VET_FLOAT4) return "Float4";
+    if (type == Ogre::VET_COLOUR) return "Color";
+    if (type == Ogre::VET_SHORT1) return "Short1";
+    if (type == Ogre::VET_SHORT2) return "Short2";
+    if (type == Ogre::VET_SHORT3) return "Short3";
+    if (type == Ogre::VET_SHORT4) return "Short4";
+    if (type == Ogre::VET_UBYTE4) return "UByte4";
+    if (type == Ogre::VET_COLOUR_ARGB) return "Color_ARGB";
+    if (type == Ogre::VET_COLOUR_ABGR) return "Color_ABGR";
+
+    return "Unknown VET(" + QString::number((int)type) + ")";
+}
+
+QString VertexElementSemanticToString(Ogre::VertexElementSemantic sem)
+{
+    if (sem == Ogre::VES_POSITION) return "Position";
+    if (sem == Ogre::VES_BLEND_WEIGHTS) return "BlendWeights";
+    if (sem == Ogre::VES_BLEND_INDICES) return "BlendIndices";
+    if (sem == Ogre::VES_NORMAL) return "Normal";
+    if (sem == Ogre::VES_DIFFUSE) return "Diffuse";
+    if (sem == Ogre::VES_SPECULAR) return "Specular";
+    if (sem == Ogre::VES_TEXTURE_COORDINATES) return "TexCoord";
+    if (sem == Ogre::VES_BINORMAL) return "Binormal";
+    if (sem == Ogre::VES_TANGENT) return "Tangent";
+
+    return "Unknown VES(" + QString::number((int)sem) + ")";
+}
+
+void AddOgreVertexElement(QTreeWidgetItem *parent, const Ogre::VertexElement *node, int idx)
+{
+    QString str = QString("VertexElem ") + QString::number(idx) + ": ";
+    if (node)
+    {
+        str += "sourceBufferIndex: " + QString::number(node->getSource());
+        str += ", offset: " + QString::number(node->getOffset());
+        str += ", type: " + VertexElementTypeToString(node->getType());
+        str += ", semantic: " + VertexElementSemanticToString(node->getSemantic());
+        str += ", index: " + QString::number(node->getIndex());
+        str += ", size: " + QString::number(node->getSize());
+    }
+
+    /*QTreeWidgetItem *nodeItem = */AddNewItem(parent, str);
+}
+
 void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
 {
     QString str = QString("SubEntity ") + QString::number(idx);
@@ -2214,6 +2263,14 @@ void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
         for(int i = 0; i < material->getNumTechniques(); ++i)
             AddOgreTechnique(item, material->getTechnique(i), i);
     }
+
+    Ogre::SubMesh *submesh = node->getSubMesh();
+    if (submesh && submesh->vertexData && !submesh->useSharedVertices && submesh->vertexData->vertexDeclaration)
+    {
+        Ogre::VertexDeclaration *vd = submesh->vertexData->vertexDeclaration;
+        for(int i = 0; i < vd->getElementCount(); ++i)
+            AddOgreVertexElement(item, vd->getElement(i), i);
+    }
 }
 
 void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
@@ -2222,7 +2279,7 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
     str += node->getName().c_str();
     str += ", isVisible: " + QString::number(node->isVisible());
     str += ", isAttached: " + QString::number(node->isAttached());
-    str += ", isParentTagPoint: " + QString::number(node->isParentTagPoint());
+//    str += ", isParentTagPoint: " + QString::number(node->isParentTagPoint());
     str += ", isInScene: " + QString::number(node->isInScene());
     str += ", visibilityFlags: " + QString::number(node->getVisibilityFlags());
 
