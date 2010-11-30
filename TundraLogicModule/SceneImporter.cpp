@@ -790,6 +790,169 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     return sceneDesc;
 }
 
+QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials) const
+{
+    QSet<QString> used_textures;
+    
+    bool known_material = false;
+    
+    // Read the material file
+    QFile matfile(matfilename);
+    if (!matfile.open(QFile::ReadOnly))
+    {
+        TundraLogicModule::LogError("Could not open material file " + matfilename.toStdString());
+        return used_textures;
+    }
+    else
+    {
+        QByteArray bytes = matfile.readAll();
+        matfile.close();
+
+        if (bytes.size())
+        {
+            int num_materials = 0;
+            int brace_level = 0;
+            bool skip_until_next = false;
+            int skip_brace_level = 0;
+            Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
+            
+            while(!data->eof())
+            {
+                std::string line = data->getLine();
+                
+                // Skip empty lines & comments
+                if ((line.length()) && (line.substr(0, 2) != "//"))
+                {
+                    // Process opening/closing braces
+                    if (!ProcessBraces(line, brace_level))
+                    {
+                        // If not a brace and on level 0, it should be a new material
+                        if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
+                        {
+                            std::string matname = line.substr(9);
+                            ReplaceCharInplace(matname, '/', '_');
+                            line = "material " + matname;
+                            if (used_materials.find(matname.c_str()) == used_materials.end())
+                            {
+                                known_material = false;
+                            }
+                            else
+                            {
+                                known_material = true;
+                                ++num_materials;
+                            }
+                        }
+                        else
+                        {
+                            // Check for textures
+                            if (known_material)
+                                if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
+                                    used_textures.insert(line.substr(8).c_str());
+                        }
+                    }
+                    else
+                    {
+                        if (brace_level <= skip_brace_level)
+                            skip_until_next = false;
+                    }
+                }
+            }
+        }
+    }
+    
+    return used_textures;
+}
+
+QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const
+{
+    QString material;
+
+    bool right_material = false;
+
+    // Read the material file
+    QFile matfile(filename);
+    if (!matfile.open(QFile::ReadOnly))
+    {
+        TundraLogicModule::LogError("Could not open material file " + filename.toStdString());
+        return material;
+    }
+    else
+    {
+        QByteArray bytes = matfile.readAll();
+        matfile.close();
+        if (bytes.size() == 0)
+        {
+            TundraLogicModule::LogError("Empty material file: " + filename.toStdString());
+            return material;
+        }
+
+        int brace_level = 0;
+        bool skip_until_next = false;
+        int skip_brace_level = 0;
+
+        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
+        while(!data->eof())
+        {
+            std::string line = data->getLine();
+
+            // Skip empty lines & comments
+            if ((line.length()) && (line.substr(0, 2) != "//"))
+            {
+                // Process opening/closing braces
+                if (!ProcessBraces(line, brace_level))
+                {
+                    // If not a brace and on level 0, it should be a new material
+                    if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
+                    {
+                        std::string matname = line.substr(9);
+                        ReplaceCharInplace(matname, '/', '_');
+                        line = "material " + matname;
+                        if (matname.c_str() == materialName)
+                            right_material = true;
+                        else
+                            right_material = false;
+                    }
+
+                    // Write line to the modified copy
+                    if (!skip_until_next && right_material)
+                    {
+                        // Add indentation.
+                        for(int i =0; i < brace_level; ++i)
+                            material.append("    ");
+
+                        material.append(line.c_str());
+                        material.append("\n");
+                    }
+                }
+                else
+                {
+                    // Write line to the modified copy
+                    if (!skip_until_next && right_material)
+                    {
+                        // Add indentation.
+                        int i = 0;
+                        if (line.find("{") != std::string::npos)
+                            ++i;
+                        for(; i < brace_level; ++i)
+                            material.append("    ");
+
+                        material.append(line.c_str());
+                        material.append("\n");
+                    }
+
+                    if (brace_level <= skip_brace_level)
+                    {
+                        skip_until_next = false;
+                        ///\todo return material; here?
+                    }
+                }
+            }
+        }
+    }
+
+    return material;
+}
+
 void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir)
 {
     while (!node_elem.isNull())
@@ -1124,169 +1287,6 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
     }
-}
-
-QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials) const
-{
-    QSet<QString> used_textures;
-    
-    bool known_material = false;
-    
-    // Read the material file
-    QFile matfile(matfilename);
-    if (!matfile.open(QFile::ReadOnly))
-    {
-        TundraLogicModule::LogError("Could not open material file " + matfilename.toStdString());
-        return used_textures;
-    }
-    else
-    {
-        QByteArray bytes = matfile.readAll();
-        matfile.close();
-
-        if (bytes.size())
-        {
-            int num_materials = 0;
-            int brace_level = 0;
-            bool skip_until_next = false;
-            int skip_brace_level = 0;
-            Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
-            
-            while(!data->eof())
-            {
-                std::string line = data->getLine();
-                
-                // Skip empty lines & comments
-                if ((line.length()) && (line.substr(0, 2) != "//"))
-                {
-                    // Process opening/closing braces
-                    if (!ProcessBraces(line, brace_level))
-                    {
-                        // If not a brace and on level 0, it should be a new material
-                        if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
-                        {
-                            std::string matname = line.substr(9);
-                            ReplaceCharInplace(matname, '/', '_');
-                            line = "material " + matname;
-                            if (used_materials.find(matname.c_str()) == used_materials.end())
-                            {
-                                known_material = false;
-                            }
-                            else
-                            {
-                                known_material = true;
-                                ++num_materials;
-                            }
-                        }
-                        else
-                        {
-                            // Check for textures
-                            if (known_material)
-                                if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
-                                    used_textures.insert(line.substr(8).c_str());
-                        }
-                    }
-                    else
-                    {
-                        if (brace_level <= skip_brace_level)
-                            skip_until_next = false;
-                    }
-                }
-            }
-        }
-    }
-    
-    return used_textures;
-}
-
-QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const
-{
-    QString material;
-
-    bool right_material = false;
-
-    // Read the material file
-    QFile matfile(filename);
-    if (!matfile.open(QFile::ReadOnly))
-    {
-        TundraLogicModule::LogError("Could not open material file " + filename.toStdString());
-        return material;
-    }
-    else
-    {
-        QByteArray bytes = matfile.readAll();
-        matfile.close();
-        if (bytes.size() == 0)
-        {
-            TundraLogicModule::LogError("Empty material file: " + filename.toStdString());
-            return material;
-        }
-
-        int brace_level = 0;
-        bool skip_until_next = false;
-        int skip_brace_level = 0;
-
-        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
-        while(!data->eof())
-        {
-            std::string line = data->getLine();
-
-            // Skip empty lines & comments
-            if ((line.length()) && (line.substr(0, 2) != "//"))
-            {
-                // Process opening/closing braces
-                if (!ProcessBraces(line, brace_level))
-                {
-                    // If not a brace and on level 0, it should be a new material
-                    if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
-                    {
-                        std::string matname = line.substr(9);
-                        ReplaceCharInplace(matname, '/', '_');
-                        line = "material " + matname;
-                        if (matname.c_str() == materialName)
-                            right_material = true;
-                        else
-                            right_material = false;
-                    }
-
-                    // Write line to the modified copy
-                    if (!skip_until_next && right_material)
-                    {
-                        // Add indentation.
-                        for(int i =0; i < brace_level; ++i)
-                            material.append("    ");
-
-                        material.append(line.c_str());
-                        material.append("\n");
-                    }
-                }
-                else
-                {
-                    // Write line to the modified copy
-                    if (!skip_until_next && right_material)
-                    {
-                        // Add indentation.
-                        int i = 0;
-                        if (line.find("{") != std::string::npos)
-                            ++i;
-                        for(; i < brace_level; ++i)
-                            material.append("    ");
-
-                        material.append(line.c_str());
-                        material.append("\n");
-                    }
-
-                    if (brace_level <= skip_brace_level)
-                    {
-                        skip_until_next = false;
-                        ///\todo break; here?
-                    }
-                }
-            }
-        }
-    }
-
-    return material;
 }
 
 }
