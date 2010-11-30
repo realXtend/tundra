@@ -671,7 +671,7 @@ void SceneTreeWidget::EditInNew()
     editor->setAttribute(Qt::WA_DeleteOnClose);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
-    ecEditor->AddEntities(selection.EntityIds(), true);
+    editor->AddEntities(selection.EntityIds(), true);
     /*foreach(entity_id_t id, selection.EntityIds())
         editor->AddEntity(id);
     editor->SetSelectedEntities(selection.EntityIds());*/
