@@ -571,6 +571,9 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 14: // Font assets
         RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
+    case 15: // OgreSceneTree
+        PopulateOgreSceneTree();
+        break;
     }
 }
 
@@ -2159,6 +2162,89 @@ void TimeProfilerWindow::GetTexturesFromMaterials(const std::set<Ogre::Material*
         }
         ++i;
     }
+}
+
+QTreeWidgetItem *AddNewItem(QTreeWidgetItem *parent, QString name)
+{
+    QTreeWidgetItem *item = new QTreeWidgetItem(parent, QStringList(name));
+    return item;
+}
+
+void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
+{
+    QString str = (node->getMovableType() + "(MovableObject): ").c_str();
+    str += node->getName().c_str();
+    str += ", isVisible: " + QString::number(node->isVisible());
+    str += ", isAttached: " + QString::number(node->isAttached());
+    str += ", isParentTagPoint: " + QString::number(node->isParentTagPoint());
+    str += ", isInScene: " + QString::number(node->isInScene());
+    str += ", visibilityFlags: " + QString::number(node->getVisibilityFlags());
+
+    QTreeWidgetItem *nodeItem = AddNewItem(parent, str);
+}
+
+void AddOgreSceneNode(QTreeWidgetItem *parent, Ogre::SceneNode *node);
+
+void AddOgreNode(QTreeWidgetItem *parent, Ogre::Node *node)
+{
+    QTreeWidgetItem *nodeItem = AddNewItem(parent, ("Node: " + node->getName()).c_str());
+
+    for(int i = 0; i < node->numChildren(); ++i)
+    {
+        Ogre::Node *child = node->getChild(i);
+        Ogre::SceneNode *sceneNode = dynamic_cast<Ogre::SceneNode*>(child);
+        if (sceneNode)
+            AddOgreSceneNode(nodeItem, sceneNode);
+        else
+            AddOgreNode(nodeItem, sceneNode);
+    }
+}
+
+void AddOgreSceneNode(QTreeWidgetItem *parent, Ogre::SceneNode *node)
+{
+    QTreeWidgetItem *nodeItem = AddNewItem(parent, ("SceneNode: " + node->getName()).c_str());
+
+    for(int i = 0; i < node->numChildren(); ++i)
+    {
+        Ogre::Node *child = node->getChild(i);
+        Ogre::SceneNode *sceneNode = dynamic_cast<Ogre::SceneNode*>(child);
+        if (sceneNode)
+            AddOgreSceneNode(nodeItem, sceneNode);
+        else
+            AddOgreNode(nodeItem, sceneNode);
+    }
+
+    for(int i = 0; i < node->numAttachedObjects(); ++i)
+    {
+        Ogre::MovableObject *movableObject = node->getAttachedObject(i);
+        AddOgreMovableObject(nodeItem, movableObject);
+    }
+}
+
+void AddOgreScene(QTreeWidgetItem *parent, Ogre::SceneManager *scene)
+{
+    QTreeWidgetItem *sceneItem = AddNewItem(parent, ("SceneManager: " + scene->getName()).c_str());
+    AddOgreSceneNode(sceneItem, scene->getRootSceneNode());    
+}
+
+void TimeProfilerWindow::PopulateOgreSceneTree()
+{
+    QTreeWidget *tree = findChild<QTreeWidget* >("sceneDataTree");
+    if (!tree)
+        return;
+
+    tree->clear();
+
+    Ogre::Root *root = Ogre::Root::getSingletonPtr();
+    assert(root);
+
+    Ogre::SceneManagerEnumerator::SceneManagerIterator iter = root->getSceneManagerIterator();
+    while(iter.hasMoreElements())
+    {
+        Ogre::SceneManager *scene = iter.getNext();
+        if (scene)
+            AddOgreScene(tree->invisibleRootItem(), scene);
+    }    
 }
 
 void TimeProfilerWindow::RefreshRenderTargetProfilingData()

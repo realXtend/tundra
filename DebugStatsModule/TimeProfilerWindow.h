@@ -120,6 +120,8 @@ namespace DebugStats
         void GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest);
         void GetTexturesFromMaterials(const std::set<Ogre::Material*>& materials, std::set<Ogre::Texture*>& dest);
         
+        void PopulateOgreSceneTree();
+
         void DumpNetworkSummary(QTextStream* log = 0);
         
         struct NetworkLogData

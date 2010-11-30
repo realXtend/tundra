@@ -48,8 +48,8 @@ EC_Placeable::EC_Placeable(IModule* module) :
 
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    link_scene_node_ = scene_mgr->createSceneNode();
-    scene_node_ = scene_mgr->createSceneNode();
+    link_scene_node_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Placeable_LinkSceneNode"));
+    scene_node_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Placeable_SceneNode"));
     link_scene_node_->addChild(scene_node_);
     
     // In case the placeable is used for camera control, set fixed yaw axis
