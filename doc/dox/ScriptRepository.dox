@@ -66,11 +66,28 @@ Extensions cannot be loaded over the network, but are fixed to the installation.
 
 \section QtWidgetChildren The findChild function
 
-When using the qt.gui extension to operate on hierarchies of QObjects, you'll quickly notice that the function QObject::findChild is a template function and cannot be accessed from QtScript. To work around this, Naali exposes the following global scope function
+When using the qt.gui extension to operate on hierarchies of QObjects, you'll quickly notice that the function QObject::findChild is a template function and cannot be accessed from QtScript. To work around this, Naali exposes the following global scope function:
 
+<table style="width: 50%; margin: 20px; background-color: #F0F0FF; border: 1px solid black; border-spacing: 0px; ">
+<tr style="border-style: none;"><td style="border-style: none;">
 <span style="font-weight: bold; padding-left: 20px;">QObject findChild(QObject object, QString childName)</span>
 
 This function looks at all the (grand)children of object, and returns the first one found that has the name 'childName'.   
+</td></tr></table>
+
+\section ConsoleAPIPrint The print function
+
+For a simple way of getting lines of text to stdout, there is the following function.
+
+<table style="width: 50%; margin: 20px; background-color: #F0F0FF; border: 1px solid black; border-spacing: 0px; ">
+<tr style="border-style: none;"><td style="border-style: none;">
+
+<span style="font-weight: bold; padding-left: 20px;">print(QString text)</span>
+
+This function prints the given lines of text directly to console stdout. This output is different than the built-in text logging channel in the Console API (by default accessible with the F1 key). On Windows, if you are running the application from a release installer, or built it with WINDOWS_APP set, the text console will not be visible, unless you manually run the application from a command line window. 
+
+</td></tr></table>
+
 
 \section CoreAPIObjects The Core API Objects.
 
