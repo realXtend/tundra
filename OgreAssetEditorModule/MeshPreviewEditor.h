@@ -8,6 +8,7 @@
 #include "MouseEvent.h"
 #include "OgreMeshResource.h"
 #include "OgreAssetEditorModuleApi.h"
+#include "AssetFwd.h"
 
 #include <QWidget>
 #include <QLabel>
@@ -26,8 +27,6 @@ class UiProxyWidget;
 namespace Foundation
 {
     class Framework;
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
 namespace Resource

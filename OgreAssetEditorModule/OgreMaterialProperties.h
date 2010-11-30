@@ -17,11 +17,11 @@
 #include <QMap>
 #include <QString>
 
+#include "AssetFwd.h"
+
 namespace Foundation
 {
     class Framework;
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
 namespace OgreRenderer
@@ -40,7 +40,7 @@ class OgreMaterialProperties : public QObject
 public:
     /// Constructor.
     /// @param asset Asset pointer to the material binary data.
-    explicit OgreMaterialProperties(const QString &name, Foundation::AssetPtr asset);
+    explicit OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset);
 
     /// Destructor.
     ~OgreMaterialProperties();

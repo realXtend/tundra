@@ -11,6 +11,7 @@
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
 #include "EntityAction.h"
+#include "AssetFwd.h"
 
 #include <QTreeWidget>
 #include <QPointer>
@@ -224,7 +225,7 @@ private:
     QPointer<Menu> contextMenu;
 
     //! Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
-    QMap<IAssetTransfer*, QString> filesaves_;
+    QMap<AssetTransferPtr, QString> filesaves_;
 
     //! Used by 'Export all', a list of assets that have already been saved, so assets are not saved multiple times.
     //! Multiple assets can reference reference another asset, so each asset must be saved only once.
@@ -333,7 +334,7 @@ private slots:
     */
     void SaveAssetDialogClosed(int result);
 
-    void AssetLoaded();
+    void AssetLoaded(IAssetTransfer *transfer);
 };
 
 

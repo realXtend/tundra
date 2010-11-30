@@ -12,6 +12,8 @@
 #include "ModuleLoggingFunctions.h"
 #include "AttributeChangeType.h"
 #include "ScriptServiceInterface.h"
+#include "AssetFwd.h"
+#include "ScriptAsset.h"
 
 #include <QObject>
 
@@ -84,8 +86,7 @@ public slots:
     //! New scene has been added to foundation.
     void SceneAdded(const QString &name);
 
-    //! EC_Script script source ref has changed.
-    void ScriptChanged(const QString &scriptRef);
+    void ScriptAssetChanged(ScriptAssetPtr newScript);
 
     //! New component has been added to scene.
     void ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
