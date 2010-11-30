@@ -14,7 +14,7 @@ import mathutils
 
 import async_eventlet_wsgiserver
 
-SPAWNPOS = 131.806, 48.9571, 28.7691 #at the end of pier in w.r.o:9000
+SPAWNPOS = 131.806, 48.9571, 28.7691 #at the end of pie ",".join(args)r in w.r.o:9000
 
 class NaaliWebsocketServer(circuits.BaseComponent):
     instance = None
@@ -29,15 +29,16 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         self.clientavs = {}
 
     def newclient(self, clientid, position, orientation):
-        ent = naali.createMeshEntity("Jack.mesh")
 
-        ent.placeable.Position = Vec3(position[0], position[1], position[2])
+        #emit userconnected signal to js
+        naali._naali.server.UserConnected(1, 0)
+        
+        # ent = naali.createMeshEntity("Jack.mesh")
+        # ent.placeable.Position = Vec3(position[0], position[1], position[2])
+        # ent.placeable.Orientation = Quat(mathutils.euler_to_quat(orientation))
+        # print "New entity for web socket presence at", ent.placeable.Position
 
-        ent.placeable.Orientation = Quat(mathutils.euler_to_quat(orientation))
-
-        print "New entity for web socket presence at", ent.placeable.Position
-
-        self.clientavs[clientid] = ent
+        # self.clientavs[clientid] = ent
 
     def updateclient(self, clientid, position, orientation):
         ent = self.clientavs[clientid]
@@ -66,7 +67,7 @@ def handle_clients(ws):
     myid = random.randrange(1,10000)
     clients.add(ws)
     
-    scene = naali.getScene("World")
+    scene = naali.getScene("TundraServer")
     
     while True:
         # "main loop" for the server. When your done with the
@@ -100,55 +101,30 @@ def handle_clients(ws):
             start_orientation = (1.57, 0, 0)
             NaaliWebsocketServer.instance.newclient(myid, start_position, start_orientation)
 
-            ws.send(json.dumps(['setId', {'id': myid}]))
-            sendAll(['newAvatar', {'id': myid, 'position': start_position, 'orientation': start_orientation}])
+            # ws.send(json.dumps(['setId', {'id': myid}]))
+            # sendAll(['newAvatar', {'id': myid, 'position': start_position, 'orientation': start_orientation}])
 
-            ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent")
+            # ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent")
 
-            for ent in ents:
-                id = ent.Id
-                position = ent.placeable.Position.x(), ent.placeable.Position.y(), ent.placeable.Position.z()
-                orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
-                sendAll(['addObject', {'id': id, 'position': position, 'orientation': orientation, 'xml': scene.GetEntityXml(ent).data()}])
+            # for ent in ents:
+            #     id = ent.Id
+            #     position = ent.placeable.Position.x(), ent.placeable.Position.y(), ent.placeable.Position.z()
+            #     orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
+            #     sendAll(['addObject', {'id': id, 'position': position, 'orientation': orientation, 'xml': scene.GetEntityXml(ent).data()}])
 
         elif function == 'Naps':
             ws.send(json.dumps(['logMessage', {'message': 'Naps itelles!'}]))
             
         elif function == 'giev update':
-            id = params.get('id')
-            position = params.get('position')
-            orientation = params.get('orientation')
+            pass
+        
+        elif function == 'Action':
+            action = params.get('action')
+            args = params.get('params')
 
-            NaaliWebsocketServer.instance.updateclient(myid, position, orientation)
-            
-            ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
+            av = scene.GetEntityByNameRaw("Avatar1")
 
-            for ent in ents:
-
-                x = ent.placeable.Position.x()
-                y = ent.placeable.Position.y()
-                z = ent.placeable.Position.z()
-
-                orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
-
-                id = ent.Id
-
-                sendAll(['updateAvatar',
-                         {'id': id,
-                          'position': (x, y, z),
-                          'orientation': orientation,
-                          }])
-
-        elif function == 'updateObject':
-            id = params['id']
-            data = params['data']
-
-
-            entity = scene.GetEntityRaw(id)
-            component = entity.GetComponentRaw('EC_DynamicComponent', 'door')
-            
-            component.SetAttribute('opened', data['opened'])
-                    
+            av.Exec(1, action, args)
 
                 
         elif function == 'setSize':
@@ -161,3 +137,4 @@ def handle_clients(ws):
 
     clients.remove(ws)
     print 'END', ws
+
