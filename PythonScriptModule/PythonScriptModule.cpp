@@ -90,6 +90,9 @@
 
 #include <PythonQt.h>
 
+#include "Vector3dfDecorator.h"
+#include "QuaternionDecorator.h"
+
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
 #include <QApplication>
@@ -1815,11 +1818,13 @@ namespace PythonScript
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Ruler::staticMetaObject);
+            
+            PythonQt::self()->addDecorators(new Vector3dfDecorator());
+            PythonQt::self()->registerCPPClass("Vector3df");
+            PythonQt::self()->addDecorators(new QuaternionDecorator());
+            PythonQt::self()->registerCPPClass("Quaternion");
 
             pythonqt_inited = true;
-
-            //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);
         }
 
         //load the py written module manager using the py c api directly

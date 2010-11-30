@@ -272,7 +272,6 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     }
     
     AttachEntity();
-    
     emit OnMeshChanged();
     
     return true;
@@ -713,6 +712,25 @@ void EC_Mesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
     
     min = Vector3df(bboxmin.x, bboxmin.y, bboxmin.z);
     max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
+}
+
+QVector3D EC_Mesh::GetWorldSize() const
+{
+    QVector3D size(0,0,0);
+    if (!entity_ || !adjustment_node_ || !placeable_)
+        return size;
+
+    // Get mesh bounds and scale it to the scene node
+    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
+    Ogre::AxisAlignedBox bbox = entity_->getMesh()->getBounds();
+    bbox.scale(adjustment_node_->getScale());
+
+    // Get size and take placeable scale into consideration to get real naali inworld size
+    const Ogre::Vector3& bbsize = bbox.getSize();
+    const Vector3df &placeable_scale = placeable->GetScale();
+    // Swap y and z to make it align with other naali vectors
+    size = QVector3D(bbsize.x*placeable_scale.x, bbsize.z*placeable_scale.z, bbsize.y*placeable_scale.y);
+    return size;
 }
 
 void EC_Mesh::DetachEntity()

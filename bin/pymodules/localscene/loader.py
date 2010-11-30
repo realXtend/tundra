@@ -26,6 +26,7 @@ class OgreNode:
         self.entityNode = None
         self.entityName = None
         self.entityMeshFile = None
+        self.entityCollisionFile = None
         self.entityStatic = None
         
     def createChildSceneNode(self):

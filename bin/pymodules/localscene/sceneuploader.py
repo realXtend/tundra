@@ -223,6 +223,15 @@ class SceneUploader:
                 dstFile = self.appDataUploadFolder + os.sep + oNode.entityMeshFile[:-5] + ".material"
                 shutil.copyfile(materialfile2, dstFile)
                 self.copyTextures(materialfile2, MATERIAL_FOLDER)
+                
+            #copy collision mesh if specified
+            if(oNode.entityCollisionFile!=None and oNode.entityCollisionFile!=""):
+                collisionPath = os.path.dirname(materialfile) + os.sep + oNode.entityCollisionFile
+                if(self.fileExists(collisionPath)):
+                    dstFile = self.appDataUploadFolder + os.sep + oNode.entityCollisionFile
+                    shutil.copyfile(collisionPath, dstFile)
+                else:
+                    print "Collision file specified, but not found"
 
     def copyTextures(self, matfile, folder):
         list = self.getTexturesFromMaterialFile(matfile)
@@ -394,6 +403,10 @@ class SceneSaver:
                 entity = newdoc.createElement('entity')
                 entity.setAttribute("name", oNode.entityNode.getAttribute("name"))
                 entity.setAttribute("meshFile", oNode.entityNode.getAttribute("meshFile"))
+                if oNode.entityNode.hasAttribute("collisionFile"):
+                    entity.setAttribute("collisionFile", oNode.entityNode.getAttribute("collisionFile"))
+                if oNode.entityNode.hasAttribute("collisionPrim"):
+                    entity.setAttribute("collisionPrim", oNode.entityNode.getAttribute("collisionPrim"))
                 entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
                 nodeNode.appendChild(entity)
                 nodesNode.appendChild(nodeNode)

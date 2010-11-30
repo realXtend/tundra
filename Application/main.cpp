@@ -193,7 +193,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
 #ifdef PLAYER_VIEWER
     WCHAR* szVersion = L"Naali_v0.3.4-Player-0.1";
 #else
-    WCHAR* szVersion = L"Naali_v0.3.4";
+    WCHAR* szVersion = L"Naali_v0.3.4.1";
 #endif
 // $ END_MOD $
 	DWORD dwBufferSize = MAX_PATH;
@@ -235,4 +235,3 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
-
