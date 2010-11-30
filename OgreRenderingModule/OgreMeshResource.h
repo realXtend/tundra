@@ -29,7 +29,7 @@ namespace OgreRenderer
         /*! \param id mesh id
             \param source asset data to construct mesh from
         */
-        OgreMeshResource(const std::string& id, Foundation::AssetPtr source);
+        OgreMeshResource(const std::string& id, Foundation::AssetInterfacePtr source);
 
         //! destructor
         virtual ~OgreMeshResource();
@@ -54,7 +54,7 @@ namespace OgreRenderer
         /*! \param source asset data to construct mesh from
             \return true if successful
         */
-        bool SetData(Foundation::AssetPtr source);
+        bool SetData(Foundation::AssetInterfacePtr source);
 
         //! returns resource type in text form (static)
         static const std::string& GetTypeStatic();

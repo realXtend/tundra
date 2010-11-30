@@ -149,7 +149,7 @@ public slots:
      *  @param change Change type.
      *  @todo remove this from dynamic component when possible.
      */
-    void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change);
+    void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change = AttributeChange::Default);
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
         @param value Value of the attribute.

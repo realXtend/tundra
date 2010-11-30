@@ -22,7 +22,7 @@ EC_OgreParticleSystem::EC_OgreParticleSystem(IModule* module) :
 {
     RendererPtr renderer = renderer_.lock();     
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    adjustment_node_ = scene_mgr->createSceneNode();
+    adjustment_node_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_OgreParticleSystem"));
 }
 
 EC_OgreParticleSystem::~EC_OgreParticleSystem()
@@ -78,7 +78,7 @@ bool EC_OgreParticleSystem::AddParticleSystem(const std::string& system_name)
         }
         
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), SanitateAssetIdForOgre(system_name));
+        Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName("EC_OgreParticleSystem"), SanitateAssetIdForOgre(system_name));
         if (system)
         {
             adjustment_node_->attachObject(system);

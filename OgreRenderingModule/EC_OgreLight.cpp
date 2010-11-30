@@ -18,7 +18,7 @@ EC_OgreLight::EC_OgreLight(IModule* module) :
 {
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    light_ = scene_mgr->createLight(renderer->GetUniqueObjectName());
+    light_ = scene_mgr->createLight(renderer->GetUniqueObjectName("EC_OgreLight"));
 }
 
 EC_OgreLight::~EC_OgreLight()

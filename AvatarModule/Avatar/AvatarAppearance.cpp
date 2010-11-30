@@ -1001,7 +1001,7 @@ namespace Avatar
         if (!entity)
             return true;
 
-        Foundation::AssetPtr asset = event_data->asset_;
+        Foundation::AssetInterfacePtr asset = event_data->asset_;
         if (!asset) 
             return true;
 
@@ -1701,7 +1701,7 @@ namespace Avatar
         }
         
         // Create a clone of the material to be messed with during export
-        std::string clonename = renderer->GetUniqueObjectName();
+        std::string clonename = renderer->GetUniqueObjectName("AvatarAppearance_tempclone");
         clone = ogre_mat->clone(clonename);
         
         // Now remove unsupported techniques before exporting, or we will crash inside OGRE
@@ -1846,7 +1846,7 @@ namespace Avatar
                 return false;
             }
             // The assettype doesn't matter here
-            Foundation::AssetPtr raw_asset = asset_service->GetAsset(asset.resource_id_, std::string());
+            Foundation::AssetInterfacePtr raw_asset = asset_service->GetAsset(asset.resource_id_, std::string());
             if (!raw_asset)
             {
                 AvatarModule::LogError("Could not get raw asset data for resource " + asset.resource_id_);
@@ -2135,7 +2135,7 @@ namespace Avatar
                 return false;
             }
             
-            matname = renderer->GetUniqueObjectName();
+            matname = renderer->GetUniqueObjectName("AvatarAppearance_material");
             
             //! \todo this temp material will not be deleted ever. Should delete it
             Ogre::MaterialPtr ogremat = OgreRenderer::GetOrCreateLitTexturedMaterial(matname);

@@ -61,7 +61,7 @@ namespace Asset
         return name_;
     }
 
-    bool QtHttpAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
+    bool QtHttpAssetProvider::IsValidRef(const std::string& asset_id, const std::string& asset_type)
     {
         // Textures over http with the GetTexture cap
         if (IsAcceptableAssetType(asset_type))
@@ -81,7 +81,7 @@ namespace Asset
     
     bool QtHttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
-        if (!IsValidId(asset_id, asset_type))
+        if (!IsValidRef(asset_id, asset_type))
             return false;
 
         QString asset_id_qstring = QString::fromStdString(asset_id);
@@ -146,9 +146,9 @@ namespace Asset
             return false;
     }
 
-    Foundation::AssetPtr QtHttpAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)       
+    Foundation::AssetInterfacePtr QtHttpAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)       
     {
-        return Foundation::AssetPtr();
+        return Foundation::AssetInterfacePtr();
     }
 
     Foundation::AssetTransferInfoVector QtHttpAssetProvider::GetTransferInfo()
@@ -210,7 +210,7 @@ namespace Asset
             HttpAssetTransferInfo tranfer_info = transfer->GetTranferInfo();
             std::string id = tranfer_info.id.toStdString();
             std::string type = RexTypes::GetTypeNameFromAssetType(tranfer_info.type);
-            Foundation::AssetPtr asset_ptr = Foundation::AssetPtr(new RexAsset(id, type));
+            Foundation::AssetInterfacePtr asset_ptr = Foundation::AssetInterfacePtr(new RexAsset(id, type));
 
             // Fill asset data with reply data
             RexAsset::AssetDataVector& data_vector = checked_static_cast<RexAsset*>(asset_ptr.get())->GetDataInternal();
@@ -243,7 +243,7 @@ namespace Asset
                 QNetworkRequest *metada_request = new QNetworkRequest(metadata_url);
 
                 // Store tranfer data and asset data pointer internally
-                QPair<HttpAssetTransferInfo, Foundation::AssetPtr> data_pair;
+                QPair<HttpAssetTransferInfo, Foundation::AssetInterfacePtr> data_pair;
                 data_pair.first = tranfer_info;
                 data_pair.second = asset_ptr;
                 metadata_to_assetptr_[metada_request->url()] = data_pair;
@@ -287,7 +287,7 @@ namespace Asset
                 // Pull out transfer data and asset pointer assosiated with this reply url
                 QUrl metadata_transfer_url = fake_metadata_url_;
                 HttpAssetTransferInfo transfer_data = metadata_to_assetptr_[metadata_transfer_url].first;
-                Foundation::AssetPtr ready_asset_ptr = metadata_to_assetptr_[metadata_transfer_url].second;
+                Foundation::AssetInterfacePtr ready_asset_ptr = metadata_to_assetptr_[metadata_transfer_url].second;
                 if (!ready_asset_ptr)
                 {
                     reply->deleteLater();

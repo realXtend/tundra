@@ -2290,9 +2290,9 @@ namespace Environment
         manual_paint_object_->end();
         manual_paint_object_->setVisible(true);
 
-        std::string meshName = renderer->GetUniqueObjectName();
+        std::string meshName = renderer->GetUniqueObjectName("EnvEditor_PaintMesh");
         Ogre::MeshPtr terrainMesh = manual_paint_object_->convertToMesh(meshName);
-        Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), meshName);
+        Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName("EnvEditor_PaintMesh"), meshName);
         ogre_entity->setCastShadows(false);
 
         ReleasePaintMeshOnScene();

@@ -68,7 +68,7 @@ namespace Environment
         if(!renderer_.expired())
         {
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
-            node_ = scene_mgr->createSceneNode();
+            node_ = scene_mgr->createSceneNode(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_Root"));
         }
 
         QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
@@ -303,7 +303,7 @@ namespace Environment
                     Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Z, 0),
                     xSize, ySize, xSegmentsAttr.Get(), ySegmentsAttr.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
                 
-                entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName(), name_.toStdString().c_str());
+                entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_entity"), name_.toStdString().c_str());
                 entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
                 entity_->setCastShadows(false);
                 // Tries to attach entity, if there is not EC_Placeable availible, it will not attach object

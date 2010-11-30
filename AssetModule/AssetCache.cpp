@@ -239,14 +239,14 @@ namespace Asset
         update_time_ = 0.0;
     }
 
-    Foundation::AssetPtr AssetCache::GetAsset(const std::string& asset_id, bool check_memory, bool check_disk, const std::string& asset_type)
+    Foundation::AssetInterfacePtr AssetCache::GetAsset(const std::string& asset_id, bool check_memory, bool check_disk, const std::string& asset_type)
     {
         if (check_memory)
         {
             AssetMap::iterator i = assets_.begin();
             while (i != assets_.end())
             {
-                Foundation::AssetPtr asset = i->second;
+                Foundation::AssetInterfacePtr asset = i->second;
                 if ((asset->GetId() == asset_id) && (asset_type.empty() || (asset->GetType() == asset_type)))
                 {
                     RexAsset* asset = dynamic_cast<RexAsset*>(i->second.get());
@@ -287,13 +287,13 @@ namespace Asset
                         AssetModule::LogDebug("Malformed assetcache filename " + *i);
                         filestr.close();
                         disk_cache_contents_.erase(i);
-                        return Foundation::AssetPtr();
+                        return Foundation::AssetInterfacePtr();
                     }
                     
                     std::string type = assetNameType[assetNameType.size() - 1];
 
                     RexAsset* new_asset = new RexAsset(asset_id, type);
-                    assets_[asset_id] = Foundation::AssetPtr(new_asset);
+                    assets_[asset_id] = Foundation::AssetInterfacePtr(new_asset);
                 
                     RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
                     data.resize(length);
@@ -310,10 +310,10 @@ namespace Asset
         }
         
             
-        return Foundation::AssetPtr();
+        return Foundation::AssetInterfacePtr();
     }
 
-    void AssetCache::StoreAsset(Foundation::AssetPtr asset, bool store_to_disk)
+    void AssetCache::StoreAsset(Foundation::AssetInterfacePtr asset, bool store_to_disk)
     {
         const std::string& asset_id = asset->GetId();
         AssetModule::LogDebug("Storing complete asset " + asset_id);
@@ -344,7 +344,7 @@ namespace Asset
         }
     }
 
-    bool AssetCache::DeleteAsset(Foundation::AssetPtr asset)
+    bool AssetCache::DeleteAsset(Foundation::AssetInterfacePtr asset)
     {
         const std::string& asset_id = asset->GetId();
 

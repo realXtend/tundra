@@ -70,13 +70,13 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
         
     try
     {
-        std::string mesh_name = renderer->GetUniqueObjectName();
+        std::string mesh_name = renderer->GetUniqueObjectName("EC_OgreCustomObject_mesh");
         object->convertToMesh(mesh_name);
         object->clear();
     
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
 
-        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName(), mesh_name);
+        entity_ = scene_mgr->createEntity(renderer->GetUniqueObjectName("EC_OgreCustomObject_entity"), mesh_name);
         if (entity_)
         {
             AttachEntity();

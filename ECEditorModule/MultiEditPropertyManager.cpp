@@ -54,7 +54,7 @@ namespace ECEditor
         if(!values_.contains(property))
             return "(0 values)";
 
-        // Hackish way to get change shown on editor window.
+        // Hackish way to get the change to shown on the editor window.
         const_cast<QtProperty *>(property)->setModified(false);
         if(values_[property].value != "")
             return values_[property].value;

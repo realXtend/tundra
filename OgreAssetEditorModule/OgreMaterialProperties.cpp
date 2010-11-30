@@ -20,7 +20,7 @@
 #include <QVector>
 #include <QTextStream>
 
-OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetPtr asset) :
+OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset) :
     material_(0)
 {
     // Hack: tell the materialresource that shadows are medium quality, so that it won't create extra shadow texture units

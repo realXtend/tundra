@@ -293,7 +293,7 @@ void EC_ChatBubble::Update()
     if (!billboardSet_ && !billboard_)
     {
         // Create billboardset and billboard
-        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
+        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName("EC_ChatBubble"), 1);
         assert(billboardSet_);
 
         billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, default_z_pos_));
@@ -303,12 +303,12 @@ void EC_ChatBubble::Update()
         sceneNode->attachObject(billboardSet_);
 
         // Create material
-        materialName_ = std::string("ChatBubbleMaterial") + renderer_.lock()->GetUniqueObjectName(); 
+        materialName_ = renderer_.lock()->GetUniqueObjectName("EC_ChatBubble_Material"); 
         Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", materialName_);
         billboardSet_->setMaterialName(materialName_);
 
         // Create texture
-        texture_name_ = "ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName();
+        texture_name_ = renderer_.lock()->GetUniqueObjectName("EC_ChatBubble_Texture");
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
             texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
             Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
