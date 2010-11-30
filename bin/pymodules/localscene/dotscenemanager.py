@@ -43,6 +43,10 @@ class DotSceneManager:
         self.currentRadZ = 0
         self.currentRadW = 0
         self.localScene = None
+
+        self.pointRotRadX = 0
+        self.pointRotRadY = 0
+        self.pointRotRadZ = 0
         
         
     def setPosition(self, x, y ,z):
@@ -297,7 +301,6 @@ class DotSceneManager:
         angleRadX = (angleX/180)*pi
         rotationX = angleRadX - self.currentRadX
         self.currentRadX=self.currentRadX+rotationX
-        
         # back to degrees
         rotationX = rotationX*(180/pi)
         self.rotateSceneWithAxisAndAngle(Vec(1,0,0), rotationX, 'x')
@@ -310,19 +313,57 @@ class DotSceneManager:
         self.currentRadY=self.currentRadY+rotationY
         # back to degrees
         rotationY = rotationY*(180/pi)
-
         self.rotateSceneWithAxisAndAngle(Vec(0,1,0), rotationY, 'y')
         pass
         
     def rotateZ(self, angleZ):
-        """ Test method """
         self.setCenterPointAndCenterVectors()
         angleRadZ = angleZ*(pi/180)
         rotationZ = angleRadZ - self.currentRadZ
         self.currentRadZ=self.currentRadZ+rotationZ
-       
         # back to degrees
         rotationZ = rotationZ*(180/pi)
         self.rotateSceneWithAxisAndAngle(Vec(0,0,1), rotationZ, 'z')
         pass
         
+    def rotateAroundPointX(self, angleX, x, y, z):
+        self.setPredefinedCenterAndCalculateCenterVectors(x, y, z)
+        angleRadX = angleX*(pi/180)
+        rotationX = angleRadX - self.pointRotRadX
+        self.pointRotRadX=self.pointRotRadX+rotationX
+        # back to degrees
+        rotationX = rotationX*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(1,0,0), rotationX, 'x')        
+        pass
+    def rotateAroundPointY(self, angleY, x, y, z):
+        self.setPredefinedCenterAndCalculateCenterVectors(x, y, z)
+        angleRadY = angleY*(pi/180)
+        rotationY = angleRadY - self.pointRotRadY
+        self.pointRotRadY=self.pointRotRadY+rotationY
+        # back to degrees
+        rotationY = rotationY*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(0,1,0), rotationY, 'y')
+        pass
+    def rotateAroundPointZ(self, angleZ, x, y, z):
+        self.setPredefinedCenterAndCalculateCenterVectors(x, y, z)
+        angleRadZ = angleZ*(pi/180)
+        rotationZ = angleRadZ - self.pointRotRadZ
+        self.pointRotRadZ=self.pointRotRadZ+rotationZ
+        # back to degrees
+        rotationZ = rotationZ*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(0,0,1), rotationZ, 'z')        
+        pass
+    
+    def setPredefinedCenterAndCalculateCenterVectors(self, x, y, z):
+        self.centerPoint = Vec(x, y, z)
+        relativeCenter = Vec(self.centerPoint.x()-self.xshift, self.centerPoint.y()-self.yshift, self.centerPoint.z()-self.zshift)
+        # center Vecs
+        for k, oNode in self.nodes.iteritems():
+            diffVec = self.vectorDifference(oNode.position, relativeCenter)
+            self.nodeCenterVectors[oNode]=diffVec
+        pass
+    
+    def resetPointRotation(self):
+        self.pointRotRadX = 0
+        self.pointRotRadY = 0
+        self.pointRotRadZ = 0
