@@ -1116,9 +1116,9 @@ namespace OgreRenderer
         return renderWindow->OgreRenderWindow();
     }
 
-    std::string Renderer::GetUniqueObjectName()
+    std::string Renderer::GetUniqueObjectName(const std::string &prefix)
     {
-        return "obj" + ToString<uint>(object_id_++);
+        return prefix + "/" + ToString<uint>(object_id_++);
     }
 
     ResourcePtr Renderer::GetResource(const std::string& id, const std::string& type)

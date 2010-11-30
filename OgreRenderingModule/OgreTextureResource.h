@@ -58,7 +58,7 @@ namespace OgreRenderer
         /*! \param source source image asset
             \return true if successful
          */
-        bool SetDataFromImage(Foundation::AssetPtr source);
+        bool SetDataFromImage(Foundation::AssetInterfacePtr source);
         
         //! sets contents from raw source texture
         /*! \param source source raw texture data

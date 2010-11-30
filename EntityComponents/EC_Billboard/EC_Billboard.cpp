@@ -87,10 +87,10 @@ void EC_Billboard::Show(const std::string &imageName, int timeToShow)
     if (!IsCreated())
     {
         // Billboard not created yet, create it now.
-        billboardSet_ = scene->createBillboardSet(renderer->GetUniqueObjectName(), 1);
+        billboardSet_ = scene->createBillboardSet(renderer->GetUniqueObjectName("EC_Billboard"), 1);
         assert(billboardSet_);
 
-        materialName_ = std::string("material") + renderer->GetUniqueObjectName(); 
+        materialName_ = renderer->GetUniqueObjectName("EC_Billboard_material"); 
         Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", materialName_);
         OgreRenderer::SetTextureUnitOnMaterial(material, imageName);
         billboardSet_->setMaterialName(materialName_);

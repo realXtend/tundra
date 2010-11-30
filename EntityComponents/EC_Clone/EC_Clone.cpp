@@ -170,7 +170,7 @@ void EC_Clone::Create()
         return;
 
     // Clone the Ogre entity.
-    cloneName_ = std::string("entity") + renderer_.lock()->GetUniqueObjectName();
+    cloneName_ = renderer_.lock()->GetUniqueObjectName("EC_Clone_ent");
     entityClone_ = originalEntity->clone(cloneName_);
     assert(entityClone_);
 

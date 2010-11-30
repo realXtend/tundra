@@ -250,10 +250,10 @@ void EC_HoveringText::ShowMessage(const QString &text)
     // Create billboard if it doesn't exist.
     if (!billboardSet_ && !billboard_)
     {
-        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
+        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName("EC_HoveringText"), 1);
         assert(billboardSet_);
 
-        materialName_ = std::string("HoveringTextMaterial") + renderer_.lock()->GetUniqueObjectName();
+        materialName_ = renderer_.lock()->GetUniqueObjectName("EC_HoveringText_material");
         OgreRenderer::CloneMaterial("HoveringText", materialName_);
         billboardSet_->setMaterialName(materialName_);
         billboardSet_->setCastShadows(false);
@@ -289,7 +289,7 @@ void EC_HoveringText::Redraw()
     {
         if (textureName_.empty())
         {
-            textureName_ = "HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName();
+            textureName_ = renderer_.lock()->GetUniqueObjectName("EC_HoveringText_texture");
 
             texPtr = Ogre::TextureManager::getSingleton().createManual(
                 textureName_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,

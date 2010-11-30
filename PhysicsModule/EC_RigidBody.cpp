@@ -620,9 +620,9 @@ void EC_RigidBody::RequestMesh()
     if (!collisionMeshRef.Get().ref.isEmpty())
     {
         // Do not create shape right now, but request the mesh resource
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(collisionMeshRef.Get().ref);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(collisionMeshRef.Get().ref);
         if (transfer)
-            connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnCollisionMeshAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnCollisionMeshAssetLoaded()), Qt::UniqueConnection);
     }
 }
 

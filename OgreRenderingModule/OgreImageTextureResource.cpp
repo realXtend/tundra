@@ -15,7 +15,7 @@ namespace OgreRenderer
     {
     }
 
-    OgreImageTextureResource::OgreImageTextureResource(const std::string& id, TextureQuality texturequality, Foundation::AssetPtr source) : 
+    OgreImageTextureResource::OgreImageTextureResource(const std::string& id, TextureQuality texturequality, Foundation::AssetInterfacePtr source) : 
         ResourceInterface(id),
         texturequality_(texturequality)
     {
@@ -27,7 +27,7 @@ namespace OgreRenderer
         RemoveTexture();
     }
     
-    bool OgreImageTextureResource::SetData(Foundation::AssetPtr source)
+    bool OgreImageTextureResource::SetData(Foundation::AssetInterfacePtr source)
     {
         if (!source)
         {

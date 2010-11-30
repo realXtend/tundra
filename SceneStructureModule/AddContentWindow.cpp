@@ -330,7 +330,7 @@ void AddContentWindow::AddContent()
                     (*ai).destinationName = dest->GetFullAssetURL(aitem->text(4).trimmed());
 
                     // Add textures to special map for later use.
-                    if (aitem->desc.typeName == "texture")
+                    if (aitem->desc.typeName == "texture") ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
                     {
                         int idx = aitem->desc.filename.lastIndexOf("/");
                         //refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = dest->GetFullAssetURL(aitem->text(4).trimmed());//aitem->desc.destinationName;
@@ -348,7 +348,7 @@ void AddContentWindow::AddContent()
     while(rewriteIt.hasNext())
     {
         rewriteIt.next();
-        if (rewriteIt.value().typeName == "material")
+        if (rewriteIt.value().typeName == "material") ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
             ReplaceReferences(rewriteIt.value().data, refs);
     }
 

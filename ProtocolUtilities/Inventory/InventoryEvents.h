@@ -138,7 +138,7 @@ namespace Inventory
         InventoryItemDownloadedEventData() : handled(false){}
         virtual ~InventoryItemDownloadedEventData() {}
         RexUUID inventoryId;
-        Foundation::AssetPtr asset;
+        Foundation::AssetInterfacePtr asset;
         request_tag_t requestTag;
         asset_type_t assetType;
         std::string name;

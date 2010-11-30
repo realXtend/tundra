@@ -76,10 +76,12 @@ namespace ECEditor
     {
     }
 
-    void ECEditorWindow::AddEntity(entity_id_t entity_id)
+    void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
     {
+        PROFILE(AddEntity);
         if (entity_list_)
         {
+            entity_list_->blockSignals(true);
             //If entity don't have EC_Name then entity_name is same as it's id.
             QString entity_name = QString::number(entity_id);
             Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
@@ -94,14 +96,39 @@ namespace ECEditor
             QListWidgetItem *item = entity_list_->item(row);
             // Toggle selection.
             item->setSelected(!item->isSelected());
+            entity_list_->blockSignals(false);
         }
+        if (udpate_ui)
+            RefreshPropertyBrowser();
     }
 
-    void ECEditorWindow::RemoveEntity(entity_id_t entity_id)
+    void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select_all)
     {
+        entity_list_->blockSignals(true);
+        ClearEntities();
+        foreach(entity_id_t id, entities)
+        {
+            QString entity_name = QString::number(id);
+            Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(id);
+            if(entity && entity->HasComponent("EC_Name"))
+                entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
+
+            int row = AddUniqueListItem(entity.get(), entity_list_, entity_name);
+            QListWidgetItem *item = entity_list_->item(row);
+            if (select_all)
+                item->setSelected(true);
+        }
+        entity_list_->blockSignals(false);
+        RefreshPropertyBrowser();
+    }
+
+    void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
+    {
+        PROFILE(RemoveEntity);
         if (!entity_list_)
             return;
 
+        entity_list_->blockSignals(true);
         Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
         if (!entity)
         {
@@ -119,13 +146,18 @@ namespace ECEditor
                 break;
             }
         }
+        entity_list_->blockSignals(false);
+        if (udpate_ui)
+            RefreshPropertyBrowser();
     }
 
     void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
     {
+        PROFILE(SetSelectedEntities);
         if (!entity_list_)
             return;
 
+        entity_list_->blockSignals(true);
         foreach(entity_id_t id, ids)
             for (uint i = 0; i < entity_list_->count(); ++i)
             {
@@ -136,7 +168,7 @@ namespace ECEditor
                     break;
                 }
             }
-
+        entity_list_->blockSignals(false);
         RefreshPropertyBrowser();
     }
 
@@ -167,10 +199,7 @@ namespace ECEditor
         {
             ComponentPtr component = entity->GetComponent(componentType, name);
             if (component)
-            {
                 entity->RemoveComponent(component, AttributeChange::Default);
-                BoldEntityListItem(entity->GetId(), false);
-            }
         }
     }
     
@@ -402,17 +431,17 @@ namespace ECEditor
 
     void ECEditorWindow::HighlightEntities(IComponent *component)
     {
+        QSet<entity_id_t> entities;
         foreach(Scene::EntityPtr entity, GetSelectedEntities())
             if (entity->GetComponent(component->TypeName(), component->Name()))
-                BoldEntityListItem(entity->GetId(), true);
-            else
-                BoldEntityListItem(entity->GetId(), false);
+                entities.insert(entity->GetId());
+        BoldEntityListItems(entities);
     }
 
     void ECEditorWindow::RefreshPropertyBrowser() 
     {
         PROFILE(EC_refresh_browser);
-        if(!browser_)
+        if (!browser_)
             return;
 
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
@@ -422,36 +451,27 @@ namespace ECEditor
             return;
         }
 
+        QSet<entity_id_t> emtpty_list; 
+        BoldEntityListItems(emtpty_list);
+
         QList<Scene::EntityPtr> entities = GetSelectedEntities();
         // If any of enities was not selected clear the browser window.
-        if(!entities.size())
+        if (!entities.size())
         {
             browser_->clear();
-            // Unbold all list elements from the enity list.
-            for(uint i = 0; i < entity_list_->count(); i++)
-            {
-                EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
-                if(item && item->GetEntity())
-                    BoldEntityListItem(item->GetEntity()->GetId(), false);
-            }
             return;
         }
 
-        //! \todo hackish way to improve the browser's performance, by hiding the widget until all changes are made,
-        //! so that unnecessary widget paints are avoided. This need be fixed in a way that browser's load is minimal.
-        //! To ensure that the editor can handle thousands of induvicual elements in the same time.
-        browser_->hide();
         QList<Scene::EntityPtr> old_entities = browser_->GetEntities();
         qStableSort(entities.begin(), entities.end(), CmpEntityById);
         qStableSort(old_entities.begin(), old_entities.end(), CmpEntityById);
-
-        // Check what entities need to get removed and what need to get added to borwser.
+        // Check what entities need to get removed/added to browser.
         QList<Scene::EntityPtr>::iterator iter1 = old_entities.begin();
         QList<Scene::EntityPtr>::iterator iter2 = entities.begin();
         while(iter1 != old_entities.end() || iter2 != entities.end())
         {
             // No point to continue the iteration if old_entities list is empty. We can just push all new entitites into the browser.
-            if(iter1 == old_entities.end())
+            if (iter1 == old_entities.end())
             {
                 for(;iter2 != entities.end(); iter2++)
                     browser_->AddEntity(*iter2);
@@ -465,13 +485,13 @@ namespace ECEditor
                 break;
             }
 
-            // Entity has already added to browser.
+            // Entity has already added to the browser.
             if((*iter1)->GetId() == (*iter2)->GetId())
             {
                 iter2++;
                 iter1++;
             }
-            // Found new entity that that need to be added to browser.
+            // Found new entity that that need to be added to the browser.
             else if((*iter1)->GetId() > (*iter2)->GetId())
             {
                 browser_->AddEntity(*iter2);
@@ -484,8 +504,6 @@ namespace ECEditor
                 iter1++;
             }
         }
-
-        browser_->show();
         browser_->UpdateBrowser();
     }
 
@@ -659,29 +677,28 @@ namespace ECEditor
            QWidget::changeEvent(e);
     }
 
-    void ECEditorWindow::BoldEntityListItem(entity_id_t entity_id, bool bold)
+    void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entities)
     {
-        if(!entity_list_)
+        PROFILE(BoldEntityListItems);
+        QSet<entity_id_t> old_enitities;
+        EntityListWidgetItem *item = 0;
+        for(uint i = 0; i < entity_list_->count(); ++i)
         {
-            LogError("Fail to bold QListWidgetItem, since entity list pointer is null.");
-            return;
-        }
-        Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
-        if(!entity)
-        {
-            LogError("Fail to bold QListWidgetItem, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
-            return;
-        }
-
-        for(uint i = 0; i < entity_list_->count(); i++)
-        {
-            EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
-            if(item && item->GetEntity() && item->GetEntity().data() == entity.get())
+            item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
+            if (item)
             {
+                QPointer<Scene::Entity> ent = item->GetEntity();
                 QFont font = item->font();
-                font.setBold(bold);
-                item->setFont(font);
-                break;
+                if (!ent.isNull() && bolded_entities.contains(ent.data()->GetId()))
+                {
+                    font.setBold(true);
+                    item->setFont(font);
+                }
+                else
+                {
+                    font.setBold(false);
+                    item->setFont(font);
+                }
             }
         }
     }
@@ -816,7 +833,7 @@ namespace ECEditor
             if (item && item->GetEntity() && item->isSelected())
             {
                 Scene::EntityPtr entity = scene->GetEntity(item->GetEntity()->GetId());
-                if(entity)
+                if (entity)
                     ret.push_back(entity);
             }
         }

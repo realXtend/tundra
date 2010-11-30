@@ -12,13 +12,13 @@ void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef)
     if (!attr)
         return; ///\todo Log out warning.
 
-    IAssetTransfer *transfer = attr->GetOwner()->GetFramework()->Asset()->RequestAsset(attr->Get().ref);
-    if (!transfer)
+    AssetTransferPtr transfer = attr->GetOwner()->GetFramework()->Asset()->RequestAsset(attr->Get().ref);
+    if (!transfer.get())
         return; ///\todo Log out warning.
 
-    connect(transfer, SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(EmitDownloaded(IAssetTransfer*)), Qt::UniqueConnection);
-    connect(transfer, SIGNAL(Decoded(IAssetTransfer*)), this, SLOT(EmitDecoded(IAssetTransfer*)), Qt::UniqueConnection);
-    connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(EmitLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+    connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(EmitDownloaded(IAssetTransfer*)), Qt::UniqueConnection);
+    connect(transfer.get(), SIGNAL(Decoded(IAssetTransfer*)), this, SLOT(EmitDecoded(IAssetTransfer*)), Qt::UniqueConnection);
+    connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(EmitLoaded(IAssetTransfer*)), Qt::UniqueConnection);
 }
 
 void AssetRefListener::EmitDownloaded(IAssetTransfer *transfer)

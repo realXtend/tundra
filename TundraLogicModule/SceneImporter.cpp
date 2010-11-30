@@ -386,7 +386,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
             return false;
         }
         
-        std::string uniquename = renderer->GetUniqueObjectName();
+        std::string uniquename = renderer->GetUniqueObjectName("SceneImport_tempmesh");
         try
         {
             Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);

@@ -29,7 +29,7 @@ namespace OgreRenderer
         /*! \param id material id
             \param source asset data to construct skeleton from
         */
-        OgreSkeletonResource(const std::string& id, Foundation::AssetPtr source);
+        OgreSkeletonResource(const std::string& id, Foundation::AssetInterfacePtr source);
 
         //! destructor
         virtual ~OgreSkeletonResource();
@@ -49,7 +49,7 @@ namespace OgreRenderer
         /*! \param source asset data to construct the skeleton from
             \return true if successful
         */
-        bool SetData(Foundation::AssetPtr source);
+        bool SetData(Foundation::AssetInterfacePtr source);
 
         //! Export Ogre skeleton to the specified file
         /*! \param filename full path to file

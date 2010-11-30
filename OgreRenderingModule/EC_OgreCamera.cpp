@@ -182,7 +182,7 @@ void EC_OgreCamera::UpdateSignals()
             Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             Ogre::Viewport* viewport = renderer->GetViewport();
             
-            camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName());
+            camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName("EC_OgreCamera"));
             
             // Set default values for the camera
             camera_->setNearClipDistance(0.1f);

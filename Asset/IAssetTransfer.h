@@ -3,12 +3,15 @@
 #ifndef incl_Asset_IAssetTransfer_h
 #define incl_Asset_IAssetTransfer_h
 
+#include <boost/enable_shared_from_this.hpp>
 #include <QObject>
+#include <vector>
 
+#include "CoreTypes.h"
 #include "AssetFwd.h"
 #include "AssetReference.h"
 
-class IAssetTransfer : public QObject
+class IAssetTransfer : public QObject, public boost::enable_shared_from_this<IAssetTransfer>
 {
     Q_OBJECT
 
@@ -16,17 +19,20 @@ public:
     virtual ~IAssetTransfer() {}
 
     /// Points to the actual asset if it has been loaded in.
-    boost::shared_ptr<IAsset> asset;
+    AssetPtr asset;
 
-    /// Specifies the source where this asset was loaded from.
+    /// Specifies the full source URL where this asset was loaded from.
     AssetReference source;
 
-    /// Specifies the internal resource name. Will not be filled until the resource is loaded
+    /// Specifies the actual type of the asset.
+    QString assetType;
+
+    /// Specifies the internal resource name. Will not be filled until the resource is loaded.
     QString internalResourceName;
     
     /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
     /// transition period to new Asset API. Will be removed. -jj
-    Foundation::AssetPtr assetPtr;
+    Foundation::AssetInterfacePtr assetPtr;
     Foundation::ResourcePtr resourcePtr;
 
     void EmitAssetDownloaded();
@@ -34,6 +40,9 @@ public:
     void EmitAssetDecoded();
 
     void EmitAssetLoaded();
+
+    /// Stores the raw asset bytes for this asset.
+    std::vector<u8> rawAssetData;
 
     /// Returns the current transfer progress in the range [0, 1].
     // float Progress() const;
