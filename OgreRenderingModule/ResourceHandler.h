@@ -112,7 +112,9 @@ namespace OgreRenderer
         
         //! Processes resource ready for an outstanding reference
         void ProcessReferenceReady(Foundation::ResourcePtr resource, request_tag_t tag);
-        
+
+        void HandleTextureDownloadEvent(Foundation::AssetInterfacePtr imageasset, request_tag_t tag);
+
         //! Gets number of outstanding (not yet loaded) references for resource
         unsigned GetNumOutstandingReferences(const std::string& id);
 
@@ -124,6 +126,8 @@ namespace OgreRenderer
 
         //! Expected request tags from other subsystems
         std::set<request_tag_t> expected_request_tags_;
+
+        std::set<request_tag_t> expected_texture_request_tags_;
         
         //! Map of resource request tags by resource
         std::map<std::string, RequestTagVector> request_tags_;

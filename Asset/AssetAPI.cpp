@@ -140,7 +140,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    if (assetType == "Script" || assetType == "Terrain") // NEW PATH: Uses asset providers directly.
+    if (assetType == "Script" || assetType == "Terrain")// || assetType == "Texture") // NEW PATH: Uses asset providers directly.
     {
         AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
         if (!transfer.get())

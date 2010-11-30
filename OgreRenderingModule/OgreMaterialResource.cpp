@@ -100,7 +100,7 @@ namespace OgreRenderer
                             // Check for textures
                             if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
                             {
-                                std::string tex_name = line.substr(8);
+                                std::string tex_name = QString(line.substr(8).c_str()).trimmed().toStdString();
                                 // Note: we assume all texture references are asset based. ResourceHandler checks later whether this is true,
                                 // before requesting the reference
                                 references_.push_back(Foundation::ResourceReference(tex_name, OgreTextureResource::GetTypeStatic()));

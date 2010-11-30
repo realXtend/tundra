@@ -26,6 +26,8 @@
 #include "RendererSettings.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
+#include "AssetAPI.h"
+#include "TextureAssetFactory.h"
 
 namespace OgreRenderer
 {
@@ -59,6 +61,9 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreCamera);
         DECLARE_MODULE_EC(EC_OgreCompositor);
         DECLARE_MODULE_EC(EC_RttTarget);
+
+        /// Create an asset type factory for Texture assets.
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new TextureAssetFactory()));
     }
 
     // virtual
