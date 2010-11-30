@@ -77,9 +77,9 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
         return false;
     
     AssetModule::LogDebug("New local asset request for ref \"" + asset_id + "\"");
-    
+        
     // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
-    std::string filename = asset_id;
+    std::string filename = QString(asset_id.c_str()).trimmed().toStdString();
     if (filename.find("file://") != std::string::npos)
         filename = filename.substr(7);
     else if (filename.find("local://") != std::string::npos)
