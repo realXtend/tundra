@@ -31,13 +31,13 @@ EC_3DCanvas::EC_3DCanvas(IModule *module) :
     if (renderer)
     {
         // Create material
-        material_name_ = "EC3DCanvasMaterial" + renderer->GetUniqueObjectName();
+        material_name_ = renderer->GetUniqueObjectName("EC_3DCanvas_mat");
         Ogre::MaterialPtr material = OgreRenderer::GetOrCreateLitTexturedMaterial(material_name_);
         if (material.isNull())
             material_name_ = "";
 
         // Create texture
-        texture_name_ = "EC3DCanvasTexture" + renderer->GetUniqueObjectName();
+        texture_name_ = renderer->GetUniqueObjectName("EC_3DCanvas_tex");
         Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
             texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
             Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 

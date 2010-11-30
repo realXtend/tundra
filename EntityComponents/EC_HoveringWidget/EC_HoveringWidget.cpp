@@ -375,13 +375,13 @@ void EC_HoveringWidget::InitializeBillboards()
     // Create billboard if it doesn't exist.
     if (!namebillboardSet_ && !namebillboard_ && !buttonsbillboardSet_ && !buttonsbillboard_)
     {
-        namebillboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
-        buttonsbillboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
+        namebillboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName("EC_HoveringWidget_name_bbset"), 1);
+        buttonsbillboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName("EC_HoveringWidget_buttons_bbset"), 1);
         assert(namebillboardSet_);
         assert(buttonsbillboardSet_);
 
-        namematerialName_ = std::string("material")+ std::string("name") + renderer_.lock()->GetUniqueObjectName();
-        buttonsmaterialName_ = std::string("material")+ std::string("buttons") + renderer_.lock()->GetUniqueObjectName();
+        namematerialName_ = renderer_.lock()->GetUniqueObjectName("EC_HoveringWidget_name_mat_name");
+        buttonsmaterialName_ = renderer_.lock()->GetUniqueObjectName("EC_HoveringWidget_btns_mat_name");
 
         OgreRenderer::CloneMaterial("HoveringText", namematerialName_);
         OgreRenderer::CloneMaterial("HoveringText", buttonsmaterialName_);
@@ -469,8 +469,8 @@ void EC_HoveringWidget::Redraw()
         // If texture don't exist, create them now.
         if (hoveringTexture1Name_.empty() && hoveringTexture2Name_.empty())
         {
-            hoveringTexture1Name_ = "HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName();
-            hoveringTexture2Name_ = "HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName();
+            hoveringTexture1Name_ = renderer_.lock()->GetUniqueObjectName("EC_HoveringWidget_tex1_name");
+            hoveringTexture2Name_ = renderer_.lock()->GetUniqueObjectName("EC_HoveringWidget_tex2_name");
 
             texPtr1 = manager.createManual(hoveringTexture1Name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 Ogre::TEX_TYPE_2D, img1.width(), img1.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
