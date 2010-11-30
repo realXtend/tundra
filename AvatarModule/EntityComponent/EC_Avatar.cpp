@@ -69,7 +69,7 @@ bool EC_Avatar::HandleAssetReady(IEventData* data)
     request_tag_t tag = assetReady->tag_;
     if (tag == appearance_tag_)
     {
-        Foundation::AssetPtr asset = assetReady->asset_;
+        Foundation::AssetInterfacePtr asset = assetReady->asset_;
         if (!asset)
             return false;
         if (!avatar_handler_)

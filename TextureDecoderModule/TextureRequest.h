@@ -17,7 +17,7 @@ namespace TextureDecoder
         std::string id_;
 
         //! Source asset data (JPEG2000 stream)
-        Foundation::AssetPtr source_;
+        Foundation::AssetInterfacePtr source_;
 
         //! Quality level to decode, 0 = highest
         int level_;

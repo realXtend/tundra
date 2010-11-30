@@ -59,7 +59,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
         }
 
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), SanitateAssetIdForOgre(systemName.toStdString()));
+        particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName.toStdString()));
         if (particleSystem_)
         {
             placeable->GetSceneNode()->attachObject(particleSystem_);
@@ -125,8 +125,8 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
             return;
 
         // Request the new particle system resource. Once it has loaded, ParticleSystemAssetLoaded() will be called.
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
-        connect(transfer, SIGNAL(Loaded()), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
+        connect(transfer.get(), SIGNAL(Loaded()), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
     }
     Scene::Entity *entity = qobject_cast<Scene::Entity*>(this->GetParentEntity());
     if (!entity)

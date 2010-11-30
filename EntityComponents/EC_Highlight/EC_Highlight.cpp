@@ -134,7 +134,7 @@ void EC_Highlight::Create()
         return;
 
     // Clone the Ogre entity.
-    cloneName_ = std::string("entity") + renderer_.lock()->GetUniqueObjectName();
+    cloneName_ = renderer_.lock()->GetUniqueObjectName("EC_Highlight_entity");
     entityClone_ = originalEntity->clone(cloneName_);
 
     //This is set so we can exclude the hightlight mesh from a viewport, if so wanted
@@ -170,7 +170,7 @@ void EC_Highlight::Create()
     }
 */
 
-    std::string newMatName = std::string("HighlightMaterial") + renderer_.lock()->GetUniqueObjectName();
+    std::string newMatName = renderer_.lock()->GetUniqueObjectName("EC_Highlight_mat");
     try
     {
         Ogre::MaterialPtr highlightMaterial = OgreRenderer::CloneMaterial("Highlight", newMatName);

@@ -640,7 +640,7 @@ void SceneTreeWidget::Edit()
         foreach(AssetItem *aItem, selection.assets)
         {
             //int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
-            std::string type = AssetAPI::GetResourceTypeFromName(aItem->id.toLatin1());
+            QString type = GetResourceTypeFromResourceFileName(aItem->id.toLatin1());
 
             if (type == "OgreMesh")
             {
@@ -1359,14 +1359,14 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
 
     foreach(const QString &assetid, assets)
     {
-        IAssetTransfer *transfer = framework->Asset()->RequestAsset(assetid);
+        AssetTransferPtr transfer = framework->Asset()->RequestAsset(assetid);
 
         QString filename = directory.absolutePath();
         QString assetName = assetid.right(assetid.size() - assetid.lastIndexOf("://") - 3);
         filename += QDir::separator() + assetName;
 
         filesaves_.insert(transfer, filename);
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded()));
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
     }
 }
 
@@ -1520,7 +1520,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
     fetch_references_ = false;
     foreach(AssetItem *aItem, sel.assets)
     {
-        IAssetTransfer *transfer = framework->Asset()->RequestAsset(aItem->id);
+        AssetTransferPtr transfer = framework->Asset()->RequestAsset(aItem->id);
 
         // if saving multiple assets, append filename to directory
         QString filename = files[0];
@@ -1531,16 +1531,27 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         }
 
         filesaves_.insert(transfer, filename);
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded()));
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
     }
 }
 
-void SceneTreeWidget::AssetLoaded()
+void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(QObject::sender());
-    assert(transfer && "Do not call directly, only through signal.");
+    assert(transfer_);
+    if (!transfer_)
+        return;
 
-    assert (filesaves_.contains(transfer));
+    AssetTransferPtr transfer = transfer_->shared_from_this();
+    assert(filesaves_.contains(transfer));
+    assert(transfer.get());
+
+    if (!transfer->resourcePtr.get())
+    {
+        // This means the asset was loaded through the new Asset API, in which case the resourcePtr is null, and the 'asset' member
+        // points to the actual loaded asset. For a migration period, we'll need to check both pointers.
+        LogWarning("TODO: SceneTreeWidget::AssetLoaded: Received an asset transfer with null resourcePtr. Implement support for this.");
+        return;
+    }
 
     QString filename = filesaves_.take(transfer);
     if (!saved_assets_.contains(filename))
@@ -1563,9 +1574,9 @@ void SceneTreeWidget::AssetLoaded()
                 QString id = QString(i->id_.c_str());
                 if (!saved_assets_.contains(id))
                 {
-                    IAssetTransfer *transfer = framework->Asset()->RequestAsset(id, QString(i->type_.c_str()));
+                    AssetTransferPtr transfer = framework->Asset()->RequestAsset(id, QString(i->type_.c_str()));
                     filesaves_.insert(transfer, filename);
-                    connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded()));
+                    connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
                 }
             }
         }

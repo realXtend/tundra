@@ -20,11 +20,22 @@ DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 
 #include "MemoryLeakCheck.h"
 
-JavascriptInstance::JavascriptInstance(const QString &scriptRef, JavascriptModule *module):
-    engine_(0),
-    scriptRef_(scriptRef),
-    module_(module),
-    evaluated(false)
+JavascriptInstance::JavascriptInstance(const QString &fileName, JavascriptModule *module)
+:engine_(0),
+sourceFile(fileName),
+module_(module),
+evaluated(false)
+{
+    CreateEngine();
+    Load();
+}
+
+
+JavascriptInstance::JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module)
+:engine_(0),
+scriptRef_(scriptRef),
+module_(module),
+evaluated(false)
 {
     CreateEngine();
     Load();
@@ -40,14 +51,54 @@ void JavascriptInstance::Load()
     if (!engine_)
         CreateEngine();
 
-    program_ = LoadScript();
-    QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(program_);
-    if(syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
+    // Can't specify both a file source and an Asset API source.
+    assert(sourceFile.isEmpty() || scriptRef_.get() == 0);
+
+    if (sourceFile.length() > 0)
+        program_ = LoadScript(sourceFile);
+
+    // Do we even have a script to execute?
+    if (program_.isEmpty() && (!scriptRef_.get() || scriptRef_->scriptContent.isEmpty()))
     {
-        LogError("Syntax error in " + scriptRef_.toStdString() + syntaxResult.errorMessage().toStdString()
-            + " In line:" + QString::number(syntaxResult.errorLineNumber()).toStdString());
-        program_ = "";
+        LogError("JavascriptInstance::Load: No script content to load!");
+        return;
     }
+
+    QString scriptSourceFilename = (scriptRef_.get() ? scriptRef_->Name() : sourceFile);
+    QString &scriptContent = (scriptRef_.get() ? scriptRef_->scriptContent : program_);
+
+    QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(scriptContent);
+    if (syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
+    {
+        LogError("Syntax error in script " + scriptSourceFilename.toStdString() + "," + QString::number(syntaxResult.errorLineNumber()).toStdString() +
+            ": " + syntaxResult.errorMessage().toStdString());
+
+        // Delete our loaded script content (if any exists).
+        program_ == "";
+    }
+}
+
+QString JavascriptInstance::LoadScript(const QString &fileName)
+{
+    QString filename = fileName.trimmed();
+
+    QFile scriptFile(filename);
+    if (!scriptFile.open(QIODevice::ReadOnly))
+    {
+        LogError(("JavascriptInstance::LoadScript: Failed to load script from file " + filename + "!").toStdString());
+        return "";
+    }
+
+    QString result = scriptFile.readAll();
+    scriptFile.close();
+
+    QString trimmedResult = result.trimmed();
+    if (trimmedResult.isEmpty())
+    {
+        LogWarning(("JavascriptInstance::LoadScript: Warning Loaded script from file " + filename + ", but the content was empty.").toStdString());
+        return "";
+    }
+    return result;
 }
 
 void JavascriptInstance::Unload()
@@ -57,50 +108,61 @@ void JavascriptInstance::Unload()
 
 void JavascriptInstance::Run()
 {
+    // Need to have either absolute file path source or an Asset API source.
+    if (!scriptRef_.get() && program_.isEmpty())
+    {
+        LogError("JavascriptInstance::Run: Cannot run, no script reference loaded.");
+        return;
+    }
+
+    // Can't specify both a file source and an Asset API source.
+    assert(sourceFile.isEmpty() || scriptRef_.get() == 0);
+
+    // If we've already evaluated this script once before, create a new script engine to run it again, or otherwise
+    // the effects would stack (we'd possibly register into signals twice, or other odd side effects).
+    // We never allow a script to be run twice in this kind of "stacking" manner.
     if (evaluated)
     {
         Unload();
         Load();
     }
 
-    if (!program_.isEmpty())
+    if (!engine_)
     {
-        included_files_.clear();
-        QScriptValue result = engine_->evaluate(program_, scriptRef_);
-        if (engine_->hasUncaughtException())
-            LogError(result.toString().toStdString());
-
-        evaluated = true;
+        LogError("JavascriptInstance::Run: Cannot run, script engine not loaded.");
+        return;
     }
+
+    // If no script specified at all, we'll have to abort.
+    if (!scriptRef_.get() && program_.isEmpty())
+        return;
+
+    QString scriptSourceFilename = (scriptRef_.get() ? scriptRef_->Name() : sourceFile);
+    QString &scriptContent = (scriptRef_.get() ? scriptRef_->scriptContent : program_);
+
+    included_files_.clear();
+    QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
+    if (engine_->hasUncaughtException())
+        LogError(result.toString().toStdString());
+
+    evaluated = true;
 }
 
 void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &name)
 {
     if (!engine_)
     {
-        LogError("No Qt script engine created when trying to register service to js script instance.");
+        LogError("JavascriptInstance::RegisterService: No Qt script engine created when trying to register service to js script instance.");
+        return;
+    }
+    if (!serviceObject)
+    {
+        LogError("JavascriptInstance::RegisterService: Trying to pass a null service object pointer to RegisterService!");
         return;
     }
 
     QScriptValue scriptValue = engine_->newQObject(serviceObject);
     engine_->globalObject().setProperty(name, scriptValue);
-}
-
-QString JavascriptInstance::LoadScript() const
-{
-    QString filename = scriptRef_.trimmed();
-    ///\todo Now all strings are evaluated as being relative filenames to the current working directory.
-    ///Scripts are all loaded locally. Support here fetching from the asset store, i.e. file://, or knet://, or http://.
-    QFile scriptFile(filename);
-    if (!scriptFile.open(QIODevice::ReadOnly))
-    {
-        LogError(("Failed to load script from file " + filename + "!").toStdString());
-        return "";
-    }
-
-    QString result = scriptFile.readAll();
-    scriptFile.close();
-    return result;
 }
 
 void JavascriptInstance::IncludeFile(const QString &path)
@@ -114,15 +176,7 @@ void JavascriptInstance::IncludeFile(const QString &path)
         }
     }
     
-    QFile scriptFile(path);
-    if (!scriptFile.open(QIODevice::ReadOnly))
-    {
-        LogError(("JavascriptInstance::IncludeFile: Failed to load script from file \"" + path + "\"!").toStdString());
-        return;
-    }
-
-    QString script = scriptFile.readAll();
-    scriptFile.close();
+    QString script = LoadScript(path);
 
     QScriptContext *context = engine_->currentContext();
     assert(context);

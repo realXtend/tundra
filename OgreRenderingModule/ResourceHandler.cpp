@@ -13,6 +13,7 @@
 #include "ResourceHandler.h"
 #include "OgreMaterialUtils.h"
 #include "RexTypes.h"
+#include "RexUUID.h"
 #include "TextureServiceInterface.h"
 #include "AssetServiceInterface.h"
 #include "Framework.h"
@@ -137,7 +138,34 @@ namespace OgreRenderer
         
         return resources;
     }
-    
+
+    void ResourceHandler::HandleTextureDownloadEvent(Foundation::AssetInterfacePtr imageasset, request_tag_t tag)
+    {
+        ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
+
+        if (!asset_service)
+            return;
+
+        // If not found, prepare new
+        Foundation::ResourcePtr tex = GetResourceInternal(imageasset->GetId(), OgreTextureResource::GetTypeStatic());
+        if (!tex)
+        {
+            tex = Foundation::ResourcePtr(new OgreTextureResource(imageasset->GetId(), renderer_->GetTextureQuality()));
+        }
+        OgreTextureResource* tex_res = dynamic_cast<OgreTextureResource*>(tex.get());
+        if ((tex_res) && (tex_res->SetDataFromImage(imageasset)))
+        {
+            // Create legacy material(s) based on the texture
+            UpdateLegacyMaterials(tex->GetId());
+            resources_[tex->GetId()] = tex;
+            Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(tex->GetId(), tex, tag);
+            framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, EventDataPtr(event_data));
+            return;
+        }
+        else
+            OgreRenderingModule::LogInfo("Failed to set imagetexturedata");
+    }
     
     bool ResourceHandler::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
@@ -146,6 +174,13 @@ namespace OgreRenderer
             case Asset::Events::ASSET_READY:
             {
                 Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data); 
+
+                if (expected_texture_request_tags_.find(event_data->tag_) != expected_texture_request_tags_.end())
+                {
+                    HandleTextureDownloadEvent(event_data->asset_, event_data->tag_);
+                    expected_texture_request_tags_.erase(event_data->tag_);
+                    return true;
+                }
 
                 // Check that the request tag matches our request, so we do not (possibly) update unnecessarily many times
                 // because of others' requests
@@ -244,19 +279,24 @@ namespace OgreRenderer
         
         ServiceManagerPtr service_manager = framework_->GetServiceManager();
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
-        
+
         // Hack: if the texture indicates a local asset, do not go through the J2K pipe, but request as an image asset
-        if ((id.find("file://") == 0) && (asset_service))
+        if ((id.find("file://") == 0 || id.find("local://") == 0) && asset_service)
         {
             // This request tag is unnecessary... as the asset should be loaded immediately if it exists
             request_tag_t source_tag = asset_service->RequestAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
-            UNREFERENCED_PARAM(source_tag);
+            if (source_tag)
+            {
+                expected_texture_request_tags_.insert(source_tag);
+                request_tags_[id].push_back(source_tag); 
+                return source_tag;
+            }
         }
-        
+/* Deprecated: This asset cache for preferred pre-authored image formats is completely deprecated and unsupported.
         // See if already have in the cache with a superior (non-J2K) format
         if (asset_service)
         {
-            Foundation::AssetPtr imageasset = asset_service->GetAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
+            Foundation::AssetInterfacePtr imageasset = asset_service->GetAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
             if (imageasset)
             {
                 // If not found, prepare new
@@ -279,26 +319,29 @@ namespace OgreRenderer
                     OgreRenderingModule::LogInfo("Failed to set imagetexturedata");
             }
         }
-        
-        // Otherwise, request from texture decoder
-        boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();            
-        if (texture_service)
+*/
+        // Otherwise, if the request represents an OpenSim texture UUID (which is assumed to be a J2K image), request through j2k texture decoder
+        if (RexUUID::IsValid(id))
         {
-            // Perform the actual decode request only once, for the first request
-            if (request_tags_.find(id) == request_tags_.end())
+            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();            
+            if (texture_service)
             {
-                request_tag_t source_tag = texture_service->RequestTexture(id);
-                if (source_tag)
+                // Perform the actual decode request only once, for the first request
+                if (request_tags_.find(id) == request_tags_.end())
                 {
-                    expected_request_tags_.insert(source_tag);
+                    request_tag_t source_tag = texture_service->RequestTexture(id);
+                    if (source_tag)
+                    {
+                        expected_request_tags_.insert(source_tag);
+                        request_tags_[id].push_back(tag); 
+                        return tag;
+                    }
+                }
+                else
+                {
                     request_tags_[id].push_back(tag); 
                     return tag;
                 }
-            }
-            else
-            {
-                request_tags_[id].push_back(tag); 
-                return tag;
             }
         }
         
@@ -390,7 +433,7 @@ namespace OgreRenderer
         return 0;
     }
 
-    bool ResourceHandler::UpdateMesh(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateMesh(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -416,7 +459,7 @@ namespace OgreRenderer
         return success;
     }
 
-    bool ResourceHandler::UpdateImageTexture(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateImageTexture(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -442,7 +485,7 @@ namespace OgreRenderer
         return success;
     }
 
-    bool ResourceHandler::UpdateMaterial(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateMaterial(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -469,7 +512,7 @@ namespace OgreRenderer
         return success;
     }
     
-    bool ResourceHandler::UpdateParticles(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateParticles(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {
         expected_request_tags_.erase(tag);
         
@@ -496,7 +539,7 @@ namespace OgreRenderer
         return success;
     }
     
-    bool ResourceHandler::UpdateSkeleton(Foundation::AssetPtr source, request_tag_t tag)
+    bool ResourceHandler::UpdateSkeleton(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {    
         expected_request_tags_.erase(tag);
             
@@ -538,7 +581,7 @@ namespace OgreRenderer
             if (asset_service)
             {
                 // Check that the dependency is asset based
-                if (asset_service->IsValidId(references[i].id_, references[i].type_))
+                if (asset_service->IsValidRef(references[i].id_, references[i].type_))
                 {
                     // If can get the depended resource directly, OK
                     Foundation::ResourcePtr res = GetResourceInternal(references[i].id_, references[i].type_);

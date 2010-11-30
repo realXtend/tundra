@@ -39,7 +39,7 @@ namespace OgreRenderer
         }
     }
     
-    bool OgreTextureResource::SetDataFromImage(Foundation::AssetPtr source)
+    bool OgreTextureResource::SetDataFromImage(Foundation::AssetInterfacePtr source)
     {
         if (!source)
         {

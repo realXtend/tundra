@@ -27,7 +27,7 @@ namespace OgreRenderer
         /*! \param id particle system template id
             \param source asset data to construct templates from
         */
-        OgreParticleResource(const std::string& id, Foundation::AssetPtr source);
+        OgreParticleResource(const std::string& id, Foundation::AssetInterfacePtr source);
 
         //! destructor
         virtual ~OgreParticleResource();
@@ -39,7 +39,7 @@ namespace OgreRenderer
         /*! \param source asset data to construct templates from
             \return true if successful
         */
-        bool SetData(Foundation::AssetPtr source);
+        bool SetData(Foundation::AssetInterfacePtr source);
         
         //! returns resource type in text form
         virtual const std::string& GetType() const;

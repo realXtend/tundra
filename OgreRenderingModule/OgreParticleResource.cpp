@@ -20,7 +20,7 @@ namespace OgreRenderer
     {
     }
 
-    OgreParticleResource::OgreParticleResource(const std::string& id, Foundation::AssetPtr source) : 
+    OgreParticleResource::OgreParticleResource(const std::string& id, Foundation::AssetInterfacePtr source) : 
         ResourceInterface(id)
     {
         SetData(source);
@@ -31,7 +31,7 @@ namespace OgreRenderer
         RemoveTemplates();
     }
 
-    bool OgreParticleResource::SetData(Foundation::AssetPtr source)
+    bool OgreParticleResource::SetData(Foundation::AssetInterfacePtr source)
     {
         //! \todo fix like OgreMaterialResource::SetData(). Ogre script parser cannot accept url as resource name
         RemoveTemplates();

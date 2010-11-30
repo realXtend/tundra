@@ -6,6 +6,7 @@
 #include <QObject>
 #include <vector>
 
+#include "CoreTypes.h"
 #include "AssetFwd.h"
 #include "AssetReference.h"
 
@@ -14,8 +15,8 @@ class IAsset : public QObject
     Q_OBJECT
 
 public:
-    IAsset(const QString &type_, const QString &name_)
-    :type(type_), name(name_)
+    IAsset(const QString &type_, const QString &name_)//, const QString &ref_)
+    :type(type_), name(name_)//, ref(ref_)
     {
     }
 
@@ -23,18 +24,25 @@ public:
 
 public slots:
 
-    /// Returns the type of this asset.
+    /// Returns the type of this asset. The type of an asset cannot change during the lifetime of the instance of an asset.
     QString Type() const { return type; }
 
-    /// Returns the unique name of this asset.
+    /// Returns the unique name of this asset. The name of an asset cannot change during the lifetime of the instance of an asset.
     QString Name() const { return name; }
+/*
+    /// Returns the AssetRef address that can be used to point to this asset in an asset storage.
+    QString Ref() const { return ref; }
 
+    /// Specifies the source where this asset is loaded from.
+    void SetRef(const QString &newRef) { ref = newRef; }
+*/
 public:
     /// Loads this asset from file.
 //    virtual void LoadFromFile(QString filename);
 
-    /// Loads this asset from the specified file data in memory.
-//    virtual void LoadFromFileInMemory(const u8 *data);
+    /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
+    /// Returns true if loading succeeded, false otherwise.
+    virtual bool LoadFromFileInMemory(const u8 *data, size_t numBytes) = 0;
 
     /// Stores this asset to disk to the given file.
  //   virtual void SaveToFile(const QString &filename);
@@ -43,7 +51,10 @@ public:
 //    Hash ComputeContentHash() const;
 
     /// Returns all the assets this asset refers to (but not the references those assets refer to).
-    virtual std::vector<AssetReference> FindReferences() const;
+    virtual std::vector<AssetReference> FindReferences() const = 0;
+
+    /// Returns true if the replace succeeds.
+//    bool ReplaceReference(const QString &oldRef, const QString &newRef);
 
     /// Returns all the assets this asset refers to, and the assets those assets refer to, and so on.
     std::vector<AssetReference> FindReferencesRecursive() const;
@@ -55,12 +66,9 @@ public:
 
 //    void ReloadRawData() { // load from cache; }
 
-    /// Stores the raw asset bytes for this asset.
-//    std::vector<u8> rawAssetData;
-
     /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
     /// transition period to new Asset API. Will be removed. -jj
-    Foundation::AssetPtr assetPtr;
+    Foundation::AssetInterfacePtr assetPtr;
     Foundation::ResourcePtr resourcePtr;
 
 private:
@@ -69,6 +77,7 @@ private:
 
     QString type;
     QString name;
+//    QString ref;
 };
 
 #endif

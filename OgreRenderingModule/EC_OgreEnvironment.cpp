@@ -480,7 +480,7 @@ void EC_OgreEnvironment::CreateSunlight()
     RendererPtr renderer = renderer_.lock();
     
     Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
-    sunlight_ = sceneManager->createLight(renderer->GetUniqueObjectName());
+    sunlight_ = sceneManager->createLight(renderer->GetUniqueObjectName("EC_OgreEnviroment_Sunlight"));
     sunlight_->setType(Ogre::Light::LT_DIRECTIONAL);
     ///\todo Read parameters from config file?
     sunlight_->setDiffuseColour(0.93f, 1, 0.13f);

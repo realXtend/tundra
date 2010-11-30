@@ -293,7 +293,7 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     
     SceneImporter importer(scene);
     QList<Scene::Entity *> entities = importer.Import(filename, dirname, Transform(),
-        "file://", AttributeChange::Default, clearscene, replace);
+        "local://", AttributeChange::Default, clearscene, replace);
     if (!entities.empty())
     {
         return Console::ResultSuccess();
@@ -338,7 +338,7 @@ Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &
     
     SceneImporter importer(scene);
     Scene::EntityPtr entity = importer.ImportMesh(filename, dirname, Transform(Vector3df(x,y,z),
-        Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), "file://", AttributeChange::Default, true);
+        Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), "local://", AttributeChange::Default, true);
     
     return Console::ResultSuccess();
 }

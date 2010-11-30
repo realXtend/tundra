@@ -28,7 +28,7 @@ namespace Asset
         //! Checks an asset id for validity
         /*! \return true if this asset provider can handle the id
          */
-        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type);
+        virtual bool IsValidRef(const std::string& asset_id, const std::string& asset_type);
         
         //! Requests an asset for "download"
         /*! \param asset_id Asset UUID
@@ -58,7 +58,7 @@ namespace Asset
             \param received Minimum continuous bytes received from the start
             \return Null pointer will always be returned (not supported)
          */
-        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
+        virtual Foundation::AssetInterfacePtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
         
         //! Returns information about current asset transfers
         virtual Foundation::AssetTransferInfoVector GetTransferInfo() { return Foundation::AssetTransferInfoVector(); }
