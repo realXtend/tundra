@@ -47,7 +47,19 @@ namespace ECEditor
             entity_ptr_(entity)
         {
         }
+        
+        // Returns QPointer of entity that this item is presenting.
         QPointer<Scene::Entity> GetEntity() const { return entity_ptr_; }
+
+        // Override from QListWidgetItem. Note! baseclass's method isn't virtual, so make sure that QListWidgetItem
+        // pointers are always dynamic_casted to EntityListWidgetItem before using this mehtod.
+        /*void setSelected(bool select)
+        {
+            QListWidgetItem::setSelected(select);
+            QFont font = this->font();
+            font.setBold(select);
+            setFont(font);
+        }*/
     private:
         //Weak pointer to entity switch will get released and setted to null when QObject's destructor is called.
         QPointer<Scene::Entity> entity_ptr_;
@@ -72,12 +84,19 @@ namespace ECEditor
         /// Adds new entity to the entity list.
         /** @param id Entity ID.
         */
-        void AddEntity(entity_id_t id);
+        void AddEntity(entity_id_t id, bool udpate_ui = true);
+
+        /// Set new list of entities to ECEditor. Calling this method will clear 
+        /// previously selected entities from the editor.
+        /** @param entities a new list of entities that we want to add into the editor.
+         *  @param select_all Do we want to select all entities from the list.
+        */
+        void AddEntities(const QList<entity_id_t> &entities, bool select_all = false);
 
         /// Removes entity from the entity list.
         /** @param id Entity ID.
         */
-        void RemoveEntity(entity_id_t id);
+        void RemoveEntity(entity_id_t id, bool udpate_ui = true); 
 
         /// Sets which entities are selected in the editor window.
         /** @param ids List of entity ID's.
@@ -193,8 +212,8 @@ namespace ECEditor
         void ComponentDialogFinished(int result);
 
     private:
-        /// Find given entity from the QListWidget and if it's found, bold QListWidgetItem's font.
-        void BoldEntityListItem(entity_id_t, bool bold = true);
+
+        void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
 
         /// Initializes the widget.
         void Initialize();

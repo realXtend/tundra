@@ -7,6 +7,8 @@
 #include "Vector3D.h"
 #include "CoreStringUtils.h"
 #include "IComponent.h"
+#include "Transform.h"
+#include "AssetReference.h"
 
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
@@ -42,180 +44,6 @@ namespace ECEditor
         UsingDescription = 1 << 4
     };
 
-    /*class IUiElement : public QObject
-    {
-        Q_OBJECT
-    public:
-        IUiElement(QtAbstractPropertyBrowser *owner, const QString &name):
-            owner_(owner),
-            QObject(owner),
-            root_(0),
-            name_(name)
-        {
-            Initialize();
-        }
-
-        virtual ~IUiElement()
-        {
-            owner_->unsetFactoryForManager(manager_);
-            SAFE_DELETE(manager_)
-            SAFE_DELETE(factory_)
-        }
-
-        QtAbstractPropertyManager *GetManager() const {return manager_;}
-        QtAbstractEditorFactoryBase *GetFactory() const {return factory_;}
-        QtAbstractPropertyBrowser *GetOwner() const {return owner_;}
-
-    public slots:
-        void UpdateUi(){ Update(); }
-
-    signals:
-        void ElementChanged(QtProperty *property);
-
-    protected:
-        virtual void Initialize() = 0;
-        virtual void Update() = 0;
-        virtual void Set(QtProperty *property) = 0;
-
-        void SetMetaFlag(MetaDataFlag flag)
-        {
-            flags_ = flag;
-        }
-
-        MetaDataFlag SetMetaFlag(MetaDataFlag flag) const { return flags_; }
-
-        QString name_;
-        QtProperty *root_;
-        QtAbstractPropertyBrowser *owner_;
-        QtAbstractPropertyManager *manager_;
-        QtAbstractEditorFactoryBase *factory_;
-        MetaDataFlag flags_;
-    };
-
-    class IntUiElement : public IUiElement
-    {
-    public:
-        IntUiElement(QtAbstractPropertyBrowser *owner, const QString &name):
-            IUiElement(owner, name)
-        {
-        }
-
-    protected:
-        virtual void Initialize()
-        {
-            QtVariantPropertyManager *var_manager = new QtVariantPropertyManager(this);
-            QtVariantEditorFactory *var_factory = new QtVariantEditorFactory(this);
-            manager_ = var_manager;
-            factory_ = var_factory;
-            root_ = var_manager->addProperty(QVariant::Int, name_);
-
-            if(root_)
-            {
-                Update();
-                QObject::connect(manager_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(ElementChanged(QtProperty*)));
-            }
-            owner_->setFactoryForManager(var_manager, var_factory);
-        }
-
-        virtual void Update()
-        {
-            
-        }
-
-        virtual void Set(QtProperty *property)
-        {
-            
-        }
-    };
-
-    typedef QList<ComponentWeakPtr> ComponentWeakPtrList;
-    class AttributeEditor : public QObject
-    {
-        Q_OBJECT
-
-    public:
-        enum EditorState
-        {
-            ValuesSame = 0,
-            ValuesDiffer = 1 << 0
-        };
-
-        ~AttributeEditor()
-        {
-            SAFE_DELETE(ui_)
-        }
-
-    public slots:
-        bool HasComponent(ComponentPtr component)
-        {
-            ComponentWeakPtrList::iterator iter = FindComponent(component);
-            if(iter != components_.end())
-                return true;
-            return false;
-        }
-
-        void AddComponent(ComponentPtr component)
-        {
-            // Before we add new component we make sure that it's not already added
-            // and it contains right attribute.
-            if(!HasComponent(component) && component->GetAttribute(typename_))
-                components_.push_back(ComponentWeakPtr(component));
-        }
-
-        void RemoveComponent(ComponentPtr component)
-        {
-            ComponentWeakPtrList::iterator iter = FindComponent(component);
-            if(iter != components_.end())
-                components_.erase(iter);
-        }
-
-        void OnAttributeChanged(IAttribute *attribute, AttributeChange::Type type)
-        {
-            assert(ui_);
-            // Make sure that the attribute is right type.
-            if(attribute->GetNameString() == name_.toStdString() && attribute->TypenameToString() == typename_.toStdString())
-                ui_->UpdateUi();
-        }
-
-    protected:
-        Q_DISABLE_COPY(AttributeEditor);
-
-        // Checks if every attribute have same attribute values.
-        bool HasSameValues() const
-        {
-            if(components_.size() <= 1)
-                return true;
-
-            for(uint i = 0; i < (components_.size() - 1); i++)
-                for(uint j = 1; j < components_.size(); j++)
-                    if (!components_[i].expired() &&
-                        !components_[j].expired() &&
-                        components_[i].lock()->GetAttribute(name_)->ToString() != components_[j].lock()->GetAttribute(name_)->ToString())
-                        return false;
-            return true;
-        }
-
-        ComponentWeakPtrList::iterator FindComponent(ComponentPtr component)
-        {
-            ComponentWeakPtrList::iterator iter = components_.begin();
-            for(; iter != components_.end(); iter++)
-                if(!(*iter).expired() && component.get() == (*iter).lock().get())
-                    return iter;
-            return components_.end();
-        }
-
-        AttributeEditor(const QString &name, const QString &attr_type):
-            name_(name),
-            typename_(attr_type)
-        {}
-
-        QString name_;
-        QString typename_;
-        EditorState state_;
-        IUiElement *ui_;
-        ComponentWeakPtrList components_;
-    };*/
-
     //! ECAttributeEditorBase class.
     /*! Abstract base class for attribute editing. User can add editable attributes using a AddNewAttribute method.
      *  \todo Remove QtAbstractPropertyBrowser pointer from the attribute editor, this means that manager and factory connections need to 
@@ -226,13 +54,6 @@ namespace ECEditor
     {
         Q_OBJECT
     public:
-        enum AttributeEditorState
-        {
-            Uninitialized,
-            AttributeEdited,
-            AttributeUpdated,
-            WaitingForResponse
-        };
 
         ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
                               ComponentPtr component,
@@ -251,11 +72,11 @@ namespace ECEditor
 
         //! Check if this editor's manager contain this spesific property.
         //! @param property Property that we are looking for.
-        bool ContainProperty(QtProperty *property) const;
+        bool ContainProperty(QtProperty *property) const; 
 
         //! Update editor's ui elements to fit new attribute values, if different component's attribute valeus differ from
         //! each other the editor begin to use multiedit mode and editor need to create new ui elements.
-        void UpdateEditorUI();
+        void UpdateEditorUI(IAttribute *attr = 0);
 
     public slots:
         //! Add new attribute to the editor. If attribute has already added do nothing.
@@ -269,6 +90,7 @@ namespace ECEditor
         void AddComponent(ComponentPtr component);
         void RemoveComponent(ComponentPtr component);
         bool HasComponent(ComponentPtr component);
+        void AttributeChanged(IAttribute* attribute);
 
     signals:
         //! Signal is emmitted when editor has been reinitialized.
@@ -302,14 +124,16 @@ namespace ECEditor
         //! Read current value from the ui and set it to IAttribute.
         virtual void Set(QtProperty *property) = 0;
         //! Read attribute value from IAttribute and set it to ui.
-        virtual void Update() = 0;
+        virtual void Update(IAttribute *attr = 0) = 0;
+        //! Checks if all atributes value is same.
+        //! @return return true if all attribute values are same else return false.
+        virtual bool HasIdenticalAttributes() const = 0;
+
+        void CleanExpiredComponents();
         //! PreInitialize should be called before the Initialize.
         void PreInitialize();
         //! Delete property manager and it's factory.
         void UnInitialize();
-        //! Check if all attribute are holding exactly the same value.
-        //! @return return true if all attributes have the same value and false if not.
-        bool IsIdentical() const;
 
         //! Try to find attribute in component and if found return it's pointer.
         IAttribute *FindAttribute(ComponentPtr component);
@@ -326,7 +150,6 @@ namespace ECEditor
         typedef QList<ComponentWeakPtr> ComponentWeakPtrList;
         ComponentWeakPtrList components_;
         bool useMultiEditor_;
-        AttributeEditorState editorState_;
         MetaDataFlag metaDataFlag_;
     };
 
@@ -366,7 +189,37 @@ namespace ECEditor
         virtual void Set(QtProperty *property);
 
         //! Override from ECAttributeEditorBase
-        virtual void Update();
+        virtual void Update(IAttribute *attr = 0);
+
+        bool HasIdenticalAttributes() const
+        {
+            //No point to continue if there is only single component added.
+            if(components_.size() <= 1)
+                return true;
+
+            ComponentWeakPtrList::const_iterator lsh = components_.begin();
+            IComponent *lsh_comp = dynamic_cast<IComponent*>((*lsh).lock().get());
+            if(!lsh_comp)
+                return false;
+            Attribute<T> *lsh_attr = dynamic_cast<Attribute<T>*>(lsh_comp->GetAttribute(name_));
+
+            IComponent *rsh_comp = 0;
+            Attribute<T> *rsh_attr = 0;
+            ComponentWeakPtrList::const_iterator rhs = ++components_.begin();
+            for(;rhs != components_.end(); rhs++)
+            {
+                rsh_comp = (*rhs).lock().get();
+                if (!rsh_comp) //Ensure that component hasn't expired.
+                    continue;
+                rsh_attr = dynamic_cast<Attribute<T>*>(rsh_comp->GetAttribute(name_));
+                if (!rsh_attr)
+                    continue;
+
+                if (rsh_attr->Get() != lsh_attr->Get())
+                    return false;
+            }
+            return true;
+        }
 
         //! Sends a new value to each component and emit AttributeChanged signal.
         //! @param value_ new value that is sended over to component.
@@ -375,9 +228,10 @@ namespace ECEditor
             ComponentWeakPtr comp;
             foreach(comp, components_)
             {
-                if(!comp.expired())
+                ComponentPtr comp_ptr = comp.lock();
+                if(comp_ptr)
                 {
-                    IAttribute *attribute = FindAttribute(comp.lock());
+                    IAttribute *attribute = FindAttribute(comp_ptr);
                     if(attribute)
                     {
                         Attribute<T> *attr = dynamic_cast<Attribute<T>*>(attribute);
@@ -410,73 +264,85 @@ namespace ECEditor
             }
         }
 
-        //! Get each components atttribute value and convert it to string and put it send the string vector to
-        //! multieditor manager.
-        void UpdateMultiEditorValue()
+        //! Get each components atttribute value and convert it to a string value and put that value in a string vector.
+        //! TODO: Optimize this piece of code.
+        void UpdateMultiEditorValue(IAttribute *attribute = 0)
         {
+            PROFILE(ECAttributeEditor_UpdateMultiEditorValue);
             QStringList stringList;
             MultiEditPropertyManager *propertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);
-            if(!propertyManager)
-            {
-                //! @todo add log warning.
+            // If editor's ui isn't initilaized no point to continue.
+            if (!propertyManager)
                 return;
-            }
 
-            ComponentWeakPtr comp;
-            foreach(comp, components_)
+            if(attribute)
             {
-                Attribute<T> *attribute = dynamic_cast<Attribute<T>*>(FindAttribute(comp.lock()));
-                if(!attribute)
+                QStringList values = propertyManager->AttributeValue(rootProperty_);
+                QString value = QString::fromStdString(attribute->ToString());
+                if (!values.contains(value))
                 {
-                    //! @todo add log warning.
-                    continue;
+                    values.push_back(value);
+                    propertyManager->SetAttributeValues(rootProperty_, stringList);
                 }
-                QString newValue = QString::fromStdString(attribute->ToString());
-                //Make sure that we wont insert same strings into the list.
-                if(!stringList.contains(newValue))
-                    stringList << newValue;
             }
-            propertyManager->SetAttributeValues(rootProperty_, stringList);
+            else // This should only get called only once when attribute editor has just switched to multieditor mode.
+            {
+                ComponentWeakPtr comp;
+                foreach(comp, components_)
+                {
+                    Attribute<T> *attribute = dynamic_cast<Attribute<T>*>(FindAttribute(comp.lock()));
+                    if (!attribute)
+                    {
+                        //! @todo add log warning.
+                        continue;
+                    }
+                    QString newValue = QString::fromStdString(attribute->ToString());
+                    //Make sure that we wont insert same strings into the list.
+                    if(!stringList.contains(newValue))
+                        stringList << newValue;
+                }
+                propertyManager->SetAttributeValues(rootProperty_, stringList);
+            }
         }
     };
 
-    template<> void ECAttributeEditor<float>::Update();
+    template<> void ECAttributeEditor<float>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<float>::Initialize();
     template<> void ECAttributeEditor<float>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<int>::Update();
+    template<> void ECAttributeEditor<int>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<int>::Initialize();
     template<> void ECAttributeEditor<int>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<bool>::Update();
+    template<> void ECAttributeEditor<bool>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<bool>::Initialize();
     template<> void ECAttributeEditor<bool>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<Vector3df>::Update();
+    template<> void ECAttributeEditor<Vector3df>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<Vector3df>::Initialize();
     template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<Color>::Update();
+    template<> void ECAttributeEditor<Color>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<Color>::Initialize();
     template<> void ECAttributeEditor<Color>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<QString>::Update();
+    template<> void ECAttributeEditor<QString>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<QString>::Initialize();
     template<> void ECAttributeEditor<QString>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<QVariant>::Update();
+    template<> void ECAttributeEditor<QVariant>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<QVariant>::Initialize();
     template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<Transform>::Update();
+    template<> void ECAttributeEditor<Transform>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<Transform>::Initialize();
     template<> void ECAttributeEditor<Transform>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<QVariantList >::Update();
+    template<> void ECAttributeEditor<QVariantList >::Update(IAttribute *attr);
     template<> void ECAttributeEditor<QVariantList >::Initialize();
     template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<AssetReference>::Update();
+    template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr);
     template<> void ECAttributeEditor<AssetReference>::Initialize();
     template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property);
 }
