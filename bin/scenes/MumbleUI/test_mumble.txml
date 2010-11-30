@@ -4,11 +4,11 @@
   <component type="EC_VoiceChannel" sync="1">
    <attribute value="mumble" name="protocol"/>
    <attribute value="1.2.2" name="version"/>
-   <attribute value="world.realxtend.org:6009" name="serveraddress"/>
-   <attribute value="server123" name="serverpassword"/>
+   <attribute value="localhost" name="serveraddress"/>
+   <attribute value="" name="serverpassword"/>
    <attribute value="boban" name="username"/>
    <attribute value="Public" name="channelname"/>
-   <attribute value="voip/jsdemo" name="channelid"/>
+   <attribute value="Root" name="channelid"/>
    <attribute value="true" name="enabled"/>
   </component>
   <component type="EC_Name" sync="1">
