@@ -760,6 +760,49 @@ bool EC_Terrain::LoadFromDataInMemory(const char *data, size_t numBytes)
     return true;
 }
 
+void EC_Terrain::NormalizeImage(QString filename) const
+{
+    Ogre::Image image;
+    try
+    {
+        std::vector<u8> imageFile;
+        LoadFileToVector(filename.toStdString().c_str(), imageFile);
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
+        image.load(stream);
+    } catch(...)
+    {
+        LogError("Execption catched when trying load image file" + filename.toStdString() + ".");
+        return;
+    }
+
+    std::vector<uchar> imageData(4*image.getWidth()*image.getHeight(), 0);
+
+    uchar *imagePos = &imageData[0];
+
+    for(int y = 0; y < image.getHeight(); ++y)
+        for(int x = 0; x < image.getWidth(); ++x)
+        {
+            Ogre::ColourValue color = image.getColourAt(x, y, 0);
+            color.a = 0;
+            color /= (color.r + color.g + color.b + color.a);
+            *imagePos++ = (uchar)clamp((int)(color.b * 255), 0, 255);
+            *imagePos++ = (uchar)clamp((int)(color.g * 255), 0, 255);
+            *imagePos++ = (uchar)clamp((int)(color.r * 255), 0, 255);
+            *imagePos++ = (uchar)clamp((int)(color.a * 255), 0, 255);
+        }
+    
+    try
+    {
+        Ogre::Image dstImage;
+        dstImage.loadDynamicImage(&imageData[0], image.getWidth(), image.getHeight(), Ogre::PF_A8R8G8B8);
+        dstImage.save(filename.toStdString().c_str());
+    } catch(...)
+    {
+        ///\todo Log out warning.
+        return;
+    }
+}
+
 bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
 {
     Ogre::Image image;
