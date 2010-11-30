@@ -22,11 +22,18 @@ namespace RexLogic
 
         //! handle framework event
         bool HandleFrameworkEvent(event_id_t event_id, IEventData* data);
+
+		QString GetAvatarAddress() { return avatar_address_; };
+		void SetAvatarAddress(QString avatar_address) { avatar_address_ = avatar_address; };
+
     private:
         //! server connection
         ProtocolUtilities::WorldStream *connection_;
         //! owner module
         RexLogicModule *rexLogic_;
+
+		QString avatar_address_;
+
     };
 }
 

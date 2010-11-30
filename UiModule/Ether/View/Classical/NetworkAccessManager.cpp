@@ -19,9 +19,16 @@ namespace CoreUi
             QNetworkAccessManager::Operation operation, const QNetworkRequest &request,
             QIODevice *device)
         {           
+
+			if (request.url().scheme() == "realxtend")
+			{
+				emit WebLoginUrlReceived(request.url());
+				return QNetworkAccessManager::createRequest(operation, request, device);
+			}
+
             if (request.url().scheme() != "cablebeach")
                 return QNetworkAccessManager::createRequest(operation, request, device);
-
+                
             if (operation == GetOperation)
             {
                 emit WebLoginUrlReceived(request.url());

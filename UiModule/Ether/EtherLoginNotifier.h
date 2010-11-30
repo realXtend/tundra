@@ -37,6 +37,7 @@ namespace Ether
             EtherLoginNotifier(QObject *parent, EtherSceneController *scene_controller, Foundation::Framework *framework);
             bool IsTeleporting() const { return teleporting_; }
             void SetIsTeleporting (bool teleporting) { teleporting_ = teleporting; }
+			Foundation::Framework *GetFramework() { return framework_; };
 
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
