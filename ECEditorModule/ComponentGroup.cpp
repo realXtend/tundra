@@ -43,10 +43,6 @@ namespace ECEditor
             return false;
 
         PROFILE(ComponentGroup_IsSameComponent);
-        /*if(components_[0].expired())
-            return false;
-        // Make sure that attribute type and name is same in both components.
-        IComponent *myComponent = components_[0].lock().get();*/
         if(component->TypeName() != typeName_ ||
            component->Name() != name_)
             return false;
@@ -94,24 +90,25 @@ namespace ECEditor
 
     bool ComponentGroup::AddComponent(ComponentPtr comp)
     {
+        PROFILE(ComponentGroup_AddComponent);
         //Check if the component have already added to component group or it's name or type are different for the component group.
         if(ContainsComponent(comp) || comp->Name() != name_ || comp->TypeName() != typeName_) 
             return false;
         components_.push_back(ComponentWeakPtr(comp));
-        editor_->AddNewComponent(comp, false);
+        editor_->AddNewComponent(comp);
         return true;
     }
 
     bool ComponentGroup::RemoveComponent(ComponentPtr comp)
     {
-        if(!ContainsComponent(comp))
+        if (!ContainsComponent(comp))
             return false;
 
         std::vector<ComponentWeakPtr>::iterator iter = components_.begin();
         for(; iter != components_.end(); iter++)
         {
-            ComponentPtr comp = iter->lock();
-            if(comp && comp->GetParentEntity()->GetId() == comp->GetParentEntity()->GetId())
+            ComponentPtr comp_ptr = iter->lock();
+            if (comp.get() == comp_ptr.get())
             {
                 editor_->RemoveComponent(comp);
                 components_.erase(iter);

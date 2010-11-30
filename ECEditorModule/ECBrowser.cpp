@@ -123,7 +123,7 @@ namespace ECEditor
     {
         PROFILE(ECBrowser_UpdateBrowser);
 
-        // Sorting tends to be a heavy operation so we disable it until we have made all changes to a ui.
+        // Sorting tends to be a heavy operation so we disable it until we have made all changes to a tree structure.
         if(treeWidget_)
             treeWidget_->setSortingEnabled(false);
 
@@ -138,6 +138,14 @@ namespace ECEditor
         }
         if(treeWidget_)
             treeWidget_->setSortingEnabled(true);
+
+        for(ComponentGroupList::iterator iter = componentGroups_.begin();
+            iter != componentGroups_.end();
+            iter++)
+        {
+            (*iter)->editor_->UpdateUi();
+        }
+
     }
 
     void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
@@ -395,18 +403,15 @@ namespace ECEditor
         // Go back to the root node.
         while(item->parent())
             item = item->parent();
-        
+
         ComponentGroupList::iterator iter = FindSuitableGroup(*item);
         if(iter != componentGroups_.end())
         {
-            for(uint i = 0; i < (*iter)->components_.size(); i++)
-            {
-                PROFILE(ECBrowser_SelectionChanged_inner);
-                if((*iter)->components_[i].expired())
-                    continue;
-                emit ComponentSelected((*iter)->components_[i].lock().get());
-            }
-        }
+            // Could add a loop that will continue to find a component that hasn't expired.
+            ComponentPtr comp = (*iter)->components_[0].lock();
+            if (comp)
+                emit ComponentSelected(comp.get());
+        } 
     }
     
     void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
@@ -429,6 +434,10 @@ namespace ECEditor
                 return;
             }
         AddNewComponentToGroup(comp_ptr);
+
+        std::list<ECEditor::ComponentGroup*>::iterator iter = FindSuitableGroup(comp_ptr);
+        if (iter != componentGroups_.end())
+            (*iter)->editor_->UpdateUi();
     }
 
     void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
@@ -442,7 +451,7 @@ namespace ECEditor
         {
             LogError("Fail to remove component from ECBroser. Make sure that component's parent entity is setted.");
             return;
-        }
+        } 
 
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
@@ -452,6 +461,10 @@ namespace ECEditor
             RemoveComponentFromGroup(comp_ptr);
             return;
         }
+
+        std::list<ECEditor::ComponentGroup*>::iterator iter = FindSuitableGroup(comp_ptr);
+        if (iter != componentGroups_.end())
+            (*iter)->editor_->UpdateUi();
     }
 
     void ECBrowser::OpenComponentXmlEditor()
@@ -543,8 +556,8 @@ namespace ECEditor
 
     void ECBrowser::DynamicComponentChanged()
     {
-        EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender());
-        if(!component)
+        EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender()); 
+        if(!component) 
         {
             LogError("Fail to dynamic cast sender object to EC_DynamicComponent in DynamicComponentChanged mehtod.");
             return;
@@ -560,6 +573,10 @@ namespace ECEditor
         ComponentPtr compPtr = entity->GetComponent(component);
         RemoveComponentFromGroup(comp_ptr);
         AddNewComponentToGroup(comp_ptr);
+
+        std::list<ECEditor::ComponentGroup*>::iterator iter = FindSuitableGroup(comp_ptr);
+        if (iter != componentGroups_.end())
+            (*iter)->editor_->UpdateUi();
     }
 
     void ECBrowser::ComponentNameChanged(const QString &newName)
@@ -595,8 +612,7 @@ namespace ECEditor
             return;
 
         bool ok = false;
-        //! @todo replace this code with a one that will use Dialog::open method and listens a signal
-        //! that will tell us when dialog is closed. Should be more safe way to get this done.
+        //! @todo replace this code with the one that will use Dialog::open method.
         QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
             framework_->GetComponentManager()->GetAttributeTypes(), 0, false, &ok);
         if (!ok)
@@ -610,11 +626,11 @@ namespace ECEditor
         {
             if(components[i].expired())
                 continue;
-            EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(components[i].lock().get());
-            if(component)
+            EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(components[i].lock().get());
+            if(dc)
             {
-                if(component->CreateAttribute(typeName, name))
-                    component->ComponentChanged(AttributeChange::Default);
+                if(dc->CreateAttribute(typeName, name))
+                    dc->ComponentChanged(AttributeChange::Default);
             }
         }
     }
@@ -644,6 +660,7 @@ namespace ECEditor
 
     ComponentGroupList::iterator ECBrowser::FindSuitableGroup(const QTreeWidgetItem &item)
     {
+        PROFILE(ECBrowser_FindSuitableGroup);
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
@@ -655,6 +672,7 @@ namespace ECEditor
 
     void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     {
+        PROFILE(ECBroweser_AddNewComponentToGroup);
         assert(comp);
         if (!comp.get() && !treeWidget_)
             return;
@@ -667,7 +685,7 @@ namespace ECEditor
             if (comp_group->ContainsComponent(comp))
                 return;
 
-            comp_group->editor_->AddNewComponent(comp, false);
+            comp_group->editor_->AddNewComponent(comp);
             comp_group->components_.push_back(ComponentWeakPtr(comp));
             if (comp_group->IsDynamic())
             {
@@ -740,6 +758,7 @@ namespace ECEditor
 
     void ECBrowser::RemoveComponentFromGroup(ComponentPtr comp)
     {
+        PROFILE(ECBrowser_RemoveComponentFromGroup);
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
@@ -770,6 +789,7 @@ namespace ECEditor
 
     void ECBrowser::RemoveComponentGroup(ComponentGroup *componentGroup)
     {
+        PROFILE(ECBrowser_RemoveComponentGroup);
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
             if (componentGroup == *iter)
@@ -782,6 +802,7 @@ namespace ECEditor
 
     bool ECBrowser::HasEntity(Scene::EntityPtr entity) const
     {
+        PROFILE(ECBrowser_HasEntity);
         for(uint i = 0; i < entities_.size(); i++)
         {
             if(!entities_[i].expired() && entities_[i].lock().get() == entity.get())

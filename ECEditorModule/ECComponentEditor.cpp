@@ -21,19 +21,16 @@
 namespace ECEditor
 {
     // static
-    //! @todo Replace this more practical implementation where new attribute type support would be more pratical.
-    //! Like somesort of factory that is ownd by ComponentManager.
     ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         QtAbstractPropertyBrowser *browser,
         ECComponentEditor *editor,
         ComponentPtr component,
         const QString &name,
         const QString &type)
-        //IAttribute &attribute) 
     {
         ECAttributeEditorBase *attributeEditor = 0;
         if(type == "real")
-            attributeEditor = new ECAttributeEditor<float>(browser, component, name, editor);//&attribute, editor);
+            attributeEditor = new ECAttributeEditor<float>(browser, component, name, editor);
         else if(type == "int")
             attributeEditor = new ECAttributeEditor<int>(browser, component, name, editor);
         else if(type == "vector3df")
@@ -74,8 +71,8 @@ namespace ECEditor
         if(groupPropertyManager_)
         {
             groupProperty_ = groupPropertyManager_->addProperty();
-            AddNewComponent(component, true);
             CreateAttributeEditors(component);
+            AddNewComponent(component);
         }
 
         propertyBrowser_->addProperty(groupProperty_);
@@ -104,9 +101,8 @@ namespace ECEditor
                 continue;
 
             attributeEditors_[attributes[i]->GetName()] = attributeEditor;
-            attributeEditor->UpdateEditorUI();
             groupProperty_->setToolTip("Component type is " + component->TypeName());
-            groupProperty_->addSubProperty(attributeEditor->GetProperty());
+            groupProperty_->addSubProperty(attributeEditor->GetProperty()); 
             connect(attributeEditor, SIGNAL(EditorChanged(const QString &)), this, SLOT(OnEditorChanged(const QString &)));
         }
     }
@@ -137,8 +133,9 @@ namespace ECEditor
         return false;
     }
 
-    void ECComponentEditor::AddNewComponent(ComponentPtr component, bool updateUi)
+    void ECComponentEditor::AddNewComponent(ComponentPtr component)
     {
+        PROFILE(ECComponentEditor_AddNewComponent);
         //! Check that component type is same as editor's typename (We only want to add same type of components to editor).
         if(component->TypeName() != typeName_)
             return;
@@ -153,8 +150,6 @@ namespace ECEditor
                 iter->second->AddComponent(component);
             iter++;
         }
-        QObject::connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
         UpdateGroupPropertyText();
     }
 
@@ -169,19 +164,17 @@ namespace ECEditor
         ComponentSet::iterator iter = components_.begin();
         while(iter != components_.end())
         {
-            ComponentPtr componentPtr = (*iter).lock();
-            if(componentPtr.get() == component.get())
+            ComponentPtr comp_ptr = (*iter).lock();
+            if(comp_ptr.get() == component.get())
             {
                 AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
                 while(attributeIter != attributeEditors_.end())
                 {
-                    IAttribute *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName());
+                    IAttribute *attribute = comp_ptr->GetAttribute(attributeIter->second->GetAttributeName());
                     if(attribute)
-                        attributeIter->second->RemoveComponent(component);//RemoveAttribute(attribute);
+                        attributeIter->second->RemoveComponent(component);
                     attributeIter++;
                 }
-                disconnect(componentPtr.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-                    this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
                 components_.erase(iter);
                 break;
             }
@@ -190,8 +183,19 @@ namespace ECEditor
         UpdateGroupPropertyText();
     }
 
+    void ECComponentEditor::UpdateUi()
+    {
+        for(AttributeEditorMap::iterator iter = attributeEditors_.begin();
+            iter != attributeEditors_.end();
+            iter++)
+        {
+            iter->second->UpdateEditorUI();
+        }
+    }
+
     void ECComponentEditor::OnEditorChanged(const QString &name)
     {
+        PROFILE(ECComponentEditor_OnEditorChanged);
         ECAttributeEditorBase *editor = qobject_cast<ECAttributeEditorBase*>(sender());
         if(!editor)
         {
@@ -199,18 +203,5 @@ namespace ECEditor
             return;
         }
         groupProperty_->addSubProperty(editor->GetProperty());
-    }
-
-    void ECComponentEditor::AttributeChanged(IAttribute* attribute, AttributeChange::Type change)
-    {
-        IComponent *component = dynamic_cast<IComponent *>(sender());
-        if((!component) || (!attribute))
-            return;
-        if(component->TypeName() != typeName_)
-            return;
-
-        AttributeEditorMap::iterator iter = attributeEditors_.find(attribute->GetName());
-        if(iter != attributeEditors_.end())
-            iter->second->UpdateEditorUI();
     }
 }

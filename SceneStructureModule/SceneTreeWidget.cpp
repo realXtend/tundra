@@ -605,9 +605,10 @@ void SceneTreeWidget::Edit()
         // If we have an existing editor instance, use it.
         if (ecEditor)
         {
-            foreach(entity_id_t id, selection.EntityIds())
-                ecEditor->AddEntity(id);
-            ecEditor->SetSelectedEntities(selection.EntityIds());
+            ecEditor->AddEntities(selection.EntityIds(), true);
+            /*foreach(entity_id_t id, selection.EntityIds())
+                ecEditor->AddEntity(id, false);
+            ecEditor->SetSelectedEntities(selection.EntityIds());*/
             ecEditor->show();
             //ui->BringWidgetToFront(ecEditor);
             return;
@@ -618,9 +619,10 @@ void SceneTreeWidget::Edit()
         ecEditor->setAttribute(Qt::WA_DeleteOnClose);
         ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
         ecEditor->hide();
-        foreach(entity_id_t id, selection.EntityIds())
-            ecEditor->AddEntity(id);
-        ecEditor->SetSelectedEntities(selection.EntityIds());
+        ecEditor->AddEntities(selection.EntityIds(), true);
+        /*foreach(entity_id_t id, selection.EntityIds())
+            ecEditor->AddEntity(id, false);
+        ecEditor->SetSelectedEntities(selection.EntityIds());*/
 
         NaaliUi *ui = framework->Ui();
         if (!ui)
@@ -669,9 +671,10 @@ void SceneTreeWidget::EditInNew()
     editor->setAttribute(Qt::WA_DeleteOnClose);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
-    foreach(entity_id_t id, selection.EntityIds())
+    ecEditor->AddEntities(selection.EntityIds(), true);
+    /*foreach(entity_id_t id, selection.EntityIds())
         editor->AddEntity(id);
-    editor->SetSelectedEntities(selection.EntityIds());
+    editor->SetSelectedEntities(selection.EntityIds());*/
 
     NaaliUi *ui = framework->Ui();
     if (!ui)
