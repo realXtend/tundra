@@ -174,6 +174,10 @@ namespace OgreRenderer
     // virtual 
     void OgreRenderingModule::Uninitialize()
     {
+        // We're shutting down. Force a release of all loaded asset objects from the Asset API so that 
+        // no refs to Ogre assets remain - below 'renderer_.reset()' is going to delete Ogre::Root.
+        framework_->Asset()->ForgetAllAssets();
+
         framework_->GetServiceManager()->UnregisterService(renderer_);
 
         // Explicitly remove log listener now, because the service has been
