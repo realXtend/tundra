@@ -136,13 +136,13 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
     else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
     {
-        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
-//        sceneDesc = scene->GetSceneDescription(filename);
+//        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
+        sceneDesc = scene->GetSceneDescFromXml(filename);
     }
     else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
     {
-        ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
-//        sceneDesc = scene->GetSceneDescription(filename);
+//        ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
+        sceneDesc = scene->GetSceneDescFromBinary(filename);
     }
     else
     {
