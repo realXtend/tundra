@@ -9,7 +9,7 @@
 #include <CoreTypes.h>
 #include <QRect>
 
-class HoveringNameController: public QWidget, public Ui::HoveringName
+class HoveringNameController: public QWidget, public Ui::hoveringName
 {
     
 Q_OBJECT
@@ -20,9 +20,12 @@ public:
 
 public slots:
     void SetText(const QString& text);
+    void SetPixmap(QPixmap* icon);
+    QPixmap* GetPixmap();
 
 private:
     float text_padding_;
+    QPixmap* pixmap_;
 
 
 };
