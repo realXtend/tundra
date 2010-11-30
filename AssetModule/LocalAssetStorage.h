@@ -30,6 +30,7 @@ public:
 
     /// Returns the full local filesystem path name of the given asset in this storage, if it exists.
     /// Example: GetFullPathForAsset("my.mesh", true) might return "C:\Projects\Tundra\bin\data\assets".
+    /// If the file does not exist, returns "".
     QString GetFullPathForAsset(const QString &assetname, bool recursive);
 
     /// Returns the URL that should be used in a scene asset reference attribute to refer to the asset with the given localName.
