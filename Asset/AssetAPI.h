@@ -133,6 +133,12 @@ public:
     */
     IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
+    /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
+    /// Use this to clear the client's memory from all assets.
+    /// \note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
+    /// until the refcounts drop to zero.
+    void ForgetAllAssets();
+
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<AssetTransferPtr> PendingTransfers() const;
 

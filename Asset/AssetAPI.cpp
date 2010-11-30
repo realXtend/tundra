@@ -205,6 +205,12 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
     /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
 }
 
+void AssetAPI::ForgetAllAssets()
+{
+    assets.clear();
+    currentTransfers.clear();
+}
+
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
     assetType = assetType.trimmed();
@@ -355,6 +361,7 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
                 transfer->assetPtr = assetReady->asset_;
                 assert(transfer);
                 transfer->EmitAssetDownloaded();
+                currentTransfers.erase(iter);
             }
         }
     }
@@ -373,6 +380,7 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
                 //! \todo Causes linker error in debug build, must be disabled for now
                 //transfer->internalResourceName = QString::fromStdString(resourceReady->resource_->GetInternalName());
                 transfer->EmitAssetLoaded();
+                currentTransfers.erase(iter);
             }
         }
     }
