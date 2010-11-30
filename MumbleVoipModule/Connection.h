@@ -249,6 +249,6 @@ namespace MumbleLib
 
 } // namespace MumbleLib
 
-//Q_DECLARE_METATYPE(MumbleClient::User) // not needed
+Q_DECLARE_METATYPE(MumbleLib::Connection::State) 
 
 #endif // incl_MumbleVoipModule_Connection_h
