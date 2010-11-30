@@ -268,7 +268,7 @@ bool CopyAsset(const char *sourceFile, const char *destFile)
     QFile asset_in(sourceFile);
     if (!asset_in.open(QFile::ReadOnly))
     {
-        AssetModule::LogError("Could not open input asset file " + std::string(sourceFile));
+        AssetModule::LogError("Could not open input asset file \"" + std::string(sourceFile) + "\"");
         return false;
     }
 
@@ -278,7 +278,7 @@ bool CopyAsset(const char *sourceFile, const char *destFile)
     QFile asset_out(destFile);
     if (!asset_out.open(QFile::WriteOnly))
     {
-        AssetModule::LogError("Could not open output asset file " + std::string(destFile));
+        AssetModule::LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
         return false;
     }
 
@@ -296,7 +296,7 @@ bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *dest
     QFile asset_out(destFile);
     if (!asset_out.open(QFile::WriteOnly))
     {
-        AssetModule::LogError("Could not open output asset file " + std::string(destFile));
+        AssetModule::LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
         return false;
     }
 
@@ -342,7 +342,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
         {
-            AssetModule::LogError("Failed to read asset data from file " + absoluteFilename.toStdString());
+            AssetModule::LogError("Failed to read asset data from file \"" + absoluteFilename.toStdString() + "\"");
             continue;
         }
         

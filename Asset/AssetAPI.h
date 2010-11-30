@@ -83,6 +83,28 @@ public:
     /// Returns the known asset storage instances in the system.
     std::vector<AssetStoragePtr> GetAssetStorages() const;
 
+    /// Specifies the different possible results for AssetAPI::QueryFileLocation.
+    enum FileQueryResult
+    {
+        FileQueryLocalFileFound, ///< The asset reference specified a local filesystem file, and the absolute path name for it was found.
+        FileQueryLocalFileMissing, ///< The asset reference specified a local filesystem file, but there was no file in that location.
+        FileQueryExternalFile ///< The asset reference points to a file in an external source, which cannot be checked for existence (too costly performance-wise).
+    };
+
+    /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
+    /// @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
+    ///           usually the local path of the scene content that is being added.
+    FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
+
+    /// Tries to find the filename in an url/assetref. For example, all "my.mesh", "C:\files\my.mesh", "local://path/my.mesh", "http://www.web.com/my.mesh" will return "my.mesh".
+    /// \todo It is the intent that "local://collada.dae/subMeshName" would return "collada.dae" and "file.zip/path1/path2/my.mesh" would return "file.zip", but this hasn't been
+    /// implemented (since those aren't yet supported).
+    static QString ExtractFilenameFromAssetRef(QString ref);
+
+    /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
+    /// Returns the absolute path for that file, if it exists. The path contains the filename, i.e. it is of form "C:\folder\file.ext" or "/home/username/file.ext".
+    static QString RecursiveFindFile(QString basePath, QString filename);
+
     /// Creates a new empty asset of the given type and with the given name.
 //    IAsset *CreateAsset(QString assetType, QString assetRef);
 

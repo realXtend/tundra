@@ -15,6 +15,7 @@
 #include "IAssetTypeFactory.h"
 #include "BinaryAssetFactory.h"
 #include "../AssetModule/AssetEvents.h"
+#include <QDir>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
@@ -79,6 +80,91 @@ std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
     }
 
     return storages;
+}
+
+AssetAPI::FileQueryResult AssetAPI::QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath)
+{
+    sourceRef = sourceRef.trimmed();
+    baseDirectory = GuaranteeTrailingSlash(baseDirectory.trimmed());
+    outFilePath = "";
+
+    // Remove both 'file://' and 'local://' specifiers in this lookup.
+    if (sourceRef.startsWith("file://"))
+        sourceRef = sourceRef.mid(7);
+    if (sourceRef.startsWith("local://"))
+        sourceRef = sourceRef.mid(8);
+
+    if (sourceRef.contains("://")) // It's an external URL with a protocol specifier?
+    {
+        outFilePath = sourceRef;
+        return FileQueryExternalFile;
+    }
+
+    if (QDir::isAbsolutePath(sourceRef)) // If the user specified an absolute path, don't look recursively at all, and ignore baseDirectory.
+    {
+        outFilePath = sourceRef; // This is where the file should be if it exists.
+        if (QFile::exists(sourceRef))
+            return FileQueryLocalFileFound;
+        else
+            return FileQueryLocalFileMissing;
+    }
+
+    // The user did not specify an URL with a protocol specifier, and he did not specify an absolute path, so it's a relative path.
+
+    QString sourceFilename = ExtractFilenameFromAssetRef(sourceRef);
+
+    // The baseDirectory has the first priority for lookup.
+    QString fullPath = RecursiveFindFile(baseDirectory, sourceFilename);
+    if (!fullPath.isEmpty())
+    {
+        outFilePath = fullPath;
+        return FileQueryLocalFileFound;
+    }
+
+    // Do a recursive lookup through all local asset providers and the given base directory.
+    ///\todo Implement this. Can't query the LocalAssetProviders here directly (wrong direction for dependency chain).
+
+    return FileQueryLocalFileMissing;
+}
+
+QString AssetAPI::ExtractFilenameFromAssetRef(QString ref)
+{
+    using namespace std;
+
+    // Try to find the local filename from the given string, e.g. "c:\data\my.mesh" -> "my.mesh", or "file://my.mesh" -> "my.mesh".
+    QString s = ref.trimmed();
+    int end = 0;
+    end = max(end, s.lastIndexOf('/')+1);
+    end = max(end, s.lastIndexOf('\\')+1);
+    return s.mid(end);
+}
+
+QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
+{
+    basePath = basePath.trimmed();
+    filename = ExtractFilenameFromAssetRef(filename.trimmed());
+
+    QDir dir(GuaranteeTrailingSlash(basePath) + filename);
+    if (boost::filesystem::exists(dir.absolutePath().toStdString()))
+        return dir.absolutePath();
+
+    try
+    {
+        boost::filesystem::recursive_directory_iterator iter(basePath.toStdString());
+        boost::filesystem::recursive_directory_iterator end_iter;
+        // Check the subdir
+        for(; iter != end_iter; ++iter)
+        {
+            QDir dir(GuaranteeTrailingSlash(iter->path().string().c_str()) + filename);
+            if (!fs::is_regular_file(iter->status()) && boost::filesystem::exists(dir.absolutePath().toStdString()))
+                return dir.absolutePath();
+        }
+    }
+    catch (...)
+    {
+    }
+
+    return "";    
 }
 
 IAssetUploadTransfer *AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)

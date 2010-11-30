@@ -52,13 +52,7 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
 
 QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
 {    
-    using namespace std;
-
-    QString s = localName.trimmed();
-    int end = 0;
-    end = max(end, s.lastIndexOf('/')+1);
-    end = max(end, s.lastIndexOf('\\')+1);
-    return BaseURL() + localName.mid(end);
+    return BaseURL() + AssetAPI::ExtractFilenameFromAssetRef(localName);
 }
 
 void LocalAssetStorage::SetupWatcher()
