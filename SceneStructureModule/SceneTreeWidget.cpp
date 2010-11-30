@@ -1537,8 +1537,21 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
 
 void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
 {
+    assert(transfer_);
+    if (!transfer_)
+        return;
+
     AssetTransferPtr transfer = transfer_->shared_from_this();
     assert(filesaves_.contains(transfer));
+    assert(transfer.get());
+
+    if (!transfer->resourcePtr.get())
+    {
+        // This means the asset was loaded through the new Asset API, in which case the resourcePtr is null, and the 'asset' member
+        // points to the actual loaded asset. For a migration period, we'll need to check both pointers.
+        LogWarning("TODO: SceneTreeWidget::AssetLoaded: Received an asset transfer with null resourcePtr. Implement support for this.");
+        return;
+    }
 
     QString filename = filesaves_.take(transfer);
     if (!saved_assets_.contains(filename))
