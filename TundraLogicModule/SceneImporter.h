@@ -93,6 +93,20 @@ public:
     */
     SceneDesc GetSceneDescForScene(const QString &filename);
 
+    //! Process a material file, searching for used materials and recording used textures
+    /*! \param matfilename Material file name, including full path
+        \param used_materials Set of materials that are needed. Any materials in the file that are not listed will be skipped
+        \return Set of used textures
+     */
+    QSet<QString> ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials) const;
+
+    /// Loads single material script from material file and returns it as a string.
+    /** @param filename File name.
+        @param materialName Material name.
+        @return Material script as a string, or an empty string if material was not found
+    */
+    QString LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const;
+
 private:
     //! Process the asset references of a node, and its child nodes
     /*! \param node_elem Node element
@@ -111,20 +125,6 @@ private:
      */
     void ProcessNodeForCreation(QList<Scene::Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
-
-    //! Process a material file, searching for used materials and recording used textures
-    /*! \param matfilename Material file name, including full path
-        \param used_materials Set of materials that are needed. Any materials in the file that are not listed will be skipped
-        \return Set of used textures
-     */
-    QSet<QString> ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials) const;
-
-    /// Loads single material script from material file and returns it as a string.
-    /** @param filename File name.
-        @param materialName Material name.
-        @return Material script as a string, or an empty string if material was not found
-    */
-    QString LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const;
 
     //! Materials read from meshes, in case of no subentity elements
     QMap<QString, QStringList> mesh_default_materials_;

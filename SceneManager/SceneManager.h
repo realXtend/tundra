@@ -367,10 +367,15 @@ namespace Scene
         //! Returns Framework
         Foundation::Framework *GetFramework() const { return framework_; }
 
-        /// Inspects file and returns a scene description structure of the contents of the file.
+        /// Inspects file and returns a scene description structure from the contents of XML file.
         /** @param filename File name.
         */
-        SceneDesc GetSceneDescription(const QString &filename) const;
+        SceneDesc GetSceneDescFromXml(const QString &filename) const;
+
+        /// Inspects file and returns a scene description structure from the contents of binary file.
+        /** @param filename File name.
+        */
+        SceneDesc GetSceneDescFromBinary(const QString &filename) const;
 
     signals:
         //! Signal when an attribute of a component has changed
