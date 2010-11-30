@@ -515,7 +515,8 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
 
         AssetDesc matDesc;
         matDesc.typeName = "material";
-        matDesc.filename = !sourceMatFile.isEmpty() ? sourceMatFile + ", " + matName : matName;
+        matDesc.filename = !sourceMatFile.isEmpty() ? sourceMatFile : matName;
+        matDesc.subname = matName;
         matDesc.destinationName = matName + ".material";
         matDesc.data = matScript.toAscii();
         sceneDesc.assets << matDesc;
@@ -716,7 +717,8 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 
                     AssetDesc matDesc;
                     matDesc.typeName = "material";
-                    matDesc.filename = !materialFileName.isEmpty() ? materialFileName + ", " + material_name : material_name;
+                    matDesc.filename = !materialFileName.isEmpty() ? materialFileName : material_name;
+                    matDesc.subname = material_name;
                     matDesc.destinationName = material_name + ".material";
                     matDesc.data = LoadSingleMaterialFromFile(materialFileName, material_name).toAscii();
                     sceneDesc.assets.append(matDesc);
@@ -752,7 +754,8 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 {
                     AssetDesc matDesc;
                     matDesc.typeName = "material";
-                    matDesc.filename = !materialFileName.isEmpty() ? materialFileName + ", " + material_name : material_name;
+                    matDesc.filename = !materialFileName.isEmpty() ? materialFileName : material_name;
+                    matDesc.subname = material_name;
                     matDesc.destinationName = material_name + ".material";
                     matDesc.data = LoadSingleMaterialFromFile(materialFileName, material_name).toAscii();
                     sceneDesc.assets.append(matDesc);
