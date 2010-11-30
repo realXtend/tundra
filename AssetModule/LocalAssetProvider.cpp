@@ -76,10 +76,14 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     if (!asset_service)
         return false;
     
-    AssetModule::LogDebug("New local asset request: " + asset_id);
+    AssetModule::LogDebug("New local asset request for ref \"" + asset_id + "\"");
     
     // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
-    std::string filename = asset_id.substr(7);
+    std::string filename = asset_id;
+    if (filename.find("file://") != std::string::npos)
+        filename = filename.substr(7);
+    else if (filename.find("local://") != std::string::npos)
+        filename = filename.substr(8);
     size_t lastSlash = filename.find_last_of('/');
     if (lastSlash != std::string::npos)
         filename = filename.substr(0, lastSlash);
@@ -87,7 +91,7 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     std::string assetpath = GetPathForAsset(filename.c_str()).toStdString(); // Look up all known local file asset storages for this asset.
     if (assetpath.empty())
     {
-        AssetModule::LogInfo("Failed to load local asset " + filename);
+        AssetModule::LogInfo("Failed to load local asset \"" + filename + "\"");
         return true;
     }
     
@@ -121,7 +125,7 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
             filestr.close();
     }
     
-    AssetModule::LogInfo("Failed to load local asset " + filename);
+    AssetModule::LogInfo("Failed to load local asset \"" + filename + "\"");
     return true;
 }
 
@@ -369,7 +373,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
         }
 
         QString fromFile = transfer->sourceFilename;
-        QString toFile = AssetAPI::GuaranteeTrailingSlash(storage->directory) + transfer->destinationName;
+        QString toFile = GuaranteeTrailingSlash(storage->directory) + transfer->destinationName;
 
         bool success;
         if (fromFile.length() == 0)

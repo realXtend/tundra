@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_Terrain.h"
 
+#include "BinaryAsset.h"
 #include "Renderer.h"
 #include "IModule.h"
 #include "ServiceManager.h"
@@ -284,10 +285,14 @@ void EC_Terrain::TextureAssetLoaded(IAssetTransfer *transfer)
 void EC_Terrain::TerrainAssetLoaded(IAssetTransfer *transfer)
 {
     assert(transfer);
-    if (!transfer || !transfer->assetPtr)
+    if (!transfer)
         return;
 
-    LoadFromDataInMemory((const char*)transfer->assetPtr->GetData(), transfer->assetPtr->GetSize());    
+    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(transfer->asset);
+    if (!assetData.get() || assetData->data.size() == 0)
+        return;
+
+    LoadFromDataInMemory((const char*)&assetData->data[0], assetData->data.size());
 }
 
 /// Releases all GPU resources used for the given patch.
@@ -1245,7 +1250,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
         terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial("Rex/TerrainPCF");
 
     Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
+    Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName("EC_Terrain_manual"));
     manual->setCastShadows(false);
 
     manual->clear();
@@ -1351,14 +1356,14 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
         catch (...) {}
     }
 
-    patch.meshGeometryName = renderer->GetUniqueObjectName();
+    patch.meshGeometryName = renderer->GetUniqueObjectName("EC_Terrain_patchmesh");
     Ogre::MeshPtr terrainMesh = manual->convertToMesh(patch.meshGeometryName);
 
     // Odd: destroyManualObject seems to leave behind a memory leak if we don't call manualObject->clear first.
     manual->clear();
     sceneMgr->destroyManualObject(manual);
 
-    patch.entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), patch.meshGeometryName);
+    patch.entity = sceneMgr->createEntity(renderer->GetUniqueObjectName("EC_Terrain_patchentity"), patch.meshGeometryName);
     patch.entity->setUserAny(Ogre::Any(parent_entity_));
     patch.entity->setCastShadows(false);
     // Set UserAny also on subentities
@@ -1396,7 +1401,7 @@ void EC_Terrain::CreateRootNode()
     if (!sceneMgr)
         return;
 
-    rootNode = sceneMgr->createSceneNode();
+    rootNode = sceneMgr->createSceneNode(renderer->GetUniqueObjectName("EC_Terrain_RootNode"));
 
     // Add the newly created node to scene or to a parent EC_Placeable.
     AttachTerrainRootNode();
@@ -1417,7 +1422,8 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
     if (!rootNode)
         CreateRootNode();
 
-    node = sceneMgr->createSceneNode();
+    QString name = QString("EC_Terrain_Patch_") + QString::number(patchX) + "_" + QString::number(patchY);
+    node = sceneMgr->createSceneNode(renderer->GetUniqueObjectName(name.toStdString()));
     if (!node)
         return;
 

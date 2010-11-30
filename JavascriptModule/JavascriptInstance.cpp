@@ -64,12 +64,13 @@ void JavascriptInstance::Load()
         return;
     }
 
+    QString scriptSourceFilename = (scriptRef_.get() ? scriptRef_->Name() : sourceFile);
     QString &scriptContent = (scriptRef_.get() ? scriptRef_->scriptContent : program_);
 
     QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(scriptContent);
     if (syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
     {
-        LogError("Syntax error in script " + scriptRef_->Name().toStdString() + "," + QString::number(syntaxResult.errorLineNumber()).toStdString() +
+        LogError("Syntax error in script " + scriptSourceFilename.toStdString() + "," + QString::number(syntaxResult.errorLineNumber()).toStdString() +
             ": " + syntaxResult.errorMessage().toStdString());
 
         // Delete our loaded script content (if any exists).
@@ -136,10 +137,11 @@ void JavascriptInstance::Run()
     if (!scriptRef_.get() && program_.isEmpty())
         return;
 
+    QString scriptSourceFilename = (scriptRef_.get() ? scriptRef_->Name() : sourceFile);
     QString &scriptContent = (scriptRef_.get() ? scriptRef_->scriptContent : program_);
 
     included_files_.clear();
-    QScriptValue result = engine_->evaluate(program_, scriptContent);
+    QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
     if (engine_->hasUncaughtException())
         LogError(result.toString().toStdString());
 
