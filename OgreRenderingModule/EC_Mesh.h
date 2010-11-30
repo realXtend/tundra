@@ -12,6 +12,7 @@
 #include "Declare_EC.h"
 
 #include <QVariant>
+#include <QVector3D>
 
 namespace Ogre
 {
@@ -321,6 +322,8 @@ public slots:
     //! returns bounding box of Ogre mesh entity
     //! returns zero box if no entity
     void GetBoundingBox(Vector3df& min, Vector3df& max) const;
+
+    QVector3D GetWorldSize() const;
 
     //! returns adjustment position
     Vector3df GetAdjustPosition() const;

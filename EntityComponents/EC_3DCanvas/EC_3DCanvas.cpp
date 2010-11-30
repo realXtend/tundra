@@ -28,6 +28,7 @@ EC_3DCanvas::EC_3DCanvas(IModule *module) :
 {
     boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+    mesh_hooked_ = false;
     if (renderer)
     {
         // Create material
@@ -86,6 +87,34 @@ void EC_3DCanvas::Start()
     }
     else
         Update();
+
+    if(!mesh_hooked_)
+    {
+        Scene::Entity* entity = GetParentEntity();
+        EC_Mesh* ec_mesh = entity->GetComponent<EC_Mesh>().get();
+        if (ec_mesh)
+        {
+            connect(ec_mesh, SIGNAL(OnMaterialChanged(uint, const QString)), SLOT(MeshMaterialsUpdated(uint, const QString)));
+            mesh_hooked_ = true;
+        }
+    }
+}
+
+void EC_3DCanvas::MeshMaterialsUpdated(uint index, const QString &material_name)
+{
+    if (material_name_.empty())
+        return;
+    if(material_name.compare(QString(material_name_.c_str())) != 0 )
+    {
+        bool has_index = false;
+        for (int i=0; i<submeshes_.length(); i++)
+        {
+            if (index == submeshes_[i])
+                has_index = true;
+        }
+        if(has_index)
+            UpdateSubmeshes();
+    }
 }
 
 void EC_3DCanvas::Stop()
