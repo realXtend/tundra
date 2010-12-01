@@ -164,10 +164,11 @@ namespace OgreRenderer
             scenemanager_->getRenderQueue()->setRenderableListener(0);
 
         if (ray_query_)
-            if (scenemanager_)
+            if (scenemanager_) {
                 scenemanager_->destroyQuery(ray_query_);
-            else
+            } else {
                 OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
+            }
 
         if (framework_->Ui() && framework_->Ui()->MainWindow())
             framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();

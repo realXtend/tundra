@@ -1,11 +1,11 @@
 # Define target name and output directory
-init_target (EC_3DGizmo)
+init_target (EC_Gizmo)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES EC_3DGizmo.h)
+file (GLOB MOC_FILES EC_Gizmo.h)
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()
@@ -19,7 +19,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule EntityComponents/EC_OpenSimPrim)
+use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
@@ -27,7 +27,7 @@ link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
 link_ogre()
-link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule EC_OpenSimPrim)
+link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule)
 
 SetupCompileFlagsWithPCH()
 
