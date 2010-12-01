@@ -14,6 +14,9 @@
 #include "Frame.h"
 #include "EC_OgreCamera.h"
 #include "EC_RttTarget.h"
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
+
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_PlanarMirror")
 
 int EC_PlanarMirror::mirror_cam_num_ = 0;
@@ -103,12 +106,13 @@ void EC_PlanarMirror::Initialize()
     }
 
      const Ogre::Camera* v_cam = renderer_.lock()->GetCurrentCamera();
+     const Ogre::Viewport* vp = renderer_.lock()->GetViewport();
 
     mirror_cam_ = cam->GetCamera();
     mirror_cam_->setFarClipDistance(v_cam->getFarClipDistance());
     mirror_cam_->setNearClipDistance(v_cam->getNearClipDistance());
     mirror_cam_->setAutoAspectRatio(false);
-    mirror_cam_->setAspectRatio(v_cam->getAspectRatio());
+    mirror_cam_->setAspectRatio(Ogre::Real(vp->getActualWidth())/Ogre::Real(vp->getActualHeight()));
     mirror_cam_->setFOVy(v_cam->getFOVy());
 
     QString texname = target->gettargettexture();
@@ -138,6 +142,16 @@ void EC_PlanarMirror::Initialize()
     mirror_cam_->getViewport()->setOverlaysEnabled(false);
 
     connect(framework_->GetFrame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
+    connect(framework_->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int, int)), this, SLOT(WindowResized(int,int)));
+}
+
+void EC_PlanarMirror::WindowResized(int w,int h)
+{
+    if(!renderer_.expired())
+    {
+        const Ogre::Viewport* vp = renderer_.lock()->GetViewport();
+        mirror_cam_->setAspectRatio(Ogre::Real(vp->getActualWidth())/Ogre::Real(vp->getActualHeight()));
+    }
 }
 
 

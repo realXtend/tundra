@@ -75,6 +75,7 @@ public slots:
     void Initialize();
     void Update(float val);
     void AttributeUpdated(IAttribute* attr);
+    void WindowResized(int w,int h);
 
 
 private:
