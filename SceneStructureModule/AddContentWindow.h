@@ -17,6 +17,7 @@
 class QTreeWidget;
 class QPushButton;
 class QComboBox;
+class QTreeWidgetItem;
 
 class IAssetUploadTransfer;
 
@@ -78,6 +79,12 @@ private slots:
 
     /// Closes the window.
     void Close();
+
+    /// Checks if tree widget column is editable.
+    /** @param item Item which was double-clicked.
+        @param column Column index.
+    */
+    void CheckIfColumnIsEditable(QTreeWidgetItem *item, int column);
 
     /// Rewrites the destination names of all assets in the UI accordingly to the selected asset storage.
     void RewriteDestinationNames();

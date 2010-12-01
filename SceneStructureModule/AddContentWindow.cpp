@@ -24,6 +24,18 @@ DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
 
 #include "MemoryLeakCheck.h"
 
+// Entity tree widget columnd index enumeration.
+const int cColumnEntityCreate = 0; ///< Create column index.
+const int cColumnEntityId = 1; ///< ID column index.
+const int cColumnEntityName = 2; ///< Name column index.
+
+// Asset tree widget columnd index enumeration.
+const int cColumnAssetUpload = 0; ///< Upload column index;
+const int cColumnAssetTypeName = 1; ///< Type name column index.
+const int cColumnAssetSourceName = 2; ///< Source name column index.
+const int cColumnAssetSubname = 3; ///< Subname column index.
+const int cColumnAssetDestName = 4; ///< Destination name column index.
+
 /// Tree widget item representing an entity.
 class EntityWidgetItem : public QTreeWidgetItem
 {
@@ -33,18 +45,18 @@ public:
     */
     explicit EntityWidgetItem(const EntityDesc &edesc) : desc(edesc)
     {
-        setCheckState(0, Qt::Checked);
-        setText(1, desc.id);
-        setText(2, desc.name);
+        setCheckState(cColumnEntityCreate, Qt::Checked);
+        setText(cColumnEntityId, desc.id);
+        setText(cColumnEntityName, desc.name);
     }
 
     /// QTreeWidgetItem override. Peforms case-insensitive comparison.
     bool operator <(const QTreeWidgetItem &rhs) const
     {
         int column = treeWidget()->sortColumn();
-        if (column == 0)
+        if (column == cColumnEntityCreate)
             return checkState(column) < rhs.checkState(column);
-        else if (column == 1)
+        else if (column == cColumnEntityId)
             return text(column).toInt() < rhs.text(column).toInt();
         else
             return text(column).toLower() < rhs.text(column).toLower();
@@ -62,20 +74,18 @@ public:
     */
     explicit AssetWidgetItem(const AssetDesc &adesc) : desc(adesc)
     {
-        setCheckState(0, Qt::Checked);
-        setText(1, desc.typeName);
-        setText(2, desc.filename);
-        setText(3, desc.subname);
-        setText(4, desc.destinationName);
-        ///\todo Make just single column editable
-        setFlags(Qt::ItemIsUserCheckable |Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+        setCheckState(cColumnAssetUpload, Qt::Checked);
+        setText(cColumnAssetTypeName, desc.typeName);
+        setText(cColumnAssetSourceName, desc.filename);
+        setText(cColumnAssetSubname, desc.subname);
+        setText(cColumnAssetDestName, desc.destinationName);
     }
 
     /// QTreeWidgetItem override. Peforms case-insensitive comparison.
     bool operator <(const QTreeWidgetItem &rhs) const
     {
         int column = treeWidget()->sortColumn();
-        if (column == 0)
+        if (column == cColumnAssetUpload)
             return checkState(column) < rhs.checkState(column);
         else
             return text(column).toLower() < rhs.text(column).toLower();
@@ -181,6 +191,10 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     connect(deselectAllEntitiesButton, SIGNAL(clicked()), SLOT(DeselectAllEntities()));
     connect(selectAllAssetsButton, SIGNAL(clicked()), SLOT(SelectAllAssets()));
     connect(deselectAllAssetsButton, SIGNAL(clicked()), SLOT(DeselectAllAssets()));
+
+    connect(assetTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
+        SLOT(CheckIfColumnIsEditable(QTreeWidgetItem *, int)));
+
     connect(storageComboBox, SIGNAL(currentIndexChanged(int)), SLOT(RewriteDestinationNames()));
 }
 
@@ -257,17 +271,17 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
         AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.filename, basePath, outFilePath);
         if ((a.typeName == "material" && a.data.isEmpty()) || res == AssetAPI::FileQueryLocalFileMissing)
         {
-            aItem->setBackgroundColor(2, Qt::red);
-            aItem->setCheckState(0, Qt::Unchecked);
-            aItem->setText(4, "");
+            aItem->setBackgroundColor(cColumnAssetSourceName, Qt::red);
+            aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
+            aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);
         }
         else if (res == AssetAPI::FileQueryExternalFile)
         {
-            aItem->setCheckState(0, Qt::Unchecked);
-            aItem->setText(4, "");
+            aItem->setBackgroundColor(cColumnAssetSourceName, Qt::gray);
+            aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
+            aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);
-            aItem->setBackgroundColor(2, Qt::gray);
         }
 
         /*
@@ -285,7 +299,7 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
     assetTreeWidget->header()->resizeSections(QHeaderView::ResizeToContents);
 
     // Sort asset items initially so that erroneous are first
-    assetTreeWidget->sortItems(0, Qt::AscendingOrder);
+    assetTreeWidget->sortItems(cColumnAssetUpload, Qt::AscendingOrder);
 }
 
 void AddContentWindow::SelectAllEntities()
@@ -293,7 +307,7 @@ void AddContentWindow::SelectAllEntities()
     QTreeWidgetItemIterator it(entityTreeWidget);
     while(*it)
     {
-        (*it)->setCheckState(0, Qt::Checked);
+        (*it)->setCheckState(cColumnEntityCreate, Qt::Checked);
         ++it;
     }
 }
@@ -303,7 +317,7 @@ void AddContentWindow::DeselectAllEntities()
     QTreeWidgetItemIterator it(entityTreeWidget);
     while(*it)
     {
-        (*it)->setCheckState(0, Qt::Unchecked);
+        (*it)->setCheckState(cColumnEntityCreate, Qt::Unchecked);
         ++it;
     }
 }
@@ -313,7 +327,7 @@ void AddContentWindow::SelectAllAssets()
     QTreeWidgetItemIterator it(assetTreeWidget);
     while(*it)
     {
-        (*it)->setCheckState(0, Qt::Checked);
+        (*it)->setCheckState(cColumnAssetUpload, Qt::Checked);
         ++it;
     }
 }
@@ -323,7 +337,7 @@ void AddContentWindow::DeselectAllAssets()
     QTreeWidgetItemIterator it(assetTreeWidget);
     while(*it)
     {
-        (*it)->setCheckState(0, Qt::Unchecked);
+        (*it)->setCheckState(cColumnAssetUpload, Qt::Unchecked);
         ++it;
     }
 }
@@ -361,7 +375,7 @@ void AddContentWindow::AddContent()
         assert(aitem);
         if (aitem)
         {
-            if (aitem ->checkState(0) == Qt::Unchecked)
+            if (aitem->checkState(cColumnAssetUpload) == Qt::Unchecked)
             {
                 QList<AssetDesc>::const_iterator ai = qFind(newDesc.assets, aitem->desc);
                 if (ai != newDesc.assets.end())
@@ -482,6 +496,14 @@ void AddContentWindow::Close()
     close();
 }
 
+void AddContentWindow::CheckIfColumnIsEditable(QTreeWidgetItem *item, int column)
+{
+    if (column == cColumnAssetDestName)
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+    else
+        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+}
+
 void AddContentWindow::RewriteDestinationNames()
 {
     AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageComboBox->currentText());
@@ -498,8 +520,8 @@ void AddContentWindow::RewriteDestinationNames()
         assert(aitem);
         if (aitem && !aitem->isDisabled())
         {
-            aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(4).trimmed());
-            aitem->setText(4, aitem->desc.destinationName);
+            aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(cColumnAssetDestName).trimmed());
+            aitem->setText(cColumnAssetDestName, aitem->desc.destinationName);
         }
 
         ++it;
