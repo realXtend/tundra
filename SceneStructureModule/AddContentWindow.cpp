@@ -250,20 +250,31 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
 
-        // If asset reference file not found, mark the item read and disable it.
-        if ((a.typeName == "material" && a.data.isEmpty()) || (a.typeName != "material" && !QFile::exists(a.filename)))
+        // If asset reference file not found, mark the item red and disable it.
+        // If it's external reference, mark the item gray and disable it.
+        QString basePath(boost::filesystem::path(a.filename.toStdString()).branch_path().string().c_str());
+        QString outFilePath;
+        AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.filename, basePath, outFilePath);
+        if ((a.typeName == "material" && a.data.isEmpty()) || res == AssetAPI::FileQueryLocalFileMissing)
         {
             aItem->setBackgroundColor(2, Qt::red);
             aItem->setCheckState(0, Qt::Unchecked);
             aItem->setText(4, "");
             aItem->setDisabled(true);
-
-            /*
-            QList<AssetDesc>::const_iterator ai = qFind(sceneDesc.assets, aitem->desc);
-            if (ai != newDesc.assets.end())
-                sceneDesc.assets.removeOne(*ai);
-            */
         }
+        else if (res == AssetAPI::FileQueryExternalFile)
+        {
+            aItem->setCheckState(0, Qt::Unchecked);
+            aItem->setText(4, "");
+            aItem->setDisabled(true);
+            aItem->setBackgroundColor(2, Qt::gray);
+        }
+
+        /*
+        QList<AssetDesc>::const_iterator ai = qFind(sceneDesc.assets, aitem->desc);
+        if (ai != newDesc.assets.end())
+            sceneDesc.assets.removeOne(*ai);
+        */
     }
 
     RewriteDestinationNames();
@@ -358,25 +369,13 @@ void AddContentWindow::AddContent()
             }
             else
             {
-                // Set (possibly new) destination names to scene desc.
-                /*
-                QList<AssetDesc>::iterator ai = qFind(newDesc.assets.begin(), newDesc.assets.end(), aitem->desc);
-                assert(ai != newDesc.assets.end());
-                if (ai != newDesc.assets.end())
+                // Add textures to special map for later use.
+                ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
+                if (aitem->desc.typeName == "texture")
                 {
-                    //(*ai).destinationName = aitem->text(3).trimmed(); //= dest->GetFullAssetURL(aitem->text(3).trimmed());
-                    (*ai).destinationName = dest->GetFullAssetURL(aitem->text(4).trimmed());
-                */
-                    // Add textures to special map for later use.
-                    if (aitem->desc.typeName == "texture") ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
-                    {
-                        int idx = aitem->desc.filename.lastIndexOf("/");
-                        //refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = dest->GetFullAssetURL(aitem->text(4).trimmed());//aitem->desc.destinationName;
-                        refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
-                    }
-                /*
+                    int idx = aitem->desc.filename.lastIndexOf("/");
+                    refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
                 }
-                */
             }
         }
 
@@ -388,7 +387,8 @@ void AddContentWindow::AddContent()
     while(rewriteIt.hasNext())
     {
         rewriteIt.next();
-        if (rewriteIt.value().typeName == "material") ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
+        if (rewriteIt.value().typeName == "material")
+            ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
             ReplaceReferences(rewriteIt.value().data, refs);
     }
 
