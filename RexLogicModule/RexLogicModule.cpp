@@ -154,6 +154,10 @@
 #include "EC_Gizmo.h"
 #endif
 
+#ifdef EC_PlanarMirror_ENABLED
+#include "EC_PlanarMirror.h"
+#endif
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
@@ -257,6 +261,10 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_Gizmo_ENABLED
     DECLARE_MODULE_EC(EC_Gizmo);
+#endif
+
+#ifdef EC_PlanarMirror_ENABLED
+    DECLARE_MODULE_EC(EC_PlanarMirror);
 #endif
 }
 
