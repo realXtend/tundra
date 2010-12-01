@@ -23,7 +23,6 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         circuits.BaseComponent.__init__(self)
         self.sock = eventlet.listen(('0.0.0.0', 9999))
         self.server = async_eventlet_wsgiserver.server(self.sock, handle_clients)
-
         print "websocket server started."
 
         NaaliWebsocketServer.instance = self
@@ -33,10 +32,13 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         
     @circuits.handler("on_sceneadded")
     def on_sceneadded(self, name):
+        '''Connects to various signal when scene is added'''
         self.scene = naali.getScene(name)
-        self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onComponentChanged)
+        self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
 
         self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)",onNewEntity)
+
+        self.scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
 
     @circuits.handler("update")
     def update(self, t):
@@ -52,14 +54,34 @@ def sendAll(data):
     for client in clients:
         client.send(json.dumps(data))        
 
-def onComponentChanged(component, attribute, changeType):
-    #print component, attribute
-    #print component.GetParentEntity().Id
-    pass
+def onAttributeChanged(component, attribute, changeType):
+    #FIXME Find a better way to get component name
+    component_name = str(component).split()[0]
+
+    #We don't need no stinkin' rigid body
+    if component_name == "EC_RigidBody":
+        return
+
+    ent_id = component.GetParentEntity().Id
+    attribute = attribute
+
+    sendAll(['setAttr', {'id': ent_id, 'component': component_name}])
 
 def onNewEntity(entity, changeType):
     sendAll(['addEntity', {'id': entity.Id}])
     print entity
+
+def onComponentAdded(entity, component, changeType):
+    #FIXME Find a better way to get component name
+    component_name = str(component).split()[0]
+
+    #We don't need no stinkin' rigid body
+    if component_name == "EC_RigidBody":
+        return
+
+
+    sendAll(['addComponent', {'id': entity.Id, 'component': component_name}])
+    print entity.Id, component
 
 @websocket.WebSocketWSGI
 def handle_clients(ws):
