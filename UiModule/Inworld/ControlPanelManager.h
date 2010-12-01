@@ -77,6 +77,10 @@ namespace CoreUi
         TeleportWidget* teleport_widget_;
         ChangeThemeWidget* changetheme_widget_;
         CacheSettingsWidget *cache_settings_widget_;
+
+		//$ BEGIN_MOD $
+		ControlPanelButton *previous_button;
+		//$ END_MOD $
     };
 }
 

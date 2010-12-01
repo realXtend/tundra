@@ -341,7 +341,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
     }
 
     // Framework
-    if (category_id == frameworkEventCategory_) 
+    if (category_id == frameworkEventCategory_)
     {
         switch(event_id)
         {
@@ -476,7 +476,7 @@ void InventoryModule::CreateInventoryWindow()
     if (!ui)
         return;
 
-    SAFE_DELETE(inventoryWindow_); 
+    SAFE_DELETE(inventoryWindow_);
     inventoryWindow_ = new InventoryWindow;
 //$ BEGIN_MOD $
 #ifndef PLAYER_VIEWER

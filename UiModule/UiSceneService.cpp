@@ -36,7 +36,7 @@ namespace UiServices
 		connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
 				this,SLOT(HandleTransferToBuild(const QString&, const QString&)));
 		//Settings Panel, List of panels send when we enter the world
-		connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)), this,SLOT(SetPanelsList(const QString&, const QString&)));
+		//connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)), this,SLOT(SetPanelsList(const QString&, const QString&)));
 //$ END_MOD $
     }
 

@@ -58,7 +58,7 @@ namespace Environment
 		//$ BEGIN_MOD $
         //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
 		setWindowTitle("TerrainTexture Weightmap Editor");
-		UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, false);
+		UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
 		//$ END_MOD $
         if(editor_proxy == 0)
             return;

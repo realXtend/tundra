@@ -1019,6 +1019,7 @@ namespace WorldBuilding
 		ui->ShowWidget(propertyWidget_);
 		ui->BringWidgetToFront("Entity-component Editor");
 		ui->BringWidgetToFront("Inventory");
+		ui->BringWidgetToFront("Library");
 	}
 //$ END_MOD $
 }

@@ -246,7 +246,7 @@ namespace Environment
             return;
         }
 
-        editor_widget_ = loader.load(&file, this); 
+        editor_widget_ = loader.load(&file, this);
         if (editor_widget_ == 0)
             return;
 

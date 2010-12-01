@@ -10,7 +10,7 @@
  */
 
 #ifndef incl_UiModule_UiSceneService_h
-#define incl_UiModule_UiSceneService_h
+#define incl_UiModule_UiSceneService_h 
 
 #include "UiServiceInterface.h"
 //$ BEGIN_MOD $

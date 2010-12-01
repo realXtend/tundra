@@ -90,7 +90,7 @@ namespace CoreUi
 		//$ END_MOD $
 
         ControlPanelButton *button = 0;
-        ControlPanelButton *previous_button = 0;
+        previous_button = 0;
         foreach(UiServices::ControlButtonType button_type, buttons)
         {
             // Create the button and anchor in scene
@@ -222,7 +222,7 @@ namespace CoreUi
         buttons  << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;
-        ControlPanelButton *previous_button = 0;
+        //ControlPanelButton *previous_button = 0;
         foreach(UiServices::ControlButtonType button_type, buttons)
         {
             // Create the button and anchor in scene
