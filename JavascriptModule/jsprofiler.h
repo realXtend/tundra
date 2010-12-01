@@ -29,6 +29,8 @@
 #ifndef JSPROFILER_H
 #define JSPROFILER_H
 
+#ifndef _WINDOWS
+
 #include <QtScript>
 
 namespace jsprofiler {
@@ -100,5 +102,7 @@ private:
 };
 
 }
+
+#endif // _WINDOWS
 
 #endif
