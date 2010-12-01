@@ -24,12 +24,12 @@ DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
 
 #include "MemoryLeakCheck.h"
 
-// Entity tree widget columnd index enumeration.
+// Entity tree widget column index enumeration.
 const int cColumnEntityCreate = 0; ///< Create column index.
 const int cColumnEntityId = 1; ///< ID column index.
 const int cColumnEntityName = 2; ///< Name column index.
 
-// Asset tree widget columnd index enumeration.
+// Asset tree widget column index enumeration.
 const int cColumnAssetUpload = 0; ///< Upload column index;
 const int cColumnAssetTypeName = 1; ///< Type name column index.
 const int cColumnAssetSourceName = 2; ///< Source name column index.
@@ -140,6 +140,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     QPushButton *deselectAllEntitiesButton = new QPushButton(tr("Deselect All"));
     QHBoxLayout *entityButtonsLayout = new QHBoxLayout;
     QSpacerItem *entityButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    QSpacerItem *middleSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     layout->addWidget(entityLabel);
     layout->addWidget(entityTreeWidget);
@@ -147,6 +148,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     entityButtonsLayout->addWidget(deselectAllEntitiesButton);
     entityButtonsLayout->addSpacerItem(entityButtonSpacer);
     layout->insertLayout(-1, entityButtonsLayout);
+    layout->insertSpacerItem(-1, middleSpacer);
 
     QLabel *assetLabel = new QLabel(tr("The following assets will be uploaded:"));
 
@@ -191,10 +193,8 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     connect(deselectAllEntitiesButton, SIGNAL(clicked()), SLOT(DeselectAllEntities()));
     connect(selectAllAssetsButton, SIGNAL(clicked()), SLOT(SelectAllAssets()));
     connect(deselectAllAssetsButton, SIGNAL(clicked()), SLOT(DeselectAllAssets()));
-
     connect(assetTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
         SLOT(CheckIfColumnIsEditable(QTreeWidgetItem *, int)));
-
     connect(storageComboBox, SIGNAL(currentIndexChanged(int)), SLOT(RewriteDestinationNames()));
 }
 
