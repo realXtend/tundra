@@ -113,12 +113,15 @@ AssetAPI::FileQueryResult AssetAPI::QueryFileLocation(QString sourceRef, QString
 
     QString sourceFilename = ExtractFilenameFromAssetRef(sourceRef);
 
-    // The baseDirectory has the first priority for lookup.
-    QString fullPath = RecursiveFindFile(baseDirectory, sourceFilename);
-    if (!fullPath.isEmpty())
+    if (!baseDirectory.isEmpty())
     {
-        outFilePath = fullPath;
-        return FileQueryLocalFileFound;
+        // The baseDirectory has the first priority for lookup.
+        QString fullPath = RecursiveFindFile(baseDirectory, sourceFilename);
+        if (!fullPath.isEmpty())
+        {
+            outFilePath = fullPath;
+            return FileQueryLocalFileFound;
+        }
     }
 
     // Do a recursive lookup through all local asset providers and the given base directory.
@@ -391,6 +394,9 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
 QString GuaranteeTrailingSlash(const QString &source)
 {
     QString s = source.trimmed();
+    if (s.isEmpty() == 0)
+        return ""; // If user inputted "", output "" (can't output "/", since that would mean the root of the whole filesystem on linux)
+
     if (s[s.length()-1] != '/' && s[s.length()-1] != '\\')
         s = s + "/";
 
