@@ -24,6 +24,8 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifndef _WINDOWS
+
 #include "jsprofiler.h"
 #include <sys/time.h>
 #include <time.h>
@@ -234,3 +236,5 @@ void Profiler::scriptLoad(qint64 id, const QString &program, const QString &file
 }
 
 }
+
+#endif
