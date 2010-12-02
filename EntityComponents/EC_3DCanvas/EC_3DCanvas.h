@@ -96,7 +96,7 @@ private:
 
 private slots:
     void WidgetDestroyed(QObject *obj);
-    
+    void MeshMaterialsUpdated(uint index, const QString &material_name);
 
 private:
     QWidget *widget_;
@@ -111,6 +111,7 @@ private:
     bool update_internals_;
 
     QImage buffer_;
+    bool mesh_hooked_;
 };
 
 #endif

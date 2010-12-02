@@ -367,6 +367,47 @@ p, li { white-space: pre-wrap; }
        </layout>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_11">
+        <property name="leftMargin">
+         <number>16</number>
+        </property>
+        <property name="rightMargin">
+         <number>16</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="checkBoxRotationPoint">
+          <property name="text">
+           <string>Use rotation point</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="rotateCenterX">
+          <property name="maximum">
+           <double>255.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="rotateCenterY">
+          <property name="maximum">
+           <double>255.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="rotateCenterZ"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonSetOffset">
+          <property name="text">
+           <string>Set offset</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <property name="rightMargin">
          <number>0</number>

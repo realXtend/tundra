@@ -77,6 +77,10 @@ public slots:
     /// @return height if the billboard in the scene
     float GetHeight() { return height_; }
 
+    void SetVisible(bool visible);
+    bool IsVisible() { return visible_; }
+
+
 private slots:
     void InitializeOgreBillboard();
     void UninitializeOgreBillboard();
@@ -101,6 +105,7 @@ private:
     Ogre::Vector3 position_;
     float width_;
     float height_;
+    bool visible_;
 };
 
 #endif // incl_EC_BillboardWidget_h

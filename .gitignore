@@ -5,6 +5,9 @@
 *.pdb
 *.idb
 *.lib
+Application/resource*.h
+Application/*.aps
+Application/*.rc
 
 # Windows -specific data - data is stored in our deps repository.
 *.dll
@@ -41,6 +44,10 @@ ui_*.h
 doc/html/
 *.tmp
 
+# Generated installers and pdb zip files
+Naali-*.exe
+pdb-files.zip
+
 # Python files
 *.pyc
 
@@ -61,6 +68,8 @@ bin/gstreamer/
 bin/fullmemoryleaklog.txt
 bin/pymodules/DLLs/
 bin/pymodules/python26_Lib.zip
+bin/qtplugins
+bin/scenes
 build/
 
 # Binary compiled translation files

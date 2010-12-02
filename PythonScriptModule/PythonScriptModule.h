@@ -48,6 +48,11 @@ namespace MediaPlayer
     class ServiceInterface;
 }
 
+namespace Communications
+{
+    class ServiceInterface;
+}
+
 class UiProxyWidget;
 
 namespace PythonScript
@@ -68,6 +73,8 @@ namespace PythonScript
         InputContext* GetInputContext() const { return input.get(); }
         InputContext* CreateInputContext(const QString &name, int priority = 100);
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
+        Communications::ServiceInterface* GetCommunicationsService() const;
+        
         void RemoveQtDynamicProperty(QObject* qobj, char* propname);
         QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate);
         /** Prepares Python script instance used with EC_Script for execution.

@@ -1337,6 +1337,7 @@ namespace Avatar
 
     void AvatarAppearance::WebDavExportAvatar(Scene::EntityPtr entity)
     {
+
         if (!entity)
             return;
 

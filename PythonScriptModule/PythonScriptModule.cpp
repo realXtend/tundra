@@ -98,9 +98,11 @@
 #include <QApplication>
 #include <QGraphicsView>
 #include <QWebView>
+#include <QStringList>
 //#include <QDebug>
 
 #include <MediaPlayerService.h>
+#include <CommunicationsService.h>
 #include <WorldBuildingServiceInterface.h>
 
 #include "PythonQtScriptingConsole.h"
@@ -623,6 +625,23 @@ namespace PythonScript
             return player_service;
 
         PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
+        return 0;
+    }
+
+    Communications::ServiceInterface* PythonScriptModule::GetCommunicationsService() const
+    {
+        Foundation::Framework* framework = PythonScript::self()->GetFramework();
+        if (!framework)
+        {
+            PythonScriptModule::LogCritical("Framework object doesn't exist!");
+            return 0;
+        }
+
+        Communications::ServiceInterface *service = framework_->GetService<Communications::ServiceInterface>();
+        if (service)
+            return service;
+
+        PythonScriptModule::LogError("Cannot find CommunicationsServiceInterface implementation.");
         return 0;
     }
 
@@ -1824,6 +1843,14 @@ namespace PythonScript
             PythonQt::self()->addDecorators(new QuaternionDecorator());
             PythonQt::self()->registerCPPClass("Quaternion");
 
+            // For some reason: plain registerClass doosn't work for these classes.
+            // Possible reason is that they are just interfaces
+            QStringList list;
+            list << "Communications::ServiceInterface";
+            list << "InWorldVoice::SessionInterface";
+            list << "InWorldVoice::ParticipantInterface";
+            list << "Communications::InWorldVoice::ParticipantInterface";
+            PythonQt::self()->registerQObjectClassNames(list);
             pythonqt_inited = true;
         }
 
