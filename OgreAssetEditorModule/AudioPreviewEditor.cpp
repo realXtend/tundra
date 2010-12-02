@@ -44,7 +44,7 @@ AudioPreviewEditor::~AudioPreviewEditor()
 
 }
 
-void AudioPreviewEditor::HandleAssetReady(Foundation::AssetPtr asset)
+void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
 {
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)

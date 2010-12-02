@@ -53,7 +53,7 @@ EC_Light::EC_Light(IModule *module) :
         return;
 
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    light_ = scene_mgr->createLight(renderer->GetUniqueObjectName());
+    light_ = scene_mgr->createLight(renderer->GetUniqueObjectName("EC_Light"));
     
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateOgreLight()));
 }

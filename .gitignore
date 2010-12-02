@@ -4,6 +4,8 @@
 *.user
 *.pdb
 *.idb
+*.vcproj
+*.lib
 
 # Windows -specific data - data is stored in our deps repository.
 *.dll

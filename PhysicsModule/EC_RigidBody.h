@@ -8,6 +8,7 @@
 #include "LinearMath/btMotionState.h"
 #include "AssetReference.h"
 #include "Declare_EC.h"
+#include "AssetFwd.h"
 
 #include <QVector>
 
@@ -311,7 +312,7 @@ private slots:
     void OnTerrainRegenerated();
 
     //! Called when collision mesh has been downloaded.
-    void OnCollisionMeshAssetLoaded();
+    void OnCollisionMeshAssetLoaded(IAssetTransfer *transfer);
 
 private:
     //! constructor

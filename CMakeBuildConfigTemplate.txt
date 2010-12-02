@@ -33,6 +33,9 @@ SET(DYNAMIC_LOGIN_SCENE 1)
 # If the following flag is defined, Naali will be compiled with the built-in execution time profiler enabled.
 add_definitions(-DPROFILING)
 
+# Enable js profiling?
+# add_definitions -(DENABLE_JS_PROFILING)
+
 # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
 if (MSVC)
     add_definitions(-DMEMORY_LEAK_CHECK)
@@ -93,7 +96,8 @@ AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
 AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
 AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
 AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
-AddEntityComponent(EntityComponents/EC_3DGizmo EC_3DGizmo)
+AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
+AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
 
 # The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)

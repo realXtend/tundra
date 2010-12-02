@@ -571,6 +571,9 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 14: // Font assets
         RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
+    case 15: // OgreSceneTree
+        PopulateOgreSceneTree();
+        break;
     }
 }
 
@@ -2159,6 +2162,206 @@ void TimeProfilerWindow::GetTexturesFromMaterials(const std::set<Ogre::Material*
         }
         ++i;
     }
+}
+
+QTreeWidgetItem *AddNewItem(QTreeWidgetItem *parent, QString name)
+{
+    QTreeWidgetItem *item = new QTreeWidgetItem(parent, QStringList(name));
+    return item;
+}
+
+void AddOgreTUState(QTreeWidgetItem *parent, Ogre::TextureUnitState *node, int idx)
+{
+    QString str = QString("TUState ") + QString::number(idx) + ": " + node->getName().c_str();
+    str += QString(", texture: ") + node->getTextureName().c_str();
+
+    /*QTreeWidgetItem *item = */AddNewItem(parent, str);
+}
+
+void AddOgrePass(QTreeWidgetItem *parent, Ogre::Pass *node, int idx)
+{
+    QString str = QString("Pass ") + QString::number(idx) + ": " + node->getName().c_str();
+
+    QTreeWidgetItem *item = AddNewItem(parent, str);
+
+    for(int i = 0; i < node->getNumTextureUnitStates(); ++i)
+        AddOgreTUState(item, node->getTextureUnitState(i), i);
+}
+
+void AddOgreTechnique(QTreeWidgetItem *parent, Ogre::Technique *node, int idx)
+{
+    QString str = QString("Technique ") + QString::number(idx) + ": " + node->getName().c_str();
+
+    QTreeWidgetItem *item = AddNewItem(parent, str);
+
+    for(int i = 0; i < node->getNumPasses(); ++i)
+        AddOgrePass(item, node->getPass(i), i);
+}
+
+QString VertexElementTypeToString(Ogre::VertexElementType type)
+{
+    if (type == Ogre::VET_FLOAT1) return "Float1";
+    if (type == Ogre::VET_FLOAT2) return "Float2";
+    if (type == Ogre::VET_FLOAT3) return "Float3";
+    if (type == Ogre::VET_FLOAT4) return "Float4";
+    if (type == Ogre::VET_COLOUR) return "Color";
+    if (type == Ogre::VET_SHORT1) return "Short1";
+    if (type == Ogre::VET_SHORT2) return "Short2";
+    if (type == Ogre::VET_SHORT3) return "Short3";
+    if (type == Ogre::VET_SHORT4) return "Short4";
+    if (type == Ogre::VET_UBYTE4) return "UByte4";
+    if (type == Ogre::VET_COLOUR_ARGB) return "Color_ARGB";
+    if (type == Ogre::VET_COLOUR_ABGR) return "Color_ABGR";
+
+    return "Unknown VET(" + QString::number((int)type) + ")";
+}
+
+QString VertexElementSemanticToString(Ogre::VertexElementSemantic sem)
+{
+    if (sem == Ogre::VES_POSITION) return "Position";
+    if (sem == Ogre::VES_BLEND_WEIGHTS) return "BlendWeights";
+    if (sem == Ogre::VES_BLEND_INDICES) return "BlendIndices";
+    if (sem == Ogre::VES_NORMAL) return "Normal";
+    if (sem == Ogre::VES_DIFFUSE) return "Diffuse";
+    if (sem == Ogre::VES_SPECULAR) return "Specular";
+    if (sem == Ogre::VES_TEXTURE_COORDINATES) return "TexCoord";
+    if (sem == Ogre::VES_BINORMAL) return "Binormal";
+    if (sem == Ogre::VES_TANGENT) return "Tangent";
+
+    return "Unknown VES(" + QString::number((int)sem) + ")";
+}
+
+void AddOgreVertexElement(QTreeWidgetItem *parent, const Ogre::VertexElement *node, int idx)
+{
+    QString str = QString("VertexElem ") + QString::number(idx) + ": ";
+    if (node)
+    {
+        str += "sourceBufferIndex: " + QString::number(node->getSource());
+        str += ", offset: " + QString::number(node->getOffset());
+        str += ", type: " + VertexElementTypeToString(node->getType());
+        str += ", semantic: " + VertexElementSemanticToString(node->getSemantic());
+        str += ", index: " + QString::number(node->getIndex());
+        str += ", size: " + QString::number(node->getSize());
+    }
+
+    /*QTreeWidgetItem *nodeItem = */AddNewItem(parent, str);
+}
+
+void AddOgreSubEntity(QTreeWidgetItem *parent, Ogre::SubEntity *node, int idx)
+{
+    QString str = QString("SubEntity ") + QString::number(idx);
+    str += QString(", material: ") + node->getMaterialName().c_str();
+
+    Ogre::MaterialPtr material = node->getMaterial();
+    if (!material.get())
+        str += "(not loaded)";
+
+    QTreeWidgetItem *item = AddNewItem(parent, str);
+
+    if (material.get())
+    {
+        for(int i = 0; i < material->getNumTechniques(); ++i)
+            AddOgreTechnique(item, material->getTechnique(i), i);
+    }
+
+    Ogre::SubMesh *submesh = node->getSubMesh();
+    if (submesh && submesh->vertexData && !submesh->useSharedVertices && submesh->vertexData->vertexDeclaration)
+    {
+        Ogre::VertexDeclaration *vd = submesh->vertexData->vertexDeclaration;
+        for(int i = 0; i < vd->getElementCount(); ++i)
+            AddOgreVertexElement(item, vd->getElement(i), i);
+    }
+}
+
+void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
+{
+    QString str = (node->getMovableType() + "(MovableObject): ").c_str();
+    str += node->getName().c_str();
+    str += ", isVisible: " + QString::number(node->isVisible());
+    str += ", isAttached: " + QString::number(node->isAttached());
+//    str += ", isParentTagPoint: " + QString::number(node->isParentTagPoint());
+    str += ", isInScene: " + QString::number(node->isInScene());
+    str += ", visibilityFlags: " + QString::number(node->getVisibilityFlags());
+
+    Ogre::Entity *e = dynamic_cast<Ogre::Entity*>(node);
+    if (e)
+    {
+        Ogre::MeshPtr mesh = e->getMesh();
+        if (mesh.get())
+            str += QString(", mesh: ") + mesh->getName().c_str();
+        else
+            str += ", (null MeshPtr)";
+    }
+
+    QTreeWidgetItem *nodeItem = AddNewItem(parent, str);
+
+    if (e)
+        for(int i = 0; i < e->getNumSubEntities(); ++i)
+            AddOgreSubEntity(nodeItem, e->getSubEntity(i), i);
+}
+
+void AddOgreSceneNode(QTreeWidgetItem *parent, Ogre::SceneNode *node);
+
+void AddOgreNode(QTreeWidgetItem *parent, Ogre::Node *node)
+{
+    QTreeWidgetItem *nodeItem = AddNewItem(parent, ("Node: " + node->getName()).c_str());
+
+    for(int i = 0; i < node->numChildren(); ++i)
+    {
+        Ogre::Node *child = node->getChild(i);
+        Ogre::SceneNode *sceneNode = dynamic_cast<Ogre::SceneNode*>(child);
+        if (sceneNode)
+            AddOgreSceneNode(nodeItem, sceneNode);
+        else
+            AddOgreNode(nodeItem, sceneNode);
+    }
+}
+
+void AddOgreSceneNode(QTreeWidgetItem *parent, Ogre::SceneNode *node)
+{
+    QTreeWidgetItem *nodeItem = AddNewItem(parent, ("SceneNode: " + node->getName()).c_str());
+
+    for(int i = 0; i < node->numChildren(); ++i)
+    {
+        Ogre::Node *child = node->getChild(i);
+        Ogre::SceneNode *sceneNode = dynamic_cast<Ogre::SceneNode*>(child);
+        if (sceneNode)
+            AddOgreSceneNode(nodeItem, sceneNode);
+        else
+            AddOgreNode(nodeItem, sceneNode);
+    }
+
+    for(int i = 0; i < node->numAttachedObjects(); ++i)
+    {
+        Ogre::MovableObject *movableObject = node->getAttachedObject(i);
+        AddOgreMovableObject(nodeItem, movableObject);
+    }
+}
+
+void AddOgreScene(QTreeWidgetItem *parent, Ogre::SceneManager *scene)
+{
+    QTreeWidgetItem *sceneItem = AddNewItem(parent, ("SceneManager: " + scene->getName()).c_str());
+    AddOgreSceneNode(sceneItem, scene->getRootSceneNode());    
+}
+
+void TimeProfilerWindow::PopulateOgreSceneTree()
+{
+    QTreeWidget *tree = findChild<QTreeWidget* >("sceneDataTree");
+    if (!tree)
+        return;
+
+    tree->clear();
+
+    Ogre::Root *root = Ogre::Root::getSingletonPtr();
+    assert(root);
+
+    Ogre::SceneManagerEnumerator::SceneManagerIterator iter = root->getSceneManagerIterator();
+    while(iter.hasMoreElements())
+    {
+        Ogre::SceneManager *scene = iter.getNext();
+        if (scene)
+            AddOgreScene(tree->invisibleRootItem(), scene);
+    }    
 }
 
 void TimeProfilerWindow::RefreshRenderTargetProfilingData()

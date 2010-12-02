@@ -15,6 +15,9 @@ class AssetRefListener : public QObject
 public:
     void HandleAssetRefChange(IAttribute *assetRef);
 
+    /// Returns the asset currently stored in this asset reference.
+    AssetPtr Asset();
+
 private slots:
     void EmitDownloaded(IAssetTransfer *transfer);
 

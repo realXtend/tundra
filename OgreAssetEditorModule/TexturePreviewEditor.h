@@ -13,6 +13,7 @@
 #include <QWidget>
 #include <QLabel>
 #include "OgreAssetEditorModuleApi.h"
+#include "AssetFwd.h"
 
 QT_BEGIN_NAMESPACE
 class QPushButton;
@@ -32,8 +33,6 @@ namespace Resource
 namespace Foundation
 {
     class Framework;
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
 //! TextureLabel widget is used only in texture preview window.

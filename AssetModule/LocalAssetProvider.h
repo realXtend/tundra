@@ -18,10 +18,7 @@ namespace Asset
 {
     class LocalAssetStorage;
 
-    /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
-    QString GuaranteeTrailingSlash(const QString &source);
-
-    /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'file://' reference.
+    /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'local://' reference.
     class ASSET_MODULE_API LocalAssetProvider : public QObject, public Foundation::AssetProviderInterface, public boost::enable_shared_from_this<LocalAssetProvider>
     {
             Q_OBJECT;
@@ -36,7 +33,7 @@ namespace Asset
         
         //! Checks an asset id for validity
         /*! \return true if this asset provider can handle the id */
-        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type);
+        virtual bool IsValidRef(const std::string& asset_id, const std::string& asset_type);
         
         //! Requests an asset for "download"
         /*! \param asset_id Asset UUID
@@ -45,7 +42,7 @@ namespace Asset
             \return true if asset ID was valid and file could be found (ASSET_READY will be sent in that case) */
         virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
         
-//        virtual IAssetTransfer *RequestAsset(QString assetRef);
+        virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
 
         //! Returns whether a certain asset is already being "downloaded". Returns always false.
         virtual bool InProgress(const std::string& asset_id);
@@ -65,7 +62,7 @@ namespace Asset
             \param asset_type Asset type
             \param received Minimum continuous bytes received from the start
             \return Null pointer will always be returned (not supported) */
-        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
+        virtual Foundation::AssetInterfacePtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
         
         //! Returns information about current asset transfers
         virtual Foundation::AssetTransferInfoVector GetTransferInfo() { return Foundation::AssetTransferInfoVector(); }
@@ -87,9 +84,8 @@ namespace Asset
         virtual IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     private:
-
         //! Get a path for asset, using all the search directories
-        std::string GetPathForAsset(const std::string& assetname);
+        QString GetPathForAsset(const QString &localFilename);
 
         //! Asset event category
         event_category_id_t event_category_;
@@ -102,10 +98,14 @@ namespace Asset
         //! Asset directories to search, may be recursive or not
         std::vector<LocalAssetStoragePtr> storages;
 
-        typedef boost::shared_ptr<IAssetUploadTransfer> AssetUploadTransferPtr;
-
         //! The following asset uploads are pending to be completed by this provider.
-        std::vector<AssetUploadTransferPtr > pendingUploads;
+        std::vector<AssetUploadTransferPtr> pendingUploads;
+
+        //! The following asset downloads are pending to be completed by this provider.
+        std::vector<AssetTransferPtr> pendingDownloads;
+
+        //! Takes all the pending file download transfers and finishes them.
+        void CompletePendingFileDownloads();
 
         //! Takes all the pending file upload transfers and finishes them.
         void CompletePendingFileUploads();

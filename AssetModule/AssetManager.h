@@ -35,7 +35,7 @@ namespace Asset
             \param asset_type Asset type
             \return Pointer to asset, 0 if not found
          */
-        virtual Foundation::AssetPtr GetAsset(const std::string& asset_id, const std::string& asset_type);
+        virtual Foundation::AssetInterfacePtr GetAsset(const std::string& asset_id, const std::string& asset_type);
 
         //! Gets incomplete asset
         /*! Note: a new incomplete asset object (with copy of the data) will be created for each call. Please
@@ -47,12 +47,12 @@ namespace Asset
             \return Pointer to asset, 0 if not found or not enough bytes
            
          */
-        virtual Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);
+        virtual Foundation::AssetInterfacePtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);
         
         //! Checks asset id for validity
         /*! \return true if asset id is valid
          */
-        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type);
+        virtual bool IsValidRef(const std::string& asset_id, const std::string& asset_type);
         
         //! Requests an asset download
         /*! Events will be sent when download progresses, and when asset is ready.
@@ -100,7 +100,7 @@ namespace Asset
         /*! \param asset Asset to store
             \param store_to_disk Whether to store to disk cache also. Default true.
          */
-        virtual void StoreAsset(Foundation::AssetPtr asset, bool store_to_disk = true);
+        virtual void StoreAsset(Foundation::AssetInterfacePtr asset, bool store_to_disk = true);
         
         //! Performs time-based update
         /*! Calls update function of all registered asset providers, and of cache
@@ -118,7 +118,7 @@ namespace Asset
         /*! \param asset_id Asset ID
             \param asset_type Optional asset type (empty to match any)
          */
-        Foundation::AssetPtr GetFromCache(const std::string& asset_id, const std::string& asset_type = std::string());
+        Foundation::AssetInterfacePtr GetFromCache(const std::string& asset_id, const std::string& asset_type = std::string());
         
         //! Framework we belong to
         Foundation::Framework* framework_;

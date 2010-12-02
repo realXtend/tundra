@@ -18,7 +18,7 @@ public:
     /// Default constructor.
     IArgumentType() {}
 
-    /// Destroyes the object.
+    /// Destroys the object.
     virtual ~IArgumentType() {}
 
     /// Creates new editor for the argument type.

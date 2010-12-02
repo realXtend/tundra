@@ -302,7 +302,7 @@ void MeshPreviewEditor::CreateRenderTexture()
              biggest = boxCenterPos.z;
 
 
-         scene_ = manager_->createSceneNode(mesh_id_.toStdString().c_str());      
+         scene_ = manager_->createSceneNode(rendering_module->GetRenderer()->GetUniqueObjectName(("MeshPreview_" + mesh_id_).toStdString()));
          scene_->attachObject(entity_);
          scene_->showBoundingBox(true);
          scene_->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));            

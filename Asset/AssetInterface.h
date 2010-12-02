@@ -6,14 +6,12 @@
 #include "AssetMetadataInterface.h"
 #include "CoreModuleApi.h"
 #include "CoreTypes.h"
+#include "AssetFwd.h"
 
 #include <QMetaType>
 
 namespace Foundation
 {
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetPtr;
-
     //! Interface for assets
     class MODULE_API AssetInterface
     {

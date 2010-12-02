@@ -10,6 +10,8 @@
 
 #include "IScriptInstance.h"
 #include "ForwardDefines.h"
+#include "AssetFwd.h"
+#include "ScriptAsset.h"
 
 #include <QtScript>
 
@@ -23,9 +25,13 @@ class JavascriptInstance : public IScriptInstance
 public:
     /// Creates script engine for this script instance and loads the script but doesn't run it yet.
     /** @param scriptRef Script asset reference.
-        @param module Javascript module.
-    */
-    JavascriptInstance(const QString &scriptRef, JavascriptModule *module);
+        @param module Javascript module. */
+    JavascriptInstance(const QString &fileName, JavascriptModule *module);
+
+    /// Creates script engine for this script instance and loads the script but doesn't run it yet.
+    /** @param scriptRef Script asset reference.
+        @param module Javascript module. */
+    JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module);
 
     /// Destroys script engine created for this script instance.
     virtual ~JavascriptInstance();
@@ -60,9 +66,6 @@ public slots:
     void ImportExtension(const QString &scriptExtensionName);
 
 private:
-    /// Loads script from the current script reference location.
-    QString LoadScript() const;
-
     /// Creates new script context/engine.
     void CreateEngine();
 
@@ -70,8 +73,20 @@ private:
     void DeleteEngine();
 
     QScriptEngine *engine_; ///< Qt script engine.
-    QString scriptRef_; ///< Reference to a script file.
-    QString program_; ///< Program loaded from script file.
+    
+    static QString LoadScript(const QString &fileName);
+
+    // The script content for a JavascriptInstance is loaded either using the Asset API or 
+    // using an absolute path name from the local file system.
+
+    /// If the script content is loaded using the Asset API, this points to the asset that is loaded.
+    ScriptAssetPtr scriptRef_; 
+
+    /// If the script content is loaded directly from local file, this points to the actual script content.  
+    QString program_;
+    /// Specifies the absolute path of the source file where the script is loaded from, if the content is directly loaded from file.
+    QString sourceFile;
+
     ComponentWeakPtr owner_; ///< Owner (EC_Script) component, if existing.
     JavascriptModule *module_; ///< Javascript module.
     bool evaluated; ///< Has the script program been evaluated.

@@ -274,7 +274,14 @@ namespace MumbleVoip
                 server_info.password = channel->getserverpassword();
                 server_info.channel_id = channel->getchannelid();
                 server_info.channel_name = channel->getchannelname();
-                server_info.user_name = GetUsername();
+                if (!channel->getusername().isEmpty())
+                {
+                    server_info.user_name = channel->getusername();
+                }
+                else
+                {
+                    server_info.user_name = "anonymous";
+                }
 
                 channel_names_[channel] = channel->getchannelname();
                 session_->AddChannel(channel->getchannelname(), server_info);
