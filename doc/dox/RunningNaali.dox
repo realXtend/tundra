@@ -1,0 +1,36 @@
+/**
+
+\page RunningNaali Configuring and Running Naali
+
+The application-level functionality in Naali is implemented in different ways. 
+
+Some features are implemented as Naali Modules, which are shared libraries (.dll or .so) that are loaded on startup. This architecture forms a plugin base for Naali.
+
+The modules can define custom Entity Components (ECs), which allow data and code to be embedded into individual objects in the scene. Modules and ECs differ in the following ways:
+- ECs are always attached to a certain entity in the scene, so there can be multiple instances of them, whereas there is always only one instance of a module running at once.
+- Modules start running the moment Naali starts up. ECs on the other hand cannot exist until a scene is populated with content.
+
+Modules are written in C++. ECs can be written by using C++ or by using a scripting language (via the EC_Script component).
+
+Third, application developers can use QtScript to create "application-level scripts", which operate much like native C++ modules. They are executed when the application starts up, and they have full access to the Naali Core API just like the C++ modules do. The startup scripts reside in the folder /bin/jsmodules/startup.   
+
+\section ModuleConfig Configuring which modules to build and load. 
+
+Most of the behavior of Naali is configured at compile-time via the CMakeModuleConfig.txt file. This file lists all the modules that can be included as part of the build, and you can choose the set of modules to build by commenting or uncommenting the ones you are interested in. The same file also determines which Entity-Components classes to include to the build.
+
+The compiled modules are stored in the directory /bin/modules/core. Each of these modules is accompanied by an .xml file with the same basename than the module. These xml files describe the dependencies each module may have to other modules. Prior to starting up Naali, you can configure the set of modules to run by including or excluding (adding or deleting) the shared libraries from this folder.
+
+\section NaaliCommandLineOptions Command line options
+
+The startup behavior of Naali can be configured with the following command-line options:
+
+<table>
+<tr><td style="width: 200px;">--headless</td><td>Starts the application in headless mode. In this mode, main window is not created and asset resources are not uploaded to the GPU for rendering. This is useful when running the Tundra server in dedicated mode.</td></tr>
+<tr><td>--help</td><td>Shows the command line help.</td></tr>
+<tr><td>--run <i>scriptFile.js</i></td><td>Specifies a QtScript file to execute immediately after Naali has started up.</td></tr>
+<tr><td>--python <i>scriptFile.py</i></td><td>Specifies a Python file to execute immediately after Naali has started up.</td></tr>
+<tr><td>--file <i>sceneFile.txml</i></td><td>Specifies a Tundra scene file to load into the viewer or server immediately after Naali has started up. You can either specify a .txml file or a .tbin file to load up. The directory this scene file resides is recursively added as a local asset storage folder. You can use the local:// URL protocol specifier to refer to assets inside this folder.</td></tr>
+<tr><td>--storage <i>storageDirectory</i></td><td>Adds the given directory recursively as a local asset storage folder. You can use the local:// URL protocol specifier to refer to assets inside this folder.</td></tr>
+</table>  
+
+*/
