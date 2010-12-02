@@ -152,26 +152,21 @@ void TundraLogicModule::LoadStartupScene()
     
     const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
     if (options.count("file") == 0)
-        return;
-    std::string startup_scene = QString(options["file"].as<std::string>().c_str()).trimmed().toStdString();
-    if (startup_scene.empty())
         return; // No startup scene specified, ignore.
 
-    // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
-    boost::filesystem::path scenepath(startup_scene);
-    std::string dirname = scenepath.branch_path().string();
-    if (!dirname.empty())
-    {
-        boost::shared_ptr<Asset::LocalAssetProvider> localProvider = GetFramework()->Asset()->GetAssetProvider<Asset::LocalAssetProvider>();
-        if (localProvider)
-            localProvider->AddStorageDirectory(dirname, "Scene Local", true);
-    }
-    
-    bool useBinary = startup_scene.find(".tbin") != std::string::npos;
+    std::string startupScene = QString(options["file"].as<std::string>().c_str()).trimmed().toStdString();
+    if (startupScene.empty())
+        return; // No startup scene specified, ignore.
+
+    // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
+    // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
+    // scene we now load will be able to refer to local:// assets in its subfolders.
+
+    bool useBinary = startupScene.find(".tbin") != std::string::npos;
     if (!useBinary)
-        scene->LoadSceneXML(startup_scene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        scene->LoadSceneXML(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
     else
-        scene->LoadSceneBinary(startup_scene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        scene->LoadSceneBinary(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
 }
 
 Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)
