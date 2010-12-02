@@ -5,6 +5,7 @@
 
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
+#include "ECEditorModuleApi.h"
 
 #include <QObject>
 #include <QPointer>
@@ -21,7 +22,7 @@ namespace ECEditor
     /*! \defgroup ECEditorModuleClient ECEditorModule Client interface.
      *  EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
      */
-    class ECEditorModule : public QObject, public IModule
+    class ECEDITOR_MODULE_API ECEditorModule : public QObject, public IModule
     {
         Q_OBJECT
 
@@ -41,7 +42,7 @@ namespace ECEditor
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! Show EC editor window.
-        Console::CommandResult ShowWindow(const StringVector &params);
+        //Console::CommandResult ShowWindow(const StringVector &params);
 
         Console::CommandResult ShowDocumentation(const StringVector &params);
 
@@ -56,6 +57,8 @@ namespace ECEditor
          */
         Console::CommandResult EditDynamicComponent(const StringVector &params);
 
+        ECEditorWindow *GetActiveECEditor() const;
+
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return name_static_; }
 
@@ -69,6 +72,11 @@ namespace ECEditor
         ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
     public slots:
+        // This mehtod is called when new ECEditorWindow isntance is created.
+        //void RegisterECEditor(ECEditorWindow *editor);
+        //void UnregisterECEditor();
+        void ECEditorFocusChanged(ECEditorWindow *editor);
+
         void AddEditorWindowToUI();
 
         //! Creates EC attribute XML editor widget for entity.
@@ -97,9 +105,6 @@ namespace ECEditor
         //! Id for NetworkState event category
         event_category_id_t network_state_event_category_;
 
-        //! EC editor window
-        ECEditorWindow* editor_window_;
-
         //! EC XML editor window
         QPointer<EcXmlEditorWidget> xmlEditor_;
 
@@ -109,11 +114,17 @@ namespace ECEditor
         /// Tree widget item expand memory keeps track of which items in EC editor are expanded.
         ExpandMemoryPtr expandMemory;
 
+        /// Active ECEditorWindow.
+        ECEditorWindow *active_editor_;
+
     private slots:
         /// Handles KeyPressed() signal from input context.
         /** @param e Key event.
         */
         void HandleKeyPressed(KeyEvent *e);
+
+        // When active_editor is destroyed we need to set it's pointer back to null.
+        void ActiveECEditorDestroyed(QObject *obj = 0);
     };
 }
 

@@ -22,6 +22,7 @@
 #include "EventManager.h"
 #include "ConfigurationManager.h"
 #include "ECEditorWindow.h"
+#include "ECEditorModule.h"
 #include "EntityActionDialog.h"
 #include "AddComponentDialog.h"
 #include "FunctionDialog.h"
@@ -614,12 +615,16 @@ void SceneTreeWidget::Edit()
             return;
         }
 
-        // Create new editor.
-        ecEditor = new ECEditor::ECEditorWindow(framework);
+        ECEditor::ECEditorModule *module = framework->GetModule<ECEditor::ECEditorModule>();
+        if (module)
+            ecEditor = module->GetActiveECEditor();
+        // If there isn't any active editors in ECEditorModule, create a new one.
+        if (!ecEditor)
+            ecEditor = new ECEditor::ECEditorWindow(framework);
         ecEditor->setAttribute(Qt::WA_DeleteOnClose);
-        ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
-        ecEditor->hide();
-        ecEditor->AddEntities(selection.EntityIds(), true);
+        //ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
+        //ecEditor->hide();
+        //ecEditor->AddEntities(selection.EntityIds(), true);
         /*foreach(entity_id_t id, selection.EntityIds())
             ecEditor->AddEntity(id, false);
         ecEditor->SetSelectedEntities(selection.EntityIds());*/
@@ -629,7 +634,10 @@ void SceneTreeWidget::Edit()
             return;
         ecEditor->setParent(ui->MainWindow());
         ecEditor->setWindowFlags(Qt::Tool);
-        ecEditor->show();
+        if (!ecEditor->isVisible())
+            ecEditor->show();
+
+        ecEditor->AddEntities(selection.EntityIds(), true);
 
         /*ui->AddWidgetToScene(ecEditor);
         ui->ShowWidget(ecEditor);
@@ -1098,7 +1106,7 @@ void SceneTreeWidget::OpenFunctionDialog()
     FunctionDialog *d = new FunctionDialog(objs, this);
     connect(d, SIGNAL(finished(int)), SLOT(FunctionDialogFinished(int)));
     d->show();
-    d->move(300,300);
+    //d->move(300,300);
 }
 
 void SceneTreeWidget::FunctionDialogFinished(int result)
