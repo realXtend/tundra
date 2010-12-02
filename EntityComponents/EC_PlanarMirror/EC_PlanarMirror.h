@@ -8,22 +8,16 @@
 
 #ifndef incl_EC_PlanarMirror_EC_PlanarMirror_h
 #define incl_EC_PlanarMirror_EC_PlanarMirror_h
+
 #include "StableHeaders.h"
 #include "IComponent.h"
 #include "Declare_EC.h"
-#include "Renderer.h"
+#include "OgreModuleFwd.h"
+
 #include <QVector3D>
 #include <QQuaternion>
 
-
-namespace Ogre
-{
-    class Camera;
-    class Texture;
-    class Entity;
-    class MovablePlane;
-}
-
+/// EntityComponent that will create a planar mirror texture (and optionally a plane showing it).
 /**
 <table class="header">
 <tr>
@@ -34,7 +28,7 @@ NOTE: Assumes the the entity already has: EC_Placeable, EC_RttTarget and EC_Ogre
 <b>Attributes</b>:
 <ul>
 <li>bool reflectionPlaneVisible
-<div>do we want to show the mirror plane</div>
+<div>Do we want to show the mirror plane</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -51,35 +45,34 @@ NOTE: Assumes the the entity already has: EC_Placeable, EC_RttTarget and EC_Ogre
 
 Does not emit any actions.
 
-<b>Depends on a camera component.</b>.
+<b>Depends on EC_OgreCamera, EC_Placeable and EC_RttTarget.</b>
 </table>
 */
 class EC_PlanarMirror : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_PlanarMirror);
-    
 
 public:
-
-    EC_PlanarMirror(IModule *module);
     ~EC_PlanarMirror();
 
+    /// Do we want to show the mirror plane
     Q_PROPERTY(bool reflectionPlaneVisible READ getreflectionPlaneVisible WRITE setreflectionPlaneVisible);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, reflectionPlaneVisible);
 
-
     //Returns the texture that you can set to be used on a material. Do not modify this texture yourself
-    Ogre::Texture* GetMirrorTexture();
+    Ogre::Texture* GetMirrorTexture() const;
+
 public slots:
     void Initialize();
     void Update(float val);
     void AttributeUpdated(IAttribute* attr);
     void WindowResized(int w,int h);
 
-
 private:
+    EC_PlanarMirror(IModule *module);
     void CreatePlane();
+
     static int mirror_cam_num_;
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
     Ogre::Camera* mirror_cam_;
