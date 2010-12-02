@@ -53,18 +53,19 @@ public:
 
     //! Constructor.
     /*! \param desc Description.
-     *  \param min Minimum value.
-     *  \param max Maximum value.
-     *  \param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
-        \param interpolation Interpolation mode for clients
+        \param min Minimum value.
+        \param max Maximum value.
+        \param step_ Step value.
+        \param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
+        \param interpolation_ Interpolation mode for clients
      */
-    AttributeMetadata(const QString &desc_, const QString &min_ = "", const QString &max_ = "", const QString &step_ = "", 
-        const EnumDescMap_t &enums_ = EnumDescMap_t(), InterpolationMode interpolation_ = None) :
-        description(desc_),
-        minimum(min_),
-        maximum(max_),
+    AttributeMetadata(const QString &desc, const QString &min = "", const QString &max = "", const QString &step_ = "", 
+        const EnumDescMap_t &enum_desc = EnumDescMap_t(), InterpolationMode interpolation_ = None) :
+        description(desc),
+        minimum(min),
+        maximum(max),
         step(step_),
-        enums(enums_),
+        enums(enum_desc),
         interpolation(interpolation_)
     {
     }
@@ -84,9 +85,12 @@ public:
     //! Step value.
     QString step;
 
+    //! Describes the type for individual elements of this attribute (in case there are multiple, e.g. in the case of QVariantList).
+    QString elementType;
+
     //! Interpolation mode for clients
     InterpolationMode interpolation;
-    
+
     //! Mapping of enumeration's signatures (in readable form) and actual values.
     EnumDescMap_t enums;
 
