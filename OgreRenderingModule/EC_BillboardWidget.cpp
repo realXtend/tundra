@@ -30,7 +30,8 @@ EC_BillboardWidget::EC_BillboardWidget(IModule *module):
     billboard_(0),
     width_(1),
     height_(1),
-    position_(0,0,0)
+    position_(0,0,0),
+    visible_(true)
 {
     renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 }
@@ -246,4 +247,10 @@ void EC_BillboardWidget::Refresh()
     }
     
     billboard_set_->setVisible(true);
+}
+
+void EC_BillboardWidget::SetVisible(bool visible)
+{
+    visible_ = visible;
+    billboard_set_->setVisible(visible_);
 }
