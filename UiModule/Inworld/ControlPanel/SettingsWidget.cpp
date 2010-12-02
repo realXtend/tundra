@@ -131,12 +131,12 @@ namespace CoreUi
             emit NewUserInterfaceSettingsApplied(opacitySlider->value(), showAnimationSpinBox->value());
         emit SaveSettingsClicked();
         
-        AnimatedHide();
+        //AnimatedHide();
     }
 
     void SettingsWidget::Canceled()
     {
-        emit CancelClicked();
-        AnimatedHide();
+        //emit CancelClicked();
+        //AnimatedHide();
     }
 }
