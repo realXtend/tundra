@@ -91,6 +91,18 @@ void JavascriptModule::PostInitialize()
     
     // Initialize startup scripts
     LoadStartupScripts();
+
+    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
+
+    if (programOptions.count("run"))
+    {
+        commandLineStartupScript_ = programOptions["run"].as<std::string>();
+        JavascriptInstance *jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
+        PrepareScriptInstance(jsInstance);
+        startupScripts_.push_back(jsInstance);
+        jsInstance->Run();
+    }
+
 }
 
 void JavascriptModule::Uninitialize()
@@ -103,25 +115,6 @@ void JavascriptModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-bool JavascriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    if (category_id == frameworkEventCategory_)
-    {
-        if (event_id == Foundation::PROGRAM_OPTIONS)
-        {
-            Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
-            if (po_event->options.count("run"))
-            {
-                commandLineStartupScript_ = po_event->options["run"].as<std::string>();
-                JavascriptInstance* jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
-                PrepareScriptInstance(jsInstance);
-                startupScripts_.push_back(jsInstance);
-                jsInstance->Run();
-            }
-        }
-    }
-    return false;
-}
 
 Console::CommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
 {

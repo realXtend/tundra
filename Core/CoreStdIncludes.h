@@ -54,7 +54,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/timer.hpp>
-#include <boost/program_options.hpp>
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 
