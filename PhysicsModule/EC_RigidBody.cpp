@@ -396,9 +396,8 @@ void EC_RigidBody::OnTerrainRegenerated()
         CreateCollisionShape();
 }
 
-void EC_RigidBody::OnCollisionMeshAssetLoaded()
+void EC_RigidBody::OnCollisionMeshAssetLoaded(IAssetTransfer *transfer)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
     assert(transfer);
     if (!transfer)
         return;
@@ -616,13 +615,22 @@ void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
 }
 
 void EC_RigidBody::RequestMesh()
-{
-    if (!collisionMeshRef.Get().ref.isEmpty())
+{    
+    Scene::Entity *parent = GetParentEntity();
+
+    QString collisionMesh = collisionMeshRef.Get().ref.trimmed();
+    if (collisionMesh.isEmpty() && parent) // We use the mesh ref in EC_Mesh as the collision mesh ref if no collision mesh is set in EC_RigidBody.
+    {
+        boost::shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
+        collisionMesh = mesh->meshRef.Get().ref.trimmed();
+    }
+
+    if (!collisionMesh.isEmpty())
     {
         // Do not create shape right now, but request the mesh resource
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(collisionMeshRef.Get().ref);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(collisionMesh);
         if (transfer)
-            connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnCollisionMeshAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnCollisionMeshAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
 }
 

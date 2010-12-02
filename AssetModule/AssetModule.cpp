@@ -14,6 +14,9 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "CoreException.h"
+#include "AssetAPI.h"
+
+#include <QDir>
 
 #include "Interfaces/ProtocolModuleInterface.h"
 
@@ -52,7 +55,13 @@ namespace Asset
         // Note: this directory is a different concept than the "pre-warmed assetcache"
         boost::shared_ptr<LocalAssetProvider> local = boost::shared_ptr<LocalAssetProvider>(new LocalAssetProvider(framework_));
         local_asset_provider_ = boost::dynamic_pointer_cast<Foundation::AssetProviderInterface>(local);
-        local->AddStorageDirectory("./data/assets", "System", true);
+
+        QDir dir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "data/assets").toStdString().c_str());
+        local->AddStorageDirectory(dir.absolutePath().toStdString(), "System", true);
+
+        QDir dir2((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "jsmodules").toStdString().c_str());
+        local->AddStorageDirectory(dir2.absolutePath().toStdString(), "Javascript", true);
+
         manager_->RegisterAssetProvider(local_asset_provider_);
 
         // Add Ogre MeshManager asset provider

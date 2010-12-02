@@ -36,7 +36,7 @@ namespace Asset
         class AssetReady : public IEventData
         {
         public:
-            AssetReady(const std::string& asset_id, const std::string& asset_type, Foundation::AssetPtr asset, request_tag_t tag) :
+            AssetReady(const std::string& asset_id, const std::string& asset_type, Foundation::AssetInterfacePtr asset, request_tag_t tag) :
                 asset_id_(asset_id),
                 asset_type_(asset_type),
                 asset_(asset),
@@ -53,7 +53,7 @@ namespace Asset
             //! Type of the ready asset
             std::string asset_type_;
             //! Pointer to the ready asset
-            Foundation::AssetPtr asset_;
+            Foundation::AssetInterfacePtr asset_;
             //! Request tag, identifying the asset request
             request_tag_t tag_;
         };

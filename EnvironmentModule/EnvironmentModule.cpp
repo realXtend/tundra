@@ -7,6 +7,9 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "AssetAPI.h"
+#include "BinaryAssetFactory.h"
+
 #include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "Water.h"
@@ -14,7 +17,6 @@
 #include "Sky.h"
 #include "EnvironmentEditor.h"
 #include "PostProcessWidget.h"
-
 
 #include "EC_WaterPlane.h"
 #include "EC_Fog.h"
@@ -81,6 +83,9 @@ namespace Environment
         DECLARE_MODULE_EC(EC_SkyBox);
         DECLARE_MODULE_EC(EC_SkyDome);
         DECLARE_MODULE_EC(EC_EnvironmentLight);
+
+        /// Create an asset type factory for Terrain assets. The terrain assets are handled as binary blobs - the EC_Terrain parses it when showing the asset.
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Terrain")));
     }
 
     void EnvironmentModule::Initialize()

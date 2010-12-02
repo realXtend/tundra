@@ -32,13 +32,13 @@ namespace Asset
         void Update(f64 frametime);
 
         const std::string& Name();
-        bool IsValidId(const std::string& asset_id, const std::string& asset_type);
+        bool IsValidRef(const std::string& asset_id, const std::string& asset_type);
         
         bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
         bool InProgress(const std::string& asset_id);
         bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous);
 
-        Foundation::AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);
+        Foundation::AssetInterfacePtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);
         Foundation::AssetTransferInfoVector GetTransferInfo();
     
     private slots:
@@ -60,7 +60,7 @@ namespace Asset
         f64 asset_timeout_;
 
         QMap<QString, QtHttpAssetTransfer *> assetid_to_transfer_map_;
-        QMap<QUrl, QPair<HttpAssetTransferInfo, Foundation::AssetPtr> > metadata_to_assetptr_;
+        QMap<QUrl, QPair<HttpAssetTransferInfo, Foundation::AssetInterfacePtr> > metadata_to_assetptr_;
         QList<QtHttpAssetTransfer *> pending_request_queue_;
 
         bool filling_stack_;

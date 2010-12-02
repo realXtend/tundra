@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "EC_Terrain.h"
 
+#include "BinaryAsset.h"
 #include "Renderer.h"
 #include "IModule.h"
 #include "ServiceManager.h"
@@ -64,7 +65,7 @@ EC_Terrain::EC_Terrain(IModule* module) :
     texture2.Set(AssetReference(""), AttributeChange::Disconnected);
     texture3.Set(AssetReference(""), AttributeChange::Disconnected);
     texture4.Set(AssetReference(""), AttributeChange::Disconnected);
-    material.Set(AssetReference("file://RexTerrainPCF.material"), AttributeChange::Disconnected);
+    material.Set(AssetReference("local://RexTerrainPCF.material"), AttributeChange::Disconnected);
 
     heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
     connect(heightMapAsset.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded(IAssetTransfer *)));
@@ -184,33 +185,33 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     else if (changedAttribute == material.GetNameString())
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(material.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture0.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture1.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture2.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture3.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture4.GetNameString())
     {
-        IAssetTransfer *transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        connect(transfer, SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == heightMap.GetNameString())
     {
@@ -284,10 +285,14 @@ void EC_Terrain::TextureAssetLoaded(IAssetTransfer *transfer)
 void EC_Terrain::TerrainAssetLoaded(IAssetTransfer *transfer)
 {
     assert(transfer);
-    if (!transfer || !transfer->assetPtr)
+    if (!transfer)
         return;
 
-    LoadFromDataInMemory((const char*)transfer->assetPtr->GetData(), transfer->assetPtr->GetSize());    
+    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(transfer->asset);
+    if (!assetData.get() || assetData->data.size() == 0)
+        return;
+
+    LoadFromDataInMemory((const char*)&assetData->data[0], assetData->data.size());
 }
 
 /// Releases all GPU resources used for the given patch.
@@ -675,31 +680,6 @@ bool EC_Terrain::SaveToFile(QString filename)
     return true;
 }
 
-bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
-{
-    FILE *handle = fopen(filename, "rb");
-    if (!handle)
-    {
-        LogError("Could not open file " + std::string(filename) + ".");
-        return false;
-    }
-
-    fseek(handle, 0, SEEK_END);
-    long numBytes = ftell(handle);
-    if (numBytes == 0)
-    {
-        fclose(handle);
-        return false;
-    }
-
-    fseek(handle, 0, SEEK_SET);
-    dst.resize(numBytes);
-    size_t numRead = fread(&dst[0], sizeof(u8), numBytes, handle);
-    fclose(handle);
-
-    return (long)numRead == numBytes;
-}
-
 u32 ReadU32(const char *dataPtr, size_t numBytes, int &offset)
 {
     if (offset + 4 > numBytes)
@@ -778,6 +758,49 @@ bool EC_Terrain::LoadFromDataInMemory(const char *data, size_t numBytes)
     this->yPatches.Changed(AttributeChange::LocalOnly);
 
     return true;
+}
+
+void EC_Terrain::NormalizeImage(QString filename) const
+{
+    Ogre::Image image;
+    try
+    {
+        std::vector<u8> imageFile;
+        LoadFileToVector(filename.toStdString().c_str(), imageFile);
+        Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
+        image.load(stream);
+    } catch(...)
+    {
+        LogError("Execption catched when trying load image file" + filename.toStdString() + ".");
+        return;
+    }
+
+    std::vector<uchar> imageData(4*image.getWidth()*image.getHeight(), 0);
+
+    uchar *imagePos = &imageData[0];
+
+    for(int y = 0; y < image.getHeight(); ++y)
+        for(int x = 0; x < image.getWidth(); ++x)
+        {
+            Ogre::ColourValue color = image.getColourAt(x, y, 0);
+            color.a = 0;
+            color /= (color.r + color.g + color.b + color.a);
+            *imagePos++ = (uchar)clamp((int)(color.b * 255), 0, 255);
+            *imagePos++ = (uchar)clamp((int)(color.g * 255), 0, 255);
+            *imagePos++ = (uchar)clamp((int)(color.r * 255), 0, 255);
+            *imagePos++ = (uchar)clamp((int)(color.a * 255), 0, 255);
+        }
+    
+    try
+    {
+        Ogre::Image dstImage;
+        dstImage.loadDynamicImage(&imageData[0], image.getWidth(), image.getHeight(), Ogre::PF_A8R8G8B8);
+        dstImage.save(filename.toStdString().c_str());
+    } catch(...)
+    {
+        ///\todo Log out warning.
+        return;
+    }
 }
 
 bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
@@ -1270,7 +1293,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
         terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial("Rex/TerrainPCF");
 
     Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-    Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
+    Ogre::ManualObject *manual = sceneMgr->createManualObject(renderer->GetUniqueObjectName("EC_Terrain_manual"));
     manual->setCastShadows(false);
 
     manual->clear();
@@ -1376,14 +1399,14 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
         catch (...) {}
     }
 
-    patch.meshGeometryName = renderer->GetUniqueObjectName();
+    patch.meshGeometryName = renderer->GetUniqueObjectName("EC_Terrain_patchmesh");
     Ogre::MeshPtr terrainMesh = manual->convertToMesh(patch.meshGeometryName);
 
     // Odd: destroyManualObject seems to leave behind a memory leak if we don't call manualObject->clear first.
     manual->clear();
     sceneMgr->destroyManualObject(manual);
 
-    patch.entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), patch.meshGeometryName);
+    patch.entity = sceneMgr->createEntity(renderer->GetUniqueObjectName("EC_Terrain_patchentity"), patch.meshGeometryName);
     patch.entity->setUserAny(Ogre::Any(parent_entity_));
     patch.entity->setCastShadows(false);
     // Set UserAny also on subentities
@@ -1421,7 +1444,7 @@ void EC_Terrain::CreateRootNode()
     if (!sceneMgr)
         return;
 
-    rootNode = sceneMgr->createSceneNode();
+    rootNode = sceneMgr->createSceneNode(renderer->GetUniqueObjectName("EC_Terrain_RootNode"));
 
     // Add the newly created node to scene or to a parent EC_Placeable.
     AttachTerrainRootNode();
@@ -1442,7 +1465,8 @@ void EC_Terrain::CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, 
     if (!rootNode)
         CreateRootNode();
 
-    node = sceneMgr->createSceneNode();
+    QString name = QString("EC_Terrain_Patch_") + QString::number(patchX) + "_" + QString::number(patchY);
+    node = sceneMgr->createSceneNode(renderer->GetUniqueObjectName(name.toStdString()));
     if (!node)
         return;
 

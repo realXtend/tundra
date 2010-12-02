@@ -1,0 +1,17 @@
+ -- Install Murmur --
+
+ - Windows - 
+   Download the latest stable Win32 release http://sourceforge.net/projects/mumble/files/ .
+   Start the installation, and when you come to the installation selection, select at least the Murmur server. 
+   You can choose to install Mumble and Bonjour if you want, but it is not a requirement. 
+   Once you have it installed, it is recommended that you make a shortcut to it in order to easily start it. 
+   Go to C:\Program Files\Mumble (or wherever you installed Murmur to), right click on murmur.exe and click "Create Shortcut." 
+   Find the shortcut (it will be in the same folder as murmur.exe), right click it, and click "Rename." Type "Murmur" (without the quotes) and press enter. 
+   Now drag the Murmur icon onto your desktop.
+
+ - Linux
+   For nearly all Linux distributions, you can simply use the static binary. 
+   However, if your specific distribution supports Murmur (such as Ubuntu), you should look into using the specific packages for it.
+   
+ For more info please visit:
+   http://mumble.sourceforge.net/Murmurguide

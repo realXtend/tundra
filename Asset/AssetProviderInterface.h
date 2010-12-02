@@ -50,7 +50,7 @@ namespace Foundation
         //! Checks an asset id for validity
         /*! \return true if this asset provider can handle the id
          */
-        virtual bool IsValidId(const std::string& asset_id, const std::string& asset_type) = 0;
+        virtual bool IsValidRef(const std::string& asset_id, const std::string& asset_type) = 0;
 
         //! Requests an asset for download
         /*! Note: implementation should not queue multiple transfers if for some reason RequestAsset gets called
@@ -64,7 +64,7 @@ namespace Foundation
          */
         virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag) = 0;
 
-        virtual IAssetTransfer *RequestAsset(QString assetRef) { return 0; }
+        virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType) { return AssetTransferPtr(); }
 
         //! Returns whether a certain asset is already being downloaded
         /*! \param asset_id Asset ID
@@ -91,7 +91,7 @@ namespace Foundation
             \param received Minimum continuous bytes received from the start
             \return Pointer to asset
          */
-        virtual AssetPtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received) = 0;   
+        virtual AssetInterfacePtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received) = 0;   
 
         //! Returns information about current asset transfers
         virtual AssetTransferInfoVector GetTransferInfo() = 0;

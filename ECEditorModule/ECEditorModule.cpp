@@ -17,7 +17,6 @@
 #include "ModuleManager.h"
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
-//#include "UiProxyWidget.h"
 #include "Input.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
@@ -60,14 +59,14 @@ namespace ECEditor
             Console::Bind(this, &ECEditorModule::ShowWindow)));
 
         RegisterConsoleCommand(Console::CreateCommand("EditDynComp",
-            "Edit dynamic component's attributes."
+            "Command that will create/remove components from the dynamic component."
             "Params:"
             " 0 = entity id."
             " 1 = operation (add or rem)"
             " 2 = component type.(ec. EC_DynamicComponent)"
             " 3 = attribute name."
-            " 4 = attribute type. !Only rem dont use in rem operation."
-            " 5 = attribute value. !Only rem dont use in rem operation.",
+            " 4 = attribute type. (Add only)"
+            " 5 = attribute value. (Add only)",
             Console::Bind(this, &ECEditorModule::EditDynamicComponent)));
 
         RegisterConsoleCommand(Console::CreateCommand("ShowDocumentation",
@@ -82,7 +81,6 @@ namespace ECEditor
         AddEditorWindowToUI();
 
         inputContext = framework_->GetInput()->RegisterInputContext("ECEditorInput", 90);
-        //input->SetTakeKeyboardEventsOverQt(true);
         connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
     }
 
@@ -226,10 +224,10 @@ namespace ECEditor
                 ComponentPtr comp = ent->GetComponent(QString::fromStdString(params[2]));
                 EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 if(!dynComp)
-                    return Console::ResultFailure("Wrong component type name" + params[2]);
+                    return Console::ResultFailure("Invalid component type " + params[2]);
                 IAttribute *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
                 if(!attribute)
-                    return Console::ResultFailure("invalid attribute type" + params[4]);
+                    return Console::ResultFailure("Failed to create attribute type " + params[4]);
                 attribute->FromString(params[5], AttributeChange::Default);
                 //dynComp->ComponentChanged("Default");//AttributeChange::Local); 
             }
@@ -239,14 +237,14 @@ namespace ECEditor
             entity_id_t id = ParseString<entity_id_t>(params[0]);
             Scene::Entity *ent = sceneMgr->GetEntity(id).get();
             if(!ent)
-                return Console::ResultFailure("Cannot find entity by name of" + params[0]);
+                return Console::ResultFailure("Cannot find entity by name of " + params[0]);
 
             else if(params[1] == "rem")
             {
                 ComponentPtr comp = ent->GetComponent(QString::fromStdString(params[2]));
                 EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 if(!dynComp)
-                    return Console::ResultFailure("Wrong component type name" + params[2]);
+                    return Console::ResultFailure("Wrong component typename " + params[2]);
                 dynComp->RemoveAttribute(QString::fromStdString(params[3]));
                 dynComp->ComponentChanged(AttributeChange::Default);
             }

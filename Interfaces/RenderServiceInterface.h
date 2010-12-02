@@ -146,6 +146,9 @@ namespace Foundation
             \param type Resource type
          */
         virtual void RemoveResource(const std::string& id, const std::string& type) = 0;
+
+        virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
+
     };
 }
 

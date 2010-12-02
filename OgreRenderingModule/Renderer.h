@@ -184,7 +184,7 @@ namespace OgreRenderer
         //! Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.
         /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
-        std::string GetUniqueObjectName();
+        std::string GetUniqueObjectName(const std::string &prefix);
 
         //! Returns resource handler
         ResourceHandlerPtr GetResourceHandler() const { return resource_handler_; }

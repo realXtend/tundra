@@ -99,7 +99,7 @@ namespace RexLogic
             if (!renderer)
                 return 0;
             Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
-            prim_manual_object = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
+            prim_manual_object = sceneMgr->createManualObject(renderer->GetUniqueObjectName("Prim"));
             if (!prim_manual_object)
                 return 0;
         }

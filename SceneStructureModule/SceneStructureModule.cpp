@@ -107,7 +107,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         //std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(scene);
-        sceneDesc = importer.GetSceneDescription(filename);
+        sceneDesc = importer.GetSceneDescForScene(filename);
         ///\todo Take into account asset sources.
         /*
         ret = importer.Import(filename.toStdString(), dirname, "./data/assets",
@@ -124,7 +124,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(scene);
-        sceneDesc = importer.GetSceneDescription(filename);
+        sceneDesc = importer.GetSceneDescForMesh(filename);
 /*
         Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
@@ -136,13 +136,13 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     }
     else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
     {
-        //ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
-        sceneDesc = scene->GetSceneDescription(filename);
+//        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
+        sceneDesc = scene->GetSceneDescFromXml(filename);
     }
     else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
     {
-        ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
-//        sceneDesc = scene->GetSceneDescription(filename);
+//        ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
+        sceneDesc = scene->GetSceneDescFromBinary(filename);
     }
     else
     {
@@ -159,8 +159,8 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
             TundraLogic::SceneImporter sceneimporter(scene);
             for (size_t i=0 ; i<meshNames.size() ; ++i)
             {
-                Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, "./data/assets",
-                    meshNames[i].transform_, std::string(), AttributeChange::Default, true, false, meshNames[i].name_.toStdString());
+                Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
+                    std::string(), "local://", AttributeChange::Default, false, meshNames[i].name_.toStdString());
                 if (entity)
                     ret.append(entity.get());
             }
@@ -170,12 +170,15 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
 #endif
     }
 
-    AddContentWindow *addContent = new AddContentWindow(scene);
-    addContent->AddDescription(sceneDesc);
-    if (worldPos != Vector3df())
-        addContent->AddPosition(worldPos);
-    addContent->move((framework_->Ui()->MainWindow()->pos()) + QPoint(400, 200));
-    addContent->show();
+    if (!sceneDesc.IsEmpty())
+    {
+        AddContentWindow *addContent = new AddContentWindow(framework_, scene);
+        addContent->AddDescription(sceneDesc);
+        if (worldPos != Vector3df())
+            addContent->AddPosition(worldPos);
+        addContent->move((framework_->Ui()->MainWindow()->pos()) + QPoint(400, 200));
+        addContent->show();
+    }
 
     return ret;
 }
@@ -282,7 +285,7 @@ void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
 {
     // If at least one file is supported, accept.
     if (e->mimeData()->hasUrls())
-        foreach (QUrl url, e->mimeData()->urls())
+        foreach(QUrl url, e->mimeData()->urls())
             if (IsSupportedFileType(url.path()))
                 e->accept();
 }
@@ -291,7 +294,7 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
 {
     // If at least one file is supported, accept.
     if (e->mimeData()->hasUrls())
-        foreach (QUrl url, e->mimeData()->urls())
+        foreach(QUrl url, e->mimeData()->urls())
             if (IsSupportedFileType(url.path()))
                 e->accept();
 }

@@ -35,14 +35,14 @@ const std::string& OgreAssetProvider::Name()
     return name;
 }
 
-bool OgreAssetProvider::IsValidId(const std::string& asset_id, const std::string& asset_type)
+bool OgreAssetProvider::IsValidRef(const std::string& asset_id, const std::string& asset_type)
 {
     return (asset_id.find("mesh://") == 0);
 }
 
 bool OgreAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
 {
-    if (!IsValidId(asset_id, asset_type))
+    if (!IsValidRef(asset_id, asset_type))
         return false;
     
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
@@ -55,7 +55,7 @@ bool OgreAssetProvider::RequestAsset(const std::string& asset_id, const std::str
     
  
     Asset::RexAsset* new_asset = new Asset::RexAsset(asset_id, asset_type);
-    Foundation::AssetPtr asset_ptr(new_asset);
+    Foundation::AssetInterfacePtr asset_ptr(new_asset);
             
     // Store to memory cache only
     asset_service->StoreAsset(asset_ptr, false);
@@ -72,10 +72,10 @@ bool OgreAssetProvider::InProgress(const std::string& asset_id)
     return false;
 }
 
-Foundation::AssetPtr OgreAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
+Foundation::AssetInterfacePtr OgreAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
 {
     // Not supported
-    return Foundation::AssetPtr();
+    return Foundation::AssetInterfacePtr();
 }
 
 bool OgreAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)

@@ -17,6 +17,9 @@
 class QTreeWidget;
 class QPushButton;
 class QComboBox;
+class QTreeWidgetItem;
+
+class IAssetUploadTransfer;
 
 /// Window for adding new content and assets.
 /** The window is modal and is deleted when it's closed.
@@ -27,10 +30,11 @@ class AddContentWindow : public QWidget
 
 public:
     /// Constructs the window.
-    /** @param dest Destination scene.
+    /** @param fw Framework.
+        @param dest Destination scene.
         @param parent Parent widget.
     */
-    explicit AddContentWindow(const Scene::ScenePtr &dest, QWidget *parent = 0);
+    explicit AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent = 0);
 
     ///
     ~AddContentWindow();
@@ -49,6 +53,7 @@ private:
     Q_DISABLE_COPY(AddContentWindow)
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
+    Foundation::Framework *framework; ///< Framework.
     Scene::SceneWeakPtr scene; ///< Destination scene.
     SceneDesc sceneDesc; ///< Current scene description shown on the window.
     QPushButton *addContentButton; ///< Add content button.
@@ -74,6 +79,25 @@ private slots:
 
     /// Closes the window.
     void Close();
+
+    /// Checks if tree widget column is editable.
+    /** @param item Item which was double-clicked.
+        @param column Column index.
+    */
+    void CheckIfColumnIsEditable(QTreeWidgetItem *item, int column);
+
+    /// Rewrites the destination names of all assets in the UI accordingly to the selected asset storage.
+    void RewriteDestinationNames();
+
+    /// Handles completed upload asset transfer.
+    /** @param transfer Completed transfer.
+    */
+    void HandleUploadCompleted(IAssetUploadTransfer *transfer);
+
+    /// Handles failed upload asset transfer.
+    /** @param transfer Failed transfer.
+    */
+    void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
 };
 
 #endif

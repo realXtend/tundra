@@ -1192,8 +1192,6 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     for (uint i = 0; i < msg.parameters.size(); ++i)
         params << BufferToString(msg.parameters[i].parameter).c_str();
 
-    TundraLogicModule::LogDebug(std::string("EntityAction ") + ToString<int>(entityId));
-
     EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
 
     if ((type & EntityAction::Local) != 0 || (isServer && (type & EntityAction::Server) != 0))

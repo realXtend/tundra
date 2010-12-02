@@ -44,7 +44,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>15</number>
         </property>
         <widget class="QWidget" name="timing">
          <attribute name="title">
@@ -2293,6 +2293,22 @@
             <column>
              <property name="text">
               <string>State count</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>OgreScene</string>
+         </attribute>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QTreeWidget" name="sceneDataTree">
+            <column>
+             <property name="text">
+              <string notr="true">1</string>
              </property>
             </column>
            </widget>

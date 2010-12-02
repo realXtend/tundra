@@ -117,7 +117,7 @@ public:
     const char* GetName() const { return name_.c_str(); }
 
     //! Returns attributes name as string.
-    std::string GetNameString() const { return std::string(name_); }
+    std::string GetNameString() const { return name_; }
 
     //! Write attribute to string for XML serialization
     virtual std::string ToString() const = 0;

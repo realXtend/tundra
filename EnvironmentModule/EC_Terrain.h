@@ -280,6 +280,8 @@ public slots:
     /// Loads the terrain height map data from the given in-memory .ntf file buffer.
     bool LoadFromDataInMemory(const char *data, size_t numBytes);
 
+    void NormalizeImage(QString filename) const;
+
     /// Loads the terrain from the given image file. Adjusts the xPatches and yPatches properties to that of the image file, 
     /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this  
     /// function will get the terrain contents desynchronized between the local system and network. The file is loaded using Ogre, so

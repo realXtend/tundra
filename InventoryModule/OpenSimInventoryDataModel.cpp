@@ -247,7 +247,7 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
     request_tag_t tag = 0;
 
     // Check out if the asset already exists in the cache.
-    Foundation::AssetPtr assetPtr = asset_service->GetAsset(asset_id, GetTypeNameFromAssetType(asset_type));
+    Foundation::AssetInterfacePtr assetPtr = asset_service->GetAsset(asset_id, GetTypeNameFromAssetType(asset_type));
     if(assetPtr.get() && assetPtr->GetSize() > 0)
     {
         // Send InventoryItemDownloadedEventData event.
@@ -487,7 +487,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(IEventData *data)
 
     emit DownloadCompleted(assetReady->asset_id_.c_str());
 
-    Foundation::AssetPtr asset = assetReady->asset_;
+    Foundation::AssetInterfacePtr asset = assetReady->asset_;
     if (asset_type == RexAT_Texture)
     {
         Ogre::Image image;

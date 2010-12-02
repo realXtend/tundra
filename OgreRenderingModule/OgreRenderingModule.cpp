@@ -26,6 +26,8 @@
 #include "RendererSettings.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
+#include "AssetAPI.h"
+#include "TextureAssetFactory.h"
 
 namespace OgreRenderer
 {
@@ -59,6 +61,9 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreCamera);
         DECLARE_MODULE_EC(EC_OgreCompositor);
         DECLARE_MODULE_EC(EC_RttTarget);
+
+        /// Create an asset type factory for Texture assets.
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new TextureAssetFactory()));
     }
 
     // virtual
@@ -169,6 +174,10 @@ namespace OgreRenderer
     // virtual 
     void OgreRenderingModule::Uninitialize()
     {
+        // We're shutting down. Force a release of all loaded asset objects from the Asset API so that 
+        // no refs to Ogre assets remain - below 'renderer_.reset()' is going to delete Ogre::Root.
+        framework_->Asset()->ForgetAllAssets();
+
         framework_->GetServiceManager()->UnregisterService(renderer_);
 
         // Explicitly remove log listener now, because the service has been

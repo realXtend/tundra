@@ -43,7 +43,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
                 return;
 
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
-            meshEntity_ = scene_mgr->createEntity(renderer_.lock()->GetUniqueObjectName(), customMeshName);
+            meshEntity_ = scene_mgr->createEntity(renderer_.lock()->GetUniqueObjectName("EntityPlacer"), customMeshName);
             meshEntity_->getSubEntity(0)->setMaterialName("Clone");
             meshEntity_->setCastShadows(false);
             placeable_->GetSceneNode()->attachObject(meshEntity_);

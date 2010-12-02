@@ -127,7 +127,7 @@ namespace Environment
         OgreRenderer::RendererPtr renderer = renderer_.lock();
     
         Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
-        sunLight_ = sceneManager->createLight(renderer->GetUniqueObjectName());
+        sunLight_ = sceneManager->createLight(renderer->GetUniqueObjectName("EC_Environment_ogresunlight"));
         
         sunLight_->setType(Ogre::Light::LT_DIRECTIONAL);
         
