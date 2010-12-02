@@ -218,11 +218,15 @@ namespace ECEditor
         }
     }
 
-    void ECEditorWindow::ActionTriggered(Scene::Entity *entity, const QString &action)
+    void ECEditorWindow::ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params)
     {
-        if(has_focus_ && action == "MousePress" && isVisible())
+        if (params.size() && action == "MousePress")
         {
-            AddEntity(entity->GetId());
+            MouseEvent::MouseButton mouse_event = static_cast<MouseEvent::MouseButton>(params[0].toUInt());
+            if (has_focus_ && isVisible() && mouse_event == MouseEvent::LeftButton)
+            {
+                AddEntity(entity->GetId());
+            }
         }
     }
 
@@ -630,35 +634,14 @@ namespace ECEditor
 
     void ECEditorWindow::SetFocus(bool focus)
     {
-        // Ensure that only this editor have the focus and other editors don't.
-        if(focus)
-        {
-            QGraphicsProxyWidget *widget =  graphicsProxyWidget();
-            if(widget)
-            {
-                QGraphicsScene *scene = widget->scene();
-                if(scene)
-                {
-                    QList<QGraphicsItem *> items = scene->items();
-                    foreach(QGraphicsItem *item, items)
-                    {
-                        QGraphicsProxyWidget *proxyWidget = dynamic_cast<QGraphicsProxyWidget *>(item);
-                        ECEditorWindow *ec_editor_widget = 0;
-                        if(proxyWidget && (ec_editor_widget = dynamic_cast<ECEditorWindow*>(proxyWidget->widget())))
-                            if(ec_editor_widget != this)
-                                ec_editor_widget->SetFocus(false);
-                    }
-                }
-            }
-        }
-
         has_focus_ = focus;
     }
 
-    void ECEditorWindow::FocusChanged(QFocusEvent *e)
+    void ECEditorWindow::setVisible(bool visible)
     {
-        if (e->type() == QEvent::FocusIn)
-            SetFocus(true);
+        QWidget::setVisible(visible);
+        if (visible)
+            emit OnFocusChanged(this);
     }
 
     void ECEditorWindow::hideEvent(QHideEvent* hide_event)
@@ -667,7 +650,7 @@ namespace ECEditor
         if(browser_)
             browser_->clear();
         QWidget::hideEvent(hide_event);
-    }
+    } 
 
     void ECEditorWindow::changeEvent(QEvent *e)
     {
@@ -675,6 +658,14 @@ namespace ECEditor
             setWindowTitle(QApplication::translate("ECEditor", "Entity-component Editor"));
         else
            QWidget::changeEvent(e);
+    }
+
+    bool ECEditorWindow::eventFilter(QObject *obj, QEvent *event)
+    {
+        QEvent::Type type = event->type();
+        if (type == QEvent::WindowActivate)
+            emit OnFocusChanged(this);
+        return QWidget::eventFilter(obj, event);
     }
 
     void ECEditorWindow::BoldEntityListItems(const QSet<entity_id_t> &bolded_entities)
@@ -715,6 +706,7 @@ namespace ECEditor
             LogError("Could not load editor layout");
             return;
         }
+        contents->installEventFilter(this);
         file.close();
 
         QVBoxLayout *layout = new QVBoxLayout(this);
@@ -761,6 +753,19 @@ namespace ECEditor
 
         // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
         connect(framework_, SIGNAL(DefaultWorldSceneChanged(const Scene::ScenePtr &)), SLOT(DefaultSceneChanged(const Scene::ScenePtr &)));
+
+        ECEditorModule *module = framework_->GetModule<ECEditorModule>();
+        if (module)
+            connect(this, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
+
+        Scene::SceneManager *scene = framework_->DefaultScene();
+        if (scene)
+        {
+            connect(scene, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
+                SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
+            connect(scene, SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
+                    SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
+        }
     }
 
     void ECEditorWindow::DefaultSceneChanged(const Scene::ScenePtr &scene)
@@ -770,7 +775,7 @@ namespace ECEditor
         connect(scene.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
                 SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
         connect(scene.get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
-                SLOT(ActionTriggered(Scene::Entity *, const QString &)), Qt::UniqueConnection);
+                SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 
     void ECEditorWindow::ComponentDialogFinished(int result)
