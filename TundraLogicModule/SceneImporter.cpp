@@ -460,14 +460,14 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
 
     AssetDesc meshAssetDesc;
     meshAssetDesc.typeName = "mesh";
-    meshAssetDesc.filename = filename;
+    meshAssetDesc.source = filename;
     meshAssetDesc.destinationName = meshleafname;
     sceneDesc.assets << meshAssetDesc;
 
     if (!skeleton_name.isEmpty())
     {
         AssetDesc skeletonAssetDesc;
-        skeletonAssetDesc.filename = QString(path.branch_path().string().c_str()) + "/" + skeleton_name;
+        skeletonAssetDesc.source = QString(path.branch_path().string().c_str()) + "/" + skeleton_name;
         skeletonAssetDesc.typeName = "skeleton";
         skeletonAssetDesc.destinationName = skeleton_name;
         sceneDesc.assets << skeletonAssetDesc;
@@ -515,7 +515,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
 
         AssetDesc matDesc;
         matDesc.typeName = "material";
-        matDesc.filename = !sourceMatFile.isEmpty() ? sourceMatFile : matName;
+        matDesc.source = !sourceMatFile.isEmpty() ? sourceMatFile : matName;
         matDesc.subname = matName;
         matDesc.destinationName = matName + ".material";
         matDesc.data = matScript.toAscii();
@@ -536,7 +536,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     {
         AssetDesc textureAssetDesc;
         textureAssetDesc.typeName = "texture";
-        textureAssetDesc.filename = QString(path.branch_path().string().c_str()) + "/" + tex;
+        textureAssetDesc.source = QString(path.branch_path().string().c_str()) + "/" + tex;
         textureAssetDesc.destinationName = tex;
         sceneDesc.assets << textureAssetDesc;
     }
@@ -677,7 +677,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 
             // Mesh asset desc
             AssetDesc meshAssetDesc;
-            meshAssetDesc.filename = QString(path.branch_path().string().c_str()) + "/" + mesh_name;
+            meshAssetDesc.source = QString(path.branch_path().string().c_str()) + "/" + mesh_name;
             meshAssetDesc.typeName = "mesh";
             meshAssetDesc.destinationName = mesh_name;
             sceneDesc.assets.append(meshAssetDesc);
@@ -717,7 +717,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 
                     AssetDesc matDesc;
                     matDesc.typeName = "material";
-                    matDesc.filename = !materialFileName.isEmpty() ? materialFileName : material_name;
+                    matDesc.source = !materialFileName.isEmpty() ? materialFileName : material_name;
                     matDesc.subname = material_name;
                     matDesc.destinationName = material_name + ".material";
                     matDesc.data = LoadSingleMaterialFromFile(materialFileName, material_name).toAscii();
@@ -744,7 +744,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 if (!skeleton_name.isEmpty())
                 {
                     AssetDesc skeletonAssetDesc;
-                    skeletonAssetDesc.filename = QString(path.branch_path().string().c_str()) + "/" + skeleton_name;
+                    skeletonAssetDesc.source = QString(path.branch_path().string().c_str()) + "/" + skeleton_name;
                     skeletonAssetDesc.typeName = "skeleton";
                     skeletonAssetDesc.destinationName = skeleton_name;
                     sceneDesc.assets << skeletonAssetDesc;
@@ -754,7 +754,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 {
                     AssetDesc matDesc;
                     matDesc.typeName = "material";
-                    matDesc.filename = !materialFileName.isEmpty() ? materialFileName : material_name;
+                    matDesc.source = !materialFileName.isEmpty() ? materialFileName : material_name;
                     matDesc.subname = material_name;
                     matDesc.destinationName = material_name + ".material";
                     matDesc.data = LoadSingleMaterialFromFile(materialFileName, material_name).toAscii();
@@ -785,7 +785,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     {
         AssetDesc textureAssetDesc;
         textureAssetDesc.typeName = "texture";
-        textureAssetDesc.filename = QString(path.branch_path().string().c_str()) + "/" + tex;
+        textureAssetDesc.source = QString(path.branch_path().string().c_str()) + "/" + tex;
         textureAssetDesc.destinationName = tex;
         sceneDesc.assets << textureAssetDesc;
     }

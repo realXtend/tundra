@@ -14,7 +14,8 @@
 #include "Framework.h"
 #include "ComponentManager.h"
 #include "EventManager.h"
-#include "ForwardDefines.h"
+#include "AssetAPI.h"
+#include "Profiler.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
@@ -28,7 +29,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
-#include "Profiler.h"
 
 using namespace kNet;
 
@@ -834,30 +834,34 @@ namespace Scene
                         comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                         foreach(IAttribute *a,comp->GetAttributes())
                         {
-                            AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                            QString typeName(a->TypenameToString().c_str());
+                            AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
                             compDesc.attributes.append(attrDesc);
 
-                            if (attrDesc.typeName == "assetreference" && !a->ToString().empty())
+                            if ((typeName == "assetreference" || (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference"))
+                                && !a->ToString().empty())
                             {
-                                QString value = a->ToString().c_str();
-                                AssetDesc ad;
-                                ad.typeName = a->GetNameString().c_str();
-                                ad.filename = value;
-                                /*
-                                if (value.contains("://") || QDir::isAbsolutePath(value))
-                                    ad.filename = value;
-                                else
+                                // We might have multiple references, ";" used as a separator.
+                                QStringList values = QString(a->ToString().c_str()).split(";");
+                                foreach(QString value, values)
                                 {
-                                    QDir dir(filename);
-                                    ad.filename = dir.absolutePath() + value;
+                                    AssetDesc ad;
+                                    ad.typeName = a->GetNameString().c_str();
+                                    ad.source = value;
+
+                                    // Rewrite source refs for asset descs, if necessary.
+                                    QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+                                    QString outFilePath;
+                                    AssetAPI::FileQueryResult res = framework_->Asset()->QueryFileLocation(ad.source, basePath, outFilePath);
+                                    if (res == AssetAPI::FileQueryLocalFileFound)
+                                        ad.source = outFilePath;
+
+                                    QString filepath = QDir::fromNativeSeparators(value);
+                                    int idx = filepath.lastIndexOf("/");
+                                    ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
+
+                                    sceneDesc.assets << ad;
                                 }
-                                */
-
-                                QString filepath = QDir::fromNativeSeparators(value);
-                                int idx = filepath.lastIndexOf("/");
-                                ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
-
-                                sceneDesc.assets << ad;
                             }
                         }
 
@@ -980,7 +984,7 @@ namespace Scene
                                         QString value = a->ToString().c_str();
                                         AssetDesc ad;
                                         ad.typeName = a->GetNameString().c_str();
-                                        ad.filename = value;
+                                        ad.source = value;
                                         /*
                                         if (value.contains("://") || QDir::isAbsolutePath(value))
                                             ad.filename = value;
