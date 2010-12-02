@@ -79,6 +79,9 @@ namespace Foundation
         */
         void ParseProgramOptions();
 
+        //! Returns the command line options specified as command-line options when starting up Naali.
+        const boost::program_options::variables_map &ProgramOptions() const { return commandLineVariables; }
+
         //! Do post-initialization steps. No need to call if using Framework::Go().
         /*! This function can be used if you wish to use the framework without main loop.
             It does
@@ -368,15 +371,11 @@ namespace Foundation
         //! profiler
         Profiler profiler_;
 #endif
-        //! program options
-        boost::program_options::variables_map cm_options_;
+        /// program options
+        boost::program_options::variables_map commandLineVariables;
 
-        //! program option descriptions
-        boost::program_options::options_description cm_descriptions_;
-
-        //! command line arguments as supplied by the operating system
-        int argc_;
-        char **argv_;
+        /// program option descriptions
+        boost::program_options::options_description commandLineDescriptions;
 
         //! Frame timer.
         boost::timer timer;
@@ -408,33 +407,17 @@ namespace Foundation
         /// This object represents the Naali core Asset API.
         AssetAPI *asset;
 
+        /// Command line arguments as supplied by the operating system.
+        int argc_;
+        char **argv_;
     };
 
     ///\todo Refactor-remove these. -jj.
     namespace
     {
-        const event_id_t PROGRAM_OPTIONS = 1;
         const event_id_t NETWORKING_REGISTERED = 2;
         const event_id_t WORLD_STREAM_READY = 3;
     }
-
-    //! Contains pre-parsed program options and non-parsed command line arguments.
-    /*! Options contains program options pre-parsed by framework. If modules wish
-        to use their own command line arguments, the arguments are also supplied.
-        ///\todo Refactor-remove these. -jj.
-    */
-    class ProgramOptionsEvent : public IEventData
-    {
-        ProgramOptionsEvent();
-    public:
-        ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av) :
-            options(vars), argc(ac), argv(av) { }
-        //! parsed program options
-        const boost::program_options::variables_map &options;
-        //! command line arguments as supplied by the operating system
-        int argc;
-        char **argv;
-    };
 }
 
 #endif

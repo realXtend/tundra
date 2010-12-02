@@ -157,13 +157,15 @@ namespace ECEditor
         /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
         void EntityRemoved(Scene::Entity* entity);
 
-        /// Set editor focus boolean value. Only one ECEditorWindow can have focus and if focus
-        /// is setted to true, this method will iterate all other ECEditorWindow intances and set their focus to false.
+		/// Set focus to this editor window. When window have
+		/// focus it should accept entity select actions and add clicked entities from the scene.
         void SetFocus(bool focus);
+
+        void setVisible(bool visible);
 
         /// Listens when editor's proxy widget gets the focus. If event type was focusInEvent
         /// then method will call SetFocus method.
-        void FocusChanged(QFocusEvent *e);
+        //void FocusChanged(QFocusEvent *e);
 
     signals:
         /// Emitted user wants to edit entity's EC attributes in XML editor.
@@ -180,6 +182,9 @@ namespace ECEditor
         /// @param list of components
         void EditComponentXml(const QList<ComponentPtr> & components);
 
+        /// Signal is emmitted when this window has gained a focus.
+        void OnFocusChanged(ECEditorWindow *editor);
+
     protected:
         /// QWidget override.
         void hideEvent(QHideEvent *hide_event);
@@ -187,10 +192,12 @@ namespace ECEditor
         /// QWidget override.
         void changeEvent(QEvent *change_event);
 
+        bool eventFilter(QObject *obj, QEvent *event);
+
     private slots:
         /// Listens SceneManager's ActionTriggered signal and if action was "MousePress"
         /// add entity to editor window (assuming that editor has a focus).
-        void ActionTriggered(Scene::Entity *entity, const QString &action);
+        void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params);
 
         /// Deletes entity.
         void DeleteEntity();
