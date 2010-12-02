@@ -153,6 +153,20 @@ namespace PythonScript
             SAFE_DELETE(proxy);
     }
 
+    void PythonScriptModule::ProcessCommandLineOptions()
+    {
+        assert(engine_);
+        if (!engine_)
+            return; // Need to have the Python engine initialized to be able to process the command line!
+
+        const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
+
+        if (programOptions.count("python"))
+            engine_->RunScript(programOptions["python"].as<std::string>().c_str());
+        if (programOptions.count("p"))
+            engine_->RunScript(programOptions["p"].as<std::string>().c_str());
+    }
+
     void PythonScriptModule::PostInitialize()
     {
         em_ = framework_->GetEventManager();
@@ -244,6 +258,8 @@ namespace PythonScript
         RegisterConsoleCommand(Console::CreateCommand(
             "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
             Console::Bind(this, &PythonScriptModule::ConsoleReset)));
+
+        ProcessCommandLineOptions();
     }
 
     bool PythonScriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)

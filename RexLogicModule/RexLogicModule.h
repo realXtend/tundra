@@ -69,7 +69,6 @@ namespace RexLogic
     class InputEventHandler;
     class SceneEventHandler;
     class NetworkStateEventHandler;
-    class FrameworkEventHandler;
     class AvatarEventHandler;
     class Primitive;
     class CameraControllable;
@@ -287,9 +286,6 @@ namespace RexLogic
 
         //! Event handler for scene events.
         SceneEventHandler *scene_handler_;
-
-        //! event handler for framework events
-        FrameworkEventHandler *framework_handler_;
 
         //! event handler for avatar events
         AvatarEventHandler *avatar_event_handler_;
