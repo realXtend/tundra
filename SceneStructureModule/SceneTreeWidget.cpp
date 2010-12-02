@@ -338,6 +338,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         }
     }
 
+    
     // "Save scene as..." action is possible if we have at least one entity in the scene.
     bool saveSceneAsPossible = (topLevelItemCount() > 0);
     QAction *saveSceneAsAction = 0;
@@ -347,7 +348,7 @@ void SceneTreeWidget::AddAvailableEntityActions(QMenu *menu)
         saveSceneAsAction = new QAction(tr("Save scene as..."), menu);
         connect(saveSceneAsAction, SIGNAL(triggered()), SLOT(SaveSceneAs()));
 
-        exportAllAction = new QAction(tr("Export all..."), menu);
+        exportAllAction = new QAction(tr("Export..."), menu);
         connect(exportAllAction, SIGNAL(triggered()), SLOT(ExportAll()));
     }
 
@@ -981,9 +982,21 @@ void SceneTreeWidget::ExportAll()
 {
     if (fileDialog)
         fileDialog->close();
-    fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
-        tr("Export all"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 
+    if (GetSelection().HasEntities())
+    {
+        // Save only selected entities
+        fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+            tr("Export scene"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
+    }
+    else
+    {
+        // Save all entities in the scene
+        fileDialog = QtUtils::SaveFileDialogNonModal(cTundraXmlFileFilter + ";;" + cTundraBinaryFileFilter,
+            tr("Export scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
+    }
+
+    // Finally export assets
     connect(fileDialog, SIGNAL(finished(int)), this, SLOT(ExportAllDialogClosed(int)));
 }
 
@@ -1318,41 +1331,32 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
 
 
     QSet<QString> assets;
-    for (int i = 0; i < topLevelItemCount(); ++i)
+    Selection sel = GetSelection();
+    if (!sel.HasEntities())
     {
-        EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(i));
-        if (!eItem)
-            continue;
-
-        Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
-        if (!entity)
-            continue;
-
-        int entityChildCount = eItem->childCount();
-        for(int j = 0; j < entityChildCount; ++j)
+        // Export all assets
+        for (int i = 0; i < topLevelItemCount(); ++i)
         {
-            ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
-            if (!cItem)
+            EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(i));
+            if (!eItem)
                 continue;
 
-            ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
-            if (!comp)
-                continue;
-
-            foreach(ComponentPtr comp, entity->GetComponentVector())
-                foreach(IAttribute *attr, comp->GetAttributes())
-                    if (attr->TypenameToString() == "assetreference")
-                    {
-                        Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-                        if (assetRef)
-                            assets.insert(assetRef->Get().ref);
-                    }
+            assets.unite(GetAssetRefs(eItem));
         }
     }
+    else
+    {
+        // Export assets for selected entities
+        foreach (EntityItem *eItem, sel.entities)
+        {
+            assets.unite(GetAssetRefs(eItem));
+        }
+    }
+
     saved_assets_.clear();
     fetch_references_ = true;
     //! \todo This is in theory a better way to get all assets in a sceene, but not all assets are currently available with this method
-    //!       Once all assets are properly shown in this widget, it would be better to do it this way
+    //!       Once all assets are properly shown in this widget, it would be better to do it this way -cm
     /*QTreeWidgetItemIterator it(this);
     while (*it)
     {
@@ -1376,6 +1380,38 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         filesaves_.insert(transfer, filename);
         connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
     }
+}
+
+QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
+{
+    assert(scene.lock());
+    QSet<QString> assets;
+
+    Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
+    if (entity)
+    {
+        int entityChildCount = eItem->childCount();
+        for(int j = 0; j < entityChildCount; ++j)
+        {
+            ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
+            if (!cItem)
+                continue;
+
+            ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
+            if (!comp)
+                continue;
+
+            foreach(ComponentPtr comp, entity->GetComponentVector())
+                foreach(IAttribute *attr, comp->GetAttributes())
+                    if (attr->TypenameToString() == "assetreference")
+                    {
+                        Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
+                        if (assetRef)
+                            assets.insert(assetRef->Get().ref);
+                    }
+        }
+    }
+    return assets;
 }
 
 void SceneTreeWidget::OpenFileDialogClosed(int result)
