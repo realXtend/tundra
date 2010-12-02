@@ -74,11 +74,7 @@ public:
     */
     explicit AssetWidgetItem(const AssetDesc &adesc) : desc(adesc)
     {
-        setCheckState(cColumnAssetUpload, Qt::Checked);
-        setText(cColumnAssetTypeName, desc.typeName);
-        setText(cColumnAssetSourceName, desc.filename);
-        setText(cColumnAssetSubname, desc.subname);
-        setText(cColumnAssetDestName, desc.destinationName);
+        RewriteText();
     }
 
     /// QTreeWidgetItem override. Peforms case-insensitive comparison.
@@ -89,6 +85,16 @@ public:
             return checkState(column) < rhs.checkState(column);
         else
             return text(column).toLower() < rhs.text(column).toLower();
+    }
+
+    /// Rewrites the items visible text accordingly to the asset description the item owns.
+    void RewriteText()
+    {
+        setCheckState(cColumnAssetUpload, Qt::Checked);
+        setText(cColumnAssetTypeName, desc.typeName);
+        setText(cColumnAssetSourceName, desc.source);
+        setText(cColumnAssetSubname, desc.subname);
+        setText(cColumnAssetDestName, desc.destinationName);
     }
 
     AssetDesc desc; ///< Asset description of the item.
@@ -264,13 +270,24 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
 
-        // If asset reference file not found, mark the item red and disable it.
-        // If it's external reference, mark the item gray and disable it.
-        QString basePath(boost::filesystem::path(a.filename.toStdString()).branch_path().string().c_str());
+        QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
         QString outFilePath;
-        AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.filename, basePath, outFilePath);
+        AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.source, basePath, outFilePath);
+        /*if (res == AssetAPI::FileQueryLocalFileFound)
+        {
+            // If file is found locally rewrite the source for asset desc.
+            QList<AssetDesc>::iterator ai = qFind(sceneDesc.assets.begin(), sceneDesc.assets.end(), aItem->desc);
+            if (ai != sceneDesc.assets.end())
+            {
+                aItem->desc.source = outFilePath;
+                aItem->RewriteText();
+                (*ai).source = outFilePath;
+            }
+        }
+        */
         if ((a.typeName == "material" && a.data.isEmpty()) || res == AssetAPI::FileQueryLocalFileMissing)
         {
+            // File not found, mark the item red and disable it.
             aItem->setBackgroundColor(cColumnAssetSourceName, Qt::red);
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
@@ -278,17 +295,12 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
         }
         else if (res == AssetAPI::FileQueryExternalFile)
         {
+            // External reference, mark the item gray and disable it.
             aItem->setBackgroundColor(cColumnAssetSourceName, Qt::gray);
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);
         }
-
-        /*
-        QList<AssetDesc>::const_iterator ai = qFind(sceneDesc.assets, aitem->desc);
-        if (ai != newDesc.assets.end())
-            sceneDesc.assets.removeOne(*ai);
-        */
     }
 
     RewriteDestinationNames();
@@ -357,7 +369,7 @@ void AddContentWindow::AddContent()
     while(*eit)
     {
         EntityWidgetItem *eitem = dynamic_cast<EntityWidgetItem *>(*eit);
-        if (eitem && eitem->checkState(0) == Qt::Unchecked)
+        if (eitem && eitem->checkState(cColumnEntityCreate) == Qt::Unchecked)
         {
             QList<EntityDesc>::const_iterator ei = qFind(newDesc.entities, eitem->desc);
             if (ei != newDesc.entities.end())
@@ -387,8 +399,8 @@ void AddContentWindow::AddContent()
                 ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
                 if (aitem->desc.typeName == "texture")
                 {
-                    int idx = aitem->desc.filename.lastIndexOf("/");
-                    refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
+                    int idx = aitem->desc.source.lastIndexOf("/");
+                    refs[aitem->desc.source.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
                 }
             }
         }
@@ -420,13 +432,13 @@ void AddContentWindow::AddContent()
         {
             IAssetUploadTransfer *transfer = 0;
 
-            if (!ad.filename.isEmpty() && ad.data.isEmpty())
+            if (!ad.source.isEmpty() && ad.data.isEmpty())
             {
 //                LogDebug("Starting upload of ."+ ad.filename.toStdString());
-                transfer = framework->Asset()->UploadAssetFromFile(ad.filename.toStdString().c_str(),
+                transfer = framework->Asset()->UploadAssetFromFile(ad.source.toStdString().c_str(),
                     dest, ad.destinationName.toStdString().c_str());
             }
-            else if (/*ad.filename.isEmpty() && */!ad.data.isEmpty())
+            else if (ad.typeName.contains("material", Qt::CaseInsensitive) && !ad.data.isEmpty())
             {
 //                LogDebug("Starting upload of ."+ ad.destinationName.toStdString());
                 transfer = framework->Asset()->UploadAssetFromFileInMemory((const u8*)QString(ad.data).toStdString().c_str(),
