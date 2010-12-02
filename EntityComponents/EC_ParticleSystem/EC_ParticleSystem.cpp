@@ -23,16 +23,14 @@ using namespace OgreRenderer;
 
 EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     IComponent(module->GetFramework()),
-    particleRef(this, "Particle ref"),
+    particleRef(this, "Particle ref" ),
     castShadows(this, "Cast shadows", false),
     renderingDistance(this, "Rendering distance", 0.0f),
     particleSystem_(0)
 {
     renderer_ = GetFramework()->GetServiceManager()->GetService<Renderer>();
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
-    connect(this, SIGNAL(ParentEntitySet()),
-            SLOT(EntitySetted()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_ParticleSystem::~EC_ParticleSystem()
@@ -126,16 +124,18 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 
         // Request the new particle system resource. Once it has loaded, ParticleSystemAssetLoaded() will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
-        connect(transfer.get(), SIGNAL(Loaded()), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
+        if ( transfer.get() != 0)
+        {
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
+        }
+        else
+        {
+            DeleteParticleSystem();
+        }
+        
     }
-    Scene::Entity *entity = qobject_cast<Scene::Entity*>(this->GetParentEntity());
-    if (!entity)
-    {
-        LogError("Failed to connect entity signals, component's parent entity is null");
-        return;
-    }
-    disconnect(this, SLOT(DeleteParticleSystem()));
-    connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(DeleteParticleSystem()));
+    
+   
 }
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const
@@ -172,6 +172,7 @@ void EC_ParticleSystem::EntitySet()
         LogError("Failed to connect entity signals, component's parent entity is null");
         return;
     }
-    disconnect(this, SLOT(DeleteParticleSystem()));
-    connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(DeleteParticleSystem()));
+    
+    QObject::disconnect(this, SLOT(DeleteParticleSystem()));
+    QObject::connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(DeleteParticleSystem()));
 }

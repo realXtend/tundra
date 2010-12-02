@@ -166,6 +166,7 @@ macro (configure_ogre)
         # Ogre built from sources
         include_directories($ENV{OGRE_HOME}/include) 
         include_directories($ENV{OGRE_HOME}/include/RenderSystems/Direct3D9/include)
+        include_directories($ENV{OGRE_HOME}/RenderSystems/Direct3D9/include)
         # Ogre official sdk
         include_directories($ENV{OGRE_HOME}/include/OGRE) 
         include_directories($ENV{OGRE_HOME}/include/OGRE/RenderSystems/Direct3D9)
