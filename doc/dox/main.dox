@@ -22,7 +22,7 @@ Follow these first steps.
 <ul>
 <li><a href="http://wiki.realxtend.org/index.php/Getting_Started_with_Naali">Getting started with Naali</a>.
 <li><a href="http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk">Building the sources</a>.
-<li>\ref ModuleConfig "Configuring which modules to build and load." 
+<li>\ref RunningNaali "Configuring and Running Naali."
 </ul>
 </td>
 </tr>
@@ -71,7 +71,7 @@ The Naali SDK consists of the following set of core APIs that are accessible fro
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Module</h3>
 The \ref ModuleArchitecture "Module" API gives access to all the modules registered in the system. For working with modules, see the following topics:
-- \ref communication_sec "Accessing modules in your code.""
+- \ref communication_sec "Accessing modules in your code."
 - \ref creating_sec "Creating a new module using C++."
 - \ref module_python "Creating a new module using Python."
 - \ref module_cmake "Setting up cmake files and PCHs for your module."
