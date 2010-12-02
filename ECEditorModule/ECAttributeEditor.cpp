@@ -596,21 +596,14 @@ namespace ECEditor
             }
 
             QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-            if(rootProperty_)
+            if (rootProperty_)
             {
-                QList<QtProperty *> children = rootProperty_->subProperties();
-                if(children.size() >= 4)
-                {
-                    Color colorValue = attribute->Get();
-                    variantManager->setValue(children[0], colorValue.r * 255);
-                    variantManager->setValue(children[1], colorValue.g * 255);
-                    variantManager->setValue(children[2], colorValue.b * 255);
-                    variantManager->setValue(children[3], colorValue.a * 255);
-                }
+                Color colorValue = attribute->Get();
+                variantManager->setValue(rootProperty_, QVariant::fromValue<QColor>(QColor(colorValue.r * 255, colorValue.g * 255, colorValue.b * 255, colorValue.a * 255)));
             }
         }
         else
-            UpdateMultiEditorValue(attr);
+            UpdateMultiEditorValue(attr); 
     }
 
     template<> void ECAttributeEditor<Color>::Initialize()
@@ -620,42 +613,15 @@ namespace ECEditor
         {
             QtVariantPropertyManager *variantManager = new QtVariantPropertyManager(this);
             QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+            rootProperty_ = variantManager->addProperty(QVariant::Color, name_);
             propertyMgr_ = variantManager;
             factory_ = variantFactory;
-
-            rootProperty_ = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), name_);
-            if(rootProperty_)
-            {
-                QtVariantProperty *childProperty = 0;
-                childProperty = variantManager->addProperty(QVariant::Int, "Red");
-                rootProperty_->addSubProperty(childProperty);
-                variantManager->setAttribute(childProperty, "minimum", QVariant(0));
-                variantManager->setAttribute(childProperty, "maximum", QVariant(255));
-
-                childProperty = variantManager->addProperty(QVariant::Int, "Green");
-                rootProperty_->addSubProperty(childProperty);
-                variantManager->setAttribute(childProperty, "minimum", QVariant(0));
-                variantManager->setAttribute(childProperty, "maximum", QVariant(255));
-
-                childProperty = variantManager->addProperty(QVariant::Int, "Blue");
-                rootProperty_->addSubProperty(childProperty);
-                variantManager->setAttribute(childProperty, "minimum", QVariant(0));
-                variantManager->setAttribute(childProperty, "maximum", QVariant(255));
-
-                childProperty = variantManager->addProperty(QVariant::Int, "Alpha");
-                rootProperty_->addSubProperty(childProperty);
-                variantManager->setAttribute(childProperty, "minimum", QVariant(0));
-                variantManager->setAttribute(childProperty, "maximum", QVariant(255));
-
-                Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
-            }
+            Update();
+            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             owner_->setFactoryForManager(variantManager, variantFactory);
         }
         else
-        {
             InitializeMultiEditor();
-        }
         emit EditorChanged(name_);
     }
 
@@ -663,26 +629,9 @@ namespace ECEditor
     {
         if(listenEditorChangedSignal_)
         {
-           QList<QtProperty *> children = rootProperty_->subProperties();
-            if(children.size() >= 4)
-            {
-                ComponentPtr comp = components_[0].lock();
-                Attribute<Color> *attribute = dynamic_cast<Attribute<Color> *>(FindAttribute(comp));
-                if (!attribute)
-                    return;
-
-                Color newValue = attribute->Get();
-                QString propertyName = property->propertyName();
-                if(propertyName == "Red")
-                    newValue.r = ParseString<int>(property->valueText().toStdString()) / 255.0f;
-                else if(propertyName == "Green")
-                    newValue.g = ParseString<int>(property->valueText().toStdString()) / 255.0f;
-                else if(propertyName == "Blue")
-                    newValue.b = ParseString<int>(property->valueText().toStdString()) / 255.0f;
-                else if(propertyName == "Alpha")
-                    newValue.a = ParseString<int>(property->valueText().toStdString()) / 255.0f;
-                SetValue(newValue);
-            }
+            QtVariantProperty *prop = dynamic_cast<QtVariantProperty*>(rootProperty_);
+            QColor value = prop->value().value<QColor>();
+            SetValue(Color(value.red(), value.green(), value.blue(), value.alpha()));
         }
     }
 
@@ -707,9 +656,7 @@ namespace ECEditor
             owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
         }
         else
-        {
             InitializeMultiEditor();
-        }
 
         emit EditorChanged(name_);
     }
