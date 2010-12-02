@@ -151,12 +151,14 @@ void TundraLogicModule::LoadStartupScene()
         return;
     
     const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
-    std::string startup_scene_ = QString(options["file"].as<std::string>().c_str()).trimmed().toStdString();
-    if (startup_scene_.empty())
+    if (options.count("file") == 0)
+        return;
+    std::string startup_scene = QString(options["file"].as<std::string>().c_str()).trimmed().toStdString();
+    if (startup_scene.empty())
         return; // No startup scene specified, ignore.
 
     // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
-    boost::filesystem::path scenepath(startup_scene_);
+    boost::filesystem::path scenepath(startup_scene);
     std::string dirname = scenepath.branch_path().string();
     if (!dirname.empty())
     {
@@ -165,11 +167,11 @@ void TundraLogicModule::LoadStartupScene()
             localProvider->AddStorageDirectory(dirname, "Scene Local", true);
     }
     
-    bool useBinary = startup_scene_.find(".tbin") != std::string::npos;
+    bool useBinary = startup_scene.find(".tbin") != std::string::npos;
     if (!useBinary)
-        scene->LoadSceneXML(startup_scene_, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        scene->LoadSceneXML(startup_scene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
     else
-        scene->LoadSceneBinary(startup_scene_, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        scene->LoadSceneBinary(startup_scene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
 }
 
 Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)
