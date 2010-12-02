@@ -121,9 +121,6 @@ private:
     
     //! Type name of the module.
     static std::string type_name_static_;
-    
-    //! Scene to load at startup, specified from commandline
-    std::string startup_scene_;
 };
 
 }

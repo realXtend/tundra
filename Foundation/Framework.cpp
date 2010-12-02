@@ -89,21 +89,20 @@ namespace Foundation
         asset(0)
     {
         ParseProgramOptions();
-        if (cm_options_.count("help")) 
+        if (commandLineVariables.count("help")) 
         {
             std::cout << "Supported command line arguments: " << std::endl;
-            std::cout << cm_descriptions_ << std::endl;
+            std::cout << commandLineDescriptions << std::endl;
         }
         else
         {
-            if (cm_options_.count("headless"))
+            if (commandLineVariables.count("headless"))
                 headless_ = true;
             
 #ifdef PROFILING
             ProfilerSection::SetProfiler(&profiler_);
 #endif
             PROFILE(FW_Startup);
-//            application_ = ApplicationPtr(new Application(this));
             platform_ = PlatformPtr(new Platform(this));
         
             // Create config manager
@@ -279,8 +278,8 @@ namespace Foundation
     void Framework::ParseProgramOptions()
     {
         namespace po = boost::program_options;
-        //po::options_description desc;
-        cm_descriptions_.add_options()
+
+        commandLineDescriptions.add_options()
             ("headless", "run in headless mode without any windows or rendering")
             ("help", "produce help message")
             ("user", po::value<std::string>(), "OpenSim login name")
@@ -293,13 +292,13 @@ namespace Foundation
             ("file", po::value<std::string>(), "Load scene on startup");
         try
         {
-            po::store (po::command_line_parser(argc_, argv_).options(cm_descriptions_).allow_unregistered().run(), cm_options_);
+            po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
         }
         catch (std::exception &e)
         {
             RootLogWarning(e.what());
         }
-        po::notify (cm_options_);
+        po::notify(commandLineVariables);
     }
 
     void Framework::PostInitialize()
@@ -313,10 +312,6 @@ namespace Foundation
 
         // commands must be registered after modules are loaded and initialized
         RegisterConsoleCommands();
-
-        ProgramOptionsEvent *data = new ProgramOptionsEvent(cm_options_, argc_, argv_);
-        event_manager_->SendEvent(framework_events, PROGRAM_OPTIONS, data);
-        delete data;
     }
 
     void Framework::ProcessOneFrame()
@@ -360,7 +355,6 @@ namespace Foundation
                 renderer.lock()->Render();
             }
 
-            input->Update(frametime);
             input->Update(frametime);
         }
 

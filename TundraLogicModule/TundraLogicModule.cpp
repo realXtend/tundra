@@ -120,9 +120,9 @@ void TundraLogicModule::Update(f64 frametime)
                 LogInfo("Started server by default");
                 server_->Start(cDefaultPort);
             }
-            // Load startup scene here
-            if (!startup_scene_.empty())
-                LoadStartupScene();
+
+            // Load startup scene here (if we have one)
+            LoadStartupScene();
             
             check_default_server_start = false;
         }
@@ -150,6 +150,11 @@ void TundraLogicModule::LoadStartupScene()
     if (!scene)
         return;
     
+    const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
+    std::string startup_scene_ = QString(options["file"].as<std::string>().c_str()).trimmed().toStdString();
+    if (startup_scene_.empty())
+        return; // No startup scene specified, ignore.
+
     // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
     boost::filesystem::path scenepath(startup_scene_);
     std::string dirname = scenepath.branch_path().string();
@@ -370,16 +375,6 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
             server_->HandleKristalliEvent(event_id, data);
         if (syncManager_)
             syncManager_->HandleKristalliEvent(event_id, data);
-    }
-    
-    if (category_id == frameworkEventCategory_)
-    {
-        if (event_id == Foundation::PROGRAM_OPTIONS)
-        {
-            Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
-            if (po_event->options.count("file"))
-                startup_scene_ = po_event->options["file"].as<std::string>();
-        }
     }
     
     return false;

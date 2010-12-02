@@ -28,7 +28,6 @@
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
 #include "EventHandlers/SceneEventHandler.h"
-#include "EventHandlers/FrameworkEventHandler.h"
 #include "EventHandlers/AvatarEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
@@ -184,7 +183,6 @@ RexLogicModule::RexLogicModule() :
     input_handler_(0),
     scene_handler_(0),
     network_state_handler_(0),
-    framework_handler_(0),
     main_panel_handler_(0)
 {
 }
@@ -280,7 +278,6 @@ void RexLogicModule::Initialize()
     network_state_handler_ = new NetworkStateEventHandler(this);
     input_handler_ = new InputEventHandler(this);
     scene_handler_ = new SceneEventHandler(this);
-    framework_handler_ = new FrameworkEventHandler(world_stream_.get(), this);
     avatar_event_handler_ = new AvatarEventHandler(this);
     camera_controllable_ = CameraControllablePtr(new CameraControllable(this));
     main_panel_handler_ = new MainPanelHandler(this);
@@ -355,8 +352,6 @@ void RexLogicModule::PostInitialize()
 
     // Framework events
     eventcategoryid = eventMgr->QueryEventCategory("Framework");
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &ObjectCameraController::HandleFrameworkEvent, obj_camera_controller_.get(), _1, _2));
 
@@ -513,7 +508,6 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(input_handler_);
     SAFE_DELETE(scene_handler_);
     SAFE_DELETE(network_state_handler_);
-    SAFE_DELETE(framework_handler_);
     SAFE_DELETE(main_panel_handler_);
     SAFE_DELETE(avatar_event_handler_);
 
