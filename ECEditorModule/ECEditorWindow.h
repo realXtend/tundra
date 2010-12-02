@@ -157,15 +157,11 @@ namespace ECEditor
         /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
         void EntityRemoved(Scene::Entity* entity);
 
-		/// Set focus to this editor window. When window have
-		/// focus it should accept entity select actions and add clicked entities from the scene.
+        /// Set focus to this editor window. When window have
+        /// focus it should accept entity select actions and add clicked entities from the scene.
         void SetFocus(bool focus);
 
         void setVisible(bool visible);
-
-        /// Listens when editor's proxy widget gets the focus. If event type was focusInEvent
-        /// then method will call SetFocus method.
-        //void FocusChanged(QFocusEvent *e);
 
     signals:
         /// Emitted user wants to edit entity's EC attributes in XML editor.

@@ -33,8 +33,7 @@ namespace ECEditor
         IModule(name_static_),
         scene_event_category_(0),
         network_state_event_category_(0),
-        xmlEditor_(0),
-        active_editor_(0)
+        xmlEditor_(0)
     {
     }
     
@@ -48,7 +47,6 @@ namespace ECEditor
 
     void ECEditorModule::Initialize()
     {
-        expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_->GetDefaultConfig()));
         expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_->GetDefaultConfig()));
     }
 
@@ -86,8 +84,8 @@ namespace ECEditor
 
     void ECEditorModule::Uninitialize()
     {
-        /// @todo make sure that this wont cause any problems in else where.
-        SAFE_DELETE_LATER(active_editor_);
+        if (common_editor_)
+            SAFE_DELETE(common_editor_);
         SAFE_DELETE_LATER(xmlEditor_);
     }
 
@@ -98,37 +96,6 @@ namespace ECEditor
 
     bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
-        /*if (category_id == scene_event_category_)
-        {            switch(event_id)
-            {
-            case Scene::Events::EVENT_ENTITY_CLICKED:
-            {
-                //! \todo support multiple entity selection
-                Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
-                if (editor_window_ && entity_clicked_data)
-                    editor_window_->AddEntity(entity_clicked_data->entity->GetId());
-                break;
-            }
-            case Scene::Events::EVENT_ENTITY_SELECT:
-                //if (editor_window_)
-                //    editor_window_->AddEntity(entity_clicked_data->entity->GetId());
-                break;
-            case Scene::Events::EVENT_ENTITY_DESELECT:
-                //if (editor_window_)
-                //    editor_window_->RemoveEntity(entity_clicked_data->entity->GetId());
-                break;
-            case Scene::Events::EVENT_ENTITY_DELETED:
-            {
-                Scene::Events::SceneEventData *entity_clicked_data = dynamic_cast<Scene::Events::SceneEventData*>(data);
-                if (editor_window_ && entity_clicked_data)
-                    editor_window_->RemoveEntity(entity_clicked_data->localID);
-                break;
-            }
-            default:
-                break;
-            }
-        }*/
-
         if (category_id == network_state_event_category_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             if (active_editor_)
                 active_editor_->ClearEntities(); 
@@ -141,41 +108,6 @@ namespace ECEditor
         return active_editor_;
     }
 
-    /*void ECEditorModule::RegisterECEditor(ECEditorWindow *editor) 
-    {
-        if (!editor)
-            return;
-
-        if (!editors_.contains(editor))
-        {
-            for(uint i = 0; i < editors_.size(); ++i)
-                if (editors_[i])
-                {
-                    connect(editor, SIGNAL(OnFocusChanged(ECEditorWindow*)), editors_[i], SLOT(FocusChanged(ECEditorWindow *)), Qt::UniqueConnection);
-                    connect(editors_[i], SIGNAL(OnFocusChanged(ECEditorWindow*)), editor, SLOT(FocusChanged(ECEditorWindow *)), Qt::UniqueConnection);
-                }
-            connect(editor, SIGNAL(destroyed()), this, SLOT(UnregisterECEditor()));
-            editors_.push_back(editor);
-        }
-    }
-
-    void ECEditorModule::UnregisterECEditor()
-    {
-        ECEditorWindow *editor = qobject_cast<ECEditorWindow*>(sender());
-        if (editor)
-        {
-            for(ECEditorWindowList::iterator iter = editors_.begin();
-                iter != editors_.end();
-                ++iter)
-            {
-                if ((*iter) == editor)
-                {
-                    editors_.erase(iter);
-                    break;
-                }
-            }
-        }
-    }*/
     void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
     {
         if (editor == active_editor_ && !editor)
@@ -196,7 +128,6 @@ namespace ECEditor
     {
         if (active_editor_)
         {
-            //editor_window_->setVisible(!(editor_window_->isVisible()));
             active_editor_->setVisible(!active_editor_->isVisible());
             return;
         }
@@ -209,6 +140,7 @@ namespace ECEditor
             return;
 
         active_editor_ = new ECEditorWindow(GetFramework());
+        common_editor_ = active_editor_;
         active_editor_->setParent(ui->MainWindow());
         active_editor_->setWindowFlags(Qt::Tool);
         active_editor_->setAttribute(Qt::WA_DeleteOnClose);

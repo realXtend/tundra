@@ -210,7 +210,7 @@ private:
     Scene::SceneWeakPtr scene;
 
     /// This widget's "own" EC editor.
-    QPointer<ECEditor::ECEditorWindow> ecEditor;
+    QList<QPointer<ECEditor::ECEditorWindow> > ecEditors;
 
     /// Maximum count of invoke history items.
     int historyMaxItemCount;
@@ -338,6 +338,9 @@ private slots:
     void SaveAssetDialogClosed(int result);
 
     void AssetLoaded(IAssetTransfer *transfer);
+
+    /// If editor is destoyed this method ensures that that object is erased from the list.
+    void ECEditorDestroyed(QObject *obj);
 };
 
 
