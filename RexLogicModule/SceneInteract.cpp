@@ -91,7 +91,7 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
         case  MouseEvent::MouseScroll:
             break;
         case  MouseEvent::MousePressed:
-            lastHitEntity_.lock()->Exec(EntityAction::Local, "MousePress");
+            lastHitEntity_.lock()->Exec(EntityAction::Local, "MousePress", QString::number(static_cast<uint>(e->button)));
             emit EntityClicked(lastHitEntity_.lock().get());
             break;
         case  MouseEvent::MouseReleased:

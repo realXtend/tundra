@@ -40,6 +40,9 @@ EC_Mesh::EC_Mesh(IModule* module) :
 {
     static AttributeMetadata drawDistanceData("", "0", "10000");
     drawDistance.SetMetadata(&drawDistanceData);
+    static AttributeMetadata materialMetadata;
+    materialMetadata.elementType = "assetreference";
+    meshMaterial.SetMetadata(&materialMetadata);
 
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();

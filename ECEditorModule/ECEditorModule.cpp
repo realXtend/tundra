@@ -33,8 +33,8 @@ namespace ECEditor
         IModule(name_static_),
         scene_event_category_(0),
         network_state_event_category_(0),
-        editor_window_(0),
-        xmlEditor_(0)
+        xmlEditor_(0),
+        active_editor_(0)
     {
     }
     
@@ -54,9 +54,9 @@ namespace ECEditor
 
     void ECEditorModule::PostInitialize()
     {
-        RegisterConsoleCommand(Console::CreateCommand("ECEditor",
+        /*RegisterConsoleCommand(Console::CreateCommand("ECEditor",
             "Shows the EC editor.",
-            Console::Bind(this, &ECEditorModule::ShowWindow)));
+            Console::Bind(this, &ECEditorModule::ShowWindow)));*/
 
         RegisterConsoleCommand(Console::CreateCommand("EditDynComp",
             "Command that will create/remove components from the dynamic component."
@@ -86,7 +86,8 @@ namespace ECEditor
 
     void ECEditorModule::Uninitialize()
     {
-        SAFE_DELETE_LATER(editor_window_);
+        /// @todo make sure that this wont cause any problems in else where.
+        SAFE_DELETE_LATER(active_editor_);
         SAFE_DELETE_LATER(xmlEditor_);
     }
 
@@ -129,30 +130,88 @@ namespace ECEditor
         }*/
 
         if (category_id == network_state_event_category_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
-            if (editor_window_)
-                editor_window_->ClearEntities(); 
+            if (active_editor_)
+                active_editor_->ClearEntities(); 
 
         return false;
     }
 
+    ECEditorWindow *ECEditorModule::GetActiveECEditor() const
+    {
+        return active_editor_;
+    }
+
+    /*void ECEditorModule::RegisterECEditor(ECEditorWindow *editor) 
+    {
+        if (!editor)
+            return;
+
+        if (!editors_.contains(editor))
+        {
+            for(uint i = 0; i < editors_.size(); ++i)
+                if (editors_[i])
+                {
+                    connect(editor, SIGNAL(OnFocusChanged(ECEditorWindow*)), editors_[i], SLOT(FocusChanged(ECEditorWindow *)), Qt::UniqueConnection);
+                    connect(editors_[i], SIGNAL(OnFocusChanged(ECEditorWindow*)), editor, SLOT(FocusChanged(ECEditorWindow *)), Qt::UniqueConnection);
+                }
+            connect(editor, SIGNAL(destroyed()), this, SLOT(UnregisterECEditor()));
+            editors_.push_back(editor);
+        }
+    }
+
+    void ECEditorModule::UnregisterECEditor()
+    {
+        ECEditorWindow *editor = qobject_cast<ECEditorWindow*>(sender());
+        if (editor)
+        {
+            for(ECEditorWindowList::iterator iter = editors_.begin();
+                iter != editors_.end();
+                ++iter)
+            {
+                if ((*iter) == editor)
+                {
+                    editors_.erase(iter);
+                    break;
+                }
+            }
+        }
+    }*/
+    void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
+    {
+        if (editor == active_editor_ && !editor)
+            return;
+
+        // Unfocus previously active editor.
+        if (active_editor_)
+        {
+            active_editor_->SetFocus(false);
+            disconnect(active_editor_, SIGNAL(destroyed(QObject*)), this, SLOT(ActiveECEditorDestroyed(QObject*)));
+        }
+        active_editor_ = editor;
+        active_editor_->SetFocus(true);
+        connect(active_editor_, SIGNAL(destroyed(QObject*)), SLOT(ActiveECEditorDestroyed(QObject*)), Qt::UniqueConnection);
+    }
+
     void ECEditorModule::AddEditorWindowToUI()
     {
-        if (editor_window_)
+        if (active_editor_)
         {
-            editor_window_->setVisible(!(editor_window_->isVisible()));
+            //editor_window_->setVisible(!(editor_window_->isVisible()));
+            active_editor_->setVisible(!active_editor_->isVisible());
             return;
         }
 
-        //UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        //UiServiceInterface *ui = framework_->GetService<UiServiceInterface>(); 
         //if (!ui)
         //    return;
         NaaliUi *ui = GetFramework()->Ui();
         if (!ui)
             return;
 
-        editor_window_ = new ECEditorWindow(GetFramework());
-        editor_window_->setParent(ui->MainWindow());
-        editor_window_->setWindowFlags(Qt::Tool);
+        active_editor_ = new ECEditorWindow(GetFramework());
+        active_editor_->setParent(ui->MainWindow());
+        active_editor_->setWindowFlags(Qt::Tool);
+        active_editor_->setAttribute(Qt::WA_DeleteOnClose);
 
         //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
         // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
@@ -164,7 +223,7 @@ namespace ECEditor
         //ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
     }
 
-    Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
+    /*Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
     {
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (!ui)
@@ -177,7 +236,7 @@ namespace ECEditor
         }
         else
             return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
-    }
+    }*/
 
     Console::CommandResult ECEditorModule::ShowDocumentation(const StringVector &params)
     {
@@ -307,7 +366,18 @@ namespace ECEditor
 
         const QKeySequence showEcEditor = input.KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
         if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
-            ShowWindow(StringVector());
+        {
+            if (!active_editor_)
+                AddEditorWindowToUI();
+            active_editor_->show();
+        }
+            //ShowWindow(StringVector());  
+    }
+
+    void ECEditorModule::ActiveECEditorDestroyed(QObject *obj)
+    {
+        if (active_editor_ == obj)
+            active_editor_ = 0;
     }
 
 }
