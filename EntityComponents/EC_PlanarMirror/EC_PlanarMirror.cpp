@@ -7,9 +7,9 @@
  */
 
 #include "StableHeaders.h"
-#include "DebugOperatorNew.h"
 #include "EC_PlanarMirror.h"
 
+#include "Renderer.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "LoggingFunctions.h"
@@ -20,8 +20,6 @@
 #include "NaaliMainWindow.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_PlanarMirror")
-
-#include "MemoryLeakCheck.h"
 
 int EC_PlanarMirror::mirror_cam_num_ = 0;
 
