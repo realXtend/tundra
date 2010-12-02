@@ -145,7 +145,7 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->move(100, 100);
 
     profilerWindow_->resize(650, 530);
-    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
+    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, true, true);
     connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
 	//$ BEGIN_MOD $

@@ -166,9 +166,9 @@ namespace UiServices
 		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
 		if (!uiExternal)
 			inworld_scene_controller_->GetControlPanelManager()->CreateOptionalControls();
-		//else
-			//ui_scene_service_->CreateSettingsPanel();
 		//$ END_MOD $
+
+		ui_scene_service_->CreateSettingsPanel();
     }
 
     void UiModule::Uninitialize()

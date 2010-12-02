@@ -45,7 +45,7 @@ namespace UiServices
     void MenuSettingsWidget::HandleSelection(bool checked, const QString &name)
     {
 		//QSettings saved for next time Naali starts, if is this var exists, the panel will be placed where here has been configured
-		QSettings settings("Naali UIExternal", "UiExternal Settings");		
+		QSettings settings("Naali UIExternal2", "UiExternal Settings");		
 		if (checked){
 			//Transfer inside the scene
 			owner_->TransferWidgetOut(name, false);

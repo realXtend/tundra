@@ -21,6 +21,8 @@
 #include <QUiLoader>
 #include <QSettings>
 
+#include "Inworld/ControlPanel/SettingsWidget.h"
+
 namespace UiServices
 {
 //$ BEGIN_MOD $
@@ -61,7 +63,7 @@ namespace UiServices
 			//save value
 			moveable_widgets_->append(widget->windowTitle());
 			//then check if we have settings..
-			QSettings settings("Naali UIExternal", "UiExternal Settings");
+			QSettings settings("Naali UIExternal2", "UiExternal Settings");
 			QString pos = "vacio";
 			if (widget->windowTitle() != "")
 				pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
@@ -102,7 +104,7 @@ namespace UiServices
 		widget->setObjectName(widget->windowTitle());
 		QWidget* wid = widget->widget();
 
-		QSettings settings("Naali UIExternal", "UiExternal Settings");
+		QSettings settings("Naali UIExternal2", "UiExternal Settings");
 		QString pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
 		if (pos != "inside" && uiExternal){
 			widget->setWidget(0);
@@ -439,7 +441,7 @@ namespace UiServices
 			{
 				//begin_mod
 				foreach(QString s, panels){
-					QSettings settings("Naali UIExternal", "UiExternal Settings");
+					QSettings settings("Naali UIExternal2", "UiExternal Settings");
 					QString pos = settings.value(s, QString("vacio")).toString();
 					if (pos == "outside" && uiExternal){
 						proxyDock pair = proxy_dock_list.value(s);
@@ -533,12 +535,25 @@ namespace UiServices
 
 	//TO MANAGE MENU SETTINGS
 	void UiSceneService::CreateSettingsPanel(){
+
+		//TRY TO ADD SETTINGS OUTSIDE..
+		//$ BEGIN_MOD $
+		CoreUi::SettingsWidget *settings_widget_ = dynamic_cast<CoreUi::SettingsWidget *>(owner_->GetInworldSceneController()->GetSettingsObject());
+		QWidget *internal_wid = settings_widget_->GetInternalWidget();//
+		//internal_wid->->setObjectName("Settings Panel");
+		if (internal_wid) {
+			AddWidgetToScene(internal_wid, true, true);
+			AddWidgetToMenu(internal_wid, "Naali Settings", "Panels","");
+		}
+		//$ END_MOD $
+		/*
 		// Initialize post-process dialog.
 		settings_panel_ = new MenuSettingsWidget(this);
 		settings_panel_->setWindowTitle("Menu Config");
         // Add to scene.
         AddWidgetToScene(settings_panel_, true, true);
 		AddWidgetToMenu(settings_panel_, QObject::tr("Menu Config"), QObject::tr("Settings"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");	
+		*/
 	}
 
 	bool UiSceneService::IsMenuInside(QString name){

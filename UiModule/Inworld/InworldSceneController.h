@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_UiModule_InworldSceneController_h
@@ -32,6 +33,9 @@ namespace UiServices
 
         //! Destructor.
         ~InworldSceneController();
+
+		//! Framework pointer.
+        Foundation::Framework *framework_;
 
     public slots:
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
@@ -172,8 +176,10 @@ namespace UiServices
         //! QMap of docked UiProxyWidgets and their original size
         QMap<QGraphicsProxyWidget *, QSizeF> old_proxy_size;
 
+		//$ BEGIN_MOD $
         //! Framework pointer.
-        Foundation::Framework *framework_;
+        //Foundation::Framework *framework_;
+		//$ END_MOD $
 
         //Store last scene rectangle 
         QRectF last_scene_rect;

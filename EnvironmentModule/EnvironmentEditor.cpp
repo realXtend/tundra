@@ -257,7 +257,7 @@ namespace Environment
 
         setWindowTitle(tr("Environment Editor"));
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
 		//$ BEGIN_MOD $
         //ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
 		ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("Panels"), "./data/ui/images/menus/edbutton_ENVED_normal");

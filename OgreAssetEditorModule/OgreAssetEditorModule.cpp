@@ -75,7 +75,7 @@ void OgreAssetEditorModule::PostInitialize()
     uiService_ = framework_->GetServiceManager()->GetService<UiServiceInterface>(Service::ST_Gui);
     if (!uiService_.expired())
     {
-        UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
+        UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_, true, true);
         uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material"), tr("Create"),
             "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));

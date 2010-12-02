@@ -486,7 +486,7 @@ void InventoryModule::CreateInventoryWindow()
 	//$ END_MOD $
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, true, false);
+    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, true, true);
 	//$ BEGIN_MOD $	
 	ui->AddWidgetToMenu(inventoryWindow_, "Inventory", "Create");
     //ui->AddWidgetToMenu(inventoryWindow_);

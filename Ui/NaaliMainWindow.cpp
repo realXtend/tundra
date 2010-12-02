@@ -77,7 +77,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
     move(windowX, windowY);*/
 
 	//QSettings
-		QSettings settings("Naali UIExternal", "UiExternal Settings");
+		QSettings settings("Naali UIExternal2", "UiExternal Settings");
 		QPoint pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
 		QSize size = settings.value("win_size", QSize(400, 400)).toSize();		
 		
@@ -141,7 +141,7 @@ void NaaliMainWindow::SaveWindowSettingsToFile()
     owner->GetDefaultConfig().SetSetting("MainWindow", "fullscreen", parentWin_->isFullScreen());
 
 	//Save settings with QtSettings..
-	QSettings settings("Naali UIExternal", "UiExternal Settings");
+	QSettings settings("Naali UIExternal2", "UiExternal Settings");
 	settings.setValue("win_pos", parentWin_->pos());
 	settings.setValue("win_size", parentWin_->size());
 	//settings.setValue("win_state", saveState());

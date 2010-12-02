@@ -807,6 +807,15 @@ namespace WorldBuilding
 			editToolbar_->addAction(properties);
 			connect(properties, SIGNAL(triggered()), this, SLOT(ActionToolBarProperties()));
 
+			//Current World Build
+			QToolBar *worldBuildToolbar= ui->GetExternalToolbar("WorldBuildToolBar");
+			worldBuildToolbar->setIconSize(QSize(76, 32));
+			QAction* worldbuild=new QAction(QIcon("./media/icons/uibutton_BUILD_normal.png"),"WorldBuildScene",worldBuildToolbar);
+			worldBuildToolbar->addAction(worldbuild);
+			connect(worldbuild, SIGNAL(triggered()), this, SLOT(ToggleBuildScene()));
+
+			
+
 			UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
 
 			//Create the Properties Widget

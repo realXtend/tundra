@@ -1,3 +1,4 @@
+//$ HEADER_MOD FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -5,6 +6,10 @@
 
 #include "SettingsWidget.h"
 #include "Inworld/ControlPanelManager.h"
+
+/*
+#include "UiServiceInterface.h"
+#include "Inworld/InworldSceneController.h"*/
 
 #include <QPropertyAnimation>
 #include <QGraphicsScene>
@@ -19,7 +24,11 @@ namespace CoreUi
         panel_(control_panel_manager)
     {
         setupUi(internal_widget_);
-        setWidget(internal_widget_);
+		// $ BEGIN_MOD $
+		// To use it as a external widget
+        //setWidget(internal_widget_);
+		// $ END_MOD $
+		internal_widget_->setObjectName("Naali Settings");
 
         QFont titleFont("facetextrabold", 10, 25, false);
         titleFont.setCapitalization(QFont::AllUppercase);
@@ -37,11 +46,13 @@ namespace CoreUi
         connect(opacitySlider, SIGNAL(valueChanged(int)), SLOT(OpacitySliderChanged(int)));
         connect(savePushButton, SIGNAL(clicked()), SLOT(SaveSettings()));
         connect(cancelPushButton, SIGNAL(clicked()), SLOT(Canceled()));
-        connect(visibility_animation_, SIGNAL(finished()), SLOT(AnimationsFinished()));
+        //connect(visibility_animation_, SIGNAL(finished()), SLOT(AnimationsFinished()));
         connect(scene, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(SceneRectChanged(const QRectF&)));
 
-        scene->addItem(this);
-        hide();
+		//$ BEGIN_MOD $
+        //scene->addItem(this);
+        //hide();
+		// $ END_MOD $
     }
 
     // Public
@@ -53,8 +64,12 @@ namespace CoreUi
 
     void SettingsWidget::AnimatedHide()
     {
-        visibility_animation_->setDirection(QAbstractAnimation::Backward);
-        visibility_animation_->start();
+		//$ BEGIN_MOD $
+        //scene->addItem(this);
+        internal_widget_->hide();
+		// $ END_MOD $
+        /*visibility_animation_->setDirection(QAbstractAnimation::Backward);
+        visibility_animation_->start();*/
     }
 
     // Protected
@@ -65,20 +80,26 @@ namespace CoreUi
             return;
         if (!widget())
             return;
+
+		//$ BEGIN_MOD $
+		internal_widget_->show();
+		// $ END_MOD $
+
+		/*
         qreal padding = 10;
         setPos(scene()->sceneRect().right() - widget()->size().width() - padding, panel_->GetContentHeight() + padding);
         setOpacity(0);
 
         QGraphicsProxyWidget::showEvent(show_event);
         visibility_animation_->setDirection(QAbstractAnimation::Forward);
-        visibility_animation_->start();
+        visibility_animation_->start();*/
     }
 
     void SettingsWidget::AnimationsFinished()
     {
         if (visibility_animation_->direction() == QAbstractAnimation::Backward)
         {
-            hide();
+            //hide();
             emit Hidden();
         }
     }

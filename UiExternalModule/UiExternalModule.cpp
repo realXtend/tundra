@@ -100,7 +100,7 @@ namespace UiExternalServices
 		menu_manager_->AddExternalMenuAction(action4, "Assets:TODO", "Panels");
 		*/
 
-		QSettings settings("Naali UIExternal", "UiExternal Settings");	
+		QSettings settings("Naali UIExternal2", "UiExternal Settings");	
 		qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
 	
 
@@ -121,7 +121,7 @@ namespace UiExternalServices
 		*/
 
 		//Save settings with QtSettings..
-		QSettings settings("Naali UIExternal", "UiExternal Settings");
+		QSettings settings("Naali UIExternal2", "UiExternal Settings");
 		settings.setValue("win_state", qWin_->saveState());
 
         framework_->GetServiceManager()->UnregisterService(ui_external_scene_service_);

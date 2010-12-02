@@ -1,3 +1,4 @@
+//$ HEADER_MOD FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_UiModule_SettingsWidget_h
@@ -22,6 +23,9 @@ namespace CoreUi
 
     public:
         SettingsWidget(QGraphicsScene *scene, ControlPanelManager *conrol_panel_manager);
+		// $ BEGIN_MOD $
+		QWidget *GetInternalWidget() { return internal_widget_; }
+		// $ END_MOD $
 
     public slots:
         void AddWidget(QWidget *widget, const QString &tab_name) const;

@@ -153,7 +153,7 @@ namespace ECEditor
 		//editor_window_->setWindowTitle(tr("EC Editor"));
 		//$ END_MOD $
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_, true, true);
         // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
         // it's attached to QGraphicsProxyWidget.
         connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);

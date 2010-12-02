@@ -19,6 +19,9 @@
 #include "Inworld/ControlPanel/CacheSettingsWidget.h"
 #include "Inworld/ControlPanel/ChangeThemeWidget.h"
 
+#include "UiServiceInterface.h"
+#include "Inworld/InworldSceneController.h"
+
 #include <QAction>
 
 #include "MemoryLeakCheck.h"
@@ -41,7 +44,7 @@ namespace CoreUi
         // Settings widget
         settings_widget_ = new SettingsWidget(layout_manager_->GetScene(), this);
         ControlButtonAction *settings_action = new ControlButtonAction(GetButtonForType(UiServices::Settings), settings_widget_, this);
-        
+
         SetHandler(UiServices::Settings, settings_action);
         connect(settings_action, SIGNAL(toggled(bool)), SLOT(ToggleSettingsVisibility(bool)));
         connect(settings_widget_, SIGNAL(Hidden()), SLOT(CheckSettingsButtonStyle()));
@@ -164,10 +167,15 @@ namespace CoreUi
 
     void ControlPanelManager::ToggleSettingsVisibility(bool visible)
     {
-        if (visible)
-            settings_widget_->show();
-        else
-            settings_widget_->AnimatedHide();
+		//Show it with Ui
+		UiServiceInterface *ui = (dynamic_cast<UiServices::InworldSceneController *>(parent()))->framework_->GetService<UiServiceInterface>();
+		if (ui)      
+			if (settings_widget_->GetInternalWidget()->isVisible())
+				ui->HideWidget(settings_widget_->GetInternalWidget());
+			else
+				ui->ShowWidget(settings_widget_->GetInternalWidget());//settings_widget_->AnimatedHide();				
+				
+
     }
 
     void ControlPanelManager::ToggleTeleportVisibility(bool visible)
