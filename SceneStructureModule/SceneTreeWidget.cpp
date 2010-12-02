@@ -189,8 +189,13 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
 
 SceneTreeWidget::~SceneTreeWidget()
 {
-    if (ecEditor)
-        ecEditor->close();
+    while(!ecEditors.empty())
+    {
+        ECEditor::ECEditorWindow *editor = ecEditors.back();
+        ecEditors.pop_back();
+        if (editor)
+            SAFE_DELETE(editor);
+    }
     if (fileDialog)
         fileDialog->close();
 
@@ -605,24 +610,38 @@ void SceneTreeWidget::Edit()
         //assert(ui);
 
         // If we have an existing editor instance, use it.
-        if (ecEditor)
+        if (ecEditors.size())
         {
-            ecEditor->AddEntities(selection.EntityIds(), true);
-            /*foreach(entity_id_t id, selection.EntityIds())
+            ECEditor::ECEditorWindow *editor = ecEditors.back();
+            if (editor)
+            {
+                editor->AddEntities(selection.EntityIds(), true);
+                /*foreach(entity_id_t id, selection.EntityIds())
                 ecEditor->AddEntity(id, false);
-            ecEditor->SetSelectedEntities(selection.EntityIds());*/
-            ecEditor->show();
-            //ui->BringWidgetToFront(ecEditor);
-            return;
+                ecEditor->SetSelectedEntities(selection.EntityIds());*/
+                editor->show();
+                //ui->BringWidgetToFront(ecEditor);
+                return;
+            }
         }
 
+        ECEditor::ECEditorWindow *editor = 0;
         ECEditor::ECEditorModule *module = framework->GetModule<ECEditor::ECEditorModule>();
-        if (module)
-            ecEditor = module->GetActiveECEditor();
-        // If there isn't any active editors in ECEditorModule, create a new one.
-        if (!ecEditor)
-            ecEditor = new ECEditor::ECEditorWindow(framework);
-        ecEditor->setAttribute(Qt::WA_DeleteOnClose);
+        editor = module->GetActiveECEditor();
+        if (editor && !ecEditors.contains(editor))
+        {
+            editor->setAttribute(Qt::WA_DeleteOnClose);
+            ecEditors.push_back(editor);
+        }
+        else // If there isn't any active editors in ECEditorModule, create a new one.
+        {
+            editor = new ECEditor::ECEditorWindow(framework);
+            editor->setAttribute(Qt::WA_DeleteOnClose);
+            ecEditors.push_back(editor);
+        }
+        // To ensure that destroyed editors will get erased from the ecEditors list.
+        connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
+
         //ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
         //ecEditor->hide();
         //ecEditor->AddEntities(selection.EntityIds(), true);
@@ -633,12 +652,12 @@ void SceneTreeWidget::Edit()
         NaaliUi *ui = framework->Ui();
         if (!ui)
             return;
-        ecEditor->setParent(ui->MainWindow());
-        ecEditor->setWindowFlags(Qt::Tool);
-        if (!ecEditor->isVisible())
-            ecEditor->show();
+        editor->setParent(ui->MainWindow());
+        editor->setWindowFlags(Qt::Tool);
+        if (!editor->isVisible())
+            editor->show();
 
-        ecEditor->AddEntities(selection.EntityIds(), true);
+        editor->AddEntities(selection.EntityIds(), true);
 
         /*ui->AddWidgetToScene(ecEditor);
         ui->ShowWidget(ecEditor);
@@ -678,6 +697,7 @@ void SceneTreeWidget::EditInNew()
 
     ECEditor::ECEditorWindow *editor = new ECEditor::ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
+    connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
     editor->AddEntities(selection.EntityIds(), true);
@@ -692,8 +712,10 @@ void SceneTreeWidget::EditInNew()
     editor->setWindowFlags(Qt::Tool);
     editor->show();
 
-    if (!ecEditor)
-        ecEditor = editor;
+    ecEditors.push_back(editor);
+    /*if (!ecEditor)
+        ecEditor = editor;*/
+
     
     /*ui->AddWidgetToScene(editor); 
     ui->ShowWidget(editor);
@@ -1624,5 +1646,19 @@ void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
                 }
             }
         }
+    }
+}
+
+void SceneTreeWidget::ECEditorDestroyed(QObject *obj)
+{
+    QList<QPointer<ECEditor::ECEditorWindow> >::iterator iter = ecEditors.begin();
+    while(iter != ecEditors.end())
+    {
+        if (*iter == obj)
+        {
+            ecEditors.erase(iter);
+            break;
+        }
+        ++iter;
     }
 }

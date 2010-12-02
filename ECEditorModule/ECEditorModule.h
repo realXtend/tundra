@@ -115,7 +115,10 @@ namespace ECEditor
         ExpandMemoryPtr expandMemory;
 
         /// Active ECEditorWindow.
-        ECEditorWindow *active_editor_;
+        QPointer<ECEditorWindow> active_editor_;
+        /// ECEditorModule will create it's own ECEditorWindow instance while it's initializing. 
+        /// To avoid a memory leak, we store that pointer.
+        QPointer<ECEditorWindow> common_editor_;
 
     private slots:
         /// Handles KeyPressed() signal from input context.

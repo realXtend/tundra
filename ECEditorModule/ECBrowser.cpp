@@ -46,9 +46,9 @@ namespace ECEditor
             connect(treeWidget_, SIGNAL(itemSelectionChanged()), SLOT(SelectionChanged()));
         }
 
-        QShortcut* delete_shortcut = new QShortcut(QKeySequence::Delete, this);
-        QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
-        QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
+        QShortcut *delete_shortcut = new QShortcut(QKeySequence::Delete, this);
+        QShortcut *copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), this);
+        QShortcut *paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), this);
         connect(delete_shortcut, SIGNAL(activated()), SLOT(OnDeleteAction()), Qt::UniqueConnection);
         connect(copy_shortcut, SIGNAL(activated()), SLOT(CopyComponent()), Qt::UniqueConnection);
         connect(paste_shortcut, SIGNAL(activated()), SLOT(PasteComponent()), Qt::UniqueConnection);
@@ -56,6 +56,7 @@ namespace ECEditor
 
     ECBrowser::~ECBrowser()
     {
+        // Clear should release all ComponentGroup objects from the memory.
         clear();
     }
 
@@ -530,7 +531,9 @@ namespace ECEditor
             // Only single component can be pasted.
             //! @todo add suport to multi component copy/paste feature.
             QDomElement comp_elem = temp_doc.firstChildElement("component");
-            
+            if (comp_elem.isNull())
+                return;
+
             for(EntityWeakPtrList::iterator iter = entities_.begin();
                 iter != entities_.end();
                 iter++)
@@ -549,7 +552,8 @@ namespace ECEditor
                 }
                 else
                     component = entity_ptr->GetComponent(type, name);
-                component->DeserializeFrom(comp_elem, AttributeChange::Default);
+                if (component)
+                    component->DeserializeFrom(comp_elem, AttributeChange::Default);
             }
         }
     }
