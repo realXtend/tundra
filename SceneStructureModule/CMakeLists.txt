@@ -18,7 +18,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 use_package_assimp()
 
 use_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule TundraLogicModule
-    OgreRenderingModule AssetModule RexCommon)
+    OgreRenderingModule AssetModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
