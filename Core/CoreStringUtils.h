@@ -129,6 +129,17 @@ uint GetHash(const std::string& str);
 //! Calculate SDBM hash for a string
 uint GetHash(const QString& str);
 
+//! Parses boolean value from string.
+/*! The value can either true, false (both case-insensitive), 1 or 0.
+    @param value String to be inspected.
+*/
+bool ParseBool(const std::string &value);
+
+//! This is an overloaded function.
+/*! @param value String to be inspected.
+*/
+bool ParseBool(const QString &value);
+
 #endif
 
 

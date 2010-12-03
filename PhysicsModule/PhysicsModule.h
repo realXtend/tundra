@@ -6,9 +6,9 @@
 #include "PhysicsModuleApi.h"
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
-#include "RexTypes.h"
-#include "SceneManager.h"
-#include "LinearMath/btIDebugDraw.h"
+#include "ForwardDefines.h"
+
+#include <LinearMath/btIDebugDraw.h>
 
 #include <QObject>
 

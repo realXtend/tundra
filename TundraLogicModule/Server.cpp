@@ -11,7 +11,6 @@
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
 #include "TundraMessages.h"
 #include "TundraEvents.h"
 #include "PhysicsModule.h"
@@ -49,13 +48,11 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
 #endif
     )
 {
-    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject,
-                                       qScriptValueToQObject, prototype);
+    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject, qScriptValueToQObject, prototype);
 }
 
 
 using namespace kNet;
-using namespace RexTypes;
 
 namespace TundraLogic
 {

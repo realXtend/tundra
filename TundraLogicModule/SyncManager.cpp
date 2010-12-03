@@ -22,7 +22,7 @@
 #include "MsgEntityAction.h"
 #include "EC_DynamicComponent.h"
 
-#include "kNet.h"
+#include <kNet.h>
 
 #include <cstring>
 
