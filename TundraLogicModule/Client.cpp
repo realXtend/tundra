@@ -10,7 +10,6 @@
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
 #include "SyncManager.h"
 #include "TundraMessages.h"
 #include "TundraEvents.h"
@@ -22,7 +21,6 @@
 
 #include "MemoryLeakCheck.h"
 
-using namespace RexTypes;
 using namespace kNet;
 
 namespace TundraLogic

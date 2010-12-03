@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
 #include "DebugOperatorNew.h"
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
@@ -18,8 +17,6 @@
 
 #include <QDomDocument>
 #include <QFile>
-
-using namespace RexTypes;
 
 namespace fs = boost::filesystem;
 

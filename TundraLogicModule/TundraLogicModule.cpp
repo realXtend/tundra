@@ -13,7 +13,6 @@
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
 #include "TundraEvents.h"
 #include "SceneImporter.h"
 #include "AssetServiceInterface.h"
@@ -21,8 +20,6 @@
 #include "AssetAPI.h"
 
 #include "MemoryLeakCheck.h"
-
-using namespace RexTypes;
 
 namespace TundraLogic
 {
