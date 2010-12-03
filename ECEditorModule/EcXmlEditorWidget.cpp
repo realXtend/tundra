@@ -15,7 +15,6 @@
 #include "SceneManager.h"
 #include "IComponent.h"
 #include "Entity.h"
-#include "XMLUtilities.h"
 
 #include <QDomDocument>
 
@@ -202,7 +201,7 @@ void EcXmlEditorWidget::Save()
         while (!entity_elem.isNull())
         {
             entity_found = true;
-            entity_id_t id = (entity_id_t)RexTypes::ParseInt(entity_elem.attribute("id").toStdString());
+            entity_id_t id = (entity_id_t)boost::lexical_cast<int>(entity_elem.attribute("id").toStdString());
             Scene::EntityPtr entity = scene->GetEntity(id);
             if (entity)
             {

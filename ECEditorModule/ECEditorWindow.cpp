@@ -24,7 +24,6 @@
 #include "SceneManager.h"
 #include "EC_Name.h"
 #include "ComponentManager.h"
-#include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
 #include "EC_Placeable.h"
@@ -37,8 +36,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("ECEditorWindow");
 #include <QDomDocument>
 
 #include "MemoryLeakCheck.h"
-
-using namespace RexTypes;
 
 uint AddUniqueListItem(Scene::Entity *entity, QListWidget* list, const QString& name)
 {
