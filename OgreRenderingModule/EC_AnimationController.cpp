@@ -6,7 +6,7 @@
 #include "EC_AnimationController.h"
 #include "Entity.h"
 #include "OgreRenderingModule.h"
-#include "RexNetworkUtils.h"
+#include "CoreStringUtils.h"
 
 #include <Ogre.h>
 
@@ -16,7 +16,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_AnimationController")
 #include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
-using namespace RexTypes;
 
 EC_AnimationController::EC_AnimationController(IModule* module) :
     IComponent(module->GetFramework()),
