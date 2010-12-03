@@ -6,7 +6,7 @@
 #include "PhysicsModuleApi.h"
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
-#include "RexTypes.h"
+#include "CoreTypes.h"
 #include "SceneManager.h"
 #include "LinearMath/btIDebugDraw.h"
 
