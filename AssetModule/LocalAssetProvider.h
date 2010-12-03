@@ -84,9 +84,6 @@ namespace Asset
         virtual IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     private:
-
-        void ProcessCommandLineOptions();
-
         //! Get a path for asset, using all the search directories
         QString GetPathForAsset(const QString &localFilename);
 

@@ -29,8 +29,6 @@ LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework) :
 {
     EventManagerPtr event_manager = framework_->GetEventManager();
     event_category_ = event_manager->QueryEventCategory("Asset");
-
-    ProcessCommandLineOptions();
 }
 
 LocalAssetProvider::~LocalAssetProvider()
@@ -258,39 +256,6 @@ IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *
     pendingUploads.push_back(transfer);
 
     return transfer.get();
-}
-
-void LocalAssetProvider::ProcessCommandLineOptions()
-{
-    assert(framework_);
-
-    const boost::program_options::variables_map &options = framework_->ProgramOptions();
-
-    if (options.count("file") > 0)
-    {
-        std::string startup_scene_ = QString(options["file"].as<std::string>().c_str()).trimmed().toStdString();
-        if (!startup_scene_.empty())
-        {
-            // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
-            boost::filesystem::path scenepath(startup_scene_);
-            std::string dirname = scenepath.branch_path().string();
-            if (!dirname.empty())
-                AddStorageDirectory(dirname, "Scene Local", true);
-        }
-    }
-
-    if (options.count("storage") > 0)
-    {
-        std::string startup_scene_ = QString(options["storage"].as<std::string>().c_str()).trimmed().toStdString();
-        if (!startup_scene_.empty())
-        {
-            // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
-            boost::filesystem::path scenepath(startup_scene_);
-            std::string dirname = scenepath.branch_path().string();
-            if (!dirname.empty())
-                AddStorageDirectory(dirname, "Scene Local", true);
-        }
-    }
 }
 
 namespace
