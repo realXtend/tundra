@@ -369,7 +369,6 @@ void EC_VideoSource::Play()
 
     if (media_object_->state() == Phonon::LoadingState && getplaybackState() != PS_Stop)
     {
-        LogDebug("-- Loading state, wait");
         if (!ready_poller_->isActive())
             ready_poller_->start(1000);
         return;
