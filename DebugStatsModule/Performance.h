@@ -18,42 +18,42 @@
 namespace PDH
 {
 #ifndef Q_WS_WIN
-    struct HCOUNTER {};
-    typedef unsigned int PDH_STATUS;
-    typedef unsigned int DWORD;
-    typedef std::string LPCTSTR;
-    typedef char TCHAR;
+struct HCOUNTER {};
+typedef unsigned int PDH_STATUS;
+typedef unsigned int DWORD;
+typedef std::string LPCTSTR;
+typedef char TCHAR;
 
 #define ERROR_SUCCESS 1
 #define PDH_FMT_DOUBLE 2
 #define PDH_FMT_LONG 3
 
-    struct PDH_FMT_COUNTERVALUE 
-    {
-        PDH_FMT_COUNTERVALUE() : doubleValue(0.0), longValue(0) { }
-        double doubleValue; 
-        long longValue;
-    };
+struct PDH_FMT_COUNTERVALUE 
+{
+    PDH_FMT_COUNTERVALUE() : doubleValue(0.0), longValue(0) { }
+    double doubleValue;
+    long longValue;
+};
 
-    struct HQUERY {};
+struct HQUERY {};
 #endif
 
-/// An an interface class for MS performance monitor API.
+/// An an interface class for WIN32 performance monitor API.
 class PerformanceMonitor
 {
 public:
     PerformanceMonitor();
     virtual ~PerformanceMonitor();
 
-    ///Reads from M$ performance API that how many threads are used to run this application. 
-    /** @return viewer thread count. 
+    /// Reads from WIN32 performance API that how many threads are used to run this application.
+    /** @return viewer thread count.
     */
     int GetThreadCount();
 
-    /// Reads from M$ performace API that how many disk bytes are average read from all disk. 
+    /// Reads from WIN32 performace API that how many disk bytes are average read from all disk.
     long GetAvgDiskRead();
 
-    /// Reads from M$ performace API that how many disk bytes are average write to all disk. 
+    /// Reads from WIN32 performace API that how many disk bytes are average write to all disk.
     long GetAvgDiskWrite();
 };
 
@@ -81,17 +81,17 @@ public:
         if (pdhStatus != ERROR_SUCCESS) 
         return -1.0;
 
-        return fmtValue.doubleValue ;
+        return fmtValue.doubleValue;
     }
 
-    std::string asDoubleString() const 
+    std::string asDoubleString() const
     {
         std::stringstream st;
         PDH_FMT_COUNTERVALUE fmtValue;
         PDH_STATUS pdhStatus = GetFormatted(PDH_FMT_DOUBLE, &fmtValue);
         if (pdhStatus == ERROR_SUCCESS) 
             st << std::setprecision(20) << fmtValue.doubleValue ;
-        else 
+        else
             return "DebugStats::Perfomance.h : asDoubleString() error value were not converted";
 
         return st.str();
@@ -101,18 +101,18 @@ public:
     {
         PDH_FMT_COUNTERVALUE fmtValue;
         PDH_STATUS pdhStatus = GetFormatted(PDH_FMT_LONG, &fmtValue);
-        if (pdhStatus != ERROR_SUCCESS) 
+        if (pdhStatus != ERROR_SUCCESS)
             return -1;
 
         return fmtValue.longValue;
     }
 
-    std::string asLongString() const 
+    std::string asLongString() const
     {
         std::stringstream st;
         PDH_FMT_COUNTERVALUE   fmtValue;
         PDH_STATUS pdhStatus = GetFormatted(PDH_FMT_LONG, &fmtValue);
-        if (pdhStatus == ERROR_SUCCESS) 
+        if (pdhStatus == ERROR_SUCCESS)
             st << fmtValue.longValue;
         else 
             return std::string("DebugStats::Perfomance.h : asLongString() error value were not converted");
@@ -136,7 +136,7 @@ public:
     ~Query()
     {
 #ifdef Q_WS_WIN
-        PdhCloseQuery (h); 
+        PdhCloseQuery (h);
 #endif
     }
 
@@ -158,7 +158,7 @@ public:
 
         pdhCpe.szInstanceName = NULL;
         pdhCpe.szParentInstance = NULL;
-        pdhCpe.dwInstanceIndex = -1;
+        pdhCpe.dwInstanceIndex = (DWORD)-1;
         pdhCpe.szCounterName = counterName;
 
         if ((pdhStatus=PdhMakeCounterPath(&pdhCpe,szAvailBytes,&dwBufferSize, 0)) == ERROR_SUCCESS) 
@@ -174,7 +174,7 @@ public:
         PDH_STATUS Collect() const
         {
 #ifdef Q_WS_WIN
-            return PdhCollectQueryData (h); 
+            return PdhCollectQueryData (h);
 #else
            return 0;
 #endif

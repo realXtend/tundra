@@ -791,87 +791,69 @@ namespace Scene
             {
                 EntityDesc entityDesc;
                 entityDesc.id = id_str;
-                /*
-                entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
-                if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
-                {
-                    if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
-                        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-                    else // Create a new ID for the new entity.
-                    {
-                        if ((id & LocalEntity) != 0) // Check if the ID is local
-                            id = GetNextFreeIdLocal();
-                        else
-                            id = GetNextFreeId();
-                    }
-                }
-                */
-                //EntityPtr entity = CreateEntity(id);
-                //if (entity)
-                {
-                    QDomElement comp_elem = ent_elem.firstChildElement("component");
-                    while(!comp_elem.isNull())
-                    {
-                        QString type_name = comp_elem.attribute("type");
-                        QString name = comp_elem.attribute("name");
-                        QString sync = comp_elem.attribute("sync");
-                        ComponentDesc compDesc;
-                        compDesc.typeName = type_name;
-                        compDesc.name = name;
-                        compDesc.sync = sync;
 
-                        // A bit of a hack to get the name from EC_Name.
-                        if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
-                        {
-                            ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
-                            EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
-                            ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-                            entityDesc.name = ecName->name.Get();
-                        }
+                QDomElement comp_elem = ent_elem.firstChildElement("component");
+                while(!comp_elem.isNull())
+                {
+                    QString type_name = comp_elem.attribute("type");
+                    QString name = comp_elem.attribute("name");
+                    QString sync = comp_elem.attribute("sync");
+                    ComponentDesc compDesc;
+                    compDesc.typeName = type_name;
+                    compDesc.name = name;
+                    compDesc.sync = sync;
 
-                        // Find asset references.
+                    // A bit of a hack to get the name from EC_Name.
+                    if (entityDesc.name.isEmpty() && type_name == EC_Name::TypeNameStatic())
+                    {
                         ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
-                        comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-                        foreach(IAttribute *a,comp->GetAttributes())
+                        EC_Name *ecName = checked_static_cast<EC_Name*>(comp.get());
+                        ecName->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                        entityDesc.name = ecName->name.Get();
+                    }
+
+                    // Find asset references.
+                    ComponentPtr comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+                    comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                    foreach(IAttribute *a,comp->GetAttributes())
+                    {
+                        QString typeName(a->TypenameToString().c_str());
+                        AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
+                        compDesc.attributes.append(attrDesc);
+
+                        if ((typeName == "assetreference" || (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference"))
+                            && !a->ToString().empty())
                         {
-                            QString typeName(a->TypenameToString().c_str());
-                            AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
-                            compDesc.attributes.append(attrDesc);
-
-                            if ((typeName == "assetreference" || (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference"))
-                                && !a->ToString().empty())
+                            // We might have multiple references, ";" used as a separator.
+                            QStringList values = QString(a->ToString().c_str()).split(";");
+                            foreach(QString value, values)
                             {
-                                // We might have multiple references, ";" used as a separator.
-                                QStringList values = QString(a->ToString().c_str()).split(";");
-                                foreach(QString value, values)
-                                {
-                                    AssetDesc ad;
-                                    ad.typeName = a->GetNameString().c_str();
-                                    ad.source = value;
+                                AssetDesc ad;
+                                ad.typeName = a->GetNameString().c_str();
+                                ad.source = value;
 
-                                    // Rewrite source refs for asset descs, if necessary.
-                                    QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                                    QString outFilePath;
-                                    AssetAPI::FileQueryResult res = framework_->Asset()->QueryFileLocation(ad.source, basePath, outFilePath);
-                                    if (res == AssetAPI::FileQueryLocalFileFound)
-                                        ad.source = outFilePath;
+                                // Rewrite source refs for asset descs, if necessary.
+                                QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+                                QString outFilePath;
+                                AssetAPI::FileQueryResult res = framework_->Asset()->QueryFileLocation(ad.source, basePath, outFilePath);
+                                if (res == AssetAPI::FileQueryLocalFileFound)
+                                    ad.source = outFilePath;
 
-                                    QString filepath = QDir::fromNativeSeparators(value);
-                                    int idx = filepath.lastIndexOf("/");
-                                    ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
+                                QString filepath = QDir::fromNativeSeparators(value);
+                                int idx = filepath.lastIndexOf("/");
+                                ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
 
-                                    sceneDesc.assets << ad;
-                                }
+                                sceneDesc.assets << ad;
                             }
                         }
-
-                        entityDesc.components.append(compDesc);
-
-                        comp_elem = comp_elem.nextSiblingElement("component");
                     }
 
-                    sceneDesc.entities.append(entityDesc);
+                    entityDesc.components.append(compDesc);
+
+                    comp_elem = comp_elem.nextSiblingElement("component");
                 }
+
+                sceneDesc.entities.append(entityDesc);
             }
 
             // Process siblings.
@@ -923,28 +905,7 @@ namespace Scene
                 EntityDesc entityDesc;
                 entity_id_t id = source.Read<u32>();
                 entityDesc.id = QString::number((int)id);
-                /*
-                if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
-                {
-                    if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
-                        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-                    else // Create a new ID for the new entity.
-                    {
-                        if ((id & LocalEntity) != 0) // Check if the ID is local
-                            id = GetNextFreeIdLocal();
-                        else
-                            id = GetNextFreeId();
-                    }
-                }
 
-                EntityPtr entity = CreateEntity(id);
-                if (!entity)
-                {
-                    std::cout << "Failed to create entity, stopping scene load" << std::endl;
-                    return ret; // If entity creation fails, stream desync is more than likely so stop right here
-                }
-                */
-                
                 uint num_components = source.Read<u32>();
                 for (uint i = 0; i < num_components; ++i)
                 {
@@ -976,30 +937,34 @@ namespace Scene
                                 comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
                                 foreach(IAttribute *a, comp->GetAttributes())
                                 {
-                                    AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                                    QString typeName = a->TypenameToString().c_str();
+                                    AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
                                     compDesc.attributes.append(attrDesc);
 
-                                    if (attrDesc.typeName == "assetreference" && !a->ToString().empty())
+                                    if ((typeName == "assetreference" || (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference"))
+                                        && !a->ToString().empty())
                                     {
-                                        QString value = a->ToString().c_str();
-                                        AssetDesc ad;
-                                        ad.typeName = a->GetNameString().c_str();
-                                        ad.source = value;
-                                        /*
-                                        if (value.contains("://") || QDir::isAbsolutePath(value))
-                                            ad.filename = value;
-                                        else
+                                        // We might have multiple references, ";" used as a separator.
+                                        QStringList values = QString(a->ToString().c_str()).split(";");
+                                        foreach(QString value, values)
                                         {
-                                            QDir dir(filename);
-                                            ad.filename = dir.absolutePath() + value;
+                                            AssetDesc ad;
+                                            ad.typeName = a->GetNameString().c_str();
+                                            ad.source = value;
+
+                                            // Rewrite source refs for asset descs, if necessary.
+                                            QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+                                            QString outFilePath;
+                                            AssetAPI::FileQueryResult res = framework_->Asset()->QueryFileLocation(ad.source, basePath, outFilePath);
+                                            if (res == AssetAPI::FileQueryLocalFileFound)
+                                                ad.source = outFilePath;
+
+                                            QString filepath = QDir::fromNativeSeparators(value);
+                                            int idx = filepath.lastIndexOf("/");
+                                            ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
+
+                                            sceneDesc.assets << ad;
                                         }
-                                        */
-
-                                        QString filepath = QDir::fromNativeSeparators(value);
-                                        int idx = filepath.lastIndexOf("/");
-                                        ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
-
-                                        sceneDesc.assets << ad;
                                     }
                                 }
                             }

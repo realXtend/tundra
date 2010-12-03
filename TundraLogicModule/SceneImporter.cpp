@@ -1,11 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
-#include "DebugOperatorNew.h"
+
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
+
+#include "CoreStringUtils.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "EC_Placeable.h"
@@ -13,24 +13,28 @@
 #include "EC_Name.h"
 #include "ServiceManager.h"
 #include "Renderer.h"
+#include "AssetAPI.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("SceneImporter")
 
 #include <Ogre.h>
 
 #include <QDomDocument>
 #include <QFile>
 
-using namespace RexTypes;
-
 namespace fs = boost::filesystem;
 
 namespace TundraLogic
 {
 
+/*
 struct MeshInfo
 {
     std::string name_;
     unsigned filesize_;
 };
+*/
 
 bool ProcessBraces(const std::string& line, int& braceLevel)
 {
@@ -63,7 +67,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
 {
     if (!scene_)
     {
-        TundraLogicModule::LogError("Null scene for mesh import");
+        LogError("Null scene for mesh import");
         return Scene::EntityPtr();
     }
 
@@ -98,41 +102,36 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
         */
         //if (create)
         {
-            TundraLogicModule::LogDebug("Material ref: " + material_names[i].toStdString());
+            LogDebug("Material ref: " + material_names[i].toStdString());
             material_names_set.insert(material_names[i]);
         }
     }
 
-    TundraLogicModule::LogDebug("Skeleton ref: " + skeleton_name.toStdString());
+    LogDebug("Skeleton ref: " + skeleton_name.toStdString());
 
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     QStringList material_files;
     if (inspect)
     {
-        fs::directory_iterator iter(in_asset_dir);
-        fs::directory_iterator end_iter;
+        fs::recursive_directory_iterator iter(in_asset_dir);
+        fs::recursive_directory_iterator end_iter;
         for(; iter != end_iter; ++iter )
-        {
             if (fs::is_regular_file(iter->status()))
             {
                 std::string ext = iter->path().extension();
                 boost::algorithm::to_lower(ext);
                 if (ext == ".material")
                 {
-                    TundraLogicModule::LogDebug("Material file: " + iter->path().string());
+                    LogDebug("Material file: " + iter->path().string());
                     material_files.push_back(iter->path().string().c_str());
                 }
             }
-        }
     }
-    
+
     // Process materials for textures.
     QSet<QString> all_textures;
-    for (uint i = 0; i < material_files.size(); ++i)
-    {
-        QSet<QString> textures = ProcessMaterialFileForTextures(material_files[i], material_names_set);
-        all_textures.unite(textures);
-    }
+    foreach(QString file, material_files)
+        all_textures.unite(ProcessMaterialFileForTextures(file, material_names_set));
 
     // Process textures
 //    ProcessTextures(all_textures, in_asset_dir, out_asset_dir);
@@ -184,7 +183,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     Scene::EntityPtr newentity = scene_->CreateEntity(0, QStringList(), change, true);
     if (!newentity)
     {
-        TundraLogicModule::LogError("Could not create entity for mesh");
+        LogError("Could not create entity for mesh");
         return newentity;
     }
     
@@ -213,7 +212,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     if (placeablePtr)
         placeablePtr->transform.Set(worldtransform, AttributeChange::Disconnected);
     else
-        TundraLogicModule::LogError("No EC_Placeable was created!");
+        LogError("No EC_Placeable was created!");
 
     // Fill the mesh attributes
     QVector<QVariant> materials;
@@ -234,7 +233,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
             meshPtr->nodeTransformation.Set(Transform(), AttributeChange::Disconnected);
     }
     else
-        TundraLogicModule::LogError("No EC_Mesh was created!");
+        LogError("No EC_Mesh was created!");
 
     // Fill the name attributes
     /*
@@ -242,7 +241,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     if (namePtr)
         namePtr->name.Set(name, AttributeChange::Disconnected);
     else
-        TundraLogicModule::LogError("No EC_Name was created!");
+        LogError("No EC_Name was created!");
     */
 
     // All components have been loaded/modified. Trigger change for them now.
@@ -260,7 +259,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
     QList<Scene::Entity *> ret;
     if (!scene_)
     {
-        TundraLogicModule::LogError("Null scene for import");
+        LogError("Null scene for import");
         return ret;
     }
 
@@ -269,15 +268,15 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
     try
     {
         if (clearscene)
-            TundraLogicModule::LogInfo("Importing scene from " + filename + " and clearing the old");
+            LogInfo("Importing scene from " + filename + " and clearing the old");
         else
-            TundraLogicModule::LogInfo("Importing scene from " + filename);
+            LogInfo("Importing scene from " + filename);
 
         QFile file(filename.c_str());
         if (!file.open(QFile::ReadOnly))
         {
             file.close();
-            TundraLogicModule::LogError("Failed to open file");
+            LogError("Failed to open file");
             return QList<Scene::Entity *>();
         }
         
@@ -285,7 +284,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
         if (!dotscene.setContent(&file))
         {
             file.close();
-            TundraLogicModule::LogError("Failed to parse XML content");
+            LogError("Failed to parse XML content");
             return ret;
         }
         
@@ -294,13 +293,13 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
         QDomElement scene_elem = dotscene.firstChildElement("scene");
         if (scene_elem.isNull())
         {
-            TundraLogicModule::LogError("No scene element");
+            LogError("No scene element");
             return ret;
         }
         QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
         if (nodes_elem.isNull())
         {
-            TundraLogicModule::LogError("No nodes element");
+            LogError("No nodes element");
             return ret;
         }
         
@@ -315,11 +314,11 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
         QDomElement node_elem = nodes_elem.firstChildElement("node");
         
         // First pass: get used assets
-        TundraLogicModule::LogInfo("Processing scene for assets");
+        LogInfo("Processing scene for assets");
         ProcessNodeForAssets(node_elem, in_asset_dir);
         
         // Write out the needed assets
-        TundraLogicModule::LogInfo("Saving needed assets");
+        LogInfo("Saving needed assets");
         // By default, assume the material file is scenename.material if scene is scenename.scene.
         // However, if an external reference exists, use that.
         std::string matfilename = ReplaceSubstring(filename, ".scene", ".material");
@@ -345,7 +344,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
 //        ProcessAssets(matfilename, in_asset_dir, out_asset_dir, localassets);
         
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
-        TundraLogicModule::LogInfo("Creating entities");
+        LogInfo("Creating entities");
 
         Quaternion rot(DEGTORAD * worldtransform.rotation.x, DEGTORAD * worldtransform.rotation.y,
             DEGTORAD * worldtransform.rotation.z);
@@ -353,11 +352,11 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
     }
     catch (Exception& e)
     {
-        TundraLogicModule::LogError(std::string("Exception while scene importing: ") + e.what());
+        LogError(std::string("Exception while scene importing: ") + e.what());
         return QList<Scene::Entity *>();
     }
     
-    TundraLogicModule::LogInfo("Finished");
+    LogInfo("Finished");
 
     // Reset possible scene descrition filter
     scene_desc_ = SceneDesc();
@@ -372,7 +371,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
     QFile mesh_in(meshname);
     if (!mesh_in.open(QFile::ReadOnly))
     {
-        TundraLogicModule::LogError("Could not open input mesh file " + meshname.toStdString());
+        LogError("Could not open input mesh file " + meshname.toStdString());
         return false;
     }
     else
@@ -382,7 +381,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
         OgreRenderer::RendererPtr renderer = scene_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
         if (!renderer)
         {
-            TundraLogicModule::LogError("Renderer does not exist");
+            LogError("Renderer does not exist");
             return false;
         }
         
@@ -392,7 +391,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
             Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             if (tempmesh.isNull())
             {
-                TundraLogicModule::LogError("Failed to create temp mesh");
+                LogError("Failed to create temp mesh");
                 return false;
             }
             
@@ -420,7 +419,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
         }
         catch (...)
         {
-            TundraLogicModule::LogError("Exception while inspecting mesh " + meshname.toStdString());
+            LogError("Exception while inspecting mesh " + meshname.toStdString());
             return false;
         }
     }
@@ -434,7 +433,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
 
     if (!filename.endsWith(".mesh", Qt::CaseInsensitive))
     {
-        TundraLogicModule::LogError("Unsupported file type for scene description creation: " + filename.toStdString());
+        LogError("Unsupported file type for scene description creation: " + filename.toStdString());
         return sceneDesc;
     }
 
@@ -453,6 +452,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     int start = entityName.lastIndexOf(".mesh");
     int end = entityName.length();
     QString meshEntityName = entityName.remove(start, end - start);
+
     EntityDesc entityDesc = { "", meshEntityName };
     ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
     ComponentDesc placeableDesc = { EC_Placeable::TypeNameStatic() };
@@ -476,60 +476,59 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     QSet<QString> material_names_set;
     for (uint i = 0; i < material_names.size(); ++i)
     {
-        TundraLogicModule::LogDebug("Creating scene desc for .mesh, Material ref: " + material_names[i].toStdString());
+        LogDebug("Creating scene desc for .mesh, Material ref: " + material_names[i].toStdString());
         material_names_set.insert(material_names[i]);
     }
 
     if (!skeleton_name.isEmpty())
-        TundraLogicModule::LogDebug("Creating scene desc for .mesh, Skeleton ref: " + skeleton_name.toStdString());
+        LogDebug("Creating scene desc for .mesh, Skeleton ref: " + skeleton_name.toStdString());
 
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     QStringList material_files;
-    fs::directory_iterator iter(path.branch_path());
-    fs::directory_iterator end_iter;
-    for(; iter != end_iter; ++iter )
+    fs::recursive_directory_iterator iter(path.branch_path()), end_iter;
+    for(; iter != end_iter; ++iter)
         if (fs::is_regular_file(iter->status()))
         {
-            std::string ext = iter->path().extension();
-            boost::algorithm::to_lower(ext);
-            if (ext == ".material")
+            QString ext(iter->path().extension().c_str());
+            if (ext.contains(".material", Qt::CaseInsensitive))
             {
-                TundraLogicModule::LogDebug("Creating scene desc for .mesh, Material file: " + iter->path().string());
+                LogDebug("Creating scene desc for .mesh, Material file: " + iter->path().string());
                 material_files.push_back(iter->path().string().c_str());
             }
         }
 
-    // Crate material assets descs even if the files does not exist.
-    foreach(QString matName, material_names_set)
+    // Get all materials scripts from all material script files.
+    MaterialInfoList allMaterials;
+    foreach(QString filename, material_files)
     {
-        QString matScript, sourceMatFile;
-        foreach(QString matFile, material_files)
-        {
-            matScript = LoadSingleMaterialFromFile(matFile, matName);
-            if (!matScript.isEmpty())
-            {
-                sourceMatFile = matFile;
-                break;
-            }
-        }
+        MaterialInfoList mats = LoadAllMaterialsFromFile(filename);
+        allMaterials.insert(mats.begin(), mats.end());
+    }
 
+    // Find the used materials and create material assets descs even if the files don't exist.
+    QSet<QString> usedMaterials = material_names.toSet();
+    foreach(QString matName, usedMaterials)
+    {
         AssetDesc matDesc;
         matDesc.typeName = "material";
-        matDesc.source = !sourceMatFile.isEmpty() ? sourceMatFile : matName;
         matDesc.subname = matName;
         matDesc.destinationName = matName + ".material";
-        matDesc.data = matScript.toAscii();
+
+        foreach(MaterialInfo mat, allMaterials)
+            if (mat.name == matName)
+            {
+                matDesc.source = mat.source;
+                matDesc.data = mat.data.toAscii();
+            }
+
         sceneDesc.assets << matDesc;
     }
 
     // Process materials for textures.
     QSet<QString> all_textures;
-    for (uint i = 0; i < material_files.size(); ++i)
-    {
-        //textures = ProcessMaterialFile(material_files[i], material_names_set, out_asset_dir, localassets);
-        QSet<QString> textures = ProcessMaterialFileForTextures(material_files[i], material_names_set);
-        all_textures.unite(textures);
-    }
+    foreach(MaterialInfo matInfo, allMaterials)
+        if (usedMaterials.find(matInfo.name) != usedMaterials.end())
+            all_textures.unite(ProcessMaterialForTextures(matInfo.data));
 
     // Add texture asset descs.
     foreach(QString tex, all_textures)
@@ -612,7 +611,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 
     if (!filename.endsWith(".scene", Qt::CaseInsensitive))
     {
-        TundraLogicModule::LogError("Unsupported file type for scene description creation: " + filename.toStdString());
+        LogError("Unsupported file type for scene description creation: " + filename.toStdString());
         return sceneDesc;
     }
 
@@ -623,7 +622,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     if (!file.open(QFile::ReadOnly))
     {
         file.close();
-        TundraLogicModule::LogError("Failed to open file " + filename.toStdString());
+        LogError("Failed to open file " + filename.toStdString());
         return sceneDesc;
     }
 
@@ -631,7 +630,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     if (!dotscene.setContent(&file))
     {
         file.close();
-        TundraLogicModule::LogError("Failed to parse XML content");
+        LogError("Failed to parse XML content");
         return sceneDesc;
     }
     
@@ -640,14 +639,14 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     QDomElement scene_elem = dotscene.firstChildElement("scene");
     if (scene_elem.isNull())
     {
-        TundraLogicModule::LogError("No scene element");
+        LogError("No scene element");
         return sceneDesc;
     }
 
     QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
     if (nodes_elem.isNull())
     {
-        TundraLogicModule::LogError("No nodes element");
+        LogError("No nodes element");
         return sceneDesc;
     }
 
@@ -656,6 +655,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     // For scenes we assume that the material file is named same as the scene file itself.
     QString materialFileName = filename.mid(0, filename.indexOf(".scene"));
     materialFileName.append(".material");
+
     QSet<QString> material_names_set;
     QStringList material_filenames;
 
@@ -790,6 +790,9 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
         sceneDesc.assets << textureAssetDesc;
     }
 
+//    foreach(AssetDesc ad, sceneDesc.assets)
+//        RewriteAssetRef(sceneDesc.filename, ad.source);
+
     return sceneDesc;
 }
 
@@ -803,7 +806,7 @@ QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfi
     QFile matfile(matfilename);
     if (!matfile.open(QFile::ReadOnly))
     {
-        TundraLogicModule::LogError("Could not open material file " + matfilename.toStdString());
+        LogError("Could not open material file " + matfilename.toStdString());
         return used_textures;
     }
     else
@@ -866,6 +869,20 @@ QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfi
     return used_textures;
 }
 
+QSet<QString> SceneImporter::ProcessMaterialForTextures(const QString &material) const
+{
+    QSet<QString> textures;
+    QStringList lines = material.split("\n");
+    for(int i = 0; i < lines.size(); ++i)
+    {
+        int idx = lines[i].indexOf("texture ");
+        if (idx != -1)
+            textures.insert(lines[i].mid(idx + 8).trimmed());
+    }
+
+    return textures;
+}
+
 QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const
 {
     QString material;
@@ -876,7 +893,7 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
     QFile matfile(filename);
     if (!matfile.open(QFile::ReadOnly))
     {
-        TundraLogicModule::LogError("Could not open material file " + filename.toStdString());
+        LogError("Could not open material file " + filename.toStdString());
         return material;
     }
     else
@@ -885,7 +902,7 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
         matfile.close();
         if (bytes.size() == 0)
         {
-            TundraLogicModule::LogError("Empty material file: " + filename.toStdString());
+            LogError("Empty material file: " + filename.toStdString());
             return material;
         }
 
@@ -954,6 +971,82 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
     }
 
     return material;
+}
+
+MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename) const
+{
+    MaterialInfoList materials;
+
+    // Read the material file
+    QFile matfile(filename);
+    if (!matfile.open(QFile::ReadOnly))
+    {
+        LogError("Could not open material file " + filename.toStdString());
+        return materials;
+    }
+    else
+    {
+        QByteArray bytes = matfile.readAll();
+        matfile.close();
+        if (bytes.size() == 0)
+        {
+            LogError("Empty material file: " + filename.toStdString());
+            return materials;
+        }
+
+        int brace_level = 0;
+        int skip_brace_level = 0;
+
+        MaterialInfo material;
+        material.source = filename;
+
+        Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
+        while(!data->eof())
+        {
+            std::string line = data->getLine();
+
+            // Skip empty lines & comments
+            if ((line.length()) && (line.substr(0, 2) != "//"))
+            {
+                // Process opening/closing braces
+                if (!ProcessBraces(line, brace_level))
+                {
+                    // If not a brace and on level 0, it should be a new material
+                    if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
+                    {
+                        QString matname = line.substr(9).c_str();
+                        matname.replace('/', '_');
+                        material.name = matname.trimmed();
+                        material.data.clear();
+                    }
+
+                    // Add indentation.
+                    for(int i =0; i < brace_level; ++i)
+                        material.data.append("    ");
+
+                    material.data.append(line.c_str());
+                    material.data.append("\n");
+                }
+                else
+                {
+                    // Add indentation.
+                    int i = 0;
+                    if (line.find("{") != std::string::npos)
+                        ++i;
+                    for(; i < brace_level; ++i)
+                        material.data.append("    ");
+
+                    material.data.append(line.c_str());
+                    material.data.append("\n");
+
+                    if (brace_level <= skip_brace_level)
+                        materials.insert(material);
+                }
+            }
+        }
+    }
+
+    return materials;
 }
 
 void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir)
@@ -1030,7 +1123,7 @@ void SceneImporter::ProcessAssets(const std::string& matfilename, const std::str
         std::string meshname = m->first;
         QFile mesh_in((in_asset_dir + meshname).c_str());
         if (!mesh_in.open(QFile::ReadOnly))
-            TundraLogicModule::LogError("Could not open input mesh file " + meshname);
+            LogError("Could not open input mesh file " + meshname);
         else
         {
             QByteArray bytes = mesh_in.readAll();
@@ -1071,7 +1164,7 @@ void SceneImporter::ProcessAssets(const std::string& matfilename, const std::str
             {
                 QFile mesh_out((out_asset_dir + meshname).c_str());
                 if (!mesh_out.open(QFile::WriteOnly))
-                    TundraLogicModule::LogError("Could not open output mesh file " + meshname);
+                    LogError("Could not open output mesh file " + meshname);
                 else
                 {
                     mesh_out.write(bytes);
@@ -1154,7 +1247,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
             std::string orig_mesh_name = entity_elem.attribute("meshFile").toStdString();
             QString mesh_name = QString::fromStdString(mesh_names_[orig_mesh_name]);
             
-            bool cast_shadows = ParseBool(entity_elem.attribute("castShadows").toStdString());
+            bool cast_shadows = ::ParseBool(entity_elem.attribute("castShadows").toStdString());
 
             mesh_name = prefix + mesh_name;
 
@@ -1188,7 +1281,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                 }
                 else
                 {
-                    TundraLogicModule::LogInfo("Updating existing entity " + node_name);
+                    LogInfo("Updating existing entity " + node_name);
                 }
 
                 EC_Mesh* meshPtr = 0;
@@ -1277,7 +1370,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                         entities.append(entity.get());
                     }
                     else
-                        TundraLogicModule::LogError("Could not create mesh, placeable, name components");
+                        LogError("Could not create mesh, placeable, name components");
                 }
             }
         }
@@ -1290,6 +1383,15 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
     }
+}
+
+void SceneImporter::RewriteAssetRef(const QString &sceneFileName, QString &ref) const
+{
+    QString basePath(boost::filesystem::path(sceneFileName.toStdString()).branch_path().string().c_str());
+    QString outFilePath;
+    AssetAPI::FileQueryResult res = scene_->GetFramework()->Asset()->QueryFileLocation(ref, basePath, outFilePath);
+    if (res == AssetAPI::FileQueryLocalFileFound)
+        ref = outFilePath;
 }
 
 }

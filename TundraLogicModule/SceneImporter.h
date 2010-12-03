@@ -18,6 +18,8 @@
 #include "Transform.h"
 #include "SceneDesc.h"
 
+#include <QPair>
+
 #include <map>
 
 class QDomElement;
@@ -29,6 +31,24 @@ namespace Foundation
 
 namespace TundraLogic
 {
+
+/// Stores information about material script.
+struct MaterialInfo
+{
+    QString source; ///< Source file of the material script.
+    QString name; ///< Name of the material.
+    QString data; ///< Data (the actual material script).
+
+    /// Less than operator. Compares source and name.
+    bool operator <(const MaterialInfo &rhs) const
+    {
+        if (source < rhs.source) return true; else if (source > rhs.source) return false;
+        if (name < rhs.name) return true; else if (name > rhs.name) return false;
+        return false;
+    }
+};
+
+typedef std::set<MaterialInfo> MaterialInfoList; ///< Set of MaterialInfo structs.
 
 //! Importer tool for OGRE .scene and .mesh files
 class TUNDRALOGIC_MODULE_API SceneImporter
@@ -100,12 +120,25 @@ public:
      */
     QSet<QString> ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials) const;
 
+    /// Process material script and searches for texture references.
+    /** @param material Material script.
+        @return Set of used texture references/names.
+    */
+    QSet<QString> ProcessMaterialForTextures(const QString &material) const;
+
     /// Loads single material script from material file and returns it as a string.
     /** @param filename File name.
         @param materialName Material name.
         @return Material script as a string, or an empty string if material was not found
     */
     QString LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const;
+
+    /// Loads all (uniquely named) material scripts found within a material script file.
+    /** @param filename File name.
+        @param materialNames Names of materials to be loaded.
+        @return List of material names - material script pairs as strings.
+    */
+    MaterialInfoList LoadAllMaterialsFromFile(const QString &filename) const;
 
 private:
     //! Process the asset references of a node, and its child nodes
@@ -125,6 +158,12 @@ private:
      */
     void ProcessNodeForCreation(QList<Scene::Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
+
+    ///
+    /** @param filename
+        @param ref
+    */
+    void RewriteAssetRef(const QString &sceneFileName, QString &ref) const;
 
     //! Materials read from meshes, in case of no subentity elements
     QMap<QString, QStringList> mesh_default_materials_;

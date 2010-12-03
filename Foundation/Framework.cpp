@@ -306,6 +306,7 @@ namespace Foundation
         PROFILE(FW_PostInitialize);
 
         event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
+        UNREFERENCED_PARAM(framework_events);
         srand(time(0));
 
         LoadModules();

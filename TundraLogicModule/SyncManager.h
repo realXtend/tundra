@@ -5,10 +5,8 @@
 
 #include "Foundation.h"
 #include "IComponent.h"
-#include "SceneManager.h"
+#include "ForwardDefines.h"
 #include "SyncState.h"
-
-#include "kNet.h"
 
 #include <QObject>
 #include <map>
@@ -24,8 +22,8 @@ struct MsgEntityAction;
 
 namespace kNet
 {
-class MessageConnection;
-typedef unsigned long message_id_t;
+    class MessageConnection;
+    typedef unsigned long message_id_t;
 }
 
 class UserConnection;

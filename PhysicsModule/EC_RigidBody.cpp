@@ -1,24 +1,26 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "EC_Mesh.h"
 #include "EC_RigidBody.h"
-#include "EC_Placeable.h"
-#include "EC_Terrain.h"
 #include "ConvexHull.h"
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
+
+#include "Entity.h"
+#include "EC_Mesh.h"
+#include "EC_Placeable.h"
+#include "EC_Terrain.h"
 #include "OgreMeshResource.h"
 #include "ServiceManager.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
-
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
 
 using namespace Physics;
 
