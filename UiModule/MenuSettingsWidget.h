@@ -4,7 +4,7 @@
 #ifndef incl_UiModule_MenuSettingsWidget_h
 #define incl_UiModule_MenuSettingsWidget_h
 
-#include "ui_menusettingswidget.h"
+#include "ui_MenuSettingsWidget.h"
 
 #include <QWidget>
 #include <QCheckBox>
