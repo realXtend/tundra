@@ -35,6 +35,8 @@ asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
         return RexAT_FlashAnimation;
     if (asset_type == ASSETTYPENAME_GENERIC_AVATAR_XML)
         return RexAT_GenericAvatarXml;
+    if (asset_type == ASSETTYPENAME_VIDEO)
+        return RexAT_Video;
 
     return RexAT_None;
 }
@@ -59,6 +61,8 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
         return ASSETTYPENAME_GENERIC_AVATAR_XML;
     if (asset_type == RexAT_Image)
         return ASSETTYPENAME_IMAGE;
+    if (asset_type == RexAT_Video)
+        return ASSETTYPENAME_VIDEO;
 
     return ASSETTYPENAME_UNKNOWN;
 }

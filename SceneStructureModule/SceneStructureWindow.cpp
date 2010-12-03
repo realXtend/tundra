@@ -170,7 +170,7 @@ void SceneStructureWindow::CreateAssetReferences()
                     continue;
 
                 foreach(IAttribute *attr, comp->GetAttributes())
-                    if (attr->TypenameToString() == "assetreference")
+                    if (attr->TypeName() == "assetreference")
                         CreateAssetItem(cItem, attr);
             }
         }
@@ -179,7 +179,7 @@ void SceneStructureWindow::CreateAssetReferences()
             // Create asset ref items as children of entity items.
             foreach(ComponentPtr comp, entity->GetComponentVector())
                 foreach(IAttribute *attr, comp->GetAttributes())
-                    if (attr->TypenameToString() == "assetreference")
+                    if (attr->TypeName() == "assetreference")
                         CreateAssetItem(eItem, attr);
         }
     }
@@ -278,7 +278,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
 //#endif
             // Add possible asset references.
             foreach(IAttribute *attr, comp->GetAttributes())
-                if (attr->TypenameToString() == "assetreference")
+                if (attr->TypeName() == "assetreference")
                     CreateAssetItem(cItem, attr);
         }
     }

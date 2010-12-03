@@ -95,9 +95,13 @@ namespace ECEditor
         AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
         {
-            ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this,
-                component, QString(attributes[i]->GetNameString().c_str()), QString(attributes[i]->TypenameToString().c_str()));
-            if (!attributeEditor)
+            ECAttributeEditorBase *attributeEditor = 0;
+            attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_,
+                                                                       this, 
+                                                                       component, 
+                                                                       QString::fromStdString(attributes[i]->GetNameString()),
+                                                                       QString::fromStdString(attributes[i]->TypeName()));
+            if(!attributeEditor)
                 continue;
 
             attributeEditors_[attributes[i]->GetName()] = attributeEditor;

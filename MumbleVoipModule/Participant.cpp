@@ -10,7 +10,8 @@ namespace MumbleVoip
         position_known_(false),
         position_(0.0, 0.0, 0.0),
         user_(user),
-        name_(name)
+        name_(name),
+        voice_activity_(0)
     {
         avatar_uuid_ = user_->Name();
         connect(user_, SIGNAL(StartReceivingAudio()), SLOT(OnStartSpeaking()) );
@@ -94,6 +95,12 @@ namespace MumbleVoip
     {
         name_ = name;
         emit Communications::InWorldVoice::ParticipantInterface::StateChanged();
+    }
+
+    double Participant::VoiceActivity() const
+    {
+         // todo: implement
+        return voice_activity_;
     }
 
 } // MumbleVoip

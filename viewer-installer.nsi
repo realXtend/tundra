@@ -1,4 +1,4 @@
-!define VERSION "0.3.3"
+!define VERSION "0.3.4.1"
 
 Name "Naali ${VERSION}"
 
@@ -8,7 +8,7 @@ Page instfiles
 InstallDir "$PROGRAMFILES\Naali ${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "Naali-0.3.3.exe"
+OutFile "Naali-0.3.4.1.exe"
 
 XPStyle on
 
@@ -27,6 +27,11 @@ Section ""
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
 
+  # register url scheme handler				   
+  WriteRegStr HKCR "realxtend" "" "URL:realXtend Protocol"
+  WriteRegStr HKCR "realxtend" "URL Protocol" ""
+  WriteRegStr HKCR "realxtend\shell\open\command" "" "$INSTDIR\viewer.exe %1"
+  
   ExecWait '"$INSTDIR\oalinst.exe"'
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
   ExecWait '"$INSTDIR\dxwebsetup.exe"'

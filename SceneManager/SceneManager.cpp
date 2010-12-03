@@ -721,7 +721,7 @@ namespace Scene
                     {
                         foreach(IAttribute *attr, comp->GetAttributes())
                             foreach(AttributeDesc a, c.attributes)
-                                if (attr->TypenameToString().c_str() == a.typeName && attr->GetName() == a.name)
+                                if (attr->TypeName().c_str() == a.typeName && attr->GetName() == a.name)
                                     // Trigger no signal yet when scene is in incoherent state
                                     attr->FromString(a.value.toStdString(), AttributeChange::Disconnected);
                     }
@@ -834,7 +834,7 @@ namespace Scene
                         comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                         foreach(IAttribute *a,comp->GetAttributes())
                         {
-                            QString typeName(a->TypenameToString().c_str());
+                            QString typeName(a->TypeName().c_str());
                             AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
                             compDesc.attributes.append(attrDesc);
 
@@ -976,7 +976,7 @@ namespace Scene
                                 comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
                                 foreach(IAttribute *a, comp->GetAttributes())
                                 {
-                                    AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                                    AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
                                     compDesc.attributes.append(attrDesc);
 
                                     if (attrDesc.typeName == "assetreference" && !a->ToString().empty())

@@ -591,6 +591,14 @@ namespace ProtocolUtilities
         /// Returns authentication type.
         AuthenticationType GetAuthenticationType() const { return authentication_type_; }
 
+        bool IsGodModeEnabled() { return god_mode_enabled_; }
+
+        void EnableGodMode() { god_mode_enabled_ = true; emit GodModeEnabled(); }
+
+        void DisableGodMode() { god_mode_enabled_ = false; emit GodModeDisabled(); }
+
+        void RequestGodMode();
+
     private:
         Q_DISABLE_COPY(WorldStream);
 
@@ -662,6 +670,12 @@ namespace ProtocolUtilities
 
         /// Block serial number used for AgentPause and AgentResume messages.
         uint32_t blockSerialNumber_;
+
+        bool god_mode_enabled_;
+
+    signals:
+        void GodModeEnabled();
+        void GodModeDisabled();
     };
 }
 

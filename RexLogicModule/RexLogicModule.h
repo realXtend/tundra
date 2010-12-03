@@ -219,6 +219,8 @@ namespace RexLogic
 
         ObjectCameraControllerPtr GetObjectCameraController() { return obj_camera_controller_; }
         CameraControlPtr GetCameraControlWidget() { return camera_control_widget_; }
+		
+		void SendAvatarUrl();
 
     public slots:
         //! logout from server and delete current scene

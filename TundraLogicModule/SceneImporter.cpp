@@ -574,7 +574,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
 
         foreach(IAttribute *a, mesh->GetAttributes())
         {
-            AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+            AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             meshDesc.attributes.append(attrDesc);
         }
     }
@@ -583,7 +583,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     if (placeable)
         foreach(IAttribute *a, placeable->GetAttributes())
         {
-            AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+            AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             placeableDesc.attributes.append(attrDesc);
         }
 
@@ -595,7 +595,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         name->name.Set(meshleafname, AttributeChange::Disconnected);
         foreach(IAttribute *a, name->GetAttributes())
         {
-            AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+            AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
             placeableDesc.attributes.append(attrDesc);
         }
     }
@@ -691,7 +691,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 
                 foreach(IAttribute *a, placeable->GetAttributes())
                 {
-                    AttributeDesc attrDesc = { a->TypenameToString().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                    AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
                     placeableDesc.attributes.append(attrDesc);
                 }
             }
