@@ -21,9 +21,6 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace ECEditor
-{
-
 EcXmlEditorWidget::EcXmlEditorWidget(Foundation::Framework *framework, QWidget *parent) :
     QWidget(parent), framework_(framework), xmlEdit_(0)
 {
@@ -246,6 +243,4 @@ void EcXmlEditorWidget::changeEvent(QEvent *event)
         setWindowTitle(tr("EC Attribute XML Editor"));
     else
        QWidget::changeEvent(event);
-}
-
 }

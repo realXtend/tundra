@@ -17,10 +17,8 @@
 #include <QPointer>
 #include <QMenu>
 
-namespace ECEditor
-{
-    class ECEditorWindow;
-}
+
+class ECEditorWindow;
 
 struct InvokeItem;
 class IArgumentType;
@@ -210,7 +208,7 @@ private:
     Scene::SceneWeakPtr scene;
 
     /// This widget's "own" EC editor.
-    QList<QPointer<ECEditor::ECEditorWindow> > ecEditors;
+    QList<QPointer<ECEditorWindow> > ecEditors;
 
     /// Maximum count of invoke history items.
     int historyMaxItemCount;

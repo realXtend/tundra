@@ -191,7 +191,7 @@ SceneTreeWidget::~SceneTreeWidget()
 {
     while(!ecEditors.empty())
     {
-        ECEditor::ECEditorWindow *editor = ecEditors.back();
+        ECEditorWindow *editor = ecEditors.back();
         ecEditors.pop_back();
         if (editor)
             SAFE_DELETE(editor);
@@ -612,7 +612,7 @@ void SceneTreeWidget::Edit()
         // If we have an existing editor instance, use it.
         if (ecEditors.size())
         {
-            ECEditor::ECEditorWindow *editor = ecEditors.back();
+            ECEditorWindow *editor = ecEditors.back();
             if (editor)
             {
                 editor->AddEntities(selection.EntityIds(), true);
@@ -625,8 +625,8 @@ void SceneTreeWidget::Edit()
             }
         }
 
-        ECEditor::ECEditorWindow *editor = 0;
-        ECEditor::ECEditorModule *module = framework->GetModule<ECEditor::ECEditorModule>();
+        ECEditorWindow *editor = 0;
+        ECEditorModule *module = framework->GetModule<ECEditorModule>();
         editor = module->GetActiveECEditor();
         if (editor && !ecEditors.contains(editor))
         {
@@ -635,7 +635,7 @@ void SceneTreeWidget::Edit()
         }
         else // If there isn't any active editors in ECEditorModule, create a new one.
         {
-            editor = new ECEditor::ECEditorWindow(framework);
+            editor = new ECEditorWindow(framework);
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
         }
@@ -695,7 +695,7 @@ void SceneTreeWidget::EditInNew()
     //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     //assert(ui);
 
-    ECEditor::ECEditorWindow *editor = new ECEditor::ECEditorWindow(framework);
+    ECEditorWindow *editor = new ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
     connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
@@ -841,7 +841,7 @@ void SceneTreeWidget::NewComponent()
     if (!sel.HasEntities())
         return;
 
-    ECEditor::AddComponentDialog *dialog = new ECEditor::AddComponentDialog(framework, sel.EntityIds(), this);
+    AddComponentDialog *dialog = new AddComponentDialog(framework, sel.EntityIds(), this);
     dialog->SetComponentList(framework->GetComponentManager()->GetAvailableComponentTypeNames());
     connect(dialog, SIGNAL(finished(int)), SLOT(ComponentDialogFinished(int)));
     dialog->show();
@@ -849,7 +849,7 @@ void SceneTreeWidget::NewComponent()
 
 void SceneTreeWidget::ComponentDialogFinished(int result)
 {
-    ECEditor::AddComponentDialog *dialog = qobject_cast<ECEditor::AddComponentDialog *>(sender());
+    AddComponentDialog *dialog = qobject_cast<AddComponentDialog *>(sender());
     if (!dialog)
         return;
 
@@ -1651,7 +1651,7 @@ void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
 
 void SceneTreeWidget::ECEditorDestroyed(QObject *obj)
 {
-    QList<QPointer<ECEditor::ECEditorWindow> >::iterator iter = ecEditors.begin();
+    QList<QPointer<ECEditorWindow> >::iterator iter = ecEditors.begin();
     while(iter != ecEditors.end())
     {
         if (*iter == obj)
