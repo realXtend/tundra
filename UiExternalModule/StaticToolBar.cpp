@@ -18,7 +18,7 @@ namespace UiExternalServices
 	{
 		createActions();
 		addActions();
-		CreateMenu();
+//		CreateMenu();
 	}
 
 	StaticToolBar::~StaticToolBar()
