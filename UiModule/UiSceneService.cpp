@@ -580,7 +580,10 @@ namespace UiServices
 
 	void UiSceneService::SetPanelsList(const QString& old_name, const QString& new_name) {
 		if (settings_panel_ && old_name == "Ether" && uiExternal)
-			settings_panel_->SetPanelsList(panels_menus_list_.keys());
+        {
+            QList<QString> keys = panels_menus_list_.keys();
+			settings_panel_->SetPanelsList(keys);
+        }
 	}
 
 
