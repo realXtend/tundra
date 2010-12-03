@@ -221,7 +221,9 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
     if (assetRef.length() == 0)
     {
-        LogError("AssetAPI::RequestAsset: Request by empty url \"\" of type \"" + assetType.toStdString() + " received!");
+        // Removed this print - seems like a bad idea to print out this warning, since there are lots of scenes with null assetrefs.
+        // Perhaps have a verbose log channel for these kinds of sanity checks.
+//        LogError("AssetAPI::RequestAsset: Request by empty url \"\" of type \"" + assetType.toStdString() + " received!");
         return AssetTransferPtr();
     }
 

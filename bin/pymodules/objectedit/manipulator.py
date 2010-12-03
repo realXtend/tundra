@@ -182,7 +182,10 @@ class Manipulator:
             if ent is None:
                 return
 
+
             if ent.Id == self.manipulator.Id:
+                ent.gizmo.ClearEditableAttributes();
+                self.setAttributes(ents)
                 submeshid = results[-3]
                 self.axisSubmesh = submeshid
                 u = results[-2]
@@ -262,7 +265,7 @@ class Manipulator:
             changevec = rightvec - upvec
 
             # group rotation
-            if self.NAME=="RotationManipulator" and len(ents)>1 and self.grabbed_axis == self.AXIS_BLUE:
+            if self.NAME=="RotationManipulator" and len(ents)>1:
                 self.setCenterPointAndCenterVectors(ents)
                 self._manipulate2(ents, amountx, amounty, changevec, self.entCenterVectors, self.centerPoint)
             else:            
@@ -274,8 +277,9 @@ class Manipulator:
                     if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
                         placeable = ents[0].placeable
                         self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
-
-                self.manipulator.ruler.UpdateRuler()
+                
+                if(self.manipulator!=None):
+                    self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
                 self.moveTo(ents)
@@ -314,31 +318,21 @@ class Manipulator:
         for ent in ents:
             pos = ent.placeable.Position
             diff = self.vectorDifference(pos, self.centerPoint)
+            #diff = pos - self.centerPoint
             self.entCenterVectors[ent]=diff 
         # print "center vectors"
         # for e, vec in self.entCenterVectors.iteritems():
             # print vec
         
     def vectorDifference(self, v1, v2):
+        """ rotations stopped working when using v1-v2 and v1+v2, so currently this method remains here """
         x = v1.x()-v2.x()
         y = v1.y()-v2.y()
         z = v1.z()-v2.z()
         return QVector3D(x, y, z)
 
-    def calibrateVec(self, r, v):
-        if(self.vectorLen(r)!=0):
-            factor = self.vectorLen(v)/self.vectorLen(r)
-            rx = factor* r.x()
-            ry = factor* r.y()
-            rz = factor* r.z()
-            return QVector3D(rx, ry, rz)
-        else: # if original vector is zero length, the rotated one must be too, just return r
-            return r
-
-    def vectorLen(self, v):
-        return math.sqrt(v.x()**2 + v.y()**2 + v.z()**2)
-
     def vectorAdd(self, v1, v2):
+        """ rotations stopped working when using v1-v2 and v1+v2, so currently this method remains here """
         x = v1.x()+v2.x()
         y = v1.y()+v2.y()
         z = v1.z()+v2.z()
@@ -382,8 +376,11 @@ class MoveManipulator(Manipulator):
                 elif self.grabbed_axis == self.AXIS_GREEN:
                     changevec.setZ(0)
                     changevec.setX(0)
-                ent.placeable.Position += changevec
-                ent.network.Position += changevec
+                self.manipulator.gizmo.Manipulate(changevec)
+
+    def setAttributes(self, ents):
+        for e in ents:
+            self.manipulator.gizmo.AddEditableAttribute(e.placeable, "Position", "")
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
@@ -415,8 +412,11 @@ class ScaleManipulator(Manipulator):
             elif self.grabbed_axis == self.AXIS_GREEN:
                 changevec.setX(0)
                 changevec.setZ(0)
-            
-            ent.placeable.Scale += changevec
+            self.manipulator.gizmo.Manipulate(changevec)
+
+    def setAttributes(self, ents):
+        for e in ents:
+            self.manipulator.gizmo.AddEditableAttribute(e.placeable, "Scale", "")
             
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
@@ -426,6 +426,8 @@ class FreeMoveManipulator(Manipulator):
     def _manipulate(self, ent, amountx, amounty, changevec):
         ent.placeable.Position += changevec
         ent.network.Position += changevec
+    def setAttributes(self, ents):
+        pass
         
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
@@ -502,9 +504,7 @@ class RotationManipulator(Manipulator):
             mov = changevec.length() * 30
 
             axis = None
-            #angle = 90 # just do 90 degrees rotations
-            #angle = 15 # just do 15 degrees rotations
-            angle = 5 # just do 5 degrees rotations
+            #angle = 1 # just do 1 degrees rotations
             
             if amountx < 0 and amounty < 0:
                 dir = -1
@@ -518,18 +518,15 @@ class RotationManipulator(Manipulator):
                 dir = 1
 
             mov *= dir
-            angle *= dir
+            #angle *= dir
+            angle = mov
             q = None
             
             euler = None
             if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
                 axis = QVector3D(1,0,0)
-                # disable this for now
-                # return 
             elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
                 axis = QVector3D(0,1,0)
-                # disable this for now
-                # return
             elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
                 axis = QVector3D(0,0,1)
 
@@ -543,46 +540,53 @@ class RotationManipulator(Manipulator):
     def _rotateEntsWithQuaternion(self, q, ents, amountx, amounty, changevec, centervecs, centerpoint):
         for ent, qvec in centervecs.iteritems():
             # rotate center vectors and calculate new points to ents
-            # print "qvec %s"%str(qvec)
             crot=q.rotatedVector(qvec) # rotated center vector
-            # print "crot %s"%str(crot)
-            calibVec = self.calibrateVec(crot, qvec) # just incase
-            centervecs[ent]=calibVec # store new rotated vector
+            centervecs[ent]=crot # store new rotated vector
             
         for ent, newVec in centervecs.iteritems():
-            # print "centerpoint %s"%centerpoint
-            # print "newVec %s"%newVec
             newPos = self.vectorAdd(centerpoint, newVec)
+            #newPos = centerpoint + newVec
             if hasattr(ent, "placeable"):
                 ent.placeable.Position = newPos
                 ent.network.Position = newPos
             else:
                 print "entity missing placeable"
-                # print type(ent)
         pass
 
-    """ This part still has some issues, z-group rotation now working perfectly,
-        x and y group rotations still go bonkers, y-rotation stops when limit -1.0 or 1.0 rads
-        is reached, and x-rotation is totally wrong
-        also this method functionality probably overlaps with above single object specific rotation, 
-        anyway keeping it separate untill multirotate works correctly """
+        
     def _rotateEachEntWithQuaternion(self, q, ents, angle):
+        """ Rotate each object along selected axis """
         for ent in ents:
             ort = ent.placeable.Orientation
-            euler = mu.quat_to_euler(ort)
+                        
+            v1 = ort.rotatedVector(QVector3D(1,0,0))
+            v2 = ort.rotatedVector(QVector3D(0,1,0))
+            v3 = ort.rotatedVector(QVector3D(0,0,1))
+
+            # rotated unit vectors are equals of objects unit vectors in objects perspective
+            # this gives equation M * x = x' (x=(i,j,k) & x'=(i',j',k'))
+            # ( M = conversion matrix, x = world unit vector, x' = object unit vector)
+            # multiply each sides of equation with inverted matrix of M^-1 gives us:
+            # I * x = M^-1 *x' => x = M^-1 * x' 
+            # => we can now express world unit vectors i,j,k with i',j',k' 
+            # with help of inverted matrix, and use objects quaternion to rotate
+            # along world unit vectors i, j, k
+            
+            m = ((v1.x(),v1.y(),v1.z()),(v2.x(),v2.y(),v2.z()),(v3.x(),v3.y(),v3.z()))
+            inv = mu.invert_3x3_matrix(m)
+
             if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                #print euler[0] 
-                #print math.radians(angle)
-                euler[0] += math.radians(angle)
+                axis = QVector3D(inv[0][0],inv[0][1],inv[0][2]) 
             elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                #print euler[1] 
-                #print math.radians(angle)
-                euler[1] += math.radians(angle)
+                axis = QVector3D(inv[1][0],inv[1][1],inv[1][2]) 
             elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                #print euler[2] 
-                #print math.radians(angle)
-                euler[2] += math.radians(angle)
-            ort = mu.euler_to_quat(euler)
-            ent.placeable.Orientation = ort
-            ent.network.Orientation = ort
+                axis = QVector3D(inv[2][0],inv[2][1],inv[2][2]) 
+
+            q = QQuaternion.fromAxisAndAngle(axis, angle)
+            q.normalize()
+
+            ent.placeable.Orientation = ort*q
+        
+
+    def setAttributes(self, ents):
         pass

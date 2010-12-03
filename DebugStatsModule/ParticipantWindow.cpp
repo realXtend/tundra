@@ -55,7 +55,7 @@ void ParticipantWindow::AddUserEntry(EC_OpenSimPresence *presence)
         entryWidget->setLayout(new QHBoxLayout(entryWidget));
 
         // Add name label by default for each entry
-        QLabel *label = new QLabel(presence->GetFullName().c_str(), entryWidget);
+        QLabel *label = new QLabel(presence->GetFullName(), entryWidget);
         entryWidget->layout()->addWidget(label);
 
         QVBoxLayout *l = static_cast<QVBoxLayout *>(layout());

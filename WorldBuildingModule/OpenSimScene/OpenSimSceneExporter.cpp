@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "OpenSimSceneExporter.h"
-
+#include "OpenSimSceneService.h"
 #include "WorldBuildingModule.h"
 #include "SceneParser.h"
 
@@ -26,6 +26,7 @@
 #include <QGraphicsScene>
 #include <QCryptographicHash>
 #include <QUrl>
+#include <QMessageBox>
 
 namespace WorldBuilding
 {
@@ -35,7 +36,8 @@ namespace WorldBuilding
         framework_(framework),
         scene_parser_(scene_parser),
         backup_widget_(new QWidget()),
-        backup_proxy_(0)
+        backup_proxy_(0),
+        backup_button_enabled_(false)
     {
         ui_.setupUi(backup_widget_);
 
@@ -76,7 +78,6 @@ namespace WorldBuilding
         if (ui)
         {
             backup_proxy_ = ui->AddWidgetToScene(backup_widget_);
-            ui->RegisterUniversalWidget("OpenSim Scene Backup Tool", backup_proxy_);
             backup_widget_->hide();
         }
         else
@@ -85,6 +86,10 @@ namespace WorldBuilding
 
     void SceneExporter::ShowBackupTool()
     {
+        OpenSimSceneService* scene_service = qobject_cast<OpenSimSceneService*>(parent());
+        if (scene_service)
+            scene_service->BackupToolButtonEnableRequest();
+
         if (!backup_proxy_)
             return;
         if (backup_proxy_->scene()->isActive() && !backup_proxy_->isVisible())
@@ -101,6 +106,13 @@ namespace WorldBuilding
 
     void SceneExporter::StartBackup()
     {
+        if (!backup_button_enabled_)
+        {
+            QMessageBox* message = new QMessageBox("Accecc denied", "You don't have permission to excecute this command.", QMessageBox::Critical, QMessageBox::Ok, 0, 0, 0);
+            message->show();
+            return;
+        }
+
         backup_meshes_ = ui_.meshCheckBox->isChecked();
         backup_textures_ = ui_.texturesCheckBox->isChecked();
         backup_animations_ = ui_.animationsCheckBox->isChecked();

@@ -19,6 +19,7 @@
 #include "CoreMath.h"
 #include "CoreStringUtils.h"
 
+#include <QVector3D>
 #include <QMetaType>
 //! 3d vector template class with lots of operators and methods.
 /** The Vector3D class is used in Irrlicht for three main purposes: 
@@ -36,6 +37,7 @@ public:
     Vector3D(T nx, T ny, T nz) : x(nx), y(ny), z(nz) {}
     //! Constructor with the same value for all elements
     explicit Vector3D(T n) : x(n), y(n), z(n) {}
+    Vector3D(const QVector3D &vec) : x(vec.x()), y(vec.y()), z(vec.z()) {}
     //! Copy constructor
     Vector3D(const Vector3D<T>& other) : x(other.x), y(other.y), z(other.z) {}
 

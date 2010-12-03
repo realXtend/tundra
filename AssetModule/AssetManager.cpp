@@ -38,6 +38,15 @@ namespace Asset
         return GetFromCache(asset_id, asset_type);
     }
 
+    QString AssetManager::GetAbsoluteAssetPath(const std::string& asset_id, const std::string& asset_type)
+    {
+        Foundation::AssetInterfacePtr cache_asset = GetFromCache(asset_id, asset_type);
+        QString path_to_cache = "";
+        if (cache_asset.get())
+            path_to_cache = QString::fromStdString(cache_->GetAbsoluteFilePath(asset_id, asset_type));
+        return path_to_cache;
+    }
+
     bool AssetManager::IsValidRef(const std::string& asset_id, const std::string& asset_type)
     {
         AssetProviderVector::iterator i = providers_.begin();

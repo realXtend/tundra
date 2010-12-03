@@ -14,58 +14,55 @@
 
 class QTextEdit;
 
-namespace ECEditor
+//! Entity-component XML editor widget used for editing EC attributes in XML format.
+//! \ingroup ECEditorModuleClient.
+class EcXmlEditorWidget : public QWidget
 {
-    //! Entity-component XML editor widget used for editing EC attributes in XML format.
-    //! \ingroup ECEditorModuleClient.
-    class EcXmlEditorWidget : public QWidget
-    {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
-        /// Constructor.
-        /// @param framework Framework.
-        /// @param parent Parent widget.
-        EcXmlEditorWidget(Foundation::Framework *framework, QWidget *parent = 0);
+public:
+    /// Constructor.
+    /// @param framework Framework.
+    /// @param parent Parent widget.
+    EcXmlEditorWidget(Foundation::Framework *framework, QWidget *parent = 0);
 
-        /// Destructor.
-        ~EcXmlEditorWidget();
+    /// Destructor.
+    ~EcXmlEditorWidget();
 
-        /// Sets the entities whose EC attributes we want to edit as XML.
-        /// @param entities List of entities.
-        void SetEntity(const QList<Scene::EntityPtr> &entities);
+    /// Sets the entities whose EC attributes we want to edit as XML.
+    /// @param entities List of entities.
+    void SetEntity(const QList<Scene::EntityPtr> &entities);
 
-        /// Sets the components whose EC attributes we want to edit as XML.
-        /// @param components List of components.
-        void SetComponent(const QList<ComponentPtr> &components);
+    /// Sets the components whose EC attributes we want to edit as XML.
+    /// @param components List of components.
+    void SetComponent(const QList<ComponentPtr> &components);
 
-    public slots:
-        /// Refreshes XML data.
-        void Refresh();
+public slots:
+    /// Refreshes XML data.
+    void Refresh();
 
-        /// Reverts the modifications.
-        void Revert();
+    /// Reverts the modifications.
+    void Revert();
 
-        /// Saves the modifications.
-        void Save();
+    /// Saves the modifications.
+    void Save();
 
-    protected:
-        /// QWidget override.
-        void changeEvent(QEvent *event);
+protected:
+    /// QWidget override.
+    void changeEvent(QEvent *event);
 
-    private:
-        /// Framework.
-        Foundation::Framework *framework_;
+private:
+    /// Framework.
+    Foundation::Framework *framework_;
 
-        /// XML text edit field.
-        QTextEdit *xmlEdit_;
+    /// XML text edit field.
+    QTextEdit *xmlEdit_;
 
-        /// Entities whose EC's we're editing.
-        QList<Scene::EntityWeakPtr> entities_;
+    /// Entities whose EC's we're editing.
+    QList<Scene::EntityWeakPtr> entities_;
 
-        /// Components which we're editing.
-        QList<ComponentWeakPtr > components_;
-    };
-}
+    /// Components which we're editing.
+    QList<ComponentWeakPtr > components_;
+};
 
 #endif

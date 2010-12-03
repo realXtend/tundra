@@ -417,8 +417,22 @@ namespace Foundation
     {
         const event_id_t NETWORKING_REGISTERED = 2;
         const event_id_t WORLD_STREAM_READY = 3;
+		const event_id_t WEB_LOGIN_DATA_RECEIVED = 4;
     }
+
+    class WebLoginDataEvent : public IEventData
+    {
+        WebLoginDataEvent();
+    public:
+		WebLoginDataEvent(const QString firstname, const QString lastname, const QString avatar_address, const QString world_address) :
+            firstname_(firstname), lastname_(lastname), avatar_address_(avatar_address), world_address_(world_address) { }
+        
+		QString firstname_;
+		QString lastname_;
+		QString avatar_address_;
+		QString world_address_;
+    };
+
 }
 
 #endif
-

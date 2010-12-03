@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import loader
+
+import mathutils as mu
 from math import sqrt
 from math import cos
 from math import sin
@@ -41,6 +43,10 @@ class DotSceneManager:
         self.currentRadZ = 0
         self.currentRadW = 0
         self.localScene = None
+
+        self.pointRotRadX = 0
+        self.pointRotRadY = 0
+        self.pointRotRadZ = 0
         
         
     def setPosition(self, x, y ,z):
@@ -213,13 +219,23 @@ class DotSceneManager:
         #if not self.initialized: do this everytime
         self.setCenterPointAndCenterVectors()
         #rotate CenterVecs and set new positions, + rotate each node
-        switch={'x': Quat(1,1,0,0), 'y': Quat(1,0,1,0), 'z': Quat(1,0,0,1), '-x': Quat(1,-1,0,0), '-y': Quat(1,0,-1,0), '-z': Quat(1,0,0,-1)}
-        q = switch[axis]
-        q.normalize()
-        self.rotateSceneWithQuaternion(q)
+        switchAxis={'x': Vec(1,0,0), 'y': Vec(0,1,0), 'z': Vec(0,0,1), '-x': Vec(1,0,0), '-y': Vec(0,1,0), '-z': Vec(0,0,1)}
+        switchAngle={'x': 90, 'y': 90, 'z': 90, '-x': -90, '-y': -90, '-z': -90}
+        axisVec = switchAxis[axis]
+        angle = switchAngle[axis]
+        switchAxisName={'x': 'x', 'y': 'y', 'z': 'z', '-x': 'x', '-y': 'y', '-z': 'z'}
+        axisName = switchAxisName[axis]
+        self.rotateSceneWithAxisAndAngle(axisVec, angle, axisName)
         
-    def rotateSceneWithQuaternion(self, q):
+        
+    
+    def rotateSceneWithAxisAndAngle(self, axis, angle, axisName):
+    #def rotateSceneWithQuaternion(self, q):
+        # Quaternion for rotating positions
+        q = Quat.fromAxisAndAngle(axis, angle)
+        q.normalize()
         # print "rotations:"
+        
         if(self.nodes.__len__()>1): # only do rotations for locations if node amount > 1        
             for oNode, CVec in self.nodeCenterVectors.iteritems():
                 CRot=q.rotatedVector(CVec)
@@ -245,7 +261,7 @@ class DotSceneManager:
 
         # rotate each node
         for k, oNode in self.nodes.iteritems():
-            self.rotateOgreNode(oNode, q)
+            self.rotateOgreNode(oNode, axis, angle, axisName)
             pass
             
     def vectorLen(self, v):
@@ -261,36 +277,33 @@ class DotSceneManager:
         else: # if original vector is zero length, the rotated one must be too, just return r
             return r
             
-    def rotateOgreNode(self, on, q):
+    def rotateOgreNode(self, on, axis, angle, axisName):
+        ort = on.orientation        
+        v1 = ort.rotatedVector(Vec(1,0,0))
+        v2 = ort.rotatedVector(Vec(0,1,0))
+        v3 = ort.rotatedVector(Vec(0,0,1))
+        m = ((v1.x(),v1.y(),v1.z()),(v2.x(),v2.y(),v2.z()),(v3.x(),v3.y(),v3.z()))
+        inv = mu.invert_3x3_matrix(m)
+        switchAxis={'x':Vec(inv[0][0],inv[0][1],inv[0][2]), 'y':Vec(inv[1][0],inv[1][1],inv[1][2]), 'z':Vec(inv[2][0],inv[2][1],inv[2][2])}
+        rotateAxis = switchAxis[axisName]
+        # print "rotateAxis: %s"%rotateAxis
+        # print "angle: %s"%angle
+        q = Quat.fromAxisAndAngle(rotateAxis, angle)
+        q.normalize()
+        on.orientation = ort*q
         e = on.naali_ent
         o = on.orientation
-        p=e.placeable
-        if(q.x()!=0):
-            print "-x"
-            x=q.x()
-            q.setX(-x)
-        if(q.y()!=0):
-            print "-y"
-            y=q.y()
-            q.setY(-y)
-
-        on.orientation = on.orientation * q
+        p=e.placeable   
         p.Orientation = on.orientation
-        pass
 
     def rotateX(self, angleX):
         self.setCenterPointAndCenterVectors()
         angleRadX = (angleX/180)*pi
         rotationX = angleRadX - self.currentRadX
         self.currentRadX=self.currentRadX+rotationX
-        w=cos(rotationX/2.0)
-        x=sin(rotationX/2.0)
-        y=0
-        z=0
-        q = Quat(w,x,y,z)
-        q.normalize()
-        print q.x()
-        self.rotateSceneWithQuaternion(q)
+        # back to degrees
+        rotationX = rotationX*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(1,0,0), rotationX, 'x')
         pass
     
     def rotateY(self, angleY):
@@ -298,35 +311,59 @@ class DotSceneManager:
         angleRadY = (angleY/180)*pi
         rotationY = angleRadY - self.currentRadY
         self.currentRadY=self.currentRadY+rotationY
-        w=cos(rotationY/2.0)
-        x=0
-        y=sin(rotationY/2.0)
-        z=0
-        q = Quat(w,x,y,z)
-        q.normalize()
-        print q.y()
-        self.rotateSceneWithQuaternion(q)
+        # back to degrees
+        rotationY = rotationY*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(0,1,0), rotationY, 'y')
         pass
         
     def rotateZ(self, angleZ):
-        """ Test method """
         self.setCenterPointAndCenterVectors()
-        # we need to translate degrees to quaternion
-        # q = cos(angle/2) + i ( x * sin(angle/2)) + j (y * sin(angle/2)) + k ( z * sin(angle/2))
-        angleRadZ = (angleZ/180)*pi
+        angleRadZ = angleZ*(pi/180)
         rotationZ = angleRadZ - self.currentRadZ
         self.currentRadZ=self.currentRadZ+rotationZ
-       
-        w=cos(rotationZ/2.0)
-        #x=sin(angleRadZ/2)
-        x=0
-        #y=sin(angleRadZ/2)
-        y=0
-        z=sin(rotationZ/2.0)
-        
-        q = Quat(w,x,y,z)
-        q.normalize()
-        print q.z()
-        self.rotateSceneWithQuaternion(q)
+        # back to degrees
+        rotationZ = rotationZ*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(0,0,1), rotationZ, 'z')
         pass
         
+    def rotateAroundPointX(self, angleX, x, y, z):
+        self.setPredefinedCenterAndCalculateCenterVectors(x, y, z)
+        angleRadX = angleX*(pi/180)
+        rotationX = angleRadX - self.pointRotRadX
+        self.pointRotRadX=self.pointRotRadX+rotationX
+        # back to degrees
+        rotationX = rotationX*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(1,0,0), rotationX, 'x')        
+        pass
+    def rotateAroundPointY(self, angleY, x, y, z):
+        self.setPredefinedCenterAndCalculateCenterVectors(x, y, z)
+        angleRadY = angleY*(pi/180)
+        rotationY = angleRadY - self.pointRotRadY
+        self.pointRotRadY=self.pointRotRadY+rotationY
+        # back to degrees
+        rotationY = rotationY*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(0,1,0), rotationY, 'y')
+        pass
+    def rotateAroundPointZ(self, angleZ, x, y, z):
+        self.setPredefinedCenterAndCalculateCenterVectors(x, y, z)
+        angleRadZ = angleZ*(pi/180)
+        rotationZ = angleRadZ - self.pointRotRadZ
+        self.pointRotRadZ=self.pointRotRadZ+rotationZ
+        # back to degrees
+        rotationZ = rotationZ*(180/pi)
+        self.rotateSceneWithAxisAndAngle(Vec(0,0,1), rotationZ, 'z')        
+        pass
+    
+    def setPredefinedCenterAndCalculateCenterVectors(self, x, y, z):
+        self.centerPoint = Vec(x, y, z)
+        relativeCenter = Vec(self.centerPoint.x()-self.xshift, self.centerPoint.y()-self.yshift, self.centerPoint.z()-self.zshift)
+        # center Vecs
+        for k, oNode in self.nodes.iteritems():
+            diffVec = self.vectorDifference(oNode.position, relativeCenter)
+            self.nodeCenterVectors[oNode]=diffVec
+        pass
+    
+    def resetPointRotation(self):
+        self.pointRotRadX = 0
+        self.pointRotRadY = 0
+        self.pointRotRadZ = 0

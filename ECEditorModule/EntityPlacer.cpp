@@ -9,8 +9,6 @@
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 
-namespace ECEditor
-{
 EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityId, QObject *parent):
     framework_(framework),
     QObject(parent),
@@ -112,5 +110,4 @@ bool EntityPlacer::DoRayCast(int x, int y, Vector3df &result)
 
     result = cast_result->pos_;
     return true;
-}
 }

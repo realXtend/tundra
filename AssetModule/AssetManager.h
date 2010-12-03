@@ -8,6 +8,8 @@
 #include "AssetProviderInterface.h"
 #include "RexUUID.h"
 
+#include <QString>
+
 namespace Foundation
 {
     class Framework;
@@ -36,6 +38,11 @@ namespace Asset
             \return Pointer to asset, 0 if not found
          */
         virtual Foundation::AssetInterfacePtr GetAsset(const std::string& asset_id, const std::string& asset_type);
+
+        //! Get absolute asset cache path
+        //! If asset is in cache this will return the absolute path to the file
+        //! If it does not exists 
+        virtual QString GetAbsoluteAssetPath(const std::string& asset_id, const std::string& asset_type);
 
         //! Gets incomplete asset
         /*! Note: a new incomplete asset object (with copy of the data) will be created for each call. Please

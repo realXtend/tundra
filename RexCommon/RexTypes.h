@@ -175,6 +175,8 @@ namespace RexTypes
     const asset_type_t RexAT_Image = 50;
     const asset_type_t RexAT_None = -1;
 
+    const asset_type_t RexAT_Video = 60;
+
     // UDP Inventory types.
     const inventory_type_t RexIT_Texture = 0;
     const inventory_type_t RexIT_Sound = 1;
@@ -197,6 +199,7 @@ namespace RexTypes
     const std::string ASSETTYPENAME_SOUNDVORBIS("SoundVorbis");
     const std::string ASSETTYPENAME_SOUNDWAV("SoundWav");
     const std::string ASSETTYPENAME_UNKNOWN("Unknown");
+    const std::string ASSETTYPENAME_VIDEO("Video");
 
     // Inventory category names.
     const std::string CATEGORY_AVATAR("Avatar");

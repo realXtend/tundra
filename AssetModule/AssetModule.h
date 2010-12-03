@@ -60,6 +60,8 @@ namespace Asset
         static const std::string &NameStatic() { return type_name_static_; }
 
     private:
+        void ProcessCommandLineOptions();
+
         //! Type name of the module.
         static std::string type_name_static_;
 

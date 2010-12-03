@@ -32,211 +32,204 @@ struct EntityComponentSelection
     std::vector<ComponentPtr> components;
 };
 
-namespace ECEditor
+class ECBrowser;
+class AddComponentDialog;
+
+//! Contains entity pointer as a QPointer. This class is used to indentify a right item using an entity ID.
+//! \ingroup ECEditorModuleClient.
+class EntityListWidgetItem: public QListWidgetItem
 {
-    class ECBrowser;
-    class AddComponentDialog;
-
-    //! Contains entity pointer as a QPointer. This class is used to indentify a right item using an entity ID.
-    //! \ingroup ECEditorModuleClient.
-    class EntityListWidgetItem: public QListWidgetItem
+public:
+    EntityListWidgetItem(const QString &name, QListWidget *list, Scene::Entity *entity):
+        QListWidgetItem(name, list),
+        entity_ptr_(entity)
     {
-    public:
-        EntityListWidgetItem(const QString &name, QListWidget *list, Scene::Entity *entity):
-            QListWidgetItem(name, list),
-            entity_ptr_(entity)
-        {
-        }
-        
-        // Returns QPointer of entity that this item is presenting.
-        QPointer<Scene::Entity> GetEntity() const { return entity_ptr_; }
-
-        // Override from QListWidgetItem. Note! baseclass's method isn't virtual, so make sure that QListWidgetItem
-        // pointers are always dynamic_casted to EntityListWidgetItem before using this mehtod.
-        /*void setSelected(bool select)
-        {
-            QListWidgetItem::setSelected(select);
-            QFont font = this->font();
-            font.setBold(select);
-            setFont(font);
-        }*/
-    private:
-        //Weak pointer to entity switch will get released and setted to null when QObject's destructor is called.
-        QPointer<Scene::Entity> entity_ptr_;
-    };
+    }
     
-    //! Entity-component editor window.
-    /*! \ingroup ECEditorModuleClient.
-    */
-    class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
+    // Returns QPointer of entity that this item is presenting.
+    QPointer<Scene::Entity> GetEntity() const { return entity_ptr_; }
+
+    // Override from QListWidgetItem. Note! baseclass's method isn't virtual, so make sure that QListWidgetItem
+    // pointers are always dynamic_casted to EntityListWidgetItem before using this mehtod.
+    /*void setSelected(bool select)
     {
-        Q_OBJECT
+        QListWidgetItem::setSelected(select);
+        QFont font = this->font();
+        font.setBold(select);
+        setFont(font);
+    }*/
+private:
+    //Weak pointer to entity switch will get released and setted to null when QObject's destructor is called.
+    QPointer<Scene::Entity> entity_ptr_;
+};
 
-    public:
-        /// Constructor
-        /** @param framework Framework.
-        */
-        explicit ECEditorWindow(Foundation::Framework* framework);
+//! Entity-component editor window.
+/*! \ingroup ECEditorModuleClient.
+*/
+class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
+{
+    Q_OBJECT
 
-        /// Destructor.
-        ~ECEditorWindow();
+public:
+    /// Constructor
+    /** @param framework Framework.
+    */
+    explicit ECEditorWindow(Foundation::Framework* framework);
 
-        /// Adds new entity to the entity list.
-        /** @param id Entity ID.
-        */
-        void AddEntity(entity_id_t id, bool udpate_ui = true);
+    /// Destructor.
+    ~ECEditorWindow();
 
-        /// Set new list of entities to ECEditor. Calling this method will clear 
-        /// previously selected entities from the editor.
-        /** @param entities a new list of entities that we want to add into the editor.
-         *  @param select_all Do we want to select all entities from the list.
-        */
-        void AddEntities(const QList<entity_id_t> &entities, bool select_all = false);
+    /// Adds new entity to the entity list.
+    /** @param id Entity ID.
+    */
+    void AddEntity(entity_id_t id, bool udpate_ui = true);
 
-        /// Removes entity from the entity list.
-        /** @param id Entity ID.
-        */
-        void RemoveEntity(entity_id_t id, bool udpate_ui = true); 
+    /// Set new list of entities to ECEditor. Calling this method will clear 
+    /// previously selected entities from the editor.
+    /** @param entities a new list of entities that we want to add into the editor.
+     *  @param select_all Do we want to select all entities from the list.
+    */
+    void AddEntities(const QList<entity_id_t> &entities, bool select_all = false);
 
-        /// Sets which entities are selected in the editor window.
-        /** @param ids List of entity ID's.
-        */
-        void SetSelectedEntities(const QList<entity_id_t> &ids);
+    /// Removes entity from the entity list.
+    /** @param id Entity ID.
+    */
+    void RemoveEntity(entity_id_t id, bool udpate_ui = true); 
 
-        /// Clears entity list.
-        void ClearEntities();
+    /// Sets which entities are selected in the editor window.
+    /** @param ids List of entity ID's.
+    */
+    void SetSelectedEntities(const QList<entity_id_t> &ids);
 
-    public slots:
-        /// Deletes selected entity entries from the list (does not delete the entity itself).
-        void DeleteEntitiesFromList();
+    /// Clears entity list.
+    void ClearEntities();
 
-        //! Remove coponent from entity and refresh property browser.
-        void DeleteComponent(const QString &componentType, const QString &name);
+public slots:
+    /// Deletes selected entity entries from the list (does not delete the entity itself).
+    void DeleteEntitiesFromList();
 
-        /// Opens a dialog that will handle new entity creation.
-        /** After the dialog is done, ComponentDialogFinished method is called.
-         */
-        void CreateComponent();
+    //! Remove coponent from entity and refresh property browser.
+    void DeleteComponent(const QString &componentType, const QString &name);
 
-        /// Shows dialog for invoking entity actions.
-        void OpenEntityActionDialog();
+    /// Opens a dialog that will handle new entity creation.
+    /** After the dialog is done, ComponentDialogFinished method is called.
+     */
+    void CreateComponent();
 
-        /// Called by entity action dialog when it's finished.
-        /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2.
-        */
-        void EntityActionDialogFinished(int result);
+    /// Shows dialog for invoking entity actions.
+    void OpenEntityActionDialog();
 
-        /// Shows dialog for invoking functions.
-        void OpenFunctionDialog();
+    /// Called by entity action dialog when it's finished.
+    /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2.
+    */
+    void EntityActionDialogFinished(int result);
 
-        /// Called by function dialog when it's finished.
-        /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2.
-        */
-        void FunctionDialogFinished(int result);
+    /// Shows dialog for invoking functions.
+    void OpenFunctionDialog();
 
-        /// If entity selection different from previous update change browser to fit those changes.
-        void RefreshPropertyBrowser();
+    /// Called by function dialog when it's finished.
+    /** @param result Result of finished. Close is 0, Execute and Close is 1, Execute is 2.
+    */
+    void FunctionDialogFinished(int result);
 
-        /// Shows context menu for entities.
-        /// @param pos Mouse position of right-click event.
-        void ShowEntityContextMenu(const QPoint &pos);
+    /// If entity selection different from previous update change browser to fit those changes.
+    void RefreshPropertyBrowser();
 
-        /// Shows EC XML editor.for entity's all components.
-        void ShowXmlEditorForEntity();
+    /// Shows context menu for entities.
+    /// @param pos Mouse position of right-click event.
+    void ShowEntityContextMenu(const QPoint &pos);
 
-        /// Shows EC XML editor.for each components.
-        void ShowXmlEditorForComponent(std::vector<ComponentPtr> components);
+    /// Shows EC XML editor.for entity's all components.
+    void ShowXmlEditorForEntity();
 
-        /// Shows EC XML editor.for a single component.
-        //void ShowXmlEditorForComponent();
-        void ShowXmlEditorForComponent(const std::string &componentType);
+    /// Shows EC XML editor.for each components.
+    void ShowXmlEditorForComponent(std::vector<ComponentPtr> components);
 
-        /// Show/Hide entity list.
-        void ToggleEntityList();
+    /// Shows EC XML editor.for a single component.
+    //void ShowXmlEditorForComponent();
+    void ShowXmlEditorForComponent(const std::string &componentType);
 
-        /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
-        void EntityRemoved(Scene::Entity* entity);
+    /// Show/Hide entity list.
+    void ToggleEntityList();
 
-		/// Set focus to this editor window. When window have
-		/// focus it should accept entity select actions and add clicked entities from the scene.
-        void SetFocus(bool focus);
+    /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
+    void EntityRemoved(Scene::Entity* entity);
 
-        void setVisible(bool visible);
+    /// Set focus to this editor window. When window have
+    /// focus it should accept entity select actions and add clicked entities from the scene.
+    void SetFocus(bool focus);
 
-        /// Listens when editor's proxy widget gets the focus. If event type was focusInEvent
-        /// then method will call SetFocus method.
-        //void FocusChanged(QFocusEvent *e);
+    void setVisible(bool visible);
 
-    signals:
-        /// Emitted user wants to edit entity's EC attributes in XML editor.
-        void EditEntityXml(Scene::EntityPtr entity);
+signals:
+    /// Emitted user wants to edit entity's EC attributes in XML editor.
+    void EditEntityXml(Scene::EntityPtr entity);
 
-        /// Emitted user wants to edit EC attributes in XML editor.
-        void EditComponentXml(ComponentPtr component);
+    /// Emitted user wants to edit EC attributes in XML editor.
+    void EditComponentXml(ComponentPtr component);
 
-        /// Emitted user wants to edit entity's EC attributes in XML editor.
-        /// @param entities list of entities
-        void EditEntityXml(const QList<Scene::EntityPtr> &entities);
+    /// Emitted user wants to edit entity's EC attributes in XML editor.
+    /// @param entities list of entities
+    void EditEntityXml(const QList<Scene::EntityPtr> &entities);
 
-        /// Emitted user wants to edit EC attributes in XML editor.
-        /// @param list of components
-        void EditComponentXml(const QList<ComponentPtr> & components);
+    /// Emitted user wants to edit EC attributes in XML editor.
+    /// @param list of components
+    void EditComponentXml(const QList<ComponentPtr> & components);
 
-        /// Signal is emmitted when this window has gained a focus.
-        void OnFocusChanged(ECEditorWindow *editor);
+    /// Signal is emmitted when this window has gained a focus.
+    void OnFocusChanged(ECEditorWindow *editor);
 
-    protected:
-        /// QWidget override.
-        void hideEvent(QHideEvent *hide_event);
+protected:
+    /// QWidget override.
+    void hideEvent(QHideEvent *hide_event);
 
-        /// QWidget override.
-        void changeEvent(QEvent *change_event);
+    /// QWidget override.
+    void changeEvent(QEvent *change_event);
 
-        bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event);
 
-    private slots:
-        /// Listens SceneManager's ActionTriggered signal and if action was "MousePress"
-        /// add entity to editor window (assuming that editor has a focus).
-        void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params);
+private slots:
+    /// Listens SceneManager's ActionTriggered signal and if action was "MousePress"
+    /// add entity to editor window (assuming that editor has a focus).
+    void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params);
 
-        /// Deletes entity.
-        void DeleteEntity();
+    /// Deletes entity.
+    void DeleteEntity();
 
-        /// Copy serializable component values to clipboard.
-        void CopyEntity();
+    /// Copy serializable component values to clipboard.
+    void CopyEntity();
 
-        /// Paste create a new entity and add serializable components.
-        void PasteEntity();
+    /// Paste create a new entity and add serializable components.
+    void PasteEntity();
 
-        /// Highlights all entities from the entities_list that own an instance of given component.
-        void HighlightEntities(IComponent *component);
+    /// Highlights all entities from the entities_list that own an instance of given component.
+    void HighlightEntities(IComponent *component);
 
-        /// Listenes when default world scene has changed and clear the editor window.
-        /// @param scene new default world scene.
-        void DefaultSceneChanged(const Scene::ScenePtr &scene);
+    /// Listenes when default world scene has changed and clear the editor window.
+    /// @param scene new default world scene.
+    void DefaultSceneChanged(const Scene::ScenePtr &scene);
 
-        //When user have pressed ok or cancel button in component dialog this mehtod is called.
-        void ComponentDialogFinished(int result);
+    //When user have pressed ok or cancel button in component dialog this mehtod is called.
+    void ComponentDialogFinished(int result);
 
-    private:
+private:
 
-        void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
+    void BoldEntityListItems(const QSet<entity_id_t> &bolded_entities);
 
-        /// Initializes the widget.
-        void Initialize();
+    /// Initializes the widget.
+    void Initialize();
 
-        /// Returns list of selected entities.
-        QList<Scene::EntityPtr> GetSelectedEntities() const;
+    /// Returns list of selected entities.
+    QList<Scene::EntityPtr> GetSelectedEntities() const;
 
-        /// Framework pointer.
-        Foundation::Framework *framework_;
+    /// Framework pointer.
+    Foundation::Framework *framework_;
 
-        QPushButton* toggle_entities_button_;
-        QListWidget* entity_list_;
-        ECBrowser *browser_;
-        QPointer<AddComponentDialog> component_dialog_;
-        bool has_focus_;
-    };
-}
+    QPushButton* toggle_entities_button_;
+    QListWidget* entity_list_;
+    ECBrowser *browser_;
+    QPointer<AddComponentDialog> component_dialog_;
+    bool has_focus_;
+};
 
 #endif

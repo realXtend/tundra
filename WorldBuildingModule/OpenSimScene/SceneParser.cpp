@@ -125,7 +125,10 @@ namespace WorldBuilding
                     if (components[i]->TypeName() == "EC_Mesh" || components[i]->TypeName() == "EC_Placeable" ||
                         components[i]->TypeName() == "EC_AnimationController")                        
                         continue;
-                    if (components[i]->IsSerializable())
+                    if (components[i]->IsSerializable() && components[i]->GetNetworkSyncEnabled())
+                        writable_comps++;
+                    // The special rex export comp that has sync disabled
+                    else if (components[i]->TypeName() == "EC_DynamicComponent" && components[i]->Name() == export_component_name_)
                         writable_comps++;
                 }
                 if (writable_comps == 0)
@@ -146,7 +149,13 @@ namespace WorldBuilding
                     if (components[i]->TypeName() == "EC_Mesh" || components[i]->TypeName() == "EC_Placeable" ||
                         components[i]->TypeName() == "EC_AnimationController")                        
                         continue;
-                    if (components[i]->IsSerializable())
+                    if (components[i]->IsSerializable() && components[i]->GetNetworkSyncEnabled())
+                    {
+                        components[i]->SerializeTo(scene_doc, entity_elem);
+                        comp_count++;
+                    }
+                    // The special rex export comp that has sync disabled
+                    else if (components[i]->TypeName() == "EC_DynamicComponent" && components[i]->Name() == export_component_name_)
                     {
                         components[i]->SerializeTo(scene_doc, entity_elem);
                         comp_count++;
@@ -187,7 +196,10 @@ namespace WorldBuilding
                     if (components[i]->TypeName() == "EC_Mesh" || components[i]->TypeName() == "EC_Placeable" ||
                         components[i]->TypeName() == "EC_AnimationController")
                         continue;
-                    if (components[i]->IsSerializable())
+                    if (components[i]->IsSerializable() && components[i]->GetNetworkSyncEnabled())
+                        components[i]->SerializeTo(scene_doc, entity_elem);
+                    // The special rex export comp that has sync disabled
+                    else if (components[i]->TypeName() == "EC_DynamicComponent" && components[i]->Name() == export_component_name_)
                         components[i]->SerializeTo(scene_doc, entity_elem);
                 }
                 scene_elem.appendChild(entity_elem);

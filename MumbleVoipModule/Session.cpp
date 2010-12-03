@@ -425,9 +425,9 @@ namespace MumbleVoip
                     if (presence_component->agentId.ToQString() == uuid)
                     {
                         QString name = ""; 
-                        name = QString(presence_component->GetFullName().c_str());
+                        name = presence_component->GetFullName();
                         if (name.length() == 0)
-                            name = QString(presence_component->GetFirstName().c_str());
+                            name = presence_component->getfirstName();
                         return name;
                     }
             }
