@@ -1403,7 +1403,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
 
             foreach(ComponentPtr comp, entity->GetComponentVector())
                 foreach(IAttribute *attr, comp->GetAttributes())
-                    if (attr->TypenameToString() == "assetreference")
+                    if (attr->TypeName() == "assetreference")
                     {
                         Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
                         if (assetRef)

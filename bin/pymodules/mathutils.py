@@ -71,3 +71,52 @@ def get_up(entity):
 def get_right(entity):
     v = QVector3D(1.0, 0.0, 0.0)
     return quat_mult_vec(entity.placeable.Orientation, v)
+
+def invert_3x3_matrix(m):
+    """
+    for matrix m:
+    (a,b,c)
+    (d,e,f)
+    (g,h,k)    
+    inverse m is given by:                
+            (A,B,C)
+    (1/Z) * (D,E,F)
+            (G,H,K)
+    A=(ek-fh) B=(ch-bk) C=(bf-ce)
+    D=(fg-dk) E=(ak-cg) F=(cd-af)
+    G=(dh-eg) H=(bg-ah) K=(ae-bd)
+    Z = a(ek - fh) + b(fg - kd) + c(dh - eg)
+    """
+    a=m[0][0]
+    b=m[0][1]
+    c=m[0][2]
+    d=m[1][0]
+    e=m[1][1]
+    f=m[1][2]
+    g=m[2][0]
+    h=m[2][1]
+    k=m[2][2]
+    A=e*k-f*h
+    B=c*h-b*k
+    C=b*f-c*e
+    D=f*g-d*k
+    E=a*k-c*g
+    F=c*d-a*f
+    G=d*h-e*g
+    H=b*g-a*h
+    K=a*e-b*d
+    Z=a*(e*k - f*h) + b*(f*g - k*d) + c*(d*h - e*g)
+    #print "Z %s"%str(Z)
+    z=1.0/Z
+    #print "z %s"%str(z)
+    A*=z
+    B*=z
+    C*=z
+    D*=z
+    E*=z
+    F*=z
+    G*=z
+    H*=z
+    K*=z
+    ret = ((A,B,C),(D,E,F),(G,H,K))
+    return ret

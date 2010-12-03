@@ -9,7 +9,9 @@ EC_OpenSimPresence::EC_OpenSimPresence(IModule* module) :
     regionHandle(0),
     localId(0),
     parentId(0),
-    agentId(RexUUID())
+    agentId(RexUUID()),
+    firstName(this, "firstName"),
+    lastName(this, "lastName")
 {
 }
 
@@ -17,35 +19,14 @@ EC_OpenSimPresence::~EC_OpenSimPresence()
 {
 }
 
-void EC_OpenSimPresence::SetFirstName(const std::string &name)
+QString EC_OpenSimPresence::GetFullName() const
 {
-    first_name_ = name;
-}
-
-std::string EC_OpenSimPresence::GetFirstName() const
-{
-    return first_name_;
-}
-
-void EC_OpenSimPresence::SetLastName(const std::string &name)
-{
-    last_name_ = name;
-}
-
-std::string EC_OpenSimPresence::GetLastName() const
-{
-    return last_name_;
-}
-
-std::string EC_OpenSimPresence::GetFullName() const
-{
-    return first_name_ + " " + last_name_;
+    return QString("%1 %2").arg(getfirstName(), getlastName());
 }
 
 QString EC_OpenSimPresence::QGetFullName() const
 {
-    std::string fullname = first_name_ + " " + last_name_;
-    return QString(fullname.c_str());
+    return GetFullName();
 }
 
 QString EC_OpenSimPresence::QGetUUIDString() const

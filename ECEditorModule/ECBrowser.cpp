@@ -241,13 +241,13 @@ namespace ECEditor
                 }
                 if(!attr)
                     continue;
-                if(attr->TypenameToString() == "string")
+                if(attr->TypeName() == "string")
                 {
                     Attribute<QString> *attribute = dynamic_cast<Attribute<QString> *>(attr);
                     if(attribute)
                         attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Default);
                 }
-                else if(attr->TypenameToString() == "qvariant")
+                else if(attr->TypeName() == "qvariant")
                 {
                     Attribute<QVariant> *attribute = dynamic_cast<Attribute<QVariant> *>(attr);
                     if(attribute)
@@ -258,7 +258,7 @@ namespace ECEditor
                         }
                     }
                 }
-                else if(attr->TypenameToString() == "qvariantarray")
+                else if(attr->TypeName() == "qvariantarray")
                 {
                     Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> > *>(attr);
                     if(attribute)
@@ -285,7 +285,7 @@ namespace ECEditor
                         attribute->Set(variants, AttributeChange::Default);
                     }
                 }
-                else if(attr->TypenameToString() == "qvariantlist")
+                else if(attr->TypeName() == "qvariantlist")
                 {
                     Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList > *>(attr);
                     if(attribute)

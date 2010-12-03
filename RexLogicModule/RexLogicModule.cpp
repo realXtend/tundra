@@ -795,6 +795,27 @@ void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
     }
 }
 
+void RexLogicModule::SendAvatarUrl()
+{
+    ///\todo Regression. The framework handler and PROGRAM_OPTIONS event has been removed. We can't have core-level events littering Framework.h. Need
+    /// to implement this in a cleaner application-specific way. -jj.
+    /*
+	if (framework_handler_ && !framework_handler_->GetAvatarAddress().isEmpty())
+	{
+		RexLogicModule::LogInfo(framework_handler_->GetAvatarAddress().toStdString());
+		RexLogicModule::LogInfo(GetServerConnection()->GetInfo().agentID.ToString());
+		GetServerConnection()->GetInfo().avatarStorageUrl = framework_handler_->GetAvatarAddress().toStdString();
+		StringVector strings;
+		strings.push_back(GetServerConnection()->GetInfo().agentID.ToString());
+		strings.push_back(framework_handler_->GetAvatarAddress().toStdString());
+		GetServerConnection()->SendGenericMessage("RexSetAppearance", strings);
+
+		//Clear avatar address
+		framework_handler_->SetAvatarAddress("");
+	}
+    */
+}
+
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();

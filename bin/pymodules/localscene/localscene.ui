@@ -309,7 +309,10 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QDoubleSpinBox" name="rotateX">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
+            </property>
+            <property name="minimum">
+             <double>-360.000000000000000</double>
             </property>
             <property name="maximum">
              <double>360.000000000000000</double>
@@ -329,7 +332,10 @@ p, li { white-space: pre-wrap; }
           <item>
            <widget class="QDoubleSpinBox" name="rotateY">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
+            </property>
+            <property name="minimum">
+             <double>-360.000000000000000</double>
             </property>
             <property name="maximum">
              <double>360.000000000000000</double>
@@ -348,12 +354,56 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QDoubleSpinBox" name="rotateZ">
+            <property name="minimum">
+             <double>-360.000000000000000</double>
+            </property>
             <property name="maximum">
              <double>360.000000000000000</double>
             </property>
            </widget>
           </item>
          </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_11">
+        <property name="leftMargin">
+         <number>16</number>
+        </property>
+        <property name="rightMargin">
+         <number>16</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="checkBoxRotationPoint">
+          <property name="text">
+           <string>Use rotation point</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="rotateCenterX">
+          <property name="maximum">
+           <double>255.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="rotateCenterY">
+          <property name="maximum">
+           <double>255.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="rotateCenterZ"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonSetOffset">
+          <property name="text">
+           <string>Set offset</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

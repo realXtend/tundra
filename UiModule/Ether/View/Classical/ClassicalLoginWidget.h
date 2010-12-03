@@ -7,6 +7,8 @@
 
 class QHideEvent;
 
+namespace Foundation { class Framework; }
+
 namespace Ether { namespace Logic { class EtherLoginNotifier; } }
 
 namespace CoreUi
@@ -21,7 +23,7 @@ namespace CoreUi
             Q_OBJECT
 
         public:
-            ClassicalLoginWidget(Ether::Logic::EtherLoginNotifier *login_notifier, QMap<QString,QString> stored_login_data);
+			ClassicalLoginWidget(Ether::Logic::EtherLoginNotifier *login_notifier, QMap<QString,QString> stored_login_data, Foundation::Framework *framework);
             ~ClassicalLoginWidget();
 
         public slots:
