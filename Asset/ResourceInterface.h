@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Interfaces_ResourceInterface_h
 #define incl_Interfaces_ResourceInterface_h
@@ -24,6 +25,7 @@ namespace Foundation
     typedef std::map<std::string, Foundation::ResourcePtr> ResourceMap;
 
     //! Reference to a resource depended on
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     struct ResourceReference
     {
         ResourceReference(const std::string& id, const std::string& type) :
@@ -38,12 +40,14 @@ namespace Foundation
         std::string type_;
     };
     
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     typedef std::vector<ResourceReference> ResourceReferenceVector;
         
     //! An identifiable resource object of some kind. Subclass as needed.
     /*! Note that resources are different from assets in the sense that assets are binary blobs of data, while
         resources should be usable, for example an image which stores its dimensions and actual decoded image data
      */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class MODULE_API ResourceInterface
     {
     public:
@@ -106,12 +110,15 @@ namespace Resource
     namespace Events
     {
         //! Sent when a resource is ready. Uses the event data structure ResourceReady.
+        ///\deprecated This object is deprecated and will be removed in the future. -jj.
         static const event_id_t RESOURCE_READY = 1;
         
         //! Sent when a resource request could not be served. Uses the event data structure ResourceCanceled.
+        ///\deprecated This object is deprecated and will be removed in the future. -jj.
         static const event_id_t RESOURCE_CANCELED = 2;
         
         //! Resource ready event data
+        ///\deprecated This object is deprecated and will be removed in the future. -jj.
         class ResourceReady : public IEventData
         {
         public:
@@ -135,6 +142,7 @@ namespace Resource
         };
         
         //! Resource canceled event data
+        ///\deprecated This object is deprecated and will be removed in the future. -jj.
         class ResourceCanceled : public IEventData
         {
         public:

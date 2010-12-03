@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Interfaces_AssetMetadataInterface_h
 #define incl_Interfaces_AssetMetadataInterface_h
@@ -14,6 +15,7 @@ namespace Foundation
 
     //! Asset meta data like 
     //! For more info read http://opensimulator.org/wiki/AssetServerProposal/ClientDocs
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class AssetMetadataInterface
     {
     public:
