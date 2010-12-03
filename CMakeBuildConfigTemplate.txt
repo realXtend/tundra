@@ -47,7 +47,7 @@ endif()
 # The define also enables LoginScreenModule which is an experimental module 
 # for abstracting the login screen / main menu from the main application:
 # currently this functionality resides in RexLogicModule and UiModule.
-SET(UISERVICE_TEST 1)
+SET(UISERVICE_TEST 0)
 
 # Enables Open Asset Import Library, which can be used to import various
 # mesh formats.
