@@ -830,7 +830,7 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
     buffer.resize(4096);
     int idx = 0;
     bool send_asset_urls = false;
-
+    UNREFERENCED_PARAM(send_asset_urls);
     WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
     if (!conn)
         return;
