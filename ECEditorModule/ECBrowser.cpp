@@ -34,6 +34,7 @@ namespace ECEditor
     {
         setMouseTracking(true);
         setAcceptDrops(true);
+        setResizeMode(QtTreePropertyBrowser::Interactive);
         setContextMenuPolicy(Qt::CustomContextMenu);
         connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), SLOT(ShowComponentContextMenu(const QPoint &)));
         treeWidget_ = findChild<QTreeWidget *>();
@@ -43,6 +44,9 @@ namespace ECEditor
             treeWidget_->setFocusPolicy(Qt::StrongFocus);
             treeWidget_->setAcceptDrops(true);
             treeWidget_->setDragDropMode(QAbstractItemView::DropOnly);
+            QHeaderView *header = treeWidget_->header();
+            if (header)
+                header->setSortIndicator(0, Qt::AscendingOrder); 
             connect(treeWidget_, SIGNAL(itemSelectionChanged()), SLOT(SelectionChanged()));
         }
 
