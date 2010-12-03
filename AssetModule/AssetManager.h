@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Asset_AssetManager_h
 #define incl_Asset_AssetManager_h
@@ -24,6 +25,7 @@ namespace Asset
         Initiates transfers based on asset requests and responds to received data.
         See \ref AssetModule for details on how to use the asset service.
      */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class AssetManager : public Foundation::AssetServiceInterface
     {
     public:

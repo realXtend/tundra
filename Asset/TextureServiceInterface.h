@@ -1,12 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Interfaces_TextureServiceInterface_h
 #define incl_Interfaces_TextureServiceInterface_h
 
 #include "IService.h"
 
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
 namespace TextureDecoder
 {
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class TextureResource;
 }
 
@@ -21,6 +24,7 @@ namespace Foundation
         (Foundation::TextureInterface).
         Implemented by the \ref TextureDecoderModule.
     */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class TextureServiceInterface : public IService
     {
     public:

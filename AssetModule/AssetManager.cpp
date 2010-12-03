@@ -1,3 +1,4 @@
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 #include "StableHeaders.h"
 #include "AssetModule.h"
 #include "AssetInterface.h"

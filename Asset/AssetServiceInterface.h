@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Interfaces_AssetServiceInterface_h
 #define incl_Interfaces_AssetServiceInterface_h
@@ -31,6 +32,7 @@ namespace Foundation
 
         \ingroup Services_group
      */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class AssetServiceInterface : public IService
     {
     public:
