@@ -5,7 +5,7 @@
 #include "OpenALAudioModule.h"
 #include "WavLoader.h"
 #include "VorbisDecoder.h"
-#include "RexTypes.h"
+#include "CoreTypes.h"
 #include "AssetServiceInterface.h"
 #include "AssetEvents.h"
 #include "Framework.h"
@@ -395,7 +395,7 @@ namespace OpenALAudio
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
         {
-            request_tag_t tag = asset_service->RequestAsset(assetid.toStdString(), RexTypes::ASSETTYPENAME_SOUNDVORBIS);
+            request_tag_t tag = asset_service->RequestAsset(assetid.toStdString(), "SoundVorbis");
             if (tag)
                 sound_resource_requests_[tag] = assetid.toStdString();
             
@@ -471,7 +471,7 @@ namespace OpenALAudio
                 sounds_[name] = new_sound;
                 
                 // The sound will be filled with data later
-                asset_service->RequestAsset(name, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
+                asset_service->RequestAsset(name, "SoundVorbis");
                 return new_sound;
             }
         }
@@ -599,7 +599,7 @@ namespace OpenALAudio
             return false;
         
         Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data);
-        if (event_data->asset_type_ == RexTypes::ASSETTYPENAME_SOUNDVORBIS)
+        if (event_data->asset_type_ == "SoundVorbis")
         {
             bool resource_request = false;
             
