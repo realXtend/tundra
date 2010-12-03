@@ -9,36 +9,33 @@
 
 class QLineEdit;
 
-namespace ECEditor
+// \todo add support to RegExp functionality.
+class LineEditPropertyFactory: public QtAbstractEditorFactory<QtStringPropertyManager>
 {
-    // \todo add support to RegExp functionality.
-    class LineEditPropertyFactory: public QtAbstractEditorFactory<QtStringPropertyManager>
+    Q_OBJECT
+public:
+    LineEditPropertyFactory(QObject *parent = 0): QtAbstractEditorFactory<QtStringPropertyManager>(parent)
     {
-        Q_OBJECT
-    public:
-        LineEditPropertyFactory(QObject *parent = 0): QtAbstractEditorFactory<QtStringPropertyManager>(parent)
-        {
 
-        }
+    }
 
-        ~LineEditPropertyFactory()
-        {
+    ~LineEditPropertyFactory()
+    {
 
-        }
+    }
 
-    protected:
-        virtual void connectPropertyManager(QtStringPropertyManager *manager);
-        virtual QWidget *createEditor(QtStringPropertyManager *manager, QtProperty *property, QWidget *parent);
-        virtual void disconnectPropertyManager(QtStringPropertyManager *manager);
+protected:
+    virtual void connectPropertyManager(QtStringPropertyManager *manager);
+    virtual QWidget *createEditor(QtStringPropertyManager *manager, QtProperty *property, QWidget *parent);
+    virtual void disconnectPropertyManager(QtStringPropertyManager *manager);
 
-    private slots:
-        //void EditingFinnished();
-        void EditorDestroyed(QObject *object);
+private slots:
+    //void EditingFinnished();
+    void EditorDestroyed(QObject *object);
 
-    private:
-        QMap<QtProperty *, QLineEdit *> propertyToEditor_;
-        QMap<QLineEdit *, QtProperty *> editorToProperty_;
-    };
-}
+private:
+    QMap<QtProperty *, QLineEdit *> propertyToEditor_;
+    QMap<QLineEdit *, QtProperty *> editorToProperty_;
+};
 
 #endif
