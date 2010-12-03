@@ -79,6 +79,9 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, IEventData* data)
             owner_->GetServerConnection()->SendObjectAddPacket(pos_data->position);
         break;
     }
+	case Events::EVENT_CONTROLLABLE_ENTITY:
+		owner_->SendAvatarUrl();
+		break;
     default:
         break;
     }

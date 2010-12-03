@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>NoteCard</class>
- <widget class="QWidget" name="NoteCard">
+ <class>CanvasSourceWidget</class>
+ <widget class="QWidget" name="CanvasSourceWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>463</width>
-    <height>390</height>
+    <width>732</width>
+    <height>555</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>3DCanvas Controls</string>
+   <string>CanvasSourceWidget</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">/* Containers */
-QWidget#ECEditor {
+   <string notr="true">QWidget#ECEditor {
 	background-color: none;
 }
 
@@ -26,11 +25,105 @@ QFrame#MainFrame {
 
 QLabel {
 	padding-bottom: 3px;
-}</string>
+}
+
+QPushButton {
+	border: 0px;
+}
+
+QPushButton::pressed {
+	border-radius: 6px;
+	border: 1px solid grey;
+}
+
+QPushButton#button_back { background-image: url('./data/ui/images/browser/back.png'); }
+QPushButton#button_forward { background-image: url('./data/ui/images/browser/forward.png'); }
+QPushButton#button_refreshstop { background-image: url('./data/ui/images/browser/refresh.png'); }
+QPushButton#button_home { background-image: url('./data/ui/images/browser/home.png'); }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLineEdit" name="line_source"/>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="button_back">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_forward">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_refreshstop">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_home">
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="line_source">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>24</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>9</pointsize>
+        </font>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QWidget" name="widget_placeholder" native="true">
@@ -54,62 +147,20 @@ QLabel {
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="but_start">
-       <property name="text">
-        <string>&lt;&lt;&lt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="but_prev">
-       <property name="text">
-        <string>&lt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="but_next">
-       <property name="text">
-        <string>&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="but_end">
-       <property name="text">
-        <string>&gt;&gt;&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
+    <widget class="QProgressBar" name="progress_bar">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>15</height>
+      </size>
+     </property>
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="textVisible">
+      <bool>false</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

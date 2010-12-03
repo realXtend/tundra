@@ -39,7 +39,8 @@ WorldStream::WorldStream(Foundation::Framework *framework) :
     password_(""),
     username_(""),
     auth_server_address_(""),
-    blockSerialNumber_(0)
+    blockSerialNumber_(0),
+    god_mode_enabled_(false)
 {
     clientParameters_.Reset();
     SetCurrentProtocolType(NotSet);
@@ -1876,6 +1877,11 @@ void WorldStream::WriteFloatToBytes(float value, uint8_t* bytes, int& idx)
 {
     *(float*)(&bytes[idx]) = value;
     idx += sizeof(float);
+}
+
+void WorldStream::RequestGodMode()
+{
+    SendRequestGodlikePowersPacket(true);
 }
 
 } // namespace ProtocolUtilities

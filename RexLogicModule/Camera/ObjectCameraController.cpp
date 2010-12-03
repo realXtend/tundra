@@ -12,8 +12,10 @@
 #include "SceneEvents.h"
 #include "AvatarEvents.h"
 #include "NetworkEvents.h"
+#include "UiServiceInterface.h"
 
 #include <QApplication>
+#include <QGraphicsScene>
 
 #include <SceneManager.h>
 #include <EC_Placeable.h>
@@ -188,8 +190,15 @@ namespace RexLogic
         if (avatar_edit_mode_)
             return;
 
+        // Only do obj focus when in the inworld scene, ignore on building and avatar scenes
+        QGraphicsScene *scene = framework_->UiService()->GetScene("Inworld");
+        if (!scene)
+            return;
+        if (!scene->isActive())
+            return;
+
         if (key_event->keyCode == Qt::Key_Alt)
-        { 
+        {
             alt_key_pressed_ = true;
             QApplication::setOverrideCursor(Qt::PointingHandCursor);
         } 

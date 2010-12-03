@@ -19,6 +19,7 @@ namespace MumbleVoip
     public:
         Participant(QString name, MumbleLib::User* user);
         virtual ~Participant();
+    public slots:
         virtual QString Name() const;
         virtual QString AvatarUUID() const;
         virtual bool IsSpeaking() const;
@@ -27,7 +28,7 @@ namespace MumbleVoip
         virtual Vector3df Position() const;
         virtual void Add(MumbleLib::User* user);
         virtual MumbleLib::User* UserPtr() const;
-
+        virtual double VoiceActivity() const;
         virtual void SetName(QString name);
 
     private:
@@ -38,6 +39,7 @@ namespace MumbleVoip
         MumbleLib::User* user_;
         QString name_;
         QString avatar_uuid_;
+        double voice_activity_;
 
     private slots:
         void OnStartSpeaking();

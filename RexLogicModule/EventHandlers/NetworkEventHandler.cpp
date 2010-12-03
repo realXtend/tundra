@@ -144,6 +144,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, IEventD
     case RexNetMsgEstateOwnerMessage:
         return HandleOSNE_EstateOwnerMessage(netdata);
 
+    case RexNetMsgGrantGodlikePowers:
+        return HandleOSNE_GrantGodlikePowers(netdata);
+
     default:
         break;
     }
@@ -202,6 +205,10 @@ bool NetworkEventHandler::HandleOSNE_GenericMessage(NetworkEventInboundData* dat
         return owner_->GetAvatarHandler()->HandleRexGM_RexAppearance(data);
     else if (methodname == "RexAnim")
         return owner_->GetAvatarHandler()->HandleRexGM_RexAnim(data);
+    else if (methodname == "ECSync")
+        return owner_->GetPrimitiveHandler()->HandleECGM_ECData(data);
+    else if (methodname == "ECRemove")
+        return owner_->GetPrimitiveHandler()->HandleECGM_ECRemove(data);
     else
         return false;
 }
@@ -688,5 +695,25 @@ bool NetworkEventHandler::HandleOSNE_EstateOwnerMessage(NetworkEventInboundData 
     
     return false;
 }
+
+bool NetworkEventHandler::HandleOSNE_GrantGodlikePowers(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    NetInMessage &msg = *data->message;
+    msg.ResetReading();
+
+    RexUUID agent_id = msg.ReadUUID();
+    RexUUID sessiont_id = msg.ReadUUID();
+    uint8_t god_level = msg.ReadU8();
+    if (god_level >= 200)
+    {
+        owner_->GetServerConnection()->EnableGodMode();
+    }
+    else
+    {
+        owner_->GetServerConnection()->DisableGodMode();
+    }
+    return false;
+}
+
 
 } //namespace RexLogic

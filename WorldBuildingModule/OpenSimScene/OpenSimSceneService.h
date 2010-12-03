@@ -49,10 +49,11 @@ namespace WorldBuilding
         /// Service interface implementation
         virtual Vector3df GetPosFrontOfAvatar();
 
-        void SetWorldStream(ProtocolUtilities::WorldStreamPtr stream) { current_stream_ = stream; }
+        void SetWorldStream(ProtocolUtilities::WorldStreamPtr stream);
         void ResetWorldStream() { current_stream_.reset(); }
 
         void CheckForCapability();
+        void BackupToolButtonEnableRequest();
 
     private slots:
         void MouseLeftPressed(MouseEvent *mouse);

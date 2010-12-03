@@ -577,7 +577,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                     if (attribute)
                                     {
                                         updAttribute.attributeName = StringToBuffer((*k).toStdString());
-                                        updAttribute.attributeType = StringToBuffer(attribute->TypenameToString());
+                                        updAttribute.attributeType = StringToBuffer(attribute->TypeName());
                                         updAttribute.attributeData.resize(64 * 1024);
                                         DataSerializer dest((char*)&updAttribute.attributeData[0], updAttribute.attributeData.size());
                                         attribute->ToBinary(dest);
@@ -1020,7 +1020,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                         if (attr)
                         {
                             // If wrong type of attribute, delete and recreate
-                            if (attr->TypenameToString() != attrTypeName.toStdString())
+                            if (attr->TypeName() != attrTypeName.toStdString())
                             {
                                 dynComp->RemoveAttribute(attrName, AttributeChange::Disconnected);
                                 attr = dynComp->CreateAttribute(attrTypeName, attrName, AttributeChange::Disconnected);

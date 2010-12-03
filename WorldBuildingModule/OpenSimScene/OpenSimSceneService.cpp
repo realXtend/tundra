@@ -246,4 +246,20 @@ namespace WorldBuilding
     {
         scene_widget_ = 0;
     }
+
+    void OpenSimSceneService::SetWorldStream(ProtocolUtilities::WorldStreamPtr stream)
+    {
+        current_stream_ = stream;
+        connect(current_stream_.get(), SIGNAL(GodModeEnabled()), scene_exporter_, SLOT(EnableBackupButton()));
+        connect(current_stream_.get(), SIGNAL(GodModeDisabled()), scene_exporter_, SLOT(DisableBackupButton()));
+        if (current_stream_->IsGodModeEnabled())
+            scene_exporter_->EnableBackupButton();
+    }
+
+    void OpenSimSceneService::BackupToolButtonEnableRequest()
+    {
+        if (!current_stream_)
+            return;
+        current_stream_->RequestGodMode();
+    }
 }

@@ -25,11 +25,10 @@ endif(PYTHON_FORCE_RELEASE_VERSION)
 use_package (PYTHON)
 use_package (PYTHON_QT)
 
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule 
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_DynamicComponent
-    EntityComponents/EC_Ruler EntityComponents/EC_Touchable EntityComponents/EC_OpenSimPresence 
-    EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas EntityComponents/EC_3DCanvasSource 
-    EntityComponents/EC_Script Input Ui)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule
+    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_DynamicComponent EntityComponents/EC_Ruler EntityComponents/EC_Touchable
+    EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas
+    EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui CommunicationsModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 

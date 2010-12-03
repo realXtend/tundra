@@ -34,7 +34,10 @@ EC_Placeable::EC_Placeable(IModule* module) :
     select_priority_(0),
     transform(this, "Transform"),
     drawDebug(this, "Show bounding box", false),
-    visible(this, "Visible", true)
+    visible(this, "Visible", true),
+    position(this, "Position", QVector3D(0,0,0)),
+    scale(this, "Scale", QVector3D(1,1,1))
+
 {
     // Enable network interpolation for the transform
     static AttributeMetadata transAttrData;
@@ -157,13 +160,13 @@ QVector3D EC_Placeable::GetQLocalZAxis() const
     return QVector3D(zaxis.x, zaxis.y, zaxis.z);
 }
 
-void EC_Placeable::SetPosition(const Vector3df& position)
+void EC_Placeable::SetPosition(const Vector3df &pos)
 {
-   assert(RexTypes::IsValidPositionVector(position));
+   assert(RexTypes::IsValidPositionVector(pos));
    
-   if ( !RexTypes::IsValidPositionVector(position) )
+   if (!RexTypes::IsValidPositionVector(pos))
         return;
-    link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+    link_scene_node_->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
 }
 
 void EC_Placeable::SetOrientation(const Quaternion& orientation)
@@ -210,9 +213,11 @@ float EC_Placeable::GetRoll() const
     return orientation.getRoll().valueRadians();
 }
 
-void EC_Placeable::SetScale(const Vector3df& scale)
+void EC_Placeable::SetScale(const Vector3df& newscale)
 {
-    scene_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
+    scene_node_->setScale(Ogre::Vector3(newscale.x, newscale.y, newscale.z));
+    this->scale.Set(QVector3D(newscale.x, newscale.y, newscale.z), AttributeChange::Default);
+    AttachNode(); // Nodes become visible only after having their position set at least once
 }
 
 void EC_Placeable::AttachNode()
@@ -377,6 +382,22 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
     }
     else if (attribute == &visible && link_scene_node_)
         link_scene_node_->setVisible(visible.Get());
+    else if(attribute == &position)
+    {
+        if (!link_scene_node_)
+            return;
+        QVector3D newPosition = position.Get();
+        link_scene_node_->setPosition(newPosition.x(), newPosition.y(), newPosition.z());
+        AttachNode();
+    }
+    else if(attribute == &scale)
+    {
+        if (!link_scene_node_)
+            return;
+        QVector3D newScale = scale.Get();
+        scene_node_->setScale(newScale.x(), newScale.y(), newScale.z());
+        AttachNode();
+    }
 }
 
 Vector3df  EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df& to)
