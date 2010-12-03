@@ -10,7 +10,7 @@
 #include <QObject>
 #include <QPointer>
 //$ BEGIN_MOD $
-#include <QToolbar>
+#include <QToolBar>
 #include <QAction>
 //$ END_MOD $
 class TreeWidgetItemExpandMemory;
