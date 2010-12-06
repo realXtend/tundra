@@ -23,6 +23,9 @@ public:
     /// @return A pointer to the newly created transfer.
 //    virtual IAssetTransfer *UploadAsset(const char *data, size_t numBytes, QString url) { return 0; }
 
+    /// Specifies whether data can be uploaded to this asset storage.
+    virtual bool Writable() const { return false; }
+
     /// Returns the full URL of an asset with the name 'localName' if it were stored in this asset storage.
     virtual QString GetFullAssetURL(const QString &localName) { return ""; }
 
