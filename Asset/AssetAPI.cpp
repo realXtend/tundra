@@ -228,7 +228,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    // To optimize, we first check if there is an outstanding requests to the given asset. If so, we return that request.
+    // To optimize, we first check if there is an outstanding requests to the given asset. If so, we return that request. In effect, we never
+    // have multiple transfers running to the same asset.
     AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
     if (iter != currentTransfers.end())
     {
@@ -242,6 +243,27 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return transfer;
     }
 
+    // Check if we've already downloaded this asset before. We never reload an asset we've downloaded before, unless the client explicitly forces so,
+    // or if we get a change notification signal from the source asset provider telling the asset was changed.
+    AssetMap::iterator iter2 = assets.find(assetRef);
+    if (iter2 != assets.end())
+    {
+        // Whenever the client requests an asset that was loaded before, we create a request for that asset nevertheless.
+        // The idea is to have the code path run the same independent of whether the asset existed or had to be downloaded, i.e.
+        // a request is always made, and the receiver writes only a single asynchronous code path for handling the asset.
+
+        // The asset was already downloaded - generate a 'virtual asset transfer' and return it to the client.
+        AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer());
+        transfer->asset = iter2->second; // For 'normal' requests, the asset ptr is zero, but for these virtual requests, we can already fill the asset here.
+        transfer->source.ref = assetRef;
+        transfer->assetType = assetType;
+
+        readyTransfers.push_back(transfer);
+        return transfer;
+        // Also store this transfer to the currentTransfers map so that we don't create multiple 
+//        currentTransfers.push_Back(transfer);
+    }
+
     if (assetType.length() == 0)
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
@@ -252,7 +274,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    if (assetType == "Script" || assetType == "Terrain")// || assetType == "Texture") // NEW PATH: Uses asset providers directly.
+    if (assetType == "Script" || assetType == "Terrain" || assetType == "Texture") // NEW PATH: Uses asset providers directly.
     {
         AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
         if (!transfer.get())
@@ -414,6 +436,18 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
     return false;
 }
 
+void AssetAPI::Update()
+{
+    // Finish any virtual transfers we might have accumulated.
+    for(size_t i = 0; i < readyTransfers.size(); ++i)
+    {
+        readyTransfers[i]->EmitAssetDownloaded();
+        readyTransfers[i]->EmitAssetDecoded();
+        readyTransfers[i]->EmitAssetLoaded();
+    }
+    readyTransfers.clear();
+}
+
 QString GuaranteeTrailingSlash(const QString &source)
 {
     QString s = source.trimmed();
@@ -460,7 +494,13 @@ void AssetAPI::AssetDownloaded(IAssetTransfer *transfer_)
     }
 
     // Remember the newly created asset in AssetAPI's internal data structure to allow clients to later fetch it without re-requesting it.
-    assets.push_back(transfer->asset);
+    AssetMap::iterator iter2 = assets.find(transfer->source.ref);
+    if (iter2 != assets.end())
+    {
+        AssetPtr existing = iter2->second;
+        LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name().toStdString() + "\", type \"" + existing->Type().toStdString() + "\" with asset of same name!");
+    }
+    assets[transfer->source.ref] = transfer->asset;
 
     ///\todo Specify the following flow better.
 
@@ -520,7 +560,7 @@ QString GetResourceTypeFromResourceFileName(const char *name)
 
     const char *textureFileTypes[] = { ".jpg", ".png", ".tga", ".bmp", ".dds" };
     if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
-        return "OgreTexture";
+        return "Texture";
 
     const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
         ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",

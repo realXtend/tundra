@@ -145,6 +145,10 @@ public:
     /// This function is implemented for legacy purposes to help transition period to new Asset API. Will be removed. Do NOT call this. -jj
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
+    /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
+    /// it yourself.
+    void Update();
+
 private slots:
     void AssetDownloaded(IAssetTransfer *transfer);
 
@@ -156,16 +160,22 @@ private:
     typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
     AssetTransferMap currentTransfers;
 
+    /// Stores a list of asset requests to assets that have already been downloaded into the system. These requests don't go to the asset providers
+    /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
+    /// by one frame, so that the client gets a chance to connect his handler's Qt signals to the AssetTransferPtr slots.
+    std::vector<AssetTransferPtr> readyTransfers;
+
     Foundation::Framework *framework;
 
     /// Contains all known asset storages in the system.
-    std::vector<boost::shared_ptr<IAssetStorage> > storages;
+    std::vector<AssetStoragePtr> storages;
 
     /// Stores all the registered asset type factories in the system.
     std::vector<AssetTypeFactoryPtr> assetTypeFactories;
 
-    /// Stores all the assets in the system.
-    std::vector<AssetPtr> assets;
+    /// Stores all the already loaded assets in the system.
+    typedef std::map<QString, AssetPtr> AssetMap;
+    AssetMap assets;
 
     /// Specifies all the registered asset providers in the system.
     std::vector<AssetProviderPtr> providers;
