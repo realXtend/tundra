@@ -329,8 +329,10 @@ void LocalAssetProvider::CompletePendingFileDownloads()
             continue;
         }
         
-        AssetModule::LogInfo("Loaded asset " + absoluteFilename.toStdString());
-        transfer->EmitAssetDownloaded();
+        AssetModule::LogInfo("Downloaded asset " + absoluteFilename.toStdString());
+
+        // Signal the Asset API that this asset is now successfully downloaded.
+        framework_->Asset()->AssetTransferCompleted(transfer.get());
     }
 }
 

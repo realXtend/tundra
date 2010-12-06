@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <vector>
+#include <utility>
 #include <map>
 
 #include "CoreTypes.h"
@@ -149,16 +150,37 @@ public:
     /// it yourself.
     void Update();
 
-private slots:
-    void AssetDownloaded(IAssetTransfer *transfer);
+    /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
+    void AssetTransferCompleted(IAssetTransfer *transfer);
 
+    void AssetDependenciesCompleted(AssetTransferPtr transfer);
+
+    void NotifyAssetDependenciesChanged(AssetPtr asset);
+
+    void RequestAssetDependencies(AssetPtr transfer);
+
+    /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
+    int NumPendingDependencies(AssetPtr asset);
+
+private slots:
+    void OnAssetLoaded(IAssetTransfer* transfer);
+    
 private:
     /// This is implemented for legacy purposes to help transition period to new Asset API. Will be removed. -jj
     std::map<request_tag_t, AssetTransferPtr> currentLegacyAssetServiceTransfers;
 
-    /// Stores all the currently ongoing asset transfers.
     typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
+    /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
+
+    typedef std::vector<std::pair<QString, QString> > AssetDependenciesMap;
+    /// Keeps track of all the dependencies each asset has to each other asset.
+    /// \todo Find a more effective data structure for this. Needs something like boost::bimap but for multi-indices.
+    AssetDependenciesMap assetDependencies;
+
+    /// Removes from AssetDependenciesMap all dependencies the given asset has.
+    void RemoveAssetDependencies(QString asset);
+    std::vector<AssetPtr> FindDependents(QString dependee);
 
     /// Stores a list of asset requests to assets that have already been downloaded into the system. These requests don't go to the asset providers
     /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
