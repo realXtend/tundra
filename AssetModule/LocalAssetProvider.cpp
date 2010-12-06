@@ -35,16 +35,16 @@ LocalAssetProvider::~LocalAssetProvider()
 {
 }
 
-const std::string& LocalAssetProvider::Name()
+const QString &LocalAssetProvider::Name()
 {
-    static const std::string name("Local");
+    static const QString name("Local");
     
     return name;
 }
 
-bool LocalAssetProvider::IsValidRef(const std::string& asset_id, const std::string& asset_type)
+bool LocalAssetProvider::IsValidRef(QString asset_id, QString asset_type)
 {
-    QString ref = asset_id.c_str();
+    QString ref = asset_id.toStdString().c_str();
     ref = ref.trimmed();
     if (ref.length() == 0)
         return false;
@@ -67,7 +67,7 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
     // Complete any file uploads before processing any download requests. (a total hack, but this function will be removed in the future)
     CompletePendingFileUploads();
 
-    if (!IsValidRef(asset_id, asset_type))
+    if (!IsValidRef(asset_id.c_str(), asset_type.c_str()))
         return false;
     
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
@@ -158,23 +158,6 @@ QString LocalAssetProvider::GetPathForAsset(const QString &assetname)
     }
     
     return "";
-}
-
-bool LocalAssetProvider::InProgress(const std::string& asset_id)
-{
-    return false;
-}
-
-Foundation::AssetInterfacePtr LocalAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
-{
-    // Not supported
-    return Foundation::AssetInterfacePtr();
-}
-
-bool LocalAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)
-{
-    // Not supported
-    return false;
 }
 
 void LocalAssetProvider::Update(f64 frametime)

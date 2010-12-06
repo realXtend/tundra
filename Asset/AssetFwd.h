@@ -12,7 +12,9 @@ typedef boost::shared_ptr<IAsset> AssetPtr;
 class IAssetTransfer;
 typedef boost::shared_ptr<IAssetTransfer> AssetTransferPtr;
 
-//class IAssetProvider;
+class IAssetProvider;
+typedef boost::shared_ptr<IAssetProvider> AssetProviderPtr;
+typedef boost::weak_ptr<IAssetProvider> AssetProviderWeakPtr;
 
 class IAssetStorage;
 typedef boost::shared_ptr<IAssetStorage> AssetStoragePtr;
@@ -38,11 +40,6 @@ namespace Foundation
     
     class ResourceInterface;
     typedef boost::shared_ptr<ResourceInterface> ResourcePtr;
-
-    class AssetProviderInterface;
-    typedef boost::shared_ptr<AssetProviderInterface> AssetProviderPtr;    
-
-    typedef boost::weak_ptr<AssetProviderInterface> AssetProviderWeakPtr;
 }
 
 #endif

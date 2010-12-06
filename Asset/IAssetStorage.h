@@ -33,7 +33,7 @@ public:
     virtual QString BaseURL() const { return ""; }
    
     /// Points to the asset provider that is used to communicate with this storage.
-    Foundation::AssetProviderWeakPtr provider;
+    AssetProviderWeakPtr provider;
 };
 
 #endif

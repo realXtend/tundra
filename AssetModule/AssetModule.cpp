@@ -3,11 +3,8 @@
 #include "StableHeaders.h"
 #include "AssetModule.h"
 #include "AssetManager.h"
-#include "UDPAssetProvider.h"
-#include "XMLRPCAssetProvider.h"
 #include "QtHttpAssetProvider.h"
 #include "LocalAssetProvider.h"
-#include "OgreAssetProvider.h"
 #include "NetworkEvents.h"
 #include "Framework.h"
 #include "Profiler.h"
@@ -43,18 +40,14 @@ namespace Asset
         manager_ = AssetManagerPtr(new AssetManager(framework_));
         framework_->GetServiceManager()->RegisterService(Service::ST_Asset, manager_);
 
-        // Add XMLRPC asset provider before http asset provider, so it will take requests it recognizes though both use http
-        xmlrpc_asset_provider_ = Foundation::AssetProviderPtr(new XMLRPCAssetProvider(framework_));
-        manager_->RegisterAssetProvider(xmlrpc_asset_provider_);
-
         // Add HTTP handler before UDP so it can handle the texture http gets with UUID via GetTexture caps url
-        http_asset_provider_ = Foundation::AssetProviderPtr(new QtHttpAssetProvider(framework_));
+        http_asset_provider_ = AssetProviderPtr(new QtHttpAssetProvider(framework_));
         manager_->RegisterAssetProvider(http_asset_provider_);
 
         // Add localassethandler, with a hardcoded dir for now
         // Note: this directory is a different concept than the "pre-warmed assetcache"
         boost::shared_ptr<LocalAssetProvider> local = boost::shared_ptr<LocalAssetProvider>(new LocalAssetProvider(framework_));
-        local_asset_provider_ = boost::dynamic_pointer_cast<Foundation::AssetProviderInterface>(local);
+        local_asset_provider_ = boost::dynamic_pointer_cast<IAssetProvider>(local);
 
         QDir dir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "data/assets").toStdString().c_str());
         local->AddStorageDirectory(dir.absolutePath().toStdString(), "System", true);
@@ -63,14 +56,6 @@ namespace Asset
         local->AddStorageDirectory(dir2.absolutePath().toStdString(), "Javascript", true);
 
         manager_->RegisterAssetProvider(local_asset_provider_);
-
-        // Add Ogre MeshManager asset provider
-        ogre_asset_provider_ = Foundation::AssetProviderPtr(new OgreAssetProvider(framework_));
-        manager_->RegisterAssetProvider(ogre_asset_provider_);
-        
-        // Last fallback is UDP provider
-        udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
-        manager_->RegisterAssetProvider(udp_asset_provider_);
 
         framework_category_id_ = framework_->GetEventManager()->QueryEventCategory("Framework");
     }
@@ -120,7 +105,6 @@ namespace Asset
     void AssetModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
     {
         protocolModule_ = currentProtocolModule;
-        udp_asset_provider_->SetCurrentProtocolModule(protocolModule_);
         network_state_category_id_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
         inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
     }
@@ -143,10 +127,7 @@ namespace Asset
     // virtual 
     void AssetModule::Uninitialize()
     {
-        manager_->UnregisterAssetProvider(udp_asset_provider_);
-        manager_->UnregisterAssetProvider(xmlrpc_asset_provider_);
         manager_->UnregisterAssetProvider(local_asset_provider_);
-        manager_->UnregisterAssetProvider(ogre_asset_provider_);
         manager_->UnregisterAssetProvider(http_asset_provider_);
 
         framework_->GetServiceManager()->UnregisterService(manager_);
@@ -168,12 +149,7 @@ namespace Asset
         IEventData* data)
     {
         PROFILE(AssetModule_HandleEvent);
-        if ((category_id == inboundcategory_id_))
-        {
-            if (udp_asset_provider_)
-                return checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->HandleNetworkEvent(data);
-        }
-        else if (category_id == framework_category_id_ && event_id == Foundation::NETWORKING_REGISTERED)
+        if (category_id == framework_category_id_ && event_id == Foundation::NETWORKING_REGISTERED)
         {
             ProtocolUtilities::NetworkingRegisteredEvent *event_data = dynamic_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
             if (event_data)
@@ -182,8 +158,6 @@ namespace Asset
         }
         if (category_id == network_state_category_id_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
-            if (udp_asset_provider_)
-                checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->ClearAllTransfers();
             if (http_asset_provider_)
                 checked_static_cast<QtHttpAssetProvider*>(http_asset_provider_.get())->ClearAllTransfers();
         }

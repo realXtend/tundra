@@ -56,19 +56,19 @@ namespace Asset
         StartTransferFromQueue();
     }
 
-    const std::string& QtHttpAssetProvider::Name()
+    const QString &QtHttpAssetProvider::Name()
     {
         return name_;
     }
 
-    bool QtHttpAssetProvider::IsValidRef(const std::string& asset_id, const std::string& asset_type)
+    bool QtHttpAssetProvider::IsValidRef(QString asset_id, QString asset_type)
     {
         // Textures over http with the GetTexture cap
-        if (IsAcceptableAssetType(asset_type))
+        if (IsAcceptableAssetType(asset_type.toStdString()))
             if (RexUUID::IsValid(asset_id) && get_texture_cap_.isValid())
                 return true;
 
-        QString id(asset_id.c_str());
+        QString id(asset_id.toStdString().c_str());
         if (!id.startsWith("http://"))
             return false;
 
@@ -81,7 +81,7 @@ namespace Asset
     
     bool QtHttpAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
     {
-        if (!IsValidRef(asset_id, asset_type))
+        if (!IsValidRef(asset_id.c_str(), asset_type.c_str()))
             return false;
 
         QString asset_id_qstring = QString::fromStdString(asset_id);
@@ -123,6 +123,15 @@ namespace Asset
         return true;
     }
 
+    AssetTransferPtr QtHttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
+    {
+        return AssetTransferPtr();
+    }
+
+    std::vector<AssetStoragePtr> QtHttpAssetProvider::GetStorages() const { return std::vector<AssetStoragePtr>(); }
+    IAssetUploadTransfer *QtHttpAssetProvider::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName) { return 0; }
+    IAssetUploadTransfer *QtHttpAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName) { return 0; }
+
     bool QtHttpAssetProvider::InProgress(const std::string& asset_id)
     {
         QString qt_asset_id = QString::fromStdString(asset_id);
@@ -161,7 +170,7 @@ namespace Asset
             Foundation::AssetTransferInfo info;
             info.id_ = iter_info.id.toStdString();
             info.type_ = RexTypes::GetAssetTypeString(iter_info.type);
-            info.provider_ = Name();
+            info.provider_ = Name().toStdString();
             // The following we dont know, QNetworkAccessManager handles these
             info.size_ = 0;
             info.received_ = 0;

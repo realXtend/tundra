@@ -29,7 +29,7 @@ public:
 
     boost::weak_ptr<IAssetStorage> destinationStorage;
 
-    Foundation::AssetProviderWeakPtr destinationProvider;
+    AssetProviderWeakPtr destinationProvider;
 
     void EmitTransferCompleted();
     void EmitTransferFailed();

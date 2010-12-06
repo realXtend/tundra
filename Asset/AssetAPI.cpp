@@ -6,7 +6,7 @@
 #include "IAsset.h"
 #include "IAssetStorage.h"
 #include "AssetServiceInterface.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 #include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
 #include "EventManager.h"
@@ -45,7 +45,7 @@ void IAssetTransfer::EmitAssetLoaded()
     emit Loaded(this);
 }
 
-std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders() const
+std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 {
     ServiceManagerPtr service_manager = framework->GetServiceManager();
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
@@ -53,13 +53,13 @@ std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders() const
     if (!asset_service)
         throw Exception("Unagle to get AssetServiceInterface!");
 
-    std::vector<Foundation::AssetProviderPtr> providers = asset_service->Providers();
+    std::vector<AssetProviderPtr> providers = asset_service->Providers();
     return providers;
 }
 
 AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
 {
-    foreach(Foundation::AssetProviderPtr provider, GetAssetProviders())
+    foreach(AssetProviderPtr provider, GetAssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
             if (storage->Name() == name)
                 return storage;
@@ -71,7 +71,7 @@ std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
 {
     std::vector<AssetStoragePtr> storages;
 
-    std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
+    std::vector<AssetProviderPtr> providers = GetAssetProviders();
 
     for(size_t i = 0; i < providers.size(); ++i)
     {
@@ -230,7 +230,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     if (assetType.length() == 0)
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
-    Foundation::AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
+    AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
     if (!provider.get())
     {
         LogError("AssetAPI::RequestAsset: Failed to find a provider for asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
@@ -291,7 +291,7 @@ AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref)
     return RequestAsset(ref.ref, ""/*ref.type*/);
 }
 
-Foundation::AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
+AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
 {
     assetType = assetType.trimmed();
     assetRef = assetRef.trimmed();
@@ -299,12 +299,12 @@ Foundation::AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, 
     if (assetType.length() == 0)
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
-    std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
+    std::vector<AssetProviderPtr> providers = GetAssetProviders();
     for(size_t i = 0; i < providers.size(); ++i)
-        if (providers[i]->IsValidRef(assetRef.toStdString(), assetType.toStdString()))
+        if (providers[i]->IsValidRef(assetRef, assetType))
             return providers[i];
 
-    return Foundation::AssetProviderPtr();
+    return AssetProviderPtr();
 }
 
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
