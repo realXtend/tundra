@@ -21,15 +21,21 @@ public:
         arr.append('\0');
         scriptContent = arr;
 
+        ParseReferences();
+
         return true;
     }
 
-    virtual std::vector<AssetReference> FindReferences() const
-    {
-        return std::vector<AssetReference>();
-    }
+    virtual std::vector<AssetReference> FindReferences() const { return references; }
 
     QString scriptContent;
+
+    /// The asset references specified by this asset are specified in the above scriptContent data,
+    /// but we cache them here on loading to quicken the access if they're needed several times.
+    /// This also performs validation-on-load.
+    std::vector<AssetReference> references;
+
+    void ParseReferences();
 };
 
 typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
