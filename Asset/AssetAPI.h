@@ -49,7 +49,7 @@ public:
     /// @param assetRef The asset reference name to query a provider for.
     /// @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
     ///                  used to more completely specify the type.
-    Foundation::AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
+    AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
 
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
@@ -75,7 +75,7 @@ public:
     boost::shared_ptr<T> GetAssetProvider();
 
     /// Returns all the asset providers that are registered to the Asset API.
-    std::vector<Foundation::AssetProviderPtr> GetAssetProviders() const;
+    std::vector<AssetProviderPtr> GetAssetProviders() const;
 
     /// Returns the asset storage of the given @c name
     AssetStoragePtr GetAssetStorage(const QString &name) const;
@@ -163,8 +163,8 @@ private:
     /// Stores all the assets in the system.
     std::vector<AssetPtr> assets;
 
-    /// For now, the Asset API holds a weak reference to each provider.
-//    std::vector<AssetProviderInterface*> providers;
+    /// Specifies all the registered asset providers in the system.
+    std::vector<AssetProviderPtr> providers;
 
 };
 

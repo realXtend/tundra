@@ -7,7 +7,7 @@
 #include "ModuleLoggingFunctions.h"
 
 #include "ConsoleCommandServiceInterface.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 #include "AssetModuleApi.h"
 
 namespace Foundation
@@ -65,20 +65,11 @@ namespace Asset
         //! Type name of the module.
         static std::string type_name_static_;
 
-        //! UDP asset provider
-        Foundation::AssetProviderPtr udp_asset_provider_;
-
-        //! XMLRPC asset provider
-        Foundation::AssetProviderPtr xmlrpc_asset_provider_;
-
         //! Local asset provider
-        Foundation::AssetProviderPtr local_asset_provider_;
-
-        //! Ogre MeshManager asset provider
-        Foundation::AssetProviderPtr ogre_asset_provider_;
+        AssetProviderPtr local_asset_provider_;
         
         //! Http asset provider
-        Foundation::AssetProviderPtr http_asset_provider_;
+        AssetProviderPtr http_asset_provider_;
 
         //! asset manager
         AssetManagerPtr manager_;

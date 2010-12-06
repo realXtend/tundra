@@ -6,7 +6,7 @@
 
 #include "AssetInterface.h"
 #include "AssetServiceInterface.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 #include "RexUUID.h"
 
 #include <QString>
@@ -97,13 +97,13 @@ namespace Asset
         /*! \param asset_provider Provider to register
             \return true if successfully registered
          */
-        virtual bool RegisterAssetProvider(Foundation::AssetProviderPtr asset_provider);
+        virtual bool RegisterAssetProvider(AssetProviderPtr asset_provider);
         
         //! Unregisters an asset provider
         /*! \param asset_provider Provider to unregister
             \return true if successfully unregistered
          */
-        virtual bool UnregisterAssetProvider(Foundation::AssetProviderPtr asset_provider);
+        virtual bool UnregisterAssetProvider(AssetProviderPtr asset_provider);
         
         //! Stores an asset to the asset cache
         /*! \param asset Asset to store
@@ -117,7 +117,7 @@ namespace Asset
          */
         void Update(f64 frametime);
                 
-        virtual std::vector<Foundation::AssetProviderPtr> Providers() { return providers_; }
+        virtual std::vector<AssetProviderPtr> Providers() { return providers_; }
 
     private:
         //! Gets new request tag
@@ -140,7 +140,7 @@ namespace Asset
         AssetCachePtr cache_;
         
         //! Asset providers
-        typedef std::vector<Foundation::AssetProviderPtr> AssetProviderVector;
+        typedef std::vector<AssetProviderPtr> AssetProviderVector;
         AssetProviderVector providers_;
     };
 }

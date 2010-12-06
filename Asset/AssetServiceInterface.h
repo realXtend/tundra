@@ -5,7 +5,7 @@
 #define incl_Interfaces_AssetServiceInterface_h
 
 #include "IService.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 
 #include "AssetFwd.h"
 
@@ -121,7 +121,7 @@ namespace Foundation
          */
         virtual void StoreAsset(AssetInterfacePtr asset, bool store_to_disk = true) = 0;
         
-        virtual std::vector<Foundation::AssetProviderPtr> Providers() { return std::vector<Foundation::AssetProviderPtr>(); }
+        virtual std::vector<AssetProviderPtr> Providers() { return std::vector<AssetProviderPtr>(); }
     };
 }
 

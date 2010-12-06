@@ -73,7 +73,7 @@ public:
 
 private:
     /// Specifies the provider this asset was downloaded from.
-    Foundation::AssetProviderWeakPtr provider;
+    AssetProviderWeakPtr provider;
 
     QString type;
     QString name;
