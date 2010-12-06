@@ -50,6 +50,9 @@ public:
     /// Goes through the contents of this asset and computes a hash that identifies the data.
 //    Hash ComputeContentHash() const;
 
+    /// Called whenever another asset this asset depends on is loaded.
+    virtual void DependencyLoaded(AssetPtr dependee) { }
+
     /// Returns all the assets this asset refers to (but not the references those assets refer to).
     virtual std::vector<AssetReference> FindReferences() const = 0;
 
@@ -71,6 +74,7 @@ public:
     Foundation::AssetInterfacePtr assetPtr;
     Foundation::ResourcePtr resourcePtr;
 
+    QString ToString() const { return (Name().isEmpty() ? "(noname)" : Name()) + " (" + (Type().isEmpty() ? "notype" : Type()) + ")"; }
 private:
     /// Specifies the provider this asset was downloaded from.
     AssetProviderWeakPtr provider;
