@@ -12,6 +12,8 @@
 #include "ScriptMetaTypeDefines.h"
 #include "NaaliCoreTypeDefines.h"
 #include "EC_Script.h"
+#include "IModule.h"
+#include "AssetAPI.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
@@ -81,6 +83,16 @@ void JavascriptInstance::Load()
 QString JavascriptInstance::LoadScript(const QString &fileName)
 {
     QString filename = fileName.trimmed();
+
+    // First check if the include was supposed to go through the Asset API.
+    if (module_)
+    {
+        ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(module_->GetFramework()->Asset()->GetAsset(fileName));
+        if (asset.get())
+            return asset->scriptContent;
+    }
+
+    // Otherwise, treat fileName as a local file to load up.
 
     QFile scriptFile(filename);
     if (!scriptFile.open(QIODevice::ReadOnly))
