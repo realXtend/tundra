@@ -211,6 +211,7 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
 void AssetAPI::ForgetAllAssets()
 {
     assets.clear();
+    currentLegacyAssetServiceTransfers.clear();
     currentTransfers.clear();
 }
 
@@ -225,6 +226,20 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         // Perhaps have a verbose log channel for these kinds of sanity checks.
 //        LogError("AssetAPI::RequestAsset: Request by empty url \"\" of type \"" + assetType.toStdString() + " received!");
         return AssetTransferPtr();
+    }
+
+    // To optimize, we first check if there is an outstanding requests to the given asset. If so, we return that request.
+    AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
+    if (iter != currentTransfers.end())
+    {
+        AssetTransferPtr transfer = iter->second;
+
+        // Check that the requested types were the same. Don't know what to do if they differ, so only print a warning if so.
+        if (!assetType.isEmpty() && !transfer->assetType.isEmpty() && assetType != transfer->assetType)
+            LogWarning("AssetAPI::RequestAsset: Asset \"" + assetRef.toStdString() + "\" first requested by type " + transfer->assetType.toStdString() + 
+            ", but now requested by type " + assetType.toStdString() + ".");
+
+        return transfer;
     }
 
     if (assetType.length() == 0)
@@ -246,6 +261,12 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
             return AssetTransferPtr();
         }
         connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(AssetDownloaded(IAssetTransfer*)));
+
+        // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
+        // so we'll avoid multiple downloads to the exact same asset.
+        assert(currentTransfers.find(assetRef) == currentTransfers.end());
+        currentTransfers[assetRef] = transfer;
+
         return transfer;
     }
     else // OLD PATH: Uses the event-based asset managers.
@@ -280,7 +301,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         else
             tag = asset_service->RequestAsset(assetRef.toStdString(), assetType.toStdString());
 
-        currentTransfers[tag] = transfer;
+        currentLegacyAssetServiceTransfers[tag] = transfer;
 
         return transfer;
     }
@@ -359,14 +380,14 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
         if (event_id == Asset::Events::ASSET_READY)
         {
             Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentTransfers.find(assetReady->tag_);
-            if (iter != currentTransfers.end())
+            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentLegacyAssetServiceTransfers.find(assetReady->tag_);
+            if (iter != currentLegacyAssetServiceTransfers.end())
             {
                 AssetTransferPtr transfer = iter->second;
                 transfer->assetPtr = assetReady->asset_;
                 assert(transfer);
                 transfer->EmitAssetDownloaded();
-                currentTransfers.erase(iter);
+                currentLegacyAssetServiceTransfers.erase(iter);
             }
         }
     }
@@ -376,8 +397,8 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
         if (event_id == Resource::Events::RESOURCE_READY)
         {
             Resource::Events::ResourceReady *resourceReady = checked_static_cast<Resource::Events::ResourceReady*>(data);
-            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentTransfers.find(resourceReady->tag_);
-            if (iter != currentTransfers.end())
+            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentLegacyAssetServiceTransfers.find(resourceReady->tag_);
+            if (iter != currentLegacyAssetServiceTransfers.end())
             {
                 AssetTransferPtr transfer = iter->second;
                 transfer->resourcePtr = resourceReady->resource_;
@@ -385,7 +406,7 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
                 //! \todo Causes linker error in debug build, must be disabled for now
                 //transfer->internalResourceName = QString::fromStdString(resourceReady->resource_->GetInternalName());
                 transfer->EmitAssetLoaded();
-                currentTransfers.erase(iter);
+                currentLegacyAssetServiceTransfers.erase(iter);
             }
         }
     }
@@ -405,8 +426,18 @@ QString GuaranteeTrailingSlash(const QString &source)
     return s;
 }
 
-void AssetAPI::AssetDownloaded(IAssetTransfer *transfer)
+void AssetAPI::AssetDownloaded(IAssetTransfer *transfer_)
 {
+    assert(transfer_);
+    AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
+
+    // This asset transfer has finished - remove it from the internal list of ongoing transfers.
+    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    if (iter != currentTransfers.end())
+        currentTransfers.erase(iter);
+    else // Even if we didn't know about this transfer, just print a warning and continue execution here nevertheless.
+        LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
+
     if (transfer->rawAssetData.size() == 0)
     {
         LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer finished: but data size was 0 bytes!");

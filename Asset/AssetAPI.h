@@ -150,7 +150,11 @@ private slots:
 
 private:
     /// This is implemented for legacy purposes to help transition period to new Asset API. Will be removed. -jj
-    std::map<request_tag_t, AssetTransferPtr> currentTransfers;
+    std::map<request_tag_t, AssetTransferPtr> currentLegacyAssetServiceTransfers;
+
+    /// Stores all the currently ongoing asset transfers.
+    typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
+    AssetTransferMap currentTransfers;
 
     Foundation::Framework *framework;
 

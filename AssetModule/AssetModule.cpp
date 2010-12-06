@@ -52,8 +52,11 @@ namespace Asset
         QDir dir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "data/assets").toStdString().c_str());
         local->AddStorageDirectory(dir.absolutePath().toStdString(), "System", true);
 
-        QDir dir2((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "jsmodules").toStdString().c_str());
-        local->AddStorageDirectory(dir2.absolutePath().toStdString(), "Javascript", true);
+        dir = QDir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "jsmodules").toStdString().c_str());
+        local->AddStorageDirectory(dir.absolutePath().toStdString(), "Javascript", true);
+
+        dir = QDir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "media").toStdString().c_str());
+        local->AddStorageDirectory(dir.absolutePath().toStdString(), "Ogre Media", true);
 
         manager_->RegisterAssetProvider(local_asset_provider_);
 
