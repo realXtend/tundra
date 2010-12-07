@@ -67,7 +67,8 @@ public:
         \param filename Filename of mesh
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
-        \param worldtransform Transform to use for the entity's placeable. You can use Transform's default ctor if you don't want to spesify custom Transform.
+        \param worldtransform Transform to use for the entity's placeable.
+            You can use Transform's default ctor if you don't want to spesify custom Transform.
         \param entity_prefab_xml Prefab data (entity & components in xml serialized format) to use for the entity
         \param prefix 
         \param change What changetype to use in scene operations
@@ -140,6 +141,11 @@ public:
     */
     MaterialInfoList LoadAllMaterialsFromFile(const QString &filename) const;
 
+    /// Searches directory recursively and returns list of found material files.
+    /** @param dir Directory to be searched.
+    */
+    QStringList GetMaterialFiles(const std::string &dir) const;
+
 private:
     //! Process the asset references of a node, and its child nodes
     /*! \param node_elem Node element
@@ -158,6 +164,9 @@ private:
      */
     void ProcessNodeForCreation(QList<Scene::Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
+
+    void CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,
+        const QStringList &materialFiles, const QSet<QString> &usedMaterials, SceneDesc &desc) const;
 
     ///
     /** @param filename
