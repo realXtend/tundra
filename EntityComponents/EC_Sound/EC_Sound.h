@@ -8,6 +8,11 @@
 #include "Declare_EC.h"
 #include "AssetReference.h"
 
+// Undef PlaySound from WIN32 API
+#ifdef PlaySound
+#undef PlaySound
+#endif
+
 /// Represents in-world sound source.
 /**
 <table class="header">

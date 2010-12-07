@@ -5,8 +5,6 @@
 
 #include <iomanip>
 
-#include <Poco/LocalDateTime.h>
-
 // Disable warnings C4702 coming from boost
 #ifdef _MSC_VER
 #pragma warning ( push )
@@ -24,28 +22,20 @@
 
 #include <QString>
 
-bool ParseBool(const std::string &value);
-bool ParseBool(const QString &value);
-
-static std::wstring ToWString(const std::string &str)
-{
-    std::wstring w_str(str.length(), L' ');
-    std::copy(str.begin(), str.end(), w_str.begin());
-    return w_str;
-}
+std::wstring ToWString(const std::string &str);
 
 //! Converts value to a string. May throw boost::bad_lexical_cast.
 template <class T>
-static std::string ToString(const T &val) { return boost::lexical_cast<std::string>(val); }
+std::string ToString(const T &val) { return boost::lexical_cast<std::string>(val); }
 
 //! Converts string to a primitive type, such as int or float. May throw boost::bad_lexical_cast.
 template <typename T>
-static T ParseString(const std::string &val) { return boost::lexical_cast<T>(val); }
+T ParseString(const std::string &val) { return boost::lexical_cast<T>(val); }
 
 //! Converts string to a primitive type, such as int or float. Returns default value on boost::bad_lexical_cast
 template <typename T>
-static T ParseString(const std::string &val, T default_value) 
-{ 
+T ParseString(const std::string &val, T default_value) 
+{
     try
     {
         return boost::lexical_cast<T>(val); 
@@ -57,37 +47,10 @@ static T ParseString(const std::string &val, T default_value)
 }
 
 //! Get the current time as a string.
-static std::string GetLocalTimeString()
-{
-    Poco::LocalDateTime *time = new Poco::LocalDateTime(); 
-    std::stringstream ss;
-    
-    ss << std::setw(2) << time->hour() << std::setfill('0') << ":" <<
-        std::setw(2) << time->minute() << std::setfill('0') << ":" <<
-        std::setw(2) << time->second() << std::setfill('0');
-        
-    SAFE_DELETE(time);
-    
-    return ss.str();
-}
+std::string GetLocalTimeString();
 
 //! Get the current date and time as a string.
-static std::string GetLocalDateTimeString()
-{
-    Poco::LocalDateTime *time = new Poco::LocalDateTime();
-    std::stringstream ss;
-    
-    ss << std::setw(2) << time->day() << std::setfill('0') << "/" <<
-        std::setw(2) << time->month() << std::setfill('0') << "/" <<
-        std::setw(4) << time->year() << std::setfill('0') << " " <<
-        std::setw(2) << time->hour() << std::setfill('0') << ":" <<
-        std::setw(2) << time->minute() << std::setfill('0') << ":" <<
-        std::setw(2) << time->second() << std::setfill('0');
-    
-    SAFE_DELETE(time);
-    
-    return ss.str();
-}
+std::string GetLocalDateTimeString();
 
 //! Split a string by separator char
 StringVector SplitString(const std::string& str, char separator);
@@ -144,5 +107,3 @@ bool ParseBool(const std::string &value);
 bool ParseBool(const QString &value);
 
 #endif
-
-
