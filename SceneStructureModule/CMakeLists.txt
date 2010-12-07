@@ -20,6 +20,10 @@ use_package_assimp()
 use_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule TundraLogicModule
     OgreRenderingModule AssetModule)
 
+if (OGREASSETEDITOR)
+use_modules(OgreAssetEditorModule RexCommon)
+endif()
+
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
@@ -28,6 +32,10 @@ GetOgreAssetEditor()
 
 link_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule TundraLogicModule
     OgreRenderingModule)
+
+if (OGREASSETEDITOR)
+link_modules(OgreAssetEditorModule)
+endif()
 
 link_ogre()
 
