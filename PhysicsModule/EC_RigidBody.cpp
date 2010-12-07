@@ -6,6 +6,7 @@
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
+#include "OgreMeshAsset.h"
 
 #include "Entity.h"
 #include "EC_Mesh.h"
@@ -404,12 +405,19 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(IAssetTransfer *transfer)
     if (!transfer)
         return;
 
+    OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(transfer->asset.get());
+    if (!meshAsset || !meshAsset->ogreMesh.get())
+        LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but Ogre::Mesh pointer was null!");
+
+    Ogre::Mesh *mesh = meshAsset->ogreMesh.get();
+/* Old asset download path:
     OgreRenderer::OgreMeshResource *resource = dynamic_cast<OgreRenderer::OgreMeshResource *>(transfer->resourcePtr.get());
     assert(resource);
     if (!resource)
         return;
 
     Ogre::Mesh* mesh = resource->GetMesh().getPointer();
+*/
     if (mesh)
     {
         if (shapeType.Get() == Shape_TriMesh)
