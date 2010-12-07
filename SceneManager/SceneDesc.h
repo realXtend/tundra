@@ -17,8 +17,17 @@ struct AssetDesc
     QString destinationName; ///< Name for the asset in the destination asset storage.
     QByteArray data; ///< Data for the asset, currently used for material files only.
 
-    /// Less than operator. Compares filename only.
-    bool operator <(const AssetDesc &rhs) const { return source < rhs.source; }
+#define LEX_CMP(a, b) if ((a) < (b)) return true; else if ((a) > (b)) return false;
+
+    /// Less than operator. Compares source and subname only.
+    bool operator <(const AssetDesc &rhs) const
+    {
+        LEX_CMP(source, rhs.source)
+        LEX_CMP(subname, rhs.subname)
+        return false;
+    }
+
+#undef LEX_CMP
 
     /// Equality operator. Returns true if filenames match, false otherwise.
     bool operator ==(const AssetDesc &rhs) const { return source == rhs.source; }

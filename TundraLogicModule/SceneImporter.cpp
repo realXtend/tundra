@@ -447,10 +447,10 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     if (!ParseMeshForMaterialsAndSkeleton(filename, material_names, skeleton_name))
         return sceneDesc;
 
-    QString entityName = meshleafname;
-    int start = entityName.lastIndexOf(".mesh");
-    int end = entityName.length();
-    QString meshEntityName = entityName.remove(start, end - start);
+    // Construct entity name from the mesh file name.
+    int start = meshleafname.lastIndexOf(".mesh");
+    int end = meshleafname.length();
+    QString meshEntityName = meshleafname.remove(start, end - start);
 
     EntityDesc entityDesc = { "", meshEntityName };
     ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
@@ -655,7 +655,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     // However, if an external reference exists, use that.
     QString materialFileName = filename;
     materialFileName.replace(".scene", ".material");
-/*
+
     QDomElement externals_elem = scene_elem.firstChildElement("externals");
     if (!externals_elem.isNull())
     {
@@ -667,16 +667,17 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 QDomElement file_elem = item_elem.firstChildElement("file");
                 if (!file_elem.isNull())
                 {
-                    matfilename = in_asset_dir + file_elem.attribute("name").toStdString();
+                    QString extMatName = QString(path.branch_path().string().c_str()) + "/" + file_elem.attribute("name");
+                    if (QFile::exists(extMatName))
+                        materialFileName = extMatName;
                     break;
                 }
             }
             item_elem = item_elem.nextSiblingElement();
         }
     }
-*/
 
-    QSet<QString> material_names_set;
+    QSet<QString> usedMaterials;
     QStringList material_filenames;
 
     QDomElement node_elem = nodes_elem.firstChildElement("node");
@@ -728,7 +729,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 while(!subentity_elem.isNull())
                 {
                     QString material_name = subentity_elem.attribute("materialName");
-                    material_names_set.insert(material_name);
+                    usedMaterials.insert(material_name);
 
                     // Attribute desc for material asset reference.
                     AttributeDesc matAttrDesc = { "assetreference", "material", material_name };
@@ -756,7 +757,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 ParseMeshForMaterialsAndSkeleton(QString(path.branch_path().string().c_str()) + "/" + mesh_name, material_names, skeleton_name);
                 for(uint i = 0; i < material_names.size(); ++i)
                 {
-                    material_names_set.insert(material_names[i]);
+                    usedMaterials.insert(material_names[i]);
                     material_names_.insert(material_names[i].toStdString());
                 }
 
@@ -770,7 +771,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                     skeletonAssetDesc.destinationName = skeleton_name;
                     sceneDesc.assets << skeletonAssetDesc;
                 }
-
+/*
                 foreach(QString material_name, material_names_set)
                 {
                     AssetDesc matDesc;
@@ -781,6 +782,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                     matDesc.data = LoadSingleMaterialFromFile(materialFileName, material_name).toAscii();
                     sceneDesc.assets.append(matDesc);
                 }
+*/
             }
 
             entityDesc.components.append(compDesc);
@@ -791,15 +793,32 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
         node_elem = node_elem.nextSiblingElement("node");
     }
 
-    // Process materials for textures.
-    QSet<QString> all_textures = ProcessMaterialFileForTextures(materialFileName, material_names_set);
-    /*
-    for (uint i = 0; i < material_files.size(); ++i)
+    // Get all materials scripts from the scene material script files.
+    MaterialInfoList allMaterials = LoadAllMaterialsFromFile(materialFileName);
+
+    // Find the used materials and create material assets descs even if the files don't exist.
+    foreach(QString matName, usedMaterials)
     {
-        QSet<QString> textures = ProcessMaterialFileForTextures(material_files[i], material_names_set);
-        all_textures.unite(textures);
+        AssetDesc matDesc;
+        matDesc.typeName = "material";
+        matDesc.subname = matName;
+        matDesc.destinationName = matName + ".material";
+
+        foreach(MaterialInfo mat, allMaterials)
+            if (mat.name == matName)
+            {
+                matDesc.source = mat.source;
+                matDesc.data = mat.data.toAscii();
+            }
+
+        sceneDesc.assets << matDesc;
     }
-    */
+
+    // Process materials for textures.
+    QSet<QString> all_textures;
+    foreach(MaterialInfo matInfo, allMaterials)
+        if (usedMaterials.find(matInfo.name) != usedMaterials.end())
+            all_textures.unite(ProcessMaterialForTextures(matInfo.data));
 
     // Add texture asset descs.
     foreach(QString tex, all_textures)
