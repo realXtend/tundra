@@ -29,6 +29,8 @@
 #include "EventManager.h"
 #include "AssetAPI.h"
 #include "TextureAssetFactory.h"
+#include "GenericAssetFactory.h"
+#include "OgreMeshAsset.h"
 
 namespace OgreRenderer
 {
@@ -66,6 +68,7 @@ namespace OgreRenderer
 
         /// Create an asset type factory for Texture assets.
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new TextureAssetFactory()));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));
     }
 
     // virtual

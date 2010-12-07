@@ -1611,7 +1611,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     
     if (!skel_res)
     {
-        mesh->SetMesh(res->GetId());
+        mesh->SetMesh(res->GetId().c_str());
     }
     else
     {
