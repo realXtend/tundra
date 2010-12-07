@@ -25,8 +25,8 @@ using namespace Scene;
 
 SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     framework(fw),
-    showComponents(false),
-    showAssets(false)
+    showComponents(true),
+    showAssets(true)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
@@ -35,7 +35,10 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     resize(200,300);
 
     QCheckBox *compCheckBox = new QCheckBox(tr("Show components"), this);
+    compCheckBox->setChecked(showComponents);
     QCheckBox *assetCheckBox = new QCheckBox(tr("Show asset references"), this);
+    assetCheckBox->setChecked(showAssets);
+
     treeWidget = new SceneTreeWidget(fw, this);
 
     connect(assetCheckBox, SIGNAL(toggled(bool)), SLOT(ShowAssetReferences(bool)));
