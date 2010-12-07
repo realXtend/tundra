@@ -30,7 +30,7 @@
 #include "InvokeItem.h"
 #include "FunctionInvoker.h"
 #include "AssetEvents.h"
-#include "RexTypes.h"
+#include "CoreTypes.h"
 #include "OgreConversionUtils.h"
 #include "AssetAPI.h"
 #include "IAsset.h"

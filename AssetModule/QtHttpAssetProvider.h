@@ -5,7 +5,7 @@
 
 #include "Foundation.h"
 #include "AssetModuleApi.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 #include "QtHttpAssetTransfer.h"
 
 #include <QNetworkAccessManager>
@@ -16,7 +16,7 @@
 
 namespace Asset
 {
-    class ASSET_MODULE_API QtHttpAssetProvider : public QObject, public Foundation::AssetProviderInterface
+    class ASSET_MODULE_API QtHttpAssetProvider : public QObject, public IAssetProvider
     {
 
     Q_OBJECT
@@ -31,10 +31,16 @@ namespace Asset
         //! Interface implementation
         void Update(f64 frametime);
 
-        const std::string& Name();
-        bool IsValidRef(const std::string& asset_id, const std::string& asset_type);
+        const QString &Name();
+        bool IsValidRef(QString assetRef, QString assetType);
         
         bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
+
+        virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
+        virtual std::vector<AssetStoragePtr> GetStorages() const;
+        virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
+        virtual IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
+
         bool InProgress(const std::string& asset_id);
         bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous);
 
@@ -53,7 +59,7 @@ namespace Asset
     private:
         Foundation::Framework *framework_;
         EventManager *event_manager_;
-        const std::string name_;
+        QString name_;
         QNetworkAccessManager *network_manager_;
         
         event_category_id_t asset_event_category_;

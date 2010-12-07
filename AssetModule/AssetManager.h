@@ -1,11 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Asset_AssetManager_h
 #define incl_Asset_AssetManager_h
 
 #include "AssetInterface.h"
 #include "AssetServiceInterface.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 #include "RexUUID.h"
 
 #include <QString>
@@ -24,6 +25,7 @@ namespace Asset
         Initiates transfers based on asset requests and responds to received data.
         See \ref AssetModule for details on how to use the asset service.
      */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class AssetManager : public Foundation::AssetServiceInterface
     {
     public:
@@ -95,13 +97,13 @@ namespace Asset
         /*! \param asset_provider Provider to register
             \return true if successfully registered
          */
-        virtual bool RegisterAssetProvider(Foundation::AssetProviderPtr asset_provider);
+        virtual bool RegisterAssetProvider(AssetProviderPtr asset_provider);
         
         //! Unregisters an asset provider
         /*! \param asset_provider Provider to unregister
             \return true if successfully unregistered
          */
-        virtual bool UnregisterAssetProvider(Foundation::AssetProviderPtr asset_provider);
+        virtual bool UnregisterAssetProvider(AssetProviderPtr asset_provider);
         
         //! Stores an asset to the asset cache
         /*! \param asset Asset to store
@@ -115,7 +117,7 @@ namespace Asset
          */
         void Update(f64 frametime);
                 
-        virtual std::vector<Foundation::AssetProviderPtr> Providers() { return providers_; }
+        virtual std::vector<AssetProviderPtr> Providers() { return providers_; }
 
     private:
         //! Gets new request tag
@@ -138,7 +140,7 @@ namespace Asset
         AssetCachePtr cache_;
         
         //! Asset providers
-        typedef std::vector<Foundation::AssetProviderPtr> AssetProviderVector;
+        typedef std::vector<AssetProviderPtr> AssetProviderVector;
         AssetProviderVector providers_;
     };
 }

@@ -24,6 +24,9 @@
 
 #include <QString>
 
+bool ParseBool(const std::string &value);
+bool ParseBool(const QString &value);
+
 static std::wstring ToWString(const std::string &str)
 {
     std::wstring w_str(str.length(), L' ');

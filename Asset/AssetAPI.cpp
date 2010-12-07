@@ -6,7 +6,7 @@
 #include "IAsset.h"
 #include "IAssetStorage.h"
 #include "AssetServiceInterface.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 #include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
 #include "EventManager.h"
@@ -45,7 +45,7 @@ void IAssetTransfer::EmitAssetLoaded()
     emit Loaded(this);
 }
 
-std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders() const
+std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 {
     ServiceManagerPtr service_manager = framework->GetServiceManager();
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
@@ -53,13 +53,13 @@ std::vector<Foundation::AssetProviderPtr> AssetAPI::GetAssetProviders() const
     if (!asset_service)
         throw Exception("Unagle to get AssetServiceInterface!");
 
-    std::vector<Foundation::AssetProviderPtr> providers = asset_service->Providers();
+    std::vector<AssetProviderPtr> providers = asset_service->Providers();
     return providers;
 }
 
 AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
 {
-    foreach(Foundation::AssetProviderPtr provider, GetAssetProviders())
+    foreach(AssetProviderPtr provider, GetAssetProviders())
         foreach(AssetStoragePtr storage, provider->GetStorages())
             if (storage->Name() == name)
                 return storage;
@@ -71,7 +71,7 @@ std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
 {
     std::vector<AssetStoragePtr> storages;
 
-    std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
+    std::vector<AssetProviderPtr> providers = GetAssetProviders();
 
     for(size_t i = 0; i < providers.size(); ++i)
     {
@@ -211,6 +211,7 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
 void AssetAPI::ForgetAllAssets()
 {
     assets.clear();
+    currentLegacyAssetServiceTransfers.clear();
     currentTransfers.clear();
 }
 
@@ -227,17 +228,53 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
+    // To optimize, we first check if there is an outstanding requests to the given asset. If so, we return that request. In effect, we never
+    // have multiple transfers running to the same asset.
+    AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
+    if (iter != currentTransfers.end())
+    {
+        AssetTransferPtr transfer = iter->second;
+
+        // Check that the requested types were the same. Don't know what to do if they differ, so only print a warning if so.
+        if (!assetType.isEmpty() && !transfer->assetType.isEmpty() && assetType != transfer->assetType)
+            LogWarning("AssetAPI::RequestAsset: Asset \"" + assetRef.toStdString() + "\" first requested by type " + transfer->assetType.toStdString() + 
+            ", but now requested by type " + assetType.toStdString() + ".");
+
+        return transfer;
+    }
+
+    // Check if we've already downloaded this asset before. We never reload an asset we've downloaded before, unless the client explicitly forces so,
+    // or if we get a change notification signal from the source asset provider telling the asset was changed.
+    AssetMap::iterator iter2 = assets.find(assetRef);
+    if (iter2 != assets.end())
+    {
+        // Whenever the client requests an asset that was loaded before, we create a request for that asset nevertheless.
+        // The idea is to have the code path run the same independent of whether the asset existed or had to be downloaded, i.e.
+        // a request is always made, and the receiver writes only a single asynchronous code path for handling the asset.
+
+        // The asset was already downloaded - generate a 'virtual asset transfer' and return it to the client.
+        AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer());
+        transfer->asset = iter2->second; // For 'normal' requests, the asset ptr is zero, but for these virtual requests, we can already fill the asset here.
+        transfer->source.ref = assetRef;
+        transfer->assetType = assetType;
+
+        readyTransfers.push_back(transfer);
+        return transfer;
+        // Also store this transfer to the currentTransfers map so that we don't create multiple 
+//        currentTransfers.push_Back(transfer);
+    }
+
     if (assetType.length() == 0)
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
-    Foundation::AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
+    AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
     if (!provider.get())
     {
         LogError("AssetAPI::RequestAsset: Failed to find a provider for asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
         return AssetTransferPtr();
     }
 
-    if (assetType == "Script" || assetType == "Terrain")// || assetType == "Texture") // NEW PATH: Uses asset providers directly.
+    if (assetType == "Script" || assetType == "Terrain" || assetType == "Texture") // NEW PATH: Uses asset providers directly.
     {
         AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
         if (!transfer.get())
@@ -245,7 +282,12 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
             LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
             return AssetTransferPtr();
         }
-        connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(AssetDownloaded(IAssetTransfer*)));
+
+        // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
+        // so we'll avoid multiple downloads to the exact same asset.
+        assert(currentTransfers.find(assetRef) == currentTransfers.end());
+        currentTransfers[assetRef] = transfer;
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(OnAssetLoaded(IAssetTransfer*)));
         return transfer;
     }
     else // OLD PATH: Uses the event-based asset managers.
@@ -280,7 +322,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         else
             tag = asset_service->RequestAsset(assetRef.toStdString(), assetType.toStdString());
 
-        currentTransfers[tag] = transfer;
+        currentLegacyAssetServiceTransfers[tag] = transfer;
 
         return transfer;
     }
@@ -291,7 +333,7 @@ AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref)
     return RequestAsset(ref.ref, ""/*ref.type*/);
 }
 
-Foundation::AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
+AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
 {
     assetType = assetType.trimmed();
     assetRef = assetRef.trimmed();
@@ -299,12 +341,12 @@ Foundation::AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, 
     if (assetType.length() == 0)
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
-    std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
+    std::vector<AssetProviderPtr> providers = GetAssetProviders();
     for(size_t i = 0; i < providers.size(); ++i)
-        if (providers[i]->IsValidRef(assetRef.toStdString(), assetType.toStdString()))
+        if (providers[i]->IsValidRef(assetRef, assetType))
             return providers[i];
 
-    return Foundation::AssetProviderPtr();
+    return AssetProviderPtr();
 }
 
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
@@ -352,6 +394,14 @@ AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
     return AssetTypeFactoryPtr();
 }
 
+AssetPtr AssetAPI::GetAsset(QString assetRef)
+{
+    AssetMap::iterator iter = assets.find(assetRef);
+    if (iter != assets.end())
+        return iter->second;
+    return AssetPtr();
+}
+
 bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     if (category_id == framework->GetEventManager()->QueryEventCategory("Asset"))
@@ -359,14 +409,14 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
         if (event_id == Asset::Events::ASSET_READY)
         {
             Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentTransfers.find(assetReady->tag_);
-            if (iter != currentTransfers.end())
+            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentLegacyAssetServiceTransfers.find(assetReady->tag_);
+            if (iter != currentLegacyAssetServiceTransfers.end())
             {
                 AssetTransferPtr transfer = iter->second;
                 transfer->assetPtr = assetReady->asset_;
                 assert(transfer);
                 transfer->EmitAssetDownloaded();
-                currentTransfers.erase(iter);
+                currentLegacyAssetServiceTransfers.erase(iter);
             }
         }
     }
@@ -376,8 +426,8 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
         if (event_id == Resource::Events::RESOURCE_READY)
         {
             Resource::Events::ResourceReady *resourceReady = checked_static_cast<Resource::Events::ResourceReady*>(data);
-            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentTransfers.find(resourceReady->tag_);
-            if (iter != currentTransfers.end())
+            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentLegacyAssetServiceTransfers.find(resourceReady->tag_);
+            if (iter != currentLegacyAssetServiceTransfers.end())
             {
                 AssetTransferPtr transfer = iter->second;
                 transfer->resourcePtr = resourceReady->resource_;
@@ -385,12 +435,24 @@ bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id,
                 //! \todo Causes linker error in debug build, must be disabled for now
                 //transfer->internalResourceName = QString::fromStdString(resourceReady->resource_->GetInternalName());
                 transfer->EmitAssetLoaded();
-                currentTransfers.erase(iter);
+                currentLegacyAssetServiceTransfers.erase(iter);
             }
         }
     }
 
     return false;
+}
+
+void AssetAPI::Update()
+{
+    // Finish any virtual transfers we might have accumulated.
+    for(size_t i = 0; i < readyTransfers.size(); ++i)
+    {
+        readyTransfers[i]->EmitAssetDownloaded();
+        readyTransfers[i]->EmitAssetDecoded();
+        readyTransfers[i]->EmitAssetLoaded();
+    }
+    readyTransfers.clear();
 }
 
 QString GuaranteeTrailingSlash(const QString &source)
@@ -405,13 +467,15 @@ QString GuaranteeTrailingSlash(const QString &source)
     return s;
 }
 
-void AssetAPI::AssetDownloaded(IAssetTransfer *transfer)
+void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 {
-    if (transfer->rawAssetData.size() == 0)
-    {
-        LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer finished: but data size was 0 bytes!");
-        return;
-    }
+    assert(transfer_);
+    AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
+
+    // We should be tracking this transfer in an internal data structure.
+    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    if (iter == currentTransfers.end())
+        LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
     // We've finished an asset data download, now create an actual instance of an asset of that type.
     transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
@@ -429,12 +493,149 @@ void AssetAPI::AssetDownloaded(IAssetTransfer *transfer)
     }
 
     // Remember the newly created asset in AssetAPI's internal data structure to allow clients to later fetch it without re-requesting it.
-    assets.push_back(transfer->asset);
+    AssetMap::iterator iter2 = assets.find(transfer->source.ref);
+    if (iter2 != assets.end())
+    {
+        AssetPtr existing = iter2->second;
+        LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name().toStdString() + "\", type \"" + existing->Type().toStdString() + "\" with asset of same name!");
+    }
+    assets[transfer->source.ref] = transfer->asset;
+
+    // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
+    RequestAssetDependencies(transfer->asset);
+
+    // Tell everyone this transfer has now been downloaded. Note that when this signal is fired, the asset dependencies may not yet be loaded.
+    transfer->EmitAssetDownloaded();
+
+    // If we don't have any outstanding dependencies, fire the Loaded signal for the asset as well.
+    if (NumPendingDependencies(transfer->asset) == 0)
+        AssetDependenciesCompleted(transfer);
+}
+
+void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
+{
+    // This asset transfer has finished - remove it from the internal list of ongoing transfers.
+    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    if (iter != currentTransfers.end())
+        currentTransfers.erase(iter);
+    else // Even if we didn't know about this transfer, just print a warning and continue execution here nevertheless.
+        LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer finished, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
+
+    if (transfer->rawAssetData.size() == 0)
+    {
+        LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer finished: but data size was 0 bytes!");
+        return;
+    }
 
     ///\todo Specify the following flow better.
+//    transfer->EmitAssetDecoded();
 
-    transfer->EmitAssetDecoded();
+    // This asset is now completely finished, and all its dependencies have been loaded.
     transfer->EmitAssetLoaded();
+}
+
+void AssetAPI::NotifyAssetDependenciesChanged(AssetPtr asset)
+{
+    /// Delete all old stored asset dependencies for this asset.
+    RemoveAssetDependencies(asset->Name());
+
+    std::vector<AssetReference> refs = asset->FindReferences();
+    for(size_t i = 0; i < refs.size(); ++i)
+    {
+        QString ref = refs[i].ref;
+        if (ref.isEmpty())
+            continue;
+
+        // Remember this assetref for future lookup.
+        assetDependencies.push_back(std::make_pair(asset->Name(), ref));
+    }
+}
+
+void AssetAPI::RequestAssetDependencies(AssetPtr asset)
+{
+    // Make sure we have most up-to-date internal view of the asset dependencies.
+    NotifyAssetDependenciesChanged(asset);
+
+    std::vector<AssetReference> refs = asset->FindReferences();
+    for(size_t i = 0; i < refs.size(); ++i)
+    {
+        QString ref = refs[i].ref;
+        if (ref.isEmpty())
+            continue;
+
+        AssetPtr existing = GetAsset(refs[i].ref);
+        if (existing.get())
+            asset->DependencyLoaded(existing);
+        else // We don't have the given asset yet, request it.
+        {
+            LogInfo("Asset " + asset->ToString().toStdString() + " depends on asset " + ref.toStdString() + " which has not been loaded yet. Requesting..");
+            RequestAsset(refs[i].ref);
+        }
+    }
+}
+
+void AssetAPI::RemoveAssetDependencies(QString asset)
+{
+    for(size_t i = 0; i < assetDependencies.size(); ++i)
+        if (assetDependencies[i].first == asset)
+        {
+            assetDependencies.erase(assetDependencies.begin() + i);
+            --i;
+        }
+}
+
+std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
+{
+    std::vector<AssetPtr> dependents;
+    for(size_t i = 0; i < assetDependencies.size(); ++i)
+        if (assetDependencies[i].second == dependee)
+        {
+            AssetMap::iterator iter = assets.find(assetDependencies[i].first);
+            if (iter != assets.end())
+                dependents.push_back(iter->second);
+        }
+    return dependents;
+}
+
+int AssetAPI::NumPendingDependencies(AssetPtr asset)
+{
+    int numDependencies = 0;
+
+    std::vector<AssetReference> refs = asset->FindReferences();
+    for(size_t i = 0; i < refs.size(); ++i)
+    {
+        QString ref = refs[i].ref;
+        if (ref.isEmpty())
+            continue;
+
+        AssetPtr existing = GetAsset(refs[i].ref);
+        if (!existing.get())
+            ++numDependencies;
+    }
+
+    return numDependencies;
+}
+
+void AssetAPI::OnAssetLoaded(IAssetTransfer *transfer)
+{
+    std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
+    for(size_t i = 0; i < dependents.size(); ++i)
+    {
+        AssetPtr asset = dependents[i];
+
+        // Notify the asset that one of its dependencies has now been loaded in.
+        asset->DependencyLoaded(transfer->asset);
+
+        // Check if this dependency was the last one of the given asset's dependencies.
+        AssetTransferMap::iterator iter = currentTransfers.find(asset->Name());
+        if (iter != currentTransfers.end())
+        {
+            AssetTransferPtr transfer = iter->second;
+
+            if (NumPendingDependencies(asset) == 0)
+                AssetDependenciesCompleted(transfer);
+        }
+    }
 }
 
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
@@ -489,7 +690,7 @@ QString GetResourceTypeFromResourceFileName(const char *name)
 
     const char *textureFileTypes[] = { ".jpg", ".png", ".tga", ".bmp", ".dds" };
     if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
-        return "OgreTexture";
+        return "Texture";
 
     const char *openAssImpFileTypes[] = { ".3d", ".b3d", ".dae", ".bvh", ".3ds", ".ase", ".obj", ".ply", ".dxf", 
         ".nff", ".smd", ".vta", ".mdl", ".md2", ".md3", ".mdc", ".md5mesh", ".x", ".q3o", ".q3s", ".raw", ".ac",

@@ -6,7 +6,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include "ThreadTaskManager.h"
 #include "AssetModuleApi.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 #include "AssetFwd.h"
 
 namespace HttpUtilities
@@ -19,7 +19,7 @@ namespace Asset
     class LocalAssetStorage;
 
     /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'local://' reference.
-    class ASSET_MODULE_API LocalAssetProvider : public QObject, public Foundation::AssetProviderInterface, public boost::enable_shared_from_this<LocalAssetProvider>
+    class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<LocalAssetProvider>
     {
             Q_OBJECT;
 
@@ -29,11 +29,11 @@ namespace Asset
         virtual ~LocalAssetProvider();
         
         //! Returns name of asset provider
-        virtual const std::string& Name();
+        virtual const QString &Name();
         
         //! Checks an asset id for validity
         /*! \return true if this asset provider can handle the id */
-        virtual bool IsValidRef(const std::string& asset_id, const std::string& asset_type);
+        virtual bool IsValidRef(QString assetRef, QString assetType);
         
         //! Requests an asset for "download"
         /*! \param asset_id Asset UUID
@@ -44,29 +44,6 @@ namespace Asset
         
         virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
 
-        //! Returns whether a certain asset is already being "downloaded". Returns always false.
-        virtual bool InProgress(const std::string& asset_id);
-        
-        //! Queries status of asset "download"
-        /*! \param asset_id Asset UUID
-            \param size Variable to receive asset size (if known, 0 if unknown)
-            \param received Variable to receive amount of bytes received
-            \param received_continuous Variable to receive amount of continuous bytes received from the start
-            \return false will always be returned (not supported) */
-        virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous);
-        
-        //! Gets incomplete asset
-        /*! If transfer not in progress or not enough bytes received, will return empty pointer
-            
-            \param asset_id Asset UUID
-            \param asset_type Asset type
-            \param received Minimum continuous bytes received from the start
-            \return Null pointer will always be returned (not supported) */
-        virtual Foundation::AssetInterfacePtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
-        
-        //! Returns information about current asset transfers
-        virtual Foundation::AssetTransferInfoVector GetTransferInfo() { return Foundation::AssetTransferInfoVector(); }
-        
         //! Performs time-based update 
         /*! \param frametime Seconds since last frame */
         virtual void Update(f64 frametime);

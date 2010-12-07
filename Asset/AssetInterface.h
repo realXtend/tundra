@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated The contents of this file is deprecated and will be removed in the future in favor of the new Asset API. See IAsset.h instead. -jj.
 
 #ifndef incl_Interfaces_AssetInterface_h
 #define incl_Interfaces_AssetInterface_h
@@ -13,6 +14,7 @@
 namespace Foundation
 {
     //! Interface for assets
+    ///\deprecated This object is deprecated and will be removed in the future in favor of the new Asset API. See IAsset.h instead. -jj.
     class MODULE_API AssetInterface
     {
     public:

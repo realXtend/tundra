@@ -11,7 +11,6 @@
 
 #include "EventManager.h"
 #include "SceneEvents.h"
-#include "NetworkEvents.h"
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "ModuleManager.h"
@@ -94,10 +93,12 @@ void ECEditorModule::Update(f64 frametime)
 
 bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
+    /* Regression. Removed the dependency from ECEditorModule to ProtocolUtilities. Reimplement this by deleting
+       all ECEditors when we disconnect. -jj.
     if (category_id == network_state_event_category_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         if (active_editor_)
             active_editor_->ClearEntities(); 
-
+    */
     return false;
 }
 

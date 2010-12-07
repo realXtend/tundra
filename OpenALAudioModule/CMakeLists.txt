@@ -28,11 +28,11 @@ add_definitions (-DOPENAL_MODULE_EXPORTS)
 use_package (OPENAL)
 use_package (OGG)
 use_package (VORBIS)
-use_modules (Core Foundation Interfaces RexCommon AssetModule)
+use_modules (Core Foundation Interfaces AssetModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon)
+link_modules (Core Foundation Interfaces)
 
 link_package (OPENAL)
 link_package (OGG)

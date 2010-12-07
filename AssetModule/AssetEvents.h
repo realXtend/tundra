@@ -14,25 +14,30 @@ namespace Asset
         //! Sent when an asset has been completely loaded. Uses AssetReady event data structure.
         /*! \ingroup AssetModuleClient
          */
+        ///\deprecated This object is deprecated and will be removed in the future. -jj.
         static const event_id_t ASSET_READY = 1;
         
         //! Sent periodically to tell about the progress of an asset download. Uses AssetProgress event data structure.
         /*! \ingroup AssetModuleClient
          */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
         static const event_id_t ASSET_PROGRESS = 2;
 
         //! Sent when asset download has been canceled out of some reason (for example network timeout). Uses AssetCanceled event data structure.
         /*! \ingroup AssetModuleClient
          */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
         static const event_id_t ASSET_CANCELED = 3;
 
         //! Sent when asset wants to be open. 
  
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
         static const event_id_t ASSET_OPEN = 4;
 
         //! Asset ready event data
         /*! \ingroup AssetModuleClient
          */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
         class AssetReady : public IEventData
         {
         public:
@@ -61,6 +66,7 @@ namespace Asset
         //! Asset progress event data
         /*! \ingroup AssetModuleClient
          */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
         class AssetProgress : public IEventData
         {
         public:
@@ -92,6 +98,7 @@ namespace Asset
         //! Asset transfer canceled event data
         /*! \ingroup AssetModuleClient
          */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
         class AssetCanceled : public IEventData
         {
         public:
@@ -115,6 +122,7 @@ namespace Asset
          * Asset open event data. 
          * @ingroup AssetModule
          */
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
         class AssetOpen : public IEventData
         {
             public: 

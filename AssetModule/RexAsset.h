@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Asset_RexAsset_h
 #define incl_Asset_RexAsset_h
@@ -14,6 +15,7 @@ namespace Asset
     //! ReX asset. Implements the AssetInterface.
     /*! \ingroup AssetModuleClient
      */ 
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class RexAsset : public Foundation::AssetInterface
     {
     public:

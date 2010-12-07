@@ -11,8 +11,7 @@
 #include "SceneManager.h"
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
-#include "RexTypes.h"
-#include "RexUUID.h"
+#include "CoreTypes.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
 #include <QtBrowserItem>
@@ -187,6 +186,10 @@ void ECBrowser::focusInEvent(QFocusEvent *event)
 
 bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action)
 {
+    return false;
+
+    ///\todo Regression. Need to reimplement this so that we can drop any kind of strings to ECEditor and not just uuids. -jj.
+#if 0
     if (action == Qt::IgnoreAction)
         return true;
 
@@ -322,6 +325,7 @@ bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *
         return false;
 
     return true;
+#endif
 }
 
 void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
