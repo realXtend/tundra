@@ -280,8 +280,34 @@ namespace OgreRenderer
         ServiceManagerPtr service_manager = framework_->GetServiceManager();
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
 
+        // If the request represents an OpenSim texture UUID (which is assumed to be a J2K image), request through j2k texture decoder
+        if (RexUUID::IsValid(id))
+        {
+            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();            
+            if (!texture_service)
+                return 0;
+
+            // Perform the actual decode request only once, for the first request
+            if (request_tags_.find(id) == request_tags_.end())
+            {
+                request_tag_t source_tag = texture_service->RequestTexture(id);
+                if (source_tag)
+                {
+                    expected_request_tags_.insert(source_tag);
+                    request_tags_[id].push_back(tag); 
+                    return tag;
+                }
+            }
+            else
+            {
+                request_tags_[id].push_back(tag); 
+                return tag;
+            }
+        }
+
         // Hack: if the texture indicates a local asset, do not go through the J2K pipe, but request as an image asset
-        if ((id.find("file://") == 0 || id.find("local://") == 0) && asset_service)
+//        if ((id.find("file://") == 0 || id.find("local://") == 0) && asset_service)
+        if (asset_service) // Always request as an image asset, never through J2K pipe.
         {
             // This request tag is unnecessary... as the asset should be loaded immediately if it exists
             request_tag_t source_tag = asset_service->RequestAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
@@ -320,31 +346,7 @@ namespace OgreRenderer
             }
         }
 */
-        // Otherwise, if the request represents an OpenSim texture UUID (which is assumed to be a J2K image), request through j2k texture decoder
-        if (RexUUID::IsValid(id))
-        {
-            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();            
-            if (texture_service)
-            {
-                // Perform the actual decode request only once, for the first request
-                if (request_tags_.find(id) == request_tags_.end())
-                {
-                    request_tag_t source_tag = texture_service->RequestTexture(id);
-                    if (source_tag)
-                    {
-                        expected_request_tags_.insert(source_tag);
-                        request_tags_[id].push_back(tag); 
-                        return tag;
-                    }
-                }
-                else
-                {
-                    request_tags_[id].push_back(tag); 
-                    return tag;
-                }
-            }
-        }
-        
+       OgreRenderingModule::LogWarning("Warning: ResourceHandler::RequestTexture(\"" + id + "\"): Unable to handle given ID!");
         return 0;
     }
 
