@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Interfaces_TextureInterface_h
 #define incl_Interfaces_TextureInterface_h
@@ -9,9 +10,11 @@
 namespace Foundation
 {
     class TextureInterface;    
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     typedef boost::shared_ptr<TextureInterface> TexturePtr;
 
     //! a generic texture image with raw data
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class MODULE_API TextureInterface : public ResourceInterface
     {
     public:

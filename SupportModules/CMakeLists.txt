@@ -19,11 +19,11 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
 add_definitions (-DCONSOLE_MODULE_EXPORTS)
 
-use_modules (Core Foundation Interfaces RexCommon Ui Input)
+use_modules (Core Foundation Interfaces Ui Input)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon Ui)
+link_modules (Core Foundation Interfaces Ui)
 link_ogre()
 
 SetupCompileFlagsWithPCH()

@@ -1515,3 +1515,10 @@ if 1: #start a pythonqt console
     
     #show also if was hidden previously
     r.qtconsole.show()
+
+if 1: # bring in manipulator code
+    try:
+        r.editor
+    except:
+        import objecttools.edit
+        r.editor = objecttools.edit.ObjectEdit()

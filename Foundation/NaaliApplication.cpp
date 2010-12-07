@@ -29,10 +29,6 @@ namespace Foundation
         QApplication::setApplicationName("realXtend-Naali");
 
 #ifdef Q_WS_WIN
-
-        // On Windows the current directory have to be the application installation directory
-        QDir::setCurrent(applicationDirPath());
-
         // If under windows, add run_dir/plugins as library path
         // unix users will get plugins from their OS Qt installation folder automatically
 

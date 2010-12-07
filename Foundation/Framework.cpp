@@ -344,10 +344,25 @@ namespace Foundation
                 event_manager_->ProcessDelayedEvents(frametime);
             }
 
+            // Process the asset API updates.
+            {
+                PROFILE(Asset_Update);
+                asset->Update();
+            }
+
+            // Process all keyboard input.
+            {
+                PROFILE(Input_Update);
+                input->Update(frametime);
+            }
+
             // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
             // information after for example network updates, that have been performed by the modules.
-            frame->Update(frametime);
-            
+            {
+                PROFILE(Frame_Update);
+                frame->Update(frametime);
+            }
+
             // if we have a renderer service, render now
             boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
             if (renderer.expired() == false)
@@ -355,8 +370,6 @@ namespace Foundation
                 PROFILE(FW_Render);
                 renderer.lock()->Render();
             }
-
-            input->Update(frametime);
         }
 
         RESETPROFILER

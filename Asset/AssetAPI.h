@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <vector>
+#include <utility>
 #include <map>
 
 #include "CoreTypes.h"
@@ -49,7 +50,7 @@ public:
     /// @param assetRef The asset reference name to query a provider for.
     /// @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
     ///                  used to more completely specify the type.
-    Foundation::AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
+    AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
 
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
@@ -75,7 +76,7 @@ public:
     boost::shared_ptr<T> GetAssetProvider();
 
     /// Returns all the asset providers that are registered to the Asset API.
-    std::vector<Foundation::AssetProviderPtr> GetAssetProviders() const;
+    std::vector<AssetProviderPtr> GetAssetProviders() const;
 
     /// Returns the asset storage of the given @c name
     AssetStoragePtr GetAssetStorage(const QString &name) const;
@@ -145,26 +146,61 @@ public:
     /// This function is implemented for legacy purposes to help transition period to new Asset API. Will be removed. Do NOT call this. -jj
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-private slots:
-    void AssetDownloaded(IAssetTransfer *transfer);
+    /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
+    /// it yourself.
+    void Update();
 
+    /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
+    void AssetTransferCompleted(IAssetTransfer *transfer);
+
+    void AssetDependenciesCompleted(AssetTransferPtr transfer);
+
+    void NotifyAssetDependenciesChanged(AssetPtr asset);
+
+    void RequestAssetDependencies(AssetPtr transfer);
+
+    /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
+    int NumPendingDependencies(AssetPtr asset);
+
+private slots:
+    void OnAssetLoaded(IAssetTransfer* transfer);
+    
 private:
     /// This is implemented for legacy purposes to help transition period to new Asset API. Will be removed. -jj
-    std::map<request_tag_t, AssetTransferPtr> currentTransfers;
+    std::map<request_tag_t, AssetTransferPtr> currentLegacyAssetServiceTransfers;
+
+    typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
+    /// Stores all the currently ongoing asset transfers.
+    AssetTransferMap currentTransfers;
+
+    typedef std::vector<std::pair<QString, QString> > AssetDependenciesMap;
+    /// Keeps track of all the dependencies each asset has to each other asset.
+    /// \todo Find a more effective data structure for this. Needs something like boost::bimap but for multi-indices.
+    AssetDependenciesMap assetDependencies;
+
+    /// Removes from AssetDependenciesMap all dependencies the given asset has.
+    void RemoveAssetDependencies(QString asset);
+    std::vector<AssetPtr> FindDependents(QString dependee);
+
+    /// Stores a list of asset requests to assets that have already been downloaded into the system. These requests don't go to the asset providers
+    /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
+    /// by one frame, so that the client gets a chance to connect his handler's Qt signals to the AssetTransferPtr slots.
+    std::vector<AssetTransferPtr> readyTransfers;
 
     Foundation::Framework *framework;
 
     /// Contains all known asset storages in the system.
-    std::vector<boost::shared_ptr<IAssetStorage> > storages;
+    std::vector<AssetStoragePtr> storages;
 
     /// Stores all the registered asset type factories in the system.
     std::vector<AssetTypeFactoryPtr> assetTypeFactories;
 
-    /// Stores all the assets in the system.
-    std::vector<AssetPtr> assets;
+    /// Stores all the already loaded assets in the system.
+    typedef std::map<QString, AssetPtr> AssetMap;
+    AssetMap assets;
 
-    /// For now, the Asset API holds a weak reference to each provider.
-//    std::vector<AssetProviderInterface*> providers;
+    /// Specifies all the registered asset providers in the system.
+    std::vector<AssetProviderPtr> providers;
 
 };
 

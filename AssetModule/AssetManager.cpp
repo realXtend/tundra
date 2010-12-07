@@ -1,3 +1,4 @@
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 #include "StableHeaders.h"
 #include "AssetModule.h"
 #include "AssetInterface.h"
@@ -53,7 +54,7 @@ namespace Asset
         while (i != providers_.end())
         {
             // See if a provider can handle request
-            if ((*i)->IsValidRef(asset_id, asset_type))
+            if ((*i)->IsValidRef(asset_id.c_str(), asset_type.c_str()))
                 return true;
             ++i;
         }
@@ -88,9 +89,9 @@ namespace Asset
 
     Foundation::AssetInterfacePtr AssetManager::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
     {
-        if (!received)
+//        if (!received)
             return Foundation::AssetInterfacePtr();
-
+/*
         // See if any provider has ongoing transfer for this asset
         AssetProviderVector::iterator i = providers_.begin();
         while (i != providers_.end())
@@ -105,10 +106,13 @@ namespace Asset
 
         // Not enough bytes
         return Foundation::AssetInterfacePtr();
+*/
     }
 
     bool AssetManager::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)
     {
+        return false;
+        /*
         // See if any provider has ongoing transfer for this asset
         AssetProviderVector::iterator i = providers_.begin();
         while (i != providers_.end())
@@ -129,6 +133,7 @@ namespace Asset
         }
 
         return false;
+        */
     }
 
     void AssetManager::StoreAsset(Foundation::AssetInterfacePtr asset, bool store_to_disk)
@@ -136,7 +141,7 @@ namespace Asset
         cache_->StoreAsset(asset, store_to_disk);
     }
 
-    bool AssetManager::RegisterAssetProvider(Foundation::AssetProviderPtr asset_provider)
+    bool AssetManager::RegisterAssetProvider(AssetProviderPtr asset_provider)
     {
         if (!asset_provider)
         {
@@ -149,18 +154,18 @@ namespace Asset
         {
             if ((*i) == asset_provider)
             {
-                AssetModule::LogWarning("Asset provider " + asset_provider->Name() + " already registered");
+                AssetModule::LogWarning("Asset provider " + asset_provider->Name().toStdString() + " already registered");
                 return false;
             }
             ++i;
         }
 
         providers_.push_back(asset_provider);
-        AssetModule::LogInfo("Asset provider " + asset_provider->Name()  + " registered");
+        AssetModule::LogInfo("Asset provider " + asset_provider->Name().toStdString() + " registered");
         return true;
     }
     
-    bool AssetManager::UnregisterAssetProvider(Foundation::AssetProviderPtr asset_provider)
+    bool AssetManager::UnregisterAssetProvider(AssetProviderPtr asset_provider)
     {
         if (!asset_provider)
         {
@@ -174,13 +179,13 @@ namespace Asset
             if ((*i) == asset_provider)
             {
                 providers_.erase(i);
-                AssetModule::LogInfo("Asset provider " + asset_provider->Name()  + " unregistered");
+                AssetModule::LogInfo("Asset provider " + asset_provider->Name().toStdString()  + " unregistered");
                 return true;
             }
             ++i;
         }
 
-        AssetModule::LogWarning("Asset provider " + asset_provider->Name()  + " not found, could not unregister");
+        AssetModule::LogWarning("Asset provider " + asset_provider->Name().toStdString()  + " not found, could not unregister");
         return false;
     }
 
@@ -204,7 +209,7 @@ namespace Asset
         Foundation::AssetInterfacePtr asset = cache_->GetAsset(asset_id, true, false, asset_type);
         if (asset)
             return asset;
-
+/*
         // If transfer in progress in any of the providers, do not check disk cache again
         AssetProviderVector::iterator i = providers_.begin();
         while (i != providers_.end())
@@ -213,7 +218,7 @@ namespace Asset
                 return Foundation::AssetInterfacePtr();
             ++i;
         }
-
+*/
         // Last check disk cache
         asset = cache_->GetAsset(asset_id, false, true, asset_type);
         return asset;
@@ -252,6 +257,7 @@ namespace Asset
     Foundation::AssetTransferInfoVector AssetManager::GetAssetTransferInfo()
     {
         Foundation::AssetTransferInfoVector ret;
+/*
         AssetProviderVector::iterator i = providers_.begin();
         while (i != providers_.end())
         {
@@ -259,6 +265,7 @@ namespace Asset
             ret.insert(ret.end(), transfers.begin(), transfers.end());
             ++i;
         }
+*/
         return ret;
     }
 }

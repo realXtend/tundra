@@ -1,5 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include <direct.h>
+
 #include "Foundation.h"
 #include "ModuleManager.h"
 
@@ -95,10 +97,23 @@ void setup (Foundation::Framework &fw)
     //fw.GetModuleManager()->ExcludeModule("UiServiceModule");
 }
 
+std::string GetWorkingDirectory()
+{
+   char *buffer = _getcwd( NULL, 0 );
+   if (buffer)
+   {
+       std::string s = buffer;
+       free(buffer);
+       return s;
+   }
+   return "(null)";
+}
+
 int run (int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
+    printf("Starting up server. Current working directory: %s.\n", GetWorkingDirectory().c_str());
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     try

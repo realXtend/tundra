@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\deprecated This file is deprecated and will be removed in the future. -jj.
 
 #ifndef incl_Asset_RexAssetMetadata_h
 #define incl_Asset_RexAssetMetadata_h
@@ -8,6 +9,7 @@
 namespace Asset
 {
     //! Asset metadata for reX assets.
+    ///\deprecated This object is deprecated and will be removed in the future. -jj.
     class RexAssetMetadata : public Foundation::AssetMetadataInterface
     {
     public:
