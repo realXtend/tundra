@@ -7,7 +7,7 @@
 #include "OgreTextureResource.h"
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
-#include "OgreParticleResource.h"
+//#include "OgreParticleResource.h" // Removed due to regression for now -jj.
 #include "OgreSkeletonResource.h"
 #include "ResourceInterface.h"
 #include "ResourceHandler.h"
@@ -31,7 +31,7 @@ namespace OgreRenderer
         source_types_[OgreMeshResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_MESH;
         source_types_[OgreSkeletonResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_SKELETON;
         source_types_[OgreMaterialResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_MATERIAL_SCRIPT;
-        source_types_[OgreParticleResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_PARTICLE_SCRIPT;
+//        source_types_[OgreParticleResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_PARTICLE_SCRIPT; // Removed due to regression for now -jj.
         source_types_[OgreImageTextureResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_IMAGE;
     }
 
@@ -100,7 +100,7 @@ namespace OgreRenderer
         if (type == OgreTextureResource::GetTypeStatic())
             return RequestTexture(id);
         if (type == OgreMeshResource::GetTypeStatic() || type == OgreMaterialResource::GetTypeStatic() ||
-            type == OgreParticleResource::GetTypeStatic() || type == OgreImageTextureResource::GetTypeStatic() ||
+            /*type == OgreParticleResource::GetTypeStatic() ||*/ type == OgreImageTextureResource::GetTypeStatic() ||
             type == OgreSkeletonResource::GetTypeStatic())
             return RequestOtherResource(id, type);
             
@@ -516,6 +516,7 @@ namespace OgreRenderer
     
     bool ResourceHandler::UpdateParticles(Foundation::AssetInterfacePtr source, request_tag_t tag)
     {
+        /* // Removed due to regression for now -jj.
         expected_request_tags_.erase(tag);
         
         // If not found, prepare new
@@ -539,6 +540,8 @@ namespace OgreRenderer
         }
         
         return success;
+        */
+        return false;
     }
     
     bool ResourceHandler::UpdateSkeleton(Foundation::AssetInterfacePtr source, request_tag_t tag)

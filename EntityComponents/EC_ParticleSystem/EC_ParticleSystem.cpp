@@ -7,7 +7,7 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
-#include "OgreParticleResource.h"
+#include "OgreParticleAsset.h"
 #include "OgreConversionUtils.h"
 #include "SceneManager.h"
 #include "AssetAPI.h"
@@ -153,15 +153,15 @@ void EC_ParticleSystem::ParticleSystemAssetLoaded()
     if (!transfer)
         return;
 
-    OgreParticleResource *resource = dynamic_cast<OgreParticleResource *>(transfer->resourcePtr.get());
-    if (!resource)
+    OgreParticleAsset *asset = dynamic_cast<OgreParticleAsset*>(transfer->asset.get());
+    if (!asset)
     {
-        LogWarning("Failed to handle particle resource ready event because resource pointer was null.");
+        LogWarning("EC_ParticleSystem::ParticleSystemAssetLoaded: Asset transfer finished, but asset pointer was null!");
         return;
     }
 
-    if (resource->GetNumTemplates())
-        CreateParticleSystem(QString::fromStdString(resource->GetTemplateName(0)));
+    if (asset->GetNumTemplates() > 0)
+        CreateParticleSystem(asset->GetTemplateName(0));
 }
 
 void EC_ParticleSystem::EntitySet()
