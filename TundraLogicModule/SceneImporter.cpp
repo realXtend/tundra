@@ -113,8 +113,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     QStringList material_files;
     if (inspect)
     {
-        fs::recursive_directory_iterator iter(in_asset_dir);
-        fs::recursive_directory_iterator end_iter;
+        fs::recursive_directory_iterator iter(in_asset_dir), end_iter;
         for(; iter != end_iter; ++iter )
             if (fs::is_regular_file(iter->status()))
             {
@@ -652,9 +651,30 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 
     fs::path path(filename.toStdString());
 
-    // For scenes we assume that the material file is named same as the scene file itself.
-    QString materialFileName = filename.mid(0, filename.indexOf(".scene"));
-    materialFileName.append(".material");
+    // By default, assume the material file is scenename.material if scene is scenename.scene.
+    // However, if an external reference exists, use that.
+    QString materialFileName = filename;
+    materialFileName.replace(".scene", ".material");
+/*
+    QDomElement externals_elem = scene_elem.firstChildElement("externals");
+    if (!externals_elem.isNull())
+    {
+        QDomElement item_elem = externals_elem.firstChildElement("item");
+        while (!item_elem.isNull())
+        {
+            if (item_elem.attribute("type") == "material")
+            {
+                QDomElement file_elem = item_elem.firstChildElement("file");
+                if (!file_elem.isNull())
+                {
+                    matfilename = in_asset_dir + file_elem.attribute("name").toStdString();
+                    break;
+                }
+            }
+            item_elem = item_elem.nextSiblingElement();
+        }
+    }
+*/
 
     QSet<QString> material_names_set;
     QStringList material_filenames;
@@ -696,7 +716,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 }
             }
 
-            // Attribute for mesh asset reference.
+            // Attribute desc for mesh asset reference.
             AttributeDesc meshAttrDesc = { "assetreference", "mesh", mesh_name };
             compDesc.attributes.append(meshAttrDesc);
 
@@ -710,11 +730,12 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                     QString material_name = subentity_elem.attribute("materialName");
                     material_names_set.insert(material_name);
 
-                    // Attribute for material asset reference.
+                    // Attribute desc for material asset reference.
                     AttributeDesc matAttrDesc = { "assetreference", "material", material_name };
                     compDesc.attributes.append(matAttrDesc);
                     //material_names_.insert(material_name);
 
+                    // Asset desc for material asset reference.
                     AssetDesc matDesc;
                     matDesc.typeName = "material";
                     matDesc.source = !materialFileName.isEmpty() ? materialFileName : material_name;
