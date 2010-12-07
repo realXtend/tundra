@@ -3,6 +3,9 @@
  *
  *  @file   SceneStructureWindow.h
  *  @brief  Window with tree view showing every entity in a scene.
+ *
+ *          This class will only handle adding and removing of entities and components and updating
+ *          their names. The SceneTreeWidget implements most of the functionlity.
  */
 
 #ifndef incl_SceneStructureModule_SceneStructureWindow_h
@@ -75,6 +78,18 @@ private:
     */
     void CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
+    /// Decorates an entity item: changes its color and appends the text with extra information.
+    /** @param entity Entity Entity for which the item is created for.
+        @param item Entity item to be decorated.
+    */
+    void DecorateEntityItem(Scene::Entity *entity, QTreeWidgetItem *item) const;
+
+    /// Decorates a component item: changes its color and appends the text with extra information.
+    /** @param comp comp Component for which the item is created for.
+        @param item Component item to be decorated.
+    */
+    void DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const;
+
     /// Framework.
     Foundation::Framework *framework;
 
@@ -121,7 +136,6 @@ private slots:
 
     /// Removes asset reference from the tree widget.
     /** This is called only by EC_DynamicComponent when asset ref attribute is removed from it.
-        @param 
         @param attr AssetReference attribute.
     */
     void RemoveAssetReference(IAttribute *attr);
