@@ -6,7 +6,7 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB UI_FILES *.ui)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES NaaliRenderWindow.h RendererSettings.h EC_*.h Renderer.h TextureAsset.h OgreMeshAsset.h OgreParticleAsset.h TextureAssetFactory.h)
+file (GLOB MOC_FILES NaaliRenderWindow.h RendererSettings.h EC_*.h Renderer.h TextureAsset.h OgreMeshAsset.h OgreParticleAsset.h OgreSkeletonAsset.h TextureAssetFactory.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Moc files to subgroup "CMake Moc"

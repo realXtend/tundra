@@ -9,7 +9,7 @@
 #include "EC_Mesh.h"
 #include "OgreConversionUtils.h"
 #include "OgreMaterialResource.h"
-#include "OgreSkeletonResource.h"
+#include "OgreSkeletonAsset.h"
 #include "OgreMeshAsset.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
@@ -987,7 +987,22 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     assert(transfer);
     if (!transfer)
         return;
+    
+    OgreSkeletonAsset *skeletonAsset = dynamic_cast<OgreSkeletonAsset*>(transfer->asset.get());
+    if (!skeletonAsset)
+    {
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
+        return;
+    }
 
+    Ogre::SkeletonPtr skeleton = skeletonAsset->ogreSkeleton;
+    if (skeleton.isNull())
+    {
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but Ogre::Skeleton pointer was null!");
+        return;
+    }
+
+/* Old asset download path. Not used anymore.
     OgreSkeletonResource *resource = dynamic_cast<OgreSkeletonResource *>(transfer->resourcePtr.get());
     if (!resource)
     {
@@ -998,7 +1013,7 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     Ogre::SkeletonPtr skeleton = resource->GetSkeleton();
     if(skeleton.isNull())
         return;
-
+*/
     if(!entity_)
     {
         LogDebug("Could not set skeleton yet because entity is not yet created");

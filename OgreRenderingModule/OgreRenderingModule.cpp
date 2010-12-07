@@ -32,6 +32,7 @@
 #include "GenericAssetFactory.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
+#include "OgreSkeletonAsset.h"
 
 namespace OgreRenderer
 {
@@ -71,6 +72,7 @@ namespace OgreRenderer
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new TextureAssetFactory()));
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton")));
     }
 
     // virtual
