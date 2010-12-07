@@ -4,7 +4,8 @@
  *  @file   SceneStructureWindow.cpp
  *  @brief  Window with tree view of contents of scene.
  *
- *          Detailed desc here.
+ *          This class will only handle adding and removing of entities and components and updating
+ *          their names. The SceneTreeWidget implements most of the functionlity.
  */
 
 #include "StableHeaders.h"
@@ -214,10 +215,7 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
     item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
 
-    if (entity->IsTemporary()) // Set temporary entity's font color red
-        item->setTextColor(0, QColor(Qt::red));
-    else if (entity->IsLocal()) // Set local entity's components font color blue
-        item->setTextColor(0, QColor(Qt::blue));
+    DecorateEntityItem(entity, item);
 
     treeWidget->addTopLevelItem(item);
 
@@ -252,10 +250,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
             cItem->setHidden(!showComponents);
 
-            if (comp->IsTemporary()) // Set temporary component's font color red
-                cItem->setTextColor(0, QColor(Qt::red));
-            else if(entity->IsLocal()) // Set local entity's components font color blue
-                cItem->setTextColor(0, QColor(Qt::blue));
+            DecorateComponentItem(comp, cItem);
 
             eItem->addChild(cItem);
 
@@ -265,6 +260,8 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             if (comp->TypeName() == EC_Name::TypeNameStatic())
             {
                 eItem->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+                DecorateEntityItem(entity, eItem);
+
                 connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
                     SLOT(UpdateEntityName(IAttribute *)), Qt::UniqueConnection);
             }
@@ -317,12 +314,69 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
     if (!assetRef)
         return;
 
-//    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().type, assetRef->Get().ref, parentItem);
     AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().ref, parentItem);
-//    aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().ref).arg(assetRef->Get().type));
     aItem->setText(0, QString("%1: %2").arg(assetRef->GetName()).arg(assetRef->Get().ref));
     aItem->setHidden(!showAssets);
     parentItem->addChild(aItem);
+}
+
+void SceneStructureWindow::DecorateEntityItem(Scene::Entity *entity, QTreeWidgetItem *item) const
+{
+    if (entity->IsTemporary() || entity->IsLocal())
+    {
+        const QString &text = item->text(0);
+        if (entity->IsTemporary() && !entity->IsLocal()) // Set temporary entity's font color red
+        {
+            item->setTextColor(0, QColor(Qt::red));
+            item->setText(0, text + tr(" (temporary)"));
+        }
+        else if(!entity->IsTemporary() && entity->IsLocal()) // Set local entity's font color blue
+        {
+            item->setTextColor(0, QColor(Qt::blue));
+            item->setText(0, text + tr(" (local)"));
+        }
+        else if(entity->IsTemporary() && entity->IsLocal())
+        {
+            item->setTextColor(0, QColor(Qt::red));
+            item->setText(0, text + tr(" (temporary, local"));
+        }
+    }
+}
+
+void SceneStructureWindow::DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const
+{
+    bool temporary = comp->IsTemporary();
+    AttributeChange::Type type = comp->GetUpdateMode();
+    if (temporary || (type != AttributeChange::Replicate || AttributeChange::Default))
+    {
+        const QString &text = item->text(0);
+        if (temporary && type == AttributeChange::LocalOnly &&
+            comp->GetUpdateMode() != AttributeChange::Disconnected)
+        {
+            item->setTextColor(0, QColor(Qt::red));
+            item->setText(0, text + tr(" (temporary"));
+        }
+        else if(!temporary && type == AttributeChange::LocalOnly)
+        {
+            item->setTextColor(0, QColor(Qt::blue));
+            item->setText(0, text + tr(" (local"));
+        }
+        else if(!temporary && type == AttributeChange::Disconnected)
+        {
+            item->setTextColor(0, QColor(Qt::blue));
+            item->setText(0, text + tr(" (disconnected"));
+        }
+        else if(temporary && type == AttributeChange::LocalOnly)
+        {
+            item->setTextColor(0, QColor(Qt::red));
+            item->setText(0, text + tr(" (temporary, local"));
+        }
+        else if(temporary && type == AttributeChange::Disconnected)
+        {
+            item->setTextColor(0, QColor(Qt::red));
+            item->setText(0, text + tr(" (temporary, disconnected)"));
+        }
+    }
 }
 
 void SceneStructureWindow::AddAssetReference(IAttribute *attr)
@@ -487,7 +541,10 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     {
         EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (item && (item->Id() == entity->GetId()))
+        {
             item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+            DecorateEntityItem(entity, item);
+        }
     }
 }
 
@@ -504,7 +561,10 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
         {
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
             if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
+            {
                 cItem->setText(0, QString("%1 %2").arg(cItem->typeName).arg(newName));
+                DecorateComponentItem(comp, cItem);
+            }
         }
     }
 }
