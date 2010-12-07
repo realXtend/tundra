@@ -11,6 +11,7 @@
 #include "OgreMaterialResource.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreMeshAsset.h"
+#include "OgreMaterialAsset.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 
@@ -273,6 +274,9 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
 
             adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         }
+
+        // Force a re-apply of all materials to this new mesh.
+        ApplyMaterial();
     }
     catch (Ogre::Exception& e)
     {
@@ -979,6 +983,7 @@ void EC_Mesh::OnMeshAssetLoaded()
     // Hack to request materials & skeleton now
     AttributeUpdated(&meshMaterial);
     AttributeUpdated(&skeletonRef);
+
 }
 
 void EC_Mesh::OnSkeletonAssetLoaded()
@@ -1047,35 +1052,38 @@ void EC_Mesh::OnMaterialAssetLoaded()
     if (!transfer)
         return;
 
-    OgreMaterialResource *resource = dynamic_cast<OgreMaterialResource *>(transfer->resourcePtr.get());
-    if (!resource)
-    {
-        LogWarning("Failed to handle material resource ready event because resource pointer was null.");
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(transfer->asset.get());
+    assert(ogreMaterial);
+    if (!ogreMaterial)
         return;
-    }
 
-    //! a bit hackish way to get materials in right order.
-    bool found = false;
-    uint index = 0;
-    QMap<int, QString>::iterator it = materialRequests.begin();
-    for(; it != materialRequests.end(); ++it)
-    {
-        if(*it == QString(resource->GetId().c_str()))
+    Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
+
+    bool assetUsed = false;
+
+    QVariantList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.size(); ++i)
+        if (materialList[i].toString() == ogreMaterial->Name())
         {
-            index = it.key();
-            found = true;
-            break;
+            SetMaterial(i, ogreMaterial->Name());
+            assetUsed = true;
         }
-    }
 
-    if(found)
+    if (!assetUsed)
     {
-        if (index > meshMaterial.Get().size()) 
-            return;
-        
-        materialRequests.erase(it);
-        SetMaterial(index, QString(resource->GetMaterial()->getName().c_str()));
+        LogWarning("Warning: EC_Mesh::OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
+            meshRef.Get().ref.toStdString() + ", but no submesh refers to the given material! The references are: ");
+        for(int i = 0; i < materialList.size(); ++i)
+            LogWarning(QString::number(i).toStdString() + ": " + materialList[i].toString().toStdString());
     }
+}
+
+void EC_Mesh::ApplyMaterial()
+{
+    QVariantList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.size(); ++i)
+        if (!materialList[i].toString().isEmpty())
+            SetMaterial(i, materialList[i].toString());
 }
 
 bool EC_Mesh::HasMaterialsChanged() const
