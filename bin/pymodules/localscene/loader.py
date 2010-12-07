@@ -29,6 +29,7 @@ class OgreNode:
         self.entityCollisionFile = None
         self.entityCollisionPrim = None
         self.entityStatic = None
+        self.entityIsPhantom = ""
         
     def createChildSceneNode(self):
         return OgreNode()
@@ -128,7 +129,8 @@ class NaaliSceneManagerFacade:
     #def createLight(self, name):
     #    pass
 
-    #def createCamera(
+    def createCamera(self, name):
+        pass
 
 def load_dotscene(fname):
     sm = NaaliSceneManagerFacade()

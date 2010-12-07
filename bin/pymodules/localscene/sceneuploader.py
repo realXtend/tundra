@@ -10,12 +10,15 @@ from socket import SOCK_STREAM
 
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
+from dotscene import findComponentAttribute
+from dotscene import findNodes
 import urllib2
 import time
 import shutil
 import math
 
 from xml.dom.minidom import getDOMImplementation
+from xml.dom import Node
 import sceneactionsxml
 
 import constants
@@ -148,13 +151,22 @@ class SceneUploader:
         print "----------------"
         #print self.file
         zf = zipfile.ZipFile(self.file, "w")
+        uploadPathLen = len(self.appDataUploadFolder)
         for dirname, dirnames, filenames in os.walk(self.appDataUploadFolder):
-            # print dirname
-            # print dirnames
-            # print filenames
+            print "--"
+            print dirname
+            print dirnames
+            print filenames
+            print "--"
+            zipfolder = dirname[uploadPathLen:]
+            zipfolder = os.path.normpath(zipfolder)
             for filename in filenames:
                 filepath = os.path.join(dirname, filename)
-                zippath = TEMP_UPLOAD_FOLDER + os.sep + os.path.basename(filepath)
+                zippath = None
+                if(zipfolder==''):
+                    zippath = TEMP_UPLOAD_FOLDER + os.sep + os.path.basename(filepath)
+                else:
+                    zippath = TEMP_UPLOAD_FOLDER + os.sep + zipfolder + os.sep + os.path.basename(filepath)
                 #zf.write(filepath)
                 zf.write(filepath, zippath)
         zf.close()
@@ -195,11 +207,15 @@ class SceneUploader:
         
         for k, oNode in ds.dotscenemanager.nodes.iteritems():
             #print k
+            self.handleNodePath(oNode.entityMeshFile)
             dstFile = self.appDataUploadFolder + os.sep + oNode.entityMeshFile
+            dstFile = os.path.normpath(dstFile)
             
             # try first load from scene folder
             sceneFilePath = os.path.dirname(ds.fileName) + os.sep + oNode.entityMeshFile
             pathToFile = relativepath + os.sep + oNode.entityMeshFile
+            sceneFilePath = os.path.normpath(sceneFilePath)
+            pathToFile = os.path.normpath(pathToFile)
             
             materialfile = ''
             
@@ -350,8 +366,27 @@ class SceneUploader:
         return os.path.dirname(path)
         
     def copyLocalizedSceneFilesToNaalisFolders(self, sceneFilePath):
-        
         pass
+
+    def handleNodePath(self, path):
+        """ Check if path is more than just filename, then we need to create folder structure, so we can copy objects """
+        # path = "test/test2/file"
+        path = os.path.normpath(path)
+        folders=[]
+        basePath, fileName = os.path.split(path)
+        while(basePath!=''):
+            basePath, folder = os.path.split(basePath)
+            folders.append(folder)
+            pass
+        # create folder structure to uploadfolder
+        folders.reverse()
+        baseFolder = self.appDataUploadFolder
+        for f in folders:
+            newFolder = os.path.join(baseFolder, f)
+            os.mkdir(newFolder)
+            baseFolder = newFolder
+        pass
+        
         
 class SceneSaver:
     """ For uploading scene different from the saver in localscene """
@@ -401,13 +436,27 @@ class SceneSaver:
                 nodeNode.appendChild(scale)
                 
                 entity = newdoc.createElement('entity')
-                entity.setAttribute("name", oNode.entityNode.getAttribute("name"))
-                entity.setAttribute("meshFile", oNode.entityNode.getAttribute("meshFile"))
-                if oNode.entityNode.hasAttribute("collisionFile"):
-                    entity.setAttribute("collisionFile", oNode.entityNode.getAttribute("collisionFile"))
-                if oNode.entityNode.hasAttribute("collisionPrim"):
-                    entity.setAttribute("collisionPrim", oNode.entityNode.getAttribute("collisionPrim"))
-                entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
+                # entity.setAttribute("name", oNode.entityNode.getAttribute("name"))
+                # entity.setAttribute("meshFile", oNode.entityNode.getAttribute("meshFile"))
+                # if oNode.entityNode.hasAttribute("collisionFile"):
+                    # entity.setAttribute("collisionFile", oNode.entityNode.getAttribute("collisionFile"))
+                # if oNode.entityNode.hasAttribute("collisionPrim"):
+                    # entity.setAttribute("collisionPrim", oNode.entityNode.getAttribute("collisionPrim"))
+                
+                #copy entitys attributes
+                eAttrs = oNode.entityNode.attributes
+                self.setElementAttributes(entity, eAttrs)
+
+                print oNode.entityNode.toxml()
+                print oNode.entityNode.hasChildNodes()
+                self.copySubStructure(newdoc, oNode.entityNode, entity)                
+                        
+                if(entity.attributes.has_key("static")==False):
+                    entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
+                
+                print "-------------------------"
+                print entity.toxml()
+                
                 nodeNode.appendChild(entity)
                 nodesNode.appendChild(nodeNode)
         
@@ -422,3 +471,36 @@ class SceneSaver:
         contents = '\n'.join(lines)
         f.write(contents)
         f.close()
+        
+    
+    def getChildElems(self, element):
+        elems = []
+        if element.hasChildNodes():
+            nodes = element.childNodes
+            for node in nodes:
+                if(node.nodeType == Node.ELEMENT_NODE):
+                    elems.append(node)
+        return elems
+        
+    def setElementAttributes(self, element, attributes):
+        keys = attributes.keys()
+        for k in keys:
+            name = attributes[k].nodeName
+            value = attributes[k].nodeValue
+            element.setAttribute(k, value)
+        
+    def copySubStructure(self, newdoc, element1, element2):
+        if element1.hasChildNodes():
+            childs1 = self.getChildElems(element1)
+            if(childs1!=None):
+                for ch1 in childs1:
+                    ch2 = newdoc.createElement(ch1.nodeName)
+                    self.setElementAttributes(ch2, ch1.attributes)
+                    self.copySubStructure(newdoc, ch1, ch2)
+                    element2.appendChild(ch2)
+            else:
+                pass
+        else:
+            print "%s has no child elements ---------------" % element1.nodeName
+        pass
+        

@@ -37,7 +37,7 @@ class DotScene:
         self.cameras = []
         self.lights = []
         self.prefix = prefix # used to prefix the node name when creating nodes
-        nodes = self.findNodes(minidom.parse(self.fileName).documentElement,'nodes')
+        nodes = findNodes(minidom.parse(self.fileName).documentElement,'nodes')
         self.root = nodes[0].childNodes
         self.dotscenemanager = DSManager()
         
@@ -50,7 +50,7 @@ class DotScene:
     
     # allows self['nodeName'] to reference xml node in '<nodes>'
     def __getitem__ (self,name):
-        return self.findNodes(self.root,name)
+        return findNodes(self.root,name)
 
     def parseDotScene (self):
         # TODO: check DTD to make sure you get all nodes/attributes
@@ -64,28 +64,28 @@ class DotScene:
                 newNode = self.rootNode.createChildSceneNode() # self.prefix + realName)
 
                 #position it
-                pos = self.findNodes(node, 'position')[0].attributes
+                pos = findNodes(node, 'position')[0].attributes
                 newNode.position = Vector(float(pos['x'].nodeValue), float(pos['y'].nodeValue), float(pos['z'].nodeValue))
                 
                 # rotate it
                 try:
-                    rot = self.findNodes(node, 'rotation')[0].attributes
+                    rot = findNodes(node, 'rotation')[0].attributes
                     newNode.orientation = Quaternion(float(rot['qw'].nodeValue), float(rot['qx'].nodeValue),
                                                             float(rot['qy'].nodeValue), float(rot['qz'].nodeValue))
 #                     print float(rot['qw'].nodeValue), float(rot['qx'].nodeValue), float(rot['qy'].nodeValue),float(rot['qz'].nodeValue)
                 except IndexError: # probably doesn't have rotation attribute
-                    rot = self.findNodes(node, 'quaternion')[0].attributes
+                    rot = findNodes(node, 'quaternion')[0].attributes
                     newNode.orientation = Quaternion(float(rot['w'].nodeValue), float(rot['x'].nodeValue), 
                                                           float(rot['y'].nodeValue), float(rot['z'].nodeValue))
 #                     print float(rot['w'].nodeValue), float(rot['x'].nodeValue), float(rot['y'].nodeValue), float(rot['z'].nodeValue)
                 
                 # scale it
-                scale = self.findNodes(node, 'scale')[0].attributes
+                scale = findNodes(node, 'scale')[0].attributes
                 newNode.scale = Vector(float(scale['x'].nodeValue), float(scale['y'].nodeValue), float(scale['z'].nodeValue))
                 
                 # is it a light?
                 #try:
-                #    thingy = self.findNodes(node, 'light')[0].attributes
+                #    thingy = findNodes(node, 'light')[0].attributes
                 #    name = str(thingy['name'].nodeValue)
                     #attachMe = self.sceneManager.createLight(name)
                     #ltypes={'point':ogre.Light.LT_POINT,'directional':ogre.Light.LT_DIRECTIONAL,'spot':ogre.Light.LT_SPOTLIGHT,'radPoint':ogre.Light.LT_POINT}
@@ -94,22 +94,22 @@ class DotScene:
                     #except IndexError:
                     #    pass
                     
-                #    lightNode = self.findNodes(node, 'light')[0]
+                #    lightNode = findNodes(node, 'light')[0]
 
                 #    try:
-                #        tempnode = self.findNodes(lightNode, 'colourSpecular')[0]
+                #        tempnode = findNodes(lightNode, 'colourSpecular')[0]
                 #        attachMe.specularColour = (float(tempnode.attributes['r'].nodeValue), float(tempnode.attributes['g'].nodeValue), float(tempnode.attributes['b'].nodeValue), 1.0)
                 #    except IndexError:
                 #        pass
                     
                 #    try:
-                #        tempnode = self.findNodes(lightNode, 'colourDiffuse')[0]
+                #        tempnode = findNodes(lightNode, 'colourDiffuse')[0]
                 #        attachMe.diffuseColour = (float(tempnode.attributes['r'].nodeValue), float(tempnode.attributes['g'].nodeValue), float(tempnode.attributes['b'].nodeValue), 1.0)
                 #    except IndexError:
                 #        pass
                     
                 #    try:
-                #        tempnode = self.findNodes(lightNode, 'colourDiffuse')[0]
+                #        tempnode = findNodes(lightNode, 'colourDiffuse')[0]
                 #        attachMe.diffuseColour = (float(tempnode.attributes['r'].nodeValue), float(tempnode.attributes['g'].nodeValue), float(tempnode.attributes['b'].nodeValue), 1.0)
                 #    except IndexError:
                 #        pass
@@ -121,7 +121,7 @@ class DotScene:
                 
                 # is it an entity?
                 try:
-                    thingy = self.findNodes(node, 'entity')[0].attributes
+                    thingy = findNodes(node, 'entity')[0].attributes
                     name = str(thingy['name'].nodeValue)
                     mesh = str(thingy['meshFile'].nodeValue)
                     attachMe = self.sceneManager.createEntity(name,mesh)
@@ -135,13 +135,13 @@ class DotScene:
                 # is it a camera?
                 # TODO: there are other attributes I need in here
                 try:
-                    thingy = self.findNodes(node, 'camera')[0].attributes
+                    thingy = findNodes(node, 'camera')[0].attributes
                     name = str(thingy['name'].nodeValue)
                     fov =  float(thingy['fov'].nodeValue)
                     projectionType= str(thingy['projectionType'].nodeValue)
                     attachMe = self.sceneManager.createCamera(name)
                     try:
-                        tempnode = self.findNodes(node, 'clipping')[0]
+                        tempnode = findNodes(node, 'clipping')[0]
                         attachMe.nearClipDistance = float(tempnode.attributes['near'].nodeValue)
                         attachMe.farClipDistance = float(tempnode.attributes['far'].nodeValue)
                     except IndexError:
@@ -156,15 +156,23 @@ class DotScene:
                 # Add id & entity data
                 #try:
                 newNode.id = node.getAttribute('id')
-                newNode.entityNode = self.findNodes(node, 'entity')[0]
-                #entity = self.findNodes(node, 'entity')
-                newNode.entityName = newNode.entityNode.getAttribute("name")
-                newNode.entityMeshFile = newNode.entityNode.getAttribute("meshFile")
-                if newNode.entityNode.hasAttribute("collisionFile"):
-                    newNode.entityCollisionFile = newNode.entityNode.getAttribute("collisionFile")
-                if newNode.entityNode.hasAttribute("collisionPrim"):
-                    newNode.entityCollisionPrim = newNode.entityNode.getAttribute("collisionPrim")
-                newNode.entityStatic = newNode.entityNode.getAttribute("static")
+                eNodes = findNodes(node, 'entity')
+                if(len(eNodes)>0):
+                    newNode.entityNode = findNodes(node, 'entity')[0]                
+                    #entity = findNodes(node, 'entity')
+                    newNode.entityName = newNode.entityNode.getAttribute("name")
+                    newNode.entityMeshFile = newNode.entityNode.getAttribute("meshFile")
+                    if newNode.entityNode.hasAttribute("collisionFile"):
+                        newNode.entityCollisionFile = newNode.entityNode.getAttribute("collisionFile")
+                    if newNode.entityNode.hasAttribute("collisionPrim"):
+                        newNode.entityCollisionPrim = newNode.entityNode.getAttribute("collisionPrim")
+                    components = findNodes(newNode.entityNode, "component")
+                    if(len(components)==1):
+                        attributeNode = findComponentAttribute(components[0], 'Phantom')
+                        if attributeNode!=None:
+                            newNode.entityIsPhantom = attributeNode.getAttribute('value')
+                        
+                    newNode.entityStatic = newNode.entityNode.getAttribute("static")
                 #except err:
                 #    print "parsing id or mesh data failed", err
                 #    pass
@@ -179,15 +187,35 @@ class DotScene:
                 
 
         
-    def findNodes (self,root, name):
-        out=minidom.NodeList()
-        if root.hasChildNodes:
-            nodes = root.childNodes
-            for node in nodes:
-                if node.nodeType == Node.ELEMENT_NODE and node.nodeName == name:
-                    out.append(node)
-        return out
+    # def findNodes (self,root, name):
+        # out=minidom.NodeList()
+        # if root.hasChildNodes:
+            # nodes = root.childNodes
+            # for node in nodes:
+                # if node.nodeType == Node.ELEMENT_NODE and node.nodeName == name:
+                    # out.append(node)
+        # return out
 
+
+# being able to call these methods from outside is helpfull
+def findNodes (root, name):
+    out=minidom.NodeList()
+    if root.hasChildNodes:
+        nodes = root.childNodes
+        for node in nodes:
+            if node.nodeType == Node.ELEMENT_NODE and node.nodeName == name:
+                out.append(node)
+    return out
+
+def findComponentAttribute(component, name):
+    out=minidom.NodeList()
+    if component.hasChildNodes:
+        nodes = component.childNodes
+        for node in nodes:
+            if(node.nodeType == Node.ELEMENT_NODE and node.getAttribute("name")==name):
+                return node
+
+                
 if __name__ == "__main__":
     import sys
     sys.exit(main(sys.argv))
