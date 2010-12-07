@@ -7,6 +7,7 @@
 #include "Framework.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
+#include "AudioAsset.h"
 
 namespace OpenALAudio
 {
@@ -52,6 +53,8 @@ namespace OpenALAudio
 
         // Sound settings depends on the sound service, so init it last
         soundsettings_ = SoundSettingsPtr(new SoundSettings(framework_));
+
+//        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("SoundVorbis")));
     }
 
     void OpenALAudioModule::Uninitialize()
