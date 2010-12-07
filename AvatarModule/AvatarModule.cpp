@@ -6,6 +6,10 @@
 #include "AvatarEvents.h"
 #include "NetworkEvents.h"
 
+#include "AssetAPI.h"
+#include "GenericAssetFactory.h"
+#include "AvatarDescAsset.h"
+
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_Controllable.h"
@@ -72,6 +76,8 @@ namespace Avatar
             connect(avatar_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), SLOT(KeyPressed(KeyEvent*)));
             connect(avatar_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), SLOT(KeyReleased(KeyEvent*)));
         }
+
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("GenericAvatarXml")));
     }
 
     void AvatarModule::Uninitialize()

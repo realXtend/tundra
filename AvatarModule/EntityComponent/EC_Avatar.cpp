@@ -14,6 +14,9 @@
 #include "EC_AnimationController.h"
 #include "EC_Placeable.h"
 #include "EC_AvatarAppearance.h"
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
+#include "AvatarDescAsset.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Avatar")
@@ -46,7 +49,7 @@ EC_Avatar::EC_Avatar(IModule* module) :
 EC_Avatar::~EC_Avatar()
 {
 }
-
+/*
 bool EC_Avatar::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if(category_id == asset_event_category_)
@@ -58,51 +61,50 @@ bool EC_Avatar::HandleEvent(event_category_id_t category_id, event_id_t event_id
     }
     return false;
 }
-
-bool EC_Avatar::HandleAssetReady(IEventData* data)
+*/
+void EC_Avatar::OnAvatarAppearanceLoaded(IAssetTransfer *transfer)
 {
+    if (!transfer)
+        return;
+
     Scene::Entity* entity = GetParentEntity();
     if (!entity)
-        return false;
+        return;
+
+    if (!avatar_handler_)
+        return;
+
+    AvatarDescAssetPtr avatarAsset = boost::dynamic_pointer_cast<AvatarDescAsset>(transfer->asset);
+    if (!avatarAsset.get())
+        return;
+
+    // Create components the avatar needs, with network sync disabled, if they don't exist yet
+    // Note: the mesh & avatarappearance are created as non-syncable on purpose, as each client's EC_Avatar should execute this code upon receiving the appearance
+    ComponentPtr mesh = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), AttributeChange::LocalOnly, false);
+    entity->GetOrCreateComponent(EC_AvatarAppearance::TypeNameStatic(), AttributeChange::LocalOnly, false);
+    EC_Mesh *mesh_ptr = checked_static_cast<EC_Mesh*>(mesh.get());
+    // Attach to placeable if not yet attached
+    if (mesh_ptr && !mesh_ptr->GetPlaceable())
+        mesh_ptr->SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
     
-    Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-    request_tag_t tag = assetReady->tag_;
-    if (tag == appearance_tag_)
-    {
-        Foundation::AssetInterfacePtr asset = assetReady->asset_;
-        if (!asset)
-            return false;
-        if (!avatar_handler_)
-            return false;
-        
-        // Create components the avatar needs, with network sync disabled, if they don't exist yet
-        // Note: the mesh & avatarappearance are created as non-syncable on purpose, as each client's EC_Avatar should execute this code upon receiving the appearance
-        ComponentPtr mesh = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), AttributeChange::LocalOnly, false);
-        entity->GetOrCreateComponent(EC_AvatarAppearance::TypeNameStatic(), AttributeChange::LocalOnly, false);
-        EC_Mesh* mesh_ptr = checked_static_cast<EC_Mesh*>(mesh.get());
-        if (mesh_ptr)
-        {
-            // Attach to placeable if not yet attached
-            if (!mesh_ptr->GetPlaceable())
-                mesh_ptr->SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
-        }
-        
-        avatar_handler_->SetupECAvatar(entity->GetId(), asset->GetData(), asset->GetSize());
-        appearance_tag_ = 0;
-        return true;
-    }
-    else
-        return false;
+    if (transfer->rawAssetData.size() > 0)
+        avatar_handler_->SetupECAvatar(entity->GetId(), &transfer->rawAssetData[0], transfer->rawAssetData.size());
 }
 
 void EC_Avatar::AttributeUpdated(IAttribute *attribute)
 {
     if (attribute == &appearanceId)
     {
-        QString ref = appearanceId.Get();
-        if (!ref.length())
+        QString ref = appearanceId.Get().trimmed();
+        if (ref.isEmpty())
             return;
-            
+
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(ref.toStdString().c_str(), ASSETTYPENAME_GENERIC_AVATAR_XML.c_str());
+        if (transfer.get())
+        {
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(OnAvatarAppearanceLoaded(IAssetTransfer *)));
+        }
+/*            
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
             GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (!asset_service)
@@ -110,6 +112,7 @@ void EC_Avatar::AttributeUpdated(IAttribute *attribute)
         request_tag_t tag = asset_service->RequestAsset(ref.toStdString(), ASSETTYPENAME_GENERIC_AVATAR_XML);
         if (tag)
             appearance_tag_ = tag;
+*/
     }
 }
 
