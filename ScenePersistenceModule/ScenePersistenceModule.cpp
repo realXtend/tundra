@@ -210,7 +210,7 @@ void ScenePersistenceModule::CreateStatements()
 
 void ScenePersistenceModule::EntityCreated(Scene::Entity* entity, AttributeChange::Type change)
 {
-    if (!db || !insertEntityStatement)
+    if (!db || !insertEntityStatement || entity->IsTemporary())
         return;
 
     sqlite3_reset(insertEntityStatement);
@@ -223,7 +223,7 @@ void ScenePersistenceModule::EntityCreated(Scene::Entity* entity, AttributeChang
 
 void ScenePersistenceModule::EntityRemoved(Scene::Entity* entity, AttributeChange::Type change)
 {
-    if (!db)
+    if (!db || entity->IsTemporary())
         return;
 
     sqlite3_reset(removeEntityStatement);
@@ -239,7 +239,7 @@ void ScenePersistenceModule::EntityRemoved(Scene::Entity* entity, AttributeChang
 
 void ScenePersistenceModule::ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
-    if (!db)
+    if (!db || entity->IsTemporary() || comp->IsTemporary())
         return;
 
     sqlite3_reset(insertComponentStatement);
@@ -256,7 +256,7 @@ void ScenePersistenceModule::ComponentAdded(Scene::Entity* entity, IComponent* c
 
 void ScenePersistenceModule::ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
-    if (!db)
+    if (!db || entity->IsTemporary() || comp->IsTemporary())
         return;
 
     sqlite3_reset(removeComponentStatement);
@@ -271,7 +271,7 @@ void ScenePersistenceModule::ComponentRemoved(Scene::Entity* entity, IComponent*
 
 void ScenePersistenceModule::AttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
-    if (!db)
+    if (!db || comp->IsTemporary())
         return;
 
     sqlite3_reset(findAttributeStatement);
@@ -289,7 +289,7 @@ void ScenePersistenceModule::AttributeChanged(IComponent* comp, IAttribute* attr
     case SQLITE_ROW:
         sqlite3_reset(updateAttributeStatement);
         sqlite3_clear_bindings(updateAttributeStatement);
-        sqlite3_bind_text(updateAttributeStatement, 1, attribute->TypenameToString().c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(updateAttributeStatement, 1, attribute->TypeName().c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_blob(updateAttributeStatement, 2, ds.GetData(), ds.BytesFilled(), SQLITE_TRANSIENT);
         sqlite3_bind_int(updateAttributeStatement, 3, comp->GetParentEntity()->GetId());
         sqlite3_bind_text(updateAttributeStatement, 4, comp->TypeName().toStdString().c_str(), -1, SQLITE_TRANSIENT);
@@ -307,7 +307,7 @@ void ScenePersistenceModule::AttributeChanged(IComponent* comp, IAttribute* attr
         sqlite3_bind_text(insertAttributeStatement, 2, comp->TypeName().toStdString().c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(insertAttributeStatement, 3, comp->Name().toStdString().c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(insertAttributeStatement, 4, attribute->GetName(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(insertAttributeStatement, 5, attribute->TypenameToString().c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(insertAttributeStatement, 5, attribute->TypeName().c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_blob(insertAttributeStatement, 6, ds.GetData(), ds.BytesFilled(), SQLITE_TRANSIENT);
        
         if (sqlite3_step(insertAttributeStatement) != SQLITE_DONE)
