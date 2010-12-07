@@ -7,6 +7,7 @@
 #include "RexUUID.h"
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
+#include "AssetFwd.h"
 
 namespace Avatar
 {
@@ -57,10 +58,7 @@ public:
 
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }
-    
-    //! Handle Naali event. Used for avatar xml asset request
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
-    
+        
     //! Destructor
     virtual ~EC_Avatar();
     
@@ -68,15 +66,13 @@ private slots:
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
     
+    void OnAvatarAppearanceLoaded(IAssetTransfer *transfer);
 private:
     //! constructor
     /*! \param module avatar module
      */
     EC_Avatar(IModule* module);
-    
-    //! Handle asset ready event
-    bool HandleAssetReady(IEventData* data);
-    
+        
     //! Category for Asset events
     event_category_id_t asset_event_category_;
     
