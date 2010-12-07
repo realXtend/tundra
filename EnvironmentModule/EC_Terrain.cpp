@@ -14,7 +14,7 @@
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "OgreMaterialUtils.h"
-#include "OgreMaterialResource.h"
+#include "OgreMaterialAsset.h"
 #include "OgreTextureResource.h"
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
@@ -241,12 +241,12 @@ void EC_Terrain::MaterialAssetLoaded(IAssetTransfer *transfer)
     if (!transfer)
         return;
 
-    OgreRenderer::OgreMaterialResource *ogreMaterial = dynamic_cast<OgreRenderer::OgreMaterialResource *>(transfer->resourcePtr.get());
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(transfer->asset.get());
     assert(ogreMaterial);
     if (!ogreMaterial)
         return;
 
-    Ogre::MaterialPtr material = ogreMaterial->GetMaterial();
+    Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
     
     ///\todo We can't free here, since something else might be using the material.
 //    Ogre::MaterialManager::getSingleton().remove(currentMaterial.toStdString()); // Free up the old material.

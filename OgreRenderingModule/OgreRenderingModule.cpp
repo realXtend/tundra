@@ -28,11 +28,12 @@
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "AssetAPI.h"
-#include "TextureAssetFactory.h"
 #include "GenericAssetFactory.h"
 #include "OgreMeshAsset.h"
 #include "OgreParticleAsset.h"
 #include "OgreSkeletonAsset.h"
+#include "OgreMaterialAsset.h"
+#include "TextureAsset.h"
 
 namespace OgreRenderer
 {
@@ -68,11 +69,13 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_OgreCompositor);
         DECLARE_MODULE_EC(EC_RttTarget);
 
-        /// Create an asset type factory for Texture assets.
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new TextureAssetFactory()));
+        // Create asset type factories for each asset OgreRenderingModule provides to the system.
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("OgreTexture")));
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle")));
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial")));
     }
 
     // virtual
