@@ -11,6 +11,7 @@
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreSkeletonResource.h"
+#include "OgreMeshAsset.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 
@@ -198,7 +199,7 @@ void EC_Mesh::SetDrawDistance(float draw_distance)
     drawDistance.Set(draw_distance, AttributeChange::LocalOnly);
 }
 
-bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
+bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
 {
     if (!ViewEnabled())
         return false;
@@ -206,6 +207,8 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
+
+    std::string mesh_name = meshResourceName.trimmed().toStdString();
 
     RemoveMesh();
 
@@ -282,11 +285,6 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     emit OnMeshChanged();
     
     return true;
-}
-
-bool EC_Mesh::SetMesh(const QString& mesh_name) 
-{
-    return SetMesh(mesh_name.toStdString(), false);
 }
 
 bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
@@ -953,14 +951,31 @@ void EC_Mesh::OnMeshAssetLoaded()
     if (!transfer)
         return;
 
-    OgreMeshResource *resource = dynamic_cast<OgreMeshResource *>(transfer->resourcePtr.get());
-    if (!resource)
-    {
-        LogWarning("Failed to handle mesh resource ready event cause resource pointer was null.");
-        return;
-    }
+    QString ogreMeshName = meshRef.Get().ref.trimmed();
 
-    SetMesh(meshRef.Get().ref);
+    // New asset download path.
+    OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(transfer->asset.get());
+    if (mesh)
+    {
+        if (mesh->ogreMesh.get())
+            ogreMeshName = mesh->ogreMesh->getName().c_str();
+        else
+            LogError("EC_Mesh::OnMeshAssetLoaded: Mesh asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but Ogre::Mesh pointer was null!");
+    }
+    /*
+    else // Old asset download path. This is deprecated. Remove when unneeded. -jj.
+    {        
+        OgreMeshResource *resource = dynamic_cast<OgreMeshResource *>(transfer->resourcePtr.get());
+        if (!resource)
+        {
+            LogWarning("Failed to handle mesh resource ready event cause resource pointer was null.");
+            return;
+        }
+        // Old asset download path above. This is deprecated. Remove when unneeded. -jj.
+        ogreMeshName = resou
+    }
+    */
+    SetMesh(ogreMeshName);
 
     // Hack to request materials & skeleton now
     AttributeUpdated(&meshMaterial);
@@ -1008,7 +1023,7 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     }
 
     // Now we have to recreate the entity to get proper animations etc.
-    SetMesh(entity_->getMesh()->getName(), false);
+    SetMesh(entity_->getMesh()->getName().c_str(), false);
 }
 
 void EC_Mesh::OnMaterialAssetLoaded()
