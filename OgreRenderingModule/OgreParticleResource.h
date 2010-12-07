@@ -9,9 +9,6 @@
 
 namespace OgreRenderer
 {
-    class OgreMeshResource;
-    typedef boost::shared_ptr<OgreMeshResource> OgreMeshResourcePtr;
-
     //! An Ogre-specific particle system template resource. One resource may contain multiple templates.
     /*! \ingroup OgreRenderingModuleClient
      */
