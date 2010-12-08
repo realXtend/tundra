@@ -280,14 +280,6 @@ namespace Scene
         return false;
     }
 
-    EntityPtr Entity::GetSharedPtr() const
-    {
-        EntityPtr ptr;
-        if(scene_)
-            ptr = scene_->GetEntity(GetId());
-        return ptr;
-    };
-
     bool Entity::HasComponent(const QString &type_name, const QString& name) const
     {
         for(size_t i=0 ; i<components_.size() ; ++i)
