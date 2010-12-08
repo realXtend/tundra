@@ -42,6 +42,12 @@ public:
     /// Return Entity ID of the entity associated with this tree widget item.
     entity_id_t Id() const;
 
+    /// QTreeWidgetItem override.
+    /** If treeWidget::sortColumn() is 0, items are sorted by ID,
+        or if it's 1, items are sorted by name (if applicable).
+    */
+    bool operator <(const QTreeWidgetItem &rhs) const;
+
 private:
     entity_id_t id; ///< Entity ID associated with this tree widget item.
     Scene::EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.

@@ -9,6 +9,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "SceneStructureWindow.h"
 #include "SceneTreeWidget.h"
 
@@ -22,6 +24,12 @@
 #include "EC_DynamicComponent.h"
 //#endif
 
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructureWindow")
+
+#include "MemoryLeakCheck.h"
+
 using namespace Scene;
 
 SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
@@ -33,21 +41,33 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     layout->setContentsMargins(5, 5, 5, 5);
     setLayout(layout);
     setWindowTitle(tr("Scene Structure"));
-    resize(200,300);
+    resize(300, 400);
 
     QCheckBox *compCheckBox = new QCheckBox(tr("Show components"), this);
     compCheckBox->setChecked(showComponents);
     QCheckBox *assetCheckBox = new QCheckBox(tr("Show asset references"), this);
     assetCheckBox->setChecked(showAssets);
 
-    treeWidget = new SceneTreeWidget(fw, this);
+    QHBoxLayout *sortLayout = new QHBoxLayout;
+    QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QLabel *sortLabel = new QLabel(tr("Sort by:"));
+    QComboBox *sortComboBox = new QComboBox;
+    sortComboBox->addItem(tr("ID"));
+    sortComboBox->addItem(tr("Name"));
+    sortLayout->addSpacerItem(spacer);
+    sortLayout->addWidget(sortLabel);
+    sortLayout->addWidget(sortComboBox);
 
-    connect(assetCheckBox, SIGNAL(toggled(bool)), SLOT(ShowAssetReferences(bool)));
-    connect(compCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
+    treeWidget = new SceneTreeWidget(fw, this);
 
     layout->addWidget(compCheckBox);
     layout->addWidget(assetCheckBox);
+    layout->insertLayout(-1, sortLayout);
     layout->addWidget(treeWidget);
+
+    connect(assetCheckBox, SIGNAL(toggled(bool)), SLOT(ShowAssetReferences(bool)));
+    connect(compCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
+    connect(sortComboBox, SIGNAL(currentIndexChanged(const QString &)), SLOT(Sort(const QString &)));
 }
 
 SceneStructureWindow::~SceneStructureWindow()
@@ -129,12 +149,16 @@ void SceneStructureWindow::Populate()
     ScenePtr s = scene.lock();
     if (!s)
     {
-        // warning print
+        LogWarning("Scene pointer expired. Cannot populate tree widget.");
         return;
     }
 
+    treeWidget->setSortingEnabled(false);
+
     for(SceneManager::iterator it = s->begin(); it != s->end(); ++it)
         AddEntity((*it).second.get());
+
+    treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::Clear()
@@ -254,7 +278,8 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
 
             eItem->addChild(cItem);
 
-            connect(comp, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(UpdateComponentName(const QString &, const QString &)));
+            connect(comp, SIGNAL(OnComponentNameChanged(const QString &, const QString &)),
+                SLOT(UpdateComponentName(const QString &, const QString &)));
 
             // If name component exists, retrieve name from it. Also hook up change signal so that UI keeps synch with the name.
             if (comp->TypeName() == EC_Name::TypeNameStatic())
@@ -338,7 +363,7 @@ void SceneStructureWindow::DecorateEntityItem(Scene::Entity *entity, QTreeWidget
         else if(entity->IsTemporary() && entity->IsLocal())
         {
             item->setTextColor(0, QColor(Qt::red));
-            item->setText(0, text + tr(" (temporary, local"));
+            item->setText(0, text + tr(" (temporary, local)"));
         }
     }
 }
@@ -369,7 +394,7 @@ void SceneStructureWindow::DecorateComponentItem(IComponent *comp, QTreeWidgetIt
         else if(temporary && type == AttributeChange::LocalOnly)
         {
             item->setTextColor(0, QColor(Qt::red));
-            item->setText(0, text + tr(" (temporary, local"));
+            item->setText(0, text + tr(" (temporary, local)"));
         }
         else if(temporary && type == AttributeChange::Disconnected)
         {
@@ -569,3 +594,14 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
     }
 }
 
+void SceneStructureWindow::Sort(const QString &type)
+{
+    Qt::SortOrder order = treeWidget->header()->sortIndicatorOrder();
+    if (order != Qt::AscendingOrder && order != Qt::DescendingOrder)
+        order = Qt::AscendingOrder;
+
+    if (type == tr("ID"))
+        treeWidget->sortItems(0, order);
+    if (type == tr("Name"))
+        treeWidget->sortItems(1, order);
+}
