@@ -13,6 +13,7 @@
 #include "ThreadTaskManager.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
+#include "AudioAsset.h"
 
 #include <boost/thread/mutex.hpp>
 

@@ -118,7 +118,9 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
             // Send asset_ready event as delayed
             Events::AssetReady* event_data = new Events::AssetReady(asset_ptr->GetId(), asset_ptr->GetType(), asset_ptr, tag);
             framework_->GetEventManager()->SendDelayedEvent(event_category_, Events::ASSET_READY, EventDataPtr(event_data));
-            
+
+            AssetModule::LogDebug("OLD Asset path: Downloaded asset \"" + asset_id + "\" from file " + file_path.native_directory_string().c_str());
+
             return true;
         }
         else
@@ -325,11 +327,11 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
         {
-            AssetModule::LogError("Failed to read asset data from file \"" + absoluteFilename.toStdString() + "\"");
+            AssetModule::LogError("Failed to read asset data for asset \"" + ref.toStdString() + "\" from file \"" + absoluteFilename.toStdString() + "\"");
             continue;
         }
         
-        AssetModule::LogInfo("Downloaded asset " + absoluteFilename.toStdString());
+        AssetModule::LogDebug("Downloaded asset \"" + ref.toStdString() + "\" from file " + absoluteFilename.toStdString());
 
         // Signal the Asset API that this asset is now successfully downloaded.
         framework_->Asset()->AssetTransferCompleted(transfer.get());

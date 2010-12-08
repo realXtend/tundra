@@ -9,7 +9,7 @@ init_target (OpenALAudioModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES SoundSettings.h)
+file (GLOB MOC_FILES SoundSettings.h AudioAsset.h)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

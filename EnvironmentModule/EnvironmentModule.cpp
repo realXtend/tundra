@@ -8,7 +8,7 @@
 #include "DebugOperatorNew.h"
 
 #include "AssetAPI.h"
-#include "BinaryAssetFactory.h"
+#include "GenericAssetFactory.h"
 
 #include "EnvironmentModule.h"
 #include "Terrain.h"

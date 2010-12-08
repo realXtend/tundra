@@ -189,12 +189,11 @@ public slots:
     
     //! sets mesh
     /*! if mesh already sets, removes the old one
-        \param mesh_name mesh to use. This will not initiate an asset request, but assumes the mesh already exists as a loaded Ogre resource
-        \param clone whether mesh should be cloned for modifying geometry uniquely
-        \return true if successful
-     */
-    bool SetMesh(const std::string& mesh_name, bool clone = false);
-    bool SetMesh(const QString& mesh_name); //same as above, just for PythonQt compatibility
+        \param meshResourceName The name of the mesh resource to use. This will not initiate an asset request, but assumes 
+            the mesh already exists as a loaded Ogre resource.
+        \param clone whether mesh should be cloned for modifying geometry uniquely.
+        \return true if successful. */
+    bool SetMesh(QString meshResourceName, bool clone = false);
 
     //! sets mesh with custom skeleton
     /*! if mesh already sets, removes the old one
@@ -212,6 +211,11 @@ public slots:
      */
     bool SetMaterial(uint index, const std::string& material_name);
     bool SetMaterial(uint index, const QString& material_name);
+
+    /// (Re)applies the currently set material refs to the currently set mesh ref. Does not start any asset requests, but 
+    /// sets the data on the currently loaded assets.
+    void ApplyMaterial();
+
     //! sets adjustment (offset) position
     /*! \param position new position
      */

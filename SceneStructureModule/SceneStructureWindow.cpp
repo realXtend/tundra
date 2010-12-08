@@ -16,8 +16,6 @@
 
 #include "Framework.h"
 #include "SceneManager.h"
-#include "ECEditorWindow.h"
-#include "UiServiceInterface.h"
 #include "EC_Name.h"
 #include "AssetReference.h"
 //#ifdef EC_DynamicComponent_ENABLED
@@ -316,7 +314,7 @@ void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* co
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->Id() == entity->GetId()))
         {
-            for (int j = 0; j < eItem->childCount(); ++j)
+            for(int j = 0; j < eItem->childCount(); ++j)
             {
                 ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
                 if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == comp->Name()))
@@ -350,12 +348,12 @@ void SceneStructureWindow::DecorateEntityItem(Scene::Entity *entity, QTreeWidget
     if (entity->IsTemporary() || entity->IsLocal())
     {
         const QString &text = item->text(0);
-        if (entity->IsTemporary() && !entity->IsLocal()) // Set temporary entity's font color red
+        if (entity->IsTemporary() && !entity->IsLocal())
         {
             item->setTextColor(0, QColor(Qt::red));
             item->setText(0, text + tr(" (temporary)"));
         }
-        else if(!entity->IsTemporary() && entity->IsLocal()) // Set local entity's font color blue
+        else if(!entity->IsTemporary() && entity->IsLocal())
         {
             item->setTextColor(0, QColor(Qt::blue));
             item->setText(0, text + tr(" (local)"));
@@ -594,14 +592,14 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
     }
 }
 
-void SceneStructureWindow::Sort(const QString &type)
+void SceneStructureWindow::Sort(const QString &criteria)
 {
     Qt::SortOrder order = treeWidget->header()->sortIndicatorOrder();
     if (order != Qt::AscendingOrder && order != Qt::DescendingOrder)
         order = Qt::AscendingOrder;
 
-    if (type == tr("ID"))
+    if (criteria == tr("ID"))
         treeWidget->sortItems(0, order);
-    if (type == tr("Name"))
+    if (criteria == tr("Name"))
         treeWidget->sortItems(1, order);
 }

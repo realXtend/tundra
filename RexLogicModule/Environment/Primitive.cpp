@@ -23,7 +23,7 @@
 #include "OgreTextureResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreMeshResource.h"
-#include "OgreParticleResource.h"
+//#include "OgreParticleResource.h"
 #include "OgreSkeletonResource.h"
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
@@ -1210,6 +1210,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         }
     }
 
+/* Regression: Should convert to using the new Particle System asset, instead of the old resource. -jj.
     if (!RexTypes::IsNull(prim.ParticleScriptID))
     {
         // Create particle system component & attach, if does not yet exist
@@ -1248,6 +1249,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             entity->RemoveComponent(particleptr);
         }
     }
+*/
 }
 
 void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
@@ -1550,8 +1552,8 @@ bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)
             asset_type = RexTypes::RexAT_Texture;
         else if (res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic())
             asset_type = RexTypes::RexAT_MaterialScript;
-        else if (res->GetType() == OgreRenderer::OgreParticleResource::GetTypeStatic())
-            asset_type = RexTypes::RexAT_ParticleScript;
+//        else if (res->GetType() == OgreRenderer::OgreParticleResource::GetTypeStatic()) // Removed due to regression for now -jj.
+//            asset_type = RexTypes::RexAT_ParticleScript;
         else if (res->GetType() == OgreRenderer::OgreSkeletonResource::GetTypeStatic())
             asset_type = RexTypes::RexAT_Skeleton;
 
@@ -1611,7 +1613,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     
     if (!skel_res)
     {
-        mesh->SetMesh(res->GetId());
+        mesh->SetMesh(res->GetId().c_str());
     }
     else
     {
@@ -1668,6 +1670,7 @@ void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePt
 
 void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
+    /* // Removed due to regression for now -jj.
     if (!res) return;
     if (res->GetType() != OgreRenderer::OgreParticleResource::GetTypeStatic()) return;
     OgreRenderer::OgreParticleResource* partres = checked_static_cast<OgreRenderer::OgreParticleResource*>(res.get());
@@ -1687,6 +1690,7 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
     // Set adjustment orientation for system (legacy haxor)
     //Quaternion adjust(PI, 0, PI);
     //particle.SetAdjustOrientation(adjust);
+    */
 }
 
 void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr res)

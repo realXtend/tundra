@@ -8,9 +8,10 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "OgreConversionUtils.h"
-#include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
-#include "OgreSkeletonResource.h"
+#include "OgreSkeletonAsset.h"
+#include "OgreMeshAsset.h"
+#include "OgreMaterialAsset.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 
@@ -198,7 +199,7 @@ void EC_Mesh::SetDrawDistance(float draw_distance)
     drawDistance.Set(draw_distance, AttributeChange::LocalOnly);
 }
 
-bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
+bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
 {
     if (!ViewEnabled())
         return false;
@@ -206,6 +207,8 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
+
+    std::string mesh_name = meshResourceName.trimmed().toStdString();
 
     RemoveMesh();
 
@@ -271,6 +274,9 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
 
             adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         }
+
+        // Force a re-apply of all materials to this new mesh.
+        ApplyMaterial();
     }
     catch (Ogre::Exception& e)
     {
@@ -282,11 +288,6 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     emit OnMeshChanged();
     
     return true;
-}
-
-bool EC_Mesh::SetMesh(const QString& mesh_name) 
-{
-    return SetMesh(mesh_name.toStdString(), false);
 }
 
 bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
@@ -953,18 +954,36 @@ void EC_Mesh::OnMeshAssetLoaded()
     if (!transfer)
         return;
 
-    OgreMeshResource *resource = dynamic_cast<OgreMeshResource *>(transfer->resourcePtr.get());
-    if (!resource)
-    {
-        LogWarning("Failed to handle mesh resource ready event cause resource pointer was null.");
-        return;
-    }
+    QString ogreMeshName = meshRef.Get().ref.trimmed();
 
-    SetMesh(meshRef.Get().ref);
+    // New asset download path.
+    OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(transfer->asset.get());
+    if (mesh)
+    {
+        if (mesh->ogreMesh.get())
+            ogreMeshName = mesh->ogreMesh->getName().c_str();
+        else
+            LogError("EC_Mesh::OnMeshAssetLoaded: Mesh asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but Ogre::Mesh pointer was null!");
+    }
+    /*
+    else // Old asset download path. This is deprecated. Remove when unneeded. -jj.
+    {        
+        OgreMeshResource *resource = dynamic_cast<OgreMeshResource *>(transfer->resourcePtr.get());
+        if (!resource)
+        {
+            LogWarning("Failed to handle mesh resource ready event cause resource pointer was null.");
+            return;
+        }
+        // Old asset download path above. This is deprecated. Remove when unneeded. -jj.
+        ogreMeshName = resou
+    }
+    */
+    SetMesh(ogreMeshName);
 
     // Hack to request materials & skeleton now
     AttributeUpdated(&meshMaterial);
     AttributeUpdated(&skeletonRef);
+
 }
 
 void EC_Mesh::OnSkeletonAssetLoaded()
@@ -973,7 +992,22 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     assert(transfer);
     if (!transfer)
         return;
+    
+    OgreSkeletonAsset *skeletonAsset = dynamic_cast<OgreSkeletonAsset*>(transfer->asset.get());
+    if (!skeletonAsset)
+    {
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
+        return;
+    }
 
+    Ogre::SkeletonPtr skeleton = skeletonAsset->ogreSkeleton;
+    if (skeleton.isNull())
+    {
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but Ogre::Skeleton pointer was null!");
+        return;
+    }
+
+/* Old asset download path. Not used anymore.
     OgreSkeletonResource *resource = dynamic_cast<OgreSkeletonResource *>(transfer->resourcePtr.get());
     if (!resource)
     {
@@ -984,7 +1018,7 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     Ogre::SkeletonPtr skeleton = resource->GetSkeleton();
     if(skeleton.isNull())
         return;
-
+*/
     if(!entity_)
     {
         LogDebug("Could not set skeleton yet because entity is not yet created");
@@ -1008,7 +1042,7 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     }
 
     // Now we have to recreate the entity to get proper animations etc.
-    SetMesh(entity_->getMesh()->getName(), false);
+    SetMesh(entity_->getMesh()->getName().c_str(), false);
 }
 
 void EC_Mesh::OnMaterialAssetLoaded()
@@ -1018,35 +1052,38 @@ void EC_Mesh::OnMaterialAssetLoaded()
     if (!transfer)
         return;
 
-    OgreMaterialResource *resource = dynamic_cast<OgreMaterialResource *>(transfer->resourcePtr.get());
-    if (!resource)
-    {
-        LogWarning("Failed to handle material resource ready event because resource pointer was null.");
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(transfer->asset.get());
+    assert(ogreMaterial);
+    if (!ogreMaterial)
         return;
-    }
 
-    //! a bit hackish way to get materials in right order.
-    bool found = false;
-    uint index = 0;
-    QMap<int, QString>::iterator it = materialRequests.begin();
-    for(; it != materialRequests.end(); ++it)
-    {
-        if(*it == QString(resource->GetId().c_str()))
+    Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
+
+    bool assetUsed = false;
+
+    QVariantList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.size(); ++i)
+        if (materialList[i].toString() == ogreMaterial->Name())
         {
-            index = it.key();
-            found = true;
-            break;
+            SetMaterial(i, ogreMaterial->Name());
+            assetUsed = true;
         }
-    }
 
-    if(found)
+    if (!assetUsed)
     {
-        if (index > meshMaterial.Get().size()) 
-            return;
-        
-        materialRequests.erase(it);
-        SetMaterial(index, QString(resource->GetMaterial()->getName().c_str()));
+        LogWarning("Warning: EC_Mesh::OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
+            meshRef.Get().ref.toStdString() + ", but no submesh refers to the given material! The references are: ");
+        for(int i = 0; i < materialList.size(); ++i)
+            LogWarning(QString::number(i).toStdString() + ": " + materialList[i].toString().toStdString());
     }
+}
+
+void EC_Mesh::ApplyMaterial()
+{
+    QVariantList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.size(); ++i)
+        if (!materialList[i].toString().isEmpty())
+            SetMaterial(i, materialList[i].toString());
 }
 
 bool EC_Mesh::HasMaterialsChanged() const
