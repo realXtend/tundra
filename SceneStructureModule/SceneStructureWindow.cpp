@@ -52,6 +52,8 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     QComboBox *sortComboBox = new QComboBox;
     sortComboBox->addItem(tr("ID"));
     sortComboBox->addItem(tr("Name"));
+
+    sortLayout->addWidget(assetCheckBox);
     sortLayout->addSpacerItem(spacer);
     sortLayout->addWidget(sortLabel);
     sortLayout->addWidget(sortComboBox);
@@ -59,7 +61,6 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     treeWidget = new SceneTreeWidget(fw, this);
 
     layout->addWidget(compCheckBox);
-    layout->addWidget(assetCheckBox);
     layout->insertLayout(-1, sortLayout);
     layout->addWidget(treeWidget);
 
