@@ -216,6 +216,10 @@ void KristalliProtocolModule::PerformConnection()
 
 void KristalliProtocolModule::Disconnect()
 {
+    // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
+    serverIp = "";
+    reconnectTimer.Stop();
+    
     if (serverConnection)
     {
         serverConnection->Disconnect();
@@ -224,10 +228,7 @@ void KristalliProtocolModule::Disconnect()
         serverConnection = 0;
     }
 
-    // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
-    serverIp = "";
-    
-    reconnectTimer.Stop();
+
 }
 
 bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLayer transport)
