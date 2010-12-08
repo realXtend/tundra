@@ -1,13 +1,15 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   SceneTreeView.cpp
+ *  @file   SceneTreeWidget.cpp
  *  @brief  Tree widget showing the scene structure.
  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "SceneTreeWidget.h"
+#include "SceneTreeWidgetItems.h"
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
 
@@ -53,99 +55,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
-
-// EntityItem
-
-EntityItem::EntityItem(const Scene::EntityPtr &entity) :
-    ptr(entity), id(entity->GetId())
-{
-}
-Scene::EntityPtr EntityItem::Entity() const
-{
-    return ptr.lock();
-}
-
-entity_id_t EntityItem::Id() const
-{
-    return id;
-}
-
-bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
-{
-    int c = treeWidget()->sortColumn();
-    if (c == 0)
-        return (entity_id_t)text(0).split(" ")[0].toInt() < (entity_id_t)rhs.text(0).split(" ")[0].toInt();
-    else if (c == 1)
-    {
-        QStringList lhsText = text(0).split(" ");
-        QStringList rhsText = rhs.text(0).split(" ");
-        if (lhsText.size() > 1 && rhsText.size() > 1)
-            return lhsText[1].toLower() < rhsText[1].toLower();
-        else
-            return false;
-    }
-    else
-        return QTreeWidgetItem::operator <(rhs);
-}
-
-// ComponentItem
-
-ComponentItem::ComponentItem(const ComponentPtr &comp, EntityItem *parent) :
-    QTreeWidgetItem(parent), parentItem(parent), ptr(comp), typeName(comp->TypeName()), name(comp->Name())
-{
-}
-
-ComponentPtr ComponentItem::Component() const
-{
-    return ptr.lock();
-}
-
-EntityItem *ComponentItem::Parent() const
-{
-    return parentItem;
-}
-
-// AssetItem
-
-AssetItem::AssetItem(const QString &name, const QString &ref, QTreeWidgetItem *parent) :
-    QTreeWidgetItem(parent)
-{
-    this->name = name;
-    this->id = ref;
-}
-
-// Selection
-
-bool Selection::IsEmpty() const
-{
-    return entities.size() == 0 && components.size() == 0 && assets.isEmpty();
-}
-
-bool Selection::HasEntities() const
-{
-    return entities.size() > 0;
-}
-
-bool Selection::HasComponents() const
-{
-    return components.size() > 0;
-}
-
-bool Selection::HasAssets() const
-{
-    return !assets.isEmpty();
-}
-
-QList<entity_id_t> Selection::EntityIds() const
-{
-    QSet<entity_id_t> ids;
-    foreach(EntityItem *e, entities)
-        ids.insert(e->Id());
-    foreach(ComponentItem *c, components)
-        ids.insert(c->Parent()->Id());
-
-    return ids.toList();
-}
 
 // Menu
 
@@ -813,11 +722,13 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
 */
 }
 
+/*
 void SceneTreeWidget::CloseEditor(QTreeWidgetItem *c, QTreeWidgetItem *p)
 {
 //    foreach(EntityItem *eItem, GetSelection().entities)
     closePersistentEditor(p);
 }
+*/
 
 void SceneTreeWidget::NewEntity()
 {
