@@ -598,7 +598,8 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
             ComponentDesc compDesc;
             compDesc.typeName = EC_Mesh::TypeNameStatic();
 
-            meshFiles << path + "/" + mesh_name;
+            meshFiles << path + "/" + mesh_name; // TODO: This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
+            //AssetAPI::QueryFileLocation();
 
             /// Create dummy placeable desc.
             ComponentPtr placeable = scene_->GetFramework()->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic());
@@ -642,6 +643,8 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
                 QStringList material_names;
 //                QSet<QString> material_names_set;
                 QString skeleton_name;
+                // TODO: This is a hardcoded assumption that the mesh_name ref was a local file. Might not hold. -jj.
+                //AssetAPI::QueryFileLocation();
                 ParseMeshForMaterialsAndSkeleton(path + "/" + mesh_name, material_names, skeleton_name);
                 for(uint i = 0; i < material_names.size(); ++i)
                 {
@@ -1223,7 +1226,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     foreach(QString skeleton, skeletons)
     {
         AssetDesc skeletonAssetDesc;
-        skeletonAssetDesc.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + skeleton;
+        skeletonAssetDesc.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + skeleton; // This is already an absolute path. Don't use QueryFileLocation.
         skeletonAssetDesc.typeName = "skeleton";
         skeletonAssetDesc.destinationName = skeleton;
         desc.assets << skeletonAssetDesc;

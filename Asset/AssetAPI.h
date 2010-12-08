@@ -62,14 +62,16 @@ public:
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
 
+    /// Returns all registered asset type factories. You can use this list to query which asset types the system can handle.
+    std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() { return assetTypeFactories; }
+
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     AssetPtr GetAsset(QString assetRef);
     
-    /// Queries if any existing Asset Storage contains an asset with the given name, and returns it.
-//    IAsset *GetAssetByName(QString assetRef);
+    typedef std::map<QString, AssetPtr> AssetMap;
 
     /// Returns all assets known to the asset system.
-//    std::vector<IAsset*> GetAllAssets() const;
+    AssetMap &GetAllAssets() { return assets; }
 
     /// Returns the asset provider of the given type.
     template<typename T>
@@ -196,7 +198,6 @@ private:
     std::vector<AssetTypeFactoryPtr> assetTypeFactories;
 
     /// Stores all the already loaded assets in the system.
-    typedef std::map<QString, AssetPtr> AssetMap;
     AssetMap assets;
 
     /// Specifies all the registered asset providers in the system.
