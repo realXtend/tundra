@@ -233,7 +233,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
     if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->GetName()))
         return;
 
-    Scene::EntityPtr entity = otherEntity->GetSharedPtr();
+    Scene::EntityPtr entity = otherEntity->shared_from_this();
 
     if (byPivot.Get())
     {
@@ -264,7 +264,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
 
 void EC_VolumeTrigger::OnEntityRemoved(Scene::Entity *entity)
 {
-    Scene::EntityWeakPtr ptr = entity->GetSharedPtr();
+    Scene::EntityWeakPtr ptr = entity->shared_from_this();
     QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.find(ptr);
     if (i != entities_.end())
     {

@@ -13,6 +13,7 @@
 #include "IAttribute.h"
 #include "IEventData.h"
 #include "CoreTypes.h"
+#include <boost/enable_shared_from_this.hpp>
 
 #include <QObject>
 
@@ -35,7 +36,7 @@ class QDomElement;
     Every Component has a state variable 'UpdateMode' that specifies a default setting for managing which objects
     get notified whenever an Attribute change event occurs. This is used to create "Local Only"-objects as well
     as when doing batch updates of Attributes (for performance or correctness). */
-class IComponent : public QObject
+class IComponent : public QObject, public boost::enable_shared_from_this<IComponent>
 {
     friend class ::IAttribute;
 
@@ -78,11 +79,6 @@ public:
     /// component initialization time to attach this component to its owning Entity.
     /// Although public, it is not intended to be called by users of IComponent.
     void SetParentEntity(Scene::Entity* entity);
-
-    /// Return component as shared pointer. 
-    /// @Note: this method wont create a new shared pointer, it only finds the right component
-    /// in it's parent entity and returns it. If parent entity was not found null pointer is returned.
-    ComponentPtr GetSharedPtr();
 
 public slots:
     /// Returns a pointer to the Naali framework instance.
