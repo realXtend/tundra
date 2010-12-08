@@ -364,7 +364,7 @@ namespace Avatar
         if (!appearance->GetSkeleton().GetLocalOrResourceName().empty())
             mesh->SetMeshWithSkeleton(appearance->GetMesh().GetLocalOrResourceName(), appearance->GetSkeleton().GetLocalOrResourceName(), need_mesh_clone);
         else
-            mesh->SetMesh(appearance->GetMesh().GetLocalOrResourceName(), need_mesh_clone);
+            mesh->SetMesh(appearance->GetMesh().GetLocalOrResourceName().c_str(), need_mesh_clone);
             
         if (need_mesh_clone)
             HideVertices(mesh->GetEntity(), vertices_to_hide);

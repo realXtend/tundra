@@ -9,8 +9,6 @@
 
 class IAssetTypeFactory : public QObject
 {
-    Q_OBJECT;
-
 public:
     virtual ~IAssetTypeFactory() {}
 

@@ -13,7 +13,7 @@
 #include "ResourceInterface.h"
 #include "CoreException.h"
 #include "IAssetTypeFactory.h"
-#include "BinaryAssetFactory.h"
+#include "GenericAssetFactory.h"
 #include "../AssetModule/AssetEvents.h"
 #include <QDir>
 
@@ -274,7 +274,9 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    if (assetType == "Script" || assetType == "Terrain" || assetType == "Texture") // NEW PATH: Uses asset providers directly.
+    if (assetType == "Script" || assetType == "Terrain" || assetType == "OgreMesh" || assetType == "OgreMaterial" 
+        || assetType == "Texture" || assetType == "GenericAvatarXml"
+        || assetType == "OgreTexture" || assetType == "OgreParticle" || assetType == "OgreSkeleton")// || assetType == "Texture") // NEW PATH: Uses asset providers directly.
     {
         AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
         if (!transfer.get())

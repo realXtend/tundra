@@ -54,7 +54,7 @@ public:
     virtual void DependencyLoaded(AssetPtr dependee) { }
 
     /// Returns all the assets this asset refers to (but not the references those assets refer to).
-    virtual std::vector<AssetReference> FindReferences() const = 0;
+    virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
 
     /// Returns true if the replace succeeds.
 //    bool ReplaceReference(const QString &oldRef, const QString &newRef);

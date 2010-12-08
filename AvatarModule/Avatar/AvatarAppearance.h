@@ -6,6 +6,7 @@
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "AvatarModule.h"
 #include "AvatarModuleApi.h" 
+#include "AssetFwd.h"
 
 class QDomDocument;
 
@@ -130,6 +131,9 @@ namespace Avatar
         void AppearanceStatus(const QString &message, int timeout = 7000);
         void AppearanceError(const QString &message, int timeout = 7000);
         void AppearanceHideMessages();
+
+//    private slots:
+//        void OnAvatarAssetDownloadCompleted(IAssetTransfer *transfer);
 
     private:
         //! Sets up an avatar mesh
