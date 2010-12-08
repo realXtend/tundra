@@ -57,6 +57,7 @@
 #include "ISoundService.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
+#include "NaaliMainWindow.h"
 
 //#include "Avatar/AvatarHandler.h"
 //#include "Avatar/AvatarControllable.h"
@@ -769,37 +770,41 @@ namespace PythonScript
         return affected_entitys_;
     }
 
-    void PythonScriptModule::LoadScript(const QString &filename)
+    void PythonScriptModule::LoadScript(ScriptAssetPtr scriptAsset)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
         if (!script)
             return;
 
-        if (script->type.Get() != "py")
-            return;
+        QString scriptType = script->type.Get().trimmed().toLower();
+        if (scriptType != "js" && scriptType.length() > 0)
+            return; // The user enforced a foreign script type using the EC_Script type field.
 
-        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get().ref, script->GetParentEntity());
-        script->SetScriptInstance(pyInstance);
-        if (script->runOnLoad.Get())
-            script->Run();
+        if (scriptAsset->Name().endsWith(".py") || scriptType == "py")
+        {
+            PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get().ref, script->GetParentEntity());
+            script->SetScriptInstance(pyInstance);
+            if (script->runOnLoad.Get())
+                script->Run();
+        }
     }
 
     void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, IComponent *component)
     {
         if (component->TypeName() == EC_Script::TypeNameStatic())
-        {
-            EC_Script *script = static_cast<EC_Script *>(component);
-            connect(script, SIGNAL(ScriptRefChanged(const QString &)), SLOT(LoadScript(const QString &)));
-        }
+            connect(component , SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), SLOT(LoadScript(ScriptAssetPtr)), Qt::UniqueConnection);
     }
 
     void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, IComponent *component)
     {
+        if (component->TypeName() == EC_Script::TypeNameStatic())
+            disconnect(component, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(LoadScript(ScriptAssetPtr)));
     }
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule());
+        NaaliMainWindow *mainWnd = framework_->Ui()->MainWindow();
+        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(mainWnd, PythonQt::self()->getMainModule(), Qt::Tool);
         return pythonqtconsole;
     }
 }

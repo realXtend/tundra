@@ -156,6 +156,11 @@ private slots:
         @param newName New component name.
     */
     void UpdateComponentName(const QString &oldName, const QString &newName);
+
+    /// Sort items in the tree widget. The outstanding sort order is used.
+    /** @param criteria Sorting criteria. Currently tr("ID") and tr("Name") are supported.
+    */
+    void Sort(const QString &criteria);
 };
 
 #endif
