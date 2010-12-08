@@ -13,6 +13,7 @@
 
 #include "SceneStructureWindow.h"
 #include "SceneTreeWidget.h"
+#include "SceneTreeWidgetItems.h"
 
 #include "Framework.h"
 #include "SceneManager.h"
@@ -236,7 +237,6 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
     EntityItem *item = new EntityItem(entity->GetSharedPtr());
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
-    item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
 
     DecorateEntityItem(entity, item);
 
@@ -270,7 +270,6 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             ComponentPtr cPtr = entity->GetComponent(comp->TypeName(), comp->Name());
             assert(cPtr.get());
             ComponentItem *cItem = new ComponentItem(cPtr, eItem);
-            cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
             cItem->setHidden(!showComponents);
 
             DecorateComponentItem(comp, cItem);
@@ -283,7 +282,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             // If name component exists, retrieve name from it. Also hook up change signal so that UI keeps synch with the name.
             if (comp->TypeName() == EC_Name::TypeNameStatic())
             {
-                eItem->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+                eItem->SetText(entity);
                 DecorateEntityItem(entity, eItem);
 
                 connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
@@ -338,8 +337,7 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
     if (!assetRef)
         return;
 
-    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().ref, parentItem);
-    aItem->setText(0, QString("%1: %2").arg(assetRef->GetName()).arg(assetRef->Get().ref));
+    AssetItem *aItem = new AssetItem(attr, parentItem);
     aItem->setHidden(!showAssets);
     parentItem->addChild(aItem);
 }
@@ -550,8 +548,7 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
 
     assert(aItem);
     if (aItem)
-        aItem->setText(0, QString("%1: %2").arg(assetRef->GetName()).arg(assetRef->Get().ref));
-//        aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().ref).arg(assetRef->Get().type));
+        aItem->SetText(attr);
 }
 
 void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
@@ -566,7 +563,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
         EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (item && (item->Id() == entity->GetId()))
         {
-            item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+            item->SetText(entity);
             DecorateEntityItem(entity, item);
         }
     }
@@ -586,7 +583,7 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
             if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
             {
-                cItem->setText(0, QString("%1 %2").arg(cItem->typeName).arg(newName));
+                cItem->SetText(comp);
                 DecorateComponentItem(comp, cItem);
             }
         }
