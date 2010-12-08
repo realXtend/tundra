@@ -57,6 +57,7 @@
 #include "ISoundService.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
+#include "NaaliMainWindow.h"
 
 //#include "Avatar/AvatarHandler.h"
 //#include "Avatar/AvatarControllable.h"
@@ -802,7 +803,8 @@ namespace PythonScript
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule(), Qt::Tool);
+        NaaliMainWindow *mainWnd = framework_->Ui()->MainWindow();
+        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(mainWnd, PythonQt::self()->getMainModule(), Qt::Tool);
         return pythonqtconsole;
     }
 }
