@@ -39,9 +39,9 @@
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
 #ifdef OGREASSETEDITOR_ENABLED
-#   include "MeshPreviewEditor.h"
-#   include "TexturePreviewEditor.h"
-#   include "OgreScriptEditor.h"
+#include "MeshPreviewEditor.h"
+#include "TexturePreviewEditor.h"
+#include "OgreScriptEditor.h"
 #endif
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
@@ -68,6 +68,24 @@ Scene::EntityPtr EntityItem::Entity() const
 entity_id_t EntityItem::Id() const
 {
     return id;
+}
+
+bool EntityItem::operator <(const QTreeWidgetItem &rhs) const
+{
+    int c = treeWidget()->sortColumn();
+    if (c == 0)
+        return (entity_id_t)text(0).split(" ")[0].toInt() < (entity_id_t)rhs.text(0).split(" ")[0].toInt();
+    else if (c == 1)
+    {
+        QStringList lhsText = text(0).split(" ");
+        QStringList rhsText = rhs.text(0).split(" ");
+        if (lhsText.size() > 1 && rhsText.size() > 1)
+            return lhsText[1].toLower() < rhsText[1].toLower();
+        else
+            return false;
+    }
+    else
+        return QTreeWidgetItem::operator <(rhs);
 }
 
 // ComponentItem
@@ -130,6 +148,7 @@ QList<entity_id_t> Selection::EntityIds() const
 }
 
 // Menu
+
 Menu::Menu(QWidget *parent) : QMenu(parent), shiftDown(false)
 {
 }
@@ -167,7 +186,9 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     setAllColumnsShowFocus(true);
     //setDefaultDropAction(Qt::MoveAction);
     setDropIndicatorShown(true);
-    setHeaderHidden(true);
+    setHeaderLabel(tr("Scene entities"));
+    setColumnCount(2);
+    header()->setSectionHidden(1, true);
 
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)), SLOT(Edit()));
 
