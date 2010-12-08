@@ -4,10 +4,11 @@
 #define incl_MumbleVoipModule_Provider_h
 
 #include <QObject>
+#include <QMap>
+#include <QString>
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
 #include "AttributeChangeType.h"
-#include "WorldStream.h"
 
 class UiProxyWidget;
 class IEventData;
@@ -68,7 +69,6 @@ namespace MumbleVoip
         QList<EC_VoiceChannel*> ec_voice_channels_;
         QMap<EC_VoiceChannel*, QString> channel_names_;
         QSignalMapper* signal_mapper_;
-        ProtocolUtilities::WorldStreamPtr world_stream_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);
