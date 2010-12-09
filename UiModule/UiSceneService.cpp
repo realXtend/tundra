@@ -443,7 +443,7 @@ namespace UiServices
 				foreach(QString s, panels){
 					QSettings settings("Naali UIExternal2", "UiExternal Settings");
 					QString pos = settings.value(s, QString("vacio")).toString();
-					if (pos != "inside" && uiExternal){
+					if (/*pos != "inside" &&*/ uiExternal){
 						proxyDock pair = proxy_dock_list.value(s);
 						QDockWidget* qdock=pair.second;
 						UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
