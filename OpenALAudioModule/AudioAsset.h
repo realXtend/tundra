@@ -11,12 +11,12 @@ class AudioAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    AudioAsset(const QString &type_, const QString &name_)//, const QString &ref_)
-    :IAsset(type_, name_)//, ref_)
+    AudioAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+    :IAsset(owner, type_, name_)
     {
     }
 
-    virtual bool LoadFromFileInMemory(const u8 *data, size_t numBytes)
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes)
     {
 
     }

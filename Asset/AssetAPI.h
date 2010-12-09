@@ -72,6 +72,9 @@ public:
     /// Note: The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
     AssetPtr GetAsset(QString assetRef);
     
+    /// Returns the given asset by the specified SHA-1 content hash. If no such asset exists, returns null.
+    AssetPtr GetAssetByHash(QString assetHash);
+
     typedef std::map<QString, AssetPtr> AssetMap;
 
     /// Returns all assets known to the asset system.
@@ -118,7 +121,7 @@ public:
 
     /// Removes the given asset from the system and frees up all resources related to it. The asset will
     /// stay in the disk cache for later access.
-//    void DeleteAsset(IAsset *asset);
+    void DeleteAsset(AssetPtr asset);
 
     /// Uploads an asset to an asset storage.
     /** @param filename The source file to load the asset from.
@@ -145,7 +148,7 @@ public:
     /// Use this to clear the client's memory from all assets.
     /// \note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
     /// until the refcounts drop to zero.
-    void ForgetAllAssets();
+    void DeleteAllAssets();
 
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<AssetTransferPtr> PendingTransfers() const;

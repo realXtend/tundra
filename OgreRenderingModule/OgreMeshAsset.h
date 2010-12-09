@@ -11,12 +11,12 @@ class OgreMeshAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    OgreMeshAsset(const QString &type_, const QString &name_)
-    :IAsset(type_, name_)
+    OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+    :IAsset(owner, type_, name_)
     {
     }
 
-    virtual bool LoadFromFileInMemory(const u8 *data_, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
     void Unload();
 

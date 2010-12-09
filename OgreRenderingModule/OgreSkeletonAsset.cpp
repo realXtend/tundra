@@ -5,7 +5,7 @@
 
 using namespace OgreRenderer;
 
-bool OgreSkeletonAsset::LoadFromFileInMemory(const u8 *data_, size_t numBytes)
+bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     if (!data_)
     {

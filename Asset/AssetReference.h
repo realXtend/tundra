@@ -15,20 +15,14 @@ public:
     AssetReference() {}
 
     /// Constructs an asset reference pointing to the given asset.
-    /** @param reference The URL of the asset to point to, e.g. "local://myasset.mesh", or "http://www.website.com/texture.png".
-    */
+    /// @param reference The URL of the asset to point to, e.g. "local://myasset.mesh", or "http://www.website.com/texture.png".
     AssetReference(const QString &reference) : ref(reference) {}
 
-    /// Constructs an asset reference pointing to the given asset.
-    /** @param reference The URL of the asset to point to, e.g. "local://myasset.mesh", or "http://www.website.com/texture.png".
-        @param type_ The type of the asset that is being pointed to. If the file name suffix of the URL uniquely identifies the asset type,
-            this field may be left blank.
-    */
-//    AssetReference(const QString &reference, const QString &type_ = QString()) :ref(reference), type(type_) {}
+    bool operator ==(const AssetReference &rhs) const { return this->ref == rhs.ref; }
 
-    bool operator == (const AssetReference &rhs) const { return this->ref == rhs.ref; }
+    bool operator !=(const AssetReference &rhs) const { return !(*this == rhs); }
 
-    bool operator != (const AssetReference &rhs) const { return !(*this == rhs); }
+    bool operator <(const AssetReference &rhs) const { return ref < rhs.ref; }
 
     /// Specifies the URL of the asset that is being pointed to.
     QString ref;
