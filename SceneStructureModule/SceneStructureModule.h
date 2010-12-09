@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneStructureModule.h
- *  @brief  Provides Scene Structure window and raycast drag-and-drop import of
+ *  @brief  Provides Scene Structure and Assets windows and raycast drag-and-drop import of
  *          .mesh, .scene, .txml and .tbinfiles to the main window.
  */
 
@@ -12,15 +12,17 @@
 #include "IModule.h"
 #include "Vector3D.h"
 
+#include <QPointer>
+
 class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
 
 class SceneStructureWindow;
-
+class AssetsWindow;
 struct SceneDesc;
 
-/// Provides Scene Structure window and raycast drag-and-drop import
+/// Provides Scene Structure and Assets windows and raycast drag-and-drop import
 /// of .mesh, .scene, .txml and .tbin files to the main window.
 class SceneStructureModule : public QObject, public IModule
 {
@@ -71,15 +73,16 @@ public slots:
     static bool IsSupportedFileType(const QString &filename);
 
 private:
-    /// Scene structure window.
-    SceneStructureWindow *sceneWindow;
-
-    /// Input context.
-    boost::shared_ptr<InputContext> inputContext;
+    SceneStructureWindow *sceneWindow; ///< Scene Structure window.
+    QPointer<AssetsWindow> assetsWindow;///< Assets window.
+    boost::shared_ptr<InputContext> inputContext; ///< Input context.
 
 private slots:
-    /// Shows scene structure window.
+    /// Shows Scene Structure window.
     void ShowSceneStructureWindow();
+
+    /// Shows Assets window.
+    void ShowAssetsWindow();
 
     /// Handles KeyPressed() signal from input context.
     /** @param e Key event.

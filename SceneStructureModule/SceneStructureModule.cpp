@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneStructureModule.cpp
- *  @brief  Provides Scene Structure window and raycast drag-and-drop import of
+ *  @brief  Provides Scene Structure and Assets windows and raycast drag-and-drop import of
  *          .mesh, .scene, .xml and .nbf files to the main window.
  */
 
@@ -11,6 +11,7 @@
 
 #include "SceneStructureModule.h"
 #include "SceneStructureWindow.h"
+#include "AssetsWindow.h"
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 
@@ -39,7 +40,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
 SceneStructureModule::SceneStructureModule() :
     IModule("SceneStructure"),
-    sceneWindow(0)
+    sceneWindow(0),
+    assetsWindow(0)
 {
 }
 
@@ -51,8 +53,9 @@ SceneStructureModule::~SceneStructureModule()
 void SceneStructureModule::PostInitialize()
 {
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window.", this, SLOT(ShowSceneStructureWindow()));
+    framework_->Console()->RegisterCommand("assets", "Shows the Assets window.", this, SLOT(ShowAssetsWindow()));
+
     inputContext = framework_->GetInput()->RegisterInputContext("SceneStructureInput", 90);
-    //input->SetTakeKeyboardEventsOverQt(true);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DragEnterEvent(QDragEnterEvent *)), SLOT(HandleDragEnterEvent(QDragEnterEvent *)));
@@ -269,6 +272,32 @@ void SceneStructureModule::ShowSceneStructureWindow()
     //ui->ShowWidget(sceneWindow);
 }
 
+void SceneStructureModule::ShowAssetsWindow()
+{
+    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    if (!ui)
+        return;*/
+
+    if (assetsWindow)
+    {
+        //ui->ShowWidget(assetsWindow);
+        assetsWindow->show();
+        return;
+    }
+
+    NaaliUi *ui = GetFramework()->Ui();
+    if (!ui)
+        return;
+
+    assetsWindow = new AssetsWindow(framework_);
+    assetsWindow->setParent(ui->MainWindow());
+    assetsWindow->setWindowFlags(Qt::Tool);
+    assetsWindow->show();
+
+    //ui->AddWidgetToScene(assetsWindow);
+    //ui->ShowWidget(assetsWindow);
+}
+
 void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 {
     if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
@@ -276,9 +305,14 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 
     Input &input = *framework_->GetInput();
 
-    const QKeySequence showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
-    if (QKeySequence(e->keyCode | e->modifiers) == showSceneStruct)
+    const QKeySequence &showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
+    const QKeySequence &showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));
+
+    QKeySequence keySeq(e->keyCode | e->modifiers);
+    if (keySeq == showSceneStruct)
         ShowSceneStructureWindow();
+    if (keySeq == showAssets)
+        ShowAssetsWindow();
 }
 
 void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
