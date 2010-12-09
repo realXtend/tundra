@@ -37,7 +37,16 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw) :
 //    treeWidget ->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
 //    treeWidget ->header()->setResizeMode(QHeaderView::ResizeToContents);
 
+    QHBoxLayout *hlayout= new QHBoxLayout;
+    QLabel *searchLabel = new QLabel(tr("Search filter: "), this);
+    QLineEdit *searchField = new QLineEdit(this);
+    hlayout->addWidget(searchLabel);
+    hlayout->addWidget(searchField);
+
+    layout->addLayout(hlayout);
     layout->addWidget(treeWidget);
+
+    connect(searchField, SIGNAL(textChanged(const QString &)), SLOT(Search(const QString &)));
 
     PopulateTreeWidget();
 }
@@ -97,4 +106,48 @@ void AssetsWindow::PopulateTreeWidget()
 
     if (noProviderItem->childCount() == 0)
         SAFE_DELETE(noProviderItem);
+}
+
+void AssetsWindow::Search(const QString &filter)
+{
+    QString f = filter.trimmed();
+    bool expand = f.size() >= 3;
+    QSet<QTreeWidgetItem *> alreadySetVisible;
+
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        QTreeWidgetItem *item = *it;
+        if (!alreadySetVisible.contains(item))
+        {
+            if (f.isEmpty())
+            {
+                item->setHidden(false);
+            }
+            else if (item->text(0).contains(filter, Qt::CaseInsensitive))
+            {
+                item->setHidden(false);
+                alreadySetVisible.insert(item);
+                if (expand)
+                    item->setExpanded(expand);
+
+                // Make sure that all the parent items are visible too
+                QTreeWidgetItem *parent = 0, *child = item;
+                while((parent = child->parent()) != 0)
+                {
+                    parent->setHidden(false);
+                    alreadySetVisible.insert(parent);
+                    if (expand)
+                        parent->setExpanded(expand);
+                    child = parent;
+                }
+            }
+            else
+            {
+                item->setHidden(true);
+            }
+        }
+
+        ++it;
+    }
 }
