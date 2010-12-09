@@ -805,18 +805,19 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         }
 
         // Check if component has been already added to a entity.
-        ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
+        ComponentPtr comp = entity->GetComponent(dialog->GetTypeName(), dialog->GetName());
         if (comp)
         {
             LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
             continue;
         }
 
-        comp = framework->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
+        comp = framework->GetComponentManager()->CreateComponent(dialog->GetTypeName(), dialog->GetName());
         assert(comp.get());
         if (comp)
         {
             comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
+            comp->SetTemporary(dialog->GetTemporary());
             entity->AddComponent(comp, AttributeChange::Default);
         }
     }

@@ -271,10 +271,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->Id() == entity->GetId()))
         {
-            // This is a bit ugly, but we want to get the shared pointer.
-            ComponentPtr cPtr = entity->GetComponent(comp->TypeName(), comp->Name());
-            assert(cPtr.get());
-            ComponentItem *cItem = new ComponentItem(cPtr, eItem);
+            ComponentItem *cItem = new ComponentItem(comp->shared_from_this(), eItem);
             cItem->setHidden(!showComponents);
 
             DecorateComponentItem(comp, cItem);
@@ -349,60 +346,77 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
 
 void SceneStructureWindow::DecorateEntityItem(Scene::Entity *entity, QTreeWidgetItem *item) const
 {
-    if (entity->IsTemporary() || entity->IsLocal())
+    bool local = entity->IsLocal();
+    bool temp = entity->IsTemporary();
+
+    QString info;
+    if (local)
     {
-        const QString &text = item->text(0);
-        if (entity->IsTemporary() && !entity->IsLocal())
-        {
-            item->setTextColor(0, QColor(Qt::red));
-            item->setText(0, text + tr(" (temporary)"));
-        }
-        else if(!entity->IsTemporary() && entity->IsLocal())
-        {
-            item->setTextColor(0, QColor(Qt::blue));
-            item->setText(0, text + tr(" (local)"));
-        }
-        else if(entity->IsTemporary() && entity->IsLocal())
-        {
-            item->setTextColor(0, QColor(Qt::red));
-            item->setText(0, text + tr(" (temporary, local)"));
-        }
+        item->setTextColor(0, QColor(Qt::blue));
+        info.append("Local");
+    }
+
+    if (temp)
+    {
+        item->setTextColor(0, QColor(Qt::red));
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append("Temporary");
+    }
+
+    if (!info.isEmpty())
+    {
+        QString text = item->text(0);
+        if (text.size() > 0 && text[text.size()-1] != ' ')
+            text.append(" ");
+        info.prepend("(");
+        info.append(")");
+        item->setText(0, text + info);
     }
 }
 
 void SceneStructureWindow::DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const
 {
+    bool sync = comp->GetNetworkSyncEnabled();
     bool temporary = comp->IsTemporary();
-    AttributeChange::Type type = comp->GetUpdateMode();
-    if (temporary || (type != AttributeChange::Replicate || AttributeChange::Default))
+
+    QString info;
+    if (!sync)
     {
-        const QString &text = item->text(0);
-        if (temporary && type == AttributeChange::LocalOnly &&
-            comp->GetUpdateMode() != AttributeChange::Disconnected)
-        {
-            item->setTextColor(0, QColor(Qt::red));
-            item->setText(0, text + tr(" (temporary"));
-        }
-        else if(!temporary && type == AttributeChange::LocalOnly)
-        {
-            item->setTextColor(0, QColor(Qt::blue));
-            item->setText(0, text + tr(" (local"));
-        }
-        else if(!temporary && type == AttributeChange::Disconnected)
-        {
-            item->setTextColor(0, QColor(Qt::blue));
-            item->setText(0, text + tr(" (disconnected"));
-        }
-        else if(temporary && type == AttributeChange::LocalOnly)
-        {
-            item->setTextColor(0, QColor(Qt::red));
-            item->setText(0, text + tr(" (temporary, local)"));
-        }
-        else if(temporary && type == AttributeChange::Disconnected)
-        {
-            item->setTextColor(0, QColor(Qt::red));
-            item->setText(0, text + tr(" (temporary, disconnected)"));
-        }
+        item->setTextColor(0, QColor(Qt::blue));
+        info.append("Local");
+    }
+
+    if (temporary)
+    {
+        item->setTextColor(0, QColor(Qt::red));
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append("Temporary");
+    }
+
+    if (comp->GetUpdateMode() == AttributeChange::LocalOnly)
+    {
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append("UpdateMode:LocalOnly");
+    }
+
+    if (comp->GetUpdateMode() == AttributeChange::Disconnected)
+    {
+        if (!info.isEmpty())
+            info.append(" ");
+        info.append("UpdateMode:Disconnected");
+    }
+
+    if (!info.isEmpty())
+    {
+        QString text = item->text(0);
+        if (text.size() > 0 && text[text.size()-1] != ' ')
+            text.append(" ");
+        info.prepend("(");
+        info.append(")");
+        item->setText(0, text + info);
     }
 }
 
@@ -643,7 +657,7 @@ void SceneStructureWindow::Search(const QString &filter)
             }
             else
             {
-                (*it)->setHidden(true);
+                item->setHidden(true);
             }
         }
 
