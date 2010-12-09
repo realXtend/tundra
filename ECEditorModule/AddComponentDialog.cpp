@@ -20,11 +20,8 @@ AddComponentDialog::AddComponentDialog(Foundation::Framework *fw, const QList<en
     QDialog(parent, f),
     framework_(fw),
     entities_(ids),
-    component_type_label_(0),
-    component_name_label_(0),
     name_line_edit_(0),
     type_combo_box_(0),
-    synch_combo_box_(0),
     ok_button_(0),
     cancel_button_(0)
 {
@@ -40,27 +37,24 @@ AddComponentDialog::AddComponentDialog(Foundation::Framework *fw, const QList<en
 
     if(entities_.size() > 1)
     {
-        component_count_label_ = new QLabel(QString::number(entities_.size()) + tr(" entities selected."), this);
-        layout->addWidget(component_count_label_); 
+        QLabel *component_count_label = new QLabel(QString::number(entities_.size()) + tr(" entities selected."), this);
+        layout->addWidget(component_count_label);
     }
 
-    component_type_label_ = new QLabel(tr("Component:"), this);
-    component_name_label_ = new QLabel(tr("Name:"), this);
-    component_synch_label_ = new QLabel(tr("Synchronization:"), this);
-    name_line_edit_ = new QLineEdit(this);
-    connect(name_line_edit_, SIGNAL(textChanged(const QString&)), this, SLOT(CheckComponentName(const QString&)));
-    type_combo_box_ = new QComboBox(this);
-    connect(type_combo_box_, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(CheckComponentName(const QString&)));
-    synch_combo_box_ = new QComboBox(this);
-    synch_combo_box_->addItem(tr("Replicate"));
-    synch_combo_box_->addItem(tr("Local"));
+    QLabel *component_type_label = new QLabel(tr("Component:"), this);
+    QLabel *component_name_label = new QLabel(tr("Name:"), this);
 
-    layout->addWidget(component_name_label_);
+    name_line_edit_ = new QLineEdit(this);
+    type_combo_box_ = new QComboBox(this);
+    sync_check_box_ = new QCheckBox(tr("NetworkSyncEnabled"), this);
+    temp_check_box_ = new QCheckBox(tr("Temporary"), this);
+
+    layout->addWidget(component_name_label);
     layout->addWidget(name_line_edit_);
-    layout->addWidget(component_type_label_);
+    layout->addWidget(component_type_label);
     layout->addWidget(type_combo_box_);
-    layout->addWidget(component_synch_label_);
-    layout->addWidget(synch_combo_box_);
+    layout->addWidget(sync_check_box_);
+    layout->addWidget(temp_check_box_);
 
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Expanding);
     layout->insertSpacerItem(-1, spacer);
@@ -73,11 +67,13 @@ AddComponentDialog::AddComponentDialog(Foundation::Framework *fw, const QList<en
     ok_button_ = new QPushButton(tr("Ok"), this);
     cancel_button_ = new QPushButton(tr("Cancel"), this);
 
-    connect(ok_button_, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(cancel_button_, SIGNAL(clicked()), this, SLOT(reject()));
-
     buttons_layout->addWidget(ok_button_);
     buttons_layout->addWidget(cancel_button_);
+
+    connect(name_line_edit_, SIGNAL(textChanged(const QString&)), this, SLOT(CheckComponentName(const QString&)));
+    connect(type_combo_box_, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(CheckComponentName(const QString&)));
+    connect(ok_button_, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(cancel_button_, SIGNAL(clicked()), this, SLOT(reject()));
 }
 
 AddComponentDialog::~AddComponentDialog()
@@ -94,7 +90,7 @@ void AddComponentDialog::SetComponentName(const QString &name)
     name_line_edit_->setText(name);
 }
 
-QString AddComponentDialog::GetTypename() const
+QString AddComponentDialog::GetTypeName() const
 {
     return type_combo_box_->currentText();
 }
@@ -106,13 +102,12 @@ QString AddComponentDialog::GetName() const
 
 bool AddComponentDialog::GetSynchronization() const
 {
-    QString synchText = synch_combo_box_->currentText();
-    if(synchText == tr("Replicate"))
-        return true;
-    else if(synchText == tr("Local"))
-        return false;
+    return sync_check_box_->isChecked();
+}
 
-    return true;
+bool AddComponentDialog::GetTemporary() const
+{
+    return temp_check_box_->isChecked();
 }
 
 QList<entity_id_t> AddComponentDialog::GetEntityIds() const
