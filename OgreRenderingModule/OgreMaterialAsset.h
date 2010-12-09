@@ -16,9 +16,11 @@ public:
     {
     }
 
+    ~OgreMaterialAsset();
+
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
-    void Unload();
+    virtual void Unload();
 
     virtual std::vector<AssetReference> FindReferences() const;
 

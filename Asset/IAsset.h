@@ -18,6 +18,8 @@ class IAsset : public QObject, public boost::enable_shared_from_this<IAsset>
 public:
     IAsset(AssetAPI *owner, const QString &type_, const QString &name_);
 
+    /// The base class destructor does nothing. However, each asset subclass is expected to Unload itself in the destructor. Especially, any assets
+    /// that create any Ogre asset types into internal Ogre pools must guarantee that at dtor (and at Unload()) these resources from Ogre pools are completely cleared.
     virtual ~IAsset() {}
 
 public slots:
@@ -43,7 +45,7 @@ public slots:
 
     /// Unloads this asset from memory. After calling this function, this asset still can be queried for its Type(), Name() and CacheFile(),
     /// but its dependencies cannot be determined and it cannot be used in any other way.
-    virtual void Unload() {}
+    virtual void Unload() = 0;
 
 public:
     /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.

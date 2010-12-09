@@ -16,6 +16,8 @@ public:
     {
     }
 
+    ~TextureAsset();
+
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
     void Unload();

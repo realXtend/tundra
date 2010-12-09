@@ -16,9 +16,11 @@ public:
     {
     }
 
+    ~OgreMeshAsset();
+
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
-    void Unload();
+    virtual void Unload();
 
     /// Returns an empty list - meshes do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }

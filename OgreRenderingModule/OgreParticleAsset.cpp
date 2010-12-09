@@ -27,7 +27,7 @@ std::vector<AssetReference> OgreParticleAsset::FindReferences() const
 
 void OgreParticleAsset::Unload()
 {
-    ///\todo Implement.
+    RemoveTemplates();
 }
 
 bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)

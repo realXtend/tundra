@@ -228,8 +228,8 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
 
 void AssetAPI::DeleteAllAssets()
 {
-    for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
-        DeleteAsset(iter->second);
+    while(assets.size() > 0)
+        DeleteAsset(assets.begin()->second); // DeleteAsset removes the asset it is given to from the assets list, so this loop terminates.
 
     assets.clear();
     currentTransfers.clear();

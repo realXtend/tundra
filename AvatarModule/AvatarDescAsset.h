@@ -18,6 +18,9 @@ public:
     {
     }
 
+    ~AvatarDescAsset();
+
+    virtual void Unload();
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
     virtual std::vector<AssetReference> FindReferences() const { return assetReferences; }
 
