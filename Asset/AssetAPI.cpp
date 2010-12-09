@@ -14,7 +14,8 @@
 #include "CoreException.h"
 #include "IAssetTypeFactory.h"
 #include "GenericAssetFactory.h"
-#include "../AssetModule/AssetEvents.h"
+#include "AssetCache_.h"
+#include "Platform.h"
 #include <QDir>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
@@ -24,10 +25,19 @@ using namespace Foundation;
 AssetAPI::AssetAPI(Foundation::Framework *owner)
 :framework(owner)
 {
+    const char cDefaultAssetCachePath[] = "/assetcache";
+
+    assetCache = new AssetCache((owner->GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
+
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
     RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
+}
+
+AssetAPI::~AssetAPI()
+{
+    delete assetCache;
 }
 
 void IAssetTransfer::EmitAssetDownloaded()
@@ -170,6 +180,19 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
     return "";    
 }
 
+AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
+{
+    AssetPtr asset = CreateNewAsset(assetType, assetFile);
+    bool success = asset->LoadFromFile(assetFile);
+    if (success)
+        return asset;
+    else
+    {
+        DeleteAsset(asset);
+        return AssetPtr();
+    }
+}
+
 void AssetAPI::DeleteAsset(AssetPtr asset)
 {
     if (!asset.get())
@@ -238,9 +261,11 @@ void AssetAPI::DeleteAllAssets()
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
     assetType = assetType.trimmed();
-    assetRef = assetRef.trimmed();
+    if (assetType.isEmpty())
+        assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
-    if (assetRef.length() == 0)
+    assetRef = assetRef.trimmed();
+    if (assetRef.isEmpty())
     {
         // Removed this print - seems like a bad idea to print out this warning, since there are lots of scenes with null assetrefs.
         // Perhaps have a verbose log channel for these kinds of sanity checks.
@@ -249,7 +274,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     }
 
     // To optimize, we first check if there is an outstanding requests to the given asset. If so, we return that request. In effect, we never
-    // have multiple transfers running to the same asset.
+    // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
+    // an asset will be stored in the AssetMap when it has been downloaded, but it might not yet have all its dependencies loaded).
     AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
     if (iter != currentTransfers.end())
     {
@@ -263,8 +289,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return transfer;
     }
 
-    // Check if we've already downloaded this asset before. We never reload an asset we've downloaded before, unless the client explicitly forces so,
-    // or if we get a change notification signal from the source asset provider telling the asset was changed.
+    // Check if we've already downloaded this asset before and it already is loaded in the system. We never reload an asset we've downloaded before, unless the 
+    // client explicitly forces so, or if we get a change notification signal from the source asset provider telling the asset was changed.
     AssetMap::iterator iter2 = assets.find(assetRef);
     if (iter2 != assets.end())
     {
@@ -272,19 +298,19 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         // The idea is to have the code path run the same independent of whether the asset existed or had to be downloaded, i.e.
         // a request is always made, and the receiver writes only a single asynchronous code path for handling the asset.
 
-        // The asset was already downloaded - generate a 'virtual asset transfer' and return it to the client.
+        // The asset was already downloaded. Generate a 'virtual asset transfer' and return it to the client.
         AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer());
         transfer->asset = iter2->second; // For 'normal' requests, the asset ptr is zero, but for these virtual requests, we can already fill the asset here.
-        transfer->source.ref = assetRef;
+        transfer->source.ref = assetRef;        
         transfer->assetType = assetType;
+        transfer->provider = transfer->asset->GetAssetProvider();
+        transfer->storage = transfer->asset->GetAssetStorage();
 
-        readyTransfers.push_back(transfer);
+        readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
         return transfer;
     }
 
-    if (assetType.length() == 0)
-        assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
-
+    // Find the AssetProvider that will fulfill this request.
     AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
     if (!provider.get())
     {
@@ -292,13 +318,36 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
+    // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
+    QString assetFileInCache = assetCache->FindAsset(assetRef);
+    AssetTransferPtr transfer;
+
+    if (!assetFileInCache.isEmpty())
+    {
+        // The asset can be found from cache. Generate a 'virtual asset transfer' and return it to the client.
+        transfer = AssetTransferPtr(new IAssetTransfer());
+        bool success = LoadFileToVector(assetFileInCache.toStdString().c_str(), transfer->rawAssetData);
+        if (!success)
+        {
+            LogError("AssetAPI::RequestAsset: Failed to load asset from cache!");
+            return AssetTransferPtr();
+        }
+        transfer->source.ref = assetRef;        
+        transfer->assetType = assetType;
+        transfer->storage = AssetStorageWeakPtr(); // Note: Unfortunately when we load an asset from cache, we don't get the information about which storage it's supposed to come from.
+        LogDebug("AssetAPI::RequestAsset: Loaded asset \"" + assetRef.toStdString() + "\" from disk cache instead of having to use asset provider."); 
+        readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
+    }
+    else // Can't find the asset in cache. Do a real request from the asset provider.
+    {
+        transfer = provider->RequestAsset(assetRef, assetType);
+    }
+
     if (!transfer.get())
     {
         LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
         return AssetTransferPtr();
     }
-    // Remember for this transfer which AssetProvider is processing it.
     transfer->provider = provider;
 
     // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
@@ -412,13 +461,15 @@ AssetPtr AssetAPI::GetAssetByHash(QString assetHash)
 
 void AssetAPI::Update()
 {
-    // Finish any virtual transfers we might have accumulated.
+    // Normally it is the AssetProvider's responsibility to call AssetTransferCompleted when a download finishes.
+    // The 'readyTransfers' list contains all the asset transfers that don't have any AssetProvider serving them. These occur in two cases:
+    // 1) A client requested an asset that was already loaded. In that case the request is not given to any assetprovider, but delayed in readyTransfers
+    //    for one frame after which we just signal the asset to have been loaded.
+    // 2) We found the asset from disk cache. No need to ask an assetprovider
+
+    // Call AssetTransferCompleted manually for any asset that doesn't have an AssetProvider serving it. ("virtual transfers").
     for(size_t i = 0; i < readyTransfers.size(); ++i)
-    {
-        readyTransfers[i]->EmitAssetDownloaded();
-        readyTransfers[i]->EmitAssetDecoded();
-        readyTransfers[i]->EmitAssetLoaded();
-    }
+        AssetTransferCompleted(readyTransfers[i].get());
     readyTransfers.clear();
 }
 
@@ -436,8 +487,24 @@ QString GuaranteeTrailingSlash(const QString &source)
 
 void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 {
+    // At this point, the transfer can originate from several different things:
+    // 1) It could be a real AssetTransfer from a real AssetProvider.
+    // 2) It could be an AssetTransfer to an Asset that was already downloaded before, in which case transfer_->asset is already filled and loaded at this point.
+    // 3) It could be an AssetTransfer that was fulfilled from the disk cache, in which case no AssetProvider was invoked to get here. (we used the readyTransfers queue for this).
+
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
+
+    if (transfer->asset.get()) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    {
+        transfer->EmitAssetDownloaded();
+        transfer->EmitAssetDecoded();
+        transfer->EmitAssetLoaded();
+        AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+        if (iter != currentTransfers.end())
+            currentTransfers.erase(iter);
+        return;
+    }
 
     // We should be tracking this transfer in an internal data structure.
     AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
@@ -452,6 +519,13 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         return;
     }
 
+    // Save this asset to cache, and find out which file will represent a cached version of this asset.
+    QString assetDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
+    if (transfer->CachingAllowed())
+        assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref, ""); ///\todo Specify the content hash.
+
+    // Save for the asset the storage and provider it came from.
+    transfer->asset->SetDiskSource(assetDiskSource.trimmed());
     transfer->asset->SetAssetStorage(transfer->storage.lock());
     transfer->asset->SetAssetProvider(transfer->provider.lock());
 
@@ -498,7 +572,7 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
     }
 
     ///\todo Specify the following flow better.
-//    transfer->EmitAssetDecoded();
+    transfer->EmitAssetDecoded();
 
     // This asset is now completely finished, and all its dependencies have been loaded.
     transfer->EmitAssetLoaded();

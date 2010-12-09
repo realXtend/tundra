@@ -11,14 +11,14 @@ IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
     assert(assetAPI);
 }
 
-void IAsset::SetCacheFile(QString cacheFile_)
+void IAsset::SetDiskSource(QString diskSource_)
 {
-    cacheFile = cacheFile_.trimmed();
+    diskSource = diskSource.trimmed();
 }
 
 bool IAsset::LoadFromCache()
 {
-    return LoadFromFile(CacheFile());
+    return LoadFromFile(DiskSource());
 }
 
 bool IAsset::LoadFromFile(QString filename)
@@ -76,15 +76,25 @@ std::vector<AssetReference> IAsset::FindReferencesRecursive() const
     return finalRefs;
 }
 
-bool IAsset::SaveToFile(const QString &filename)
+bool IAsset::SerializeTo(std::vector<u8> &data)
 {
     ///\todo Log out warning.
     return false;
 }
 
+bool IAsset::SaveToFile(const QString &filename)
+{
+    std::vector<u8> data;
+    bool success = SerializeTo(data);
+    if (!success || data.size() == 0)
+        return false; ///\todo Log warning.
+
+    return SaveAssetFromMemoryToFile(&data[0], data.size(), filename.toStdString().c_str());
+}
+
 bool IAsset::SaveCachedCopyToFile(const QString &filename)
 {
-    return CopyAssetFile(CacheFile().toStdString().c_str(), filename.toStdString().c_str());
+    return CopyAssetFile(DiskSource().toStdString().c_str(), filename.toStdString().c_str());
 }
 
 void IAsset::SetAssetProvider(AssetProviderPtr provider_)

@@ -292,6 +292,10 @@ void LocalAssetProvider::CompletePendingFileDownloads()
             continue;
         }
         
+        // Tell the Asset API that this asset should not be cached into the asset cache, and instead the original filename should be used
+        // as a disk source, rather than generating a cache file for it.
+        transfer->SetCachingBehavior(false, absoluteFilename.toStdString().c_str());
+
         transfer->storage = storage;
         AssetModule::LogDebug("Downloaded asset \"" + ref.toStdString() + "\" from file " + absoluteFilename.toStdString());
 

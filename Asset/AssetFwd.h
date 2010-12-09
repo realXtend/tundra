@@ -7,6 +7,7 @@
 #include <boost/weak_ptr.hpp>
 
 class AssetAPI;
+class AssetCache;
 
 class IAsset;
 typedef boost::shared_ptr<IAsset> AssetPtr;

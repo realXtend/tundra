@@ -34,6 +34,8 @@ class AssetAPI : public QObject
 public:
     explicit AssetAPI(Foundation::Framework *owner);
 
+    ~AssetAPI();
+
     /// Requests the given asset to be downloaded. The transfer will go to a pending transfers queue
     /// and will be processed when possible.
     /// @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
@@ -62,6 +64,9 @@ public:
     ///             given name exists, and the AssetAPI::GenerateUniqueAssetName to guarantee the creation of a unique asset name.
     AssetPtr CreateNewAsset(QString type, QString name);
 
+    /// Loads an asset from a local file.
+    AssetPtr CreateAssetFromFile(QString assetType, QString assetFile);
+
     /// Generates a new asset name that is guaranteed to be unique in the system.
     /// @param assetTypePrefix The type of the asset to use as a human-readable visual prefix identifier for the name. May be empty.
     /// @param assetNamePrefix A name prefix that is added to the asset name for visual identification. May be empty.
@@ -86,6 +91,7 @@ public:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap &GetAllAssets() { return assets; }
 
+    AssetCache *GetAssetCache() { return assetCache; }
     /// Returns the asset provider of the given type.
     /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
     template<typename T>
@@ -122,9 +128,6 @@ public:
     /// Returns the absolute path for that file, if it exists. The path contains the filename, i.e. it is of form "C:\folder\file.ext" or "/home/username/file.ext".
     static QString RecursiveFindFile(QString basePath, QString filename);
 
-    /// Creates a new empty asset of the given type and with the given name.
-//    IAsset *CreateAsset(QString assetType, QString assetRef);
-
     /// Removes the given asset from the system and frees up all resources related to it. The asset will
     /// stay in the disk cache for later access.
     void DeleteAsset(AssetPtr asset);
@@ -135,8 +138,7 @@ public:
         @param assetName The name to give to the asset in the storage.
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
-        @note This function will never return 0, but throws an Exception if the data that was passed in was bad.
-    */
+        @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
     IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
 
     /// Uploads an asset from the given data pointer in memory to an asset storage.
@@ -146,8 +148,7 @@ public:
         @param assetName The name to give to the asset in the storage.
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
-        @note This function will never return 0, but throws an Exception if the data that was passed in was bad.
-    */
+        @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
     IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
@@ -196,7 +197,7 @@ private:
     /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
     /// by one frame, so that the client gets a chance to connect his handler's Qt signals to the AssetTransferPtr slots.
     std::vector<AssetTransferPtr> readyTransfers;
-
+   
     Foundation::Framework *framework;
 
     /// Contains all known asset storages in the system.
@@ -211,6 +212,7 @@ private:
     /// Specifies all the registered asset providers in the system.
     std::vector<AssetProviderPtr> providers;
 
+    AssetCache *assetCache;
 };
 
 #include "AssetAPI.inl"
