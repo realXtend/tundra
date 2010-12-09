@@ -10,14 +10,6 @@
 
 #include "CoreTypes.h"
 #include "AssetFwd.h"
-/*
-class IAssetProvider
-{
-};
-*/
-//class LocalAssetProvider : public IAssetProvider;
-//class HttpAssetProvider : public IAssetProvider;
-//class KNetAssetProvider : public IAssetProvider;
 
 /// Loads the given local file into the specified vector. Clears all data previously in the vector.
 /// Returns true on success.
@@ -36,13 +28,15 @@ class AssetAPI : public QObject
 public:
     explicit AssetAPI(Foundation::Framework *owner);
 
-    /// Requests the given asset to be downloaded. The transfer will go to the pending transfers queue
+    /// Requests the given asset to be downloaded. The transfer will go to a pending transfers queue
     /// and will be processed when possible.
-    /// @param assetRef The asset ID, or full URL to request.
+    /// @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
+    ///       that is used to load it.
     /// @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
+    /// @return A pointer to the created asset transfer, or null if the transfer could not be initiated.
     AssetTransferPtr RequestAsset(QString assetRef, QString assetType = "");
 
-    /// Same as RequestAsset(QString assetRef, QString assetType), but provided for convenience with AssetReference type.
+    /// Same as RequestAsset(assetRef, assetType), but provided for convenience with the AssetReference type.
     AssetTransferPtr RequestAsset(const AssetReference &ref);
 
     /// Returns the asset provider that is used to fetch assets from the given full URL.
@@ -57,7 +51,16 @@ public:
 
     /// Creates a new empty unloaded asset of the given type and name.
     /// This function uses the Asset type factories to create an instance of the proper asset class.
+    /// @param type The asset type of the asset to be created. A factory of this type must have been registered beforehand, using the AssetAPI::RegisterAssetTypeFactory function.
+    /// @param name Specifies the name to give to the new asset. This name must be unique in the system, or this call will fail. Use GetAsset(name) to query if an asset with the
+    ///             given name exists, and the AssetAPI::GenerateUniqueAssetName to guarantee the creation of a unique asset name.
     AssetPtr CreateNewAsset(QString type, QString name);
+
+    /// Generates a new asset name that is guaranteed to be unique in the system.
+    /// @param assetTypePrefix The type of the asset to use as a human-readable visual prefix identifier for the name. May be empty.
+    /// @param assetNamePrefix A name prefix that is added to the asset name for visual identification. May be empty.
+    /// @return A string of the form "Asset_<assetTypePrefix>_<assetNamePrefix>_<number>".
+    QString GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix);
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
