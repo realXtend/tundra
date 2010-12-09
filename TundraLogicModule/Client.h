@@ -54,13 +54,6 @@ public:
     //! Perform any per-frame processing
     void Update(f64 frametime);
     
-    /// Connect and login
-    void Login(const std::string& address, unsigned short port, const std::string& username, const std::string& password);
-    
-    /// Disconnect and delete client scene
-    /// \param fail True if logout was due to connection/login failure
-    void Logout(bool fail = false);
-    
     /// Get connection/login state
     ClientLoginState GetLoginState() { return loginstate_; }
     
@@ -72,17 +65,29 @@ public:
     
 signals:
     //! Connected (& logged in) to server
-    void Connected(int connectionID, const QString& username);
+    void Connected(int connectionID);
     
     //! Disconnected from server
     void Disconnected();
     
 public slots:
+    /// Connect and login. Username and password will be encoded to xml key-value data
+    void Login(const QString& address, unsigned short port, const QString& username, const QString& password);
+    /// Connect and login using freeform logindata
+    void Login(const QString& address, unsigned short port, const QString& loginData);
+    
+    /// Disconnect and delete client scene
+    /// \param fail True if logout was due to connection/login failure
+    void Logout(bool fail = false);
+    
     /// Get client connection ID (from loginreply message). Is zero if not connected
     int GetConnectionID() { return client_id_; }
     
     //! See if connected & authenticated
     bool IsConnected() const;
+    
+    //! Get current raw logindata that is used to connect
+    QString GetLoginData() const { return logindata_; }
     
 private:
     /// Handle a Kristalli protocol message
@@ -104,10 +109,8 @@ private:
     ClientLoginState loginstate_;
     /// Whether the connect attempt is a reconnect because of dropped connection
     bool reconnect_;
-    /// Stored username for login
-    std::string username_;
-    /// Stored password for login
-    std::string password_;
+    /// Stored logindata for login
+    QString logindata_;
     /// User ID, once known
     u8 client_id_;
     

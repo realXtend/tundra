@@ -40,9 +40,9 @@ public:
     kNet::MessageConnection* connection;
     /// Connection ID
     u8 userID;
-    /// User's name
-    QString userName;
-    /// Any extra properties
+    /// Raw xml login data
+    QString loginData;
+    /// Property map
     std::map<QString, QString> properties;
     /// Scene sync state
     boost::shared_ptr<ISyncState> syncState;
@@ -57,14 +57,17 @@ public slots:
     /// Get connectionid
     int GetConnectionID() const;
     
-    /// Get username
-    QString GetName() const;
-    
+    /// Get raw login data
+    QString GetLoginData() const;
+     
     /// Set a property
     void SetProperty(const QString& key, const QString& value);
     
     /// Get a property
     QString GetProperty(const QString& key) const;
+    
+    /// Deny connection. Call as a response to server.UserAboutToConnect() if necessary
+    void DenyConnection();
     
 signals:
     void ActionTriggered(UserConnection* connection, Scene::Entity* entity, const QString& action, const QStringList& params);

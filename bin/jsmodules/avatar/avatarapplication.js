@@ -20,6 +20,7 @@ if (isserver == false)
 }
 else
 {
+    server.UserAboutToConnect.connect(ServerHandleUserAboutToConnect);
     server.UserConnected.connect(ServerHandleUserConnected);
     server.UserDisconnected.connect(ServerHandleUserDisconnected);
 }
@@ -45,14 +46,21 @@ function ClientHandleToggleCamera()
     }
 }
 
+function ServerHandleUserAboutToConnect(connectionID, user)
+{
+    // Uncomment to test access control
+    //if (user.GetProperty("password") != "xxx")
+    //    user.DenyConnection();
+}
+
 function ServerHandleUserConnected(connectionID, user)
 {
     var avatarEntityName = "Avatar" + connectionID;
     var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController"]);
     avatarEntity.SetName(avatarEntityName);
-    avatarEntity.SetDescription(user.GetName());
+    avatarEntity.SetDescription(user.GetProperty("username"));
 
-    print("Hai. Ur name is " + user.GetName());
+    print("Hai. Ur name is " + user.GetProperty("username"));
 
     var script = avatarEntity.script;
     script.type = "js";
@@ -78,5 +86,5 @@ function ServerHandleUserDisconnected(connectionID, user)
     var entityID = scene.GetEntityByNameRaw(avatarEntityName).Id;
     scene.RemoveEntityRaw(entityID);
 
-    print("Kthxbye, " + user.GetName());
+    print("Kthxbye, " + user.GetProperty("username"));
 }

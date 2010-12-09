@@ -455,11 +455,13 @@ namespace Foundation
     void Framework::RemoveScene(const QString &name)
     {
         SceneMap::iterator scene = scenes_.find(name);
-        if (default_scene_ == scene->second)
-            default_scene_.reset();
         if (scene != scenes_.end())
+        {
+            if (default_scene_ == scene->second)
+                default_scene_.reset();
             scenes_.erase(scene);
-        emit SceneRemoved(name);
+            emit SceneRemoved(name);
+        }
     }
 
     Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
