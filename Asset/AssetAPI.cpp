@@ -170,6 +170,24 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
     return "";    
 }
 
+void AssetAPI::DeleteAsset(AssetPtr asset)
+{
+    if (!asset.get())
+        return;
+
+    // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
+    // some object left a dangling strong ref to an asset).
+    asset->Unload();
+
+    AssetMap::iterator iter = assets.find(asset->Name());
+    if (iter == assets.end())
+    {
+        LogError("AssetAPI::DeleteAsset called on asset \"" + asset->Name().toStdString() + "\", which does not exist in AssetAPI!");
+        return;
+    }
+    assets.erase(iter);
+}
+
 IAssetUploadTransfer *AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
 {
     if (!filename || strlen(filename) == 0)
@@ -208,10 +226,12 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
     /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
 }
 
-void AssetAPI::ForgetAllAssets()
+void AssetAPI::DeleteAllAssets()
 {
+    while(assets.size() > 0)
+        DeleteAsset(assets.begin()->second); // DeleteAsset removes the asset it is given to from the assets list, so this loop terminates.
+
     assets.clear();
-    currentLegacyAssetServiceTransfers.clear();
     currentTransfers.clear();
 }
 
@@ -260,8 +280,6 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
         readyTransfers.push_back(transfer);
         return transfer;
-        // Also store this transfer to the currentTransfers map so that we don't create multiple 
-//        currentTransfers.push_Back(transfer);
     }
 
     if (assetType.length() == 0)
@@ -274,65 +292,26 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    if (assetType == "Script" || assetType == "Terrain" || assetType == "OgreMesh" || assetType == "OgreMaterial" 
-        || assetType == "Texture" || assetType == "GenericAvatarXml"
-        || assetType == "OgreTexture" || assetType == "OgreParticle" || assetType == "OgreSkeleton")// || assetType == "Texture") // NEW PATH: Uses asset providers directly.
+    AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
+    if (!transfer.get())
     {
-        AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
-        if (!transfer.get())
-        {
-            LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
-            return AssetTransferPtr();
-        }
-
-        // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
-        // so we'll avoid multiple downloads to the exact same asset.
-        assert(currentTransfers.find(assetRef) == currentTransfers.end());
-        currentTransfers[assetRef] = transfer;
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(OnAssetLoaded(IAssetTransfer*)));
-        return transfer;
+        LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
+        return AssetTransferPtr();
     }
-    else // OLD PATH: Uses the event-based asset managers.
-    {
-        // Find an asset provider that can take in the request for the desired assetRef.
-        AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer()); ///\todo Don't new here, but have the asset provider new it.
-        transfer->source = AssetReference(assetRef/*, assetType*/);
-        // (the above leaks, but not fixing before the above todo is properly implemented -jj.)
+    // Remember for this transfer which AssetProvider is processing it.
+    transfer->provider = provider;
 
-        // Get the asset service. \todo This will be removed. There will be no asset service. -jj.
-        AssetServiceInterface *asset_service = framework->GetService<AssetServiceInterface>();
-        if (!asset_service)
-        {
-            LogError("Asset service doesn't exist.");
-            return AssetTransferPtr();
-        }
-
-        Foundation::RenderServiceInterface *renderer = framework->GetService<Foundation::RenderServiceInterface>();
-        if (!renderer)
-        {
-            LogError("Renderer service doesn't exist.");
-            return AssetTransferPtr();
-        }
-
-        request_tag_t tag;
-
-        // Depending on the asset type, we must request the asset from the Renderer or from the asset service.
-
-        QString foundAssetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
-        if (foundAssetType != "")
-            tag = renderer->RequestResource(assetRef.toStdString(), foundAssetType.toStdString());
-        else
-            tag = asset_service->RequestAsset(assetRef.toStdString(), assetType.toStdString());
-
-        currentLegacyAssetServiceTransfers[tag] = transfer;
-
-        return transfer;
-    }
+    // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
+    // so we'll avoid multiple downloads to the exact same asset.
+    assert(currentTransfers.find(assetRef) == currentTransfers.end());
+    currentTransfers[assetRef] = transfer;
+    connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(OnAssetLoaded(IAssetTransfer*)));
+    return transfer;
 }
 
 AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref)
 {
-    return RequestAsset(ref.ref, ""/*ref.type*/);
+    return RequestAsset(ref.ref);
 }
 
 AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
@@ -362,6 +341,27 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
     assetTypeFactories.push_back(factory);
 }
 
+QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix)
+{
+    static unsigned long uniqueRunningAssetCounter = 1;
+
+    assetTypePrefix = assetTypePrefix.trimmed();
+    assetNamePrefix = assetNamePrefix.trimmed();
+
+    if (assetTypePrefix.isEmpty())
+        assetTypePrefix = "Asset";
+
+    QString assetName;
+    bool ok = false;
+    while(!ok) // We loop until we manage to generate a single asset name that does not exist, incrementing a running counter at each iteration.
+    {
+        assetName = assetTypePrefix + "_" + assetNamePrefix + (assetNamePrefix.isEmpty() ? "" : "_") + QString::number(uniqueRunningAssetCounter++);
+        if (!GetAsset(assetName).get())
+            ok = true;
+    }
+    return assetName;
+}
+
 AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
 {
     type = type.trimmed();
@@ -378,7 +378,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
         LogError("AssetAPI:CreateNewAsset: Cannot create asset of type \"" + type.toStdString() + "\", name: \"" + name.toStdString() + "\". No type factory registered for the type!");
         return AssetPtr();
     }
-    AssetPtr asset = factory->CreateEmptyAsset(name.toStdString().c_str());
+    AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
     if (!asset.get())
     {
         LogError("AssetAPI:CreateNewAsset: IAssetTypeFactory::CreateEmptyAsset(type \"" + type.toStdString() + "\", name: \"" + name.toStdString() + "\") failed to create asset!");
@@ -404,45 +404,10 @@ AssetPtr AssetAPI::GetAsset(QString assetRef)
     return AssetPtr();
 }
 
-bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
+AssetPtr AssetAPI::GetAssetByHash(QString assetHash)
 {
-    if (category_id == framework->GetEventManager()->QueryEventCategory("Asset"))
-    {
-        if (event_id == Asset::Events::ASSET_READY)
-        {
-            Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentLegacyAssetServiceTransfers.find(assetReady->tag_);
-            if (iter != currentLegacyAssetServiceTransfers.end())
-            {
-                AssetTransferPtr transfer = iter->second;
-                transfer->assetPtr = assetReady->asset_;
-                assert(transfer);
-                transfer->EmitAssetDownloaded();
-                currentLegacyAssetServiceTransfers.erase(iter);
-            }
-        }
-    }
-
-    if (category_id == framework->GetEventManager()->QueryEventCategory("Resource"))
-    {
-        if (event_id == Resource::Events::RESOURCE_READY)
-        {
-            Resource::Events::ResourceReady *resourceReady = checked_static_cast<Resource::Events::ResourceReady*>(data);
-            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentLegacyAssetServiceTransfers.find(resourceReady->tag_);
-            if (iter != currentLegacyAssetServiceTransfers.end())
-            {
-                AssetTransferPtr transfer = iter->second;
-                transfer->resourcePtr = resourceReady->resource_;
-                assert(transfer);
-                //! \todo Causes linker error in debug build, must be disabled for now
-                //transfer->internalResourceName = QString::fromStdString(resourceReady->resource_->GetInternalName());
-                transfer->EmitAssetLoaded();
-                currentLegacyAssetServiceTransfers.erase(iter);
-            }
-        }
-    }
-
-    return false;
+    ///\todo Implement.
+    return AssetPtr();
 }
 
 void AssetAPI::Update()
@@ -486,6 +451,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         LogError("AssetAPI: Failed to create new asset of type \"" + transfer->assetType.toStdString() + "\" and name \"" + transfer->source.ref.toStdString() + "\"");
         return;
     }
+
+    transfer->asset->SetAssetStorage(transfer->storage.lock());
+    transfer->asset->SetAssetProvider(transfer->provider.lock());
 
     bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
     if (!success)
@@ -712,4 +680,50 @@ QString GetResourceTypeFromResourceFileName(const char *name)
     return "";
 
     // Note: There's a separate OgreImageTextureResource which isn't handled above.
+}
+
+bool CopyAssetFile(const char *sourceFile, const char *destFile)
+{
+    assert(sourceFile);
+    assert(destFile);
+
+    QFile asset_in(sourceFile);
+    if (!asset_in.open(QFile::ReadOnly))
+    {
+        LogError("Could not open input asset file \"" + std::string(sourceFile) + "\"");
+        return false;
+    }
+
+    QByteArray bytes = asset_in.readAll();
+    asset_in.close();
+    
+    QFile asset_out(destFile);
+    if (!asset_out.open(QFile::WriteOnly))
+    {
+        LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
+        return false;
+    }
+
+    asset_out.write(bytes);
+    asset_out.close();
+    
+    return true;
+}
+
+bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile)
+{
+    assert(data);
+    assert(destFile);
+
+    QFile asset_out(destFile);
+    if (!asset_out.open(QFile::WriteOnly))
+    {
+        LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
+        return false;
+    }
+
+    asset_out.write((const char *)data, numBytes);
+    asset_out.close();
+    
+    return true;
 }

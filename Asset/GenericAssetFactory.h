@@ -22,7 +22,7 @@ public:
 
     virtual QString Type() const { return assetType; }
 
-    virtual AssetPtr CreateEmptyAsset(const char *name) { return AssetPtr(new AssetType(Type(), name)); }
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) { return AssetPtr(new AssetType(owner, Type(), name)); }
 
 private:
     QString assetType;

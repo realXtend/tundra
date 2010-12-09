@@ -6,6 +6,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
+class AssetAPI;
+
 class IAsset;
 typedef boost::shared_ptr<IAsset> AssetPtr;
 
@@ -18,6 +20,7 @@ typedef boost::weak_ptr<IAssetProvider> AssetProviderWeakPtr;
 
 class IAssetStorage;
 typedef boost::shared_ptr<IAssetStorage> AssetStoragePtr;
+typedef boost::weak_ptr<IAssetStorage> AssetStorageWeakPtr;
 
 class IAssetUploadTransfer;
 typedef boost::shared_ptr<IAssetUploadTransfer> AssetUploadTransferPtr;

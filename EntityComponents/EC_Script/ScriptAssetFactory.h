@@ -13,7 +13,7 @@ public:
 
     virtual QString Type() const { return "Script"; }
 
-    virtual AssetPtr CreateEmptyAsset(const char *name) { return AssetPtr(new ScriptAsset(Type(), name)); }
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) { return AssetPtr(new ScriptAsset(owner, Type(), name)); }
 };
 
 #endif

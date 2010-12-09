@@ -61,8 +61,11 @@ namespace Asset
         virtual IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     private:
-        //! Get a path for asset, using all the search directories
-        QString GetPathForAsset(const QString &localFilename);
+        typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
+
+        /// Finds a path where the file localFilename can be found. Searches through all local storages.
+        /// @param storage [out] Receives the local storage that contains the asset.
+        QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage);
 
         //! Asset event category
         event_category_id_t event_category_;
@@ -70,8 +73,6 @@ namespace Asset
         //! Framework
         Foundation::Framework* framework_;
         
-        typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
-
         //! Asset directories to search, may be recursive or not
         std::vector<LocalAssetStoragePtr> storages;
 

@@ -6,7 +6,12 @@
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 
-bool TextureAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
+TextureAsset::~TextureAsset()
+{
+    Unload();
+}
+
+bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     if (!data)
         return false; ///\todo Log out error.
@@ -29,7 +34,7 @@ bool TextureAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
     }
     catch (Ogre::Exception &e)
     {
-        OgreRenderer::OgreRenderingModule::LogError("TextureAsset::LoadFromFileInMemory: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
+        OgreRenderer::OgreRenderingModule::LogError("TextureAsset::DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
         Unload();
 
         return false;
