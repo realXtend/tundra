@@ -332,7 +332,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
 AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref)
 {
-    return RequestAsset(ref.ref, ""/*ref.type*/);
+    return RequestAsset(ref.ref);
 }
 
 AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString assetType)
@@ -360,6 +360,27 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
     assert(factory->Type() == factory->Type().trimmed());
 
     assetTypeFactories.push_back(factory);
+}
+
+QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix)
+{
+    static unsigned long uniqueRunningAssetCounter = 1;
+
+    assetTypePrefix = assetTypePrefix.trimmed();
+    assetNamePrefix = assetNamePrefix.trimmed();
+
+    if (assetTypePrefix.isEmpty())
+        assetTypePrefix = "Asset";
+
+    QString assetName;
+    bool ok = false;
+    while(!ok) // We loop until we manage to generate a single asset name that does not exist, incrementing a running counter at each iteration.
+    {
+        assetName = assetTypePrefix + "_" + assetNamePrefix + (assetNamePrefix.isEmpty() ? "" : "_") + QString::number(uniqueRunningAssetCounter++);
+        if (!GetAsset(assetName).get())
+            ok = true;
+    }
+    return assetName;
 }
 
 AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
