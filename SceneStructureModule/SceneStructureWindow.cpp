@@ -47,27 +47,32 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     QCheckBox *assetCheckBox = new QCheckBox(tr("Show asset references"), this);
     assetCheckBox->setChecked(showAssets);
 
-    QHBoxLayout *sortLayout = new QHBoxLayout;
+    QHBoxLayout *hlayout= new QHBoxLayout;
+    QLabel *searchLabel = new QLabel(tr("Search filter: "), this);
+    QLineEdit *searchField = new QLineEdit(this);
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
     QLabel *sortLabel = new QLabel(tr("Sort by:"));
     QComboBox *sortComboBox = new QComboBox;
     sortComboBox->addItem(tr("ID"));
     sortComboBox->addItem(tr("Name"));
 
-    sortLayout->addWidget(assetCheckBox);
-    sortLayout->addSpacerItem(spacer);
-    sortLayout->addWidget(sortLabel);
-    sortLayout->addWidget(sortComboBox);
+    hlayout->addWidget(searchLabel);
+    hlayout->addWidget(searchField);
+    hlayout->addSpacerItem(spacer);
+    hlayout->addWidget(sortLabel);
+    hlayout->addWidget(sortComboBox);
 
     treeWidget = new SceneTreeWidget(fw, this);
 
+    layout->addWidget(assetCheckBox);
     layout->addWidget(compCheckBox);
-    layout->insertLayout(-1, sortLayout);
+    layout->insertLayout(-1, hlayout);
     layout->addWidget(treeWidget);
 
     connect(assetCheckBox, SIGNAL(toggled(bool)), SLOT(ShowAssetReferences(bool)));
     connect(compCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
     connect(sortComboBox, SIGNAL(currentIndexChanged(const QString &)), SLOT(Sort(const QString &)));
+    connect(searchField, SIGNAL(textChanged(const QString &)), SLOT(Search(const QString &)));
 }
 
 SceneStructureWindow::~SceneStructureWindow()
@@ -600,4 +605,48 @@ void SceneStructureWindow::Sort(const QString &criteria)
         treeWidget->sortItems(0, order);
     if (criteria == tr("Name"))
         treeWidget->sortItems(1, order);
+}
+
+void SceneStructureWindow::Search(const QString &filter)
+{
+    QString f = filter.trimmed();
+    bool expand = f.size() >= 3;
+    QSet<QTreeWidgetItem *> alreadySetVisible;
+
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        QTreeWidgetItem *item = *it;
+        if (!alreadySetVisible.contains(item))
+        {
+            if (f.isEmpty())
+            {
+                item->setHidden(false);
+            }
+            else if (item->text(0).contains(filter, Qt::CaseInsensitive))
+            {
+                item->setHidden(false);
+                alreadySetVisible.insert(item);
+                if (expand)
+                    item->setExpanded(expand);
+
+                // Make sure that all the parent items are visible too
+                QTreeWidgetItem *parent = 0, *child = item;
+                while((parent = child->parent()) != 0)
+                {
+                    parent->setHidden(false);
+                    alreadySetVisible.insert(parent);
+                    if (expand)
+                        parent->setExpanded(expand);
+                    child = parent;
+                }
+            }
+            else
+            {
+                (*it)->setHidden(true);
+            }
+        }
+
+        ++it;
+    }
 }
