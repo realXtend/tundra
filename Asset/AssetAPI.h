@@ -10,18 +10,16 @@
 
 #include "CoreTypes.h"
 #include "AssetFwd.h"
-/*
-class IAssetProvider
-{
-};
-*/
-//class LocalAssetProvider : public IAssetProvider;
-//class HttpAssetProvider : public IAssetProvider;
-//class KNetAssetProvider : public IAssetProvider;
 
 /// Loads the given local file into the specified vector. Clears all data previously in the vector.
 /// Returns true on success.
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst);
+
+/// Copies the given source file to the destination file on the local filesystem. Returns true on success.
+bool CopyAssetFile(const char *sourceFile, const char *destFile);
+
+/// Saves the given raw data buffer to destFile. Returns true on success.
+bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile);
 
 /// Returns an asset type name of the given asset file name.
 QString GetResourceTypeFromResourceFileName(const char *name);
@@ -36,13 +34,15 @@ class AssetAPI : public QObject
 public:
     explicit AssetAPI(Foundation::Framework *owner);
 
-    /// Requests the given asset to be downloaded. The transfer will go to the pending transfers queue
+    /// Requests the given asset to be downloaded. The transfer will go to a pending transfers queue
     /// and will be processed when possible.
-    /// @param assetRef The asset ID, or full URL to request.
+    /// @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
+    ///       that is used to load it.
     /// @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
+    /// @return A pointer to the created asset transfer, or null if the transfer could not be initiated.
     AssetTransferPtr RequestAsset(QString assetRef, QString assetType = "");
 
-    /// Same as RequestAsset(QString assetRef, QString assetType), but provided for convenience with AssetReference type.
+    /// Same as RequestAsset(assetRef, assetType), but provided for convenience with the AssetReference type.
     AssetTransferPtr RequestAsset(const AssetReference &ref);
 
     /// Returns the asset provider that is used to fetch assets from the given full URL.
@@ -57,7 +57,16 @@ public:
 
     /// Creates a new empty unloaded asset of the given type and name.
     /// This function uses the Asset type factories to create an instance of the proper asset class.
+    /// @param type The asset type of the asset to be created. A factory of this type must have been registered beforehand, using the AssetAPI::RegisterAssetTypeFactory function.
+    /// @param name Specifies the name to give to the new asset. This name must be unique in the system, or this call will fail. Use GetAsset(name) to query if an asset with the
+    ///             given name exists, and the AssetAPI::GenerateUniqueAssetName to guarantee the creation of a unique asset name.
     AssetPtr CreateNewAsset(QString type, QString name);
+
+    /// Generates a new asset name that is guaranteed to be unique in the system.
+    /// @param assetTypePrefix The type of the asset to use as a human-readable visual prefix identifier for the name. May be empty.
+    /// @param assetNamePrefix A name prefix that is added to the asset name for visual identification. May be empty.
+    /// @return A string of the form "Asset_<assetTypePrefix>_<assetNamePrefix>_<number>".
+    QString GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix);
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
@@ -66,21 +75,26 @@ public:
     std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() { return assetTypeFactories; }
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
+    /// Note: The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
     AssetPtr GetAsset(QString assetRef);
     
+    /// Returns the given asset by the specified SHA-1 content hash. If no such asset exists, returns null.
+    AssetPtr GetAssetByHash(QString assetHash);
+
     typedef std::map<QString, AssetPtr> AssetMap;
 
-    /// Returns all assets known to the asset system.
+    /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap &GetAllAssets() { return assets; }
 
     /// Returns the asset provider of the given type.
+    /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
     template<typename T>
     boost::shared_ptr<T> GetAssetProvider();
 
     /// Returns all the asset providers that are registered to the Asset API.
     std::vector<AssetProviderPtr> GetAssetProviders() const;
 
-    /// Returns the asset storage of the given @c name
+    /// Returns the asset storage of the given name.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
 
     /// Returns the known asset storage instances in the system.
@@ -113,7 +127,7 @@ public:
 
     /// Removes the given asset from the system and frees up all resources related to it. The asset will
     /// stay in the disk cache for later access.
-//    void DeleteAsset(IAsset *asset);
+    void DeleteAsset(AssetPtr asset);
 
     /// Uploads an asset to an asset storage.
     /** @param filename The source file to load the asset from.
@@ -140,13 +154,10 @@ public:
     /// Use this to clear the client's memory from all assets.
     /// \note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
     /// until the refcounts drop to zero.
-    void ForgetAllAssets();
+    void DeleteAllAssets();
 
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<AssetTransferPtr> PendingTransfers() const;
-
-    /// This function is implemented for legacy purposes to help transition period to new Asset API. Will be removed. Do NOT call this. -jj
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
     /// it yourself.
@@ -168,9 +179,6 @@ private slots:
     void OnAssetLoaded(IAssetTransfer* transfer);
     
 private:
-    /// This is implemented for legacy purposes to help transition period to new Asset API. Will be removed. -jj
-    std::map<request_tag_t, AssetTransferPtr> currentLegacyAssetServiceTransfers;
-
     typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;

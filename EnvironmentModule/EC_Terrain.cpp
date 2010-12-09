@@ -18,6 +18,7 @@
 #include "OgreTextureResource.h"
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
+#include "TextureAsset.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Terrain")
 
 #include <Ogre.h>
@@ -274,12 +275,14 @@ void EC_Terrain::TextureAssetLoaded(IAssetTransfer *transfer)
     if (!transfer)
         return;
 
+    TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(transfer->asset.get());
+    /*
     OgreRenderer::OgreTextureResource *ogreTexture = dynamic_cast<OgreRenderer::OgreTextureResource *>(transfer->resourcePtr.get());
     assert(ogreTexture);
     if (!ogreTexture)
         return;
-
-    Ogre::TexturePtr texture = ogreTexture->GetTexture();
+*/
+    Ogre::TexturePtr texture = textureAsset->ogreTexture;
     
     if (transfer->source == texture0.Get()) SetTerrainMaterialTexture(0, texture->getName().c_str());
     else if (transfer->source == texture1.Get()) SetTerrainMaterialTexture(1, texture->getName().c_str());

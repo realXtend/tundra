@@ -188,7 +188,7 @@ namespace OgreRenderer
     {
         // We're shutting down. Force a release of all loaded asset objects from the Asset API so that 
         // no refs to Ogre assets remain - below 'renderer_.reset()' is going to delete Ogre::Root.
-        framework_->Asset()->ForgetAllAssets();
+        framework_->Asset()->DeleteAllAssets();
 
         framework_->GetServiceManager()->UnregisterService(renderer_);
 

@@ -11,14 +11,16 @@ class OgreMeshAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    OgreMeshAsset(const QString &type_, const QString &name_)
-    :IAsset(type_, name_)
+    OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+    :IAsset(owner, type_, name_)
     {
     }
 
-    virtual bool LoadFromFileInMemory(const u8 *data_, size_t numBytes);
+    ~OgreMeshAsset();
 
-    void Unload();
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+
+    virtual void Unload();
 
     /// Returns an empty list - meshes do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }

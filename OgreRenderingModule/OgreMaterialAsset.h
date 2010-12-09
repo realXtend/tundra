@@ -11,14 +11,16 @@ class OgreMaterialAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    OgreMaterialAsset(const QString &type_, const QString &name_)
-    :IAsset(type_, name_)
+    OgreMaterialAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+    :IAsset(owner, type_, name_)
     {
     }
 
-    virtual bool LoadFromFileInMemory(const u8 *data_, size_t numBytes);
+    ~OgreMaterialAsset();
 
-    void Unload();
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+
+    virtual void Unload();
 
     virtual std::vector<AssetReference> FindReferences() const;
 

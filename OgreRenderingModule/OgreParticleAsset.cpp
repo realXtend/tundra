@@ -15,14 +15,22 @@ using namespace OgreRenderer;
 
 void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_vec);
 
-void Unload();
+OgreParticleAsset::~OgreParticleAsset()
+{
+    Unload();
+}
 
 std::vector<AssetReference> OgreParticleAsset::FindReferences() const
 {
     return references_;
 }
 
-bool OgreParticleAsset::LoadFromFileInMemory(const u8 *data_, size_t numBytes)
+void OgreParticleAsset::Unload()
+{
+    RemoveTemplates();
+}
+
+bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     //! \todo fix like OgreMaterialResource::SetData(). Ogre script parser cannot accept url as resource name
     RemoveTemplates();
