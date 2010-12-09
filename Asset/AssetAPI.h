@@ -69,6 +69,7 @@ public:
     std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() { return assetTypeFactories; }
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
+    /// Note: The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
     AssetPtr GetAsset(QString assetRef);
     
     typedef std::map<QString, AssetPtr> AssetMap;
@@ -77,13 +78,14 @@ public:
     AssetMap &GetAllAssets() { return assets; }
 
     /// Returns the asset provider of the given type.
+    /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
     template<typename T>
     boost::shared_ptr<T> GetAssetProvider();
 
     /// Returns all the asset providers that are registered to the Asset API.
     std::vector<AssetProviderPtr> GetAssetProviders() const;
 
-    /// Returns the asset storage of the given @c name
+    /// Returns the asset storage of the given name.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
 
     /// Returns the known asset storage instances in the system.
@@ -148,9 +150,6 @@ public:
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<AssetTransferPtr> PendingTransfers() const;
 
-    /// This function is implemented for legacy purposes to help transition period to new Asset API. Will be removed. Do NOT call this. -jj
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
-
     /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
     /// it yourself.
     void Update();
@@ -171,9 +170,6 @@ private slots:
     void OnAssetLoaded(IAssetTransfer* transfer);
     
 private:
-    /// This is implemented for legacy purposes to help transition period to new Asset API. Will be removed. -jj
-    std::map<request_tag_t, AssetTransferPtr> currentLegacyAssetServiceTransfers;
-
     typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;

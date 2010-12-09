@@ -211,7 +211,6 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
 void AssetAPI::ForgetAllAssets()
 {
     assets.clear();
-    currentLegacyAssetServiceTransfers.clear();
     currentTransfers.clear();
 }
 
@@ -260,8 +259,6 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
         readyTransfers.push_back(transfer);
         return transfer;
-        // Also store this transfer to the currentTransfers map so that we don't create multiple 
-//        currentTransfers.push_Back(transfer);
     }
 
     if (assetType.length() == 0)
@@ -274,60 +271,19 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    if (assetType == "Script" || assetType == "Terrain" || assetType == "OgreMesh" || assetType == "OgreMaterial" 
-        || assetType == "Texture" || assetType == "GenericAvatarXml"
-        || assetType == "OgreTexture" || assetType == "OgreParticle" || assetType == "OgreSkeleton")// || assetType == "Texture") // NEW PATH: Uses asset providers directly.
+    AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
+    if (!transfer.get())
     {
-        AssetTransferPtr transfer = provider->RequestAsset(assetRef, assetType);
-        if (!transfer.get())
-        {
-            LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
-            return AssetTransferPtr();
-        }
-
-        // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
-        // so we'll avoid multiple downloads to the exact same asset.
-        assert(currentTransfers.find(assetRef) == currentTransfers.end());
-        currentTransfers[assetRef] = transfer;
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(OnAssetLoaded(IAssetTransfer*)));
-        return transfer;
+        LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
+        return AssetTransferPtr();
     }
-    else // OLD PATH: Uses the event-based asset managers.
-    {
-        // Find an asset provider that can take in the request for the desired assetRef.
-        AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer()); ///\todo Don't new here, but have the asset provider new it.
-        transfer->source = AssetReference(assetRef/*, assetType*/);
-        // (the above leaks, but not fixing before the above todo is properly implemented -jj.)
 
-        // Get the asset service. \todo This will be removed. There will be no asset service. -jj.
-        AssetServiceInterface *asset_service = framework->GetService<AssetServiceInterface>();
-        if (!asset_service)
-        {
-            LogError("Asset service doesn't exist.");
-            return AssetTransferPtr();
-        }
-
-        Foundation::RenderServiceInterface *renderer = framework->GetService<Foundation::RenderServiceInterface>();
-        if (!renderer)
-        {
-            LogError("Renderer service doesn't exist.");
-            return AssetTransferPtr();
-        }
-
-        request_tag_t tag;
-
-        // Depending on the asset type, we must request the asset from the Renderer or from the asset service.
-
-        QString foundAssetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
-        if (foundAssetType != "")
-            tag = renderer->RequestResource(assetRef.toStdString(), foundAssetType.toStdString());
-        else
-            tag = asset_service->RequestAsset(assetRef.toStdString(), assetType.toStdString());
-
-        currentLegacyAssetServiceTransfers[tag] = transfer;
-
-        return transfer;
-    }
+    // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
+    // so we'll avoid multiple downloads to the exact same asset.
+    assert(currentTransfers.find(assetRef) == currentTransfers.end());
+    currentTransfers[assetRef] = transfer;
+    connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(OnAssetLoaded(IAssetTransfer*)));
+    return transfer;
 }
 
 AssetTransferPtr AssetAPI::RequestAsset(const AssetReference &ref)
@@ -423,47 +379,6 @@ AssetPtr AssetAPI::GetAsset(QString assetRef)
     if (iter != assets.end())
         return iter->second;
     return AssetPtr();
-}
-
-bool AssetAPI::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    if (category_id == framework->GetEventManager()->QueryEventCategory("Asset"))
-    {
-        if (event_id == Asset::Events::ASSET_READY)
-        {
-            Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentLegacyAssetServiceTransfers.find(assetReady->tag_);
-            if (iter != currentLegacyAssetServiceTransfers.end())
-            {
-                AssetTransferPtr transfer = iter->second;
-                transfer->assetPtr = assetReady->asset_;
-                assert(transfer);
-                transfer->EmitAssetDownloaded();
-                currentLegacyAssetServiceTransfers.erase(iter);
-            }
-        }
-    }
-
-    if (category_id == framework->GetEventManager()->QueryEventCategory("Resource"))
-    {
-        if (event_id == Resource::Events::RESOURCE_READY)
-        {
-            Resource::Events::ResourceReady *resourceReady = checked_static_cast<Resource::Events::ResourceReady*>(data);
-            std::map<request_tag_t, AssetTransferPtr>::iterator iter = currentLegacyAssetServiceTransfers.find(resourceReady->tag_);
-            if (iter != currentLegacyAssetServiceTransfers.end())
-            {
-                AssetTransferPtr transfer = iter->second;
-                transfer->resourcePtr = resourceReady->resource_;
-                assert(transfer);
-                //! \todo Causes linker error in debug build, must be disabled for now
-                //transfer->internalResourceName = QString::fromStdString(resourceReady->resource_->GetInternalName());
-                transfer->EmitAssetLoaded();
-                currentLegacyAssetServiceTransfers.erase(iter);
-            }
-        }
-    }
-
-    return false;
 }
 
 void AssetAPI::Update()

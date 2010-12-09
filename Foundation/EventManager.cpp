@@ -116,10 +116,6 @@ bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_i
         return false;
     }
 
-    /// The following line exists for legacy purposes to help transition period to new Asset API. Will be removed. -jj
-    if (framework_->Asset())
-        framework_->Asset()->HandleEvent(category_id, event_id, data);
-
     // Send event in priority order, until someone returns true
     for (int i = 0; i < module_subscribers_.size(); ++i)
         if (SendEvent(module_subscribers_[i], category_id, event_id, data))
