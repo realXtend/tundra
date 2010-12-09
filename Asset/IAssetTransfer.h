@@ -29,11 +29,17 @@ public:
 
     /// Specifies the internal resource name. Will not be filled until the resource is loaded.
     QString internalResourceName;
-    
+
+    /// Specifies the provider this asset is being downloaded from.
+    AssetProviderWeakPtr provider;
+
+    /// Specifies the storage this asset is being downloaded from.
+    AssetStorageWeakPtr storage;
+
     /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
     /// transition period to new Asset API. Will be removed. -jj
-    Foundation::AssetInterfacePtr assetPtr;
-    Foundation::ResourcePtr resourcePtr;
+//    Foundation::AssetInterfacePtr assetPtr;
+//    Foundation::ResourcePtr resourcePtr;
 
     void EmitAssetDownloaded();
 
