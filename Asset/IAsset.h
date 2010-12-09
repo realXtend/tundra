@@ -3,6 +3,7 @@
 #ifndef incl_Asset_IAsset_h
 #define incl_Asset_IAsset_h
 
+#include <boost/enable_shared_from_this.hpp>
 #include <QObject>
 #include <vector>
 
@@ -10,7 +11,7 @@
 #include "AssetFwd.h"
 #include "AssetReference.h"
 
-class IAsset : public QObject
+class IAsset : public QObject, public boost::enable_shared_from_this<IAsset>
 {
     Q_OBJECT
 

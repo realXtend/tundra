@@ -200,7 +200,17 @@ void JavascriptModule::ScriptAssetChanged(ScriptAssetPtr newScript)
     if (newScript->Name().endsWith(".js") || scriptType == "js") // We're positively using QtScript.
     {
         JavascriptInstance *jsInstance = new JavascriptInstance(newScript, this);
-        jsInstance->SetOwnerComponent(sender->GetSharedPtr());
+        ComponentPtr comp;
+        try
+        {
+            comp = sender->shared_from_this();
+        } catch(...)
+        {
+            LogError("Couldn't update component name, cause parent entity was null.");
+            return;
+        }
+
+        jsInstance->SetOwnerComponent(comp);
         sender->SetScriptInstance(jsInstance);
 
         // Register all core APIs and names to this script engine.

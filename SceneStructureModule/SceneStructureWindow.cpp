@@ -240,7 +240,7 @@ void SceneStructureWindow::ClearAssetReferences()
 
 void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
-    EntityItem *item = new EntityItem(entity->GetSharedPtr());
+    EntityItem *item = new EntityItem(entity->shared_from_this());
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
 
     DecorateEntityItem(entity, item);

@@ -427,8 +427,11 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
     Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
-    ComponentPtr comp_ptr = comp->GetSharedPtr();
-    if(!comp_ptr)
+    ComponentPtr comp_ptr;
+    try
+    {
+        comp_ptr = comp->shared_from_this();
+    } catch(...)
     {
         LogError("Fail to add new component to ECBroser. Make sure that component's parent entity is setted.");
         return;
@@ -454,8 +457,12 @@ void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
     if(!HasEntity(entity_ptr))
         return;
 
-    ComponentPtr comp_ptr = comp->GetSharedPtr();
-    if(!comp_ptr)
+    ComponentPtr comp_ptr;
+
+    try
+    {
+        comp_ptr = comp->shared_from_this();
+    } catch(...)
     {
         LogError("Fail to remove component from ECBroser. Make sure that component's parent entity is setted.");
         return;
@@ -573,10 +580,13 @@ void ECBrowser::DynamicComponentChanged()
         LogError("Fail to dynamic cast sender object to EC_DynamicComponent in DynamicComponentChanged mehtod.");
         return;
     }
-    ComponentPtr comp_ptr = component->GetSharedPtr();
-    if(!comp_ptr)
+    ComponentPtr comp_ptr;
+    try
     {
-        LogError("Couldn't update dynamic component " + component->Name().toStdString() + ", cause parent entity was null.");
+        comp_ptr = component->shared_from_this();
+    } catch(...)
+    {
+        LogError("IComponent::shared_from_this failed! Component must have been deleted!");
         return;
     }
 
@@ -593,17 +603,21 @@ void ECBrowser::DynamicComponentChanged()
 void ECBrowser::ComponentNameChanged(const QString &newName)
 {
     IComponent *component = dynamic_cast<IComponent*>(sender());
-    if(component)
+    if (!component)
+        return;
+
+    ComponentPtr comp_ptr;
+    try
     {
-        ComponentPtr comp_ptr = component->GetSharedPtr();
-        if(!comp_ptr)
-        {
-            LogError("Couldn't update component name, cause parent entity was null.");
-            return;
-        }
-        RemoveComponentFromGroup(comp_ptr);
-        AddNewComponentToGroup(comp_ptr);
+        comp_ptr = component->shared_from_this();
+    } catch(...)
+    {
+        LogError("Couldn't update component name, cause parent entity was null.");
+        return;
     }
+
+    RemoveComponentFromGroup(comp_ptr);
+    AddNewComponentToGroup(comp_ptr);
 }
 
 void ECBrowser::CreateAttribute()

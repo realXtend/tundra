@@ -213,7 +213,7 @@ Console::CommandResult TundraLogicModule::ConsoleConnect(const StringVector& par
     }
     catch (...) {}
     
-    client_->Login(params[0], port, username, password);
+    client_->Login(QString::fromStdString(params[0]), port, QString::fromStdString(username), QString::fromStdString(password));
     
     return Console::ResultSuccess();
 }
@@ -361,7 +361,7 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
         {
             Events::TundraLoginEventData* event_data = checked_static_cast<Events::TundraLoginEventData*>(data);
             if (client_)
-                client_->Login(event_data->address_, event_data->port_ ? event_data->port_ : cDefaultPort, event_data->username_, event_data->password_);
+                client_->Login(QString::fromStdString(event_data->address_), event_data->port_ ? event_data->port_ : cDefaultPort, QString::fromStdString(event_data->username_), QString::fromStdString(event_data->password_));
         }
     }
     

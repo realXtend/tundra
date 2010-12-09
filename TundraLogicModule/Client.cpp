@@ -21,6 +21,8 @@
 
 #include "MemoryLeakCheck.h"
 
+#include <QDomElement>
+
 using namespace kNet;
 
 namespace TundraLogic
@@ -48,7 +50,23 @@ void Client::Update(f64 frametime)
         CheckLogin();
 }
 
-void Client::Login(const std::string& address, unsigned short port, const std::string& username, const std::string& password)
+void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password)
+{
+    // Create one kind of hardcoded logindata containing username & password
+    QDomDocument xml;
+    QDomElement rootElem = xml.createElement("login");
+    QDomElement usernameElem = xml.createElement("username");
+    usernameElem.setAttribute("value", username);
+    QDomElement passwordElem = xml.createElement("password");
+    passwordElem.setAttribute("value", password);
+    rootElem.appendChild(usernameElem);
+    rootElem.appendChild(passwordElem);
+    xml.appendChild(rootElem);
+    
+    Login(address, port, xml.toString());
+}
+
+void Client::Login(const QString& address, unsigned short port, const QString& loginData)
 {
     if (owner_->IsServer())
     {
@@ -56,11 +74,10 @@ void Client::Login(const std::string& address, unsigned short port, const std::s
         return;
     }
     
-    username_ = username;
-    password_ = password;
+    logindata_ = loginData;
     reconnect_ = false;
     
-    owner_->GetKristalliModule()->Connect(address.c_str(), port, kNet::SocketOverTCP);
+    owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, kNet::SocketOverTCP);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
 }
@@ -104,8 +121,7 @@ void Client::CheckLogin()
         {
             loginstate_ = ConnectionEstablished;
             MsgLogin msg;
-            msg.userName = StringToBuffer(username_);
-            msg.password = StringToBuffer(password_);
+            msg.loginData = StringToBuffer(logindata_.toStdString());
             connection->Send(msg);
         }
         break;
@@ -191,7 +207,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             event_data.user_id_ = msg.userID;
             framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
             
-            emit Connected(msg.userID, QString::fromStdString(username_));
+            emit Connected(msg.userID);
         }
         reconnect_ = true;
     }
@@ -203,12 +219,10 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
 
 void Client::HandleClientJoined(MessageConnection* source, const MsgClientJoined& msg)
 {
-    TundraLogicModule::LogInfo("User " + BufferToString(msg.userName) + " is inworld");
 }
 
 void Client::HandleClientLeft(MessageConnection* source, const MsgClientLeft& msg)
 {
-    TundraLogicModule::LogInfo("User " + BufferToString(msg.userName) + " left the world");
 }
 
 }
