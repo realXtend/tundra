@@ -316,42 +316,66 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
 
 void AddContentWindow::SelectAllEntities()
 {
+    entityTreeWidget->setUpdatesEnabled(false);
+    entityTreeWidget->setSortingEnabled(false);
+
     QTreeWidgetItemIterator it(entityTreeWidget);
     while(*it)
     {
         (*it)->setCheckState(cColumnEntityCreate, Qt::Checked);
         ++it;
     }
+
+    entityTreeWidget->setSortingEnabled(true);
+    entityTreeWidget->setUpdatesEnabled(true);
 }
 
 void AddContentWindow::DeselectAllEntities()
 {
+    entityTreeWidget->setSortingEnabled(false);
+    entityTreeWidget->setUpdatesEnabled(false);
+
     QTreeWidgetItemIterator it(entityTreeWidget);
     while(*it)
     {
         (*it)->setCheckState(cColumnEntityCreate, Qt::Unchecked);
         ++it;
     }
+
+    entityTreeWidget->setSortingEnabled(true);
+    entityTreeWidget->setUpdatesEnabled(true);
 }
 
 void AddContentWindow::SelectAllAssets()
 {
+    assetTreeWidget->setSortingEnabled(false);
+    assetTreeWidget->setUpdatesEnabled(false);
+
     QTreeWidgetItemIterator it(assetTreeWidget);
     while(*it)
     {
         (*it)->setCheckState(cColumnAssetUpload, Qt::Checked);
         ++it;
     }
+
+    assetTreeWidget->setSortingEnabled(true);
+    assetTreeWidget->setUpdatesEnabled(true);
 }
 
 void AddContentWindow::DeselectAllAssets()
 {
+    assetTreeWidget->setSortingEnabled(false);
+    assetTreeWidget->setUpdatesEnabled(false);
+
     QTreeWidgetItemIterator it(assetTreeWidget);
     while(*it)
     {
         (*it)->setCheckState(cColumnAssetUpload, Qt::Unchecked);
         ++it;
     }
+
+    assetTreeWidget->setSortingEnabled(true);
+    assetTreeWidget->setUpdatesEnabled(true);
 }
 
 void AddContentWindow::AddContent()

@@ -90,20 +90,11 @@ private:
     */
     void DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const;
 
-    /// Framework.
-    Foundation::Framework *framework;
-
-    /// Scene which we are showing the in tree widget currently.
-    Scene::SceneWeakPtr scene;
-
-    /// Scene tree widget.
-    SceneTreeWidget *treeWidget;
-
-    /// Do we show components also in the tree view.
-    bool showComponents;
-
-    /// Do we show asset references also in the tree view.
-    bool showAssets;
+    Foundation::Framework *framework; ///< Framework.
+    Scene::SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
+    SceneTreeWidget *treeWidget; ///< Scene tree widget.
+    bool showComponents; ///< Do we show components also in the tree view.
+    bool showAssets; ///< Do we show asset references also in the tree view.
 
 private slots:
     /// Adds the entity to the tree widget.
