@@ -34,10 +34,10 @@ public slots:
     QString ContentHash() const { return contentHash; }
 
     /// Specifies the file from which this asset can be reloaded, if it is unloaded in between.
-    void SetCacheFile(QString cacheFile);
+    void SetDiskSource(QString diskSource);
 
     /// Returns the absolute path name to the file that contains the disk-cached version of this asset.
-    QString CacheFile() const { return cacheFile; }
+    QString DiskSource() const { return diskSource; }
 
     /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.
     bool LoadFromFile(QString filename);
@@ -90,6 +90,7 @@ public:
     /// Saves the storage this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
     void SetAssetStorage(AssetStoragePtr storage); 
 
+    virtual bool SerializeTo(std::vector<u8> &data);
 private:
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes) = 0;
@@ -109,7 +110,7 @@ private:
     QString name;
 
     /// This path specifies a local filename from which this asset can be reloaded if necessary.
-    QString cacheFile;
+    QString diskSource;
 
     /// Stores the SHA-1 hash of this content, saved as a string for convenience for script access. 
     QString contentHash;
