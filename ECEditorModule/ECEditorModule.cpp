@@ -150,7 +150,7 @@ namespace ECEditor
 
         editor_window_ = new ECEditorWindow(GetFramework());
 		//$ BEGIN_MOD $
-		//editor_window_->setWindowTitle(tr("EC Editor"));
+		//editor_window_->setWindowTitle(tr("Components"));
 		//$ END_MOD $
 
         UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_, true, true);
@@ -163,7 +163,7 @@ namespace ECEditor
 		//ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
 		ui->AddWidgetToMenu(editor_window_, tr("EC Editor"), tr("Panels"), "./data/ui/images/menus/edbutton_OBJED_normal.png");		
 		//$ END_MOD $        
-		ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
+		ui->RegisterUniversalWidget("Components", editor_proxy/*editor_window_->graphicsProxyWidget()*/);
     }
 
 //$ BEGIN_MOD $

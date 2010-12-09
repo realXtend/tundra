@@ -60,16 +60,18 @@ namespace WorldBuilding
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
 		if (ui){
 			//Create Action, insert into menu Create->Avatar
-			QAction *action = new QAction("Object",this);
+			action = new QAction("Object",this);
 			if (ui->AddExternalMenuAction(action, "Object", tr("Create"))){
 				//We change scene
 				connect(action, SIGNAL(triggered()), SLOT(ChangeAndCreateObject()));
 			}
 			//Create also an action to switch to Scene in Menu->Panels
-			QAction *action2 = new QAction("Modify Object",this);
+			action2 = new QAction("Modify Object",this);
 			if (ui->AddExternalMenuAction(action2, "Modify Object", tr("Panels"))){
 				//We change scene
 				connect(action2, SIGNAL(triggered()), SLOT(ShowBuildPanels()));
+				//connect(ui, SIGNAL(SceneChanged(const QString&, const QString &)),
+                //SLOT(SceneChangedNotification(const QString&, const QString&)));
 			}
 		}
 		//$ END_MOD $
@@ -596,6 +598,10 @@ namespace WorldBuilding
             python_handler_->EmitEditingActivated(true);
             tranfer_widgets_.clear();
             object_manip_ui.tab_widget->clear();
+			//$ BEGIN_MOD $
+			action->setDisabled(true);
+			action2->setDisabled(true);
+			//$ END_MOD $
         }
         else if (old_name == scene_name_)
         {
@@ -603,6 +609,10 @@ namespace WorldBuilding
             python_handler_->EmitEditingActivated(false);
             toolbar_->RemoveAllButtons();
             HandleTransfersBack();
+			//$ BEGIN_MOD $
+			action->setDisabled(false);
+			action2->setDisabled(false);
+			//$ END_MOD $
         }
 //$ BEGIN_MOD $
 		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
