@@ -13,6 +13,7 @@
 
 #include "SceneStructureWindow.h"
 #include "SceneTreeWidget.h"
+#include "SceneTreeWidgetItems.h"
 
 #include "Framework.h"
 #include "SceneManager.h"
@@ -46,27 +47,32 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     QCheckBox *assetCheckBox = new QCheckBox(tr("Show asset references"), this);
     assetCheckBox->setChecked(showAssets);
 
-    QHBoxLayout *sortLayout = new QHBoxLayout;
+    QHBoxLayout *hlayout= new QHBoxLayout;
+    QLabel *searchLabel = new QLabel(tr("Search filter: "), this);
+    QLineEdit *searchField = new QLineEdit(this);
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
     QLabel *sortLabel = new QLabel(tr("Sort by:"));
     QComboBox *sortComboBox = new QComboBox;
     sortComboBox->addItem(tr("ID"));
     sortComboBox->addItem(tr("Name"));
 
-    sortLayout->addWidget(assetCheckBox);
-    sortLayout->addSpacerItem(spacer);
-    sortLayout->addWidget(sortLabel);
-    sortLayout->addWidget(sortComboBox);
+    hlayout->addWidget(searchLabel);
+    hlayout->addWidget(searchField);
+    hlayout->addSpacerItem(spacer);
+    hlayout->addWidget(sortLabel);
+    hlayout->addWidget(sortComboBox);
 
     treeWidget = new SceneTreeWidget(fw, this);
 
+    layout->addWidget(assetCheckBox);
     layout->addWidget(compCheckBox);
-    layout->insertLayout(-1, sortLayout);
+    layout->insertLayout(-1, hlayout);
     layout->addWidget(treeWidget);
 
     connect(assetCheckBox, SIGNAL(toggled(bool)), SLOT(ShowAssetReferences(bool)));
     connect(compCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
     connect(sortComboBox, SIGNAL(currentIndexChanged(const QString &)), SLOT(Sort(const QString &)));
+    connect(searchField, SIGNAL(textChanged(const QString &)), SLOT(Search(const QString &)));
 }
 
 SceneStructureWindow::~SceneStructureWindow()
@@ -236,7 +242,6 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
     EntityItem *item = new EntityItem(entity->shared_from_this());
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
-    item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
 
     DecorateEntityItem(entity, item);
 
@@ -270,7 +275,6 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             ComponentPtr cPtr = entity->GetComponent(comp->TypeName(), comp->Name());
             assert(cPtr.get());
             ComponentItem *cItem = new ComponentItem(cPtr, eItem);
-            cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
             cItem->setHidden(!showComponents);
 
             DecorateComponentItem(comp, cItem);
@@ -283,7 +287,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             // If name component exists, retrieve name from it. Also hook up change signal so that UI keeps synch with the name.
             if (comp->TypeName() == EC_Name::TypeNameStatic())
             {
-                eItem->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+                eItem->SetText(entity);
                 DecorateEntityItem(entity, eItem);
 
                 connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
@@ -338,8 +342,7 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
     if (!assetRef)
         return;
 
-    AssetItem *aItem = new AssetItem(assetRef->GetName(), assetRef->Get().ref, parentItem);
-    aItem->setText(0, QString("%1: %2").arg(assetRef->GetName()).arg(assetRef->Get().ref));
+    AssetItem *aItem = new AssetItem(attr, parentItem);
     aItem->setHidden(!showAssets);
     parentItem->addChild(aItem);
 }
@@ -550,8 +553,7 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
 
     assert(aItem);
     if (aItem)
-        aItem->setText(0, QString("%1: %2").arg(assetRef->GetName()).arg(assetRef->Get().ref));
-//        aItem->setText(0, QString("%1: %2 (%3)").arg(assetRef->GetName()).arg(assetRef->Get().ref).arg(assetRef->Get().type));
+        aItem->SetText(attr);
 }
 
 void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
@@ -566,7 +568,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
         EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (item && (item->Id() == entity->GetId()))
         {
-            item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+            item->SetText(entity);
             DecorateEntityItem(entity, item);
         }
     }
@@ -586,7 +588,7 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
             if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
             {
-                cItem->setText(0, QString("%1 %2").arg(cItem->typeName).arg(newName));
+                cItem->SetText(comp);
                 DecorateComponentItem(comp, cItem);
             }
         }
@@ -603,4 +605,48 @@ void SceneStructureWindow::Sort(const QString &criteria)
         treeWidget->sortItems(0, order);
     if (criteria == tr("Name"))
         treeWidget->sortItems(1, order);
+}
+
+void SceneStructureWindow::Search(const QString &filter)
+{
+    QString f = filter.trimmed();
+    bool expand = f.size() >= 3;
+    QSet<QTreeWidgetItem *> alreadySetVisible;
+
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        QTreeWidgetItem *item = *it;
+        if (!alreadySetVisible.contains(item))
+        {
+            if (f.isEmpty())
+            {
+                item->setHidden(false);
+            }
+            else if (item->text(0).contains(filter, Qt::CaseInsensitive))
+            {
+                item->setHidden(false);
+                alreadySetVisible.insert(item);
+                if (expand)
+                    item->setExpanded(expand);
+
+                // Make sure that all the parent items are visible too
+                QTreeWidgetItem *parent = 0, *child = item;
+                while((parent = child->parent()) != 0)
+                {
+                    parent->setHidden(false);
+                    alreadySetVisible.insert(parent);
+                    if (expand)
+                        parent->setExpanded(expand);
+                    child = parent;
+                }
+            }
+            else
+            {
+                (*it)->setHidden(true);
+            }
+        }
+
+        ++it;
+    }
 }
