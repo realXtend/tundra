@@ -158,6 +158,9 @@ private slots:
         @param filter Text used as a filter.
     */
     void Search(const QString &filter);
+
+    /// Expands or collapses the whole tree view, depending of the previous action.
+    void ExpandOrCollapseAll();
 };
 
 #endif

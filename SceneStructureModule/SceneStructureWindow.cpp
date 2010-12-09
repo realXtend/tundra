@@ -62,17 +62,25 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     hlayout->addWidget(sortLabel);
     hlayout->addWidget(sortComboBox);
 
+    QHBoxLayout *hlayout2 = new QHBoxLayout;
+    QSpacerItem *spacer2 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QPushButton *expandAndCollapseButton = new QPushButton(tr("Expand/collapse all"), this);
+    hlayout2->addWidget(expandAndCollapseButton);
+    hlayout2->addSpacerItem(spacer2);
+    hlayout2->addWidget(expandAndCollapseButton);
     treeWidget = new SceneTreeWidget(fw, this);
 
     layout->addWidget(assetCheckBox);
     layout->addWidget(compCheckBox);
     layout->insertLayout(-1, hlayout);
+    layout->insertLayout(-1, hlayout2);
     layout->addWidget(treeWidget);
 
     connect(assetCheckBox, SIGNAL(toggled(bool)), SLOT(ShowAssetReferences(bool)));
     connect(compCheckBox, SIGNAL(toggled(bool)), SLOT(ShowComponents(bool)));
     connect(sortComboBox, SIGNAL(currentIndexChanged(const QString &)), SLOT(Sort(const QString &)));
     connect(searchField, SIGNAL(textChanged(const QString &)), SLOT(Search(const QString &)));
+    connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
 }
 
 SceneStructureWindow::~SceneStructureWindow()
@@ -663,4 +671,20 @@ void SceneStructureWindow::Search(const QString &filter)
 
         ++it;
     }
+}
+
+void SceneStructureWindow::ExpandOrCollapseAll()
+{
+    bool expand = true;
+    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        QTreeWidgetItem *item = treeWidget->topLevelItem(i);
+        if (item->childCount() >= 1 && item->isExpanded())
+            expand = false;
+    }
+
+    if (expand)
+        treeWidget->expandAll();
+    else
+        treeWidget->collapseAll();
 }
