@@ -23,7 +23,6 @@ public:
     virtual ~IAsset() {}
 
 public slots:
-
     /// Returns the type of this asset. The type of an asset cannot change during the lifetime of the instance of an asset.
     QString Type() const { return type; }
 
@@ -40,24 +39,37 @@ public slots:
     /// Returns the absolute path name to the file that contains the disk-cached version of this asset.
     QString CacheFile() const { return cacheFile; }
 
-    /// Reloads this asset from cache, if it was not loaded. Returns true if loading succeeded, false otherwise.
+    /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.
+    bool LoadFromFile(QString filename);
+
+    /// Forces a reload of this asset from the local disk cache. Returns true if loading succeeded, false otherwise.
     bool LoadFromCache();
 
     /// Unloads this asset from memory. After calling this function, this asset still can be queried for its Type(), Name() and CacheFile(),
     /// but its dependencies cannot be determined and it cannot be used in any other way.
     virtual void Unload() = 0;
 
-public:
-    /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.
-    bool LoadFromFile(QString filename);
+    /// Stores the *current in-memory copy* of this asset to disk to the given file on the local filesystem. Use this function to export an asset from the system to a file.
+    /// Returns true if saving succeeded, false otherwise.
+    /// The default implementation immediately returns false for the asset.
+    virtual bool SaveToFile(const QString &filename);
 
+    /// Copies the disk cache version of this asset to the specified file. 
+    bool SaveCachedCopyToFile(const QString &filename);
+
+    /// Returns the asset storage this asset was loaded from.
+    AssetStoragePtr GetAssetStorage();
+
+    /// Returns the asset provider this asset was loaded from.
+    AssetProviderPtr GetAssetProvider();
+
+    /// Returns a textual human-readable representation of this asset in the form "<name> (<type>)".
+    QString ToString() const;
+
+public:
     /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
     /// Returns true if loading succeeded, false otherwise.
     bool LoadFromFileInMemory(const u8 *data, size_t numBytes);
-
-    /// Stores this asset to disk to the given file on the local filesystem. Use this function to export an asset from the system to a file.
-    /// Returns true if saving succeeded, false otherwise.
-    virtual bool SaveToFile(const QString &filename);
 
     /// Called whenever another asset this asset depends on is loaded.
     virtual void DependencyLoaded(AssetPtr dependee) { }
@@ -72,12 +84,11 @@ public:
     /// Returns all the assets this asset refers to, and the assets those assets refer to, and so on.
     std::vector<AssetReference> FindReferencesRecursive() const;
 
-    /// Points to the actual asset if it has been loaded in. This member is implemented for legacy purposes to help 
-    /// transition period to new Asset API. Will be removed. -jj
-//    Foundation::AssetInterfacePtr assetPtr;
-//    Foundation::ResourcePtr resourcePtr;
+    /// Saves the provider this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
+    void SetAssetProvider(AssetProviderPtr provider);
 
-    QString ToString() const { return (Name().isEmpty() ? "(noname)" : Name()) + " (" + (Type().isEmpty() ? "notype" : Type()) + ")"; }
+    /// Saves the storage this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
+    void SetAssetStorage(AssetStoragePtr storage); 
 
 private:
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.
@@ -85,8 +96,11 @@ private:
 
     AssetAPI *assetAPI;
 
-    /// Specifies the provider this asset was downloaded from.
+    /// Specifies the provider this asset was downloaded from. May be null.
     AssetProviderWeakPtr provider;
+
+    /// Specifies the storage this asset was downloaded from. May be null.
+    AssetStorageWeakPtr storage;
 
     /// Specifies the type of this asset, e.g. "Texture" or "OgreMaterial".
     QString type;

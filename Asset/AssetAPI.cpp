@@ -298,6 +298,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
         return AssetTransferPtr();
     }
+    // Remember for this transfer which AssetProvider is processing it.
+    transfer->provider = provider;
 
     // Store the newly allocated AssetTransfer internally, so that any duplicated requests to this asset will return the same request pointer,
     // so we'll avoid multiple downloads to the exact same asset.
@@ -449,6 +451,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         LogError("AssetAPI: Failed to create new asset of type \"" + transfer->assetType.toStdString() + "\" and name \"" + transfer->source.ref.toStdString() + "\"");
         return;
     }
+
+    transfer->asset->SetAssetStorage(transfer->storage.lock());
+    transfer->asset->SetAssetProvider(transfer->provider.lock());
 
     bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
     if (!success)
@@ -675,4 +680,50 @@ QString GetResourceTypeFromResourceFileName(const char *name)
     return "";
 
     // Note: There's a separate OgreImageTextureResource which isn't handled above.
+}
+
+bool CopyAssetFile(const char *sourceFile, const char *destFile)
+{
+    assert(sourceFile);
+    assert(destFile);
+
+    QFile asset_in(sourceFile);
+    if (!asset_in.open(QFile::ReadOnly))
+    {
+        LogError("Could not open input asset file \"" + std::string(sourceFile) + "\"");
+        return false;
+    }
+
+    QByteArray bytes = asset_in.readAll();
+    asset_in.close();
+    
+    QFile asset_out(destFile);
+    if (!asset_out.open(QFile::WriteOnly))
+    {
+        LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
+        return false;
+    }
+
+    asset_out.write(bytes);
+    asset_out.close();
+    
+    return true;
+}
+
+bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile)
+{
+    assert(data);
+    assert(destFile);
+
+    QFile asset_out(destFile);
+    if (!asset_out.open(QFile::WriteOnly))
+    {
+        LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
+        return false;
+    }
+
+    asset_out.write((const char *)data, numBytes);
+    asset_out.close();
+    
+    return true;
 }

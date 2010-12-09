@@ -1536,6 +1536,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
 
 void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
 {
+#if 0 ///\todo Removed due to regression. Reimplement using the new Asset API. -jj.
     assert(transfer_);
     if (!transfer_)
         return;
@@ -1580,6 +1581,7 @@ void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
             }
         }
     }
+#endif
 }
 
 void SceneTreeWidget::ECEditorDestroyed(QObject *obj)

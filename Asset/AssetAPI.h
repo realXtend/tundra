@@ -15,6 +15,12 @@
 /// Returns true on success.
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst);
 
+/// Copies the given source file to the destination file on the local filesystem. Returns true on success.
+bool CopyAssetFile(const char *sourceFile, const char *destFile);
+
+/// Saves the given raw data buffer to destFile. Returns true on success.
+bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile);
+
 /// Returns an asset type name of the given asset file name.
 QString GetResourceTypeFromResourceFileName(const char *name);
 
@@ -77,7 +83,7 @@ public:
 
     typedef std::map<QString, AssetPtr> AssetMap;
 
-    /// Returns all assets known to the asset system.
+    /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap &GetAllAssets() { return assets; }
 
     /// Returns the asset provider of the given type.
