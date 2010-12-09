@@ -161,6 +161,12 @@ private slots:
     /** @param criteria Sorting criteria. Currently tr("ID") and tr("Name") are supported.
     */
     void Sort(const QString &criteria);
+
+    /// Searches for items containing @c text (case-insensitive) and toggles their visibility.
+    /** If match is found the item is set visible and expanded, otherwise it's hidden.
+        @param filter Text used as a filter.
+    */
+    void Search(const QString &filter);
 };
 
 #endif

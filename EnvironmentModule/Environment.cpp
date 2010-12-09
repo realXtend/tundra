@@ -9,14 +9,13 @@
 
 #include "Environment.h"
 #include "EnvironmentModule.h"
+#include "EC_WaterPlane.h"
+#include "EC_Fog.h"
 
 #include "EC_OgreEnvironment.h"
-#include <SceneManager.h>
+#include "SceneManager.h"
 #include "NetworkMessages/NetInMessage.h"
-#include "EC_WaterPlane.h"
 #include "OgreRenderingModule.h"
-
-
 
 #ifdef CAELUM
 #include <Caelum.h>
@@ -36,7 +35,6 @@ void ClampFog(float& start, float& end, float farclip)
         start = farclip/3.0;
 }
 
-
 Environment::Environment(EnvironmentModule *owner) :
     owner_(owner),
     activeEnvEntity_(Scene::EntityWeakPtr()),
@@ -44,10 +42,7 @@ Environment::Environment(EnvironmentModule *owner) :
     usecSinceStart_(0),
     secPerDay_(0),
     secPerYear_(0),
-    sunDirection_(RexTypes::Vector3()),
-    sunPhase_(0.0),
-    sunAngVelocity_(RexTypes::Vector3())
-  
+    sunPhase_(0.0)
 {
 
 #ifdef CAELUM
@@ -59,14 +54,11 @@ Environment::Environment(EnvironmentModule *owner) :
         Caelum::CaelumSystem::CAELUM_COMPONENT_POINT_STARFIELD |
         Caelum::CaelumSystem::CAELUM_COMPONENT_SCREEN_SPACE_FOG |
         Caelum::CaelumSystem::CAELUM_COMPONENT_GROUND_FOG;
-
 #endif
-    
 }
 
 Environment::~Environment()
 {
-    
     if ( activeEnvEntity_.lock().get() != 0)
     {
         Scene::EntityPtr entity = activeEnvEntity_.lock();
@@ -75,35 +67,26 @@ Environment::~Environment()
             // Remove entity from scene.
             Scene::SceneManager* manager = entity->GetScene();
             if ( manager != 0)
-            {
                 manager->RemoveEntity(entity->GetId());
-                
-            }
         }
+
         entity.reset();
     }
 
     activeEnvEntity_.reset();
     owner_ = 0;
-    
 }
 
 EC_OgreEnvironment* Environment::GetEnvironmentComponent()
 {
-
     if (activeEnvEntity_.expired())
         return 0;
-    
-    EC_OgreEnvironment* ec = activeEnvEntity_.lock()->GetComponent<EC_OgreEnvironment>().get();  
-    
-    return ec;
-    
-}
 
+    return activeEnvEntity_.lock()->GetComponent<EC_OgreEnvironment>().get();  
+}
 
 void Environment::CreateEnvironment()
 {
-  
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeIdLocal());
     active_scene->EmitEntityCreated(entity);
@@ -126,19 +109,13 @@ void Environment::CreateEnvironment()
         // Has it allready EC_Fog ?
         if ( !enviroment->HasComponent(EC_Fog::TypeNameStatic()))
             enviroment->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic())); 
-       
-       
     }
     else
     {
         enviroment =  active_scene->GetEntityByName("LocalEnvironment").get();
-       
         if ( enviroment != 0 && !enviroment->HasComponent(EC_Fog::TypeNameStatic()))
             enviroment->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic())); 
-    
-      
     }
-
 }
 
 bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
@@ -146,7 +123,6 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
-    
     // SimulatorViewerTimeMessage seems to be corrupted with 0.4 & 0.5 servers.
     try
     {
@@ -231,86 +207,56 @@ EC_EnvironmentLight* Environment::GetEnvironmentLight()
         
        
     }
-  
-    
-    EC_EnvironmentLight* light = entity->GetComponent<EC_EnvironmentLight >().get();
-    
-    return light;
 
+    return entity->GetComponent<EC_EnvironmentLight >().get();
 }
 
 void Environment::SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
-   EC_Fog *fog = GetEnvironmentFog();
-
-   if ( fog == 0)
+    EC_Fog *fog = GetEnvironmentFog();
+    if ( fog == 0)
        return;
-    
-   fog->startDistanceAttr.Set(fogStart,AttributeChange::Default);
-   fog->endDistanceAttr.Set(fogEnd, AttributeChange::Default);
-   fog->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
-   //fog->ComponentChanged(AttributeChange::Default);
-   
-   emit GroundFogAdjusted(fogStart, fogEnd, color);
+
+    fog->startDistance.Set(fogStart,AttributeChange::Default);
+    fog->endDistance.Set(fogEnd, AttributeChange::Default);
+    fog->color.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
+    //fog->ComponentChanged(AttributeChange::Default);
+
+    emit GroundFogAdjusted(fogStart, fogEnd, color);
 }
 
 void Environment::SetFogColorOverride(bool enabled)
 {
-   
-   EC_Fog *fog = GetEnvironmentFog();
-
-   if ( fog == 0)
-       return;
-
-   fog->useAttr.Set(enabled, AttributeChange::Default);
-   //fog->ComponentChanged(AttributeChange::Default);
-   
-    
+    EC_Fog *fog = GetEnvironmentFog();
+    if (fog)
+        fog->use.Set(enabled, AttributeChange::Default);
 }
 
 bool Environment::GetFogColorOverride() 
 {
-     
-   EC_Fog *fog = GetEnvironmentFog();
-
-   if ( fog == 0)
-       return false;
-
-   return fog->useAttr.Get();
-   
-    
+    EC_Fog *fog = GetEnvironmentFog();
+    return fog ? fog->use.Get() : false;
 }
 
 QVector<float> Environment::GetFogGroundColor()
 {
-
    EC_Fog *fog = GetEnvironmentFog();
-
    if ( fog == 0)
     return QVector<float>();
 
-
     Ogre::ColourValue color = fog->GetColorAsOgreValue();
-    QVector<float> vec; 
-    vec<<color[0]<<color[1]<<color[2];
-    return vec;
-      
+    return QVector<float>(QVector<float>() << color[0] <<color[1] <<color[2]);
 }
-
-
 
 void Environment::Update(f64 frametime)
 {
     PROFILE(Environment_Update);
 
-  
     // We are still little depend of old EC_OgreEnvironment component,
     /// todo refactor away depency of old EC_OgreEnvironmen component 
     EC_OgreEnvironment* env = GetEnvironmentComponent();
-    
-    
+
     EC_EnvironmentLight* light = GetEnvironmentLight();
-  
     if ( light != 0)
     {
         light->Update(frametime);
@@ -323,8 +269,6 @@ void Environment::Update(f64 frametime)
         // Currently updates other then water and fog.
         env->UpdateVisualEffects(frametime);
     }
-   
-
 
 #ifdef CAELUM
      if (!env)
@@ -335,11 +279,9 @@ void Environment::Update(f64 frametime)
 #endif
 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
-    
     if (!renderer)
        return;
-   
-    
+
     Ogre::Camera *camera = renderer.get()->GetCurrentCamera();
     Ogre::Viewport *viewport = renderer.get()->GetViewport();
     if (!viewport)
@@ -360,14 +302,14 @@ void Environment::Update(f64 frametime)
     {
         Scene::EntityPtr ent = *iter;
         Scene::Entity* e = ent.get();
-        plane = e->GetComponent<EC_WaterPlane >().get();        
+        plane = e->GetComponent<EC_WaterPlane >().get();
         if ( plane != 0 && plane->IsCameraInsideWaterCube() )
         {
             underWater = true;
             break;
         }
     }
-    
+
     // Ground fog value. 
     // Caelum calculates this value depending of time ( sun position? )
     Ogre::ColourValue fogColor;
@@ -375,7 +317,7 @@ void Environment::Update(f64 frametime)
 
 #ifdef CAELUM
        fogColor = caelumSystem->getGroundFog()->getColour();
-       if ( fog != 0 && fog->useAttr.Get() )
+       if ( fog != 0 && fog->use.Get() )
            fogColor = fog->GetColorAsOgreValue();
 #else
     if ( fog != 0)
@@ -392,9 +334,9 @@ void Environment::Update(f64 frametime)
        Ogre::FogMode mode = static_cast<Ogre::FogMode>(plane->fogModeAttr.Get());
        
        if (farClip > cameraFarClip)
-           farClip = cameraFarClip;            
+           farClip = cameraFarClip;
     
-       ClampFog(fogStart, fogEnd, farClip);            
+       ClampFog(fogStart, fogEnd, farClip);
 #ifdef CAELUM
             // Hide the Caelum subsystems.
             caelumSystem->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
@@ -406,7 +348,6 @@ void Environment::Update(f64 frametime)
             sceneManager->setFog(mode, fogColor * color, 0.001f, fogStart, fogEnd);
             viewport->setBackgroundColour(fogColor *  color);
             camera->setFarClipDistance(farClip);
-
     }
     else
     {
@@ -415,9 +356,9 @@ void Environment::Update(f64 frametime)
             Ogre::FogMode mode = Ogre::FOG_LINEAR;
             if ( fog != 0 )
             {
-                fogStart = fog->startDistanceAttr.Get();
-                fogEnd = fog->endDistanceAttr.Get();
-                mode = static_cast<Ogre::FogMode>(fog->modeAttr.Get());
+                fogStart = fog->startDistance.Get();
+                fogEnd = fog->endDistance.Get();
+                mode = static_cast<Ogre::FogMode>(fog->mode.Get());
             }
           
             ClampFog(fogStart, fogEnd, cameraFarClip);
@@ -427,17 +368,13 @@ void Environment::Update(f64 frametime)
             sceneManager->setFog(mode, fogColor, 0.001f, fogStart, fogEnd);
             viewport->setBackgroundColour(fogColor);
             camera->setFarClipDistance(cameraFarClip);
-
     }
- 
-
 }
 
 EC_Fog* Environment::GetEnvironmentFog()
 {
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::Entity* entity = active_scene->GetEntityByName("FogEnvironment").get();
-    
     if (entity != 0 )
     {
         owner_->RemoveLocalEnvironment();
@@ -457,27 +394,18 @@ EC_Fog* Environment::GetEnvironmentFog()
             
             entity = lst.front().get();
         }
-        
-        
     }
-  
-    
-    EC_Fog* fog = entity->GetComponent<EC_Fog >().get();
-    
-    return fog;
-    
 
+    return entity->GetComponent<EC_Fog >().get();
 }
 
 bool Environment::IsCaelum()
 {
-    
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return false;
-        
+
     return env->IsCaelumUsed();
-    
 }
 
 void Environment::SetGroundFogColor(const QVector<float>& color)
@@ -487,11 +415,9 @@ void Environment::SetGroundFogColor(const QVector<float>& color)
    if ( fog == 0)
     return;
 
-   fog->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
+   fog->color.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
    //fog->ComponentChanged(AttributeChange::Default);
 }
-
-
 
 void Environment::SetGroundFogDistance(float fogStart, float fogEnd)
 {
@@ -500,8 +426,8 @@ void Environment::SetGroundFogDistance(float fogStart, float fogEnd)
    if ( fog == 0)
     return;
 
-    fog->startDistanceAttr.Set(fogStart, AttributeChange::Default);
-    fog->endDistanceAttr.Set(fogEnd, AttributeChange::Default);
+    fog->startDistance.Set(fogStart, AttributeChange::Default);
+    fog->endDistance.Set(fogEnd, AttributeChange::Default);
     //fog->ComponentChanged(AttributeChange::Default);
 }
 
@@ -512,8 +438,7 @@ float Environment::GetGroundFogStartDistance()
    if ( fog == 0)
     return 0.f;
     
-    return fog->startDistanceAttr.Get();
-
+    return fog->startDistance.Get();
 }
 
 float Environment::GetGroundFogEndDistance()
@@ -523,8 +448,7 @@ float Environment::GetGroundFogEndDistance()
    if ( fog == 0)
     return 0.f;
  
-    return fog->endDistanceAttr.Get();
-
+    return fog->endDistance.Get();
 }
 
 void Environment::SetSunDirection(const QVector<float>& vector)
@@ -547,10 +471,8 @@ void Environment::SetSunDirection(const QVector<float>& vector)
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
-   
+
     env->SetSunDirection(Vector3df(vector[0], vector[1], vector[2]));
-    
-    
 }
 
 QVector<float> Environment::GetSunDirection() 
@@ -563,7 +485,6 @@ QVector<float> Environment::GetSunDirection()
         vector.append(vec.x), vector.append(vec.y), vector.append(vec.z);
         return vector;
     }
-
 
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     
@@ -579,7 +500,6 @@ QVector<float> Environment::GetSunDirection()
 
 void Environment::SetSunColor(const QVector<float>& vector)
 {
-
     Color color;
     if ( vector.size() == 4)
     {
@@ -598,15 +518,11 @@ void Environment::SetSunColor(const QVector<float>& vector)
         return;
     }
 
-
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 
     env->SetSunColor(color);
-
-  
-    
 }
 
 QVector<float> Environment::GetSunColor()
@@ -620,9 +536,8 @@ QVector<float> Environment::GetSunColor()
        QVector<float> vec(4);
        vec[0] = color.r, vec[1] = color.g, vec[2] = color.b, vec[3] = color.a;
        return vec;
-
     }
-    
+
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return QVector<float>(4);
@@ -631,13 +546,11 @@ QVector<float> Environment::GetSunColor()
     QVector<float> vec(4);
     vec[0] = color.r, vec[1] = color.g, vec[2] = color.b, vec[3] = color.a;
     return vec;
-    
 }
 
 QVector<float> Environment::GetAmbientLight()
 {
     EC_EnvironmentLight* light = GetEnvironmentLight();
-    
     if ( light != 0)
     {
         Color color = light->ambientColorAttr.Get();
@@ -654,28 +567,22 @@ QVector<float> Environment::GetAmbientLight()
    QVector<float> vec(3);
    vec[0] = color.r, vec[1] = color.g, vec[2] = color.b;
    return vec;
-   
- 
 }
 
 void Environment::SetAmbientLight(const QVector<float>& vector)
 {
-    
     EC_EnvironmentLight* light = GetEnvironmentLight();
-    
     if ( light != 0)
     {
         light->ambientColorAttr.Set(Color(vector[0], vector[1], vector[2]), AttributeChange::Default);
         return;
     }
 
-
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 
     env->SetAmbientLightColor(Color(vector[0], vector[1], vector[2]));
-    
- }
+}
 
 }
