@@ -18,11 +18,11 @@ public:
     {
     }
 
-    virtual ~OgreSkeletonAsset() {}
+    virtual ~OgreSkeletonAsset();
 
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
-    void Unload();
+    virtual void Unload();
 
     Ogre::SkeletonPtr ogreSkeleton;
 

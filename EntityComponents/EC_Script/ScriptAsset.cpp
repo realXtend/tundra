@@ -3,6 +3,28 @@
 #include "ScriptAsset.h"
 #include <boost/regex.hpp>
 
+ScriptAsset::~ScriptAsset()
+{
+    Unload();
+}
+
+void ScriptAsset::Unload()
+{
+    scriptContent = "";
+    references.clear();
+}
+
+bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes)
+{
+    QByteArray arr((const char *)data, numBytes);
+    arr.append('\0');
+    scriptContent = arr;
+
+    ParseReferences();
+
+    return true;
+}
+
 void ScriptAsset::ParseReferences()
 {
     references.clear();

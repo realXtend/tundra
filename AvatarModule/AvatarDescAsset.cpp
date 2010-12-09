@@ -3,6 +3,17 @@
 
 #include <QDomDocument>
 
+AvatarDescAsset::~AvatarDescAsset()
+{
+    Unload();
+}
+
+void AvatarDescAsset::Unload()
+{
+    avatarAppearanceXML = "";
+    assetReferences.clear();
+}
+
 bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     // Just store the raw downloaded Avatar Appearance XML data for now..    

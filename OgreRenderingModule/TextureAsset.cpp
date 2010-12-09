@@ -6,6 +6,11 @@
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 
+TextureAsset::~TextureAsset()
+{
+    Unload();
+}
+
 bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     if (!data)

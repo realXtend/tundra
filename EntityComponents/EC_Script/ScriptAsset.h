@@ -15,16 +15,11 @@ public:
     {
     }
 
-    virtual bool DeserializeFromData(const u8 *data, size_t numBytes)
-    {
-        QByteArray arr((const char *)data, numBytes);
-        arr.append('\0');
-        scriptContent = arr;
+    ~ScriptAsset();
 
-        ParseReferences();
+    virtual void Unload();
 
-        return true;
-    }
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
 
     virtual std::vector<AssetReference> FindReferences() const { return references; }
 

@@ -5,6 +5,11 @@
 
 using namespace OgreRenderer;
 
+OgreSkeletonAsset::~OgreSkeletonAsset()
+{
+    Unload();
+}
+
 bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     if (!data_)

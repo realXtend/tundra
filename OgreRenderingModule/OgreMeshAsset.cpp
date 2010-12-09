@@ -5,6 +5,11 @@
 
 #include <Ogre.h>
 
+OgreMeshAsset::~OgreMeshAsset()
+{
+    Unload();
+}
+
 bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     PROFILE(OgreMeshAsset_LoadFromFileInMemory);

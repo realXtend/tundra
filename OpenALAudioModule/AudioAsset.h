@@ -16,6 +16,13 @@ public:
     {
     }
 
+    ~AudioAsset() { Unload(); }
+
+    virtual void Unload()
+    {
+        audioData.data_.clear();
+    }
+
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes)
     {
 

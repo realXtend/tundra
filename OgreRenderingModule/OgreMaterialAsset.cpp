@@ -6,6 +6,11 @@
 
 using namespace OgreRenderer;
 
+OgreMaterialAsset::~OgreMaterialAsset()
+{
+    Unload();
+}
+
 bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     // Remove old material if any
