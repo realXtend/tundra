@@ -38,6 +38,13 @@ private:
 
     Foundation::Framework *framework; ///< Framework pointer.
     QTreeWidget *treeWidget; ///< Tree widget showing the assets.
+
+private slots:
+    /// Searches for items containing @c text (case-insensitive) and toggles their visibility.
+    /** If match is found the item is set visible and expanded, otherwise it's hidden.
+        @param filter Text used as a filter.
+    */
+    void Search(const QString &filter);
 };
 
 #endif
