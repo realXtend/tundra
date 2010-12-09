@@ -3,7 +3,7 @@
 
 #include <QDomDocument>
 
-bool AvatarDescAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
+bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     // Just store the raw downloaded Avatar Appearance XML data for now..    
     QByteArray bytes((const char *)data, numBytes);

@@ -5,7 +5,7 @@
 
 #include <Ogre.h>
 
-bool OgreMeshAsset::LoadFromFileInMemory(const u8 *data_, size_t numBytes)
+bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     PROFILE(OgreMeshAsset_LoadFromFileInMemory);
     assert(data_);

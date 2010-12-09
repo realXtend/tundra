@@ -13,12 +13,12 @@ class AvatarDescAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    AvatarDescAsset(const QString &type_, const QString &name_)
-    :IAsset(type_, name_)
+    AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+    :IAsset(owner, type_, name_)
     {
     }
 
-    virtual bool LoadFromFileInMemory(const u8 *data, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
     virtual std::vector<AssetReference> FindReferences() const { return assetReferences; }
 
     /// Stores the downloaded avatar appearance XML file as raw .xml data.

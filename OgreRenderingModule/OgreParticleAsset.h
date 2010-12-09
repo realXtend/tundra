@@ -12,18 +12,18 @@ class OGRE_MODULE_API OgreParticleAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    OgreParticleAsset(const QString &type_, const QString &name_)
-    :IAsset(type_, name_)
+    OgreParticleAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+    :IAsset(owner, type_, name_)
     {
     }
 
-    virtual ~OgreParticleAsset() {}
+    ~OgreParticleAsset();
 
-    virtual bool LoadFromFileInMemory(const u8 *data_, size_t numBytes);
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
     virtual std::vector<AssetReference> FindReferences() const;
 
-    void Unload();
+    virtual void Unload();
     
     /// Returns the number of templates in this particle system asset.
     int GetNumTemplates() const;

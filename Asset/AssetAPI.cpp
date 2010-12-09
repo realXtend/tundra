@@ -170,6 +170,24 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
     return "";    
 }
 
+void AssetAPI::DeleteAsset(AssetPtr asset)
+{
+    if (!asset.get())
+        return;
+
+    // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
+    // some object left a dangling strong ref to an asset).
+    asset->Unload();
+
+    AssetMap::iterator iter = assets.find(asset->Name());
+    if (iter == assets.end())
+    {
+        LogError("AssetAPI::DeleteAsset called on asset \"" + asset->Name().toStdString() + "\", which does not exist in AssetAPI!");
+        return;
+    }
+    assets.erase(iter);
+}
+
 IAssetUploadTransfer *AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
 {
     if (!filename || strlen(filename) == 0)
@@ -208,8 +226,11 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
     /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
 }
 
-void AssetAPI::ForgetAllAssets()
+void AssetAPI::DeleteAllAssets()
 {
+    for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
+        DeleteAsset(iter->second);
+
     assets.clear();
     currentTransfers.clear();
 }
@@ -355,7 +376,7 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
         LogError("AssetAPI:CreateNewAsset: Cannot create asset of type \"" + type.toStdString() + "\", name: \"" + name.toStdString() + "\". No type factory registered for the type!");
         return AssetPtr();
     }
-    AssetPtr asset = factory->CreateEmptyAsset(name.toStdString().c_str());
+    AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
     if (!asset.get())
     {
         LogError("AssetAPI:CreateNewAsset: IAssetTypeFactory::CreateEmptyAsset(type \"" + type.toStdString() + "\", name: \"" + name.toStdString() + "\") failed to create asset!");
@@ -378,6 +399,12 @@ AssetPtr AssetAPI::GetAsset(QString assetRef)
     AssetMap::iterator iter = assets.find(assetRef);
     if (iter != assets.end())
         return iter->second;
+    return AssetPtr();
+}
+
+AssetPtr AssetAPI::GetAssetByHash(QString assetHash)
+{
+    ///\todo Implement.
     return AssetPtr();
 }
 

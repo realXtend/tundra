@@ -17,7 +17,7 @@ public:
 
     /// Creates a new asset of the given type that is initialized to the "empty" asset of this type.
     /// @param name The name to give for this asset.
-    virtual AssetPtr CreateEmptyAsset(const char *name) = 0;
+    virtual AssetPtr CreateEmptyAsset(AssetAPI *owner, const char *name) = 0;
 };
 
 #endif
