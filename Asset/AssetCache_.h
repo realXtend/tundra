@@ -1,5 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+// A note about the filename: This file will be renamed to AssetCache_.h at the moment the old AssetCache.h from AssetModule is deleted.
+
 #ifndef incl_Asset_AssetCache_h
 #define incl_Asset_AssetCache_h
 
@@ -7,6 +9,10 @@
 
 #include "CoreTypes.h"
 #include "AssetFwd.h"
+
+/// An utility function that takes an assetRef and makes a string out of it that can safely be used as a part of a filename.
+/// Cleans characters / \ :
+QString SanitateAssetRefForCache(QString assetRef);
 
 class AssetCache
 {

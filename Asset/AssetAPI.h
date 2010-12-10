@@ -79,6 +79,11 @@ public:
     */
     QString GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix);
 
+    /// Generates an absolute path name to a file on the local system that is guaranteed to be writable to and nonexisting. This file can be used as temporary workspace
+    /// for asset serialization/deserialization routines. This is used especially with Ogre-related data (de)serializers, since they don't have support for loading/saving data
+    /// from memory and need to access a file.
+    QString GenerateTemporaryNonexistingAssetFilename(QString filename);
+
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
 
@@ -97,6 +102,7 @@ public:
     /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
     AssetMap &GetAllAssets() { return assets; }
 
+    /// Returns the asset cache object that genereates a disk source for all assets.
     AssetCache *GetAssetCache() { return assetCache; }
 
     /// Returns the asset provider of the given type.
