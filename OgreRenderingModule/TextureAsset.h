@@ -20,7 +20,9 @@ public:
 
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
-    void Unload();
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
+
+    virtual void Unload();
 
     /// Returns an empty list - textures do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
