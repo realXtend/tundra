@@ -27,6 +27,12 @@ public:
         return true;
     }
 
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+    {
+        dst = data;
+        return true;
+    }
+
     virtual std::vector<AssetReference> FindReferences() const
     {
         return std::vector<AssetReference>();

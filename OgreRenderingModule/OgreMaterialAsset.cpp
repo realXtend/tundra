@@ -176,6 +176,35 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     return true;
 }
 
+bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+{
+    if (ogreMaterial.isNull())
+    {
+        OgreRenderingModule::LogWarning("Tried to export non-existing Ogre material " + Name().toStdString() + ".");
+        return false;
+    }
+    try
+    {
+        Ogre::MaterialSerializer serializer;
+        serializer.queueForExport(ogreMaterial);
+        std::string materialData = serializer.getQueuedAsString();
+        if (materialData.empty())
+            return false;
+
+        data.clear();
+        data.insert(data.end(), &materialData[0], &materialData[0] + materialData.length());
+
+//        serializer.exportQueued(filename);
+    } catch (std::exception &e)
+    {
+        OgreRenderingModule::LogError("Failed to export Ogre material " + Name().toStdString() + ":");
+        if (e.what())
+            OgreRenderingModule::LogError(e.what());
+        return false;
+    }
+    return true;
+}
+
 std::vector<AssetReference> OgreMaterialAsset::FindReferences() const
 {
     return references_;
