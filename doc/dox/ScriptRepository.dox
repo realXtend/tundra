@@ -37,15 +37,15 @@ Each script receives a predefined object called <b>engine</b>. This object repre
 
 <table style="width: 50%; margin: 20px; background-color: #F0F0FF; border: 1px solid black; border-spacing: 0px; ">
 <tr style="border-style: none;"><td style="border-style: none;">
-<span style="font-weight: bold; font-size: 1.15em;">engine.IncludeFile(filename)</span>
+<span style="font-weight: bold; font-size: 1.15em;">engine.IncludeFile(assetRef)</span>
 
-Includes the given .js file and executes it in the current engine context.
+Includes the given .js file and executes it in the current engine context. 
  
-QtScript (or ECMAScript/JavaScript) does not have a built-in <b>include</b> keyword. In Naali, you can however use the <b>engine.IncludeFile(filename.js)</b> function to execute another .js file at the point where engine.IncludeFile is called.
+QtScript (or ECMAScript/JavaScript) does not have a built-in <b>include</b> keyword. In Naali, you can however use this command to execute another .js file at the point where engine.IncludeFile is called.
 
-Note that inclusion of the same file multiple times during script execution is automatically prevented.
+The parameter <i>assetRef</i> can either be an asset reference URL or an absolute path on a local filesystem, e.g. "local://myscript.js", "http://www.someserver.com/myscript.js" and "C:\Tundra\myscript.js" are all valid.  If you specify a local filename, each client looks the file up locally and there is no network asset transfers included.
 
-\todo Currently, the filename that is specified into IncludeFile is interpreted locally, relative to the current working directory (the bin/ directory), but in the future, the Naali asset system will be used.
+Note that inclusion of the same file multiple times during script execution is automatically prevented. It is as if each .js file had a #pragma once clause in them.
 
 </td></tr></table>
 
