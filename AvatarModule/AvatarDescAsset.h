@@ -22,6 +22,7 @@ public:
 
     virtual void Unload();
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters);
     virtual std::vector<AssetReference> FindReferences() const { return assetReferences; }
 
     /// Stores the downloaded avatar appearance XML file as raw .xml data.
