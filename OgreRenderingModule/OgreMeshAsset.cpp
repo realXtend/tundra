@@ -126,7 +126,6 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
         QFile::remove(tempFilename); // Delete the temporary file we used for serialization.
         if (!success)
             return false;
-
     } catch (std::exception &e)
     {
         OgreRenderer::OgreRenderingModule::LogError("Failed to export Ogre mesh " + Name().toStdString() + ":");
