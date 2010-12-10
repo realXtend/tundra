@@ -11,10 +11,14 @@
 #define incl_SceneStructureModule_AssetsWindow_h
 
 #include "ForwardDefines.h"
+#include "AssetFwd.h"
 
 #include <QWidget>
 
+#include <set>
+
 class QTreeWidget;
+class QTreeWidgetItem;
 
 ///
 /**
@@ -35,6 +39,13 @@ public:
 private:
     ///
     void PopulateTreeWidget();
+
+    /// 
+    /** @param asset 
+        @param parent 
+        @param alreadyAdded 
+    */
+    void AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent, std::set<AssetPtr> &alreadyAdded);
 
     Foundation::Framework *framework; ///< Framework pointer.
     QTreeWidget *treeWidget; ///< Tree widget showing the assets.

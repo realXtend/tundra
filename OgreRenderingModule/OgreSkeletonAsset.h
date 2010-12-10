@@ -22,6 +22,8 @@ public:
 
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "");
+
     virtual void Unload();
 
     Ogre::SkeletonPtr ogreSkeleton;

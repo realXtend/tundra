@@ -33,10 +33,11 @@ public slots:
     /// or if the hash was not computed.
     QString ContentHash() const { return contentHash; }
 
-    /// Specifies the file from which this asset can be reloaded, if it is unloaded in between.
+    /// Specifies the file from which this asset can be reloaded, if it is unloaded in between. 
     void SetDiskSource(QString diskSource);
 
-    /// Returns the absolute path name to the file that contains the disk-cached version of this asset.
+    /// Returns the absolute path name to the file that contains the disk-cached version of this asset. For some assets, this is the cache file containing this asset,
+    /// but for assets from some providers (e.g. LocalAssetProvider), this is the actual source filename of the asset.
     QString DiskSource() const { return diskSource; }
 
     /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.
@@ -52,7 +53,8 @@ public slots:
     /// Stores the *current in-memory copy* of this asset to disk to the given file on the local filesystem. Use this function to export an asset from the system to a file.
     /// Returns true if saving succeeded, false otherwise.
     /// The default implementation immediately returns false for the asset.
-    virtual bool SaveToFile(const QString &filename);
+    /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
+    virtual bool SaveToFile(const QString &filename, const QString &serializationParameters = "");
 
     /// Copies the disk cache version of this asset to the specified file. 
     bool SaveCachedCopyToFile(const QString &filename);
@@ -90,8 +92,11 @@ public:
     /// Saves the storage this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
     void SetAssetStorage(AssetStoragePtr storage); 
 
-    virtual bool SerializeTo(std::vector<u8> &data);
-private:
+    /// Saves this asset to the given data buffer. Returns true on success. If this asset is unloaded, will return false.
+    /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "");
+
+protected:
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes) = 0;
 
