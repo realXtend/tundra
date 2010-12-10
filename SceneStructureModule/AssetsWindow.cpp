@@ -40,13 +40,16 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw) :
     QHBoxLayout *hlayout= new QHBoxLayout;
     QLabel *searchLabel = new QLabel(tr("Search filter: "), this);
     QLineEdit *searchField = new QLineEdit(this);
+    QPushButton *expandAndCollapseButton = new QPushButton(tr("Expand/collapse all"), this);
     hlayout->addWidget(searchLabel);
     hlayout->addWidget(searchField);
+    hlayout->addWidget(expandAndCollapseButton);
 
     layout->addLayout(hlayout);
     layout->addWidget(treeWidget);
 
     connect(searchField, SIGNAL(textChanged(const QString &)), SLOT(Search(const QString &)));
+    connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
 
     PopulateTreeWidget();
 }
@@ -150,4 +153,20 @@ void AssetsWindow::Search(const QString &filter)
 
         ++it;
     }
+}
+
+void AssetsWindow::ExpandOrCollapseAll()
+{
+    bool expand = true;
+    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        QTreeWidgetItem *item = treeWidget->topLevelItem(i);
+        if (item->childCount() >= 1 && item->isExpanded())
+            expand = false;
+    }
+
+    if (expand)
+        treeWidget->expandAll();
+    else
+        treeWidget->collapseAll();
 }
