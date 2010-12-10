@@ -7,6 +7,24 @@
 
 namespace Tts
 {
+    class Settings
+    {
+    public:
+        virtual void Load();
+        virtual void Save();
+
+    public:
+        QString testVoice;
+        QString ownVoice;
+        QString otherDefaultVoice;
+        QString notificationVoice;
+        bool playOwnChatMessages;
+        bool playOtherChatMessages;
+        bool playNotificationMessages;
+        QString testPhrase;
+        static const char SETTINGS_HEADER_[];
+    };
+
     class SettingsWidget : public QWidget, private Ui::TTSSettings
     {
         Q_OBJECT
@@ -20,6 +38,9 @@ namespace Tts
 
     private slots:
         virtual void TestVoice();
+        virtual void UpdateVoiceOptions();
+    private:
+        Settings settings_;
     };
 } // Tts
 
