@@ -74,7 +74,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="ownVoiceComboBox">
+                   <widget class="QComboBox" name="ownVoice">
                     <property name="minimumSize">
                      <size>
                       <width>200</width>
@@ -95,7 +95,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_6">
+                   <widget class="QComboBox" name="defaultVoiceForTextChat">
                     <property name="minimumSize">
                      <size>
                       <width>200</width>
@@ -136,7 +136,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBox_2">
+                   <widget class="QComboBox" name="notificationVoice">
                     <property name="minimumSize">
                      <size>
                       <width>200</width>
@@ -191,7 +191,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QComboBox" name="comboBox_4">
+                <widget class="QComboBox" name="testVoice">
                  <property name="minimumSize">
                   <size>
                    <width>200</width>

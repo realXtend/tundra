@@ -13,7 +13,7 @@
 
 #include "TtsServiceInterface.h"
 #include "UiServiceInterface.h" 
-
+#include <QSettings>
 
 #include <QColor>
 
@@ -25,14 +25,23 @@ namespace NotifiTts
 
 	NotificationTts::NotificationTts() :
 		QObject(),
-        IModule(module_name_)
+        IModule(module_name_),
+        enabled_(false),
+        notification_voice_("")
 	{
-
 	}
 
 	NotificationTts::~NotificationTts()
 	{
 	}
+
+    void NotificationTts::UpdateTtsSettings()
+    {
+        /// @todo signal when settings are changed
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Tts");
+        enabled_ = settings.value("Tts/play_notifications_messages", false).toBool();
+        notification_voice_ = settings.value("Tts/notification_voice", "").toString();
+    }
 
 	void NotificationTts::Load()
 	{
@@ -62,10 +71,15 @@ namespace NotifiTts
 	
 	void NotificationTts::Notification2Speech(const QString &message)
 	{
+        UpdateTtsSettings();
+
+        if (!enabled_)
+            return;
+
 		tts_service_ = framework_->GetService<Tts::TtsServiceInterface>();
 		if (!tts_service_)
 			return;
-		tts_service_->Text2Speech(message, Tts::Voices.EN4);
+		tts_service_->Text2Speech(message, notification_voice_);
 	}
 	
 } // end of namespace

@@ -5,6 +5,11 @@
 
 #include "ui_TTSSettings.h"
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace Tts
 {
     class Settings
@@ -29,7 +34,7 @@ namespace Tts
     {
         Q_OBJECT
     public:
-        SettingsWidget();
+        SettingsWidget(Foundation::Framework* framework);
         virtual ~SettingsWidget();
 
         public slots:
@@ -41,6 +46,7 @@ namespace Tts
         virtual void UpdateVoiceOptions();
     private:
         Settings settings_;
+        Foundation::Framework* framework_;
     };
 } // Tts
 

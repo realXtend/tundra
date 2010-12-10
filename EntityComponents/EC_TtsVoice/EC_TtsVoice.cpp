@@ -16,7 +16,7 @@
 
 EC_TtsVoice::EC_TtsVoice(IModule *module) :
     IComponent(module->GetFramework()),
-	voice_(this, "voice", Tts::Voices.ES1.c_str()),
+	voice_(this, "voice", ""),
     message_(this, "message", "")
 {
 	// Get TTS service
@@ -29,20 +29,20 @@ EC_TtsVoice::~EC_TtsVoice()
 {
 }
 
-void EC_TtsVoice::SetMyVoice(const Tts::Voice voice)
+void EC_TtsVoice::SetMyVoice(const QString voice)
 {
-	voice_.Set(voice.c_str(),AttributeChange::LocalOnly);
+	voice_.Set(voice, AttributeChange::LocalOnly);
 	//AttributeChanged(voice_,AttributeChange::Local);
 	ComponentChanged(AttributeChange::LocalOnly);
 	//voice_=voice;
 }
 
-Tts::Voice EC_TtsVoice::GetMyVoice() const
+QString EC_TtsVoice::GetMyVoice() const
 {
-	return voice_.Get().toStdString();
+    return voice_.Get();
 }
 
-void EC_TtsVoice::SpeakMessage(const QString msg, Tts::Voice voice)
+void EC_TtsVoice::SpeakMessage(const QString msg, QString voice)
 {
 	if(!ttsService_)
 		ttsService_ = framework_->GetService<Tts::TtsServiceInterface>();
@@ -55,7 +55,7 @@ void EC_TtsVoice::SpeakMessage(const QString msg)
 	if(!ttsService_)
 		ttsService_ = framework_->GetService<Tts::TtsServiceInterface>();
 	
-	ttsService_->Text2Speech(msg,voice_.Get().toStdString());
+	ttsService_->Text2Speech(msg, voice_.Get());
 }
 
 void EC_TtsVoice::SpeakMessage()
@@ -63,7 +63,7 @@ void EC_TtsVoice::SpeakMessage()
 	if(!ttsService_)
 		ttsService_ = framework_->GetService<Tts::TtsServiceInterface>();
 
-	ttsService_->Text2Speech(message_.Get(),voice_.Get().toStdString());
+	ttsService_->Text2Speech(message_.Get(),voice_.Get());
 	//ttsService_->text2PHO(message_.Get(),"nombrepho", voice_.Get().toStdString());
 	//ttsService_->text2WAV(message_.Get(),"nombrewav", voice_.Get().toStdString());
 

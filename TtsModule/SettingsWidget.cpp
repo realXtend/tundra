@@ -39,12 +39,22 @@ namespace Tts
         settings.sync();
     }
 
-    SettingsWidget::SettingsWidget():  QWidget()
+    SettingsWidget::SettingsWidget(Foundation::Framework* framework):
+        QWidget(),
+        framework_(framework)
     {
         setupUi(this);
         UpdateVoiceOptions();
         LoadSettings();
         connect(testButton, SIGNAL(clicked()), this, SLOT(TestVoice()) );
+        connect(playOwnMessagesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
+        connect(playOtherMessagesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
+        connect(playNotificationMessagesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
+        connect(testPhraseText, SIGNAL(textChanged(const QString &)), this, SLOT(SaveSettings()) );
+        connect(ownVoice, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SaveSettings()) );
+        connect(defaultVoiceForTextChat, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SaveSettings()) );
+        connect(notificationVoice, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SaveSettings()) );
+        connect(testVoice, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SaveSettings()) );
     }
 
     SettingsWidget::~SettingsWidget()
@@ -54,16 +64,20 @@ namespace Tts
 
     void SettingsWidget::SaveSettings()
     {
+        /// @todo get data from ui to settings_ object
         settings_.Save();
     }
 
     void SettingsWidget::UpdateVoiceOptions()
     {
-  //      Tts::TtsServiceInterface* tts_service = framework_->GetService<Tts::TtsServiceInterface>();
-		//if (!tts_service)
-		//	return;
+        Tts::TtsServiceInterface* tts_service = framework_->GetService<Tts::TtsServiceInterface>();
+		if (!tts_service)
+			return;
 
-        // TODO: TtsServiceInterface::GetAvailableVoices
+        ownVoice->addItems(tts_service->GetAvailableVoices());
+        defaultVoiceForTextChat->addItems(tts_service->GetAvailableVoices());
+        notificationVoice->addItems(tts_service->GetAvailableVoices());
+        testVoice->addItems(tts_service->GetAvailableVoices());
     }
 
     void SettingsWidget::LoadSettings()
@@ -88,7 +102,13 @@ namespace Tts
     void SettingsWidget::TestVoice()
     {
         QString text = testPhraseText->displayText();
-        // TODO: tts_service->play(text)
+        QString voice = testVoice->currentText();
+
+        Tts::TtsServiceInterface* tts_service = framework_->GetService<Tts::TtsServiceInterface>();
+		if (!tts_service)
+			return;
+
+        tts_service->Text2Speech(text, voice);
     }
 
 } // Tts

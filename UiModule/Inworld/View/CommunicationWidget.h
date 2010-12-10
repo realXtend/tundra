@@ -8,10 +8,7 @@
 #include "ui_CommunicationWidget.h"
 #include "Input.h"
 
-//$ BEGIN_MOD $
-#include "TtsChatWidget.h"
 #include "EC_TtsVoice.h"
-//$ END_MOD $
 
 class QStackedLayout;
 class QTextBrowser;
@@ -27,13 +24,11 @@ namespace Communications
         class TextMessageInterface;
     }
 	
-//$ BEGIN_MOD $
 	namespace TtsChat
 	{
 		class TtsChatWidget;
 		class TtsChatConfig;
 	}
-//$ END_MOD $
 }
 
 namespace CommUI
@@ -80,28 +75,14 @@ namespace CoreUi
         void ToggleImWidget();
 
         void ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message);
-		/// Takes the message from chat line and adds voice information if TTS available
+
         void SendMessageRequested();
         void InitializeInWorldVoice();
         void InitializeInWorldChat();
         void UninitializeInWorldVoice();
-		/// Updates chat view removing voice info first
-//$ BEGIN_MOD $
-//$ MOD_DESCRIPTION param uuid added $
-        void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message, const QString& uuid);
-//$ END_MOD $
 
-//$ BEGIN_MOD $
-		/// Shows or hides TTSCHatWidget configuration window
-		void ToggleTtsChatWidget();
-		/// Shows TTS Button in the communication widget
-		void ShowTtsChatControls();
-		/// Hides TTS Button in the communication widget
-        void HideTtsChatControls();
-	    /// Update TTS Button color to yellow or green changing style sheet
-		void UpdateTtsChatControls();
-		/// Initializes all TTS system showing buttons, creating widgets and with default configuration
-		void InitializeInWorldTts();
+        void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message, const QString& uuid);
+	    
 		/** Message parser (voice+msg) calls TTS Service
 		\param message Message directly from network with time stamp and so on.
 		\param from_uuid
@@ -120,10 +101,7 @@ namespace CoreUi
         QStackedLayout *stacked_layout_;
         QTextBrowser *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
-//$ BEGIN_MOD $
-//$ MOD_DESCRIPTION TTS added $
-        UiProxyWidget *im_proxy_,*tts_proxy_;
-//$ END_MOD $
+        UiProxyWidget *im_proxy_; //,*tts_proxy_;
 
         Communications::InWorldChat::SessionInterface* in_world_chat_session_;
         CommUI::VoiceToolWidget* voice_tool_;
@@ -136,13 +114,16 @@ namespace CoreUi
 
         InputContextPtr input_context_;
 
-//$ BEGIN_MOD $
-		Communications::TtsChat::TtsChatWidget* Tts_chat_widget;
+//		Communications::TtsChat::TtsChatWidget* Tts_chat_widget;
 		Tts::TtsServiceInterface* tts_service_;
-		Communications::TtsChat::TtsChatConfig* tts_config_;
-		bool ownVoiceOn,othersVoiceOn;
+//		Communications::TtsChat::TtsChatConfig* tts_config_;
+//		bool ownVoiceOn,othersVoiceOn;
 		boost::shared_ptr<EC_TtsVoice> avatar_voice_;
-//$ END_MOD $
+        QString own_tts_voice_;
+        QString default_avatar_tts_voice_;
+        bool tts_own_messages_;
+        bool tts_other_messages_;
+
 
     signals:
         void SendMessageToServer(const QString &message);

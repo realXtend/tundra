@@ -78,7 +78,7 @@ namespace Tts
         if (!ui)
             return;
 
-        settings_widget_ = new SettingsWidget();
+        settings_widget_ = new SettingsWidget(framework_);
         ui->AddSettingsWidget(settings_widget_, "TTS");
     }
 

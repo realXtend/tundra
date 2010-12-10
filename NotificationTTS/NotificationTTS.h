@@ -77,12 +77,17 @@ namespace NotifiTts
 
 		///TTS Service
 		Tts::TtsServiceInterface* tts_service_;
+
+        QString notification_voice_;
+        bool enabled_;
 	
 	private slots:
 		/** The message is synthetized using a default voice using TTS Service
 		\param message Text to synthetize. */
 
 		void Notification2Speech(const QString &message);
+
+        void UpdateTtsSettings();
     };
 }  // end of namespace
 
