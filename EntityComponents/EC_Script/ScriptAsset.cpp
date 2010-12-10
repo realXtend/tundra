@@ -17,11 +17,18 @@ void ScriptAsset::Unload()
 bool ScriptAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
     QByteArray arr((const char *)data, numBytes);
-    arr.append('\0');
     scriptContent = arr;
 
     ParseReferences();
 
+    return true;
+}
+
+bool ScriptAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+{
+    QByteArray arr(scriptContent.toStdString().c_str());
+    dst.clear();
+    dst.insert(dst.end(), arr.data(), arr.data() + arr.size());
     return true;
 }
 
