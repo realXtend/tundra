@@ -36,25 +36,22 @@ void AvatarDescAsset::ParseReferences()
     // The avatar desc itself is incomplete in regard to asset references. We need to parse the "assetmap"
     // which is an extension originally developed for inventory/webdav avatars
     
-    // Note: this is presently commented out, because AvatarAppearance does its own asset reference tracking, and
-    // uses still the old Ogre resource system. The commenting out prevents assets from being doubly loaded
-    
-    //QDomElement avatar = avatar_doc.firstChildElement("avatar");
-    //if (!avatar.isNull())
-    //{
-    //    QDomElement assetmap = avatar.firstChildElement("assetmap");
-    //    if (!assetmap.isNull())
-    //    {
-    //        QDomElement asset = assetmap.firstChildElement("asset");
-    //        while (!asset.isNull())
-    //        {
-    //            AssetReference newRef;
-    //            newRef.ref = asset.attribute("id");
-    //            if (!newRef.ref.isEmpty())
-    //                assetReferences.push_back(newRef);
-    //            
-    //            asset = asset.nextSiblingElement("asset");
-    //        }
-    //    }
-    //}
+    QDomElement avatar = avatar_doc.firstChildElement("avatar");
+    if (!avatar.isNull())
+    {
+        QDomElement assetmap = avatar.firstChildElement("assetmap");
+        if (!assetmap.isNull())
+        {
+            QDomElement asset = assetmap.firstChildElement("asset");
+            while (!asset.isNull())
+            {
+                AssetReference newRef;
+                newRef.ref = asset.attribute("id");
+                if (!newRef.ref.isEmpty())
+                    assetReferences.push_back(newRef);
+                
+                asset = asset.nextSiblingElement("asset");
+            }
+        }
+    }
 }

@@ -24,6 +24,8 @@ public:
     //! Asset resource id
     std::string resource_id_;
     //! Resource (once it has been loaded)
+    /*! Note: this is completely deprecated and not needed for EC_Avatar
+     */
     Foundation::ResourceWeakPtr resource_;
     
     const std::string& GetLocalOrResourceName() const;
@@ -328,7 +330,7 @@ public:
 private:
     EC_AvatarAppearance(IModule* module);
     AppearanceModifier* FindModifier(const std::string& name, AppearanceModifier::ModifierType type);
-            
+    
     //! Avatar mesh
     AvatarAsset mesh_;
     //! Avatar skeleton
