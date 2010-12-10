@@ -179,7 +179,15 @@ public:
     void ForgetAllAssets();
 
     /// Returns all the currently ongoing or waiting asset transfers.
-    std::vector<AssetTransferPtr> PendingTransfers() const;
+    std::vector<AssetTransferPtr> PendingTransfers();
+
+    /// Returns a pointer to an existing asset transfer if one is in-progress for the given assetRef. Returns a null pointer if no transfer exists, in which
+    /// case the asset may already have been loaded to the system (or not). It can be that an asset is loaded to the system, but one or more of its dependencies
+    /// have not, in which case there exists both an IAssetTransfer and IAsset to this particular assetRef (so the existence of these two objects is not
+    /// mutually exclusive).
+    /// \note Client code should not need to worry about whether a particular transfer is pending or not, but simply call RequestAsset whenever an asset
+    /// request is needed. AssetAPI will optimize away any duplicate transfers to the same asset.
+    AssetTransferPtr GetPendingTransfer(QString assetRef);
 
     /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
     /// it yourself.
@@ -188,17 +196,22 @@ public:
     /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
     void AssetTransferCompleted(IAssetTransfer *transfer);
 
-    /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and notify
+    /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and
+    /// also fail any transfers of assets which depended on this transfer.
     void AssetTransferFailed(IAssetTransfer *transfer);
 
     void AssetDependenciesCompleted(AssetTransferPtr transfer);
 
     void NotifyAssetDependenciesChanged(AssetPtr asset);
 
+    /// Starts an asset transfer for each dependency the given asset has.
     void RequestAssetDependencies(AssetPtr transfer);
 
     /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset);
+
+    /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
+    std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
 
 private slots:
     void OnAssetLoaded(IAssetTransfer* transfer);
@@ -215,7 +228,6 @@ private:
 
     /// Removes from AssetDependenciesMap all dependencies the given asset has.
     void RemoveAssetDependencies(QString asset);
-    std::vector<AssetPtr> FindDependents(QString dependee);
 
     /// Stores a list of asset requests to assets that have already been downloaded into the system. These requests don't go to the asset providers
     /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions

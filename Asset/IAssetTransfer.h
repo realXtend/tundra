@@ -47,6 +47,8 @@ public:
 
     void EmitAssetLoaded();
 
+    void EmitAssetFailed();
+
     /// Stores the raw asset bytes for this asset.
     std::vector<u8> rawAssetData;
 
@@ -76,6 +78,9 @@ signals:
 
     /// Emitted when this asset is ready to be used in the system.
     void Loaded(IAssetTransfer *transfer);
+
+    /// Emitted when this transfer failed.
+    void Failed(IAssetTransfer *transfer);
 
 private:
     bool cachingAllowed;
