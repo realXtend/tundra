@@ -1,6 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#if defined(_MSC_VER)
 #include <direct.h>
+#define getcwd _getcwd
+#else
+#include <unistd.h>
+#endif
+
+#include <stdio.h>
 
 #include "Foundation.h"
 #include "ModuleManager.h"
@@ -99,7 +106,7 @@ void setup (Foundation::Framework &fw)
 
 std::string GetWorkingDirectory()
 {
-   char *buffer = _getcwd( NULL, 0 );
+   char *buffer = getcwd(NULL, 0);
    if (buffer)
    {
        std::string s = buffer;
