@@ -44,6 +44,7 @@ namespace ProtocolUtilities
 
 namespace Tts
 {
+    class SettingsWidget;
 
     class TTS_MODULE_API TtsModule :  public QObject, public IModule
     {
@@ -66,6 +67,8 @@ namespace Tts
         void PostInitialize();
 		/// Unregisters and destroys the service. 
         void Uninitialize();
+
+        void SetupSettingsWidget();
 		
         /// Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return module_name_; } 
@@ -81,6 +84,7 @@ namespace Tts
         static const std::string module_name_;
 		/// TTS service
 		TtsServicePtr tts_service_;
+        SettingsWidget* settings_widget_;
     };
 }  // end of namespace: Tts
 

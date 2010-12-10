@@ -11,16 +11,16 @@
 
 #include "StableHeaders.h"
 
+#include "SettingsWidget.h"
+#include <QColor>
+#include "UiServiceInterface.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "CoreStringUtils.h"
-#include "MemoryLeakCheck.h"
-
-#include <QColor>
-
-
 #include "TtsModule.h"
 #include "EC_TtsVoice.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace Tts
 {
@@ -28,13 +28,15 @@ namespace Tts
 
 	TtsModule::TtsModule() :
 	    QObject(),
-        IModule(module_name_)
+        IModule(module_name_),
+        settings_widget_(0)
 	{
 
 	}
 
 	TtsModule::~TtsModule()
 	{
+        SAFE_DELETE(settings_widget_);
 	}
 
 	void TtsModule::Load()
@@ -58,16 +60,28 @@ namespace Tts
 		tts_service_ = TtsServicePtr(new TtsService(framework_));
 		framework_->GetServiceManager()->RegisterService(Service::ST_Tts, tts_service_);
 	}
+
 	void TtsModule::PostInitialize()
 	{
-	}
-
+        SetupSettingsWidget();
+    }
 
 	void TtsModule::Uninitialize()
 	{
 		framework_->GetServiceManager()->UnregisterService(tts_service_);
 		tts_service_.reset();
 	}
+
+    void TtsModule::SetupSettingsWidget()
+    {
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        if (!ui)
+            return;
+
+        settings_widget_ = new SettingsWidget();
+        ui->AddSettingsWidget(settings_widget_, "TTS");
+    }
+
 } // end of namespace: Tts
 
 
