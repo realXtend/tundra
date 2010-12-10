@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Asset_AssetCache_h
-#define incl_Asset_AssetCache_h
+#ifndef incl_AssetModule_AssetCache_h
+#define incl_AssetModule_AssetCache_h
 
 #include "Foundation.h"
 #include "AssetInterface.h"
