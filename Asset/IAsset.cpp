@@ -76,16 +76,16 @@ std::vector<AssetReference> IAsset::FindReferencesRecursive() const
     return finalRefs;
 }
 
-bool IAsset::SerializeTo(std::vector<u8> &data)
+bool IAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
 {
     ///\todo Log out warning.
     return false;
 }
 
-bool IAsset::SaveToFile(const QString &filename)
+bool IAsset::SaveToFile(const QString &filename, const QString &serializationParameters)
 {
     std::vector<u8> data;
-    bool success = SerializeTo(data);
+    bool success = SerializeTo(data, serializationParameters);
     if (!success || data.size() == 0)
         return false; ///\todo Log warning.
 

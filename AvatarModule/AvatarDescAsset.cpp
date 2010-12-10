@@ -25,6 +25,12 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     return true;
 }
 
+bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+{
+    ///\todo Implement.
+    return false;
+}
+
 void AvatarDescAsset::ParseReferences()
 {
     assetReferences.clear();

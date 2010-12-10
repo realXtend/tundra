@@ -20,6 +20,7 @@ public:
     virtual void Unload();
 
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters);
 
     virtual std::vector<AssetReference> FindReferences() const { return references; }
 

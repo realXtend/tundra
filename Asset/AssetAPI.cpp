@@ -401,14 +401,31 @@ QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString asset
         assetTypePrefix = "Asset";
 
     QString assetName;
-    bool ok = false;
-    while(!ok) // We loop until we manage to generate a single asset name that does not exist, incrementing a running counter at each iteration.
+    // We loop until we manage to generate a single asset name that does not exist, incrementing a running counter at each iteration.
+    for(int i = 0; i < 10000; ++i) // The intent is to loop 'infinitely' until a name is found, but do an artificial limit to avoid voodoo bugs.
     {
         assetName = assetTypePrefix + "_" + assetNamePrefix + (assetNamePrefix.isEmpty() ? "" : "_") + QString::number(uniqueRunningAssetCounter++);
         if (!GetAsset(assetName).get())
-            ok = true;
+            return assetName;
     }
-    return assetName;
+    assert(false);
+    throw Exception("GenerateUniqueAssetName failed!");
+}
+
+QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuffix)
+{
+    static unsigned long uniqueRunningFilenameCounter = 1;
+
+    QString filename;
+    // We loop until we manage to generate a single filename that does not exist, incrementing a running counter at each iteration.
+    for(int i = 0; i < 10000; ++i) // The intent is to loop 'infinitely' until a name is found, but do an artificial limit to avoid voodoo bugs.
+    {
+        filename = "temporary_" + SanitateAssetRefForCache(filenameSuffix.trimmed()) + QString::number(uniqueRunningFilenameCounter++);
+        if (!QFile::exists(filename))
+            return filename;
+    }
+    assert(false);
+    throw Exception("GenerateTemporaryNonexistingAssetFilename failed!");
 }
 
 AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
