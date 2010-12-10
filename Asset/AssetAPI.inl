@@ -3,7 +3,7 @@
 template<typename T>
 boost::shared_ptr<T> AssetAPI::GetAssetProvider()
 {
-    std::vector<Foundation::AssetProviderPtr> providers = GetAssetProviders();
+    std::vector<AssetProviderPtr> providers = GetAssetProviders();
     for(size_t i = 0; i < providers.size(); ++i)
     {
         boost::shared_ptr<T> provider = boost::dynamic_pointer_cast<T>(providers[i]);
