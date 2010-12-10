@@ -142,7 +142,7 @@ else
     sed 's/CocoaRequestModal = QEvent::CocoaRequestModal,//' < $fn > x
     mv x $fn
     qmake
-    make -j2
+    make -j$nprocs
     rm -f $prefix/lib/lib$what*
     cp -a lib/lib$what* $prefix/lib/
     cp src/PythonQt*.h $prefix/include/
@@ -163,7 +163,7 @@ else
     cd $pkgbase
     echo yes | ./configure -library
     qmake
-    make
+    make -j$nprocs
     cp lib/lib* $prefix/lib/
     # luckily only extensionless headers under src match Qt*:
     cp src/qt*.h src/Qt* $prefix/include/
