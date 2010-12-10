@@ -279,6 +279,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         if (path.isEmpty())
         {
             AssetModule::LogWarning("Failed to find local asset with filename \"" + ref.toStdString() + "\"!");
+            framework_->Asset()->AssetTransferFailed(transfer.get());
             continue;
         }
     
@@ -289,6 +290,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         if (!success)
         {
             AssetModule::LogError("Failed to read asset data for asset \"" + ref.toStdString() + "\" from file \"" + absoluteFilename.toStdString() + "\"");
+            framework_->Asset()->AssetTransferFailed(transfer.get());
             continue;
         }
         

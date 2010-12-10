@@ -40,21 +40,6 @@ AssetAPI::~AssetAPI()
     delete assetCache;
 }
 
-void IAssetTransfer::EmitAssetDownloaded()
-{
-    emit Downloaded(this);
-}
-
-void IAssetTransfer::EmitAssetDecoded()
-{
-    emit Decoded(this);
-}
-
-void IAssetTransfer::EmitAssetLoaded()
-{
-    emit Loaded(this);
-}
-
 std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 {
     ServiceManagerPtr service_manager = framework->GetServiceManager();
@@ -260,6 +245,28 @@ void AssetAPI::ForgetAllAssets()
 
     assets.clear();
     currentTransfers.clear();
+}
+
+std::vector<AssetTransferPtr> AssetAPI::PendingTransfers()
+{
+    std::vector<AssetTransferPtr> transfers;
+    for(AssetTransferMap::iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
+        transfers.push_back(iter->second);
+
+    transfers.insert(transfers.end(), readyTransfers.begin(), readyTransfers.end());
+    return transfers;
+}
+
+AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
+{
+    AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
+    if (iter != currentTransfers.end())
+        return iter->second;
+    for(size_t i = 0; i < readyTransfers.size(); ++i)
+        if (readyTransfers[i]->source.ref == assetRef)
+            return readyTransfers[i];
+
+    return AssetTransferPtr();
 }
 
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
@@ -575,6 +582,33 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     // If we don't have any outstanding dependencies, fire the Loaded signal for the asset as well.
     if (NumPendingDependencies(transfer->asset) == 0)
         AssetDependenciesCompleted(transfer);
+}
+
+void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer)
+{
+    ///\todo In this function, there is a danger of reaching an infinite recursion. Remember recursion parents and avoid infinite loops. (A -> B -> C -> A)
+
+    assert(transfer);
+    if (!transfer)
+        return;
+
+    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    if (iter == currentTransfers.end())
+        LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer failed, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
+
+    // Signal any listeners that this asset transfer failed.
+    transfer->EmitAssetFailed();
+
+    // Propagate the failure of this asset transfer to all assets which depend on this asset.
+    std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
+    for(size_t i = 0; i < dependents.size(); ++i)
+    {
+        AssetTransferPtr transfer = GetPendingTransfer(dependents[i]->Name());
+        if (transfer.get())
+            AssetTransferFailed(transfer.get());
+    }
+
+    currentTransfers.erase(iter);
 }
 
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
