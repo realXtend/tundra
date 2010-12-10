@@ -73,7 +73,7 @@ private:
     EC_Avatar(IModule* module);
 
     //! Setup avatar from ready avatar description asset
-    void EC_Avatar::SetupAvatar(AvatarDescAssetPtr avatarAsset);
+    void SetupAvatar(AvatarDescAssetPtr avatarAsset);
 
     //! Category for Asset events
     event_category_id_t asset_event_category_;
