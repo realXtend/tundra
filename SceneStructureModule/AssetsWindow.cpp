@@ -18,6 +18,28 @@
 
 #include "MemoryLeakCheck.h"
 
+/*class AssetItem: public QTreeWidgetItem
+{
+};
+*/
+
+namespace
+{
+    bool HasSameRefAsPredecessors(QTreeWidgetItem *item)
+    {
+
+        QTreeWidgetItem *parent = 0, *child = item;
+        while((parent = child->parent()) != 0)
+        {
+            if (parent->text(0).compare(child->text(0), Qt::CaseInsensitive) == 0)
+                return true;
+            child = parent;
+        }
+
+        return false;
+    }
+}
+
 AssetsWindow::AssetsWindow(Foundation::Framework *fw) :
     framework(fw)
 {
@@ -69,6 +91,27 @@ AssetsWindow::~AssetsWindow()
     }
 }
 
+void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent, std::set<AssetPtr> &alreadyAdded)
+{
+    foreach(AssetReference ref, asset->FindReferences())
+    {
+        AssetPtr asset = framework->Asset()->GetAsset(ref.ref);
+        if (asset && alreadyAdded.find(asset) == alreadyAdded.end())
+        {
+            QTreeWidgetItem *item= new QTreeWidgetItem(parent);
+            item->setText(0, asset->Name());
+            parent->addChild(item);
+            alreadyAdded.insert(asset);
+
+            // Check that we don't have 
+            if (HasSameRefAsPredecessors(item))
+                item->setText(0, tr("Recursive dependency to ") + asset->Name());
+            else
+                AddChildren(asset, item, alreadyAdded);
+        }
+    }
+}
+
 void AssetsWindow::PopulateTreeWidget()
 {
     foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
@@ -83,11 +126,19 @@ void AssetsWindow::PopulateTreeWidget()
     noProviderItem->setText(0, tr("No provider"));
     treeWidget->addTopLevelItem(noProviderItem);
 
+    std::set<AssetPtr> alreadyAdded;
+
     std::pair<QString, AssetPtr> pair;
     foreach(pair, framework->Asset()->GetAllAssets())
     {
-        QTreeWidgetItem *item = new QTreeWidgetItem;
-        item->setText(0, pair.first);
+        if (alreadyAdded.find(pair.second) != alreadyAdded.end())
+            continue;
+
+        QTreeWidgetItem *aitem = new QTreeWidgetItem;
+        aitem->setText(0, pair.first);
+        alreadyAdded.insert(pair.second);
+
+        AddChildren(pair.second, aitem, alreadyAdded);
 
         AssetStoragePtr storage = pair.second->GetAssetStorage();
         bool storageFound = false;
@@ -97,14 +148,14 @@ void AssetsWindow::PopulateTreeWidget()
                 QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
                 if (storageItem->text(0) == storage->Name())
                 {
-                    storageItem->addChild(item);
+                    storageItem->addChild(aitem);
                     storageFound = true;
                     break;
                 }
             }
 
         if (!storageFound)
-            noProviderItem->addChild(item);
+            noProviderItem->addChild(aitem);
     }
 
     if (noProviderItem->childCount() == 0)
