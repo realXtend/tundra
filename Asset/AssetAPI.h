@@ -38,39 +38,45 @@ public:
 
     /// Requests the given asset to be downloaded. The transfer will go to a pending transfers queue
     /// and will be processed when possible.
-    /// @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
-    ///       that is used to load it.
-    /// @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
-    /// @return A pointer to the created asset transfer, or null if the transfer could not be initiated.
+    /** @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
+              that is used to load it.
+        @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
+        @return A pointer to the created asset transfer, or null if the transfer could not be initiated.
+    */
     AssetTransferPtr RequestAsset(QString assetRef, QString assetType = "");
 
     /// Same as RequestAsset(assetRef, assetType), but provided for convenience with the AssetReference type.
     AssetTransferPtr RequestAsset(const AssetReference &ref);
 
     /// Returns the asset provider that is used to fetch assets from the given full URL.
-    /// Example: GetProviderForAssetRef("local://my.mesh") will return an instance of LocalAssetProvider.
-    /// @param assetRef The asset reference name to query a provider for.
-    /// @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
-    ///                  used to more completely specify the type.
+    /** Example: GetProviderForAssetRef("local://my.mesh") will return an instance of LocalAssetProvider.
+        @param assetRef The asset reference name to query a provider for.
+        @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
+                        used to more completely specify the type.
+    */
     AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
 
     /// Registers a type factory for creating assets of the type governed by the factory.
     void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
 
     /// Creates a new empty unloaded asset of the given type and name.
-    /// This function uses the Asset type factories to create an instance of the proper asset class.
-    /// @param type The asset type of the asset to be created. A factory of this type must have been registered beforehand, using the AssetAPI::RegisterAssetTypeFactory function.
-    /// @param name Specifies the name to give to the new asset. This name must be unique in the system, or this call will fail. Use GetAsset(name) to query if an asset with the
-    ///             given name exists, and the AssetAPI::GenerateUniqueAssetName to guarantee the creation of a unique asset name.
+    /** This function uses the Asset type factories to create an instance of the proper asset class.
+        @param type The asset type of the asset to be created. A factory of this type must have been registered beforehand,
+                    using the AssetAPI::RegisterAssetTypeFactory function.
+        @param name Specifies the name to give to the new asset. This name must be unique in the system, or this call will fail.
+                    Use GetAsset(name) to query if an asset with the given name exists, and the AssetAPI::GenerateUniqueAssetName 
+                    to guarantee the creation of a unique asset name.
+    */
     AssetPtr CreateNewAsset(QString type, QString name);
 
     /// Loads an asset from a local file.
     AssetPtr CreateAssetFromFile(QString assetType, QString assetFile);
 
     /// Generates a new asset name that is guaranteed to be unique in the system.
-    /// @param assetTypePrefix The type of the asset to use as a human-readable visual prefix identifier for the name. May be empty.
-    /// @param assetNamePrefix A name prefix that is added to the asset name for visual identification. May be empty.
-    /// @return A string of the form "Asset_<assetTypePrefix>_<assetNamePrefix>_<number>".
+    /** @param assetTypePrefix The type of the asset to use as a human-readable visual prefix identifier for the name. May be empty.
+        @param assetNamePrefix A name prefix that is added to the asset name for visual identification. May be empty.
+        @return A string of the form "Asset_<assetTypePrefix>_<assetNamePrefix>_<number>".
+    */
     QString GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix);
 
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
@@ -80,7 +86,7 @@ public:
     std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() { return assetTypeFactories; }
 
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
-    /// Note: The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
+    /// @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
     AssetPtr GetAsset(QString assetRef);
     
     /// Returns the given asset by the specified SHA-1 content hash. If no such asset exists, returns null.
@@ -92,8 +98,10 @@ public:
     AssetMap &GetAllAssets() { return assets; }
 
     AssetCache *GetAssetCache() { return assetCache; }
+
     /// Returns the asset provider of the given type.
-    /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
+    /** The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
+    */
     template<typename T>
     boost::shared_ptr<T> GetAssetProvider();
 
@@ -115,17 +123,22 @@ public:
     };
 
     /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
-    /// @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
-    ///           usually the local path of the scene content that is being added.
+    /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
+               usually the local path of the scene content that is being added.
+    */
     FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
 
-    /// Tries to find the filename in an url/assetref. For example, all "my.mesh", "C:\files\my.mesh", "local://path/my.mesh", "http://www.web.com/my.mesh" will return "my.mesh".
-    /// \todo It is the intent that "local://collada.dae/subMeshName" would return "collada.dae" and "file.zip/path1/path2/my.mesh" would return "file.zip", but this hasn't been
-    /// implemented (since those aren't yet supported).
+    /// Tries to find the filename in an url/assetref.
+    /** For example, all "my.mesh", "C:\files\my.mesh", "local://path/my.mesh", "http://www.web.com/my.mesh" will return "my.mesh".
+        \todo It is the intent that "local://collada.dae/subMeshName" would return "collada.dae" and "file.zip/path1/path2/my.mesh"
+        would return "file.zip", but this hasn't been implemented (since those aren't yet supported).
+    */
     static QString ExtractFilenameFromAssetRef(QString ref);
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
-    /// Returns the absolute path for that file, if it exists. The path contains the filename, i.e. it is of form "C:\folder\file.ext" or "/home/username/file.ext".
+    /** Returns the absolute path for that file, if it exists. The path contains the filename,
+        i.e. it is of form "C:\folder\file.ext" or "/home/username/file.ext".
+    */
     static QString RecursiveFindFile(QString basePath, QString filename);
 
     /// Removes the given asset from the system and frees up all resources related to it. The asset will
@@ -152,9 +165,10 @@ public:
     IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
-    /// Use this to clear the client's memory from all assets.
-    /// \note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
-    /// until the refcounts drop to zero.
+    /** Use this to clear the client's memory from all assets.
+        \note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
+        until the refcounts drop to zero.
+    */
     void DeleteAllAssets();
 
     /// Returns all the currently ongoing or waiting asset transfers.
@@ -178,7 +192,7 @@ public:
 
 private slots:
     void OnAssetLoaded(IAssetTransfer* transfer);
-    
+
 private:
     typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
     /// Stores all the currently ongoing asset transfers.
@@ -197,7 +211,7 @@ private:
     /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
     /// by one frame, so that the client gets a chance to connect his handler's Qt signals to the AssetTransferPtr slots.
     std::vector<AssetTransferPtr> readyTransfers;
-   
+
     Foundation::Framework *framework;
 
     /// Contains all known asset storages in the system.
