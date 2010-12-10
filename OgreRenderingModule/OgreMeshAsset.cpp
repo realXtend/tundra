@@ -2,6 +2,9 @@
 #include "OgreMeshAsset.h"
 #include "OgreConversionUtils.h"
 #include "OgreRenderingModule.h"
+#include "AssetAPI.h"
+
+#include <QFile>
 
 #include <Ogre.h>
 
@@ -103,4 +106,33 @@ void OgreMeshAsset::SetDefaultMaterial()
             submesh->setMaterialName("LitTextured");
         }
     }
+}
+
+bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
+{
+    if (ogreMesh.isNull())
+    {
+        OgreRenderer::OgreRenderingModule::LogWarning("Tried to export non-existing Ogre mesh " + Name().toStdString() + ".");
+        return false;
+    }
+    try
+    {
+        Ogre::MeshSerializer serializer;
+        QString tempFilename = assetAPI->GenerateTemporaryNonexistingAssetFilename(Name() + ".mesh");
+        // Ogre has a limitation of not supporting serialization to a file in memory, so serialize directly to a temporary file,
+        // load it up and delete the temporary file.
+        serializer.exportMesh(ogreMesh.get(), tempFilename.toStdString());
+        bool success = LoadFileToVector(tempFilename.toStdString().c_str(), data);
+        QFile::remove(tempFilename); // Delete the temporary file we used for serialization.
+        if (!success)
+            return false;
+
+    } catch (std::exception &e)
+    {
+        OgreRenderer::OgreRenderingModule::LogError("Failed to export Ogre mesh " + Name().toStdString() + ":");
+        if (e.what())
+            OgreRenderer::OgreRenderingModule::LogError(e.what());
+        return false;
+    }
+    return true;
 }

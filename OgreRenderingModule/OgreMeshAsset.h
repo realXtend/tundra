@@ -20,6 +20,8 @@ public:
 
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
+
     virtual void Unload();
 
     /// Returns an empty list - meshes do not refer to other assets.
