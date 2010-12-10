@@ -130,26 +130,28 @@ public:
 
     /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
     /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
-               usually the local path of the scene content that is being added.
-    */
+               usually the local path of the scene content that is being added. */
     FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
 
     /// Tries to find the filename in an url/assetref.
     /** For example, all "my.mesh", "C:\files\my.mesh", "local://path/my.mesh", "http://www.web.com/my.mesh" will return "my.mesh".
         \todo It is the intent that "local://collada.dae/subMeshName" would return "collada.dae" and "file.zip/path1/path2/my.mesh"
-        would return "file.zip", but this hasn't been implemented (since those aren't yet supported).
-    */
+        would return "file.zip", but this hasn't been implemented (since those aren't yet supported). */
     static QString ExtractFilenameFromAssetRef(QString ref);
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
     /** Returns the absolute path for that file, if it exists. The path contains the filename,
-        i.e. it is of form "C:\folder\file.ext" or "/home/username/file.ext".
-    */
+        i.e. it is of form "C:\folder\file.ext" or "/home/username/file.ext". */
     static QString RecursiveFindFile(QString basePath, QString filename);
 
-    /// Removes the given asset from the system and frees up all resources related to it. The asset will
-    /// stay in the disk cache for later access.
-    void DeleteAsset(AssetPtr asset);
+    /// Removes the given asset from the system and frees up all resources related to it. Any assets depending on this asset will break.
+    /// @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
+    ///         but for example for local assets, this is the asset itself.
+    void ForgetAsset(AssetPtr asset, bool removeDiskSource);
+
+    /// Sends an asset deletion request to the remote asset storage the asset resides in.
+    ///\todo Implement.
+    void DeleteAssetFromStorage(AssetPtr asset) { /* N/I. */ }
 
     /// Uploads an asset to an asset storage.
     /** @param filename The source file to load the asset from.
@@ -173,9 +175,8 @@ public:
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
     /** Use this to clear the client's memory from all assets.
         \note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
-        until the refcounts drop to zero.
-    */
-    void DeleteAllAssets();
+        until the refcounts drop to zero. */
+    void ForgetAllAssets();
 
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<AssetTransferPtr> PendingTransfers() const;
@@ -186,6 +187,9 @@ public:
 
     /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
     void AssetTransferCompleted(IAssetTransfer *transfer);
+
+    /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and notify
+    void AssetTransferFailed(IAssetTransfer *transfer);
 
     void AssetDependenciesCompleted(AssetTransferPtr transfer);
 

@@ -188,15 +188,19 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
         return asset;
     else
     {
-        DeleteAsset(asset);
+        ForgetAsset(asset, false);
         return AssetPtr();
     }
 }
 
-void AssetAPI::DeleteAsset(AssetPtr asset)
+void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 {
     if (!asset.get())
         return;
+
+    // If we are supposed to remove the cached (or original for local assets) version of the asset, do so.
+    if (removeDiskSource && !asset->DiskSource().isEmpty())
+        QFile::remove(asset->DiskSource());
 
     // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
     // some object left a dangling strong ref to an asset).
@@ -249,10 +253,10 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
     /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
 }
 
-void AssetAPI::DeleteAllAssets()
+void AssetAPI::ForgetAllAssets()
 {
     while(assets.size() > 0)
-        DeleteAsset(assets.begin()->second); // DeleteAsset removes the asset it is given to from the assets list, so this loop terminates.
+        ForgetAsset(assets.begin()->second, false); // DeleteAsset removes the asset it is given to from the assets list, so this loop terminates.
 
     assets.clear();
     currentTransfers.clear();

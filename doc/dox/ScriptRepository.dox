@@ -43,7 +43,7 @@ Includes the given .js file and executes it in the current engine context.
  
 QtScript (or ECMAScript/JavaScript) does not have a built-in <b>include</b> keyword. In Naali, you can however use this command to execute another .js file at the point where engine.IncludeFile is called.
 
-The parameter <i>assetRef</i> can either be an asset reference URL or an absolute path on a local filesystem, e.g. "local://myscript.js", "http://www.someserver.com/myscript.js" and "C:\Tundra\myscript.js" are all valid.  If you specify a local filename, each client looks the file up locally and there is no network asset transfers included.
+The parameter <i>assetRef</i> can either be an asset reference URL or an absolute path on a local filesystem, e.g. "local://myscript.js", "http://www.someserver.com/myscript.js" and "C:/Tundra/myscript.js" are all valid.  If you specify a local filename, each client looks the file up locally and there is no network asset transfers included.
 
 Note that inclusion of the same file multiple times during script execution is automatically prevented. It is as if each .js file had a #pragma once clause in them.
 
