@@ -48,10 +48,8 @@ class EC_RttTarget : public IComponent
     Q_OBJECT
     
     DECLARE_EC(EC_RttTarget);
-public:
-    //Q_PROPERTY(QString compositorref READ getcompositorref WRITE setcompositorref);
-    //DEFINE_QPROPERTY_ATTRIBUTE(QString, compositorref);
 
+public:
     Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, targettexture);
 
@@ -60,10 +58,13 @@ public:
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }
 
+public slots:
+    void SetAutoUpdated(bool val);
+
 private slots:
     void AttributeUpdated(IAttribute* attribute);
     //void UpdateRtt();
-    void SetupRtt();
+    void PrepareRtt();
 
 private:
     //! constructor
