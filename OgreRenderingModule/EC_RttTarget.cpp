@@ -13,7 +13,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_RttTarget");
 EC_RttTarget::EC_RttTarget(IModule* module) :
   IComponent(module->GetFramework()),
   targettexture(this, "Target texture", "RttTex")
-    //    owner_(checked_static_cast<OgreRenderer::OgreRenderingModule*>(module))
 {
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*)));
@@ -67,9 +66,9 @@ void EC_RttTarget::SetupRtt()
         Ogre::Viewport *vp = 0;
         vp = render_texture->addViewport(ec_camera->GetCamera());
         // Exclude ui overlays
-        //vp->setOverlaysEnabled(false);
+        vp->setOverlaysEnabled(false);
         // Exclude highlight mesh from rendering
-        //vp->setVisibilityMask(0x2);
+        vp->setVisibilityMask(0x2);
 
         render_texture->update(false);
         tex->getBuffer()->getRenderTarget()->setAutoUpdated(true); //false);
