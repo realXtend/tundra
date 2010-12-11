@@ -1112,6 +1112,11 @@ namespace OgreRenderer
         return l;
     }
 
+    bool Renderer::IsEntityVisible(uint ent_id)
+    {
+        return (visible_entities_.find(ent_id) != visible_entities_.end());
+    }
+
     Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const
     {
         return renderWindow->OgreRenderWindow();
