@@ -22,8 +22,6 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-<li>Cameraref? Or uses cam in the same entity?
-<div>Name of the compositor (Ogre resource name), f.ex. "HDR"</div>
 <li>QString targettexture
 <div>Name of the target texture where to render the image
 </ul>
