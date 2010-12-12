@@ -27,7 +27,6 @@ namespace Asset
         AssetModule();
         virtual ~AssetModule();
 
-        virtual void Load();
         virtual void Initialize();
         virtual void PostInitialize();
 
@@ -35,6 +34,8 @@ namespace Asset
 
         //! callback for console command
         Console::CommandResult ConsoleRequestAsset(const StringVector &params);
+
+        Console::CommandResult AddHttpStorage(const StringVector &params);
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }

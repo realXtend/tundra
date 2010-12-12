@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "AssetModule.h"
 #include "LocalAssetProvider.h"
+#include "HttpAssetProvider.h"
 #include "Framework.h"
 #include "Profiler.h"
 #include "EventManager.h"
@@ -24,22 +25,11 @@ namespace Asset
     {
     }
 
-    // virtual
-    void AssetModule::Load()
-    {
-    }
-
-    // virtual
     void AssetModule::Initialize()
     {
-        /*
-        // Add HTTP handler before UDP so it can handle the texture http gets with UUID via GetTexture caps url
-        http_asset_provider_ = AssetProviderPtr(new QtHttpAssetProvider(framework_));
-        manager_->RegisterAssetProvider(http_asset_provider_);
-        */
+        boost::shared_ptr<HttpAssetProvider> http = boost::shared_ptr<HttpAssetProvider>(new HttpAssetProvider(framework_));
+        framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(http));
 
-        // Add localassethandler, with a hardcoded dir for now
-        // Note: this directory is a different concept than the "pre-warmed assetcache"
         boost::shared_ptr<LocalAssetProvider> local = boost::shared_ptr<LocalAssetProvider>(new LocalAssetProvider(framework_));
         framework_->Asset()->RegisterAssetProvider(boost::dynamic_pointer_cast<IAssetProvider>(local));
 
@@ -58,6 +48,10 @@ namespace Asset
         RegisterConsoleCommand(Console::CreateCommand(
             "RequestAsset", "Request asset from server. Usage: RequestAsset(uuid,assettype)", 
             Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
+
+        RegisterConsoleCommand(Console::CreateCommand(
+            "AddHttpStorage", "Adds a new Http asset storage to the known storages. Usage: AddHttpStorage(url, name)", 
+            Console::Bind(this, &AssetModule::AddHttpStorage)));
 
         ProcessCommandLineOptions();
     }
@@ -105,6 +99,18 @@ namespace Asset
             return Console::ResultSuccess();
         else
             return Console::ResultFailure();
+    }
+
+    Console::CommandResult AssetModule::AddHttpStorage(const StringVector &params)
+    {
+        if (params.size() != 2)
+            return Console::ResultFailure("Usage: AddHttpStorage(url, name). For example: AddHttpStorage(http://www.google.com/, google)");
+
+        if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>().get())
+            return Console::ResultFailure();
+
+        framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(params[0].c_str(), params[1].c_str());
+        return Console::ResultSuccess();
     }
 }
 

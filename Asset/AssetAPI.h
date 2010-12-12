@@ -133,7 +133,12 @@ public:
     /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
     /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
                usually the local path of the scene content that is being added. */
-    FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
+    static FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
+
+    /// Parses the local filename of the given assetRef. For example: ExtractLocalName("C:\assets\my.mesh") will return "my.mesh",
+    /// ExtractLocalName("local://xxx.png") will return "xxx.png"). ExtractLocalName("local://collada.dae/subMeshName") will
+    /// return "collada.dae/subMeshName". ///\todo Implement.
+//    static QString ExtractLocalName(QString assetRef);
 
     /// Tries to find the filename in an url/assetref.
     /** For example, all "my.mesh", "C:\files\my.mesh", "local://path/my.mesh", "http://www.web.com/my.mesh" will return "my.mesh".
@@ -162,7 +167,7 @@ public:
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
         @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
-    IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
+    AssetUploadTransferPtr UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
 
     /// Uploads an asset from the given data pointer in memory to an asset storage.
     /** @param data A pointer to raw source data in memory.
@@ -172,7 +177,7 @@ public:
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
         @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
-    IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
+    AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
     /** Use this to clear the client's memory from all assets.
@@ -202,6 +207,9 @@ public:
     /// also fail any transfers of assets which depended on this transfer.
     void AssetTransferFailed(IAssetTransfer *transfer);
 
+    /// Called by each AssetProvider to notify the Asset API that an asset upload transfer has completed. Do not call this function from client code.
+    void AssetUploadTransferCompleted(IAssetUploadTransfer *transfer);
+
     void AssetDependenciesCompleted(AssetTransferPtr transfer);
 
     void NotifyAssetDependenciesChanged(AssetPtr asset);
@@ -223,6 +231,10 @@ private:
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
 
+    typedef std::map<QString, AssetUploadTransferPtr> AssetUploadTransferMap;
+    /// Stores all the currently ongoing asset uploads, maps full assetRefs to the asset upload transfer structures.
+    AssetUploadTransferMap currentUploadTransfers;
+
     typedef std::vector<std::pair<QString, QString> > AssetDependenciesMap;
     /// Keeps track of all the dependencies each asset has to each other asset.
     /// \todo Find a more effective data structure for this. Needs something like boost::bimap but for multi-indices.
@@ -243,6 +255,17 @@ private:
 
     /// Stores all the registered asset type factories in the system.
     std::vector<AssetTypeFactoryPtr> assetTypeFactories;
+
+    /// Stores a list of asset requests that the Asset API hasn't started at all but has put on hold, until other operations complete.
+    /// This data structure is used to enforce that asset uploads are completed before any asset downloads to that asset.
+    struct PendingDownloadRequest
+    {
+        QString assetRef;
+        QString assetType;
+        AssetTransferPtr transfer;
+    };
+    typedef std::map<QString, PendingDownloadRequest> PendingDownloadRequestMap;
+    PendingDownloadRequestMap pendingDownloadRequests;
 
     /// Stores all the already loaded assets in the system.
     AssetMap assets;
