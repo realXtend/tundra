@@ -2,6 +2,9 @@
 #include <QByteArray>
 #include <set>
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("IAsset")
+
 #include "IAsset.h"
 #include "AssetAPI.h"
 
@@ -13,7 +16,7 @@ IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
 
 void IAsset::SetDiskSource(QString diskSource_)
 {
-    diskSource = diskSource.trimmed();
+    diskSource = diskSource_.trimmed();
 }
 
 bool IAsset::LoadFromCache()
@@ -27,10 +30,16 @@ bool IAsset::LoadFromFile(QString filename)
     std::vector<u8> fileData;
     bool success = LoadFileToVector(filename.toStdString().c_str(), fileData);
     if (!success)
-        return false; ///\todo Log warning.
+    {
+        LogDebug("LoadFromFile failed for file \"" + filename.toStdString() + "\", could not read file!");
+        return false;
+    }
 
     if (fileData.size() == 0)
-        return false; ///\todo Log warning.
+    {
+        LogDebug("LoadFromFile failed for file \"" + filename.toStdString() + "\", file size was 0!");
+        return false;
+    }
 
     // Invoke the actual virtual function to load the asset.
     return LoadFromFileInMemory(&fileData[0], fileData.size());
@@ -39,7 +48,10 @@ bool IAsset::LoadFromFile(QString filename)
 bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
 {
     if (!data || numBytes == 0)
-        return false; ///\todo Log out warning.
+    {
+        LogDebug("LoadFromFileInMemory failed for asset \"" + ToString().toStdString() + "\"! No data present!");
+        return false;
+    }
 
     // Before loading the asset, recompute the content hash for the asset data.
     QCryptographicHash hash(QCryptographicHash::Sha1);
@@ -78,7 +90,7 @@ std::vector<AssetReference> IAsset::FindReferencesRecursive() const
 
 bool IAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
 {
-    ///\todo Log out warning.
+    LogError("IAsset::SerializeTo: Asset serialization not implemented for asset \"" + ToString().toStdString() + "\"!");
     return false;
 }
 
@@ -87,7 +99,10 @@ bool IAsset::SaveToFile(const QString &filename, const QString &serializationPar
     std::vector<u8> data;
     bool success = SerializeTo(data, serializationParameters);
     if (!success || data.size() == 0)
-        return false; ///\todo Log warning.
+    {
+        LogError("IAsset::SaveToFile: SerializeTo returned no data for asset \"" + ToString().toStdString() + "\"!");
+        return false;
+    }
 
     return SaveAssetFromMemoryToFile(&data[0], data.size(), filename.toStdString().c_str());
 }

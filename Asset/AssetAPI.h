@@ -11,6 +11,8 @@
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 
+class QFileSystemWatcher;
+
 /// Loads the given local file into the specified vector. Clears all data previously in the vector.
 /// Returns true on success.
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst);
@@ -223,8 +225,26 @@ public:
     /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
     std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
 
+signals:
+    /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
+    /// may not yet have been loaded.
+    void AssetCreated(AssetPtr asset);
+
+    /// Emitted before an asset is going to be forgotten or deleted from the source. ///\todo Implement.
+    void AssetAboutToBeRemoved(AssetPtr asset);
+
+    /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
+ //   void AssetDiskSourceChanged(AssetPtr asset);
+
+    /// Emitted when the asset has changed in the remote AssetStorage it is in. ///\todo Implement.
+//    void AssetStorageSourceChanged(AssetPtr asset);
+
 private slots:
+    /// The Asset API listens on each asset when they get loaded, to track the completion of the dependencies of other loaded assets.
     void OnAssetLoaded(IAssetTransfer* transfer);
+
+    /// The Asset API reloads all assets from file when their disk source contents change.
+    void OnAssetDiskSourceChanged(const QString &path);
 
 private:
     typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
@@ -269,6 +289,9 @@ private:
 
     /// Stores all the already loaded assets in the system.
     AssetMap assets;
+
+    /// Tracks all loaded assets if their DiskSources change, and issues a reload of the assets.
+    QFileSystemWatcher *diskSourceChangeWatcher;
 
     /// Specifies all the registered asset providers in the system.
     std::vector<AssetProviderPtr> providers;

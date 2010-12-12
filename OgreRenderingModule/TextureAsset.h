@@ -27,6 +27,8 @@ public:
     /// Returns an empty list - textures do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
 
+//    void RegenerateAllMipLevels();
+
     /// This points to the loaded texture asset, if it is present.
     Ogre::TexturePtr ogreTexture;
 
