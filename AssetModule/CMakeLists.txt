@@ -4,7 +4,7 @@ init_target (AssetModule OUTPUT modules/core)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB H_MOC_FILES AssetCache.h LocalAssetStorage.h LocalAssetProvider.h)
+file (GLOB H_MOC_FILES AssetCache.h LocalAssetStorage.h LocalAssetProvider.h HttpAssetProvider.h HttpAssetTransfer.h)
 file (GLOB XML_FILES *.xml)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})

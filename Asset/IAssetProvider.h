@@ -44,7 +44,7 @@ public:
     virtual ~IAssetProvider() {}   
 
     /// Returns name of asset provider for identification purposes
-    virtual const QString &Name() = 0;
+    virtual QString Name() = 0;
 
     /// Queries this asset provider whether the assetRef is a valid assetRef this provider can handle.
     /// @param assetType The type of the asset. This field is optional, and the ref itself can specify the type,
@@ -62,11 +62,9 @@ public:
     /// Returns the list of all asset storages registered into this asset provider.
     virtual std::vector<AssetStoragePtr> GetStorages() const = 0;
 
-    /// Starts an asset upload of the given file to the given storage.
-    virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName) = 0;
-
     /// Starts an asset upload from the given file in memory to the given storage.
-    virtual IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName) = 0;
+    /// The default implementation fails all upload attempts and returns 0 immediately.
+    virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName) { return AssetUploadTransferPtr(); }
 };
 
 

@@ -20,18 +20,16 @@
 namespace Asset
 {
 
-LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework) :
-    framework_(framework)
+LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework_)
+:framework(framework_)
 {
-    EventManagerPtr event_manager = framework_->GetEventManager();
-    event_category_ = event_manager->QueryEventCategory("Asset");
 }
 
 LocalAssetProvider::~LocalAssetProvider()
 {
 }
 
-const QString &LocalAssetProvider::Name()
+QString LocalAssetProvider::Name()
 {
     static const QString name("Local");
     
@@ -132,39 +130,20 @@ std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
     return stores;
 }
 
-IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
-{
-    LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(destination.get());
-    if (!storage)
-    {
-        AssetModule::LogError("LocalAssetProvider::UploadAssetFromFile: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
-        return 0;
-    }
-
-    AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
-    transfer->sourceFilename = filename;
-    transfer->destinationName = assetName;
-    transfer->destinationStorage = destination;
-
-    pendingUploads.push_back(transfer);
-
-    return transfer.get();
-}
-
-IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
 {
     assert(data);
     if (!data)
     {
         AssetModule::LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Null source data pointer passed to function!");
-        return 0;
+        return AssetUploadTransferPtr();
     }
 
     LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(destination.get());
     if (!storage)
     {
         AssetModule::LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
-        return 0;
+        return AssetUploadTransferPtr();
     }
 
     AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
@@ -175,7 +154,7 @@ IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *
 
     pendingUploads.push_back(transfer);
 
-    return transfer.get();
+    return transfer;
 }
 
 void LocalAssetProvider::CompletePendingFileDownloads()
@@ -204,7 +183,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         if (path.isEmpty())
         {
             AssetModule::LogWarning("Failed to find local asset with filename \"" + ref.toStdString() + "\"!");
-            framework_->Asset()->AssetTransferFailed(transfer.get());
+            framework->Asset()->AssetTransferFailed(transfer.get());
             continue;
         }
     
@@ -215,7 +194,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         if (!success)
         {
             AssetModule::LogError("Failed to read asset data for asset \"" + ref.toStdString() + "\" from file \"" + absoluteFilename.toStdString() + "\"");
-            framework_->Asset()->AssetTransferFailed(transfer.get());
+            framework->Asset()->AssetTransferFailed(transfer.get());
             continue;
         }
         
@@ -227,7 +206,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         AssetModule::LogDebug("Downloaded asset \"" + ref.toStdString() + "\" from file " + absoluteFilename.toStdString());
 
         // Signal the Asset API that this asset is now successfully downloaded.
-        framework_->Asset()->AssetTransferCompleted(transfer.get());
+        framework->Asset()->AssetTransferCompleted(transfer.get());
     }
 }
 

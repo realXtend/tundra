@@ -1217,6 +1217,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     {
         AssetDesc meshAssetDesc;
         //meshAssetDesc.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + filename;
+        meshAssetDesc.dataInMemory = false;
         meshAssetDesc.source = filename;
         meshAssetDesc.typeName = "mesh";
         meshAssetDesc.destinationName = fs::path(filename.toStdString()).leaf().c_str();//meshAssetDesc.source;
@@ -1227,6 +1228,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     {
         AssetDesc skeletonAssetDesc;
         skeletonAssetDesc.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + skeleton; // This is already an absolute path. Don't use QueryFileLocation.
+        skeletonAssetDesc.dataInMemory = false;
         skeletonAssetDesc.typeName = "skeleton";
         skeletonAssetDesc.destinationName = skeleton;
         desc.assets << skeletonAssetDesc;
@@ -1246,6 +1248,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         AssetDesc matDesc;
         matDesc.typeName = "material";
         matDesc.subname = matName;
+        matDesc.dataInMemory = true;
         matDesc.destinationName = matName + ".material";
 
         foreach(MaterialInfo mat, allMaterials)
@@ -1269,8 +1272,11 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     {
         AssetDesc textureAssetDesc;
         textureAssetDesc.typeName = "texture";
-        textureAssetDesc.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + tex;
-        textureAssetDesc.destinationName = tex;
+        textureAssetDesc.dataInMemory = false;
+        AssetAPI::FileQueryResult result = AssetAPI::QueryFileLocation(tex, path, textureAssetDesc.source);
+        if (result == AssetAPI::FileQueryLocalFileMissing)
+            LogWarning("Texture file \"" + tex.toStdString() + "\" cannot be found from path \"" + path.toStdString() + "\"!");
+        textureAssetDesc.destinationName = AssetAPI::ExtractFilenameFromAssetRef(tex); // The destination name must be local to the destination asset storage.
         desc.assets << textureAssetDesc;
     }
 }
