@@ -9,11 +9,6 @@
 #include "IAssetProvider.h"
 #include "AssetFwd.h"
 
-namespace HttpUtilities
-{
-    class HttpTaskResult;
-}
-
 namespace Asset
 {
     class LocalAssetStorage;
@@ -34,14 +29,7 @@ namespace Asset
         //! Checks an asset id for validity
         /*! \return true if this asset provider can handle the id */
         virtual bool IsValidRef(QString assetRef, QString assetType);
-        
-        //! Requests an asset for "download"
-        /*! \param asset_id Asset UUID
-            \param asset_type Asset type
-            \param tag Asset request tag, allocated by AssetService
-            \return true if asset ID was valid and file could be found (ASSET_READY will be sent in that case) */
-        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
-        
+                
         virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
 
         //! Performs time-based update 

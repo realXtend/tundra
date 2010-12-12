@@ -37,7 +37,7 @@ Vector3D<float> PackQuaternionToFloat3(float x, float y, float z, float w)
     if (norm  < epsilon)
     {
         return Vector3D<float>();
-        std::cerr << "PackQuaternionToFloat3: Singular quaternion! App logic is in bad state here." << std::endl;
+//        std::cerr << "PackQuaternionToFloat3: Singular quaternion! App logic is in bad state here." << std::endl;
     }
     else
     {

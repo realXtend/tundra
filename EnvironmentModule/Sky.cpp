@@ -7,7 +7,6 @@
 #include "OgreRenderingModule.h"
 
 #include "CoreTypes.h"
-#include "OgreTextureResource.h"
 #include "NetworkEvents.h"
 #include "ServiceManager.h"
 #include "NetworkMessages/NetInMessage.h"
@@ -77,6 +76,8 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
 void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
     const float &curvature, const float &tiling)
 {
+            ///\todo Regression. Use the new Asset API here instead. -jj.
+/*
     type_ = type;
     if (type_ == SKYTYPE_NONE)
     {
@@ -167,6 +168,7 @@ void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
     }
 
     emit SkyTypeChanged();
+    */
 }
 
 void Sky::CreateDefaultSky(const bool &show)
@@ -239,6 +241,8 @@ bool Sky::IsSkyEnabled()
 
 void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
 {
+            ///\todo Regression. Use the new Asset API here instead. -jj.
+/*
     assert(tex);
     int tags = lstRequestTags_.size();
 
@@ -304,6 +308,7 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
             return;
         }
     }
+    */
 }
 
 SkyType Sky::GetSkyType() const

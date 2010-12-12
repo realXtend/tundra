@@ -5,16 +5,14 @@
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 #include "IAssetStorage.h"
-#include "AssetServiceInterface.h"
 #include "IAssetProvider.h"
 #include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
 #include "EventManager.h"
-#include "ResourceInterface.h"
 #include "CoreException.h"
 #include "IAssetTypeFactory.h"
 #include "GenericAssetFactory.h"
-#include "AssetCache_.h"
+#include "AssetCache.h"
 #include "Platform.h"
 #include <QDir>
 
@@ -42,14 +40,13 @@ AssetAPI::~AssetAPI()
 
 std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 {
-    ServiceManagerPtr service_manager = framework->GetServiceManager();
-    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-        service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
-    if (!asset_service)
-        throw Exception("Unagle to get AssetServiceInterface!");
-
-    std::vector<AssetProviderPtr> providers = asset_service->Providers();
     return providers;
+}
+
+void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
+{
+    ///\todo Debug check for duplicates.
+    providers.push_back(provider);
 }
 
 AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
@@ -487,8 +484,11 @@ AssetPtr AssetAPI::GetAssetByHash(QString assetHash)
     return AssetPtr();
 }
 
-void AssetAPI::Update()
+void AssetAPI::Update(f64 frametime)
 {
+    for(size_t i = 0; i < providers.size(); ++i)
+        providers[i]->Update(frametime);
+
     // Normally it is the AssetProvider's responsibility to call AssetTransferCompleted when a download finishes.
     // The 'readyTransfers' list contains all the asset transfers that don't have any AssetProvider serving them. These occur in two cases:
     // 1) A client requested an asset that was already loaded. In that case the request is not given to any assetprovider, but delayed in readyTransfers

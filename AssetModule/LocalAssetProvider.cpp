@@ -1,13 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "AssetEvents.h"
-#include "AssetManager.h"
 #include "AssetModule.h"
-#include "RexAsset.h"
-#include "RexTypes.h"
+#include "CoreTypes.h"
 #include "LocalAssetProvider.h"
-#include "AssetServiceInterface.h"
 #include "Framework.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
@@ -58,77 +54,6 @@ bool LocalAssetProvider::IsValidRef(QString asset_id, QString asset_type)
     }
     else
         return false;
-}
-
-///\todo This function call is deprecated, and used in conjunction with the old code flow for asset requests. Use the AssetAPI and
-/// AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString assetType) instead.
-bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
-{
-    // Complete any file uploads before processing any download requests. (a total hack, but this function will be removed in the future)
-    CompletePendingFileUploads();
-
-    if (!IsValidRef(asset_id.c_str(), asset_type.c_str()))
-        return false;
-    
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
-    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-        service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
-    if (!asset_service)
-        return false;
-    
-    AssetModule::LogDebug("New local asset request for ref \"" + asset_id + "\"");
-        
-    // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
-    std::string filename = QString(asset_id.c_str()).trimmed().toStdString();
-    if (filename.find("file://") != std::string::npos)
-        filename = filename.substr(7);
-    else if (filename.find("local://") != std::string::npos)
-        filename = filename.substr(8);
-    size_t lastSlash = filename.find_last_of('/');
-    if (lastSlash != std::string::npos)
-        filename = filename.substr(0, lastSlash);
-    
-    std::string assetpath = GetPathForAsset(filename.c_str(), 0).toStdString(); // Look up all known local file asset storages for this asset.
-    if (assetpath.empty())
-    {
-        AssetModule::LogInfo("Failed to load local asset \"" + filename + "\"");
-        return true;
-    }
-    
-    boost::filesystem::path file_path(assetpath + "/" + filename);
-    std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
-    if (filestr.good())
-    {
-        filestr.seekg(0, std::ios::end);
-        uint length = filestr.tellg();
-        filestr.seekg(0, std::ios::beg);
-        
-        if (length > 0)
-        {
-            RexAsset* new_asset = new RexAsset(asset_id, asset_type);
-            Foundation::AssetInterfacePtr asset_ptr(new_asset);
-            
-            RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
-            data.resize(length);
-            filestr.read((char *)&data[0], length);
-            filestr.close();
-            
-            // Store to memory cache only
-            asset_service->StoreAsset(asset_ptr, false);
-            // Send asset_ready event as delayed
-            Events::AssetReady* event_data = new Events::AssetReady(asset_ptr->GetId(), asset_ptr->GetType(), asset_ptr, tag);
-            framework_->GetEventManager()->SendDelayedEvent(event_category_, Events::ASSET_READY, EventDataPtr(event_data));
-
-            AssetModule::LogDebug("OLD Asset path: Downloaded asset \"" + asset_id + "\" from file " + file_path.native_directory_string().c_str());
-
-            return true;
-        }
-        else
-            filestr.close();
-    }
-    
-    AssetModule::LogInfo("Failed to load local asset \"" + filename + "\"");
-    return true;
 }
 
 AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString assetType)

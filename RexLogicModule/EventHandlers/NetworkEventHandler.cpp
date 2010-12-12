@@ -38,7 +38,6 @@
 
 #include "ServiceManager.h"
 #include "ISoundService.h"
-#include "AssetServiceInterface.h"
 #include "ScriptServiceInterface.h" // LoadURL webview opening code is not on the py side, experimentally at least
 
 namespace RexLogic
@@ -376,13 +375,13 @@ bool NetworkEventHandler::HandleOSNE_PreloadSound(NetworkEventInboundData* data)
         msg.ReadUUID(); // ObjectID
         msg.ReadUUID(); // OwnerID
         std::string asset_id = msg.ReadUUID().ToString(); // Sound asset ID
-
+/* ///\todo Regression. Reimplement using the new Asset API. -jj.
         // Preload the sound asset into cache, the sound service will get it from there when actually needed.
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
             owner_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
             asset_service->RequestAsset(asset_id, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
-
+*/
         --instance_count;
     }
 

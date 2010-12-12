@@ -2,7 +2,7 @@
 #include "OgreMaterialAsset.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
-#include "ResourceHandler.h"
+#include "Renderer.h"
 
 using namespace OgreRenderer;
 
@@ -57,7 +57,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
             if ((line.length()) && (line.substr(0, 2) != "//"))
             {
                 // Process opening/closing braces
-                if (!ResourceHandler::ProcessBraces(line, brace_level))
+                if (!ProcessBraces(line, brace_level))
                 {
                     // If not a brace and on level 0, it should be a new material; replace name
                     if ((brace_level == 0) && (line.substr(0, 8) == "material"))

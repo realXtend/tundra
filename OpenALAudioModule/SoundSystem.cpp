@@ -6,8 +6,6 @@
 #include "WavLoader.h"
 #include "VorbisDecoder.h"
 #include "CoreTypes.h"
-#include "AssetServiceInterface.h"
-#include "AssetEvents.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
 #include "ThreadTaskManager.h"
@@ -392,6 +390,8 @@ namespace OpenALAudio
 
     request_tag_t SoundSystem::RequestSoundResource(const QString& assetid)
     {
+        ///\todo Regression. Reimplement using Asset API. -jj.
+        /*
         // Loading of sound from assetdata, assumed to be vorbis compressed stream
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
@@ -402,7 +402,7 @@ namespace OpenALAudio
             
             return tag;
         }
-        
+        */
         return 0;
     }
 
@@ -464,6 +464,8 @@ namespace OpenALAudio
         }
         else
         {
+                    ///\todo Regression. Reimplement using Asset API. -jj.
+/*
             // Loading of sound from assetdata, assumed to be vorbis compressed stream
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
             if (asset_service)
@@ -475,6 +477,7 @@ namespace OpenALAudio
                 asset_service->RequestAsset(name, "SoundVorbis");
                 return new_sound;
             }
+            */
         }
         
         return SoundPtr();
@@ -564,7 +567,8 @@ namespace OpenALAudio
                 }
                 ++i;
             }
-            
+/*                     ///\todo Regression. Reimplement using Asset API. -jj.
+
             if (tag)
             {
                 // Note: the decoded sound resource is not stored anywhere, just sent in the event wrapped to a smart pointer.
@@ -578,6 +582,7 @@ namespace OpenALAudio
             }
             else
                 break;
+*/
         }
         
         // If we can find the sound from our cache, and the result contains data, stuff the data into the sound
@@ -596,6 +601,9 @@ namespace OpenALAudio
     
     bool SoundSystem::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
+        ///\todo Regression. Reimplement using the Asset API. -jj.
+        return false;
+/*
         if (event_id != Asset::Events::ASSET_READY)
             return false;
         
@@ -631,6 +639,7 @@ namespace OpenALAudio
         }
         
         return false;
+*/
     }
     
     void SoundSystem::SetMasterGain(float master_gain)

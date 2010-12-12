@@ -7,7 +7,6 @@
 #include "CoreTypes.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
-#include "ResourceInterface.h"
 
 #include <QString>
 
@@ -241,11 +240,11 @@ public:
 };
 
 //! A sound resource
-class SoundResource : public Foundation::ResourceInterface
+class SoundResource// : public Foundation::ResourceInterface
 {
 public:
     SoundResource(const std::string& id, const ISoundService::SoundBuffer& buffer) :
-        ResourceInterface(id),
+//        ResourceInterface(id),
         buffer_(buffer)
     {
     }

@@ -1,4 +1,4 @@
-#include "AssetCache_.h"
+#include "AssetCache.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "LoggingFunctions.h"

@@ -6,7 +6,6 @@
 
 #include "Foundation.h"
 #include "ModuleManager.h"
-#include "HttpUtilities.h"
 
 // Disable warning C4244 coming from boost
 #ifdef _MSC_VER
@@ -108,15 +107,12 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        HttpUtilities::InitializeHttp(); 
         Foundation::Framework fw(argc, argv);
         if (fw.Initialized())
         {
             setup(fw);
             fw.Go();
         }
-
-        HttpUtilities::UninitializeHttp();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch (std::exception& e)

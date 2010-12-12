@@ -106,10 +106,12 @@ public:
     AssetCache *GetAssetCache() { return assetCache; }
 
     /// Returns the asset provider of the given type.
-    /** The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
-    */
+    /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
     template<typename T>
     boost::shared_ptr<T> GetAssetProvider();
+
+    /// Registers a new asset provider to the Asset API. Use this to add a new provider type you have instantiated to the system.
+    void RegisterAssetProvider(AssetProviderPtr provider);
 
     /// Returns all the asset providers that are registered to the Asset API.
     std::vector<AssetProviderPtr> GetAssetProviders() const;
@@ -191,7 +193,7 @@ public:
 
     /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
     /// it yourself.
-    void Update();
+    void Update(f64 frametime);
 
     /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
     void AssetTransferCompleted(IAssetTransfer *transfer);
