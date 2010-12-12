@@ -16,6 +16,7 @@
 #include "AssetCache.h"
 #include "Platform.h"
 #include <QDir>
+#include <QFileSystemWatcher>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
@@ -27,6 +28,8 @@ AssetAPI::AssetAPI(Foundation::Framework *owner)
     const char cDefaultAssetCachePath[] = "/assetcache";
 
     assetCache = new AssetCache((owner->GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
+    diskSourceChangeWatcher = new QFileSystemWatcher();
+    connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)));
 
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
@@ -37,6 +40,7 @@ AssetAPI::AssetAPI(Foundation::Framework *owner)
 AssetAPI::~AssetAPI()
 {
     delete assetCache;
+    delete diskSourceChangeWatcher;
 }
 
 std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
@@ -181,6 +185,8 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     if (!asset.get())
         return;
 
+    emit AssetAboutToBeRemoved(asset);
+
     // If we are supposed to remove the cached (or original for local assets) version of the asset, do so.
     if (removeDiskSource && !asset->DiskSource().isEmpty())
         QFile::remove(asset->DiskSource());
@@ -195,7 +201,10 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
         LogError("AssetAPI::DeleteAsset called on asset \"" + asset->Name().toStdString() + "\", which does not exist in AssetAPI!");
         return;
     }
+    if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
+        diskSourceChangeWatcher->removePath(asset->DiskSource());
     assets.erase(iter);
+
 }
 
 AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
@@ -598,6 +607,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name().toStdString() + "\", type \"" + existing->Type().toStdString() + "\" with asset of same name!");
     }
     assets[transfer->source.ref] = transfer->asset;
+    if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
+        diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
+    emit AssetCreated(transfer->asset);
 
     // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
     RequestAssetDependencies(transfer->asset);
@@ -793,6 +805,21 @@ void AssetAPI::OnAssetLoaded(IAssetTransfer *transfer)
                 AssetDependenciesCompleted(transfer);
         }
     }
+}
+
+void AssetAPI::OnAssetDiskSourceChanged(const QString &path)
+{
+    for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
+        if (iter->second->DiskSource() == path)
+        {
+            AssetPtr asset = iter->second;
+
+            bool success = asset->LoadFromCache();
+            if (!success)
+                LogError("Failed to reload changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path.toStdString() + "\"!");
+            else
+                LogDebug("Reloaded changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path.toStdString() + "\".");
+        }
 }
 
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst)

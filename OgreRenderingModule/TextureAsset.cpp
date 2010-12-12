@@ -18,29 +18,71 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     if (numBytes == 0)
         return false; ///\todo Log out error.
 
-    // If we have any previous texture loaded, unload it first.
-    Unload();
-
     try
     {
+        // Convert the data into Ogre's own DataStream format.
         std::vector<u8> tempData(data, data + numBytes);
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&tempData[0], tempData.size(), false));
+        // Load up the image as an Ogre CPU image object.
         Ogre::Image image;
         image.load(stream);
-        ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()).c_str();
-        ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+
+        if (ogreTexture.isNull()) // If we are creating this texture for the first time, create a new Ogre::Texture object.
+        {
+            ogreAssetName = OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()).c_str();
+            ogreTexture = Ogre::TextureManager::getSingleton().loadImage(ogreAssetName.toStdString(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+        }
+        else // If we're loading on top of an Ogre::Texture we've created before, don't lose the old Ogre::Texture object, but reuse the old.
+        {    // This will allow all existing materials to keep referring to this texture, and they'll get the updated texture image immediately.
+            ogreTexture->freeInternalResources(); 
+
+            if (image.getWidth() != ogreTexture->getWidth() || image.getHeight() != ogreTexture->getHeight() || image.getFormat() != ogreTexture->getFormat())
+            {
+                ogreTexture->setWidth(image.getWidth());
+                ogreTexture->setHeight(image.getHeight());
+                ogreTexture->setFormat(image.getFormat());
+            }
+
+            if (ogreTexture->getBuffer().isNull())
+            {
+                OgreRenderer::OgreRenderingModule::LogError("TextureAsset::DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+                return false;
+            }
+
+            Ogre::PixelBox pixelBox(Ogre::Box(0,0, image.getWidth(), image.getHeight()), image.getFormat(), (void*)image.getData());
+            ogreTexture->getBuffer()->blitFromMemory(pixelBox);
+
+            ogreTexture->createInternalResources();
+        }
 
         return true;
     }
     catch (Ogre::Exception &e)
     {
         OgreRenderer::OgreRenderingModule::LogError("TextureAsset::DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
-        Unload();
 
         return false;
     }
 }
+/*
+void TextureAsset::RegenerateAllMipLevels()
+{
+    if (ogreTexture.isNull())
+        return;
 
+///\todo This function does not quite work, since ogreTexture->getNumMipmaps() will return 0 to denote a "full mipmap chain".
+
+    for(int f = 0; f < ogreTexture->getNumFaces(); ++f)
+        for(int i = 1; i < ogreTexture->getNumMipmaps(); ++i)
+        {
+            Ogre::HardwarePixelBufferSharedPtr src = ogreTexture->getBuffer(f, i-1);
+            Ogre::Box srcSize(0, 0, src->getWidth(), src->getHeight());
+            Ogre::HardwarePixelBufferSharedPtr dst = ogreTexture->getBuffer(f, i);
+            Ogre::Box dstSize(0, 0, dst->getWidth(), dst->getHeight());
+            dst->blit(src, srcSize, dstSize);
+        }
+}
+*/
 bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters)
 {
     if (ogreTexture.isNull())

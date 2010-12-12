@@ -43,7 +43,7 @@ public slots:
     /// Loads this asset from the given file on the local filesystem. Returns true if loading succeeds, false otherwise.
     bool LoadFromFile(QString filename);
 
-    /// Forces a reload of this asset from the local disk cache. Returns true if loading succeeded, false otherwise.
+    /// Forces a reload of this asset from its disk source. Returns true if loading succeeded, false otherwise.
     bool LoadFromCache();
 
     /// Unloads this asset from memory. After calling this function, this asset still can be queried for its Type(), Name() and CacheFile(),
