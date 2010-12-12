@@ -29,7 +29,6 @@
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
-#include "OgreTextureResource.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
 #include "InputEvents.h"
@@ -274,6 +273,8 @@ namespace Environment
 
     bool EnvironmentModule::HandleResouceEvent(event_id_t event_id, IEventData* data)
     {
+/*        ///\todo Regression. Use the new Asset API here instead. -jj.
+
         if (event_id == Resource::Events::RESOURCE_READY)
         {
             Resource::Events::ResourceReady *res = dynamic_cast<Resource::Events::ResourceReady*>(data);
@@ -298,7 +299,7 @@ namespace Environment
                 if (environment_editor_)
                     environment_editor_->HandleResourceReady(res);
         }
-
+*/
         return false;
     }
 

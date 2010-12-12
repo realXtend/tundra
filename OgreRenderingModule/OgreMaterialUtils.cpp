@@ -7,7 +7,6 @@
 
 #include "StableHeaders.h"
 #include "OgreMaterialUtils.h"
-#include "OgreMaterialResource.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include <Ogre.h>

@@ -5,7 +5,6 @@
 
 #include "Renderer.h"
 #include "RendererEvents.h"
-#include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "EC_Placeable.h"
@@ -138,7 +137,6 @@ namespace OgreRenderer
         viewport_(0),
         object_id_(0),
         group_id_(0),
-        resource_handler_(ResourceHandlerPtr(new ResourceHandler(this, framework))),
         config_filename_(config),
         plugins_filename_(plugins),
         ray_query_(0),
@@ -179,7 +177,6 @@ namespace OgreRenderer
         foreach(GaussianListener* listener, gaussianListeners_)
             SAFE_DELETE(listener);
 
-        resource_handler_.reset();
         root_.reset();
         SAFE_DELETE(c_handler_);
         SAFE_DELETE(renderWindow);
@@ -318,7 +315,6 @@ namespace OgreRenderer
 
     void Renderer::PostInitialize()
     {
-        resource_handler_->PostInitialize();
     }
 
     void Renderer::SetFullScreen(bool value)
@@ -1127,21 +1123,6 @@ namespace OgreRenderer
         return prefix + "_" + ToString<uint>(object_id_++);
     }
 
-    ResourcePtr Renderer::GetResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->GetResource(id, type);
-    }
-
-    request_tag_t Renderer::RequestResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->RequestResource(id, type);
-    }
-
-    void Renderer::RemoveResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->RemoveResource(id, type);
-    }
-
     void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
     {
         if (renderWindow)
@@ -1464,4 +1445,20 @@ namespace OgreRenderer
             }
         }
     }
+
+    bool ProcessBraces(const std::string& line, int& braceLevel)
+    {
+        if (line == "{")
+        {
+            ++braceLevel;
+            return true;
+        } 
+        else if (line == "}")
+        {
+            --braceLevel;
+            return true;
+        }
+        else return false;
+    }
+
 }

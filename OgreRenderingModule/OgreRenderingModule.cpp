@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "ResourceHandler.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_OgreLight.h"
@@ -140,16 +139,6 @@ namespace OgreRenderer
         PROFILE(OgreRenderingModule_HandleEvent);
         if (!renderer_)
             return false;
-
-        if (category_id == asset_event_category_)
-        {
-            return renderer_->GetResourceHandler()->HandleAssetEvent(event_id, data);
-        }
-
-        if (category_id == resource_event_category_)
-        {
-            return renderer_->GetResourceHandler()->HandleResourceEvent(event_id, data);
-        }
 
         if (category_id == input_event_category_ && event_id == InputEvents::INWORLD_CLICK)
         {

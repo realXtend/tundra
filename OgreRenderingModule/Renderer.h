@@ -163,28 +163,6 @@ namespace OgreRenderer
         //! \param fileName File name.
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
-        //! Gets a renderer-specific resource
-        /*! Does not automatically queue a download request
-            \param id Resource id
-            \param type Resource type
-            \return pointer to resource, or null if not found
-         */
-        virtual Foundation::ResourcePtr GetResource(const std::string& id, const std::string& type);
-
-        //! Requests a renderer-specific resource to be downloaded from the asset system
-        /*! A RESOURCE_READY event will be sent when the resource is ready to use
-            \param id Resource id
-            \param type Resource type
-            \return Request tag, or 0 if request could not be queued
-         */
-        virtual request_tag_t RequestResource(const std::string& id, const std::string& type);
-
-        //! Removes a renderer-specific resource
-        /*! \param id Resource id
-            \param type Resource type
-         */
-        virtual void RemoveResource(const std::string& id, const std::string& type);
-
         //! Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
 
@@ -207,15 +185,12 @@ namespace OgreRenderer
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
         //! Returns current render window
-        Ogre::RenderWindow* GetCurrentRenderWindow() const;// { return renderwindow_; }
+        Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
         //! Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.
         /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
         std::string GetUniqueObjectName(const std::string &prefix);
-
-        //! Returns resource handler
-        ResourceHandlerPtr GetResourceHandler() const { return resource_handler_; }
 
         //! Removes log listener
         void RemoveLogListener();
@@ -312,9 +287,6 @@ namespace OgreRenderer
         //! Ogre renderable listener
         RenderableListenerPtr renderable_listener_;
 
-        //! Resource handler
-        ResourceHandlerPtr resource_handler_;
-
         //! Renderer event category
         event_category_id_t renderercategory_id_;
 
@@ -374,6 +346,8 @@ namespace OgreRenderer
         // Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
     };
+
+    bool ProcessBraces(const std::string& line, int& braceLevel);
 }
 
 #endif

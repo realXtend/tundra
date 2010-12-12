@@ -3,8 +3,6 @@
 #include "Foundation.h"
 #include "ModuleManager.h"
 
-#include "HttpUtilities.h"
-
 #include "DebugOperatorNew.h"
 
 #include <QDir>
@@ -109,7 +107,6 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        HttpUtilities::InitializeHttp(); 
         Foundation::Framework fw(argc, argv);
         if (fw.Initialized())
         {
@@ -117,8 +114,6 @@ int run (int argc, char **argv)
 
             fw.Go();
         }
-        
-        HttpUtilities::UninitializeHttp();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch (std::exception& e)

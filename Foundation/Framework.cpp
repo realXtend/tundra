@@ -12,7 +12,6 @@
 #include "ModuleManager.h"
 #include "ComponentManager.h"
 #include "ServiceManager.h"
-#include "ResourceInterface.h"
 #include "ThreadTaskManager.h"
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
@@ -45,19 +44,6 @@
 #include <QMetaMethod>
 
 #include "MemoryLeakCheck.h"
-
-namespace Resource
-{
-    namespace Events
-    {
-        void RegisterResourceEvents(const EventManagerPtr &event_manager)
-        {
-            event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Resource");
-            event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_READY, "ResourceReady");
-            event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_CANCELED, "ResourceCanceled");
-        }
-    }
-}
 
 namespace Task
 {
@@ -145,7 +131,6 @@ namespace Foundation
             thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
             Scene::Events::RegisterSceneEvents(event_manager_);
-            Resource::Events::RegisterResourceEvents(event_manager_);
             Task::Events::RegisterTaskEvents(event_manager_);
 
             naaliApplication = new NaaliApplication(this, argc_, argv_);
@@ -348,7 +333,7 @@ namespace Foundation
             // Process the asset API updates.
             {
                 PROFILE(Asset_Update);
-                asset->Update();
+                asset->Update(frametime);
             }
 
             // Process all keyboard input.

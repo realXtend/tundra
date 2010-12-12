@@ -8,7 +8,6 @@
 #ifndef incl_RexLogicModule_Primitive_h
 #define incl_RexLogicModule_Primitive_h
 
-#include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 #include "IComponent.h"
@@ -170,13 +169,13 @@ namespace RexLogic
         void HandleExtraParams(const entity_id_t &entity_id, const uint8_t *extra_params_data);
 
         //! handles mesh resource being ready
-        void HandleMeshReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleMeshReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         //! handles skeleton resource (used in conjunction with a mesh) being ready
-        void HandleSkeletonReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleSkeletonReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         //! handles particle script resource being ready
-        void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         /** Attachs a light component to a prim.
             @param entity Entity pointer of the prim.
@@ -195,9 +194,9 @@ namespace RexLogic
         void AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color);
 
         //! handles mesh or prim texture resource being ready
-        void HandleTextureReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleTextureReady(entity_id_t entity, Foundation::ResourcePtr res);
 
-        void HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res);
+//        void HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res);
 
         //! handles prim size and visibility
         void HandlePrimScaleAndVisibility(entity_id_t entityid);

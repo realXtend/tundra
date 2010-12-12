@@ -4,7 +4,6 @@
 #define incl_RexLogic_EC_AvatarAppearance_h
 
 #include "IComponent.h"
-#include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 #include "AvatarModuleApi.h"
@@ -23,10 +22,6 @@ public:
     std::string name_;
     //! Asset resource id
     std::string resource_id_;
-    //! Resource (once it has been loaded)
-    /*! Note: this is completely deprecated and not needed for EC_Avatar
-     */
-    Foundation::ResourceWeakPtr resource_;
     
     const std::string& GetLocalOrResourceName() const;
 };

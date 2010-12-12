@@ -15,7 +15,6 @@
 #include "IAssetTransfer.h"
 #include "OgreMaterialUtils.h"
 #include "OgreMaterialAsset.h"
-#include "OgreTextureResource.h"
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 #include "TextureAsset.h"

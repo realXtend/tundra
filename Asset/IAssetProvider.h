@@ -51,17 +51,6 @@ public:
     ///        or if the provider in question does not need the type information, this can be left blank.
     virtual bool IsValidRef(QString assetRef, QString assetType) = 0;
 
-    /// Requests an asset for download
-    /** Note: implementation should not queue multiple transfers if for some reason RequestAsset gets called
-        multiple times for the same asset. However, they should store all the tags associated with the same
-        transfer, and then send an ASSET_READY event for each tag (if multiple), when that transfer finishes. 
-
-        \param asset_id Asset ID
-        \param asset_type Asset type
-        \param tag Asset request tag, allocated by AssetService. To be sent back along with ASSET_READY event
-        \return true if asset ID was valid and download could be queued, false if not */
-    virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag) = 0;
-
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType) = 0;
 
     /// Performs time-based update of asset provider, to for example handle timeouts.

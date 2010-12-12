@@ -11,7 +11,6 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetOutMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
-#include "AssetServiceInterface.h"
 #include "WorldStream.h"
 #include "SceneManager.h"
 #include "RenderServiceInterface.h"
@@ -19,7 +18,6 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
-#include "AssetEvents.h"
 #include "EventManager.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
@@ -252,7 +250,9 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         menu_material_assets_->addAction(copyAssetName);
     }
 
+#ifdef OGREASSETEDITOR_ENABLED
     tex_preview_ = 0;
+#endif
 }
 
 namespace
@@ -309,17 +309,19 @@ void TimeProfilerWindow::CopyMaterialAssetName()
 
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {
+    /* /// \todo Regression. Reimplement using the Asset API. -jj.
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Mesh));
     boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0 )
     {
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
     }
-
+*/
 }
 
 void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 {
+#ifdef OGREASSETEDITOR_ENABLED
     if ( tex_preview_ == 0)
     {
         tex_preview_ = new TexturePreviewEditor(framework_,this);
@@ -336,7 +338,7 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
     }
     */
-
+#endif
 }
 
 
@@ -1680,6 +1682,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
 
     tree_asset_cache_->clear();
     tree_asset_transfers_->clear();
+/*     /// \todo Regression. Reimplement using the Asset API. -jj.
 
     boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
         framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
@@ -1716,6 +1719,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     }
 
     QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
+    */
 }
 
 void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
