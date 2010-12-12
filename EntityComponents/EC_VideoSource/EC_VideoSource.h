@@ -7,7 +7,6 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 #include "EC_3DCanvas.h"
-#include "AssetInterface.h"
 
 #include <QWidget>
 #include <QString>
@@ -79,7 +78,8 @@ private slots:
     void BufferStatus(int filled);
     void StartVideoPlayback(bool has_video);
 
-    void LoadVideo(Foundation::AssetInterfacePtr asset);
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+//    void LoadVideo(Foundation::AssetInterfacePtr asset);
     void LoadCurrentVideo();
 
 private:

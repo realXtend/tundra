@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "ResourceInterface.h"
 #include "Declare_EC.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
