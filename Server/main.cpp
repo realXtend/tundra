@@ -102,6 +102,8 @@ int run (int argc, char **argv)
     int return_value = EXIT_SUCCESS;
 
     printf("Starting up server. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
+    for(int i = 0; i < argc; ++i)
+        printf("argv[%d]: %s\n", i, argv[i]);
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     try

@@ -289,7 +289,8 @@ namespace Foundation
             ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
             ("login", "automatically login to server using provided credentials")
             ("run", po::value<std::string>(), "Run script on startup")
-            ("file", po::value<std::string>(), "Load scene on startup");
+            ("file", po::value<std::string>(), "Load scene on startup")
+            ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup");
         try
         {
             po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);

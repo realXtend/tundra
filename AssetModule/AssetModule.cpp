@@ -97,7 +97,7 @@ namespace Asset
             if (!startup_scene_.empty())
             {
                 // If scene name is expressed as a full path, add it as a recursive asset source for localassetprovider
-                boost::filesystem::path scenepath(startup_scene_);
+                boost::filesystem::path scenepath(startup_scene_);  
                 std::string dirname = scenepath.branch_path().string();
                 if (!dirname.empty())
                     boost::dynamic_pointer_cast<LocalAssetProvider>(local_asset_provider_)->AddStorageDirectory(dirname, "Scene Local", true);
