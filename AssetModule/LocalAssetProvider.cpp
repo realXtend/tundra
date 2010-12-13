@@ -244,9 +244,13 @@ void LocalAssetProvider::CompletePendingFileUploads()
         {
             AssetModule::LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
             transfer->EmitTransferFailed();
+            /// \todo Jukka lisää failure-notifikaatio.
         }
         else
+        {
             transfer->EmitTransferCompleted();
+            framework->Asset()->AssetUploadTransferCompleted(transfer.get());
+        }
     }
 }
 

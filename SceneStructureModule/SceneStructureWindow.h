@@ -159,7 +159,7 @@ private slots:
     */
     void Search(const QString &filter);
 
-    /// Expands or collapses the whole tree view, depending of the previous action.
+    /// Expands or collapses the whole tree view, depending on the previous action.
     void ExpandOrCollapseAll();
 };
 

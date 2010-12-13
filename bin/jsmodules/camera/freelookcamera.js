@@ -16,7 +16,11 @@ if (!me.HasComponent("EC_OgreCamera"))
     var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
 
     camera.AutoSetPlaceable();
-    camera.SetActive();
+
+    // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the freelookcamera right now
+    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    if (!avatarcameraentity)
+        camera.SetActive();
     
     var transform = placeable.transform;
     transform.rot.x = 90;
