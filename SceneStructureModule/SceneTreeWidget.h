@@ -110,7 +110,7 @@ private:
     /// Loads invoke history from config file.
     void LoadInvokeHistory();
 
-    /// Saves incoke history to config file.
+    /// Saves invoke history to config file.
     void SaveInvokeHistory();
 
     /// Return most recently used InvokeItem.

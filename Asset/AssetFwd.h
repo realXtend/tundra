@@ -11,6 +11,7 @@ class AssetCache;
 
 class IAsset;
 typedef boost::shared_ptr<IAsset> AssetPtr;
+typedef boost::weak_ptr<IAsset> AssetWeakPtr;
 
 class IAssetTransfer;
 typedef boost::shared_ptr<IAssetTransfer> AssetTransferPtr;
