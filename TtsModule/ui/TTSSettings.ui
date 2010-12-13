@@ -43,33 +43,11 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_7">
                 <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout">
-                  <item>
-                   <widget class="QCheckBox" name="playOwnMessagesCheckBox">
-                    <property name="text">
-                     <string>Play own messages</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_4">
-                  <item>
-                   <widget class="QCheckBox" name="playOtherMessagesCheckBox">
-                    <property name="text">
-                     <string>Play messages from other avatars</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_7">
                   <item>
                    <widget class="QLabel" name="label_2">
                     <property name="text">
-                     <string>Own voice</string>
+                     <string>Voice for own avatar</string>
                     </property>
                    </widget>
                   </item>
@@ -84,6 +62,27 @@
                    </widget>
                   </item>
                  </layout>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="publishOwnVoiceCheckBox">
+                  <property name="text">
+                   <string>Publish own voice</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout">
+                  <item>
+                   <widget class="QCheckBox" name="playOwnMessagesCheckBox">
+                    <property name="text">
+                     <string>Play chat messages from own avatar</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_10"/>
                 </item>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -106,6 +105,28 @@
                   </item>
                  </layout>
                 </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <item>
+                   <widget class="QCheckBox" name="playOtherMessagesCheckBox">
+                    <property name="text">
+                     <string>Play chat messages from other avatars</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_11">
+                  <item>
+                   <widget class="QCheckBox" name="avatarSpecificVoicesCheckBox">
+                    <property name="text">
+                     <string>Use avatar specific voices if available</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
                </layout>
               </widget>
              </item>
@@ -115,17 +136,6 @@
                 <string>TTS for notifications</string>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_8">
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayout_3">
-                  <item>
-                   <widget class="QCheckBox" name="playNotificationMessagesCheckBox">
-                    <property name="text">
-                     <string>Play notifications</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <item>
@@ -142,6 +152,17 @@
                       <width>200</width>
                       <height>0</height>
                      </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <item>
+                   <widget class="QCheckBox" name="playNotificationMessagesCheckBox">
+                    <property name="text">
+                     <string>Play notifications</string>
                     </property>
                    </widget>
                   </item>
@@ -164,24 +185,6 @@
               </spacer>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_5">
-               <item>
-                <widget class="QLineEdit" name="testPhraseText">
-                 <property name="text">
-                  <string>Hello world</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="testButton">
-                 <property name="text">
-                  <string>Test</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
               <layout class="QHBoxLayout" name="horizontalLayout_6">
                <item>
                 <widget class="QLabel" name="label">
@@ -197,6 +200,24 @@
                    <width>200</width>
                    <height>0</height>
                   </size>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <item>
+                <widget class="QLineEdit" name="testPhraseText">
+                 <property name="text">
+                  <string>Hello world</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="testButton">
+                 <property name="text">
+                  <string>Test</string>
                  </property>
                 </widget>
                </item>

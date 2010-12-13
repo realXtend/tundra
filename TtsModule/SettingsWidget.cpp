@@ -16,13 +16,15 @@ namespace Tts
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, SETTINGS_HEADER_);
         playOwnChatMessages = settings.value("Tts/play_own_chat_messages", false).toBool();
-        playOtherChatMessages = settings.value("Tts/play_other_chat_messages", false).toBool();
-        playNotificationMessages = settings.value("Tts/play_notifications_messages", false).toBool();
+        playOtherChatMessages = settings.value("Tts/play_other_chat_messages", true).toBool();
+        playNotificationMessages = settings.value("Tts/play_notifications_messages", true).toBool();
         ownVoice = settings.value("Tts/own_voice", "").toString();
         testVoice = settings.value("Tts/test_voice", "").toString();
         otherDefaultVoice = settings.value("Tts/other_default_voice", "").toString();
         notificationVoice = settings.value("Tts/notification_voice", "").toString();
         testPhrase = settings.value("Tts/test_phrase", "Hello world!").toString();
+        publishOwnVoice = settings.value("Tts/publish_own_voice", true).toBool();
+        useAvatarSpecificVoices = settings.value("Tts/use_avatar_specific_voices", true).toBool();
     }
 
     void Settings::Save()
@@ -36,6 +38,8 @@ namespace Tts
         settings.setValue("Tts/other_default_voice", otherDefaultVoice);
         settings.setValue("Tts/notification_voice", notificationVoice);
         settings.setValue("Tts/test_phrase", testPhrase);
+        settings.setValue("Tts/publish_own_voice", publishOwnVoice);
+        settings.setValue("Tts/use_avatar_specific_voices", useAvatarSpecificVoices);
         settings.sync();
     }
 
@@ -55,6 +59,8 @@ namespace Tts
         connect(defaultVoiceForTextChat, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SaveSettings()) );
         connect(notificationVoice, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SaveSettings()) );
         connect(testVoice, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SaveSettings()) );
+        connect(publishOwnVoiceCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
+        connect(avatarSpecificVoicesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
     }
 
     SettingsWidget::~SettingsWidget()
@@ -72,6 +78,8 @@ namespace Tts
         settings_.otherDefaultVoice = defaultVoiceForTextChat->currentText();
         settings_.notificationVoice = notificationVoice->currentText();
         settings_.testPhrase = testPhraseText->text();
+        settings_.publishOwnVoice = publishOwnVoiceCheckBox->isChecked();
+        settings_.useAvatarSpecificVoices = avatarSpecificVoicesCheckBox->isChecked();
         settings_.Save();
 
         Tts::TtsServiceInterface* tts_service = framework_->GetService<Tts::TtsServiceInterface>();
@@ -122,6 +130,14 @@ namespace Tts
             playNotificationMessagesCheckBox->setCheckState(Qt::Checked);
         else
             playNotificationMessagesCheckBox->setCheckState(Qt::Unchecked);
+        if (settings_.publishOwnVoice)
+            publishOwnVoiceCheckBox->setCheckState(Qt::Checked);
+        else
+            publishOwnVoiceCheckBox->setCheckState(Qt::Unchecked);
+        if (settings_.useAvatarSpecificVoices)
+            avatarSpecificVoicesCheckBox->setCheckState(Qt::Checked);
+        else
+            avatarSpecificVoicesCheckBox->setCheckState(Qt::Unchecked);
 
         SetQComboBoxCurrentText(ownVoice, settings_.ownVoice);
         SetQComboBoxCurrentText(notificationVoice, settings_.notificationVoice);

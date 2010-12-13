@@ -9,16 +9,11 @@
 #ifndef incl_TTS_EC_TtsVoice_h
 #define incl_TTS_EC_TtsVoice_h
 
-//#include "ComponentInterface.h"
-//#include "AttributeInterface.h"
-
 #include "IComponent.h"
 #include "IAttribute.h"
-
-
 #include "Declare_EC.h"
-#include "TtsServiceInterface.h"
 
+#include "TtsServiceInterface.h"
 
 #include <QString>
 
@@ -27,7 +22,6 @@ class EC_TtsVoice : public IComponent
 	Q_OBJECT
 	DECLARE_EC(EC_TtsVoice);
 
-	
 public slots:
     void OnClick();
 
@@ -38,6 +32,10 @@ private slots:
 public:
     /// Destructor.
     ~EC_TtsVoice();
+
+    /// VOIP protocol used eg. 'mumble'
+    Q_PROPERTY(QString voicename READ getvoicename WRITE setvoicename);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, voicename);
 
     /// Sets voice for the entity.
     /// @param voice Voice.
@@ -68,7 +66,7 @@ private:
     explicit EC_TtsVoice(IModule *module);
 
     /// Tts pointer.
-	Tts::TtsServiceInterface* ttsService_;
+    Tts::TtsServiceInterface* ttsService_;
 };
 
 #endif

@@ -19,14 +19,18 @@ namespace Tts
         virtual void Save();
 
     public:
-        QString testVoice;
-        QString ownVoice;
-        QString otherDefaultVoice;
+        QString testVoice; // voice settings for test phrase
+        QString ownVoice; // voice settings for own avatar
+        QString otherDefaultVoice; // voice settings for other avatars
         QString notificationVoice;
         bool playOwnChatMessages;
         bool playOtherChatMessages;
         bool playNotificationMessages;
+        bool publishOwnVoice;
+        bool useAvatarSpecificVoices;
         QString testPhrase;
+
+    private:
         static const char SETTINGS_HEADER_[];
     };
 

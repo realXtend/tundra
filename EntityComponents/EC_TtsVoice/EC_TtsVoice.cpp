@@ -9,13 +9,15 @@
 #include "StableHeaders.h"
 
 #include "EC_TtsVoice.h"
-//#include "ModuleInterface.h"
 #include "IModule.h"
 #include "Entity.h"
+
+#include "MemoryLeakCheck.h"
 
 
 EC_TtsVoice::EC_TtsVoice(IModule *module) :
     IComponent(module->GetFramework()),
+    voicename(this, "", false),
 	voice_(this, "voice", ""),
     message_(this, "message", "")
 {
