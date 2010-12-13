@@ -429,11 +429,13 @@ namespace CoreUi
 				in_world_chat_session_ = comm->InWorldChatSession();
                 if (!in_world_chat_session_)
                     return;
-//$ BEGIN_MOD $
                 connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)),
                     SLOT(UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
-//$ END_MOD $			
             }
+
+       		tts_service_ = framework_->GetService<Tts::TtsServiceInterface>();
+	        if (tts_service_)
+           		connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)), SLOT(SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
         }
     }
 
@@ -445,58 +447,12 @@ namespace CoreUi
         voice_tool_ = new CommUI::VoiceToolWidget(framework_);
         tool_manager_->AddToolWidget("Voice", voice_tool_);
     }
-////$ BEGIN_MOD $
-//	void CommunicationWidget::InitializeInWorldTts()
-//	{
-//		tts_service_ = framework_->GetService<Tts::TtsServiceInterface>();
-//		if (!tts_service_)
-//			return;
-//		connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)), SLOT(SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
-//		
-//		// Pick up the EC_TtsVoice of the avatar entity
-//		//GetAvatarVoiceComponent();
-//
-//		ShowTtsChatControls();
-//
-//		if (Tts_chat_widget)
-//			SAFE_DELETE(Tts_chat_widget);
-//		
-//		Tts_chat_widget = new Communications::TtsChat::TtsChatWidget(); 
-//		
-//		tts_config_ = new Communications::TtsChat::TtsChatConfig();
-//		Tts_chat_widget->ConfigureInterface(tts_config_);
-//		connect(ttsButton, SIGNAL(clicked()), SLOT(ToggleTtsChatWidget()));
-//		connect(Tts_chat_widget, SIGNAL(TtsstateChanged()),SLOT(UpdateTtsChatControls()));
-//		//connect(Tts_chat_widget,SIGNAL(TtsVoiceChanged(Tts::Voice)),SLOT(UpdateAvatarVoice(Tts::Voice)));
-//
-//		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-//		if (ui)
-//		{
-//			Tts_chat_widget->setWindowTitle("Text To Speech Configuration");
-//     		tts_proxy_ = ui->AddWidgetToScene(Tts_chat_widget);
-//			tts_proxy_->hide();
-//		}
-//	}
-////$ END_MOD $
+
     void CommunicationWidget::UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message,const QString& uuid)
     {
         QString hour_str = QString::number(message.TimeStamp().time().hour());
         QString minute_str = QString::number(message.TimeStamp().time().minute());
         QString time_stamp_str = QString("%1:%2").arg(hour_str, 2, QChar('0')).arg(minute_str, 2, QChar('0'));
-
-//		if(!message.Text().contains("</voice>", Qt::CaseInsensitive))
-//			ShowIncomingMessage(message.IsOwnMessage(), message.Author(), time_stamp_str, message.Text());
-//		else
-//		{
-//			// Deletes voice info
-//			QString	chatText_=message.Text();
-//			const QString labelClose = "</voice>";
-//			const int labelCloseSize = labelClose.size();
-//			const int closePosition = chatText_.lastIndexOf(labelClose);
-//			chatText_ = chatText_.remove(0, closePosition + labelCloseSize);
-//			
-//			ShowIncomingMessage(message.IsOwnMessage(), message.Author(), time_stamp_str, chatText_);
-//		}
     }
 
     void CommunicationWidget::UninitializeInWorldVoice()
@@ -508,28 +464,6 @@ namespace CoreUi
         voice_tool_ = 0; // Object deleted by tool_manager_->RemoveToolWidget() function call
     }
 	
-////$ BEGIN_MOD $
-//	void CommunicationWidget::UpdateTtsChatControls()
-//    {
-//		ownVoiceOn =tts_config_->isActiveOwnVoice();
-//		othersVoiceOn =tts_config_->isActiveOthersVoice();;
-//		if (ownVoiceOn || othersVoiceOn)
-//		{
-//			this->ttsButton->setStyleSheet("QPushButton#ttsButton {border: 0px;background-color: transparent;background-image: url('./data/ui/images/chat/uibutton_TTS_semi.png');background-position: top left;background-repeat: no-repeat;} QPushButton#ttsButton::hover {border: 0px;background-image: url('./data/ui/images/chat/uibutton_TTS_semi_hover.png');} QPushButton#ttsButton::pressed {border: 0px; background-image: url('./data/ui/images/chat/uibutton_TTS_semi_click.png');}");
-//		}
-//
-//		if (ownVoiceOn && othersVoiceOn)
-//		{
-//			this->ttsButton->setStyleSheet("QPushButton#ttsButton {border: 0px;background-color: transparent;background-image: url('./data/ui/images/chat/uibutton_TTS_total.png');background-position: top left;background-repeat: no-repeat;} QPushButton#ttsButton::hover {border: 0px;background-image: url('./data/ui/images/chat/uibutton_TTS_total_hover.png');} QPushButton#ttsButton::pressed {border: 0px; background-image: url('./data/ui/images/chat/uibutton_TTS_total_click.png');}");
-//		}
-//		if (!(ownVoiceOn || othersVoiceOn))
-//		{
-//			this->ttsButton->setStyleSheet("QPushButton#ttsButton {border: 0px;background-color: transparent;background-image: url('./data/ui/images/chat/uibutton_TTS_normal.png');background-position: top left;background-repeat: no-repeat;} QPushButton#ttsButton::hover {border: 0px;background-image: url('./data/ui/images/chat/uibutton_TTS_hover.png');} QPushButton#ttsButton::pressed {border: 0px; background-image: url('./data/ui/images/chat/uibutton_TTS_click.png');}");
-//		}
-//    }
-//$ END_MOD $
-    // NormalChatViewWidget : QWidget
-
     NormalChatViewWidget::NormalChatViewWidget(QWidget *parent) :
         QWidget(parent)
     {
