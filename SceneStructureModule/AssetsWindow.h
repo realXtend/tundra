@@ -37,13 +37,13 @@ public:
     ~AssetsWindow();
 
 private:
-    ///
+    /// Populates the tree widget with all assets from all asset storages.
     void PopulateTreeWidget();
 
-    /// 
-    /** @param asset 
-        @param parent 
-        @param alreadyAdded 
+    /// If @c asset has asset references, adds the asset references as children to the @c parent.
+    /** @param asset Asset to be added to the tree widget.
+        @param parent The newly created (parent) item.
+        @param alreadyAdded Set of already added assets.
     */
     void AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent, std::set<AssetPtr> &alreadyAdded);
 
@@ -57,7 +57,7 @@ private slots:
     */
     void Search(const QString &filter);
 
-    /// Expands or collapses the whole tree view, depending of the previous action.
+    /// Expands or collapses the whole tree view, depending on the previous action.
     void ExpandOrCollapseAll();
 };
 
