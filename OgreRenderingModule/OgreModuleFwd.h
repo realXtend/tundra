@@ -26,6 +26,7 @@ namespace Ogre
     class DefaultHardwareBufferManager;
     class ParticleSystem;
     class Skeleton;
+    class TagPoint;
 }
 
 namespace OgreRenderer
