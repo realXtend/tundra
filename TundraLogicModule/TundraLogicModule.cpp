@@ -16,7 +16,6 @@
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
-#include "AssetServiceInterface.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
 

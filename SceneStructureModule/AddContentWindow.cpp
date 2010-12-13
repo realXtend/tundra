@@ -112,9 +112,12 @@ void ReplaceReferences(QByteArray &material, const RefMap &refs)
         if (idx != -1)
         {
             QString texName = lines[i].mid(idx + 8).trimmed();
+            texName = AssetAPI::ExtractFilenameFromAssetRef(texName); ///\todo This line is wrong and should be removed.
+            // There is a problem in the refmap that it doesn't store the original assetrefs, but stores the filenames
+            // without paths. Therefore we need to do the comparison here also without paths.
             RefMap::const_iterator it = refs.find(texName);
             if (it != refs.end())
-                lines[i].replace(it.key(), it.value());
+                lines[i] = "texture " + it.value();
         }
     }
 
@@ -454,27 +457,23 @@ void AddContentWindow::AddContent()
     {
         try
         {
-            IAssetUploadTransfer *transfer = 0;
+            AssetUploadTransferPtr transfer;
 
-            if (!ad.source.isEmpty() && ad.data.isEmpty())
+            if (ad.dataInMemory)
             {
-//                LogDebug("Starting upload of ."+ ad.filename.toStdString());
-                transfer = framework->Asset()->UploadAssetFromFile(ad.source.toStdString().c_str(),
-                    dest, ad.destinationName.toStdString().c_str());
-            }
-            else if (ad.typeName.contains("material", Qt::CaseInsensitive) && !ad.data.isEmpty())
-            {
-//                LogDebug("Starting upload of ."+ ad.destinationName.toStdString());
                 transfer = framework->Asset()->UploadAssetFromFileInMemory((const u8*)QString(ad.data).toStdString().c_str(),
                     ad.data.size(), dest, ad.destinationName.toStdString().c_str());
             }
             else
-                LogError("Could not upload.");
+            {
+                transfer = framework->Asset()->UploadAssetFromFile(ad.source.toStdString().c_str(),
+                    dest, ad.destinationName.toStdString().c_str());
+            }
 
             if (transfer)
             {
-                connect(transfer, SIGNAL(Completed(IAssetUploadTransfer *)), SLOT(HandleUploadCompleted(IAssetUploadTransfer *)));
-                connect(transfer, SIGNAL(Failed(IAssetUploadTransfer *)), SLOT(HandleUploadFailed(IAssetUploadTransfer *)));
+                connect(transfer.get(), SIGNAL(Completed(IAssetUploadTransfer *)), SLOT(HandleUploadCompleted(IAssetUploadTransfer *)));
+                connect(transfer.get(), SIGNAL(Failed(IAssetUploadTransfer *)), SLOT(HandleUploadFailed(IAssetUploadTransfer *)));
             }
         }
         catch(const Exception &e)

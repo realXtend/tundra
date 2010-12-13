@@ -8,7 +8,6 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "OgreConversionUtils.h"
-#include "OgreMaterialResource.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreMeshAsset.h"
 #include "OgreMaterialAsset.h"

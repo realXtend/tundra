@@ -25,8 +25,6 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "Renderer.h"
-#include "ResourceHandler.h"
-#include "OgreTextureResource.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
@@ -449,6 +447,8 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
 
 Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params)
 {
+    /* /// \todo Regression. Reimplement using the Asset API. -jj.
+
     boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
@@ -506,7 +506,7 @@ Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params
         {
         }
     }
-    
+    */
     return Console::ResultSuccess();
 }
 

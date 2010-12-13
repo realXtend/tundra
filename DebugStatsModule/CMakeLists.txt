@@ -18,14 +18,22 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 add_definitions (-DDEBUGSTATS_MODULE_EXPORTS) 
 
 use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule EnvironmentModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules AssetModule Input Ui OgreAssetEditorModule)
+    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules AssetModule Input Ui)
+
+if (OGREASSETEDITOR)
+use_modules(OgreAssetEditorModule)
+endif()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
 
 link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule EnvironmentModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules AssetModule Input Ui OgreAssetEditorModule)
+    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules AssetModule Input Ui)
+
+if (OGREASSETEDITOR)
+link_modules(OgreAssetEditorModule)
+endif()
 
 LinkEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)
 LinkEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)

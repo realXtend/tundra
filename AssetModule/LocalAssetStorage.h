@@ -28,6 +28,8 @@ public:
     /// If true, all subdirectories of the storage directory are automatically looked in when loading an asset.
     bool recursive;
 
+    bool Writable() const { return true; }
+
     /// Returns the full local filesystem path name of the given asset in this storage, if it exists.
     /// Example: GetFullPathForAsset("my.mesh", true) might return "C:\Projects\Tundra\bin\data\assets".
     /// If the file does not exist, returns "".

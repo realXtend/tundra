@@ -6,7 +6,6 @@
 #include "RexTypes.h"
 #include "Input.h"
 #include "MouseEvent.h"
-#include "OgreMeshResource.h"
 #include "OgreAssetEditorModuleApi.h"
 #include "AssetFwd.h"
 

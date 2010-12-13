@@ -9,7 +9,6 @@
 
 #include "IAttribute.h"
 #include "IComponent.h"
-#include "AssetInterface.h"
 #include "Core.h"
 #include "CoreStdIncludes.h"
 #include "Transform.h"

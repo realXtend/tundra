@@ -8,7 +8,6 @@
 #include "IComponentFactory.h"
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "AssetInterface.h"
 #include "Transform.h"
 #include "AssetReference.h"
 

@@ -20,20 +20,13 @@
 #include "EC_OgreLight.h"
 #include "EC_OgreParticleSystem.h"
 
-#include "OgreTextureResource.h"
-#include "OgreMaterialResource.h"
-#include "OgreMeshResource.h"
-//#include "OgreParticleResource.h"
-#include "OgreSkeletonResource.h"
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "QuatUtils.h"
 
 #include "SceneEvents.h"
-#include "ResourceInterface.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "SceneManager.h"
-#include "AssetServiceInterface.h"
 #include "ISoundService.h"
 #include "GenericMessageUtils.h"
 #include "EventManager.h"
@@ -1128,6 +1121,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         const std::string& mesh_name = prim.MeshID;
         if ((!RexTypes::IsNull(mesh_name)) && (mesh.GetMeshName() != mesh_name))
         {
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+            /*
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                 GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (renderer)
@@ -1138,12 +1133,15 @@ void Primitive::HandleDrawType(entity_id_t entityid)
                 if (tag)
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Mesh)] = entityid;
             }
+            */
         }
         
         // Load mesh skeleton if used/specified
         const std::string& skeleton_name = prim.AnimationPackageID;
         if ((!RexTypes::IsNull(skeleton_name)) && (mesh.GetSkeletonName() != skeleton_name))
         {
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+            /*
             boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
                 GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
             if (renderer)
@@ -1154,6 +1152,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
                 if (tag)
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Skeleton)] = entityid;
             }
+            */
         }
         
         
@@ -1268,7 +1267,9 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
     if ((prim->Materials.size()) && (prim->Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(prim->Materials[0].asset_id)))
     {
         std::string matname = prim->Materials[0].asset_id;
-        
+
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
         // Request material if don't have it yet
         if (!renderer->GetResource(matname, OgreRenderer::OgreMaterialResource::GetTypeStatic()))
         {
@@ -1278,6 +1279,7 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
             if (tag)
                 prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_MaterialScript)] = entityid;
         }
+*/
     }
     else
     {
@@ -1299,7 +1301,8 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
         while (j != tex_requests.end())
         {
             std::string texname = (*j);
-            
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*            
             // Request texture if don't have it yet
             if (!renderer->GetResource(texname, OgreRenderer::OgreTextureResource::GetTypeStatic()))
             {
@@ -1309,7 +1312,7 @@ void Primitive::HandlePrimTexturesAndMaterial(entity_id_t entityid)
                 if (tag)
                     prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;
             }
-            
+*/            
             ++j;
         }
     }
@@ -1356,6 +1359,8 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
             case RexTypes::RexAT_TextureJPEG:
             case RexTypes::RexAT_Texture:
             {
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
                 Foundation::ResourcePtr res = renderer->GetResource(mat_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
                 if (res)
                     HandleTextureReady(entityid, res);
@@ -1367,10 +1372,13 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
                     if (tag)
                         prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_Texture)] = entityid;   
                 } 
+*/
             }
             break;
             case RexTypes::RexAT_MaterialScript:
             {
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
                 Foundation::ResourcePtr res = renderer->GetResource(mat_name, OgreRenderer::OgreMaterialResource::GetTypeStatic());
                 if (res)
                     HandleMaterialResourceReady(entityid, res);
@@ -1382,6 +1390,7 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
                     if (tag)
                         prim_resource_request_tags_[std::make_pair(tag, RexTypes::RexAT_MaterialScript)] = entityid;   
                 } 
+                */
             }
             break;
         }
@@ -1538,6 +1547,9 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
 
 bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
+    return false;
+            ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
     if (event_id == Resource::Events::RESOURCE_READY)
     {
         Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
@@ -1588,8 +1600,9 @@ bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)
     }
     
     return false;
+    */
 }
-
+/*///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {     
     if (!res) return;
@@ -1650,9 +1663,12 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
     event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
 }
+    */
 
+    /*///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
+            
     if (!res) return;
     if (res->GetType() != OgreRenderer::OgreSkeletonResource::GetTypeStatic()) return;
     
@@ -1667,10 +1683,11 @@ void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePt
     if (mesh_res)
         HandleMeshReady(entityid, mesh_res);
 }
+        */
 
+    /*///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
-    /* // Removed due to regression for now -jj.
     if (!res) return;
     if (res->GetType() != OgreRenderer::OgreParticleResource::GetTypeStatic()) return;
     OgreRenderer::OgreParticleResource* partres = checked_static_cast<OgreRenderer::OgreParticleResource*>(res.get());
@@ -1690,9 +1707,10 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
     // Set adjustment orientation for system (legacy haxor)
     //Quaternion adjust(PI, 0, PI);
     //particle.SetAdjustOrientation(adjust);
-    */
 }
+    */
 
+/*            ///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
     assert(res.get());
@@ -1731,7 +1749,9 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
         }
     }
 }
+    */
 
+/*
 void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
     assert(res.get());
@@ -1809,6 +1829,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
         }
     }
 }
+    */
 
 void Primitive::DiscardRequestTags(entity_id_t entityid, Primitive::EntityResourceRequestMap& map)
 {

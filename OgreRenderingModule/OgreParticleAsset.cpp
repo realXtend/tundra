@@ -2,12 +2,10 @@
 
 #include "StableHeaders.h"
 #include "OgreConversionUtils.h"
-#include "OgreMaterialResource.h"
 #include "OgreParticleAsset.h"
-#include "OgreTextureResource.h"
 #include "OgreRenderingModule.h"
 #include "OgreMaterialUtils.h"
-#include "ResourceHandler.h"
+#include "Renderer.h"
 
 #include <Ogre.h>
 
@@ -84,7 +82,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                 ModifyVectorParameter(line, line_vec);              
 
                 // Process opening/closing braces
-                if (!ResourceHandler::ProcessBraces(line, brace_level))
+                if (ProcessBraces(line, brace_level))
                 {                
                     // If not a brace and on level 0, it should be a new particlesystem; replace name with resource ID + ordinal
                     if (brace_level == 0)

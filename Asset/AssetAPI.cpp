@@ -5,18 +5,18 @@
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 #include "IAssetStorage.h"
-#include "AssetServiceInterface.h"
 #include "IAssetProvider.h"
 #include "RenderServiceInterface.h"
 #include "LoggingFunctions.h"
 #include "EventManager.h"
-#include "ResourceInterface.h"
 #include "CoreException.h"
 #include "IAssetTypeFactory.h"
+#include "IAssetUploadTransfer.h"
 #include "GenericAssetFactory.h"
-#include "AssetCache_.h"
+#include "AssetCache.h"
 #include "Platform.h"
 #include <QDir>
+#include <QFileSystemWatcher>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
@@ -28,6 +28,8 @@ AssetAPI::AssetAPI(Foundation::Framework *owner)
     const char cDefaultAssetCachePath[] = "/assetcache";
 
     assetCache = new AssetCache((owner->GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
+    diskSourceChangeWatcher = new QFileSystemWatcher();
+    connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)));
 
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
@@ -38,33 +40,18 @@ AssetAPI::AssetAPI(Foundation::Framework *owner)
 AssetAPI::~AssetAPI()
 {
     delete assetCache;
-}
-
-void IAssetTransfer::EmitAssetDownloaded()
-{
-    emit Downloaded(this);
-}
-
-void IAssetTransfer::EmitAssetDecoded()
-{
-    emit Decoded(this);
-}
-
-void IAssetTransfer::EmitAssetLoaded()
-{
-    emit Loaded(this);
+    delete diskSourceChangeWatcher;
 }
 
 std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 {
-    ServiceManagerPtr service_manager = framework->GetServiceManager();
-    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-        service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
-    if (!asset_service)
-        throw Exception("Unagle to get AssetServiceInterface!");
-
-    std::vector<AssetProviderPtr> providers = asset_service->Providers();
     return providers;
+}
+
+void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
+{
+    ///\todo Debug check for duplicates.
+    providers.push_back(provider);
 }
 
 AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
@@ -188,15 +175,21 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
         return asset;
     else
     {
-        DeleteAsset(asset);
+        ForgetAsset(asset, false);
         return AssetPtr();
     }
 }
 
-void AssetAPI::DeleteAsset(AssetPtr asset)
+void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 {
     if (!asset.get())
         return;
+
+    emit AssetAboutToBeRemoved(asset);
+
+    // If we are supposed to remove the cached (or original for local assets) version of the asset, do so.
+    if (removeDiskSource && !asset->DiskSource().isEmpty())
+        QFile::remove(asset->DiskSource());
 
     // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
     // some object left a dangling strong ref to an asset).
@@ -208,10 +201,13 @@ void AssetAPI::DeleteAsset(AssetPtr asset)
         LogError("AssetAPI::DeleteAsset called on asset \"" + asset->Name().toStdString() + "\", which does not exist in AssetAPI!");
         return;
     }
+    if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
+        diskSourceChangeWatcher->removePath(asset->DiskSource());
     assets.erase(iter);
+
 }
 
-IAssetUploadTransfer *AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
 {
     if (!filename || strlen(filename) == 0)
         throw Exception("AssetAPI::UploadAssetFromFile failed! No source filename given!");
@@ -224,13 +220,20 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFile(const char *filename, AssetS
 
     AssetProviderPtr provider = destination->provider.lock();
     if (!provider.get())
-        throw Exception("AssetAPI::UploadAssetFromFile failed! The passed destination asset storage was null!");
+        throw Exception("AssetAPI::UploadAssetFromFile failed! The provider pointer of the passed destination asset storage was null!");
 
-    return provider->UploadAssetFromFile(filename, destination, assetName);
-    /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
+    std::vector<u8> data;
+    bool success = LoadFileToVector(filename, data);
+    if (!success)
+        return AssetUploadTransferPtr(); ///\todo Log out error.
+
+    if (data.size() == 0)
+        return AssetUploadTransferPtr(); ///\todo Log out error.
+
+    return UploadAssetFromFileInMemory(&data[0], data.size(), destination, assetName);
 }
 
-IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
 {
     if (!data || numBytes == 0)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! Null source data passed!");
@@ -243,19 +246,44 @@ IAssetUploadTransfer *AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size
 
     AssetProviderPtr provider = destination->provider.lock();
     if (!provider.get())
-        throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The passed destination asset storage was null!");
+        throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The provider pointer of the passed destination asset storage was null!");
 
-    return provider->UploadAssetFromFileInMemory(data, numBytes, destination, assetName);
-    /// \todo The pointer returned above can leak, if the provider doesn't guarantee deletion. Move the ownership to Asset API in a centralized manner.
+    AssetUploadTransferPtr transfer = provider->UploadAssetFromFileInMemory(data, numBytes, destination, assetName);
+    if (transfer.get())
+        currentUploadTransfers[transfer->destinationStorage.lock()->GetFullAssetURL(assetName)] = transfer;
+
+    return transfer;
 }
 
-void AssetAPI::DeleteAllAssets()
+void AssetAPI::ForgetAllAssets()
 {
     while(assets.size() > 0)
-        DeleteAsset(assets.begin()->second); // DeleteAsset removes the asset it is given to from the assets list, so this loop terminates.
+        ForgetAsset(assets.begin()->second, false); // DeleteAsset removes the asset it is given to from the assets list, so this loop terminates.
 
     assets.clear();
     currentTransfers.clear();
+}
+
+std::vector<AssetTransferPtr> AssetAPI::PendingTransfers()
+{
+    std::vector<AssetTransferPtr> transfers;
+    for(AssetTransferMap::iterator iter = currentTransfers.begin(); iter != currentTransfers.end(); ++iter)
+        transfers.push_back(iter->second);
+
+    transfers.insert(transfers.end(), readyTransfers.begin(), readyTransfers.end());
+    return transfers;
+}
+
+AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
+{
+    AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
+    if (iter != currentTransfers.end())
+        return iter->second;
+    for(size_t i = 0; i < readyTransfers.size(); ++i)
+        if (readyTransfers[i]->source.ref == assetRef)
+            return readyTransfers[i];
+
+    return AssetTransferPtr();
 }
 
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
@@ -310,6 +338,20 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return transfer;
     }
 
+    // See if there is an asset upload that should block this download. If the same asset is being uploaded and downloaded simultaneously, make the download
+    // wait until the upload completes.
+    if (currentUploadTransfers.find(assetRef) != currentUploadTransfers.end())
+    {
+        LogDebug("The download of asset \"" + assetRef.toStdString() + "\" needs to wait, since the same asset is being uploaded at the moment.");
+        PendingDownloadRequest pendingRequest;
+        pendingRequest.assetRef = assetRef;
+        pendingRequest.assetType = assetType;
+        pendingRequest.transfer = AssetTransferPtr(new IAssetTransfer);
+
+        pendingDownloadRequests[assetRef] = pendingRequest;
+        return pendingRequest.transfer; ///\bug Problem. When we return this structure, the client will connect to this.
+    }
+
     // Find the AssetProvider that will fulfill this request.
     AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
     if (!provider.get())
@@ -332,7 +374,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
             LogError("AssetAPI::RequestAsset: Failed to load asset from cache!");
             return AssetTransferPtr();
         }
-        transfer->source.ref = assetRef;        
+        transfer->source.ref = assetRef;
         transfer->assetType = assetType;
         transfer->storage = AssetStorageWeakPtr(); // Note: Unfortunately when we load an asset from cache, we don't get the information about which storage it's supposed to come from.
         LogDebug("AssetAPI::RequestAsset: Loaded asset \"" + assetRef.toStdString() + "\" from disk cache instead of having to use asset provider."); 
@@ -476,8 +518,11 @@ AssetPtr AssetAPI::GetAssetByHash(QString assetHash)
     return AssetPtr();
 }
 
-void AssetAPI::Update()
+void AssetAPI::Update(f64 frametime)
 {
+    for(size_t i = 0; i < providers.size(); ++i)
+        providers[i]->Update(frametime);
+
     // Normally it is the AssetProvider's responsibility to call AssetTransferCompleted when a download finishes.
     // The 'readyTransfers' list contains all the asset transfers that don't have any AssetProvider serving them. These occur in two cases:
     // 1) A client requested an asset that was already loaded. In that case the request is not given to any assetprovider, but delayed in readyTransfers
@@ -511,15 +556,16 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
+    LogDebug("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" succeeded.");
 
     if (transfer->asset.get()) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
         transfer->EmitAssetDecoded();
         transfer->EmitAssetLoaded();
-        AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
-        if (iter != currentTransfers.end())
-            currentTransfers.erase(iter);
+        pendingDownloadRequests.erase(transfer->source.ref);
+        currentTransfers.erase(transfer->source.ref);
+
         return;
     }
 
@@ -538,7 +584,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     // Save this asset to cache, and find out which file will represent a cached version of this asset.
     QString assetDiskSource = transfer->DiskSource(); // The asset provider may have specified an explicit filename to use as a disk source.
-    if (transfer->CachingAllowed())
+    if (transfer->CachingAllowed() && transfer->rawAssetData.size() > 0)
         assetDiskSource = assetCache->StoreAsset(&transfer->rawAssetData[0], transfer->rawAssetData.size(), transfer->source.ref, ""); ///\todo Specify the content hash.
 
     // Save for the asset the storage and provider it came from.
@@ -561,6 +607,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         LogWarning("AssetAPI: Overwriting a previously downloaded asset \"" + existing->Name().toStdString() + "\", type \"" + existing->Type().toStdString() + "\" with asset of same name!");
     }
     assets[transfer->source.ref] = transfer->asset;
+    if (diskSourceChangeWatcher && !transfer->asset->DiskSource().isEmpty())
+        diskSourceChangeWatcher->addPath(transfer->asset->DiskSource());
+    emit AssetCreated(transfer->asset);
 
     // If this asset depends on any other assets, we have to make asset requests for those assets as well (and all assets that they refer to, and so on).
     RequestAssetDependencies(transfer->asset);
@@ -571,6 +620,63 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     // If we don't have any outstanding dependencies, fire the Loaded signal for the asset as well.
     if (NumPendingDependencies(transfer->asset) == 0)
         AssetDependenciesCompleted(transfer);
+}
+
+void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer)
+{
+    LogError("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" failed!");
+
+    ///\todo In this function, there is a danger of reaching an infinite recursion. Remember recursion parents and avoid infinite loops. (A -> B -> C -> A)
+
+    assert(transfer);
+    if (!transfer)
+        return;
+
+    AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
+    if (iter == currentTransfers.end())
+        LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer failed, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
+
+    // Signal any listeners that this asset transfer failed.
+    transfer->EmitAssetFailed();
+
+    // Propagate the failure of this asset transfer to all assets which depend on this asset.
+    std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
+    for(size_t i = 0; i < dependents.size(); ++i)
+    {
+        AssetTransferPtr transfer = GetPendingTransfer(dependents[i]->Name());
+        if (transfer.get())
+            AssetTransferFailed(transfer.get());
+    }
+
+    pendingDownloadRequests.erase(transfer->source.ref);
+    currentTransfers.erase(iter);
+}
+
+void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)
+{
+    QString assetRef = uploadTransfer->AssetRef();
+    // We've completed an asset upload transfer. See if there is an asset download transfer that is waiting
+    // for this upload to complete. 
+    
+    // Before issuing a request, clear our cache of this data.
+    /// \note We could actually update our cache with the same version of the asset that we just uploaded,
+    /// to avoid downloading what we just uploaded. That can be implemented later.
+    assetCache->DeleteAsset(assetRef);
+
+    currentUploadTransfers.erase(assetRef); // Note: this might kill the 'transfer' ptr if we were the last one to hold on to it. Don't dereference transfer below this.
+    PendingDownloadRequestMap::iterator iter = pendingDownloadRequests.find(assetRef);
+    if (iter != pendingDownloadRequests.end())
+    {
+        PendingDownloadRequest req = iter->second;
+
+        AssetTransferPtr transfer = RequestAsset(req.assetRef, req.assetType);
+        if (!transfer.get())
+            return; ///\todo Evaluate the path to take here.
+        connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)));
+        connect(transfer.get(), SIGNAL(Decoded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Decoded(IAssetTransfer*)));
+        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Loaded(IAssetTransfer*)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*)));
+    }
 }
 
 void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
@@ -593,6 +699,8 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
 
     // This asset is now completely finished, and all its dependencies have been loaded.
     transfer->EmitAssetLoaded();
+
+    pendingDownloadRequests.erase(transfer->source.ref);
 }
 
 void AssetAPI::NotifyAssetDependenciesChanged(AssetPtr asset)
@@ -697,6 +805,21 @@ void AssetAPI::OnAssetLoaded(IAssetTransfer *transfer)
                 AssetDependenciesCompleted(transfer);
         }
     }
+}
+
+void AssetAPI::OnAssetDiskSourceChanged(const QString &path)
+{
+    for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
+        if (iter->second->DiskSource() == path)
+        {
+            AssetPtr asset = iter->second;
+
+            bool success = asset->LoadFromCache();
+            if (!success)
+                LogError("Failed to reload changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path.toStdString() + "\"!");
+            else
+                LogDebug("Reloaded changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path.toStdString() + "\".");
+        }
 }
 
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst)

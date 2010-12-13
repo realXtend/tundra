@@ -31,13 +31,11 @@
 #include "ArgumentType.h"
 #include "InvokeItem.h"
 #include "FunctionInvoker.h"
-#include "AssetEvents.h"
 #include "CoreTypes.h"
 #include "OgreConversionUtils.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-#include "ResourceInterface.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
 #ifdef OGREASSETEDITOR_ENABLED

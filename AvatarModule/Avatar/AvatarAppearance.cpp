@@ -9,27 +9,20 @@
 
 #include "EntityComponent/EC_OpenSimAvatar.h"
 
+#include "AssetAPI.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "OgreMaterialResource.h"
 #include "OgreMaterialUtils.h"
 #include "OgreLocalResourceUtils.h"
 #include "Renderer.h"
 #include "OgreConversionUtils.h"
-#include "OgreMeshResource.h"
-#include "OgreSkeletonResource.h"
-#include "OgreMaterialResource.h"
-#include "OgreImageTextureResource.h"
-#include "OgreTextureResource.h"
 #include "HttpTask.h"
 #include "HttpUtilities.h"
 #include "LLSDUtilities.h"
-#include "AssetEvents.h"
-#include "AssetServiceInterface.h"
 #include "RenderServiceInterface.h"
-#include "Inventory/InventoryEvents.h"
+//#include "Inventory/InventoryEvents.h"
 #include "ConfigurationManager.h"
 #include "CoreStringUtils.h"
 #include "ServiceManager.h"
@@ -74,12 +67,15 @@ namespace Avatar
 
     void AvatarAppearance::Update(f64 frametime)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         ProcessAppearanceDownloads();
         ProcessAvatarExport();
+*/
     }
     
     void AvatarAppearance::DownloadAppearance(Scene::EntityPtr entity, bool use_default)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
         
@@ -145,10 +141,12 @@ namespace Avatar
         new_request->url_ = appearance_address;
         appearance_downloaders_[entity->GetId()] = new_download;
         new_download->AddRequest<HttpUtilities::HttpTaskRequest>(new_request);
+        */
     }
         
     void AvatarAppearance::ReadDefaultAppearance(const std::string& filename)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         default_appearance_ = boost::shared_ptr<QDomDocument>(new QDomDocument("Avatar"));
         
         QFile file(filename.c_str());
@@ -165,10 +163,12 @@ namespace Avatar
             return;
         }
         file.close();
+        */
     }
     
     void AvatarAppearance::SetupDefaultAppearance(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
             return;
@@ -177,10 +177,12 @@ namespace Avatar
         LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, *default_appearance_);
         
         SetupAppearance(entity);
+        */
     }
     
     void AvatarAppearance::SetupAppearance(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         PROFILE(Avatar_SetupAppearance);
         
         if (!entity)
@@ -260,10 +262,12 @@ namespace Avatar
             AvatarModule::LogDebug("User avatar changed, rebuilding editor view");
             avatar_module_->GetAvatarEditor()->RebuildEditView(); 
         }  
+        */
     }
     
     void AvatarAppearance::SetupDynamicAppearance(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
         
@@ -276,10 +280,12 @@ namespace Avatar
         SetupMorphs(entity);
         SetupBoneModifiers(entity);
         AdjustHeightOffset(entity);
+        */
     }
     
     void AvatarAppearance::AdjustHeightOffset(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
         
@@ -339,10 +345,12 @@ namespace Avatar
         }
 
         mesh->SetAdjustPosition(Vector3df(0.0f, 0.0f, -offset.y + FIXED_HEIGHT_OFFSET));
+        */
     }
     
     void AvatarAppearance::SetupMeshAndMaterials(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
                 
@@ -390,10 +398,12 @@ namespace Avatar
         event_data.entity = entity;
         EventManagerPtr event_manager = avatar_module_->GetFramework()->GetEventManager();
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+        */
     }
     
     void AvatarAppearance::SetupAttachments(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
                 
@@ -414,10 +424,12 @@ namespace Avatar
             mesh->SetAttachmentOrientation(i, attachments[i].transform_.orientation_);
             mesh->SetAttachmentScale(i, attachments[i].transform_.scale_);
         }
+*/
     }
     
     void AvatarAppearance::SetupMorphs(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
                 
@@ -461,10 +473,12 @@ namespace Avatar
                 }
             }
         }
+        */
     }
     
     void AvatarAppearance::SetupBoneModifiers(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
                 
         ResetBones(entity);
@@ -477,10 +491,12 @@ namespace Avatar
                 ApplyBoneModifier(entity, bone_modifiers[i].modifiers_[j], bone_modifiers[i].value_);
             }
         }
+        */
     }
     
     void AvatarAppearance::ResetBones(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         UNREFERENCED_PARAM(appearance);
         EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
@@ -507,10 +523,12 @@ namespace Avatar
             bone->setScale(orig_bone->getInitialScale());
             bone->setInitialState();
         }
+        */
     }
     
     void AvatarAppearance::ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, float value)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
         
         Ogre::Entity* ogre_entity = mesh->GetEntity();
@@ -631,10 +649,12 @@ namespace Avatar
         }
         
         bone->setInitialState();
+        */
     }
 
     void AvatarAppearance::GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         // Hacky and slow way to derive the initial position of the base bone. Do not use current position
         // because animations change it
         position = bone->getInitialPosition();
@@ -659,10 +679,13 @@ namespace Avatar
 
            bone = parent;
         }
+        */
     }
     
     Ogre::Bone* AvatarAppearance::GetAvatarBone(Scene::EntityPtr entity, const std::string& bone_name)
     {
+        return 0;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return 0;            
         EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
@@ -678,10 +701,12 @@ namespace Avatar
         if (!skeleton->hasBone(bone_name))
             return 0;
         return skeleton->getBone(bone_name);
+        */
     }
     
     void AvatarAppearance::HideVertices(Ogre::Entity* entity, std::set<uint> vertices_to_hide)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
         Ogre::MeshPtr mesh = entity->getMesh();
@@ -745,10 +770,13 @@ namespace Avatar
             }
             ibuf->unlock();
         }
+        */
     }
     
     void AvatarAppearance::ProcessAppearanceDownloads()
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
+
         // Check download results
         std::map<entity_id_t, HttpUtilities::HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
         while (i != appearance_downloaders_.end())
@@ -778,10 +806,12 @@ namespace Avatar
             else
                 appearance_downloaders_.erase(i++);
         }
+        */
     }
 
     void AvatarAppearance::ProcessInventoryAppearance(Scene::EntityPtr entity, const u8* data, uint size, QString base_url)
-    {       
+    {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -831,10 +861,13 @@ namespace Avatar
         // In the unlikely case of no requests at all, rebuild avatar now
         if (!pending_requests)
             SetupAppearance(entity);
+            */
     }
         
     uint AvatarAppearance::RequestAvatarResources(Scene::EntityPtr entity, const AvatarAssetMap& assets, bool inventorymode, QString base_url)
     {
+        return 0;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         // Erase any old pending requests for this avatar, they are no longer interesting
         std::vector<std::map<request_tag_t, entity_id_t>::iterator> tags_to_remove;
         std::map<request_tag_t, entity_id_t>::iterator i = avatar_resource_tags_.begin();
@@ -877,11 +910,13 @@ namespace Avatar
         avatar_pending_requests_[entity->GetId()] = pending_requests;
 
         return pending_requests;    
+        */
     }
     
     
     void AvatarAppearance::ProcessAppearanceDownload(Scene::EntityPtr entity, const u8* data, uint size)
     {        
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -943,10 +978,13 @@ namespace Avatar
         // In the unlikely case of no requests at all, rebuild avatar now
         if (!pending_requests)
             SetupAppearance(entity);
+            */
     }
     
     bool AvatarAppearance::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (event_id != Resource::Events::RESOURCE_READY)
             return false;
 
@@ -981,10 +1019,13 @@ namespace Avatar
         }
     
         return true;
+        */
     }
     
     bool AvatarAppearance::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (event_id != Asset::Events::ASSET_READY)
             return false;
             
@@ -1018,10 +1059,13 @@ namespace Avatar
             ProcessInventoryAppearance(entity, asset->GetData(), asset->GetSize());
 
         return true;
+        */
     }
     
     bool AvatarAppearance::HandleInventoryEvent(event_id_t event_id, IEventData* data)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
         {
             Inventory::InventoryItemEventData* event_data = dynamic_cast<Inventory::InventoryItemEventData*>(data);
@@ -1099,27 +1143,17 @@ namespace Avatar
         }
         
         return false;
+        */
     }   
 
-    const std::string& AvatarAppearance::GetResourceTypeFromName(const std::string& name, bool inventorymode)
+    std::string AvatarAppearance::GetResourceTypeFromName(const std::string& name, bool inventorymode)
     {
-        if (name.find(".mesh") != std::string::npos)
-            return OgreRenderer::OgreMeshResource::GetTypeStatic();
-        if (name.find(".skeleton") != std::string::npos)
-            return OgreRenderer::OgreSkeletonResource::GetTypeStatic();
-        if (name.find(".material") != std::string::npos)
-            return OgreRenderer::OgreMaterialResource::GetTypeStatic();
-        
-        // If not any of these, assume a texture image (.png, .jpg etc.)
-        if (!inventorymode)
-            return OgreRenderer::OgreImageTextureResource::GetTypeStatic();
-        // In inventory mode, we first have no option but to j2k-decode everything (no general image asset)
-        else
-            return OgreRenderer::OgreTextureResource::GetTypeStatic();
+        return GetResourceTypeFromResourceFileName(name.c_str()).toStdString();
     }
     
     void AvatarAppearance::FixupResources(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
             
@@ -1211,10 +1245,12 @@ namespace Avatar
         appearance->SetSkeleton(skeleton);
         appearance->SetMaterials(materials);
         appearance->SetAttachments(attachments);
+        */
     }
     
     void AvatarAppearance::FixupResource(AvatarAsset& asset, const AvatarAssetMap& asset_map, const std::string& resource_type)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
@@ -1232,10 +1268,12 @@ namespace Avatar
                 asset.resource_ = renderer->GetResource(asset.resource_id_, resource_type);
             }
         }
+        */
     }
     
     void AvatarAppearance::FixupMaterial(AvatarMaterial& mat, const AvatarAssetMap& asset_map)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
@@ -1333,11 +1371,12 @@ namespace Avatar
                 OgreRenderer::ReplaceTextureOnMaterial(ogremat, mat.textures_[i].name_, mat.textures_[i].resource_.lock()->GetId());
             }
         }
+        */
     }
 
     void AvatarAppearance::WebDavExportAvatar(Scene::EntityPtr entity)
     {
-
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
 
@@ -1386,10 +1425,12 @@ namespace Avatar
         }
 
         eventmgr->SendEvent("Inventory", Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST, &event_data);   
+        */
     }
 
     void AvatarAppearance::WebDavExportAvatarFinalize(Scene::EntityPtr entity, const QStringList &file_list)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         // Webdav based export, final phase
         inv_export_state_ = Idle;
         inv_export_request_.reset();  
@@ -1439,10 +1480,12 @@ namespace Avatar
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
         eventmgr->SendEvent("Inventory", Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST, &event_data);       
+        */
     }
     
     void AvatarAppearance::InventoryExportAvatar(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;                           
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -1488,10 +1531,12 @@ namespace Avatar
         }
 
         eventmgr->SendEvent("Inventory", Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);                   
+        */
     }                 
     
     void AvatarAppearance::InventoryExportAvatarFinalize(Scene::EntityPtr entity)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         // Inventory based export, final phase
         inv_export_state_ = Idle;
         inv_export_request_.reset();  
@@ -1527,18 +1572,22 @@ namespace Avatar
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
         eventmgr->SendEvent("Inventory", Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);       
+        */
     }
 
     void AvatarAppearance::InventoryExportReset()
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         inv_export_state_ = Idle;
         inv_export_request_.reset();  
         inv_export_entity_.reset();
         inv_export_assetmap_ = AvatarAssetMap();        
+        */
     }
         
     void AvatarAppearance::ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;                             
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -1572,10 +1621,12 @@ namespace Avatar
         GetAvatarAssetsForExport(request, *appearance);
         
         avatar_exporter_->AddRequest<AvatarExporterRequest>(request);
+        */
     }
     
     void AvatarAppearance::ExportAvatarLocal(Scene::EntityPtr entity, const std::string& outname)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -1624,10 +1675,12 @@ namespace Avatar
             ++i;
         }
         emit AppearanceStatus("Exporting avatar to local file completed");
+        */
     }
     
     void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         AvatarModule::LogDebug("Getting mesh for export");
         GetAvatarAssetForExport(request, appearance.GetMesh(), false, inventorymode);
         AvatarModule::LogDebug("Getting skeleton for export");
@@ -1650,10 +1703,14 @@ namespace Avatar
                 GetAvatarMaterialForExport(request, attachments[i].materials_[j]);
             }
         }
+        */
     }
     
     bool AvatarAppearance::GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material, bool inventorymode)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
+
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
@@ -1807,11 +1864,13 @@ namespace Avatar
         for (uint i = 0; i < material.textures_.size(); ++i)
             GetAvatarAssetForExport(request, material.textures_[i], true);
             
-        return true;
+        return true;*/
     }
     
     bool AvatarAppearance::GetAvatarAssetForExport(AvatarExporterRequestPtr request, const AvatarAsset& asset, bool replace_spaces, bool inventorymode)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         std::string export_name = asset.name_;
         // If name is empty, skip
         if (export_name.empty())
@@ -1909,10 +1968,12 @@ namespace Avatar
         AvatarModule::LogDebug("Added export asset " + export_name);
         request->assets_[export_name] = new_export_asset;
         return true;
+        */
     }
     
     void AvatarAppearance::ProcessAvatarExport()
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         if (avatar_exporter_)
         {
             AvatarExporterResultPtr result = avatar_exporter_->GetResult<AvatarExporterResult>();
@@ -1939,10 +2000,13 @@ namespace Avatar
                 avatar_exporter_.reset();
             }
         }
+        */
     }
     
     bool AvatarAppearance::LoadAppearance(Scene::EntityPtr entity, const std::string& filename)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         boost::filesystem::path path(filename);
         std::string dirname = path.branch_path().string();
         
@@ -1977,10 +2041,13 @@ namespace Avatar
         }
         
         return true;
+        */
     }
     
     bool AvatarAppearance::PrepareAppearanceFromXml(Scene::EntityPtr entity, const std::string& filename)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         boost::filesystem::path path(filename);
         std::string leafname = path.leaf();
         
@@ -2025,10 +2092,13 @@ namespace Avatar
         }      
         
         return true;    
+        */
     }    
     
     bool AvatarAppearance::PrepareAppearanceFromMesh(Scene::EntityPtr entity, const std::string& filename)
     {   
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         boost::filesystem::path path(filename);
         std::string leafname = path.leaf();
         
@@ -2062,10 +2132,12 @@ namespace Avatar
         LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc, false);
     
         return true;
+        */
     }    
     
     void AvatarAppearance::AddTempResourceDirectory(const std::string& dirname)
     {
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
         boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
         if (!renderer)
@@ -2075,10 +2147,14 @@ namespace Avatar
         }
         
         renderer->AddResourceDirectory(QString::fromStdString(dirname));
+        */
     }    
     
     bool AvatarAppearance::ChangeAvatarMaterial(Scene::EntityPtr entity, uint index, const std::string& filename)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
+
         boost::filesystem::path path(filename);
         std::string leafname = path.leaf();
         std::string dirname = path.branch_path().string();
@@ -2160,10 +2236,14 @@ namespace Avatar
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
                 
         return true;
+        */
     }        
     
     bool AvatarAppearance::AddAttachment(Scene::EntityPtr entity, const std::string& filename)
     {
+        return false;
+        /** \todo Deprecated. Reimplement using EC_Avatar structure. -jj.
+
         boost::filesystem::path path(filename);
         std::string leafname = path.leaf();
         std::string dirname = path.branch_path().string();
@@ -2215,36 +2295,6 @@ namespace Avatar
         
         SetupAppearance(entity);
         return true;
-    }
-    
-    
-    void AvatarAppearance::ProcessECAvatarAppearance(entity_id_t entityID, const u8* data, uint size)
-    {
-        Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(entityID);
-        if (!entity)
-            return;
-        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        if (!appearance)
-            return;
-        
-        std::string data_str((const char*)data, size);
-
-        QDomDocument avatar_doc("Avatar");
-        avatar_doc.setContent(QString::fromStdString(data_str));
-
-        // Deserialize appearance from the document into the EC
-        if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
-        {
-            AvatarModule::LogError("Failed to parse avatar description");
-            return;
-        }
-        
-        const AvatarAssetMap& assets = appearance->GetAssetMap();
-        
-        uint pending_requests = RequestAvatarResources(entity, assets, true);
-        
-        // In the unlikely case of no requests at all, rebuild avatar now
-        if (!pending_requests)
-            SetupAppearance(entity);
+        */
     }
 }

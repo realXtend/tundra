@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "ResourceHandler.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_OgreLight.h"
@@ -141,16 +140,6 @@ namespace OgreRenderer
         if (!renderer_)
             return false;
 
-        if (category_id == asset_event_category_)
-        {
-            return renderer_->GetResourceHandler()->HandleAssetEvent(event_id, data);
-        }
-
-        if (category_id == resource_event_category_)
-        {
-            return renderer_->GetResourceHandler()->HandleResourceEvent(event_id, data);
-        }
-
         if (category_id == input_event_category_ && event_id == InputEvents::INWORLD_CLICK)
         {
             // do raycast into the world when user clicks mouse button
@@ -188,7 +177,7 @@ namespace OgreRenderer
     {
         // We're shutting down. Force a release of all loaded asset objects from the Asset API so that 
         // no refs to Ogre assets remain - below 'renderer_.reset()' is going to delete Ogre::Root.
-        framework_->Asset()->DeleteAllAssets();
+        framework_->Asset()->ForgetAllAssets();
 
         framework_->GetServiceManager()->UnregisterService(renderer_);
 

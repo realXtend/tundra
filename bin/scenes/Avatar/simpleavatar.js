@@ -28,7 +28,7 @@ function ServerInitialize()
 
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
     // Note: for now, you need the default_avatar.xml in your bin/data/assets folder
-    avatar.appearanceId = "file://default_avatar.xml"
+    avatar.appearanceId = "local://default_avatar.xml"
 
     // Set physics properties
     var sizeVec = new Vector3df();

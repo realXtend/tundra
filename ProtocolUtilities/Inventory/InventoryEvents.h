@@ -8,7 +8,7 @@
 #define incl_ProtocolUtilities_InventoryEvents_h
 
 #include "IEventData.h"
-#include "AssetServiceInterface.h"
+//#include "AssetServiceInterface.h"
 #include "RexUUID.h"
 
 #include <QStringList>
@@ -138,7 +138,8 @@ namespace Inventory
         InventoryItemDownloadedEventData() : handled(false){}
         virtual ~InventoryItemDownloadedEventData() {}
         RexUUID inventoryId;
-        Foundation::AssetInterfacePtr asset;
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+//        Foundation::AssetInterfacePtr asset;
         request_tag_t requestTag;
         asset_type_t assetType;
         std::string name;
