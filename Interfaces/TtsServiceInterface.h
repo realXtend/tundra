@@ -73,12 +73,18 @@ namespace Tts
 
         /**
          \return Available voice options.
-         \see Text2Speech 
-         */
+         \see Text2Speech*/
         virtual QStringList GetAvailableVoices() const = 0;
+
+        virtual void TriggerSettingsUpdated() = 0;
 
 		//virtual const Voice GetVoice() = 0;
 		//virtual void SetVoice(Voice voice) = 0;
+
+    signals:
+        /** Emited when settings are changed
+            @see TriggerSettingsUpdated*/
+        void SettingsUpdated();
 	};
 
    	typedef boost::shared_ptr<TtsServiceInterface> TtsServicePtr;

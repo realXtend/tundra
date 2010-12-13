@@ -73,6 +73,10 @@ namespace Tts
         settings_.notificationVoice = notificationVoice->currentText();
         settings_.testPhrase = testPhraseText->text();
         settings_.Save();
+
+        Tts::TtsServiceInterface* tts_service = framework_->GetService<Tts::TtsServiceInterface>();
+		if (tts_service)
+			tts_service->TriggerSettingsUpdated();
     }
 
     void SettingsWidget::UpdateVoiceOptions()

@@ -34,6 +34,7 @@ namespace Tts
 		virtual void File2PHO(QString pathAndFileNameIn, QString pathAndFileNameOut, QString voice);
 
         virtual QStringList GetAvailableVoices() const;
+        virtual void TriggerSettingsUpdated();
 		//virtual const Voice GetVoice();
 		//virtual void SetVoice(Voice voice);
 

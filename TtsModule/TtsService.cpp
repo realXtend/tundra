@@ -168,6 +168,12 @@ namespace Tts
     {
         return voices_.keys();
     }
+
+    void TtsService::TriggerSettingsUpdated()
+    {
+        emit Tts::TtsServiceInterface::SettingsUpdated();
+    }
+
 	/*const Voice TtsService::GetVoice()
 	{
 		return voice_;
