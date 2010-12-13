@@ -64,7 +64,14 @@ namespace Tts
 
     void SettingsWidget::SaveSettings()
     {
-        /// @todo get data from ui to settings_ object
+        settings_.playOwnChatMessages = playOwnMessagesCheckBox->isChecked();
+        settings_.playOtherChatMessages = playOtherMessagesCheckBox->isChecked();
+        settings_.playNotificationMessages = playNotificationMessagesCheckBox->isChecked();
+        settings_.ownVoice = ownVoice->currentText();
+        settings_.testVoice = testVoice->currentText();
+        settings_.otherDefaultVoice = defaultVoiceForTextChat->currentText();
+        settings_.notificationVoice = notificationVoice->currentText();
+        settings_.testPhrase = testPhraseText->text();
         settings_.Save();
     }
 
@@ -78,6 +85,22 @@ namespace Tts
         defaultVoiceForTextChat->addItems(tts_service->GetAvailableVoices());
         notificationVoice->addItems(tts_service->GetAvailableVoices());
         testVoice->addItems(tts_service->GetAvailableVoices());
+    }
+
+    // Set given text to currentText of the given combobox if the text is an option
+    // otherwise currentText is not changed.
+    void SetQComboBoxCurrentText(QComboBox* comboBox, QString text)
+    {
+        if (!comboBox)
+            return;
+        for (int i = 0; i < comboBox->count(); ++i)
+        {
+            if (comboBox->itemText(i) == text)
+            {
+                comboBox->setCurrentIndex(i);
+                return;
+            }
+        }
     }
 
     void SettingsWidget::LoadSettings()
@@ -95,8 +118,13 @@ namespace Tts
             playNotificationMessagesCheckBox->setCheckState(Qt::Checked);
         else
             playNotificationMessagesCheckBox->setCheckState(Qt::Unchecked);
+
+        SetQComboBoxCurrentText(ownVoice, settings_.ownVoice);
+        SetQComboBoxCurrentText(notificationVoice, settings_.notificationVoice);
+        SetQComboBoxCurrentText(defaultVoiceForTextChat, settings_.otherDefaultVoice);
+        SetQComboBoxCurrentText(testVoice, settings_.testVoice);
+
         testPhraseText->setText(settings_.testPhrase);
-        // TODO: comboboxes
     }
         
     void SettingsWidget::TestVoice()
