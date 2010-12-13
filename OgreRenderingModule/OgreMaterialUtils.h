@@ -11,7 +11,6 @@
 #include <OgreMaterial.h>
 
 #include "OgreModuleApi.h"
-#include "ResourceInterface.h"
 
 namespace OgreRenderer
 {

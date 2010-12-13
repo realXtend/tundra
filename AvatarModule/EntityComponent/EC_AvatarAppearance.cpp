@@ -5,10 +5,7 @@
 
 const std::string& AvatarAsset::GetLocalOrResourceName() const
 {
-    if (resource_.lock().get())
-        return resource_.lock()->GetId();
-    else
-        return name_;
+    return name_;
 }
 
 EC_AvatarAppearance::EC_AvatarAppearance(IModule* module) :

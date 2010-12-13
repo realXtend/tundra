@@ -59,7 +59,6 @@ public:
     /** Note: does not load configuration files by default.
         @param framework is pointer to current framework (currently not used).
         @param path is value which represents path to location where configuration xml files are found. 
-        @note @p path is platform independ (means that it can be given with M$ -style or Unix-style separator)
     */
     ConfigurationManager(Foundation::Framework* framework = 0, const std::string& path = std::string(DEFAULT_CONFIG_PATH));
 
@@ -97,7 +96,7 @@ public:
         @note if given path is a folder and group is diffrent then empty string that group will be only which is exported to given folder.
 
         @code
-        std::string myFolderPath="/path/to/folder" // can be unix style or m$-style. 
+        std::string myFolderPath="/path/to/folder"
         // Exports now only keys which are defined in myGroup.
         config_manager_->Export(myFolderPath, std::string("myGroup")); 
         @endcode

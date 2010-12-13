@@ -18,8 +18,6 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "OgreMaterialUtils.h"
-#include "TextureInterface.h"
-#include "TextureServiceInterface.h"
 #include "InputEvents.h"
 #include "../Input/Input.h"
 #include "OgreRenderingModule.h"
@@ -2129,6 +2127,8 @@ namespace Environment
 
     void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
     {
+        ///\todo Regression. Use the new Asset API here instead. -jj.
+/*
         for(uint index = 0; index < terrain_texture_requests_.size(); index++)
         {
             if(terrain_texture_requests_[index] == res->tag_)
@@ -2151,8 +2151,9 @@ namespace Environment
                     texture_label->setPixmap(QPixmap::fromImage(img));
             }
         }
+*/
     }
-
+/*
     QImage EnvironmentEditor::ConvertToQImage(Foundation::TextureInterface &tex)
     {
         uint img_width        = tex.GetWidth(); 
@@ -2202,7 +2203,7 @@ namespace Environment
 
         return image;
     }
-
+*/
     void EnvironmentEditor::CreatePaintAreaMesh(int x_pos, int y_pos, const Color &color, float gradient_size)
     {
         boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
@@ -2365,6 +2366,8 @@ namespace Environment
 
     request_tag_t EnvironmentEditor::RequestTerrainTexture(uint index)
     {
+        ///\todo Regression. Use the new Asset API here instead. -jj.
+/*
         if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
 
         ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
@@ -2380,7 +2383,7 @@ namespace Environment
                 // Request texture assets.
                 return texture_service->RequestTexture(terrain_texture_id_list_[index]);
             }
-        }
+        }*/
         return 0;
     }
 

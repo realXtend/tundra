@@ -265,7 +265,8 @@ namespace Environment
         //! Convert Degoded texture into QImage format. Note! This method is planned to be removed when QImage can directly created using raw data pointer.
         //! @Param tex Reference to texture resource.
         //! @Return converted QImage.
-        QImage ConvertToQImage(Foundation::TextureInterface &tex);
+        ///\todo Regression. Use the new Asset API here instead. -jj.
+//        QImage ConvertToQImage(Foundation::TextureInterface &tex);
 
         //! Create new terrain paint brush that will display where user is painting the terrain.
         //! Paint area color is calculated using distance between middle point and individual vertex.

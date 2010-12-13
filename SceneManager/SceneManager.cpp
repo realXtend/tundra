@@ -831,6 +831,7 @@ namespace Scene
                                 AssetDesc ad;
                                 ad.typeName = a->GetNameString().c_str();
                                 ad.source = value;
+                                ad.dataInMemory = false;
 
                                 // Rewrite source refs for asset descs, if necessary.
                                 QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());

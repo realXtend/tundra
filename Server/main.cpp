@@ -3,8 +3,6 @@
 #include "Foundation.h"
 #include "ModuleManager.h"
 
-#include "HttpUtilities.h"
-
 #include "DebugOperatorNew.h"
 
 #include <QDir>
@@ -102,12 +100,13 @@ int run (int argc, char **argv)
     int return_value = EXIT_SUCCESS;
 
     printf("Starting up server. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
+    for(int i = 0; i < argc; ++i)
+        printf("argv[%d]: %s\n", i, argv[i]);
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     try
 #endif
     {
-        HttpUtilities::InitializeHttp(); 
         Foundation::Framework fw(argc, argv);
         if (fw.Initialized())
         {
@@ -115,8 +114,6 @@ int run (int argc, char **argv)
 
             fw.Go();
         }
-        
-        HttpUtilities::UninitializeHttp();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch (std::exception& e)

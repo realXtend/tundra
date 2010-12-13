@@ -11,6 +11,8 @@
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 
+class QFileSystemWatcher;
+
 /// Loads the given local file into the specified vector. Clears all data previously in the vector.
 /// Returns true on success.
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst);
@@ -106,10 +108,12 @@ public:
     AssetCache *GetAssetCache() { return assetCache; }
 
     /// Returns the asset provider of the given type.
-    /** The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
-    */
+    /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
     template<typename T>
     boost::shared_ptr<T> GetAssetProvider();
+
+    /// Registers a new asset provider to the Asset API. Use this to add a new provider type you have instantiated to the system.
+    void RegisterAssetProvider(AssetProviderPtr provider);
 
     /// Returns all the asset providers that are registered to the Asset API.
     std::vector<AssetProviderPtr> GetAssetProviders() const;
@@ -130,26 +134,33 @@ public:
 
     /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
     /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
-               usually the local path of the scene content that is being added.
-    */
-    FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
+               usually the local path of the scene content that is being added. */
+    static FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
+
+    /// Parses the local filename of the given assetRef. For example: ExtractLocalName("C:\assets\my.mesh") will return "my.mesh",
+    /// ExtractLocalName("local://xxx.png") will return "xxx.png"). ExtractLocalName("local://collada.dae/subMeshName") will
+    /// return "collada.dae/subMeshName". ///\todo Implement.
+//    static QString ExtractLocalName(QString assetRef);
 
     /// Tries to find the filename in an url/assetref.
     /** For example, all "my.mesh", "C:\files\my.mesh", "local://path/my.mesh", "http://www.web.com/my.mesh" will return "my.mesh".
         \todo It is the intent that "local://collada.dae/subMeshName" would return "collada.dae" and "file.zip/path1/path2/my.mesh"
-        would return "file.zip", but this hasn't been implemented (since those aren't yet supported).
-    */
+        would return "file.zip", but this hasn't been implemented (since those aren't yet supported). */
     static QString ExtractFilenameFromAssetRef(QString ref);
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
     /** Returns the absolute path for that file, if it exists. The path contains the filename,
-        i.e. it is of form "C:\folder\file.ext" or "/home/username/file.ext".
-    */
+        i.e. it is of form "C:\folder\file.ext" or "/home/username/file.ext". */
     static QString RecursiveFindFile(QString basePath, QString filename);
 
-    /// Removes the given asset from the system and frees up all resources related to it. The asset will
-    /// stay in the disk cache for later access.
-    void DeleteAsset(AssetPtr asset);
+    /// Removes the given asset from the system and frees up all resources related to it. Any assets depending on this asset will break.
+    /// @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
+    ///         but for example for local assets, this is the asset itself.
+    void ForgetAsset(AssetPtr asset, bool removeDiskSource);
+
+    /// Sends an asset deletion request to the remote asset storage the asset resides in.
+    ///\todo Implement.
+    void DeleteAssetFromStorage(AssetPtr asset) { /* N/I. */ }
 
     /// Uploads an asset to an asset storage.
     /** @param filename The source file to load the asset from.
@@ -158,7 +169,7 @@ public:
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
         @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
-    IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
+    AssetUploadTransferPtr UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
 
     /// Uploads an asset from the given data pointer in memory to an asset storage.
     /** @param data A pointer to raw source data in memory.
@@ -168,41 +179,81 @@ public:
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
         @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
-    IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
+    AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
     /** Use this to clear the client's memory from all assets.
         \note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
-        until the refcounts drop to zero.
-    */
-    void DeleteAllAssets();
+        until the refcounts drop to zero. */
+    void ForgetAllAssets();
 
     /// Returns all the currently ongoing or waiting asset transfers.
-    std::vector<AssetTransferPtr> PendingTransfers() const;
+    std::vector<AssetTransferPtr> PendingTransfers();
+
+    /// Returns a pointer to an existing asset transfer if one is in-progress for the given assetRef. Returns a null pointer if no transfer exists, in which
+    /// case the asset may already have been loaded to the system (or not). It can be that an asset is loaded to the system, but one or more of its dependencies
+    /// have not, in which case there exists both an IAssetTransfer and IAsset to this particular assetRef (so the existence of these two objects is not
+    /// mutually exclusive).
+    /// \note Client code should not need to worry about whether a particular transfer is pending or not, but simply call RequestAsset whenever an asset
+    /// request is needed. AssetAPI will optimize away any duplicate transfers to the same asset.
+    AssetTransferPtr GetPendingTransfer(QString assetRef);
 
     /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
     /// it yourself.
-    void Update();
+    void Update(f64 frametime);
 
     /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
     void AssetTransferCompleted(IAssetTransfer *transfer);
+
+    /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and
+    /// also fail any transfers of assets which depended on this transfer.
+    void AssetTransferFailed(IAssetTransfer *transfer);
+
+    /// Called by each AssetProvider to notify the Asset API that an asset upload transfer has completed. Do not call this function from client code.
+    void AssetUploadTransferCompleted(IAssetUploadTransfer *transfer);
 
     void AssetDependenciesCompleted(AssetTransferPtr transfer);
 
     void NotifyAssetDependenciesChanged(AssetPtr asset);
 
+    /// Starts an asset transfer for each dependency the given asset has.
     void RequestAssetDependencies(AssetPtr transfer);
 
     /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset);
 
+    /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
+    std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
+
+signals:
+    /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
+    /// may not yet have been loaded.
+    void AssetCreated(AssetPtr asset);
+
+    /// Emitted before an asset is going to be forgotten or deleted from the source. ///\todo Implement.
+    void AssetAboutToBeRemoved(AssetPtr asset);
+
+    /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
+ //   void AssetDiskSourceChanged(AssetPtr asset);
+
+    /// Emitted when the asset has changed in the remote AssetStorage it is in. ///\todo Implement.
+//    void AssetStorageSourceChanged(AssetPtr asset);
+
 private slots:
+    /// The Asset API listens on each asset when they get loaded, to track the completion of the dependencies of other loaded assets.
     void OnAssetLoaded(IAssetTransfer* transfer);
+
+    /// The Asset API reloads all assets from file when their disk source contents change.
+    void OnAssetDiskSourceChanged(const QString &path);
 
 private:
     typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
+
+    typedef std::map<QString, AssetUploadTransferPtr> AssetUploadTransferMap;
+    /// Stores all the currently ongoing asset uploads, maps full assetRefs to the asset upload transfer structures.
+    AssetUploadTransferMap currentUploadTransfers;
 
     typedef std::vector<std::pair<QString, QString> > AssetDependenciesMap;
     /// Keeps track of all the dependencies each asset has to each other asset.
@@ -211,7 +262,6 @@ private:
 
     /// Removes from AssetDependenciesMap all dependencies the given asset has.
     void RemoveAssetDependencies(QString asset);
-    std::vector<AssetPtr> FindDependents(QString dependee);
 
     /// Stores a list of asset requests to assets that have already been downloaded into the system. These requests don't go to the asset providers
     /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
@@ -226,8 +276,22 @@ private:
     /// Stores all the registered asset type factories in the system.
     std::vector<AssetTypeFactoryPtr> assetTypeFactories;
 
+    /// Stores a list of asset requests that the Asset API hasn't started at all but has put on hold, until other operations complete.
+    /// This data structure is used to enforce that asset uploads are completed before any asset downloads to that asset.
+    struct PendingDownloadRequest
+    {
+        QString assetRef;
+        QString assetType;
+        AssetTransferPtr transfer;
+    };
+    typedef std::map<QString, PendingDownloadRequest> PendingDownloadRequestMap;
+    PendingDownloadRequestMap pendingDownloadRequests;
+
     /// Stores all the already loaded assets in the system.
     AssetMap assets;
+
+    /// Tracks all loaded assets if their DiskSources change, and issues a reload of the assets.
+    QFileSystemWatcher *diskSourceChangeWatcher;
 
     /// Specifies all the registered asset providers in the system.
     std::vector<AssetProviderPtr> providers;

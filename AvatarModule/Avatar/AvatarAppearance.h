@@ -109,9 +109,6 @@ namespace Avatar
         //! Adds an attachment on the avatar. Filename is the xml attachment description.
         bool AddAttachment(Scene::EntityPtr entity, const std::string& filename);
         
-        //! Handles appearance setup for EC_Avatar-based avatar
-        void ProcessECAvatarAppearance(entity_id_t entityID, const u8* data, uint size);
-        
     public slots:            
         //! Exports avatar to an authentication/avatar storage server account
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
@@ -188,7 +185,7 @@ namespace Avatar
         bool PrepareAppearanceFromMesh(Scene::EntityPtr entity, const std::string& filename);
                 
         //! Guesses avatar asset resource type from human-readable asset name
-        static const std::string& GetResourceTypeFromName(const std::string& name, bool inventorymode = false);
+        static std::string GetResourceTypeFromName(const std::string& name, bool inventorymode = false);
         
         //! Adds avatar assets to the export request
         void GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode = false);

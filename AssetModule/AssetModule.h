@@ -10,21 +10,8 @@
 #include "IAssetProvider.h"
 #include "AssetModuleApi.h"
 
-namespace Foundation
-{
-    class Framework;
-}
-
-namespace ProtocolUtilities
-{
-    class ProtocolModuleInterface;
-}
-
 namespace Asset
 {
-    class AssetManager;
-    typedef boost::shared_ptr<AssetManager> AssetManagerPtr;
-    
     /** \defgroup AssetModuleClient AssetModule Client Interface
         This page lists the public interface of the AssetModule,
         which consists of implementing Foundation::AssetServiceInterface and
@@ -40,21 +27,15 @@ namespace Asset
         AssetModule();
         virtual ~AssetModule();
 
-        virtual void Load();
         virtual void Initialize();
         virtual void PostInitialize();
-        virtual void Uninitialize();
-        virtual void Update(f64 frametime);
-
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
-
-        virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
-        void UnsubscribeNetworkEvents();
 
         MODULE_LOGGING_FUNCTIONS
 
         //! callback for console command
         Console::CommandResult ConsoleRequestAsset(const StringVector &params);
+
+        Console::CommandResult AddHttpStorage(const StringVector &params);
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
@@ -64,27 +45,6 @@ namespace Asset
 
         //! Type name of the module.
         static std::string type_name_static_;
-
-        //! Local asset provider
-        AssetProviderPtr local_asset_provider_;
-        
-        //! Http asset provider
-        AssetProviderPtr http_asset_provider_;
-
-        //! asset manager
-        AssetManagerPtr manager_;
-
-        //! category id for incoming messages
-        event_category_id_t inboundcategory_id_;
-
-        //! category id for network state events
-        event_category_id_t network_state_category_id_;
-
-        //! framework id for internal events
-        event_category_id_t framework_category_id_;
-
-        //! Pointer to current ProtocolModule
-        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
     };
 }
 

@@ -22,8 +22,6 @@
 #include <QCryptographicHash>
 #include <QSizePolicy>
 
-#include "AssetServiceInterface.h"
-#include "AssetEvents.h"
 #include "RexTypes.h"
 
 #include "LoggingFunctions.h"
@@ -104,6 +102,8 @@ EC_VideoSource::~EC_VideoSource()
 
 bool EC_VideoSource::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
     if (!expecting_resources_)
         return false;
 
@@ -134,9 +134,12 @@ bool EC_VideoSource::HandleEvent(event_category_id_t category_id, event_id_t eve
             }
         }
     }
+*/
     return false;    
 }
 
+/*
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
 void EC_VideoSource::LoadVideo(Foundation::AssetInterfacePtr asset)
 {
     Foundation::AssetServiceInterface *asset_service = GetFramework()->GetService<Foundation::AssetServiceInterface>();
@@ -153,7 +156,7 @@ void EC_VideoSource::LoadVideo(Foundation::AssetInterfacePtr asset)
         return;
     }
 }
-
+*/
 void EC_VideoSource::LoadCurrentVideo()
 {
     if (QFile::exists(current_video_path_))
@@ -215,6 +218,8 @@ void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
             {
                 if (media_object_->currentSource().url() != source_url)
                 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
                     Foundation::AssetServiceInterface *asset_service = GetFramework()->GetService<Foundation::AssetServiceInterface>();
                     if (asset_service)
                     {
@@ -236,6 +241,7 @@ void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
                             }
                         }
                     }
+*/
                 }
             }
             else if (QFile::exists(getvideoSourceUrl()))

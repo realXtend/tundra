@@ -6,6 +6,7 @@
 #include <QObject>
 #include "CoreTypes.h"
 #include "AssetFwd.h"
+#include "IAssetStorage.h"
 #include <boost/weak_ptr.hpp>
 
 class IAssetUploadTransfer : public QObject
@@ -26,6 +27,15 @@ public:
 
     /// Specifies the destination name for the asset.
     QString destinationName;
+
+    /// Returns the full assetRef address this asset will have when the upload is complete.
+    QString AssetRef()
+    { 
+        boost::shared_ptr<IAssetStorage> storage = destinationStorage.lock();
+        if (!storage.get())
+            return "";
+        return storage->GetFullAssetURL(destinationName);
+    }
 
     boost::weak_ptr<IAssetStorage> destinationStorage;
 

@@ -18,7 +18,6 @@
 #include "EC_Placeable.h"
 #include "EC_WaterPlane.h"
 #include "Renderer.h"
-#include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
 #include "SceneManager.h"
 

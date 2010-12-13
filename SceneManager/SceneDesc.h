@@ -11,11 +11,19 @@
 /// Description of asset.
 struct AssetDesc
 {
-    QString source; ///< Source (file) name, not used for materials, parsed from material files.
+    /// Specifies the source filename for the location of this asset.
+    QString source; 
+
+    /// Specifies in-memory content for the asset data.
+    QByteArray data;
+
+    /// If true, the data for this asset is loaded in memory, and specified by the member field 'data'. Otherwise,
+    /// the data is loaded from disk, specified by the filename 'source'.
+    bool dataInMemory;
+
     QString subname; ///< If the source filename is a container for multiple files, subname represents name withing the file.
     QString typeName; ///< Type name of the asset.
     QString destinationName; ///< Name for the asset in the destination asset storage.
-    QByteArray data; ///< Data for the asset, currently used for material files only.
 
 #define LEX_CMP(a, b) if ((a) < (b)) return true; else if ((a) > (b)) return false;
 
