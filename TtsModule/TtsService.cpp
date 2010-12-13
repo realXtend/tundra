@@ -3,6 +3,11 @@
 
 #include "TtsService.h"
 #include "TtsModule.h"
+#include <QSettings>
+
+#include "MemoryLeakCheck.h"
+
+#define INI_FILE_PATH "data/tts.ini"
 
 namespace Tts
 {
@@ -20,18 +25,19 @@ namespace Tts
     
     void TtsService::InitializeVoices()
     {
-	    //static const AvailableVoice Voices = {"-ES1","-ES2","-EN1","-EN2","-EN3","-EN4","-EN5","-EN6","-CAT1","-CAT2","-FI"};
-        voices_["Finnish male"] = "-FI";
-        voices_["English male 1"] = "-EN1";
-        voices_["English male 2"] = "-EN3";
-        voices_["English male 3"] = "-EN5";
-        voices_["English female 1"] = "-EN2";
-        voices_["English female 2"] = "-EN4";
-        voices_["English female 3"] = "-EN6";
-        voices_["Catalan male"] = "-CAT1";
-        voices_["Catalan female"] = "-CAT2";
-        voices_["Spanish female"] = "-ES1";
-        voices_["Spanich male"] = "-ES2";
+        QSettings voice_settings(INI_FILE_PATH, QSettings::IniFormat);
+        voice_settings.beginGroup("Voices");
+        QStringList voices = voice_settings.allKeys();
+        foreach(QString v, voices)
+        {
+            QString params = voice_settings.value(v).toString();
+            voices_[v] = params;
+
+            QString message = QString("Load TTS option: %1 = %2").arg(v).arg(params);
+            TtsModule::LogDebug(message.toStdString());
+        }
+        voice_settings.endGroup();
+        return;
     }
 
 	void TtsService::Text2Speech(QString message, QString voice)
