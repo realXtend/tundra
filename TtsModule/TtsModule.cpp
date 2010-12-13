@@ -11,14 +11,17 @@
 
 #include "StableHeaders.h"
 
-#include "SettingsWidget.h"
-#include <QColor>
+#include "SceneManager.h"
+//#include "OpenSimPresence.h"
+#include "WorldLogicInterface.h"
+
 #include "UiServiceInterface.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "CoreStringUtils.h"
 #include "TtsModule.h"
 #include "EC_TtsVoice.h"
+#include "SettingsWidget.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -64,6 +67,34 @@ namespace Tts
 	void TtsModule::PostInitialize()
 	{
         SetupSettingsWidget();
+
+        // todo: Add EC_TtsVoice to avatar
+        connect(framework_, SIGNAL(DefaultWorldSceneChanged(const Scene::ScenePtr &)), this, SLOT(ConnectSceneSignals()));
+
+    }
+
+    void TtsModule::ConnectSceneSignals()
+    {
+        Scene::SceneManager* scene = framework_->DefaultScene();
+        if (!scene)
+            return;
+
+        connect(scene, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ), this, SLOT(CheckNewComponent(Scene::Entity*, IComponent*, AttributeChange::Type)));
+    }
+
+    void TtsModule::CheckNewComponent(Scene::Entity* ent, IComponent* comp, AttributeChange::Type change_type)
+    {
+        Foundation::WorldLogicInterface* world_logic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (!world_logic)
+            return;
+        
+        Scene::EntityPtr user = world_logic->GetUserAvatarEntity();
+        if (!user)
+            return;
+
+        IComponent* component = user->GetOrCreateComponent("EC_TtsVoice", AttributeChange::Replicate).get();
+        EC_TtsVoice* tts_voice =  dynamic_cast<EC_TtsVoice*>(component);
+        tts_voice->setvoicename("MY VOICE");
     }
 
 	void TtsModule::Uninitialize()

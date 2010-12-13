@@ -17,6 +17,7 @@
 
 #include <QString>
 
+/// maybe EC_DynamicComponent would be enough?
 class EC_TtsVoice : public IComponent
 {
 	Q_OBJECT

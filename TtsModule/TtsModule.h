@@ -13,21 +13,15 @@
 #ifndef incl_TtsModule_h
 #define incl_TtsModule_h
 
-
-//#include "ModuleInterface.h"
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "Core.h"
-
+#include "AttributeChangeType.h"
 #include <QObject>
 
 #include "TtsModuleApi.h"
 #include "TtsServiceInterface.h"
 #include "TtsService.h"
-
-
-
-
 
 class RexUUID;
 
@@ -41,6 +35,15 @@ namespace ProtocolUtilities
     class ProtocolModuleInterface;
     typedef boost::weak_ptr<ProtocolModuleInterface> ProtocolWeakPtr;
 }
+
+namespace Scene
+{
+    class Entity;
+}
+
+class IComponent;
+
+//class AttributeChange::Type;
 
 namespace Tts
 {
@@ -85,6 +88,9 @@ namespace Tts
 		/// TTS service
 		TtsServicePtr tts_service_;
         SettingsWidget* settings_widget_;
+    private slots:  
+        void ConnectSceneSignals();
+        void CheckNewComponent(Scene::Entity*, IComponent*, AttributeChange::Type);
     };
 }  // end of namespace: Tts
 
