@@ -36,6 +36,7 @@ class IAssetTypeFactory;
 typedef boost::shared_ptr<IAssetTypeFactory> AssetTypeFactoryPtr;
 
 class AssetRefListener;
+typedef boost::shared_ptr<AssetRefListener> AssetRefListenerPtr;
 
 namespace Foundation
 {

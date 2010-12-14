@@ -75,8 +75,7 @@ signals:
     /// This signal is emitted when the contents of this asset is unloaded. It might be due to an explicit call by client code
     /// to IAsset::Unload, or it could be just prior to removing this asset from the system (perhaps in dtor at shutdown).
     /// @note After unloading an asset, the instance of IAsset can still remain in memory, and can be Reload()ed from its disk source or source storage later.
-    /// @param asset A pointer to this will be passed in. The signature of this signal deliberately contains this member to be unified with AssetAPI.
-    void Unloaded(AssetPtr asset);
+    void Unloaded(IAsset *asset);
 
     /// This signal is emitted when the contents of this asset have been loaded from new data. It might be the first time this asset was loaded,
     /// or it might also be that this asset was reloaded from its disk source. When this signal is emitted after a call to RequestAsset, all the

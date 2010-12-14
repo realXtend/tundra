@@ -387,10 +387,10 @@ private slots:
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
 
     /// Called when mesh asset has been downloaded.
-    void OnMeshAssetLoaded();
+    void OnMeshAssetLoaded(AssetPtr mesh);
 
     /// Called when skeleton asset has been downloaded.
-    void OnSkeletonAssetLoaded();
+    void OnSkeletonAssetLoaded(AssetPtr skeleton);
 
     /// Called when material asset has been downloaded.
     void OnMaterialAssetLoaded(AssetPtr material);
@@ -448,7 +448,13 @@ private:
 
     /// Manages material asset requests for EC_Mesh. This utility object is used so that EC_Mesh also gets notifications about
     /// changes to material assets on disk.
-    std::vector<boost::shared_ptr<AssetRefListener> > materialAssets;
+    std::vector<AssetRefListenerPtr> materialAssets;
+
+    /// Manages mesh asset requests for EC_Mesh.
+    AssetRefListenerPtr meshAsset;
+
+    /// Manages skeleton asset requests for EC_Mesh.
+    AssetRefListenerPtr skeletonAsset;
 };
 
 #endif
