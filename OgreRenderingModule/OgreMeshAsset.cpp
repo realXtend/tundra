@@ -77,7 +77,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     return true;
 }
 
-void OgreMeshAsset::Unload()
+void OgreMeshAsset::DoUnload()
 {
     if (ogreMesh.isNull())
         return;

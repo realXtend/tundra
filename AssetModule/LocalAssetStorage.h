@@ -46,7 +46,7 @@ public:
     /// Stops and deallocates the directory change listener.
     void RemoveWatcher();
 
-    QFileSystemWatcher *changeWatcher;
+//    QFileSystemWatcher *changeWatcher;
 
     QString Name() const { return name; }
 

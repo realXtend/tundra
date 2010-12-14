@@ -11,6 +11,7 @@
 #include "Transform.h"
 #include "AssetReference.h"
 #include "Declare_EC.h"
+#include "AssetRefListener.h"
 
 #include <QVariant>
 #include <QVector3D>
@@ -392,7 +393,7 @@ private slots:
     void OnSkeletonAssetLoaded();
 
     /// Called when material asset has been downloaded.
-    void OnMaterialAssetLoaded();
+    void OnMaterialAssetLoaded(AssetPtr material);
 
 private:
     //! constructor
@@ -444,9 +445,10 @@ private:
     Ogre::TagPoint* bone_tagpoint_;
     EC_Mesh* bone_attached_mesh_;
     EC_Mesh* bone_parent_mesh_;
-    
-    /// Pending material asset downloads.
-    QMap<int, QString> materialRequests;
+
+    /// Manages material asset requests for EC_Mesh. This utility object is used so that EC_Mesh also gets notifications about
+    /// changes to material assets on disk.
+    std::vector<boost::shared_ptr<AssetRefListener> > materialAssets;
 };
 
 #endif

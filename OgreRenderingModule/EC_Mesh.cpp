@@ -916,7 +916,7 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
         if (transfer)
         {
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
         }
         else
         {
@@ -929,19 +929,20 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             return;
         
         // We won't request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
-        if(!HasMaterialsChanged())
-            return;
+        // This logic shouldn't be necessary anymore. -jj.
+//        if(!HasMaterialsChanged())
+//            return;
 
         QVariantList materials = meshMaterial.Get();
-        materialRequests.clear();
-        for(uint i = 0; i < materials.size(); i++)
+        while(materialAssets.size() > materials.size())
+            materialAssets.pop_back();
+        while(materialAssets.size() < materials.size())
+            materialAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
+
+        for(size_t i = 0; i < materials.size(); ++i)
         {
-            AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(materials[i].toString());
-            if (transfer.get())
-            {
-                connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMaterialAssetLoaded()), Qt::UniqueConnection);
-                materialRequests[i] = materials[i].toString();
-            }
+            connect(materialAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].toString());
         }
     }
     else if((attribute == &skeletonRef) && (!skeletonRef.Get().ref.isEmpty()))
@@ -955,7 +956,7 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
         if (transfer.get())
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
     }
 }
 
@@ -1063,14 +1064,9 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     SetMesh(entity_->getMesh()->getName().c_str(), false);
 }
 
-void EC_Mesh::OnMaterialAssetLoaded()
+void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(transfer->asset.get());
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset.get());
     assert(ogreMaterial);
     if (!ogreMaterial)
         return;

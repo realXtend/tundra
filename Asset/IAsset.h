@@ -48,7 +48,7 @@ public slots:
 
     /// Unloads this asset from memory. After calling this function, this asset still can be queried for its Type(), Name() and CacheFile(),
     /// but its dependencies cannot be determined and it cannot be used in any other way.
-    virtual void Unload() = 0;
+    void Unload();
 
     /// Stores the *current in-memory copy* of this asset to disk to the given file on the local filesystem. Use this function to export an asset from the system to a file.
     /// Returns true if saving succeeded, false otherwise.
@@ -67,6 +67,22 @@ public slots:
 
     /// Returns a textual human-readable representation of this asset in the form "<name> (<type>)".
     QString ToString() const;
+
+    /// Emits IAsset::Loaded signal.
+    void EmitLoaded();
+
+signals:
+    /// This signal is emitted when the contents of this asset is unloaded. It might be due to an explicit call by client code
+    /// to IAsset::Unload, or it could be just prior to removing this asset from the system (perhaps in dtor at shutdown).
+    /// @note After unloading an asset, the instance of IAsset can still remain in memory, and can be Reload()ed from its disk source or source storage later.
+    /// @param asset A pointer to this will be passed in. The signature of this signal deliberately contains this member to be unified with AssetAPI.
+    void Unloaded(AssetPtr asset);
+
+    /// This signal is emitted when the contents of this asset have been loaded from new data. It might be the first time this asset was loaded,
+    /// or it might also be that this asset was reloaded from its disk source. When this signal is emitted after a call to RequestAsset, all the
+    /// dependencies of this asset will have been loaded in. \todo The dependencies may not have been loaded in if the reload changes them! fix!
+    /// @param asset A pointer to this will be passed in. The signature of this signal deliberately contains this member to be unified with AssetAPI.
+    void Loaded(AssetPtr asset);
 
 public:
     /// Loads this asset from the specified file data in memory. Loading an asset from memory cannot change its name or type.
@@ -92,6 +108,9 @@ public:
     /// Saves the storage this asset was downloaded from. Intended to be only called internally by Asset API at asset load time.
     void SetAssetStorage(AssetStoragePtr storage); 
 
+    /// Saves the asset transfer associated to this asset. Intended to be only called internally by Asset API at asset load time.
+    void SetAssetTransfer(AssetTransferPtr transfer); 
+
     /// Saves this asset to the given data buffer. Returns true on success. If this asset is unloaded, will return false.
     /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "");
@@ -100,6 +119,9 @@ protected:
     /// Loads this asset by deserializing it from the given data. The data pointer that is passed in is never null, and numBytes is always greater than zero.
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes) = 0;
 
+    /// Private-implementation of the unloading of an asset.
+    virtual void DoUnload() = 0;
+
     AssetAPI *assetAPI;
 
     /// Specifies the provider this asset was downloaded from. May be null.
@@ -107,6 +129,10 @@ protected:
 
     /// Specifies the storage this asset was downloaded from. May be null.
     AssetStorageWeakPtr storage;
+
+    /// Specifies the asset transfer that generated this transfer. This field expires to null immediately once the asset download completes
+    /// and all asset dependencies have been loaded.
+    AssetTransferWeakPtr transfer;
 
     /// Specifies the type of this asset, e.g. "Texture" or "OgreMaterial".
     QString type;

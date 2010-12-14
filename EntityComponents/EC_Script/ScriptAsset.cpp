@@ -8,7 +8,7 @@ ScriptAsset::~ScriptAsset()
     Unload();
 }
 
-void ScriptAsset::Unload()
+void ScriptAsset::DoUnload()
 {
     scriptContent = "";
     references.clear();

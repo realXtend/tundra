@@ -128,7 +128,7 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
         if ( transfer.get() != 0)
         {
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
         }
         else
         {

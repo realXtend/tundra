@@ -312,7 +312,7 @@ private slots:
     void OnTerrainRegenerated();
 
     //! Called when collision mesh has been downloaded.
-    void OnCollisionMeshAssetLoaded(IAssetTransfer *transfer);
+    void OnCollisionMeshAssetLoaded(AssetPtr asset);
 
 private:
     //! constructor

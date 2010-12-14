@@ -1642,8 +1642,8 @@ const char *SimStatsStr(int statID)
         "LL_SIM_STAT_SIMPHYSICSMEMORY",
         "UnknownID"
     };
-    if (statID < 0 || statID > 30)
-        return str[31];
+    if (statID < 0 || statID > 29)
+        return str[29];
     return str[statID];
 }
 

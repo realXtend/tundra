@@ -244,7 +244,7 @@ signals:
 
 private slots:
     /// The Asset API listens on each asset when they get loaded, to track the completion of the dependencies of other loaded assets.
-    void OnAssetLoaded(IAssetTransfer* transfer);
+    void OnAssetLoaded(AssetPtr asset);
 
     /// The Asset API reloads all assets from file when their disk source contents change.
     void OnAssetDiskSourceChanged(const QString &path);
