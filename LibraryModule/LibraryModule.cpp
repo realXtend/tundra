@@ -412,7 +412,8 @@ namespace Library
                         newmaterialdata.asset_id = url.toString().toStdString();
                         materials[submesh] = newmaterialdata;
 
-                        prim->Materials = materials;        
+                        prim->Materials = materials;
+                        emit TextureUrlWasAssigned(submesh); //so that scripts can e.g. make it so that the material is preserved, but only the texture used is changed
                         prim->SendRexPrimDataUpdate();
                     }
                 }

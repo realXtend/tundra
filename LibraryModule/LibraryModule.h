@@ -138,6 +138,10 @@ namespace Library
 
         /// Emitted when a url is dropped that this module will not process eg. .xml
         void DragAndDropUrl(const QString &url);
+    
+        /// Emitted when an image url was dropped and handled, before the change was sent to server.
+        /// For overriding image assignment behaviour to e.g. use the img in a material template instead
+        void TextureUrlWasAssigned(uint submesh);
    };
 }
 
