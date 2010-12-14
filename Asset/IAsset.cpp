@@ -31,7 +31,7 @@ bool IAsset::LoadFromCache()
 void IAsset::Unload()
 {
     DoUnload();
-    emit Unloaded(shared_from_this());
+    emit Unloaded(this);
 }
 
 bool IAsset::LoadFromFile(QString filename)

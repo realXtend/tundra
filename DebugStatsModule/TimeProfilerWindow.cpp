@@ -2302,7 +2302,7 @@ void AddOgreMovableObject(QTreeWidgetItem *parent, Ogre::MovableObject *node)
     if (e)
     {
         if (!e->hasSkeleton())
-            AddNewItem(nodeItem, "Ogre::SkeletonInstance: (no skeleton");
+            AddNewItem(nodeItem, "Ogre::SkeletonInstance: (no skeleton)");
         else
             AddNewItem(nodeItem, ("Ogre::SkeletonInstance: " + e->getSkeleton()->getName()).c_str());
         for(int i = 0; i < e->getNumSubEntities(); ++i)
