@@ -17,7 +17,8 @@ namespace UiExternalServices
 
     ExternalToolBarManager::ExternalToolBarManager(QMainWindow *main_window, UiExternalModule *owner) :
             main_window_(main_window),
-			owner_(owner)
+			owner_(owner),
+			controller_toolbar_()
     {
     }
 

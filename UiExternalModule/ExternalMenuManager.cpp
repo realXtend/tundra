@@ -16,8 +16,11 @@ namespace UiExternalServices
 
     ExternalMenuManager::ExternalMenuManager(QMenuBar *parent, UiExternalModule *owner) :
             root_menu_(parent),
-			owner_(owner)
-    {
+			owner_(owner),
+			controller_panels_(),
+			controller_actions_(),
+			category_menu_()
+	{
     }
 
     ExternalMenuManager::~ExternalMenuManager()

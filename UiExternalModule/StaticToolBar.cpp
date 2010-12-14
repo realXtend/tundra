@@ -14,6 +14,11 @@ namespace UiExternalServices
 
 	StaticToolBar::StaticToolBar(const QString &title, QWidget *parent, Foundation::Framework* framework): 
 		QToolBar(title,parent), 
+		flyAction_(0),
+		cameraAction_(0),
+		editAction_(0),
+		scene_event_category_(0),
+		currentScene(0),
 		framework_(framework)
 	{
 		createActions();

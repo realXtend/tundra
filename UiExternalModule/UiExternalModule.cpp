@@ -38,7 +38,9 @@ namespace UiExternalServices
 		qWin_(0),
 		menu_manager_(0),
 		panel_manager_(0),
-		toolbar_manager_(0)
+		toolbar_manager_(0),
+		staticToolBar_(0),
+		scene_event_category_(0)
     {
     }
 
