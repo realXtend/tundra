@@ -14,6 +14,7 @@
 #include "SceneStructureWindow.h"
 #include "SceneTreeWidget.h"
 #include "SceneTreeWidgetItems.h"
+#include "TreeWidgetUtils.h"
 
 #include "Framework.h"
 #include "SceneManager.h"

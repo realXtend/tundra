@@ -9,16 +9,22 @@
 #include "DebugOperatorNew.h"
 
 #include "AssetTreeWidget.h"
+#include "AddContentWindow.h"
+#include "SupportedFileTypes.h"
 
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "AssetCache.h"
+#include "IAssetTypeFactory.h"
+#include "QtUtils.h"
 
 #ifdef _WINDOWS
 #include <windows.h>
 #endif
 
 #include "MemoryLeakCheck.h"
+
+// AssetItem
 
 AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
@@ -31,6 +37,8 @@ AssetPtr AssetItem::Asset() const
 {
     return assetPtr.lock();
 }
+
+// AssetTreeWidget
 
 AssetTreeWidget::AssetTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
@@ -113,58 +121,58 @@ void AssetTreeWidget::dropEvent(QDropEvent *e)
 void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 {
     QList<AssetItem *> items = GetSelection();
-    if (items.isEmpty())
-        return;
+    if (!items.isEmpty())
+    {
+        QMenu *deleteMenu = new QMenu(tr("Delete"), menu);
+        QAction *deleteSourceAction = new QAction(tr("Delete from source"), deleteMenu);
+        deleteSourceAction->setDisabled(true);
+        QAction *deleteCacheAction = new QAction(tr("Delete from cache"), deleteMenu);
+        QAction *forgetAction = new QAction(tr("Forget asset"), deleteMenu);
 
-    QMenu *deleteMenu = new QMenu(tr("Delete"), menu);
-    QAction *deleteSourceAction = new QAction(tr("Delete from source"), deleteMenu);
-    deleteSourceAction->setDisabled(true);
-    QAction *deleteCacheAction = new QAction(tr("Delete from cache"), deleteMenu);
-    QAction *forgetAction = new QAction(tr("Forget asset"), deleteMenu);
+        deleteMenu->addAction(deleteSourceAction);
+        deleteMenu->addAction(deleteCacheAction);
+        deleteMenu->addAction(forgetAction);
+        menu->addMenu(deleteMenu);
 
-    deleteMenu->addAction(deleteSourceAction);
-    deleteMenu->addAction(deleteCacheAction);
-    deleteMenu->addAction(forgetAction);
-    menu->addMenu(deleteMenu);
+        connect(deleteSourceAction, SIGNAL(triggered()), SLOT(DeleteFromSource()));
+        connect(deleteCacheAction, SIGNAL(triggered()), SLOT(DeleteFromCache()));
+        connect(forgetAction, SIGNAL(triggered()), SLOT(Forget()));
 
-    connect(deleteSourceAction, SIGNAL(triggered()), SLOT(DeleteFromSource()));
-    connect(deleteCacheAction, SIGNAL(triggered()), SLOT(DeleteFromCache()));
-    connect(forgetAction, SIGNAL(triggered()), SLOT(Forget()));
+        QMenu *reloadMenu = new QMenu(tr("Reload"), menu);
+        QAction *reloadFromSourceAction = new QAction(tr("Reload from source"), deleteMenu);
+        QAction *reloadFromCacheAction = new QAction(tr("Reload from cache"), deleteMenu);
+        QAction *unloadAction = new QAction(tr("Unload"), deleteMenu);
 
-    QMenu *reloadMenu = new QMenu(tr("Reload"), menu);
-    QAction *reloadFromSourceAction = new QAction(tr("Reload from source"), deleteMenu);
-    QAction *reloadFromCacheAction = new QAction(tr("Reload from cache"), deleteMenu);
-    QAction *unloadAction = new QAction(tr("Unload"), deleteMenu);
+        // Reload from cache is not possible if asset's disk source is empty.
+        foreach(AssetItem *item, items)
+            if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
+            {
+                reloadFromCacheAction->setDisabled(true);
+                break;
+            }
 
-    // Reload from cache is not possible if asset's disk source is empty.
-    foreach(AssetItem *item, items)
-        if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
-        {
-            reloadFromCacheAction->setDisabled(true);
-            break;
-        }
+        reloadMenu->addAction(reloadFromSourceAction);
+        reloadMenu->addAction(reloadFromCacheAction);
+        reloadMenu->addAction(unloadAction);
+        menu->addMenu(reloadMenu);
 
-    reloadMenu->addAction(reloadFromSourceAction);
-    reloadMenu->addAction(reloadFromCacheAction);
-    reloadMenu->addAction(unloadAction);
-    menu->addMenu(reloadMenu);
+        connect(reloadFromSourceAction, SIGNAL(triggered()), SLOT(ReloadFromSource()));
+        connect(reloadFromCacheAction, SIGNAL(triggered()), SLOT(ReloadFromCache()));
+        connect(unloadAction, SIGNAL(triggered()), SLOT(Unload()));
+    /*
+        QAction *exportAction = new QAction(tr("Export..."), menu);
+        menu->addAction(exportAction);
+        connect(exportAction, SIGNAL(triggered()), SLOT(Export()));
+    */
+        QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
+        menu->addAction(openFileLocationAction);
 
-    connect(reloadFromSourceAction, SIGNAL(triggered()), SLOT(ReloadFromSource()));
-    connect(reloadFromCacheAction, SIGNAL(triggered()), SLOT(ReloadFromCache()));
-    connect(unloadAction, SIGNAL(triggered()), SLOT(Unload()));
-/*
+        connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
+    }
+
     QAction *importAction = new QAction(tr("Import..."), menu);
-    QAction *exportAction = new QAction(tr("Export..."), menu);
-    menu->addAction(importAction);
-    menu->addAction(exportAction);
-
     connect(importAction, SIGNAL(triggered()), SLOT(Import()));
-    connect(exportAction, SIGNAL(triggered()), SLOT(Export()));
-*/
-    QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
-    menu->addAction(openFileLocationAction);
-
-    connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
+    menu->addAction(importAction);
 }
 
 QList<AssetItem *> AssetTreeWidget::GetSelection() const
@@ -186,7 +194,6 @@ void AssetTreeWidget::DeleteFromSource()
 /*
     foreach(AssetItem *item, GetSelection())
         framework->Asset()->ForgetAsset(asset, false);
-
 */
 }
 
@@ -230,17 +237,40 @@ void AssetTreeWidget::ReloadFromSource()
         if (item->Asset())
         {
             QString assetRef = item->Asset()->Name();
-            framework->Asset()->ForgetAsset(item->Asset(), false); // This line will delete IAsset from the system, so dereferencing item->Asset() would be invalid.
+            // The next line will delete IAsset from the system, so dereferencing item->Asset() after that would be invalid.
+            framework->Asset()->ForgetAsset(item->Asset(), false);
             framework->Asset()->RequestAsset(assetRef);
         }
 }
 
 void AssetTreeWidget::Import()
 {
+    QtUtils::OpenFileDialogNonModal(cAllTypesFileFilter, tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)), true);
+}
+
+void AssetTreeWidget::OpenFileDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    if (dialog->selectedFiles().isEmpty())
+        return;
+
+    AddContentWindow *addContent = new AddContentWindow(framework, framework->GetDefaultWorldScene());
+    addContent->AddFiles(dialog->selectedFiles());
+    addContent->show();
 }
 
 void AssetTreeWidget::RequestNewAsset()
 {
+    QStringList types;
+    foreach(AssetTypeFactoryPtr factory, framework->Asset()->GetAssetTypeFactories())
+        types << factory->Type();
 }
 
 void AssetTreeWidget::Export()

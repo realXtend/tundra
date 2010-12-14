@@ -12,7 +12,7 @@
 
 #include "AssetsWindow.h"
 #include "AssetTreeWidget.h"
-#include "SceneTreeWidgetItems.h"
+#include "TreeWidgetUtils.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
