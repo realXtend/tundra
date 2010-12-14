@@ -30,7 +30,6 @@ void OgreParticleAsset::Unload()
 
 bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
-    OgreRenderer::OgreRenderingModule::LogInfo("Begin deserializing particle asset");
     RemoveTemplates();
     references_.clear();
 
@@ -121,7 +120,6 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                     // Write line to the copy
                     if (!skip_until_next)
                     {
-                        std::cout << line << std::endl;
                         output << line << std::endl;
                     }
                     else
@@ -132,7 +130,6 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                     // Write line to the copy
                     if (!skip_until_next)
                     {
-                        std::cout << line << std::endl;
                         output << line << std::endl;
                     }
                     else
