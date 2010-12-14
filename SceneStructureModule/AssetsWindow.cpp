@@ -12,6 +12,7 @@
 
 #include "AssetsWindow.h"
 #include "AssetTreeWidget.h"
+#include "SceneTreeWidgetItems.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -176,63 +177,10 @@ void AssetsWindow::RemoveAsset(AssetPtr asset)
 
 void AssetsWindow::Search(const QString &filter)
 {
-    QString f = filter.trimmed();
-    bool expand = f.size() >= 3;
-    QSet<QTreeWidgetItem *> alreadySetVisible;
-
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        QTreeWidgetItem *item = *it;
-        if (!alreadySetVisible.contains(item))
-        {
-            if (f.isEmpty())
-            {
-                item->setHidden(false);
-            }
-            else if (item->text(0).contains(filter, Qt::CaseInsensitive))
-            {
-                item->setHidden(false);
-                alreadySetVisible.insert(item);
-                if (expand)
-                    item->setExpanded(expand);
-
-                // Make sure that all the parent items are visible too
-                QTreeWidgetItem *parent = 0, *child = item;
-                while((parent = child->parent()) != 0)
-                {
-                    parent->setHidden(false);
-                    alreadySetVisible.insert(parent);
-                    if (expand)
-                        parent->setExpanded(expand);
-                    child = parent;
-                }
-            }
-            else
-            {
-                item->setHidden(true);
-            }
-        }
-
-        ++it;
-    }
+    TreeWidgetSearch(treeWidget, filter);
 }
 
 void AssetsWindow::ExpandOrCollapseAll()
 {
-    bool expand = true;
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
-    {
-        QTreeWidgetItem *item = treeWidget->topLevelItem(i);
-        if (item->childCount() >= 1 && item->isExpanded())
-        {
-            expand = false;
-            break;
-        }
-    }
-
-    if (expand)
-        treeWidget->expandAll();
-    else
-        treeWidget->collapseAll();
+    TreeWidgetExpandOrCollapseAll(treeWidget);
 }
