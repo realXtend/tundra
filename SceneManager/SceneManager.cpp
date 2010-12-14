@@ -844,7 +844,7 @@ namespace Scene
                                 int idx = filepath.lastIndexOf("/");
                                 ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
 
-                                sceneDesc.assets << ad;
+                                sceneDesc.assets.insert(ad);
                             }
                         }
                     }
@@ -964,7 +964,7 @@ namespace Scene
                                             int idx = filepath.lastIndexOf("/");
                                             ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
 
-                                            sceneDesc.assets << ad;
+                                            sceneDesc.assets.insert(ad);
                                         }
                                     }
                                 }

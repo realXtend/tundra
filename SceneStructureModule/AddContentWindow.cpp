@@ -255,7 +255,7 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
         QString type = GetResourceTypeFromResourceFileName(file.toStdString().c_str());
         ad.typeName = type.isEmpty() ? "Binary" : type;
         ad.destinationName = fs::path(file.toStdString()).leaf().c_str();
-        desc.assets << ad;
+        desc.assets.insert(ad);
     }
 
     sceneDesc = desc;
@@ -294,16 +294,11 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     entityTreeWidget->setSortingEnabled(true);
 }
 
-void AddContentWindow::AddAssets(const QList<AssetDesc> &assetDescs)
+void AddContentWindow::AddAssets(const std::set<AssetDesc> &assetDescs)
 {
-    // Add asset references. Do not show duplicates.
-    std::set<AssetDesc> assets;
-    foreach(AssetDesc a, assetDescs)
-        assets.insert(a);
-
     assetTreeWidget->setSortingEnabled(false);
 
-    foreach(AssetDesc a, assets)
+    foreach(AssetDesc a, assetDescs)
     {
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
@@ -406,9 +401,9 @@ void AddContentWindow::AddContent()
         {
             if (aitem->checkState(cColumnAssetUpload) == Qt::Unchecked)
             {
-                QList<AssetDesc>::const_iterator ai = qFind(newDesc.assets, aitem->desc);
+                std::set<AssetDesc>::const_iterator ai = newDesc.assets.find(aitem->desc);
                 if (ai != newDesc.assets.end())
-                    newDesc.assets.removeOne(*ai);
+                    newDesc.assets.erase(ai);
             }
             else
             {
@@ -426,6 +421,7 @@ void AddContentWindow::AddContent()
     }
 
     // Rewrite asset refs
+/*
     QMutableListIterator<AssetDesc> rewriteIt(newDesc.assets);
     while(rewriteIt.hasNext())
     {
@@ -434,7 +430,7 @@ void AddContentWindow::AddContent()
             ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
             ReplaceReferences(rewriteIt.value().data, refs);
     }
-
+*/
     Scene::ScenePtr destScene = scene.lock();
     if (!destScene)
         return;

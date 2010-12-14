@@ -8,14 +8,13 @@
 #ifndef incl_SceneManager_SceneDesc_h
 #define incl_SceneManager_SceneDesc_h
 
+#include <set>
+
 /// Description of asset.
 struct AssetDesc
 {
-    /// Specifies the source filename for the location of this asset.
-    QString source; 
-
-    /// Specifies in-memory content for the asset data.
-    QByteArray data;
+    QString source; ///< Specifies the source filename for the location of this asset.
+    QByteArray data; ///< Specifies in-memory content for the asset data.
 
     /// If true, the data for this asset is loaded in memory, and specified by the member field 'data'. Otherwise,
     /// the data is loaded from disk, specified by the filename 'source'.
@@ -116,7 +115,7 @@ struct SceneDesc
     QString name; ///< Name.
     bool viewEnabled; ///< Is scene view enabled (ie. rendering-related components actually create stuff)
     QList<EntityDesc> entities; ///< List of entities the scene has.
-    QList<AssetDesc> assets; ///< List of assets the scene refers to.
+    std::set<AssetDesc> assets; ///< List of assets the scene refers to.
 
     /// Returns true if the scene description has no entities, false otherwise.
     bool IsEmpty() const { return entities.isEmpty(); }

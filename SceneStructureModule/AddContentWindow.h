@@ -65,7 +65,7 @@ private:
     /// 
     /** @param assetDescs List of assets descriptions.
     */
-    void AddAssets(const QList<AssetDesc> &assetDescs);
+    void AddAssets(const std::set<AssetDesc> &assetDescs);
 
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.

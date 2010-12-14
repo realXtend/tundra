@@ -1221,7 +1221,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         meshAssetDesc.source = filename;
         meshAssetDesc.typeName = "mesh";
         meshAssetDesc.destinationName = fs::path(filename.toStdString()).leaf().c_str();//meshAssetDesc.source;
-        desc.assets << meshAssetDesc;
+        desc.assets.insert(meshAssetDesc);
     }
 
     foreach(QString skeleton, skeletons)
@@ -1231,7 +1231,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         skeletonAssetDesc.dataInMemory = false;
         skeletonAssetDesc.typeName = "skeleton";
         skeletonAssetDesc.destinationName = skeleton;
-        desc.assets << skeletonAssetDesc;
+        desc.assets.insert(skeletonAssetDesc);
     }
 
     // Get all materials scripts from all material script files.
@@ -1258,7 +1258,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
                 matDesc.data = mat.data.toAscii();
             }
 
-        desc.assets << matDesc;
+        desc.assets.insert(matDesc);
     }
 
     // Process materials for textures.
@@ -1277,7 +1277,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         if (result == AssetAPI::FileQueryLocalFileMissing)
             LogWarning("Texture file \"" + tex.toStdString() + "\" cannot be found from path \"" + path.toStdString() + "\"!");
         textureAssetDesc.destinationName = AssetAPI::ExtractFilenameFromAssetRef(tex); // The destination name must be local to the destination asset storage.
-        desc.assets << textureAssetDesc;
+        desc.assets.insert(textureAssetDesc);
     }
 }
 
