@@ -8,8 +8,6 @@
 #include "ui_CommunicationWidget.h"
 #include "Input.h"
 
-#include "EC_TtsVoice.h"
-
 class QStackedLayout;
 class QTextBrowser;
 class QGraphicsSceneMouseEvent;
@@ -39,6 +37,11 @@ namespace CommUI
 namespace Foundation
 {
     class Framework;
+}
+
+namespace Tts
+{
+    class TtsServiceInterface;
 }
 
 namespace CoreUi
@@ -114,11 +117,7 @@ namespace CoreUi
 
         InputContextPtr input_context_;
 
-//		Communications::TtsChat::TtsChatWidget* Tts_chat_widget;
 		Tts::TtsServiceInterface* tts_service_;
-//		Communications::TtsChat::TtsChatConfig* tts_config_;
-//		bool ownVoiceOn,othersVoiceOn;
-		boost::shared_ptr<EC_TtsVoice> avatar_voice_;
         QString own_tts_voice_;
         QString default_avatar_tts_voice_;
         bool tts_own_messages_;

@@ -13,6 +13,9 @@
 #include "UiServiceInterface.h"
 #include "VoiceControllerWidget.h"
 #include "EC_DynamicComponent.h"
+#include "EC_OpenSimPresence.h"
+#include "RexUUID.h"
+#include "SceneManager.h"
 
 #include <QWidget>
 #include <QStackedLayout>
@@ -24,24 +27,13 @@
 #include <QSettings>
 
 #include "VoiceToolWidget.h"
-
-#include "DebugOperatorNew.h"
-
-
-//$ BEGIN_MOD $
 #include "TtsServiceInterface.h"
 #include "TtsModule.h"
-
-
 #include "Entity.h"
 #include "ServiceInterface.h"
 #include "WorldLogicInterface.h"
+#include "DebugOperatorNew.h"
 
-#include "RexUUID.h"
-#include "SceneManager.h"
-#include "EC_OpenSimPresence.h"
-
-//$ END_MOD $
 namespace
 {
     /// HTTP schema indentifier

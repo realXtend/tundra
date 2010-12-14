@@ -20,7 +20,6 @@
 #include "ModuleManager.h"
 #include "CoreStringUtils.h"
 #include "TtsModule.h"
-#include "EC_TtsVoice.h"
 #include "SettingsWidget.h"
 
 #include "MemoryLeakCheck.h"
@@ -46,8 +45,6 @@ namespace Tts
 
 	void TtsModule::Load()
 	{
-		DECLARE_MODULE_EC(EC_TtsVoice);
-
 		if (QDir("tmp").exists())
 			boost::filesystem::remove_all("tmp");
 
