@@ -210,7 +210,7 @@ std::vector<AssetReference> OgreMaterialAsset::FindReferences() const
     return references_;
 }
 
-void OgreMaterialAsset::Unload()
+void OgreMaterialAsset::DoUnload()
 {
     if (ogreMaterial.isNull())
         return;

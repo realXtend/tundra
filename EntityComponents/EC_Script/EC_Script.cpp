@@ -74,7 +74,7 @@ EC_Script::EC_Script(IModule *module):
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 
     scriptAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
-    connect(scriptAsset.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(ScriptAssetLoaded(IAssetTransfer*)));
+    connect(scriptAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(ScriptAssetLoaded(AssetPtr)));
 }
 
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
@@ -83,9 +83,9 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
         scriptAsset->HandleAssetRefChange(attribute);
 }
 
-void EC_Script::ScriptAssetLoaded(IAssetTransfer *transfer)
+void EC_Script::ScriptAssetLoaded(AssetPtr asset_)
 {
-    ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(transfer->asset);
+    ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(asset_);
     if (!asset.get())
     {
         LogError("EC_Script::ScriptAssetLoaded: Loaded asset of type other than ScriptAsset!");

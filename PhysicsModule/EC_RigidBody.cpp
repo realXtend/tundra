@@ -398,15 +398,11 @@ void EC_RigidBody::OnTerrainRegenerated()
         CreateCollisionShape();
 }
 
-void EC_RigidBody::OnCollisionMeshAssetLoaded(IAssetTransfer *transfer)
+void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(transfer->asset.get());
+    OgreMeshAsset *meshAsset = dynamic_cast<OgreMeshAsset*>(asset.get());
     if (!meshAsset || !meshAsset->ogreMesh.get())
-        LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but Ogre::Mesh pointer was null!");
+        LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
 
     Ogre::Mesh *mesh = meshAsset->ogreMesh.get();
 /* Old asset download path:
@@ -639,7 +635,7 @@ void EC_RigidBody::RequestMesh()
         // Do not create shape right now, but request the mesh resource
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(collisionMesh);
         if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnCollisionMeshAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnCollisionMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
 }
 

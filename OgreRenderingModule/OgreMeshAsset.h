@@ -22,7 +22,7 @@ public:
 
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
 
-    virtual void Unload();
+    virtual void DoUnload();
 
     /// Returns an empty list - meshes do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }

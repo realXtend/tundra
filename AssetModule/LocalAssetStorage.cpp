@@ -13,7 +13,7 @@ namespace Asset
 {
 
 LocalAssetStorage::LocalAssetStorage()
-:changeWatcher(0)
+//:changeWatcher(0)
 {
 }
 
@@ -57,6 +57,7 @@ QString LocalAssetStorage::GetFullAssetURL(const QString &localName)
 
 void LocalAssetStorage::SetupWatcher()
 {
+    /* This watcher is not used for now. -jj. will be removed.
     if (changeWatcher) // Remove the old watcher if one exists.
         RemoveWatcher();
 
@@ -73,12 +74,15 @@ void LocalAssetStorage::SetupWatcher()
 
     ///\todo The QFileSystemWatcher is severely lacking in functionality. Replace the above with some custom method that can tell
     /// which files change.
+    */
 }
 
 void LocalAssetStorage::RemoveWatcher()
 {
+    /* This watcher is not used for now. -jj. will be removed.
     delete changeWatcher;
     changeWatcher = 0;
+    */
 }
 
 } // ~Asset

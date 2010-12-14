@@ -65,7 +65,7 @@ private slots:
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
     
-    void OnAvatarAppearanceLoaded(IAssetTransfer *transfer);
+    void OnAvatarAppearanceLoaded(AssetPtr asset);
 private:
     //! constructor
     /*! \param module avatar module

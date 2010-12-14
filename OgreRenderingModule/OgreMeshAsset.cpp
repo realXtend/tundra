@@ -20,6 +20,9 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     if (!data_)
         return false;
     
+    /// Force an unload of this data first.
+    Unload();
+
     if (ogreMesh.isNull())
     {   
         ogreMesh = Ogre::MeshManager::getSingleton().createManual(
@@ -35,7 +38,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     std::vector<u8> tempData(data_, data_ + numBytes);
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&tempData[0], numBytes, false));
     Ogre::MeshSerializer serializer;
-    serializer.importMesh(stream, ogreMesh.getPointer());
+    serializer.importMesh(stream, ogreMesh.getPointer()); // Note: importMesh *adds* submeshes to an existing mesh. It doesn't replace old ones.
     
     // Generate tangents to mesh
     try
@@ -77,7 +80,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     return true;
 }
 
-void OgreMeshAsset::Unload()
+void OgreMeshAsset::DoUnload()
 {
     if (ogreMesh.isNull())
         return;

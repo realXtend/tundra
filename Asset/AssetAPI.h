@@ -228,6 +228,14 @@ public:
     /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
     std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
 
+    class QStringLessThanNoCase
+    {
+    public:
+        bool operator()(const QString &a, const QString b) const
+        {
+            return QString::compare(a, b, Qt::CaseInsensitive) < 0;
+        }
+    };
 signals:
     /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
     /// may not yet have been loaded.
@@ -244,17 +252,17 @@ signals:
 
 private slots:
     /// The Asset API listens on each asset when they get loaded, to track the completion of the dependencies of other loaded assets.
-    void OnAssetLoaded(IAssetTransfer* transfer);
+    void OnAssetLoaded(AssetPtr asset);
 
     /// The Asset API reloads all assets from file when their disk source contents change.
     void OnAssetDiskSourceChanged(const QString &path);
 
 private:
-    typedef std::map<QString, AssetTransferPtr> AssetTransferMap;
+    typedef std::map<QString, AssetTransferPtr, AssetAPI::QStringLessThanNoCase> AssetTransferMap;
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
 
-    typedef std::map<QString, AssetUploadTransferPtr> AssetUploadTransferMap;
+    typedef std::map<QString, AssetUploadTransferPtr, AssetAPI::QStringLessThanNoCase> AssetUploadTransferMap;
     /// Stores all the currently ongoing asset uploads, maps full assetRefs to the asset upload transfer structures.
     AssetUploadTransferMap currentUploadTransfers;
 
@@ -287,7 +295,7 @@ private:
         QString assetType;
         AssetTransferPtr transfer;
     };
-    typedef std::map<QString, PendingDownloadRequest> PendingDownloadRequestMap;
+    typedef std::map<QString, PendingDownloadRequest, AssetAPI::QStringLessThanNoCase> PendingDownloadRequestMap;
     PendingDownloadRequestMap pendingDownloadRequests;
 
     /// Stores all the already loaded assets in the system.

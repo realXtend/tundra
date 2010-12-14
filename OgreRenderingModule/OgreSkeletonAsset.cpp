@@ -85,7 +85,7 @@ bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serial
     return true;
 }
 
-void OgreSkeletonAsset::Unload()
+void OgreSkeletonAsset::DoUnload()
 {
     if (ogreSkeleton.isNull())
         return;

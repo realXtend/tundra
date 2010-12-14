@@ -301,7 +301,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    // To optimize, we first check if there is an outstanding requests to the given asset. If so, we return that request. In effect, we never
+    // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
     // an asset will be stored in the AssetMap when it has been downloaded, but it might not yet have all its dependencies loaded).
     AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
@@ -396,7 +396,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     // so we'll avoid multiple downloads to the exact same asset.
     assert(currentTransfers.find(assetRef) == currentTransfers.end());
     currentTransfers[assetRef] = transfer;
-    connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(OnAssetLoaded(IAssetTransfer*)));
+    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAssetLoaded(AssetPtr)));
     return transfer;
 }
 
@@ -561,8 +561,10 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     if (transfer->asset.get()) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
+//        transfer->asset->EmitDecoded
         transfer->EmitAssetDecoded();
-        transfer->EmitAssetLoaded();
+        transfer->asset->EmitLoaded();
+//        transfer->EmitAssetLoaded();
         pendingDownloadRequests.erase(transfer->source.ref);
         currentTransfers.erase(transfer->source.ref);
 
@@ -591,6 +593,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     transfer->asset->SetDiskSource(assetDiskSource.trimmed());
     transfer->asset->SetAssetStorage(transfer->storage.lock());
     transfer->asset->SetAssetProvider(transfer->provider.lock());
+    transfer->asset->SetAssetTransfer(transfer);
 
     bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
     if (!success)
@@ -624,13 +627,13 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
 void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer)
 {
-    LogError("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" failed!");
-
-    ///\todo In this function, there is a danger of reaching an infinite recursion. Remember recursion parents and avoid infinite loops. (A -> B -> C -> A)
-
     assert(transfer);
     if (!transfer)
         return;
+
+    LogError("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" failed!");
+
+    ///\todo In this function, there is a danger of reaching an infinite recursion. Remember recursion parents and avoid infinite loops. (A -> B -> C -> A)
 
     AssetTransferMap::iterator iter = currentTransfers.find(transfer->source.ref);
     if (iter == currentTransfers.end())
@@ -673,8 +676,8 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
         if (!transfer.get())
             return; ///\todo Evaluate the path to take here.
         connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)));
-        connect(transfer.get(), SIGNAL(Decoded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Decoded(IAssetTransfer*)));
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Loaded(IAssetTransfer*)));
+        connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), req.transfer.get(), SIGNAL(Decoded(AssetPtr)));
+        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), req.transfer.get(), SIGNAL(Loaded(AssetPtr)));
         connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*)));
     }
 }
@@ -698,7 +701,8 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
     transfer->EmitAssetDecoded();
 
     // This asset is now completely finished, and all its dependencies have been loaded.
-    transfer->EmitAssetLoaded();
+    if (transfer->asset.get())
+        transfer->asset->EmitLoaded();
 
     pendingDownloadRequests.erase(transfer->source.ref);
 }
@@ -746,7 +750,7 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
 void AssetAPI::RemoveAssetDependencies(QString asset)
 {
     for(size_t i = 0; i < assetDependencies.size(); ++i)
-        if (assetDependencies[i].first == asset)
+        if (QString::compare(assetDependencies[i].first, asset, Qt::CaseInsensitive) == 0)
         {
             assetDependencies.erase(assetDependencies.begin() + i);
             --i;
@@ -757,7 +761,7 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
 {
     std::vector<AssetPtr> dependents;
     for(size_t i = 0; i < assetDependencies.size(); ++i)
-        if (assetDependencies[i].second == dependee)
+        if (QString::compare(assetDependencies[i].second, dependee, Qt::CaseInsensitive) == 0)
         {
             AssetMap::iterator iter = assets.find(assetDependencies[i].first);
             if (iter != assets.end())
@@ -785,40 +789,42 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
     return numDependencies;
 }
 
-void AssetAPI::OnAssetLoaded(IAssetTransfer *transfer)
+void AssetAPI::OnAssetLoaded(AssetPtr asset)
 {
-    std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
+    std::vector<AssetPtr> dependents = FindDependents(asset->Name());
     for(size_t i = 0; i < dependents.size(); ++i)
     {
-        AssetPtr asset = dependents[i];
+        AssetPtr dependent = dependents[i];
 
         // Notify the asset that one of its dependencies has now been loaded in.
-        asset->DependencyLoaded(transfer->asset);
+        dependent->DependencyLoaded(asset);
 
         // Check if this dependency was the last one of the given asset's dependencies.
-        AssetTransferMap::iterator iter = currentTransfers.find(asset->Name());
+        AssetTransferMap::iterator iter = currentTransfers.find(dependent->Name());
         if (iter != currentTransfers.end())
         {
             AssetTransferPtr transfer = iter->second;
 
-            if (NumPendingDependencies(asset) == 0)
+            if (NumPendingDependencies(dependent) == 0)
                 AssetDependenciesCompleted(transfer);
         }
     }
 }
 
-void AssetAPI::OnAssetDiskSourceChanged(const QString &path)
+void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 {
+    QDir path(path_);
+
     for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
-        if (iter->second->DiskSource() == path)
+        if (!iter->second->DiskSource().isEmpty() && QDir(iter->second->DiskSource()) == path)
         {
             AssetPtr asset = iter->second;
 
             bool success = asset->LoadFromCache();
             if (!success)
-                LogError("Failed to reload changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path.toStdString() + "\"!");
+                LogError("Failed to reload changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path_.toStdString() + "\"!");
             else
-                LogDebug("Reloaded changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path.toStdString() + "\".");
+                LogDebug("Reloaded changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path_.toStdString() + "\".");
         }
 }
 

@@ -4,7 +4,13 @@
 #include "IComponent.h"
 #include "Framework.h"
 #include "AssetAPI.h"
+#include "IAsset.h"
 #include "IAssetTransfer.h"
+
+AssetPtr AssetRefListener::Asset()
+{
+    return asset.lock();
+}
 
 void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef)
 {
@@ -12,28 +18,51 @@ void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef)
     if (!attr)
         return; ///\todo Log out warning.
 
-    AssetTransferPtr transfer = attr->GetOwner()->GetFramework()->Asset()->RequestAsset(attr->Get().ref);
+    HandleAssetRefChange(attr->GetOwner()->GetFramework()->Asset(), attr->Get().ref);
+}
+
+void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef)
+{
+    assert(assetApi);
+
+    assetRef = assetRef.trimmed();
+
+    AssetTransferPtr transfer = assetApi->RequestAsset(assetRef);
     if (!transfer.get())
         return; ///\todo Log out warning.
 
     connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(EmitDownloaded(IAssetTransfer*)), Qt::UniqueConnection);
-    connect(transfer.get(), SIGNAL(Decoded(IAssetTransfer*)), this, SLOT(EmitDecoded(IAssetTransfer*)), Qt::UniqueConnection);
-    connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(EmitLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+//    connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), this, SLOT(EmitDecoded(AssetPtr)), Qt::UniqueConnection);
+//    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(EmitLoaded(AssetPtr)), Qt::UniqueConnection);
+
+    AssetPtr assetData = asset.lock();
+    if (assetData.get())
+        disconnect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SIGNAL(Loaded(AssetPtr)));
+    asset = AssetPtr();
 }
 
 void AssetRefListener::EmitDownloaded(IAssetTransfer *transfer)
 {
+    assert(transfer);
+    if (!transfer)
+        return;
+
+    AssetPtr assetData = transfer->asset;
+    assert(assetData.get());
+    if (!assetData.get())
+        return;
+    asset = assetData;
+    
+    connect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SIGNAL(Loaded(AssetPtr)));
     emit Downloaded(transfer);
 }
 
-void AssetRefListener::EmitDecoded(IAssetTransfer *transfer)
+void AssetRefListener::EmitDecoded(AssetPtr asset)
 {
-    emit Decoded(transfer);
+    emit Decoded(asset);
 }
 
-void AssetRefListener::EmitLoaded(IAssetTransfer *transfer)
+void AssetRefListener::EmitLoaded(AssetPtr asset)
 {
-    emit Loaded(transfer);
+    emit Loaded(asset);
 }
-
-//void AssetRefListener::HandleAssetSourceChange(

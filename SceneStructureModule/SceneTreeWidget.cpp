@@ -1331,7 +1331,7 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
         filename += QDir::separator() + assetName;
 
         filesaves_.insert(transfer, filename);
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
+        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
 
@@ -1529,11 +1529,11 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         }
 
         filesaves_.insert(transfer, filename);
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
+        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
 
-void SceneTreeWidget::AssetLoaded(IAssetTransfer *transfer_)
+void SceneTreeWidget::AssetLoaded(AssetPtr asset)
 {
 #if 0 ///\todo Removed due to regression. Reimplement using the new Asset API. -jj.
     assert(transfer_);

@@ -15,6 +15,7 @@ typedef boost::weak_ptr<IAsset> AssetWeakPtr;
 
 class IAssetTransfer;
 typedef boost::shared_ptr<IAssetTransfer> AssetTransferPtr;
+typedef boost::weak_ptr<IAssetTransfer> AssetTransferWeakPtr;
 
 class IAssetProvider;
 typedef boost::shared_ptr<IAssetProvider> AssetProviderPtr;
@@ -35,6 +36,7 @@ class IAssetTypeFactory;
 typedef boost::shared_ptr<IAssetTypeFactory> AssetTypeFactoryPtr;
 
 class AssetRefListener;
+typedef boost::shared_ptr<AssetRefListener> AssetRefListenerPtr;
 
 namespace Foundation
 {
