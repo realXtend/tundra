@@ -134,7 +134,7 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 
     // Reload from cache is not possible if asset's disk source is empty.
     foreach(AssetItem *item, items)
-        if (item->Asset()->DiskSource().trimmed().isEmpty())
+        if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
         {
             reloadFromCacheAction->setDisabled(true);
             break;
@@ -216,8 +216,9 @@ void AssetTreeWidget::ReloadFromSource()
     foreach(AssetItem *item, GetSelection())
         if (item->Asset())
         {
-            framework->Asset()->ForgetAsset(item->Asset(), false);
-            framework->Asset()->RequestAsset(item->Asset()->Name());
+            QString assetRef = item->Asset()->Name();
+            framework->Asset()->ForgetAsset(item->Asset(), false); // This line will delete IAsset from the system, so dereferencing item->Asset() would be invalid.
+            framework->Asset()->RequestAsset(assetRef);
         }
 }
 

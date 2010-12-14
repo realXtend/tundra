@@ -156,10 +156,12 @@ public:
     /// Removes the given asset from the system and frees up all resources related to it. Any assets depending on this asset will break.
     /// @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
     ///         but for example for local assets, this is the asset itself.
+    /// @note Calling ForgetAsset on an asset will unload it from the system. Do not dereference the asset after calling this function.
     void ForgetAsset(AssetPtr asset, bool removeDiskSource);
 
     /// Sends an asset deletion request to the remote asset storage the asset resides in.
     ///\todo Implement.
+    /// @note Calling DeleteAssetFromStorage on an asset will unload it from the system. Do not dereference the asset after calling this function.
     void DeleteAssetFromStorage(AssetPtr asset) { /* N/I. */ }
 
     /// Uploads an asset to an asset storage.
@@ -183,8 +185,9 @@ public:
 
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
     /** Use this to clear the client's memory from all assets.
-        \note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
-        until the refcounts drop to zero. */
+        @note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
+        until the refcounts drop to zero.
+        @note Do not dereference any asset pointers that might have been left over after calling this function. */
     void ForgetAllAssets();
 
     /// Returns all the currently ongoing or waiting asset transfers.
