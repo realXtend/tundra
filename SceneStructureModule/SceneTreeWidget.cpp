@@ -1420,6 +1420,7 @@ void SceneTreeWidget::InvokeActionTriggered()
     QList<Scene::EntityWeakPtr> entities;
     QObjectList objects;
     QObjectWeakPtrList objectPtrs;
+
     foreach(EntityItem *eItem, sel.entities)
         if (eItem->Entity())
         {
@@ -1427,6 +1428,7 @@ void SceneTreeWidget::InvokeActionTriggered()
             objects << eItem->Entity().get();
             objectPtrs << boost::dynamic_pointer_cast<QObject>(eItem->Entity());
         }
+
     foreach(ComponentItem *cItem, sel.components)
         if (cItem->Component())
         {
@@ -1471,7 +1473,6 @@ void SceneTreeWidget::InvokeActionTriggered()
         }
     }
 }
-
 
 void SceneTreeWidget::SaveAssetAs()
 {

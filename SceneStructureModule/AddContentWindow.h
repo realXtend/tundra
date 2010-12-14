@@ -36,7 +36,7 @@ public:
     */
     explicit AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent = 0);
 
-    ///
+    /// Destructor.
     ~AddContentWindow();
 
     /// Add scene descrition to be shown the tree widgets.
@@ -45,12 +45,28 @@ public:
     void AddDescription(const SceneDesc &desc);
 
     /// 
+    /** @param fileNames List of files.
+    */
+    void AddFiles(const QStringList &fileNames);
+
+    /// 
     /** @param pos
     */
     void AddPosition(const Vector3df &pos) { position = pos; }
 
 private:
     Q_DISABLE_COPY(AddContentWindow)
+
+    /// 
+    /** @param entityDescs List of entity descriptions.
+    */
+    void AddEntities(const QList<EntityDesc> &entityDescs);
+
+    /// 
+    /** @param assetDescs List of assets descriptions.
+    */
+    void AddAssets(const QList<AssetDesc> &assetDescs);
+
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
     Foundation::Framework *framework; ///< Framework.

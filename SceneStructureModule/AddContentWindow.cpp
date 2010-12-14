@@ -10,6 +10,7 @@
 
 #include "AddContentWindow.h"
 #include "SceneStructureModule.h"
+#include "TreeWidgetUtils.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -23,6 +24,8 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
 
 #include "MemoryLeakCheck.h"
+
+namespace fs = boost::filesystem;
 
 // Entity tree widget column index enumeration.
 const int cColumnEntityCreate = 0; ///< Create column index.
@@ -234,13 +237,38 @@ AddContentWindow::~AddContentWindow()
 void AddContentWindow::AddDescription(const SceneDesc &desc)
 {
     sceneDesc = desc;
-//    std::set<AttributeDesc> assetRefs;
 
-    // Disable sorting while we insert items.
+    AddEntities(desc.entities);
+    AddAssets(desc.assets);
+}
+
+void AddContentWindow::AddFiles(const QStringList &fileNames)
+{
     assetTreeWidget->setSortingEnabled(false);
+
+    SceneDesc desc;
+    foreach(QString file, fileNames)
+    {
+        AssetDesc ad;
+        ad.source = file;
+        ad.dataInMemory = false;
+        QString type = GetResourceTypeFromResourceFileName(file.toStdString().c_str());
+        ad.typeName = type.isEmpty() ? "Binary" : type;
+        ad.destinationName = fs::path(file.toStdString()).leaf().c_str();
+        desc.assets << ad;
+    }
+
+    sceneDesc = desc;
+
+    AddAssets(desc.assets);
+}
+
+void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
+{
+    // Disable sorting while we insert items.
     entityTreeWidget->setSortingEnabled(false);
 
-    foreach(EntityDesc e, desc.entities)
+    foreach(EntityDesc e, entityDescs)
     {
         EntityWidgetItem *eItem = new EntityWidgetItem(e);
         entityTreeWidget->addTopLevelItem(eItem);
@@ -252,10 +280,10 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
             QTreeWidgetItem *cItem = new QTreeWidgetItem;
             cItem->setText(0, c.typeName + " " + c.name);
             eItem->addChild(cItem);
-            */
+*/
 
             // Gather non-empty asset references. They're shown in their own tree widget.
-            /*
+/*
             foreach(AttributeDesc a, c.attributes)
                 if (a.typeName == "assetreference" && !a.value.isEmpty())
                     assetRefs.insert(a);
@@ -263,17 +291,24 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
 */
     }
 
+    entityTreeWidget->setSortingEnabled(true);
+}
+
+void AddContentWindow::AddAssets(const QList<AssetDesc> &assetDescs)
+{
     // Add asset references. Do not show duplicates.
     std::set<AssetDesc> assets;
-    foreach(AssetDesc a, desc.assets)
+    foreach(AssetDesc a, assetDescs)
         assets.insert(a);
+
+    assetTreeWidget->setSortingEnabled(false);
 
     foreach(AssetDesc a, assets)
     {
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
 
-        QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+        QString basePath(fs::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
         QString outFilePath;
         AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.source, basePath, outFilePath);
         /*if (res == AssetAPI::FileQueryLocalFileFound)
@@ -310,7 +345,6 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
 
     // Enable sorting, resize header sections to contents.
     assetTreeWidget->setSortingEnabled(true);
-    entityTreeWidget->setSortingEnabled(true);
     assetTreeWidget->header()->resizeSections(QHeaderView::ResizeToContents);
 
     // Sort asset items initially so that erroneous are first
@@ -319,66 +353,22 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
 
 void AddContentWindow::SelectAllEntities()
 {
-    entityTreeWidget->setUpdatesEnabled(false);
-    entityTreeWidget->setSortingEnabled(false);
-
-    QTreeWidgetItemIterator it(entityTreeWidget);
-    while(*it)
-    {
-        (*it)->setCheckState(cColumnEntityCreate, Qt::Checked);
-        ++it;
-    }
-
-    entityTreeWidget->setSortingEnabled(true);
-    entityTreeWidget->setUpdatesEnabled(true);
+    TreeWidgetSetCheckStateForAllItems(entityTreeWidget, cColumnEntityCreate, Qt::Checked);
 }
 
 void AddContentWindow::DeselectAllEntities()
 {
-    entityTreeWidget->setSortingEnabled(false);
-    entityTreeWidget->setUpdatesEnabled(false);
-
-    QTreeWidgetItemIterator it(entityTreeWidget);
-    while(*it)
-    {
-        (*it)->setCheckState(cColumnEntityCreate, Qt::Unchecked);
-        ++it;
-    }
-
-    entityTreeWidget->setSortingEnabled(true);
-    entityTreeWidget->setUpdatesEnabled(true);
+    TreeWidgetSetCheckStateForAllItems(entityTreeWidget, cColumnEntityCreate, Qt::Unchecked);
 }
 
 void AddContentWindow::SelectAllAssets()
 {
-    assetTreeWidget->setSortingEnabled(false);
-    assetTreeWidget->setUpdatesEnabled(false);
-
-    QTreeWidgetItemIterator it(assetTreeWidget);
-    while(*it)
-    {
-        (*it)->setCheckState(cColumnAssetUpload, Qt::Checked);
-        ++it;
-    }
-
-    assetTreeWidget->setSortingEnabled(true);
-    assetTreeWidget->setUpdatesEnabled(true);
+    TreeWidgetSetCheckStateForAllItems(assetTreeWidget, cColumnAssetUpload, Qt::Checked);
 }
 
 void AddContentWindow::DeselectAllAssets()
 {
-    assetTreeWidget->setSortingEnabled(false);
-    assetTreeWidget->setUpdatesEnabled(false);
-
-    QTreeWidgetItemIterator it(assetTreeWidget);
-    while(*it)
-    {
-        (*it)->setCheckState(cColumnAssetUpload, Qt::Unchecked);
-        ++it;
-    }
-
-    assetTreeWidget->setSortingEnabled(true);
-    assetTreeWidget->setUpdatesEnabled(true);
+    TreeWidgetSetCheckStateForAllItems(assetTreeWidget, cColumnAssetUpload, Qt::Unchecked);
 }
 
 void AddContentWindow::AddContent()
@@ -491,7 +481,7 @@ void AddContentWindow::AddContent()
         break;
     case SceneDesc::OgreMesh:
     {
-        boost::filesystem::path path(newDesc.filename.toStdString());
+        fs::path path(newDesc.filename.toStdString());
         std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(destScene);
@@ -503,7 +493,7 @@ void AddContentWindow::AddContent()
     }
     case SceneDesc::OgreScene:
     {
-        boost::filesystem::path path(newDesc.filename.toStdString());
+        fs::path path(newDesc.filename.toStdString());
         std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(destScene);
