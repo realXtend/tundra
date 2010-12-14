@@ -266,7 +266,8 @@ namespace MumbleVoip
                 server_info.channel_id = channel->getchannelid();
                 server_info.channel_name = channel->getchannelname();
                 server_info.user_name = GetUsername();
-
+                if (server_info.user_name.isEmpty())
+                    server_info.user_name = "Anonymous";
                 channel_names_[channel] = channel->getchannelname();
                 session_->AddChannel(channel->getchannelname(), server_info);
             }
@@ -281,16 +282,13 @@ namespace MumbleVoip
     {
         using namespace Foundation;
         boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+        
         if (!world_logic)
             return "";
-
+       
         Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
-        if (!user_avatar)
-            return "";
 
         boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
-        if (!presence)
-            return "";
 
         return presence->agentId.ToQString();
     }
