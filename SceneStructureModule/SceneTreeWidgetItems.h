@@ -71,13 +71,13 @@ private:
 };
 
 /// Tree widget item representing an asset reference.
-class AssetItem : public QTreeWidgetItem
+class AssetRefItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
     /** @param attr Asset reference attribute.
     */
-    AssetItem(IAttribute *attr, QTreeWidgetItem *parent = 0);
+    AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent = 0);
 
     /// Sets the item text accordingly to the attribute information.
     /** @param attr Asset reference attribute.
@@ -109,7 +109,7 @@ struct Selection
 
     QList<EntityItem *> entities; ///< List of selected entities.
     QList<ComponentItem *> components; ///< List of selected components.
-    QList<AssetItem *> assets; ///< List of selected asset refs
+    QList<AssetRefItem *> assets; ///< List of selected asset refs
 };
 
 #endif

@@ -50,24 +50,24 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     QHBoxLayout *hlayout= new QHBoxLayout;
     QLabel *searchLabel = new QLabel(tr("Search filter: "), this);
     QLineEdit *searchField = new QLineEdit(this);
+    QPushButton *expandAndCollapseButton = new QPushButton(tr("Expand/collapse all"), this);
     QSpacerItem *spacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    hlayout->addWidget(searchLabel);
+    hlayout->addWidget(searchField);
+    hlayout->addSpacerItem(spacer);
+    hlayout->addWidget(expandAndCollapseButton);
+
+    QHBoxLayout *hlayout2 = new QHBoxLayout;
+    QSpacerItem *spacer2 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
     QLabel *sortLabel = new QLabel(tr("Sort by:"));
     QComboBox *sortComboBox = new QComboBox;
     sortComboBox->addItem(tr("ID"));
     sortComboBox->addItem(tr("Name"));
 
-    hlayout->addWidget(searchLabel);
-    hlayout->addWidget(searchField);
-    hlayout->addSpacerItem(spacer);
-    hlayout->addWidget(sortLabel);
-    hlayout->addWidget(sortComboBox);
-
-    QHBoxLayout *hlayout2 = new QHBoxLayout;
-    QSpacerItem *spacer2 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
-    QPushButton *expandAndCollapseButton = new QPushButton(tr("Expand/collapse all"), this);
-    hlayout2->addWidget(expandAndCollapseButton);
     hlayout2->addSpacerItem(spacer2);
-    hlayout2->addWidget(expandAndCollapseButton);
+    hlayout2->addWidget(sortLabel);
+    hlayout2->addWidget(sortComboBox);
     treeWidget = new SceneTreeWidget(fw, this);
 
     layout->addWidget(assetCheckBox);
@@ -228,17 +228,17 @@ void SceneStructureWindow::CreateAssetReferences()
 
 void SceneStructureWindow::ClearAssetReferences()
 {
-    QList<AssetItem *> assetItems;
+    QList<AssetRefItem *> assetItems;
     QTreeWidgetItemIterator it(treeWidget);
     while(*it)
     {
-        AssetItem *aItem = dynamic_cast<AssetItem *>(*it);
+        AssetRefItem *aItem = dynamic_cast<AssetRefItem *>(*it);
         if (aItem)
             assetItems << aItem;
         ++it;
     }
 
-    foreach(AssetItem *aItem, assetItems)
+    foreach(AssetRefItem *aItem, assetItems)
     {
         QTreeWidgetItem *p = aItem->parent();
         p->removeChild(aItem);
@@ -347,7 +347,7 @@ void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribu
     if (!assetRef)
         return;
 
-    AssetItem *aItem = new AssetItem(attr, parentItem);
+    AssetRefItem *aItem = new AssetRefItem(attr, parentItem);
     aItem->setHidden(!showAssets);
     parentItem->addChild(aItem);
 }
@@ -499,11 +499,11 @@ void SceneStructureWindow::RemoveAssetReference(IAttribute *attr)
     if (!dc)
         return;
 
-    AssetItem *assetItem = 0;
+    AssetRefItem *assetItem = 0;
     QTreeWidgetItemIterator it(treeWidget);
     while(*it)
     {
-        AssetItem *a = dynamic_cast<AssetItem *>(*it);
+        AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
         if (a && (/*a->type == assetRef->Get().type && */a->id == assetRef->Get().ref))
         {
             assetItem = a;
@@ -558,11 +558,11 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
     }
 
     // Find asset item with the matching parent.
-    AssetItem *aItem = 0;
+    AssetRefItem *aItem = 0;
     QTreeWidgetItemIterator it(treeWidget);
     while(*it)
     {
-        AssetItem *a = dynamic_cast<AssetItem *>(*it);
+        AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
         /// \todo Should check that the parent matches also?
         if (a && (a->name == assetRef->GetName())) //(a->parent() == parentItem))
         {

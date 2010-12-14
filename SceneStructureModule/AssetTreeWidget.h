@@ -11,8 +11,26 @@
 #include <QTreeWidget>
 
 #include "ForwardDefines.h"
+#include "AssetFwd.h"
 
 class QMenu;
+
+/// Item representing asset in the tree widget.
+class AssetItem : public QTreeWidgetItem
+{
+public:
+    /// Constructor.
+    /** @param asset Asset pointer.
+        @param parent Parent tree widget item.
+    */
+    AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent = 0);
+
+    /// Returns shared pointer to the asset. Always remember to check that the pointer is not null.
+    AssetPtr Asset() const;
+
+private:
+    AssetWeakPtr assetPtr; ///< Weak pointer to the asset.
+};
 
 /// Tree widget showing all available assets.
 class AssetTreeWidget : public QTreeWidget
@@ -30,17 +48,17 @@ public:
     virtual ~AssetTreeWidget();
 
 protected:
-    /// QWidget override. Show context menu with assets-spesific actions.
+    /// QWidget override. Show context menu with asset-spesific actions.
     void contextMenuEvent(QContextMenuEvent *e);
 
     /// QWidget override.
-    //void dragEnterEvent(QDragEnterEvent *e);
+    void dragEnterEvent(QDragEnterEvent *e);
 
     /// QWidget override.
-    //void dragMoveEvent(QDragMoveEvent *e);
+    void dragMoveEvent(QDragMoveEvent *e);
 
     /// QWidget override.
-    //void dropEvent(QDropEvent *e);
+    void dropEvent(QDropEvent *e);
 
 private:
     /// Creates and adds applicable actions to the right-click context menu.
@@ -48,8 +66,39 @@ private:
     */
     void AddAvailableActions(QMenu *menu);
 
-    Foundation::Framework *framework; ///> Framework.
+    /// Returns list of selected asset items.
+    QList<AssetItem *> GetSelection() const;
+
+    Foundation::Framework *framework; ///< Framework.
     QMenu *contextMenu; ///< Right-click context menu.
+
+private slots:
+    /// Deletes selected asset(s) from source.
+    void DeleteFromSource();
+
+    /// Deletes selected assets(s) from cache.
+    void DeleteFromCache();
+
+    /// Forgets selected asset(s).
+    void Forget();
+
+    /// Unloads selected asset(s).
+    void Unload();
+
+    /// Reload selected asset(s) from cache.
+    void ReloadFromCache();
+
+    /// Reload selected asset(s) from source.
+    void ReloadFromSource();
+
+    /// Imports new asset(s).
+    void Import();
+
+    /// Exports selected asset(s).
+    void Export();
+
+    ///
+    void Upload();
 };
 
 #endif

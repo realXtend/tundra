@@ -8,8 +8,10 @@
  */
 
 #include "StableHeaders.h"
-#include "AssetsWindow.h"
 #include "DebugOperatorNew.h"
+
+#include "AssetsWindow.h"
+#include "AssetTreeWidget.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -17,11 +19,6 @@
 #include "IAssetStorage.h"
 
 #include "MemoryLeakCheck.h"
-
-/*class AssetItem: public QTreeWidgetItem
-{
-};
-*/
 
 namespace
 {
@@ -53,7 +50,7 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw) :
 
 //    QLabel *entityLabel = new QLabel(tr("The following entities will be created:"));
 
-    treeWidget = new QTreeWidget;
+    treeWidget = new AssetTreeWidget(framework, this);
     treeWidget->setHeaderHidden(true);
 //    treeWidget ->setColumnCount(3);
 //    treeWidget ->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
@@ -70,10 +67,17 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw) :
     layout->addLayout(hlayout);
     layout->addWidget(treeWidget);
 
+    // Create "No provider" for assets without storage.
+    noProviderItem = new QTreeWidgetItem;
+    noProviderItem->setText(0, tr("No provider"));
+
+    PopulateTreeWidget();
+
     connect(searchField, SIGNAL(textChanged(const QString &)), SLOT(Search(const QString &)));
     connect(expandAndCollapseButton, SIGNAL(clicked()), SLOT(ExpandOrCollapseAll()));
 
-    PopulateTreeWidget();
+    connect(framework->Asset(), SIGNAL(AssetCreated(AssetPtr)), SLOT(AddAsset(AssetPtr)));
+    connect(framework->Asset(), SIGNAL(AssetAboutToBeRemoved(AssetPtr)), SLOT(RemoveAsset(AssetPtr)));
 }
 
 AssetsWindow::~AssetsWindow()
@@ -91,15 +95,14 @@ AssetsWindow::~AssetsWindow()
     }
 }
 
-void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent, std::set<AssetPtr> &alreadyAdded)
+void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
 {
     foreach(AssetReference ref, asset->FindReferences())
     {
         AssetPtr asset = framework->Asset()->GetAsset(ref.ref);
         if (asset && alreadyAdded.find(asset) == alreadyAdded.end())
         {
-            QTreeWidgetItem *item= new QTreeWidgetItem(parent);
-            item->setText(0, asset->Name());
+            AssetItem *item = new AssetItem(asset, parent);
             parent->addChild(item);
             alreadyAdded.insert(asset);
 
@@ -107,7 +110,7 @@ void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent, s
             if (HasSameRefAsPredecessors(item))
                 item->setText(0, tr("Recursive dependency to ") + asset->Name());
             else
-                AddChildren(asset, item, alreadyAdded);
+                AddChildren(asset, item);
         }
     }
 }
@@ -121,45 +124,44 @@ void AssetsWindow::PopulateTreeWidget()
         treeWidget->addTopLevelItem(item);
     }
 
-    // Create "No provider" for assets without storage.
-    QTreeWidgetItem *noProviderItem = new QTreeWidgetItem;
-    noProviderItem->setText(0, tr("No provider"));
-    treeWidget->addTopLevelItem(noProviderItem);
-
-    std::set<AssetPtr> alreadyAdded;
-
     std::pair<QString, AssetPtr> pair;
     foreach(pair, framework->Asset()->GetAllAssets())
+        if (alreadyAdded.find(pair.second) == alreadyAdded.end())
+            AddAsset(pair.second);
+
+    treeWidget->addTopLevelItem(noProviderItem);
+    noProviderItem->setHidden(noProviderItem->childCount() == 0);
+}
+
+void AssetsWindow::AddAsset(AssetPtr asset)
+{
+    AssetItem *item = new AssetItem(asset);
+    AddChildren(asset, item);
+
+    bool storageFound = false;
+    AssetStoragePtr storage = asset->GetAssetStorage();
+    if (storage)
     {
-        if (alreadyAdded.find(pair.second) != alreadyAdded.end())
-            continue;
-
-        QTreeWidgetItem *aitem = new QTreeWidgetItem;
-        aitem->setText(0, pair.first);
-        alreadyAdded.insert(pair.second);
-
-        AddChildren(pair.second, aitem, alreadyAdded);
-
-        AssetStoragePtr storage = pair.second->GetAssetStorage();
-        bool storageFound = false;
-        if (storage)
-            for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+        for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+        {
+            QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
+            if (storageItem->text(0) == storage->Name())
             {
-                QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
-                if (storageItem->text(0) == storage->Name())
-                {
-                    storageItem->addChild(aitem);
-                    storageFound = true;
-                    break;
-                }
+                storageItem->addChild(item);
+                storageFound = true;
+                break;
             }
-
-        if (!storageFound)
-            noProviderItem->addChild(aitem);
+        }
     }
 
-    if (noProviderItem->childCount() == 0)
-        SAFE_DELETE(noProviderItem);
+    if (!storageFound)
+        noProviderItem->addChild(item);
+
+    noProviderItem->setHidden(noProviderItem->childCount() == 0);
+}
+
+void AssetsWindow::RemoveAsset(AssetPtr asset)
+{
 }
 
 void AssetsWindow::Search(const QString &filter)
