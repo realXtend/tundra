@@ -680,7 +680,10 @@ void SceneStructureWindow::ExpandOrCollapseAll()
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
         if (item->childCount() >= 1 && item->isExpanded())
+        {
             expand = false;
+            break;
+        }
     }
 
     if (expand)

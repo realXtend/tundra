@@ -94,6 +94,9 @@ private slots:
     /// Imports new asset(s).
     void Import();
 
+    /// 
+    void RequestNewAsset();
+
     /// Exports selected asset(s).
     void Export();
 

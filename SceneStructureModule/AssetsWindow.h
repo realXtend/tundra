@@ -21,7 +21,7 @@ class QTreeWidgetItem;
 
 class AssetTreeWidget;
 
-///
+/// 
 /**
 */
 class AssetsWindow : public QWidget
