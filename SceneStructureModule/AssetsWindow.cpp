@@ -120,7 +120,7 @@ void AssetsWindow::PopulateTreeWidget()
     foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem;
-        item->setText(0, storage->Name());
+        item->setText(0, storage->ToString());
         treeWidget->addTopLevelItem(item);
     }
 
@@ -144,7 +144,7 @@ void AssetsWindow::AddAsset(AssetPtr asset)
         for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         {
             QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
-            if (storageItem->text(0) == storage->Name())
+            if (storageItem->text(0) == storage->ToString())
             {
                 storageItem->addChild(item);
                 storageFound = true;
