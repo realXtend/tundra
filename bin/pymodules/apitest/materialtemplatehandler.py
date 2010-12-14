@@ -7,19 +7,22 @@ class MaterialTemplateHandler(circuits.BaseComponent):
     def __init__(self, entity=None, comp=None, changetype=None):
         circuits.BaseComponent.__init__(self)
         self.entity = entity
+        self.comp = comp
         
-        comp.connect("library.TextureUrlWasAssigned(uint submesh)", self.newTexture)
+        naali.library.connect("TextureUrlWasAssigned(uint)", self.newTexture)
         
     def newTexture(self, submesh):
         print "Submesh ", submesh, " got a new texture img"
-        print "Testing..."
         print self.entity.prim.Materials[submesh]
+        color = '0.5, 0.5, 0.5'
         
-        
-        # 
-        # % {"name": self.getNewName() , "texture": str(self.entity.prim.Materials[submesh]) }
-        # 
-        # 
+        # # get material template from the dynamic component, get material name, use String modulo to create the final material file
+        # if (self.comp.GetAttribute('template) is not null):
+        #   materialAsString = self.comp.GetAttribute('template')
+        #   imageTexTuple = self.entity.prim.Materials[submesh]
+        #   materialAsString = materialAsString % {"name": self.getNewName() , "texture": str( imageTexTuple[1] ) }
+        #   print templateText
+        # # output material file
         # 
         
         
