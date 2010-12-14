@@ -97,7 +97,7 @@ void EC_ParticleSystem::DeleteParticleSystems()
         for (unsigned i = 0; i < particleSystems_.size(); ++i)
             scene_mgr->destroyParticleSystem(particleSystems_[i]);
     }
-    catch (Ogre::Exception& e)
+    catch (Ogre::Exception& /*e*/)
     {
         LogError("Could not delete particle systems");
     }
