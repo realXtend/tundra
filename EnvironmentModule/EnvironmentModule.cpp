@@ -219,6 +219,30 @@ namespace Environment
                     CreateTerrain();
                     CreateWater();
                     CreateSky();
+
+#ifdef PLAYER_VIEWER
+					//Make the sun always at midday
+					int new_value = 50; //MidDay
+					environment_->SetTimeOverride(true);
+					EC_EnvironmentLight* light = environment_->GetEnvironmentLight();
+					if ( light != 0)
+					{
+						light->fixedTimeAttr.Set(true, AttributeChange::LocalOnly);
+			            
+						qreal float_time = new_value;
+						float_time /= 100;
+			            
+						light->currentTimeAttr.Set(float_time, AttributeChange::LocalOnly);
+					}
+
+					EC_OgreEnvironment* ec_ogre_env = environment_->GetEnvironmentComponent();
+					if (ec_ogre_env)
+					{
+						qreal float_time = new_value;
+						float_time /= 100;
+						ec_ogre_env->SetTime(float_time);
+					}
+#endif
                 }
             }
 

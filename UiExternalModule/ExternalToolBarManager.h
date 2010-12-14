@@ -29,7 +29,7 @@ namespace UiExternalServices
         /*! Constuctor. Gets the main menubar of the main window.
          *  \param parent Main MenuBar of the main window
          */
-		ExternalToolBarManager(QMainWindow *main_window);
+		ExternalToolBarManager(QMainWindow *main_window, UiExternalModule *owner);
 
         //! Destructor.
         ~ExternalToolBarManager();
@@ -100,6 +100,8 @@ namespace UiExternalServices
 
     private slots:
 
+		void ActionNodeClicked();
+
 
     private:
 
@@ -108,6 +110,9 @@ namespace UiExternalServices
 
         //! Pointer to the main menu Bar
 		QMainWindow *main_window_;
+
+		//Owner of the class
+		UiExternalModule *owner_;
 
         /// Default icon for menu item node.
         static QString defaultItemIcon;

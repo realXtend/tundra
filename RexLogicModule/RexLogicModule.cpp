@@ -312,7 +312,10 @@ void RexLogicModule::Initialize()
 void RexLogicModule::PostInitialize()
 {
 	//$ BEGIN_MOD $
-	camera_control_widget_ = CameraControlPtr(new CameraControl(this)); //Done here when UiExternalModule is available
+	//Done here when UiExternalModule is available and if is not player_viewer
+#ifndef PLAYER_VIEWER
+	camera_control_widget_ = CameraControlPtr(new CameraControl(this));
+#endif
 	//$ END_MOD $
 
     EventManagerPtr eventMgr = framework_->GetEventManager();

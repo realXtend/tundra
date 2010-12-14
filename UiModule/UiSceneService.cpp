@@ -543,7 +543,10 @@ namespace UiServices
 		//internal_wid->->setObjectName("Settings Panel");
 		if (internal_wid) {
 			AddWidgetToScene(internal_wid, true, true);
-			AddWidgetToMenu(internal_wid, "Naali Settings", "Panels","");
+			uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+			//Do that only if uiExternal is available, settings button is placed inscene in the right-top corner by default
+			if (uiExternal)
+				AddWidgetToMenu(internal_wid, "Naali Settings", "Panels","");
 		}
 		//$ END_MOD $
 		/*

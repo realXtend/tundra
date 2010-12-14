@@ -4,6 +4,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "ExternalToolBarManager.h"
+#include "UiExternalServiceInterface.h"
 
 #include <QDebug>
 
@@ -14,8 +15,9 @@ namespace UiExternalServices
     QString ExternalToolBarManager::defaultItemIcon = "./data/ui/images/menus/edbutton_MATWIZ_normal.png";
     QString ExternalToolBarManager::defaultGroupIcon = "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png";
 
-    ExternalToolBarManager::ExternalToolBarManager(QMainWindow *main_window) :
-            main_window_(main_window)
+    ExternalToolBarManager::ExternalToolBarManager(QMainWindow *main_window, UiExternalModule *owner) :
+            main_window_(main_window),
+			owner_(owner)
     {
     }
 
@@ -34,15 +36,15 @@ namespace UiExternalServices
 
 	void ExternalToolBarManager::DisableToolBars(){
 		foreach (QToolBar *tool, controller_toolbar_){
+			//tool->setDisabled(false);
 			tool->setDisabled(true);
-			tool->setVisible(false);
 		}
 	}
 
 	void ExternalToolBarManager::EnableToolBars(){
 		foreach (QToolBar *tool, controller_toolbar_){
-				tool->setVisible(true);
-				tool->setDisabled(false); 
+				tool->setDisabled(false);
+				//tool->setDisabled(true); 
 		}
 	}
 
@@ -54,8 +56,24 @@ namespace UiExternalServices
 
 		main_window_->addToolBar(toolbar);
 		controller_toolbar_[name]=toolbar;
+		//Put an entry in the menu Bar
+		QAction *menuAc = new QAction(name, toolbar);
+		owner_->GetExternalMenuManager()->AddExternalMenuAction(menuAc, name, "ToolBars");
+		connect(menuAc, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
+		
 		HideExternalToolbar(name);
 		return true;
+	}
+
+	void ExternalToolBarManager::ActionNodeClicked()
+    {
+		QAction *act = dynamic_cast<QAction*>(sender());
+
+		QToolBar  *aux = dynamic_cast<QToolBar *>(act->parentWidget());
+		if (aux->isHidden())
+			aux->show();
+		else
+			aux->hide();
 	}
 
 	bool ExternalToolBarManager::RemoveExternalToolbar(QString name){
