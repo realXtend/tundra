@@ -301,7 +301,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return AssetTransferPtr();
     }
 
-    // To optimize, we first check if there is an outstanding requests to the given asset. If so, we return that request. In effect, we never
+    // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
     // an asset will be stored in the AssetMap when it has been downloaded, but it might not yet have all its dependencies loaded).
     AssetTransferMap::iterator iter = currentTransfers.find(assetRef);
@@ -701,7 +701,6 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
     transfer->EmitAssetDecoded();
 
     // This asset is now completely finished, and all its dependencies have been loaded.
-//    transfer->EmitAssetLoaded();
     if (transfer->asset.get())
         transfer->asset->EmitLoaded();
 
@@ -751,7 +750,7 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
 void AssetAPI::RemoveAssetDependencies(QString asset)
 {
     for(size_t i = 0; i < assetDependencies.size(); ++i)
-        if (assetDependencies[i].first == asset)
+        if (QString::compare(assetDependencies[i].first, asset, Qt::CaseInsensitive) == 0)
         {
             assetDependencies.erase(assetDependencies.begin() + i);
             --i;
@@ -762,7 +761,7 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
 {
     std::vector<AssetPtr> dependents;
     for(size_t i = 0; i < assetDependencies.size(); ++i)
-        if (assetDependencies[i].second == dependee)
+        if (QString::compare(assetDependencies[i].second, dependee, Qt::CaseInsensitive) == 0)
         {
             AssetMap::iterator iter = assets.find(assetDependencies[i].first);
             if (iter != assets.end())
@@ -812,18 +811,20 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
     }
 }
 
-void AssetAPI::OnAssetDiskSourceChanged(const QString &path)
+void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 {
+    QDir path(path_);
+
     for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
-        if (iter->second->DiskSource() == path)
+        if (!iter->second->DiskSource().isEmpty() && QDir(iter->second->DiskSource()) == path)
         {
             AssetPtr asset = iter->second;
 
             bool success = asset->LoadFromCache();
             if (!success)
-                LogError("Failed to reload changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path.toStdString() + "\"!");
+                LogError("Failed to reload changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path_.toStdString() + "\"!");
             else
-                LogDebug("Reloaded changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path.toStdString() + "\".");
+                LogDebug("Reloaded changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path_.toStdString() + "\".");
         }
 }
 

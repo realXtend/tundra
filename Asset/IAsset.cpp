@@ -23,8 +23,16 @@ void IAsset::SetDiskSource(QString diskSource_)
 bool IAsset::LoadFromCache()
 {
     bool success = LoadFromFile(DiskSource());
-    if (success)
-        emit Loaded(shared_from_this()); ///\todo This is not correct. If asset dependencies changed, the new deps won't be requested. Do a new deps request.
+    if (!success)
+        return false;
+
+    AssetPtr thisAsset = shared_from_this();
+
+    if (assetAPI->NumPendingDependencies(thisAsset) == 0)
+        emit Loaded(thisAsset);
+    else
+        assetAPI->RequestAssetDependencies(thisAsset);
+
     return success;
 }
 
