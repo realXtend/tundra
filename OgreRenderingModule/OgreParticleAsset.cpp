@@ -30,7 +30,6 @@ void OgreParticleAsset::Unload()
 
 bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
-    //! \todo fix like OgreMaterialResource::SetData(). Ogre script parser cannot accept url as resource name
     RemoveTemplates();
     references_.clear();
 
@@ -65,7 +64,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
             if ((line.length()) && (line.substr(0, 2) != "//"))
             {
                 // Split line to components
-		      std::vector<Ogre::String> line_vec;
+                std::vector<Ogre::String> line_vec;
 
 #if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6 
 		      line_vec = Ogre::StringUtil::split(line, "\t ");
@@ -79,11 +78,11 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 #endif               
 
                 // Check for vector parameters to be modified, so that particle scripts can be authored in typical Ogre coord system
-                ModifyVectorParameter(line, line_vec);              
+                ModifyVectorParameter(line, line_vec);
 
                 // Process opening/closing braces
-                if (ProcessBraces(line, brace_level))
-                {                
+                if (!ProcessBraces(line, brace_level))
+                {
                     // If not a brace and on level 0, it should be a new particlesystem; replace name with resource ID + ordinal
                     if (brace_level == 0)
                     {
@@ -120,7 +119,9 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                     }
                     // Write line to the copy
                     if (!skip_until_next)
+                    {
                         output << line << std::endl;
+                    }
                     else
                         OgreRenderer::OgreRenderingModule::LogDebug("Skipping risky particle effect line: " + line);
                 }
@@ -128,7 +129,9 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                 {
                     // Write line to the copy
                     if (!skip_until_next)
+                    {
                         output << line << std::endl;
+                    }
                     else
                         OgreRenderer::OgreRenderingModule::LogDebug("Skipping risky particle effect line: " + line);
 
