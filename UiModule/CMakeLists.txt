@@ -46,13 +46,13 @@ use_package (XMLRPC)
 use_package (OGRE)
 #$BEGIN_MOD$
 #$MOD_DESCRIPTION TtsModule EntityComponents/EC_TtsVoice EntityComponents/EC_OpenSimPresence added$ 
-use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui TtsModule Input EntityComponents/EC_TtsVoice EntityComponents/EC_OpenSimPresence)
+use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui TtsModule Input EntityComponents/EC_TtsVoice EntityComponents/EC_OpenSimPresence EntityComponents/EC_DynamicComponent )
 #$END_MOD$
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 #$BEGIN_MOD$
 #$MOD_DESCRIPTION EC_TtsVoice EC_OpenSimPresence added$
-link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule EC_TtsVoice EC_OpenSimPresence)
+link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule EC_TtsVoice EC_OpenSimPresence EC_DynamicComponent)
 #$END_MOD$
 link_package (BOOST)
 link_package (QT4)

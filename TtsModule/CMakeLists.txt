@@ -66,14 +66,14 @@ use_package (POCO)
 use_package (QT4)
 use_package (CELT)
 
-use_modules (Core Foundation Interfaces RexCommon EntityComponents/EC_TtsVoice)
+use_modules (Core Foundation Interfaces RexCommon EntityComponents/EC_TtsVoice EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation Interfaces RexCommon EC_TtsVoice)
+link_modules (Core Foundation Interfaces RexCommon EC_TtsVoice EC_DynamicComponent)
 link_package (CELT)
 
 # Copy XML files from source directory to target directory

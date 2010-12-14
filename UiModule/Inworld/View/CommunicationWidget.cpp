@@ -12,6 +12,7 @@
 #include "VoiceUsersWidget.h"
 #include "UiServiceInterface.h"
 #include "VoiceControllerWidget.h"
+#include "EC_DynamicComponent.h"
 
 #include <QWidget>
 #include <QStackedLayout>
@@ -275,12 +276,13 @@ namespace CoreUi
 
 	void CommunicationWidget::SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface &message, const QString& from_uuid)
 	{
-        /// @todo signal when settings are changed
+        /// @todo signal when settings are changed so we do not have to read each time we have a new message to play
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Tts");
         tts_own_messages_ = settings.value("Tts/play_own_chat_messages", false).toBool();
         tts_other_messages_ = settings.value("Tts/play_other_chat_messages", false).toBool();
         own_tts_voice_ = settings.value("Tts/own_voice", "").toString();
         default_avatar_tts_voice_ = settings.value("Tts/other_default_voice", "").toString();
+        bool avatar_spesific_voices = settings.value("Tts/use_avatar_specific_voices", false).toBool();
 
         if (message.IsOwnMessage())
         {
@@ -293,30 +295,42 @@ namespace CoreUi
         {
             if (tts_other_messages_)
             {
-                /// @todo check if there is EC_TTSAgent for this avatar!
+                if (avatar_spesific_voices)
+                {
+                    QList<Scene::Entity*> entities = framework_->DefaultScene()->GetEntitiesWithComponentRaw("EC_OpenSimPresence");
+                    foreach(Scene::Entity* ent, entities)
+                    {
+                        EC_OpenSimPresence* presence = ent->GetComponent<EC_OpenSimPresence>().get();
+                        if (!presence)
+                            continue;
+
+                        qDebug() << "TTS VOICE COMPONENT AT" << presence->agentId.ToQString() << " ### " << from_uuid;
+                        if (presence->agentId.ToQString() == from_uuid)
+                        {
+
+                            //Scene::Entity::ComponentVector components = ent->GetComponents("EC_DynamicComponent");
+                            //foreach(Scene::IComponent* c, components)
+                            //{
+
+                            //}
+
+                            IComponent* tts_voice_comp = ent->GetComponent("EC_DynamicComponent", "EC_TtsVoice").get();
+                            if (!tts_voice_comp)
+                                continue;
+
+                            EC_DynamicComponent* tts_voice = dynamic_cast<EC_DynamicComponent*>(tts_voice_comp);
+                            QString avatar_voice = tts_voice->GetAttribute("avatar voice").toString();
+                            tts_service_->Text2Speech(message.Text(), avatar_voice);
+                            return;
+                        }
+                    }
+                }
+
                 tts_service_->Text2Speech(message.Text(), default_avatar_tts_voice_);
+                return;
             }
         }
 	}
-
-	/*void CommunicationWidget::GetAvatarVoiceComponent()
-	{
-		// Pick up the EC_TtsVoice of the avatar entity
-		boost::shared_ptr<Foundation::WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<Foundation::WorldLogicInterface>(Foundation::Service::ST_WorldLogic).lock();
-			if(world_logic)
-			{
-				Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
-				if(user_avatar)
-					avatar_voice_=user_avatar->GetComponent<EC_TtsVoice>();
-			}
-	}
-
-	void CommunicationWidget::UpdateAvatarVoice(Tts::Voice voice)
-	{
-		if(!avatar_voice_)
-				GetAvatarVoiceComponent();
-		avatar_voice_->SetMyVoice(voice);
-	}*/
 
     void CommunicationWidget::hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event)
     {

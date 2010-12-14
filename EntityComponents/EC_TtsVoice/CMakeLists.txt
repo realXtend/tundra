@@ -21,14 +21,14 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager)
+use_modules (Core Foundation Interfaces SceneManager EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation Interfaces SceneManager)
+link_modules (Core Foundation Interfaces SceneManager EC_DynamicComponent)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)
