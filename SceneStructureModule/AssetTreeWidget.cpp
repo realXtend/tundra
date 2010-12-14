@@ -200,8 +200,13 @@ void AssetTreeWidget::Unload()
 {
     foreach(AssetItem *item, GetSelection())
         if (item->Asset())
+        {
             item->Asset()->Unload();
-            ///\todo mark the asset item as unusable in the ui?
+            QTreeWidgetItem *parent = item->parent();
+            parent->removeChild(item);
+            SAFE_DELETE(item);
+            ///\todo Preferrably use the AssetDeleted() signal from AssetAPI for deleting items.
+        }
 }
 
 void AssetTreeWidget::ReloadFromCache()
