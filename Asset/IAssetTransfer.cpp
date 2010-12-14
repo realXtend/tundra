@@ -1,4 +1,5 @@
 #include "IAssetTransfer.h"
+#include "IAsset.h"
 
 void IAssetTransfer::EmitAssetDownloaded()
 {
@@ -7,12 +8,19 @@ void IAssetTransfer::EmitAssetDownloaded()
 
 void IAssetTransfer::EmitAssetDecoded()
 {
-    emit Decoded(this);
+//    if (this->asset.get())
+//        emit Decoded(this->asset);
 }
 
 void IAssetTransfer::EmitAssetLoaded()
 {
-    emit Loaded(this);
+    emit Loaded(this->asset);
+    /*
+    if (this->asset.get())
+    {
+        this->asset->EmitLoaded();
+    }
+    */
 }
 
 void IAssetTransfer::EmitAssetFailed()

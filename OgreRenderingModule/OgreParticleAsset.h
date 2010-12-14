@@ -23,7 +23,7 @@ public:
 
     virtual std::vector<AssetReference> FindReferences() const;
 
-    virtual void Unload();
+    virtual void DoUnload();
     
     /// Returns the number of templates in this particle system asset.
     int GetNumTemplates() const;

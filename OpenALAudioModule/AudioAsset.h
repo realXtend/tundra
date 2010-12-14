@@ -18,7 +18,7 @@ public:
 
     ~AudioAsset() { Unload(); }
 
-    virtual void Unload()
+    virtual void DoUnload()
     {
         audioData.data_.clear();
     }

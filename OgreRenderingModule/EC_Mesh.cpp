@@ -53,6 +53,11 @@ EC_Mesh::EC_Mesh(IModule* module) :
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+
+    meshAsset = AssetRefListenerPtr(new AssetRefListener());
+    connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    skeletonAsset = AssetRefListenerPtr(new AssetRefListener());
+    connect(skeletonAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 }
 
 EC_Mesh::~EC_Mesh()
@@ -909,19 +914,21 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             return;
             
         //Ensure that mesh is requested only when it's has actually changed.
-        if(entity_)
-            if(QString::fromStdString(entity_->getMesh()->getName()) == meshRef.Get().ref/*meshResourceId.Get()*/)
-                return;
-
+//        if(entity_)
+ //           if(QString::fromStdString(entity_->getMesh()->getName()) == meshRef.Get().ref/*meshResourceId.Get()*/)
+  //              return;
+/*
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
         if (transfer)
         {
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
         }
         else
         {
             RemoveMesh();
         }
+        */
+        meshAsset->HandleAssetRefChange(&meshRef);
     }
     else if (attribute == &meshMaterial)
     {
@@ -929,19 +936,22 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             return;
         
         // We won't request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
-        if(!HasMaterialsChanged())
-            return;
+        // This logic shouldn't be necessary anymore. -jj.
+//        if(!HasMaterialsChanged())
+//            return;
 
         QVariantList materials = meshMaterial.Get();
-        materialRequests.clear();
-        for(uint i = 0; i < materials.size(); i++)
+
+        // Reallocate the number of material asset reflisteners.
+        while(materialAssets.size() > materials.size())
+            materialAssets.pop_back();
+        while(materialAssets.size() < materials.size())
+            materialAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
+
+        for(size_t i = 0; i < materials.size(); ++i)
         {
-            AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(materials[i].toString());
-            if (transfer.get())
-            {
-                connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMaterialAssetLoaded()), Qt::UniqueConnection);
-                materialRequests[i] = materials[i].toString();
-            }
+            connect(materialAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].toString());
         }
     }
     else if((attribute == &skeletonRef) && (!skeletonRef.Get().ref.isEmpty()))
@@ -950,12 +960,13 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             return;
         
         // If same name skeleton already set no point to do it again.
-        if (entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonRef.Get().ref/*skeletonId.Get()*/.toStdString())
-            return;
+//        if (entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonRef.Get().ref/*skeletonId.Get()*/.toStdString())
+ //           return;
 
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
-        if (transfer.get())
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
+  //      AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
+   //     if (transfer.get())
+    //        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+        skeletonAsset->HandleAssetRefChange(&skeletonRef);
     }
 }
 
@@ -965,78 +976,42 @@ void EC_Mesh::OnComponentRemoved(IComponent* component, AttributeChange::Type ch
         SetPlaceable(ComponentPtr());
 }
 
-void EC_Mesh::OnMeshAssetLoaded()
+void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    QString ogreMeshName = meshRef.Get().ref.trimmed();
-
     // New asset download path.
-    OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(transfer->asset.get());
+    OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(asset.get());
+    QString ogreMeshName = mesh->Name();
     if (mesh)
     {
         if (mesh->ogreMesh.get())
             ogreMeshName = mesh->ogreMesh->getName().c_str();
         else
-            LogError("EC_Mesh::OnMeshAssetLoaded: Mesh asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but Ogre::Mesh pointer was null!");
+            LogError("EC_Mesh::OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
     }
-    /*
-    else // Old asset download path. This is deprecated. Remove when unneeded. -jj.
-    {        
-        OgreMeshResource *resource = dynamic_cast<OgreMeshResource *>(transfer->resourcePtr.get());
-        if (!resource)
-        {
-            LogWarning("Failed to handle mesh resource ready event cause resource pointer was null.");
-            return;
-        }
-        // Old asset download path above. This is deprecated. Remove when unneeded. -jj.
-        ogreMeshName = resou
-    }
-    */
+
     SetMesh(ogreMeshName);
 
     // Hack to request materials & skeleton now
-    AttributeUpdated(&meshMaterial);
-    AttributeUpdated(&skeletonRef);
-
+//    AttributeUpdated(&meshMaterial);
+//    AttributeUpdated(&skeletonRef);
 }
 
-void EC_Mesh::OnSkeletonAssetLoaded()
+void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
-    assert(transfer);
-    if (!transfer)
-        return;
-    
-    OgreSkeletonAsset *skeletonAsset = dynamic_cast<OgreSkeletonAsset*>(transfer->asset.get());
+    OgreSkeletonAsset *skeletonAsset = dynamic_cast<OgreSkeletonAsset*>(asset.get());
     if (!skeletonAsset)
     {
-        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
         return;
     }
 
     Ogre::SkeletonPtr skeleton = skeletonAsset->ogreSkeleton;
     if (skeleton.isNull())
     {
-        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + transfer->source.ref.toStdString() + "\", but Ogre::Skeleton pointer was null!");
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Skeleton pointer was null!");
         return;
     }
 
-/* Old asset download path. Not used anymore.
-    OgreSkeletonResource *resource = dynamic_cast<OgreSkeletonResource *>(transfer->resourcePtr.get());
-    if (!resource)
-    {
-        LogWarning("Failed to handle skeleton resource ready event because resource pointer was null.");
-        return;
-    }
-
-    Ogre::SkeletonPtr skeleton = resource->GetSkeleton();
-    if(skeleton.isNull())
-        return;
-*/
     if(!entity_)
     {
         LogDebug("Could not set skeleton yet because entity is not yet created");
@@ -1063,14 +1038,9 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     SetMesh(entity_->getMesh()->getName().c_str(), false);
 }
 
-void EC_Mesh::OnMaterialAssetLoaded()
+void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(transfer->asset.get());
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset.get());
     assert(ogreMaterial);
     if (!ogreMaterial)
         return;

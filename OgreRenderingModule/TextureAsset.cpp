@@ -133,7 +133,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
     return true;
 }
 
-void TextureAsset::Unload()
+void TextureAsset::DoUnload()
 {
     if (!ogreTexture.isNull())
         ogreAssetName = ogreTexture->getName().c_str();

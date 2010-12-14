@@ -24,7 +24,7 @@ public:
 
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "");
 
-    virtual void Unload();
+    virtual void DoUnload();
 
     Ogre::SkeletonPtr ogreSkeleton;
 

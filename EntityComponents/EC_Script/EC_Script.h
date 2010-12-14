@@ -105,7 +105,7 @@ private slots:
     void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     /// Called when a new script asset has been loaded.
-    void ScriptAssetLoaded(IAssetTransfer *transfer);
+    void ScriptAssetLoaded(AssetPtr asset);
 
     /// Registers the actions this component provides when parent entity is set.
     void RegisterActions();

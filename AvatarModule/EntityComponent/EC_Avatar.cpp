@@ -68,16 +68,16 @@ EC_Avatar::~EC_Avatar()
 {
 }
 
-void EC_Avatar::OnAvatarAppearanceLoaded(IAssetTransfer *transfer)
+void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
 {
-    if (!transfer)
+    if (!asset.get())
         return;
 
     Scene::Entity* entity = GetParentEntity();
     if (!entity)
         return;
 
-    AvatarDescAssetPtr avatarAsset = boost::dynamic_pointer_cast<AvatarDescAsset>(transfer->asset);
+    AvatarDescAssetPtr avatarAsset = boost::dynamic_pointer_cast<AvatarDescAsset>(asset);
     if (!avatarAsset.get())
         return;
 
@@ -104,7 +104,7 @@ void EC_Avatar::AttributeUpdated(IAttribute *attribute)
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(ref.toStdString().c_str(), ASSETTYPENAME_GENERIC_AVATAR_XML.c_str());
         if (transfer.get())
         {
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(OnAvatarAppearanceLoaded(IAssetTransfer *)));
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)));
         }
     }
 }
