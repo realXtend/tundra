@@ -114,19 +114,6 @@ public:
     /*! \param look_at point to look at
      */
     void LookAt(const Vector3df& look_at);
-    //! yaws the node
-    /*! \param radians how many radians to yaw
-     */
-    void SetYaw(float radians);
-    //! pitches the node
-    /*! \param radians how many radians to pitch
-     */
-    void SetPitch(float radians);
-    //! rolls the node
-    /*! \param radians how many radians to roll
-     */
-    void SetRoll(float radians);
-
     //! get the yaw of the node
     float GetYaw() const;
     //! get the pitch of the node
@@ -203,6 +190,18 @@ public slots:
 
     //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
     void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
+//! yaws the node
+    /*! \param radians how many radians to yaw
+     */
+    void SetYaw(float radians);
+    //! pitches the node
+    /*! \param radians how many radians to pitch
+     */
+    void SetPitch(float radians);
+    //! rolls the node
+    /*! \param radians how many radians to roll
+     */
+    void SetRoll(float radians);
 
 signals:
     //! emmitted when position has changed.
