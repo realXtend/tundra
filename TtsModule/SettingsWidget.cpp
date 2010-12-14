@@ -23,8 +23,8 @@ namespace Tts
         otherDefaultVoice = settings.value("Tts/other_default_voice", "").toString();
         notificationVoice = settings.value("Tts/notification_voice", "").toString();
         testPhrase = settings.value("Tts/test_phrase", "Hello world!").toString();
-        publishOwnVoice = settings.value("Tts/publish_own_voice", true).toBool();
-        useAvatarSpecificVoices = settings.value("Tts/use_avatar_specific_voices", true).toBool();
+        publishOwnVoice = settings.value("Tts/publish_own_voice", false).toBool();
+        useAvatarSpecificVoices = settings.value("Tts/use_avatar_specific_voices", false).toBool();
     }
 
     void Settings::Save()

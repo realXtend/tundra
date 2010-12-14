@@ -65,6 +65,9 @@
                 </item>
                 <item>
                  <widget class="QCheckBox" name="publishOwnVoiceCheckBox">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="text">
                    <string>Publish own voice</string>
                   </property>
@@ -120,6 +123,9 @@
                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                   <item>
                    <widget class="QCheckBox" name="avatarSpecificVoicesCheckBox">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
                     <property name="text">
                      <string>Use avatar specific voices if available</string>
                     </property>
