@@ -37,6 +37,9 @@ public:
    
     /// Points to the asset provider that is used to communicate with this storage.
     AssetProviderWeakPtr provider;
+
+    /// Returns a human-readable description of this asset storage.
+    virtual QString ToString() const { return Name() + " (" + BaseURL() + ")"; }
 };
 
 #endif
