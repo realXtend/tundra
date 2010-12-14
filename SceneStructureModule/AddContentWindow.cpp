@@ -178,7 +178,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     storageComboBox = new QComboBox;
     // Get available asset storages.
     foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
-        storageComboBox->addItem(storage->Name());
+        storageComboBox->addItem(storage->ToString(), storage->Name());
 
     layout->addWidget(assetLabel);
     layout->addWidget(assetTreeWidget);
@@ -368,7 +368,7 @@ void AddContentWindow::DeselectAllAssets()
 
 void AddContentWindow::AddContent()
 {
-    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageComboBox->currentText());
+    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageComboBox->itemData(storageComboBox->currentIndex()).toString());
     if (!dest)
     {
         LogError("Could not retrieve asset storage " + storageComboBox->currentText().toStdString() + ".");
