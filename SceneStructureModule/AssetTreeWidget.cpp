@@ -14,6 +14,10 @@
 #include "IAsset.h"
 #include "AssetCache.h"
 
+#ifdef _WINDOWS
+#include <windows.h>
+#endif
+
 #include "MemoryLeakCheck.h"
 
 AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
@@ -134,7 +138,7 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
 
     // Reload from cache is not possible if asset's disk source is empty.
     foreach(AssetItem *item, items)
-        if (item->Asset()->DiskSource().trimmed().isEmpty())
+        if (item->Asset() && item->Asset()->DiskSource().trimmed().isEmpty())
         {
             reloadFromCacheAction->setDisabled(true);
             break;
@@ -157,6 +161,10 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     connect(importAction, SIGNAL(triggered()), SLOT(Import()));
     connect(exportAction, SIGNAL(triggered()), SLOT(Export()));
 */
+    QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
+    menu->addAction(openFileLocationAction);
+
+    connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
 }
 
 QList<AssetItem *> AssetTreeWidget::GetSelection() const
@@ -200,8 +208,13 @@ void AssetTreeWidget::Unload()
 {
     foreach(AssetItem *item, GetSelection())
         if (item->Asset())
+        {
             item->Asset()->Unload();
-            ///\todo mark the asset item as unusable in the ui?
+            QTreeWidgetItem *parent = item->parent();
+            parent->removeChild(item);
+            SAFE_DELETE(item);
+            ///\todo Preferrably use the AssetDeleted() or similar signal from AssetAPI for deleting items.
+        }
 }
 
 void AssetTreeWidget::ReloadFromCache()
@@ -216,12 +229,17 @@ void AssetTreeWidget::ReloadFromSource()
     foreach(AssetItem *item, GetSelection())
         if (item->Asset())
         {
-            framework->Asset()->ForgetAsset(item->Asset(), false);
-            framework->Asset()->RequestAsset(item->Asset()->Name());
+            QString assetRef = item->Asset()->Name();
+            framework->Asset()->ForgetAsset(item->Asset(), false); // This line will delete IAsset from the system, so dereferencing item->Asset() would be invalid.
+            framework->Asset()->RequestAsset(assetRef);
         }
 }
 
 void AssetTreeWidget::Import()
+{
+}
+
+void AssetTreeWidget::RequestNewAsset()
 {
 }
 
@@ -231,4 +249,31 @@ void AssetTreeWidget::Export()
 
 void AssetTreeWidget::Upload()
 {
+}
+
+void AssetTreeWidget::OpenFileLocation()
+{
+    foreach(AssetItem *item, GetSelection())
+        if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
+        {
+#ifdef _WINDOWS
+            // Craft command line string
+            QString path = boost::filesystem::path(item->Asset()->DiskSource().toStdString()).branch_path().string().c_str();
+            WCHAR commandLineStr[256] = {};
+            WCHAR wcharPath[256] = {};
+            mbstowcs(wcharPath, QDir::toNativeSeparators(path).toStdString().c_str(), 254);
+            wsprintf(commandLineStr, L"explorer.exe %s", wcharPath);
+
+            STARTUPINFO startupInfo;
+            memset(&startupInfo, 0, sizeof(STARTUPINFO));
+            startupInfo.cb = sizeof(STARTUPINFO);
+            PROCESS_INFORMATION processInfo;
+            memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
+            /*BOOL success = */CreateProcessW(NULL, commandLineStr, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS,
+                NULL, NULL, &startupInfo, &processInfo);
+
+            CloseHandle(processInfo.hProcess);
+            CloseHandle(processInfo.hThread);
+#endif
+        }
 }

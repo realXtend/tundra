@@ -198,7 +198,7 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     AssetMap::iterator iter = assets.find(asset->Name());
     if (iter == assets.end())
     {
-        LogError("AssetAPI::DeleteAsset called on asset \"" + asset->Name().toStdString() + "\", which does not exist in AssetAPI!");
+        LogError("AssetAPI::ForgetAsset called on asset \"" + asset->Name().toStdString() + "\", which does not exist in AssetAPI!");
         return;
     }
     if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
@@ -258,7 +258,7 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, siz
 void AssetAPI::ForgetAllAssets()
 {
     while(assets.size() > 0)
-        ForgetAsset(assets.begin()->second, false); // DeleteAsset removes the asset it is given to from the assets list, so this loop terminates.
+        ForgetAsset(assets.begin()->second, false); // ForgetAsset removes the asset it is given to from the assets list, so this loop terminates.
 
     assets.clear();
     currentTransfers.clear();

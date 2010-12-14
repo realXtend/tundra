@@ -2,13 +2,27 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneTreeWidgetItems.h
- *  @brief  Tree widget items used in the @c SceneTreeWidget.
+ *  @brief  Tree widget utility classes and functions used in the @c SceneTreeWidget and @c AssetTreeWidget.
  */
 
 #ifndef incl_SceneStructureModule_SceneTreeWidgetItems_h
 #define incl_SceneStructureModule_SceneTreeWidgetItems_h
 
 #include "ForwardDefines.h"
+
+class QTreeWidget;
+
+/// Searches for items containing @c filter (case-insensitive) in the item's column index 0 and toggles their visibility.
+/** If match is found the item is set visible and expanded (if filter >= 3 chars), otherwise it's hidden.
+    @param treeWidget Target tree widget for the action.
+    @param filter Text used as a filter.
+*/
+void TreeWidgetSearch(QTreeWidget *treeWidget, const QString &filter);
+
+/// Expands or collapses the whole tree view, depending on the previous action.
+/** @param treeWidget Target tree widget for the action.
+*/
+void TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget);
 
 /// Tree widget item representing an entity.
 class EntityItem : public QTreeWidgetItem

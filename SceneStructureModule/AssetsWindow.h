@@ -21,7 +21,7 @@ class QTreeWidgetItem;
 
 class AssetTreeWidget;
 
-///
+/// 
 /**
 */
 class AssetsWindow : public QWidget
@@ -63,7 +63,7 @@ private slots:
     */
     void RemoveAsset(AssetPtr asset);
 
-    /// Searches for items containing @c text (case-insensitive) and toggles their visibility.
+    /// Searches for items containing @c filter (case-insensitive) and toggles their visibility.
     /** If match is found the item is set visible and expanded, otherwise it's hidden.
         @param filter Text used as a filter.
     */
