@@ -102,6 +102,8 @@ private slots:
 
     ///
     void Upload();
+
+    void OpenFileLocation();
 };
 
 #endif
