@@ -75,9 +75,9 @@ EntityItem *ComponentItem::Parent() const
     return parentItem;
 }
 
-// AssetItem
+// AssetRefItem
 
-AssetItem::AssetItem(IAttribute *attr, QTreeWidgetItem *parent) :
+AssetRefItem::AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent)
 {
     Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
@@ -87,7 +87,7 @@ AssetItem::AssetItem(IAttribute *attr, QTreeWidgetItem *parent) :
     SetText(assetRef);
 }
 
-void AssetItem::SetText(IAttribute *attr)
+void AssetRefItem::SetText(IAttribute *attr)
 {
     Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
     assert(assetRef);

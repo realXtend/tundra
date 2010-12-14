@@ -413,7 +413,7 @@ Selection SceneTreeWidget::GetSelection() const
                 ret.components << cItem;
             else
             {
-                AssetItem *aItem = dynamic_cast<AssetItem *>(item);
+                AssetRefItem *aItem = dynamic_cast<AssetRefItem *>(item);
                 if (aItem)
                     ret.assets << aItem;
             }
@@ -593,7 +593,7 @@ void SceneTreeWidget::Edit()
     } else
     {
 #ifdef OGREASSETEDITOR_ENABLED
-        foreach(AssetItem *aItem, selection.assets)
+        foreach(AssetRefItem *aItem, selection.assets)
         {
             //int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
             QString type = GetResourceTypeFromResourceFileName(aItem->id.toLatin1());
@@ -1515,7 +1515,7 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
 
     saved_assets_.clear();
     fetch_references_ = false;
-    foreach(AssetItem *aItem, sel.assets)
+    foreach(AssetRefItem *aItem, sel.assets)
     {
         AssetTransferPtr transfer = framework->Asset()->RequestAsset(aItem->id);
 

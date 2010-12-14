@@ -17,8 +17,9 @@
 
 #include <set>
 
-class QTreeWidget;
 class QTreeWidgetItem;
+
+class AssetTreeWidget;
 
 ///
 /**
@@ -43,14 +44,25 @@ private:
     /// If @c asset has asset references, adds the asset references as children to the @c parent.
     /** @param asset Asset to be added to the tree widget.
         @param parent The newly created (parent) item.
-        @param alreadyAdded Set of already added assets.
     */
-    void AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent, std::set<AssetPtr> &alreadyAdded);
+    void AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent);
 
     Foundation::Framework *framework; ///< Framework pointer.
-    QTreeWidget *treeWidget; ///< Tree widget showing the assets.
+    AssetTreeWidget *treeWidget; ///< Tree widget showing the assets.
+    QTreeWidgetItem *noProviderItem; ///< "No provider" parent item for assets without storage.'
+    std::set<AssetWeakPtr> alreadyAdded; ///< Set of already added assets.
 
 private slots:
+    /// Adds new asset to the tree widget.
+    /** @param asset New asset.
+    */
+    void AddAsset(AssetPtr asset);
+
+    /// Removes asset from the tree widget.
+    /** @param asset Asset to be removed.
+    */
+    void RemoveAsset(AssetPtr asset);
+
     /// Searches for items containing @c text (case-insensitive) and toggles their visibility.
     /** If match is found the item is set visible and expanded, otherwise it's hidden.
         @param filter Text used as a filter.
