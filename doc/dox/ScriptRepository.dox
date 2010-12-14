@@ -88,8 +88,13 @@ This function prints the given lines of text directly to console stdout. This ou
 
 </td></tr></table>
 
+\section QtScriptExplicitRef Specifying Asset Dependencies
 
-\section CoreAPIObjects The Core API Objects.
+When parsing the script file, Tundra takes any strings found in each engine.IncludeFile() function call, and interprets them as asset references. This means that if you have for example a line engine.IncludeFile("http://myserver.com/myscript.js"), this script file is loaded in before the main script is executed.
+
+Asset dependencies can be also explicitly speficied. This specification is stored in a commented out line, in the form <i>// !ref: http://myserver.com/myscript.js</i>.
+
+\section CoreAPIObjects The Core API Objects
 
 The whole \ref CoreAPIList "Naali Core API" is exposed to QtScript through the following variable names:
  - The UI API: \ref NaaliUi "ui".
