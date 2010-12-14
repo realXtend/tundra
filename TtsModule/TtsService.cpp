@@ -4,7 +4,7 @@
 #include "TtsService.h"
 #include "TtsModule.h"
 #include <QSettings>
-
+#include <QProcess>
 #include "MemoryLeakCheck.h"
 
 #define INI_FILE_PATH "data/tts.ini"
@@ -49,126 +49,97 @@ namespace Tts
             return;
         }
         QString voice_params = voices_[voice];
+        message = RemoveUnwantedCharacters(message);
 
-		std::stringstream commandoss;
-		std::string commandos,msg;
-		commandoss << "start /B festival.exe --libdir \"festival/lib\" "; 
-		
-        commandoss << voice_params.toStdString();
-
-		commandoss << " -A -T \"";
-
-		msg = message.toStdString();
-		std::replace_if(msg.begin(),msg.end(),boost::is_any_of("\""),', ');
-		commandoss << msg;
-		commandoss << "\"";
-		commandos = commandoss.str();
-
-        /// @todo Use Qt
-		system(commandos.c_str());	
+        QString command = QString("festival.exe --libdir \"festival/lib\" %1 -A -T \"%2\"").arg(voice_params).arg(message); 
+        QProcess* p = new QProcess(this);
+        p->start(command);
 	}
 
 	void TtsService::Text2WAV(QString message, QString pathAndFileName, QString voice)
 	{
-		std::string msg;
-		msg=message.toStdString();
+        if (!voices_.contains(voice))
+        {
+            QString message = QString("Unsupported voice %1").arg(voice);
+            TtsModule::LogError(message.toStdString());       
+            return;
+        }
+        QString voice_params = voices_[voice];
+        message = RemoveUnwantedCharacters(message);
 
-		std::stringstream commandoss;
-		std::string commandos;
-		commandoss << "start /B festival.exe --libdir \"festival/lib\" "; 
-        commandoss << voice.toStdString();
-		commandoss << " -W ";
-		commandoss << pathAndFileName.toStdString();
-		commandoss << " -T \"";
-
-		std::replace_if(msg.begin(),msg.end(),boost::is_any_of("{}\""),', ');
-		commandoss << msg;
-		commandoss << "\"";
-		commandos = commandoss.str();
-
-		system(commandos.c_str());	
+        QString command = QString("festival.exe --libdir \"festival/lib\" %1 -W %2 -T \"%3\"").arg(voice_params).arg(pathAndFileName).arg(message); 
+        QProcess* p = new QProcess(this);
+        p->start(command);
 	}
 
 	void TtsService::Text2PHO(QString message, QString pathAndFileName, QString voice)
 	{
-		std::string msg;
-		msg=message.toStdString();
+        if (!voices_.contains(voice))
+        {
+            QString message = QString("Unsupported voice %1").arg(voice);
+            TtsModule::LogError(message.toStdString());       
+            return;
+        }
+        QString voice_params = voices_[voice];
+        message = RemoveUnwantedCharacters(message);
 
-		std::stringstream commandoss;
-		std::string commandos;
-		commandoss << "start /B festival.exe --libdir \"festival/lib\" "; 
-        commandoss << voice.toStdString();
-		commandoss << " -P ";
-		commandoss << pathAndFileName.toStdString();
-		commandoss << " -T \"";
-
-		std::replace_if(msg.begin(),msg.end(),boost::is_any_of("\""),', ');
-		commandoss << msg;
-		commandoss << "\"";
-		commandos = commandoss.str();
-
-		system(commandos.c_str());	
+        QString command = QString("festival.exe --libdir \"festival/lib\" %1 -P %2 -T \"%3\"").arg(voice_params).arg(pathAndFileName).arg(message); 
+        QProcess* p = new QProcess(this);
+        p->start(command);
 	}
 	
 	void TtsService::File2Speech(QString pathAndFileName, QString voice)
 	{
-		std::stringstream commandoss;
-		std::string commandos,file;
-		commandoss << "start /B festival.exe --libdir \"festival/lib\" "; 
+        if (!voices_.contains(voice))
+        {
+            QString message = QString("Unsupported voice %1").arg(voice);
+            TtsModule::LogError(message.toStdString());       
+            return;
+        }
+        QString voice_params = voices_[voice];
 
-		
-        commandoss << voice.toStdString();
-
-		commandoss << " -A -F \"";
-
-		file=pathAndFileName.toStdString();
-
-		commandoss << file;
-		commandoss << "\"";
-		commandos = commandoss.str();
-
-		system(commandos.c_str());	
+        QString command = QString("festival.exe --libdir \"festival/lib\" %1 -A -F \"%2\"").arg(voice_params).arg(pathAndFileName); 
+        QProcess* p = new QProcess(this);
+        p->start(command);
 	}
+
 	void TtsService::File2WAV(QString pathAndFileNameIn, QString pathAndFileNameOut, QString voice)
 	{
-		std::string fileIn;
-		fileIn=pathAndFileNameIn.toStdString();
+        if (!voices_.contains(voice))
+        {
+            QString message = QString("Unsupported voice %1").arg(voice);
+            TtsModule::LogError(message.toStdString());       
+            return;
+        }
+        QString voice_params = voices_[voice];
 
-		std::stringstream commandoss;
-		std::string commandos;
-		commandoss << "start /B festival.exe --libdir \"festival/lib\" "; 
-        commandoss << voice.toStdString();
-		commandoss << " -W ";
-		commandoss << pathAndFileNameOut.toStdString();
-		commandoss << " -F \"";
-
-		commandoss << fileIn;
-		commandoss << "\"";
-		commandos = commandoss.str();
-
-		system(commandos.c_str());	
+        QString command = QString("festival.exe --libdir \"festival/lib\" %1 -W %2 -F\"%3\"").arg(voice_params).arg(pathAndFileNameOut).arg(pathAndFileNameIn); 
+        QProcess* p = new QProcess(this);
+        p->start(command);
 	}
 
 	void TtsService::File2PHO(QString pathAndFileNameIn, QString pathAndFileNameOut, QString voice)
 	{
-		std::string fileIn;
-		fileIn=pathAndFileNameIn.toStdString();
+        if (!voices_.contains(voice))
+        {
+            QString message = QString("Unsupported voice %1").arg(voice);
+            TtsModule::LogError(message.toStdString());       
+            return;
+        }
+        QString voice_params = voices_[voice];
 
-		std::stringstream commandoss;
-		std::string commandos;
-		commandoss << "start /B festival.exe --libdir \"festival/lib\" "; 
-        commandoss << voice.toStdString();
-		commandoss << " -P ";
-		commandoss << pathAndFileNameOut.toStdString();
-		commandoss << " -F \"";
-
-		commandoss << fileIn;
-		commandoss << "\"";
-		commandos = commandoss.str();
-
-		system(commandos.c_str());	
+        QString command = QString("festival.exe --libdir \"festival/lib\" %1 -P %2 -F\"%3\"").arg(voice_params).arg(pathAndFileNameOut).arg(pathAndFileNameIn); 
+        QProcess* p = new QProcess(this);
+        p->start(command);
 	}
 
+    QString TtsService::RemoveUnwantedCharacters(QString text)
+    {
+        text.replace("\"", " ");
+        text.replace("{", ", ");
+        text.replace("}", ", ");
+        return text;
+    }
 
     QStringList TtsService::GetAvailableVoices() const
     {
@@ -189,5 +160,4 @@ namespace Tts
 	{
 		voice_=voice;
 	}*/
-
 }

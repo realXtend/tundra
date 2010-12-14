@@ -40,6 +40,7 @@ namespace Tts
 
     private:
         void InitializeVoices();
+        QString RemoveUnwantedCharacters(QString text);
         
         //! Framework we belong to
         Foundation::Framework* framework_;
