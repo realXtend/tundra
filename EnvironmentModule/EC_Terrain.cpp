@@ -68,7 +68,7 @@ EC_Terrain::EC_Terrain(IModule* module) :
     material.Set(AssetReference("local://RexTerrainPCF.material"), AttributeChange::Disconnected);
 
     heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
-    connect(heightMapAsset.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded(IAssetTransfer *)));
+    connect(heightMapAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(TerrainAssetLoaded(AssetPtr)));
 }
 
 EC_Terrain::~EC_Terrain()
@@ -187,8 +187,9 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
         if (transfer.get())
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
+/*
     else if (changedAttribute == texture0.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
@@ -218,7 +219,7 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
         if (transfer.get())
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
+    } */
     else if (changedAttribute == heightMap.GetNameString())
     {
         heightMapAsset->HandleAssetRefChange(attribute);
@@ -235,13 +236,9 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     ///\todo Delete the old unused textures.
 }
 
-void EC_Terrain::MaterialAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(transfer->asset.get());
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset_.get());
     assert(ogreMaterial);
     if (!ogreMaterial)
         return;
@@ -268,19 +265,13 @@ void EC_Terrain::MaterialAssetLoaded(IAssetTransfer *transfer)
 */
 }
 
-void EC_Terrain::TextureAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::TextureAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
+    /*
+    TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(asset_.get());
+    if (!textureAsset)
         return;
 
-    TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(transfer->asset.get());
-    /*
-    OgreRenderer::OgreTextureResource *ogreTexture = dynamic_cast<OgreRenderer::OgreTextureResource *>(transfer->resourcePtr.get());
-    assert(ogreTexture);
-    if (!ogreTexture)
-        return;
-*/
     Ogre::TexturePtr texture = textureAsset->ogreTexture;
     
     if (transfer->source == texture0.Get()) SetTerrainMaterialTexture(0, texture->getName().c_str());
@@ -288,15 +279,12 @@ void EC_Terrain::TextureAssetLoaded(IAssetTransfer *transfer)
     else if (transfer->source == texture2.Get()) SetTerrainMaterialTexture(2, texture->getName().c_str());
     else if (transfer->source == texture3.Get()) SetTerrainMaterialTexture(3, texture->getName().c_str());
     else if (transfer->source == texture4.Get()) SetTerrainMaterialTexture(4, texture->getName().c_str());
+    */
 }
 
-void EC_Terrain::TerrainAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(transfer->asset);
+    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(asset_);
     if (!assetData.get() || assetData->data.size() == 0)
         return;
 

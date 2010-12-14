@@ -23,7 +23,7 @@ std::vector<AssetReference> OgreParticleAsset::FindReferences() const
     return references_;
 }
 
-void OgreParticleAsset::Unload()
+void OgreParticleAsset::DoUnload()
 {
     RemoveTemplates();
 }

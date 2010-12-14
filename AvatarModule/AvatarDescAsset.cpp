@@ -8,7 +8,7 @@ AvatarDescAsset::~AvatarDescAsset()
     Unload();
 }
 
-void AvatarDescAsset::Unload()
+void AvatarDescAsset::DoUnload()
 {
     avatarAppearanceXML = "";
     assetReferences.clear();

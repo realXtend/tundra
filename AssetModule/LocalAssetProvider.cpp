@@ -117,7 +117,7 @@ void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const
     storage->provider = shared_from_this();
     storage->SetupWatcher(); // Start listening on file change notifications.
 //    connect(storage->changeWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(FileChanged(QString)));
-    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
+//    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
 
     storages.push_back(storage);
 }

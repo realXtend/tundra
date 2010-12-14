@@ -74,10 +74,10 @@ signals:
     void Downloaded(IAssetTransfer *transfer);
 
     /// Emitted when a decoder plugin has decoded this asset.
-    void Decoded(IAssetTransfer *transfer);
+    void Decoded(AssetPtr asset);
 
     /// Emitted when this asset is ready to be used in the system.
-    void Loaded(IAssetTransfer *transfer);
+    void Loaded(AssetPtr asset);
 
     /// Emitted when this transfer failed.
     void Failed(IAssetTransfer *transfer);

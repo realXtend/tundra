@@ -237,7 +237,7 @@ private slots:
     */
     void SaveAssetDialogClosed(int result);
 
-    void AssetLoaded(IAssetTransfer *transfer);
+    void AssetLoaded(AssetPtr asset);
 
     /// If editor is destoyed this method ensures that that object is erased from the list.
     void ECEditorDestroyed(QObject *obj);

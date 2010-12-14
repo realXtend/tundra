@@ -6,6 +6,7 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("IAsset")
 
 #include "IAsset.h"
+#include "IAssetTransfer.h"
 #include "AssetAPI.h"
 
 IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
@@ -21,7 +22,16 @@ void IAsset::SetDiskSource(QString diskSource_)
 
 bool IAsset::LoadFromCache()
 {
-    return LoadFromFile(DiskSource());
+    bool success = LoadFromFile(DiskSource());
+    if (success)
+        emit Loaded(shared_from_this()); ///\todo This is not correct. If asset dependencies changed, the new deps won't be requested. Do a new deps request.
+    return success;
+}
+
+void IAsset::Unload()
+{
+    DoUnload();
+    emit Unloaded(shared_from_this());
 }
 
 bool IAsset::LoadFromFile(QString filename)
@@ -122,6 +132,11 @@ void IAsset::SetAssetStorage(AssetStoragePtr storage_)
     storage = storage_;
 }
 
+void IAsset::SetAssetTransfer(AssetTransferPtr transfer_)
+{
+    transfer = transfer_;
+}
+
 AssetStoragePtr IAsset::GetAssetStorage()
 {
     return storage.lock();
@@ -135,4 +150,16 @@ AssetProviderPtr IAsset::GetAssetProvider()
 QString IAsset::ToString() const
 { 
     return (Name().isEmpty() ? "(noname)" : Name()) + " (" + (Type().isEmpty() ? "notype" : Type()) + ")";
+}
+
+void IAsset::EmitLoaded()
+{
+    emit Loaded(shared_from_this());
+
+    AssetTransferPtr t = transfer.lock();
+    if (t.get())
+    {
+        assert(t->asset.get() == this);
+        t->EmitAssetLoaded();
+    }
 }

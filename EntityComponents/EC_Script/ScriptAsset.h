@@ -17,7 +17,7 @@ public:
 
     ~ScriptAsset();
 
-    virtual void Unload();
+    virtual void DoUnload();
 
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
     virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters);

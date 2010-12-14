@@ -17,7 +17,7 @@ public:
 
     ~BinaryAsset() { Unload(); }
 
-    virtual void Unload() { data.clear(); }
+    virtual void DoUnload() { data.clear(); }
 
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes)
     {
