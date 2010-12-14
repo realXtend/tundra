@@ -24,7 +24,6 @@ namespace
 {
     bool HasSameRefAsPredecessors(QTreeWidgetItem *item)
     {
-
         QTreeWidgetItem *parent = 0, *child = item;
         while((parent = child->parent()) != 0)
         {
@@ -57,7 +56,7 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw) :
 //    treeWidget ->header()->setResizeMode(QHeaderView::ResizeToContents);
 
     QHBoxLayout *hlayout= new QHBoxLayout;
-    QLabel *searchLabel = new QLabel(tr("Search filter: "), this);
+    QLabel *searchLabel = new QLabel(tr("Search filter:"), this);
     QLineEdit *searchField = new QLineEdit(this);
     QPushButton *expandAndCollapseButton = new QPushButton(tr("Expand/collapse all"), this);
     hlayout->addWidget(searchLabel);
@@ -83,7 +82,7 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw) :
 AssetsWindow::~AssetsWindow()
 {
     // Disable ResizeToContents, Qt goes sometimes into eternal loop after
-    // ~AddContentWindow() if we have lots (hudreds or thousands) of items.
+    // ~AssetsWindow() if we have lots (hudreds or thousands) of items.
     treeWidget->header()->setResizeMode(QHeaderView::Interactive);
 
     QTreeWidgetItemIterator it(treeWidget);
@@ -106,7 +105,7 @@ void AssetsWindow::AddChildren(const AssetPtr &asset, QTreeWidgetItem *parent)
             parent->addChild(item);
             alreadyAdded.insert(asset);
 
-            // Check that we don't have 
+            // Check for recursive dependencies.
             if (HasSameRefAsPredecessors(item))
                 item->setText(0, tr("Recursive dependency to ") + asset->Name());
             else
@@ -141,7 +140,6 @@ void AssetsWindow::AddAsset(AssetPtr asset)
     bool storageFound = false;
     AssetStoragePtr storage = asset->GetAssetStorage();
     if (storage)
-    {
         for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         {
             QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
@@ -152,7 +150,6 @@ void AssetsWindow::AddAsset(AssetPtr asset)
                 break;
             }
         }
-    }
 
     if (!storageFound)
         noProviderItem->addChild(item);
@@ -162,6 +159,19 @@ void AssetsWindow::AddAsset(AssetPtr asset)
 
 void AssetsWindow::RemoveAsset(AssetPtr asset)
 {
+    QTreeWidgetItemIterator it(treeWidget);
+    while(*it)
+    {
+        AssetItem *item = dynamic_cast<AssetItem *>(*it);
+        if (item && item->Asset() && item->Asset() == asset)
+        {
+            QTreeWidgetItem *parent = item->parent();
+            parent->removeChild(item);
+            SAFE_DELETE(item);
+        }
+
+        ++it;
+    }
 }
 
 void AssetsWindow::Search(const QString &filter)
@@ -215,7 +225,10 @@ void AssetsWindow::ExpandOrCollapseAll()
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
         if (item->childCount() >= 1 && item->isExpanded())
+        {
             expand = false;
+            break;
+        }
     }
 
     if (expand)

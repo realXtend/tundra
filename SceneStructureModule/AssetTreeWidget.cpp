@@ -205,7 +205,7 @@ void AssetTreeWidget::Unload()
             QTreeWidgetItem *parent = item->parent();
             parent->removeChild(item);
             SAFE_DELETE(item);
-            ///\todo Preferrably use the AssetDeleted() signal from AssetAPI for deleting items.
+            ///\todo Preferrably use the AssetDeleted() or similar signal from AssetAPI for deleting items.
         }
 }
 
@@ -228,6 +228,10 @@ void AssetTreeWidget::ReloadFromSource()
 }
 
 void AssetTreeWidget::Import()
+{
+}
+
+void AssetTreeWidget::RequestNewAsset()
 {
 }
 
