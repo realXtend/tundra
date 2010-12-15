@@ -978,7 +978,6 @@ void EC_Mesh::OnComponentRemoved(IComponent* component, AttributeChange::Type ch
 
 void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
 {
-    // New asset download path.
     OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(asset.get());
     QString ogreMeshName = mesh->Name();
     if (mesh)
@@ -991,9 +990,9 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
 
     SetMesh(ogreMeshName);
 
-    // Hack to request materials & skeleton now
-//    AttributeUpdated(&meshMaterial);
-//    AttributeUpdated(&skeletonRef);
+    // Force a re-application of the skeleton on this mesh. ///\todo This path should be re-evaluated to see if we have potential performance issues here. -jj.
+    if (skeletonAsset->Asset().get())
+        OnSkeletonAssetLoaded(skeletonAsset->Asset());
 }
 
 void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)

@@ -359,11 +359,10 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
                           DEGTORAD * trans.rotation.y,
                           DEGTORAD * trans.rotation.z);
 
-        assert(RexTypes::IsValidOrientation(orientation));
-        if ( RexTypes::IsValidOrientation(orientation) )
-        {
+        if (RexTypes::IsValidOrientation(orientation))
             link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
-        }
+        else
+            OgreRenderingModule::LogError("EC_Placeable: transform attribute changed, but orientation not valid!");
 
         // Prevent Ogre exception from zero scale
         Vector3df scale(trans.scale.x, trans.scale.y, trans.scale.z);
@@ -400,7 +399,7 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
     }
 }
 
-Vector3df  EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df& to)
+Vector3df EC_Placeable::GetRotationFromTo(const Vector3df& from, const Vector3df& to)
 {
     Quaternion orientation;
     orientation.rotationFromTo(from,to);
