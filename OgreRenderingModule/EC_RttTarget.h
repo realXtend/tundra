@@ -75,7 +75,8 @@ private:
     //! Owner module of this component
     //OgreRenderer::OgreRenderingModule *owner_;
 
-    Ogre::TexturePtr tex;
+    Ogre::TexturePtr tex_;
+    std::string material_name_;
     //void ScheduleRender();
 };
 

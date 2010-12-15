@@ -1,0 +1,25 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="8">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="0,127,50,0,0,-90,133,100,100" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="local://rect_plane.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="camdisplaywall" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+</scene>
