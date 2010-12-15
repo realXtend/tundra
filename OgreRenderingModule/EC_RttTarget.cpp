@@ -4,6 +4,7 @@
 #include "EC_RttTarget.h"
 #include "OgreRenderingModule.h"
 #include "EC_OgreCamera.h"
+#include "OgreMaterialUtils.h"
 #include "Frame.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
@@ -28,9 +29,15 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
 
 EC_RttTarget::~EC_RttTarget()
 {
+  //XXX didn't have a ref to renderer here yet. is this really required?
+  //if(renderer_.expired())
+  //      return;
+
     //if (!image_rendering_texture_name_.empty())
-  Ogre::TextureManager::getSingleton().remove(targettexture.Get().toStdString());
-  //does this remove also the rendertarget with the viewports etc?
+    Ogre::TextureManager::getSingleton().remove(targettexture.Get().toStdString());
+    //does this remove also the rendertarget with the viewports etc? seems so?
+    
+    Ogre::MaterialManager::getSingleton().remove(material_name_);
 }
 
 void EC_RttTarget::PrepareRtt()
@@ -49,17 +56,17 @@ void EC_RttTarget::PrepareRtt()
 
     ec_camera->GetCamera()->setAspectRatio(Ogre::Real(width) / Ogre::Real(height));
 
-    tex = Ogre::TextureManager::getSingleton().getByName(targettexture.Get().toStdString());
-    if (tex.isNull())
+    tex_ = Ogre::TextureManager::getSingleton().getByName(targettexture.Get().toStdString());
+    if (tex_.isNull())
     {
-        tex = Ogre::TextureManager::getSingleton()
+        tex_ = Ogre::TextureManager::getSingleton()
           .createManual(
                         targettexture.Get().toStdString(), 
                         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                         Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
     }
 
-    Ogre::RenderTexture *render_texture = tex->getBuffer()->getRenderTarget();
+    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
     if (render_texture)
     {
         render_texture->removeAllViewports();
@@ -71,20 +78,26 @@ void EC_RttTarget::PrepareRtt()
         vp->setVisibilityMask(0x2);
 
         render_texture->update(false);
-        tex->getBuffer()->getRenderTarget()->setAutoUpdated(false);
+        tex_->getBuffer()->getRenderTarget()->setAutoUpdated(false);
     }
 
     else
         LogError("render target texture getting failed.");
 
+    //create material to show the texture
+    material_name_ = targettexture.Get().toStdString() + "_mat"; //renderer_.lock()->GetUniqueObjectName("EC_BillboardWidget_mat");
+    OgreRenderer::CloneMaterial("HoveringText", material_name_); //would LitTextured be the right thing? XXX \todo
+    Ogre::MaterialManager &material_manager = Ogre::MaterialManager::getSingleton();
+    Ogre::MaterialPtr material = material_manager.getByName(material_name_);
+    OgreRenderer::SetTextureUnitOnMaterial(material, targettexture.Get().toStdString());    
 }
 
 void EC_RttTarget::SetAutoUpdated(bool val)
 {
-    Ogre::RenderTexture *render_texture = tex->getBuffer()->getRenderTarget();
+    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
     if (render_texture)
     {
-         tex->getBuffer()->getRenderTarget()->setAutoUpdated(val);
+         tex_->getBuffer()->getRenderTarget()->setAutoUpdated(val);
     }
     else
         LogError("render target texture getting failed.");
@@ -106,7 +119,7 @@ void EC_RttTarget::UpdateRtt()
     LogInfo("Rtt update");
 
     // Get rendering texture and update it
-    Ogre::RenderTexture *render_texture = tex->getBuffer()->getRenderTarget();
+    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
     if (render_texture)
     {
         render_texture->update(false);
