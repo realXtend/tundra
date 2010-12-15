@@ -105,9 +105,15 @@ private slots:
     /// Exports selected asset(s).
     void Export();
 
+    /// Called by SaveAssetAs save file dialog when it's closed.
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
+    */
+    void SaveAssetDialogClosed(int result);
+
     ///
     void Upload();
 
+    /// Opens the location folder of an asset in operating system's file explorer.
     void OpenFileLocation();
 };
 
