@@ -45,6 +45,8 @@ AssetTreeWidget::AssetTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     framework(fw),
     contextMenu(0)
 {
+    setSelectionMode(QAbstractItemView::ExtendedSelection);
+    setSelectionBehavior(QAbstractItemView::SelectItems);
 //    setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
 //    setDropIndicatorShown(true);
 }
@@ -159,15 +161,17 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         connect(reloadFromSourceAction, SIGNAL(triggered()), SLOT(ReloadFromSource()));
         connect(reloadFromCacheAction, SIGNAL(triggered()), SLOT(ReloadFromCache()));
         connect(unloadAction, SIGNAL(triggered()), SLOT(Unload()));
-    /*
-        QAction *exportAction = new QAction(tr("Export..."), menu);
-        menu->addAction(exportAction);
-        connect(exportAction, SIGNAL(triggered()), SLOT(Export()));
-    */
+
         QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
         menu->addAction(openFileLocationAction);
 
         connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
+
+        menu->addSeparator();
+
+        QAction *exportAction = new QAction(tr("Export..."), menu);
+        menu->addAction(exportAction);
+        connect(exportAction, SIGNAL(triggered()), SLOT(Export()));
     }
 
     QAction *importAction = new QAction(tr("Import..."), menu);
@@ -220,7 +224,7 @@ void AssetTreeWidget::Unload()
             QTreeWidgetItem *parent = item->parent();
             parent->removeChild(item);
             SAFE_DELETE(item);
-            ///\todo Preferrably use the AssetDeleted() or similar signal from AssetAPI for deleting items.
+            ///\todo Preferably use the AssetDeleted() or similar signal from AssetAPI for deleting items.
         }
 }
 
@@ -275,6 +279,58 @@ void AssetTreeWidget::RequestNewAsset()
 
 void AssetTreeWidget::Export()
 {
+    QList<AssetItem *> sel = GetSelection();
+    if (sel.isEmpty())
+        return;
+
+    if (sel.size() == 1)
+    {
+        QString ref = sel.first()->Asset() ? sel.first()->Asset()->Name() : "";
+        QString assetName= AssetAPI::ExtractFilenameFromAssetRef(ref);
+        QtUtils::SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+    }
+    else
+    {
+        QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
+    }
+}
+
+void AssetTreeWidget::SaveAssetDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+
+    if (!dialog || result != QDialog::Accepted || dialog->selectedFiles().isEmpty())
+        return;
+
+    QStringList files = dialog->selectedFiles();
+
+    QList<AssetItem *> sel = GetSelection();
+
+    bool isDir = QDir(files[0]).exists();
+
+    if ((sel.size() == 1 && isDir) || (sel.size() > 1 && !isDir))
+    {
+        // should not happen normally, so just log error. No prompt for user.
+//        LogError("Could not save asset: no such directory.");
+        return;
+    }
+
+    foreach(AssetItem *item, sel)
+        if (item->Asset())
+        {
+            // if saving multiple assets, append filename to directory
+            QString filename = files[0];
+            if (isDir)
+            {
+                QString assetName = AssetAPI::ExtractFilenameFromAssetRef(item->Asset()->Name());
+               //while(QFile::exists(filename))
+                    //filename.append("_");
+                filename += QDir::separator() + assetName;
+            }
+
+            item->Asset()->SaveToFile(filename);
+        }
 }
 
 void AssetTreeWidget::Upload()
@@ -283,27 +339,31 @@ void AssetTreeWidget::Upload()
 
 void AssetTreeWidget::OpenFileLocation()
 {
-    foreach(AssetItem *item, GetSelection())
-        if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
-        {
+    QList<AssetItem *> selection = GetSelection();
+    if (selection.isEmpty() || selection.size() < 1)
+        return;
+
+    AssetItem *item = selection.first();
+    if (item->Asset() && !item->Asset()->DiskSource().isEmpty())
+    {
 #ifdef _WINDOWS
-            // Craft command line string
-            QString path = boost::filesystem::path(item->Asset()->DiskSource().toStdString()).branch_path().string().c_str();
-            WCHAR commandLineStr[256] = {};
-            WCHAR wcharPath[256] = {};
-            mbstowcs(wcharPath, QDir::toNativeSeparators(path).toStdString().c_str(), 254);
-            wsprintf(commandLineStr, L"explorer.exe %s", wcharPath);
+        // Craft command line string
+        QString path = boost::filesystem::path(item->Asset()->DiskSource().toStdString()).branch_path().string().c_str();
+        WCHAR commandLineStr[256] = {};
+        WCHAR wcharPath[256] = {};
+        mbstowcs(wcharPath, QDir::toNativeSeparators(path).toStdString().c_str(), 254);
+        wsprintf(commandLineStr, L"explorer.exe %s", wcharPath);
 
-            STARTUPINFO startupInfo;
-            memset(&startupInfo, 0, sizeof(STARTUPINFO));
-            startupInfo.cb = sizeof(STARTUPINFO);
-            PROCESS_INFORMATION processInfo;
-            memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
-            /*BOOL success = */CreateProcessW(NULL, commandLineStr, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS,
-                NULL, NULL, &startupInfo, &processInfo);
+        STARTUPINFO startupInfo;
+        memset(&startupInfo, 0, sizeof(STARTUPINFO));
+        startupInfo.cb = sizeof(STARTUPINFO);
+        PROCESS_INFORMATION processInfo;
+        memset(&processInfo, 0, sizeof(PROCESS_INFORMATION));
+        /*BOOL success = */CreateProcessW(NULL, commandLineStr, NULL, NULL, FALSE, NORMAL_PRIORITY_CLASS,
+            NULL, NULL, &startupInfo, &processInfo);
 
-            CloseHandle(processInfo.hProcess);
-            CloseHandle(processInfo.hThread);
+        CloseHandle(processInfo.hProcess);
+        CloseHandle(processInfo.hThread);
 #endif
-        }
+    }
 }

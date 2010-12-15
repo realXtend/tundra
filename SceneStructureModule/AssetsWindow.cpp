@@ -135,6 +135,7 @@ void AssetsWindow::PopulateTreeWidget()
 
 void AssetsWindow::AddAsset(AssetPtr asset)
 {
+    ///\todo Check that the asset doesn't already exists
     AssetItem *item = new AssetItem(asset);
     AddChildren(asset, item);
 
