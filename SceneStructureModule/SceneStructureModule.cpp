@@ -63,13 +63,12 @@ void SceneStructureModule::PostInitialize()
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent *)), SLOT(HandleDropEvent(QDropEvent *)));
 }
 
-QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene, bool queryPosition)
+QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene)
 {
-    return InstantiateContent(filename, worldPos, SceneDesc(), clearScene, queryPosition);
+    return InstantiateContent(filename, worldPos, SceneDesc(), clearScene);
 }
 
-QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc,
-    bool clearScene, bool queryPosition)
+QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
 {
     QList<Scene::Entity *> ret;
     SceneDesc sceneDesc;
@@ -83,7 +82,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
     const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return ret;
-
+/*
     if (queryPosition)
     {
         bool ok;
@@ -103,7 +102,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
         if (pos.size() > 2)
             worldPos.z = pos[2].toFloat();
     }
-
+*/
     if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
     {
         //boost::filesystem::path path(filename.toStdString());

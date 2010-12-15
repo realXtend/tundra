@@ -43,11 +43,9 @@ public slots:
     /** @param filename File name.
         @param worldPos Destination in-world position.
         @param clearScene Do we want to clear the scene before adding new content.
-        @param queryPosition Do we want to query the position from user.
         @return List of created entities.
     */
-    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene,
-        bool queryPosition = false);
+    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene);
 
     /// This is an overloaded function
     /** Uses scene description structure to filter unwanted content.
@@ -55,11 +53,9 @@ public slots:
         @param worldPos Destination in-world position.
         @param clearScene Do we want to clear the scene before adding new content.
         @param desc Scene description filter
-        @param queryPosition Do we want to query the position from user.
         @return List of created entities.
     */
-    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc,
-        bool clearScene, bool queryPosition = false);
+    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc, bool clearScene);
 
     /// Centralizes group of entities around same center point. The entities must have EC_Placeable component present.
     /** @param pos Center point for entities.
