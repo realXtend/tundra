@@ -111,7 +111,9 @@ private slots:
     void SaveAssetDialogClosed(int result);
 
     ///
-    void Upload();
+    /** @param files List of filenames.
+    */
+    void Upload(const QStringList &files);
 
     /// Opens the location folder of an asset in operating system's file explorer.
     void OpenFileLocation();
