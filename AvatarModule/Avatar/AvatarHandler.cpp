@@ -197,8 +197,8 @@ namespace Avatar
             msg.SkipToFirstVariableByName("NameValue");
             QString namevalue = QString::fromUtf8(msg.ReadString().c_str());
             NameValueMap map = ParseNameValueMap(namevalue.toStdString());
-            presence->SetFirstName(map["FirstName"]);
-            presence->SetLastName(map["LastName"]);
+            presence->setfirstName(QString(map["FirstName"].c_str()));
+            presence->setlastName(QString(map["LastName"].c_str()));
             ///@note If using reX auth map["RexAuth"] contains the username and authentication address.
 
 #ifdef EC_HoveringWidget_ENABLED
@@ -206,7 +206,7 @@ namespace Avatar
             EC_HoveringWidget *overlay= entity->GetComponent<EC_HoveringWidget>().get();
             if(overlay)
             {
-                overlay->SetText(presence->GetFullName().c_str());
+                overlay->SetText(presence->GetFullName());
                 if (presence->agentId == avatar_module_->GetServerConnection()->GetInfo().agentID)
                     overlay->SetDisabled(true);
             }
@@ -254,7 +254,7 @@ namespace Avatar
             if (!existing_avatar && presence->agentId != avatar_module_->GetServerConnection()->GetInfo().agentID)
             {
                 ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
-                event_data.fullName = presence->GetFullName();
+                event_data.fullName =  presence->GetFullName().toStdString();
                 event_data.localId = presence->localId;
                 eventMgr->SendEvent("NetworkState", ProtocolUtilities::Events::EVENT_USER_CONNECTED, &event_data);
             }
@@ -464,7 +464,7 @@ namespace Avatar
                 // Send event notifying about user leaving the world
                 EventManagerPtr eventMgr = avatar_module_->GetFramework()->GetEventManager();
                 ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
-                event_data.fullName = presence->GetFullName();
+                event_data.fullName = presence->GetFullName().toStdString();
                 event_data.localId = presence->localId;
                 eventMgr->SendEvent("NetworkState", ProtocolUtilities::Events::EVENT_USER_DISCONNECTED, &event_data);
             }
@@ -529,7 +529,7 @@ namespace Avatar
         if (overlay && presence)
         {
             overlay->InitializeBillboards();
-            overlay->SetText(presence->GetFullName().c_str());
+            overlay->SetText(presence->GetFullName());
             /*overlay->AddButton(*(new QPushButton("Poke")));
             overlay->AddButton(*(new QPushButton("Chat")));
             overlay->AddButton(*(new QPushButton("Mute")));
@@ -593,7 +593,7 @@ namespace Avatar
         {
             overlay->SetTextColor(QColor(255,255,255,230));
             overlay->SetBackgroundGradient(QColor(0,0,0,230), QColor(50,50,50,230));
-            overlay->ShowMessage(presence->GetFullName().c_str());
+            overlay->ShowMessage(presence->GetFullName());
             if (!visible)
                 overlay->Hide();
         }

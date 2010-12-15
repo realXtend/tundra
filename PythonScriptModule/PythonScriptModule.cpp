@@ -90,14 +90,19 @@
 
 #include <PythonQt.h>
 
+#include "Vector3dfDecorator.h"
+#include "QuaternionDecorator.h"
+
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
 #include <QApplication>
 #include <QGraphicsView>
 #include <QWebView>
+#include <QStringList>
 //#include <QDebug>
 
 #include <MediaPlayerService.h>
+#include <CommunicationsService.h>
 #include <WorldBuildingServiceInterface.h>
 
 #include "PythonQtScriptingConsole.h"
@@ -623,6 +628,23 @@ namespace PythonScript
         return 0;
     }
 
+    Communications::ServiceInterface* PythonScriptModule::GetCommunicationsService() const
+    {
+        Foundation::Framework* framework = PythonScript::self()->GetFramework();
+        if (!framework)
+        {
+            PythonScriptModule::LogCritical("Framework object doesn't exist!");
+            return 0;
+        }
+
+        Communications::ServiceInterface *service = framework_->GetService<Communications::ServiceInterface>();
+        if (service)
+            return service;
+
+        PythonScriptModule::LogError("Cannot find CommunicationsServiceInterface implementation.");
+        return 0;
+    }
+
     void PythonScriptModule::RemoveQtDynamicProperty(QObject* qobj, char* propname)
     {
         qobj->setProperty(propname, QVariant());
@@ -762,6 +784,9 @@ namespace PythonScript
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
         PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule());
+		//$ BEGIN_MOD $
+
+		//$ END_MOD $
         return pythonqtconsole;
     }
 }
@@ -1812,11 +1837,21 @@ namespace PythonScript
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Ruler::staticMetaObject);
+            
+            PythonQt::self()->addDecorators(new Vector3dfDecorator());
+            PythonQt::self()->registerCPPClass("Vector3df");
+            PythonQt::self()->addDecorators(new QuaternionDecorator());
+            PythonQt::self()->registerCPPClass("Quaternion");
 
+            // For some reason: plain registerClass doosn't work for these classes.
+            // Possible reason is that they are just interfaces
+            QStringList list;
+            list << "Communications::ServiceInterface";
+            list << "InWorldVoice::SessionInterface";
+            list << "InWorldVoice::ParticipantInterface";
+            list << "Communications::InWorldVoice::ParticipantInterface";
+            PythonQt::self()->registerQObjectClassNames(list);
             pythonqt_inited = true;
-
-            //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);
         }
 
         //load the py written module manager using the py c api directly

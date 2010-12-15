@@ -114,8 +114,9 @@ namespace CoreUi
         setupUi(internal_widget_);
         setWidget(internal_widget_);
 
-        // Hide IM contenat are (and button) by default. Shown when UpdateImWidget is called.
-        imContentWidget->hide();
+        // Hide IM button by default, leave the container so we dont get ugly clipping. 
+        // Shown button when UpdateImWidget() is called with a valid widget.
+        imButton->hide();
 
         // Stacked layout
         stacked_layout_ = new QStackedLayout();
@@ -471,7 +472,8 @@ namespace CoreUi
     void CommunicationWidget::UpdateImWidget(UiProxyWidget *im_proxy)
     {
         im_proxy_ = im_proxy;
-        imContentWidget->show();
+        if (im_proxy_)
+            imButton->show();
     }
 
     void CommunicationWidget::SetFocusToChat()

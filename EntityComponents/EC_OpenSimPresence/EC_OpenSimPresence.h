@@ -49,20 +49,14 @@ public slots:
 public:
     virtual ~EC_OpenSimPresence();
 
-    //! set first name
-    void SetFirstName(const std::string &name);
+    Q_PROPERTY(QString firstName READ getfirstName WRITE setfirstName);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, firstName);
 
-    //! get first name
-    std::string GetFirstName() const;
-
-    //! set last name
-    void SetLastName(const std::string &name);
-
-    //! get last name
-    std::string GetLastName() const;
+    Q_PROPERTY(QString lastName READ getlastName WRITE setlastName);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, lastName);
 
     //! get full name
-    std::string GetFullName() const;
+    QString GetFullName() const;
 
     // !ID related
     uint64_t regionHandle;
@@ -74,12 +68,6 @@ private:
     /// Constructor.
     /// @param module Owner module.
     EC_OpenSimPresence(IModule* module);
-
-    //! first name of avatar
-    std::string first_name_;
-
-    //! last name of avatar
-    std::string last_name_;
 };
 
 #endif

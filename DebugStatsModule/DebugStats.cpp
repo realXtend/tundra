@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -144,10 +145,13 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->move(100, 100);
 
     profilerWindow_->resize(650, 530);
-    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
+    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, true, true);
     connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
-    ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+	//$ BEGIN_MOD $
+    //ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+	ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Panels"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+	//$ END_MOD $
 }
 
 void DebugStatsModule::StartProfiling(bool visible)
@@ -415,7 +419,7 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
     {
         boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity->GetComponent<EC_OpenSimPresence>();
         assert(ec_presence.get());
-        if (ec_presence->GetFullName() == params[0])
+        if (ec_presence->GetFullName().toStdString() == params[0])
         {
             user_presence = ec_presence;
             break;

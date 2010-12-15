@@ -4,6 +4,8 @@
 #include "DebugOperatorNew.h"
 
 #include <QSignalMapper>
+#include "WorldLogicInterface.h"
+#include "EC_OpenSimPresence.h"
 #include "Provider.h"
 #include "Session.h"
 #include "MumbleVoipModule.h"
@@ -72,17 +74,6 @@ namespace MumbleVoip
             case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 CloseSession();
                 SAFE_DELETE(session_);
-                break;
-            }
-        }
-        if (category_id == framework_event_category_)
-        {
-            switch (event_id)
-            {
-            case Foundation::WORLD_STREAM_READY:
-                ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
-                if (event_data)
-                    world_stream_ = event_data->WorldStream;
                 break;
             }
         }
@@ -288,10 +279,20 @@ namespace MumbleVoip
 
     QString Provider::GetUsername()
     {
-        if (world_stream_.get())
-            return world_stream_->GetInfo().agentID.ToQString();
-        else
+        using namespace Foundation;
+        boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+        if (!world_logic)
             return "";
+
+        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+        if (!user_avatar)
+            return "";
+
+        boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
+        if (!presence)
+            return "";
+
+        return presence->agentId.ToQString();
     }
 
 } // MumbleVoip

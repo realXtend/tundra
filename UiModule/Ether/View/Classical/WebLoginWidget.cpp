@@ -3,6 +3,8 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "WebLoginWidget.h"
+#include "Framework.h"
+#include "EventManager.h"
 
 #include <QFile>
 #include <QLineEdit>
@@ -18,8 +20,8 @@ namespace CoreUi
 {
     namespace Classical
     {
-        WebLoginWidget::WebLoginWidget(QWidget *parent) : 
-            QWidget(parent)
+		WebLoginWidget::WebLoginWidget(QWidget *parent, Foundation::Framework *framework) : 
+            QWidget(parent), framework_(framework)
         {
             permanentCookieStore = new WebLoginPermanentCookie(this);
             InitWidget();
@@ -153,6 +155,21 @@ namespace CoreUi
                     urlString = urlString.replace("http//", "http://");
                 emit WebLoginUrlReceived(urlString);
             }
-        }
+
+            if (url.scheme() == "realxtend")
+            {
+				QString urlString = url.toString().replace("realxtend://", "");
+				if (!urlString.isEmpty())
+				{
+					QStringList values = urlString.split('?');
+					if (!values.isEmpty() && values.length() == 4)
+					{				
+						Foundation::WebLoginDataEvent data(values[2], values[3], values[1], values[0]);
+						framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("Framework"), Foundation::WEB_LOGIN_DATA_RECEIVED, &data);
+					}
+				}                
+			}
+		
+		}
     }
 }

@@ -291,7 +291,9 @@ void RexLogicModule::Initialize()
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
     obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
-    camera_control_widget_ = CameraControlPtr(new CameraControl(this));
+	//$ BEGIN_MOD $
+	//camera_control_widget_ = CameraControlPtr(new CameraControl(this)); //Done in PostInitialize, when UiExternalModule is available
+	//$ END_MOD $
     
     SceneInteract *sceneInteract = new SceneInteract(framework_);
     QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
@@ -322,6 +324,10 @@ void RexLogicModule::Initialize()
 // virtual
 void RexLogicModule::PostInitialize()
 {
+	//$ BEGIN_MOD $
+	camera_control_widget_ = CameraControlPtr(new CameraControl(this)); //Done here when UiExternalModule is available
+	//$ END_MOD $
+
     EventManagerPtr eventMgr = framework_->GetEventManager();
     eventMgr->RegisterEventSubscriber(this, 104);
 
@@ -791,6 +797,24 @@ void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
         UUIDs_.erase(iter);
         avatar_event_handler_->SendUnregisterEvent(fullid);
     }
+}
+
+void RexLogicModule::SendAvatarUrl()
+{
+
+	if (framework_handler_ && !framework_handler_->GetAvatarAddress().isEmpty())
+	{
+		RexLogicModule::LogInfo(framework_handler_->GetAvatarAddress().toStdString());
+		RexLogicModule::LogInfo(GetServerConnection()->GetInfo().agentID.ToString());
+		GetServerConnection()->GetInfo().avatarStorageUrl = framework_handler_->GetAvatarAddress().toStdString();
+		StringVector strings;
+		strings.push_back(GetServerConnection()->GetInfo().agentID.ToString());
+		strings.push_back(framework_handler_->GetAvatarAddress().toStdString());
+		GetServerConnection()->SendGenericMessage("RexSetAppearance", strings);
+
+		//Clear avatar address
+		framework_handler_->SetAvatarAddress("");
+	}
 }
 
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)

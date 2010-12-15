@@ -40,7 +40,10 @@ class HoveringButtonsController;
 class HoveringNameController;
 class DetachedWidgetController;
 
-/// Shows a hovering widget attached to an entity.
+/// Shows given text hovering above user avatar entity
+/// - Automatically keeps visible billboard sceen size to be static
+/// - Icon can be set to left side of text label
+
 class EC_HoveringWidget : public IComponent
 {
     Q_OBJECT
@@ -117,6 +120,13 @@ public slots:
     /// @param text Text to be shown.
     void SetText(const QString &text);
 
+    /// Sets the icon to the left side of text
+    void SetIcon(QPixmap *icon);
+
+    /// @return the icon
+    /// @see SetIcon
+    QPixmap* GetIcon();
+
     // Add button to the widget
     //! @button button to add
     void AddButton(QPushButton &button);
@@ -148,15 +158,14 @@ private slots:
     /// Redraws the hovering text with the current text, font and color.
     void Redraw();
 
-    /// Check for name width
-    int CheckNameTagWidth() const;
-
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
 
+    void UpdateBillboardSize();
+
 private:
     /// Returns pixmap with widget rendered to it
-    QPixmap GetPixmap(QWidget &w, const QRect &dimensions);
+    QPixmap GetPixmap(QWidget &w);
 
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;

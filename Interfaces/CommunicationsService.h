@@ -210,17 +210,20 @@ namespace Communications
 
     namespace InWorldVoice
     {
+
         class ParticipantInterface : public QObject
         {
             Q_OBJECT
         public:
             virtual ~ParticipantInterface() {};
+        public slots:
             virtual QString Name() const = 0;
             virtual QString AvatarUUID() const = 0;
             virtual bool IsSpeaking() const = 0;
             virtual void Mute(bool mute) = 0;
             virtual bool IsMuted() const = 0;
             virtual Vector3df Position() const = 0;
+            virtual double VoiceActivity() const = 0;
 //            virtual bool IsLeft() const = 0;
 
             //! \return true if participant has left 
@@ -230,6 +233,7 @@ namespace Communications
             void StopSpeaking();
             void Left(); //! @todo remove
             void StateChanged();
+            void VoiceActivityChanged();
 //            void PositionUpdated();
         };
         typedef QList<ParticipantInterface*> ParticipantList;

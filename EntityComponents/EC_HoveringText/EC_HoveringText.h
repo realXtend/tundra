@@ -13,6 +13,7 @@
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
+#include <QVector3D>
 #include <QFont>
 #include <QColor>
 #include <QLinearGradient>
@@ -113,31 +114,6 @@ public:
 
 	virtual bool IsSerializable() const { return true; }
 
-    /// Sets postion for the chat bubble.
-    /// @param position Position.
-    /// @note The position is relative to the entity to which the hovering text is attached.
-    void SetPosition(const Vector3df &position);
-
-    /// Sets the font used for the hovering text.
-    /// @param font Font.
-    void SetFont(const QFont &font);
-
-    /// Sets the color of the chat bubble text.
-    /// @param color Color.
-    void SetTextColor(const QColor &color);
-
-    /// Sets the background color for the hovering text.
-    /// @param color Color.
-    /// @note If EC_HoveringText's color is Qt::transparent (default behavior), background is not drawn.
-    /// @note Sets the using_gradient_ boolean to false.
-    void SetBackgroundColor(const QColor &color);
-
-    /// Sets the colors for the background gradient color.
-    /// @param start_color Start color.
-    /// @param end_color End color.
-    /// @note Sets the using_gradient_ boolean to true.
-    void SetBackgroundGradient(const QColor &start_color, const QColor &end_color);
-
 	Q_PROPERTY(QString textAttr READ gettextAttr WRITE settextAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(QString, textAttr);
 
@@ -164,7 +140,6 @@ public:
 	
 	Q_PROPERTY(Color gradEndAttr READ getgradEndAttr WRITE setgradEndAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(Color, gradEndAttr);
-
 
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
@@ -193,6 +168,36 @@ public slots:
     /// Sets the text to be shown.
     /// @param text Text to be shown.
     void ShowMessage(const QString &text);
+
+    /// Sets postion for the hovering text.
+    /// @param position Position as Vector3df.
+    /// @note The position is relative to the entity to which the hovering text is attached.
+    void SetPosition(const Vector3df &position);
+
+    /// Sets postion for the hovering text.
+    /// @param position Position as QVector3D.
+    /// @note The position is relative to the entity to which the hovering text is attached.
+    void SetPosition(const QVector3D &position);
+
+    /// Sets the font used for the hovering text.
+    /// @param font Font.
+    void SetFont(const QFont &font);
+
+    /// Sets the color of the chat bubble text.
+    /// @param color Color.
+    void SetTextColor(const QColor &color);
+
+    /// Sets the background color for the hovering text.
+    /// @param color Color.
+    /// @note If EC_HoveringText's color is Qt::transparent (default behavior), background is not drawn.
+    /// @note Sets the using_gradient_ boolean to false.
+    void SetBackgroundColor(const QColor &color);
+
+    /// Sets the colors for the background gradient color.
+    /// @param start_color Start color.
+    /// @param end_color End color.
+    /// @note Sets the using_gradient_ boolean to true.
+    void SetBackgroundGradient(const QColor &start_color, const QColor &end_color);
 
 private slots:
     /// Updates the animation

@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -72,6 +73,17 @@ namespace ECEditor
         network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
 
         AddEditorWindowToUI();
+//$ BEGIN_MOD $
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		if(ui){
+			QToolBar* editToolbar_= ui->GetExternalToolbar("EditToolBar");
+			if(editToolbar_){
+				QAction* ecEditorButton_=new QAction(QIcon("./media/icons/components.png"),"Components",editToolbar_);
+				editToolbar_->addAction(ecEditorButton_);
+				connect(ecEditorButton_, SIGNAL(triggered()), this, SLOT(ActionToolBarECEditor()));
+			}
+		}
+//$ END_MOD $
     }
 
     void ECEditorModule::Uninitialize()
@@ -137,17 +149,33 @@ namespace ECEditor
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
+		//$ BEGIN_MOD $
+		//editor_window_->setWindowTitle(tr("Components"));
+		//$ END_MOD $
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_, true, true);
         // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
         // it's attached to QGraphicsProxyWidget.
         connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
 
         // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly.
-        ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
-        ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
+		//$ BEGIN_MOD $	
+		//ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+		ui->AddWidgetToMenu(editor_window_, tr("EC Editor"), tr("Panels"), "./data/ui/images/menus/edbutton_OBJED_normal.png");		
+		//$ END_MOD $        
+		ui->RegisterUniversalWidget("Components", editor_proxy/*editor_window_->graphicsProxyWidget()*/);
     }
 
+//$ BEGIN_MOD $
+	void ECEditorModule::ActionToolBarECEditor()
+	{
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+		if(!editor_window_->isVisible())
+			ui->ShowWidget(editor_window_);
+		else
+			ui->HideWidget(editor_window_);
+	}
+//$ END_MOD $
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
     {
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();

@@ -183,7 +183,17 @@ class LocalScene(Component):
         self.dsManager.rotateY(rotY)
     def rotateZ(self, rotZ):
         self.dsManager.rotateZ(rotZ)
-            
+
+    def rotateAroundPointX(self, rotX, x,y,z):
+        self.dsManager.rotateAroundPointX(rotX, x,y,z)
+    def rotateAroundPointY(self, rotY, x,y,z):
+        self.dsManager.rotateAroundPointY(rotY, x,y,z)
+    def rotateAroundPointZ(self, rotZ, x,y,z):
+        self.dsManager.rotateAroundPointZ(rotZ, x,y,z)
+
+    def resetPointRotation(self):
+        self.dsManager.resetPointRotation()
+        
     def checkBoxZYToggled(self, enabled):
         self.flipZY = enabled
         if(self.dsManager!=None):

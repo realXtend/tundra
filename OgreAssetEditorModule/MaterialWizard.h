@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -88,11 +89,12 @@ public:
         ///\todo Material_DiffTwoPassAlpha
     };
     Q_DECLARE_FLAGS(MaterialWizardOptions, MaterialWizardOption)
-
+//$ BEGIN_MOD $   
+//$ MOD_DESCRIPTION Added the Framework param to constructo $ 
     /// Consturctor.
     /// @param parent Parent widget.
-    explicit MaterialWizard(QWidget *parent = 0);
-
+	explicit MaterialWizard(QWidget *parent = 0, Foundation::Framework *framework = 0);
+//$ END_MOD $  
     /// Destructor.
     ~MaterialWizard();
 

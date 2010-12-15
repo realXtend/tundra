@@ -46,6 +46,9 @@ namespace CoreUi
         TeleportWidget *GetTeleportWidget() const { return teleport_widget_; }
         LanguageWidget *GetLanguageWidget() const { return language_widget_; }
         CacheSettingsWidget *GetCacheSettingsWidget() const { return cache_settings_widget_; }
+		//$ BEGIN_MOD $
+		void CreateOptionalControls();
+		//$ END_MOD $
 
     private slots:
         void CreateBasicControls();
@@ -74,6 +77,10 @@ namespace CoreUi
         TeleportWidget* teleport_widget_;
         ChangeThemeWidget* changetheme_widget_;
         CacheSettingsWidget *cache_settings_widget_;
+
+		//$ BEGIN_MOD $
+		ControlPanelButton *previous_button;
+		//$ END_MOD $
     };
 }
 

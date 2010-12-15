@@ -8,7 +8,7 @@ set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h)
+file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h Vector3dfDecorator.h QuaternionDecorator.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -34,14 +34,14 @@ use_package (XMLRPC)
 use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_DynamicComponent EntityComponents/EC_Ruler EntityComponents/EC_Touchable
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas
-    EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui)
+    EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui CommunicationsModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DIR}/RexLogicModule/Release)
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule EC_Touchable
-    ProtocolUtilities EC_DynamicComponent EC_Ruler EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui)
+    ProtocolUtilities EC_DynamicComponent EC_Ruler EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui CommunicationsModule)
 
 link_package (BOOST)
 link_package (POCO)

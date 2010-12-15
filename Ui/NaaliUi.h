@@ -23,7 +23,9 @@ public:
 
 public slots:
     /// Returns the widget that is the main window of Naali.
-    NaaliMainWindow *MainWindow() const;
+    QWidget *MainWindow() const;
+
+	NaaliMainWindow *CentralWindow() const;
 
     /// This widget shows all the user-added UI that has been added to the screen. It is contained as a child of NaaliMainWindow.
     NaaliGraphicsView *GraphicsView() const;

@@ -24,6 +24,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 #include <QUiLoader>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
+#include <QPushButton>
+#include <QProgressBar>
+#include <QSize>
 
 #include "MemoryLeakCheck.h"
 
@@ -32,14 +35,23 @@ EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     source(this, "source", ""),
     submesh(this, "submesh", 0),
     refreshRate(this, "refresh per sec", 0),
-    show2d(this, "show 2D", true),
+    show2d(this, "show 2D on click", true),
+    sync2dbrowsing(this, "sync 2D browsing", false),
+    pageWidth(this, "page width", 800),
+    pageHeight(this, "page height", 600),
     widget_(0),
     content_widget_(0),
     placeholder_widget_(0),
+    button_refreshstop_(0),
+    progress_bar_(0),
     proxy_(0),
     source_edit_(0),
     canvas_started_(false)
 {
+    static AttributeMetadata size_metadata("", "100", "2000", "50");
+    pageWidth.SetMetadata(&size_metadata);
+    pageHeight.SetMetadata(&size_metadata);
+
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(RegisterActions()));
     CreateWidget();
@@ -69,27 +81,52 @@ void EC_3DCanvasSource::OnClick()
 
 void EC_3DCanvasSource::SourceEdited()
 {
+    if (!source_edit_)
+        return;
+    
     QString new_source = source_edit_->text();
     if (new_source != getsource())
     {
-        setsource(new_source);
+        if (getsync2dbrowsing())
+            setsource(new_source);
+        else
+            UpdateWidget(new_source);
     }
 }
 
-void EC_3DCanvasSource::StartPressed()
+void EC_3DCanvasSource::RefreshStopPressed()
 {
+    QWebView *webview = GetWebView();
+    if (!webview || !progress_bar_)
+        return;
+    if (progress_bar_->isVisible())
+        webview->stop();
+    else
+        webview->reload();
 }
 
-void EC_3DCanvasSource::PrevPressed()
+void EC_3DCanvasSource::BackPressed()
 {
+    QWebView *webview = GetWebView();
+    if (!webview)
+        return;
+    webview->back();
 }
 
-void EC_3DCanvasSource::NextPressed()
+void EC_3DCanvasSource::ForwardPressed()
 {
+    QWebView *webview = GetWebView();
+    if (!webview)
+        return;
+    webview->forward();
 }
 
-void EC_3DCanvasSource::EndPressed()
+void EC_3DCanvasSource::HomePressed()
 {
+    QWebView *webview = GetWebView();
+    if (!webview || home_url_.isEmpty())
+        return;
+    webview->load(QUrl(home_url_));
 }
 
 void EC_3DCanvasSource::UpdateWidgetAndCanvas(IAttribute *attribute, AttributeChange::Type type)
@@ -121,6 +158,9 @@ void EC_3DCanvasSource::UpdateWidgetAndCanvas(IAttribute *attribute, AttributeCh
                 UpdateCanvas();
             else
                 update = true;
+
+            if (home_url_.isEmpty())
+                home_url_ = getsource();
         }
     }
     else if (attribute == &refreshRate)
@@ -140,6 +180,19 @@ void EC_3DCanvasSource::UpdateWidgetAndCanvas(IAttribute *attribute, AttributeCh
             }
             else
                 canvas->SetRefreshRate(0);
+        }
+    }
+    else if (attribute == &pageHeight || attribute == &pageWidth)
+    {
+        QWebView *webview = GetWebView();
+        if (webview)
+        {
+            QSize new_size(getpageWidth(), getpageHeight());
+            if (webview->size() != new_size)
+            {
+                webview->resize(new_size);
+                update = true;
+            }
         }
     }
     
@@ -163,10 +216,44 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
         if (source_edit_)
             source_edit_->setText(url_str);
         
-        // Set last_source now so that we won't trigger reload of the page again when the source comes back from network
-        last_source_ = url_str;
-        setsource(url_str);
+        if (getsync2dbrowsing())
+        {
+            // Set last_source now so that we won't trigger reload of the page again when the source comes back from network
+            last_source_ = url_str;
+            setsource(url_str);
+        }
     }
+}
+
+void EC_3DCanvasSource::WebViewLoadStarted()
+{
+    if (progress_bar_)
+        progress_bar_->show();
+    if (button_refreshstop_)
+        button_refreshstop_->setStyleSheet("QPushButton#button_refreshstop { background-image: url('./data/ui/images/browser/stop.png'); }");
+}
+
+void EC_3DCanvasSource::WebViewLoadProgress(int progress)
+{
+    if (progress_bar_)
+        progress_bar_->setValue(progress);
+}
+
+void EC_3DCanvasSource::WebViewLoadCompleted()
+{
+    // Setup ui
+    if (progress_bar_)
+        progress_bar_->hide();
+    if (button_refreshstop_)
+        button_refreshstop_->setStyleSheet("QPushButton#button_refreshstop { background-image: url('./data/ui/images/browser/refresh.png'); }");
+    
+    // Update the 2d ui line edit
+    QWebView *webview = GetWebView();
+    if (webview && source_edit_)
+        source_edit_->setText(webview->url().toString());
+
+    // Invoke a delayed repaint of the inworld texture
+    QTimer::singleShot(50, this, SLOT(RepaintCanvas()));
 }
 
 void EC_3DCanvasSource::RepaintCanvas()
@@ -188,9 +275,22 @@ EC_3DCanvas *EC_3DCanvasSource::Get3DCanvas()
     return canvas;
 }
 
-void EC_3DCanvasSource::UpdateWidget()
+QWebView *EC_3DCanvasSource::GetWebView()
 {
-    QString source = getsource();
+    if (!content_widget_)
+        return 0;
+    return dynamic_cast<QWebView*>(content_widget_);
+}
+
+void EC_3DCanvasSource::UpdateWidget(QString url)
+{
+    // Prefer inparam over the attribute (if sync 2d browsing is disabled)
+    QString source;
+    if (url.isEmpty())
+        source = getsource();
+    else
+        source = url;
+
     if (source.isEmpty())
     {
         QTimer::singleShot(1000, this, SLOT(FetchWebViewUrl()));
@@ -212,7 +312,7 @@ void EC_3DCanvasSource::UpdateWidget()
         // See if source looks like an url, and instantiate a QWebView then if it doesn't already exist
         if (source.indexOf("http://") != -1)
         {
-            QWebView* webwidget = dynamic_cast<QWebView*>(content_widget_);
+            QWebView* webwidget = GetWebView();
             if (!webwidget)
             {
                 // If widget exists, but is wrong type, delete and recreate
@@ -227,13 +327,20 @@ void EC_3DCanvasSource::UpdateWidget()
                 if (layout)
                     layout->addWidget(webwidget);
 
+                // Load current source and resize to attribute set size
                 webwidget->load(QUrl(source));
                 webwidget->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
-                content_widget_ = webwidget;
+                webwidget->resize(getpageWidth(), getpageHeight());
                 
-                connect(webwidget, SIGNAL(loadFinished(bool)), this, SLOT(RepaintCanvas()), Qt::UniqueConnection);
+                // Connect webview signals
+                connect(webwidget, SIGNAL(loadStarted()), this, SLOT(WebViewLoadStarted()), Qt::UniqueConnection);
+                connect(webwidget, SIGNAL(loadProgress(int)), this, SLOT(WebViewLoadProgress(int)), Qt::UniqueConnection);
+                connect(webwidget, SIGNAL(loadFinished(bool)), this, SLOT(WebViewLoadCompleted()), Qt::UniqueConnection);
                 connect(webwidget, SIGNAL(linkClicked(const QUrl&)), this, SLOT(WebViewLinkClicked(const QUrl &)), Qt::UniqueConnection);
                 connect(webwidget->page(), SIGNAL(scrollRequested(int, int, const QRect&)), this, SLOT(RepaintCanvas()), Qt::UniqueConnection);
+
+                // This webview is our new content_widget_
+                content_widget_ = webwidget;
             }
             else
             {
@@ -341,7 +448,11 @@ void EC_3DCanvasSource::FetchWebViewUrl()
         return;
     QString url = canvas_webview->url().toString();
     if (!url.isEmpty())
+    {
         setsource(url);
+        if (home_url_.isEmpty())
+            home_url_ = url;
+    }
     else
         QTimer::singleShot(1000, this, SLOT(FetchWebViewUrl()));
 }
@@ -377,27 +488,35 @@ void EC_3DCanvasSource::CreateWidget()
         return;
     }
 
-    widget_->setWindowTitle(tr("3DCanvas Controls"));
+    widget_->setWindowTitle(tr("Naali Web Browser"));
     proxy_ = ui->AddWidgetToScene(widget_);
-
     connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
 
     source_edit_ = widget_->findChild<QLineEdit*>("line_source");
     if (source_edit_)
-    {
-        connect(source_edit_, SIGNAL( editingFinished() ), this, SLOT( SourceEdited() ));
-    }
-    
+        connect(source_edit_, SIGNAL(returnPressed()), SLOT(SourceEdited()));
+
     placeholder_widget_ = widget_->findChild<QWidget*>("widget_placeholder");
-    
-    QPushButton* button = widget_->findChild<QPushButton*>("but_start");
-    if (button) connect(button, SIGNAL( clicked() ), this, SLOT( StartPressed() ));
-    button = widget_->findChild<QPushButton*>("but_prev");
-    if (button) connect(button, SIGNAL( clicked() ), this, SLOT( PrevPressed() ));
-    button = widget_->findChild<QPushButton*>("but_next");
-    if (button) connect(button, SIGNAL( clicked() ), this, SLOT( NextPressed() ));
-    button = widget_->findChild<QPushButton*>("but_end");
-    if (button) connect(button, SIGNAL( clicked() ), this, SLOT( EndPressed() ));
+
+    button_refreshstop_ = widget_->findChild<QPushButton*>("button_refreshstop");
+    if (button_refreshstop_) 
+        connect(button_refreshstop_, SIGNAL(clicked()), SLOT(RefreshStopPressed()));
+
+    QPushButton* button = widget_->findChild<QPushButton*>("button_back");
+    if (button) 
+        connect(button, SIGNAL(clicked()), SLOT(BackPressed()));
+
+    button = widget_->findChild<QPushButton*>("button_forward");
+    if (button) 
+        connect(button, SIGNAL(clicked()), SLOT(ForwardPressed()));
+
+    button = widget_->findChild<QPushButton*>("button_home");
+    if (button) 
+        connect(button, SIGNAL(clicked()), SLOT(HomePressed()));
+
+    progress_bar_ = widget_->findChild<QProgressBar*>("progress_bar");
+    if (progress_bar_)
+        progress_bar_->hide();
 }
 
 void EC_3DCanvasSource::RegisterActions()

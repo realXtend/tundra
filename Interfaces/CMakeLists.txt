@@ -9,7 +9,7 @@ file (GLOB MOC_FILES CommunicationsService.h UiSettingsServiceInterface.h
 #$ BEGIN_MOD $
 #$ MOD_DESCRIPTION TtsServiceInterface added $
     UiServiceInterface.h UiWidgetProperties.h UiProxyWidget.h LoginServiceInterface.h WorldLogicInterface.h TtsServiceInterface.h
-    ConsoleCommandServiceInterface.h ISoundService.h InputServiceInterface.h IOpenSimSceneService.h)
+    ConsoleCommandServiceInterface.h ISoundService.h InputServiceInterface.h IOpenSimSceneService.h UiExternalServiceInterface.h)
 #$ END_MOD $
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

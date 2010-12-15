@@ -52,7 +52,7 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     buttons_disabled_(false),
     buttons_visible_(false),
     detached_(false),
-    bb_name_size_view(0.25f, 0.08f),
+    bb_name_size_view(0.25f, 0.07f), // Only the height is used
     bb_buttons_size_view(0.1f, 0.25f),
     bb_rel_posy(1.3f),
     cam_distance_(0.0f)
@@ -172,7 +172,9 @@ void EC_HoveringWidget::ScaleWidget(Ogre::BillboardSet& bset, Ogre::Billboard& b
     
     Ogre::Vector3 width_vec = cam_right.dotProduct(diagonal) * cam_right;
     Ogre::Vector3 height_vec = cam_up.dotProduct(diagonal) * cam_up;
-    b.setDimensions(width_vec.length(), height_vec.length());
+    float bb_height = height_vec.length();
+    float bb_width = size.width() * bb_height / size.height();
+    b.setDimensions(bb_width, bb_height);
     
     if (next_to_name_tag)
     {
@@ -372,6 +374,8 @@ void EC_HoveringWidget::InitializeBillboards()
     if (!sceneNode)
         return;
 
+    UpdateBillboardSize();
+
     // Create billboard if it doesn't exist.
     if (!namebillboardSet_ && !namebillboard_ && !buttonsbillboardSet_ && !buttonsbillboard_)
     {
@@ -426,6 +430,17 @@ void EC_HoveringWidget::SetText(const QString &text)
     Redraw();
 }
 
+void EC_HoveringWidget::SetIcon(QPixmap *icon)
+{
+    namewidget_->SetPixmap(icon);
+    Redraw();
+}
+
+QPixmap* EC_HoveringWidget::GetIcon()
+{
+    return namewidget_->GetPixmap();
+}
+
 void EC_HoveringWidget::AddButton(QPushButton &button)
 {
     QPushButton* copy = new QPushButton(button.text());
@@ -442,19 +457,11 @@ void EC_HoveringWidget::Redraw()
     if (renderer_.expired() || !namebillboardSet_ || !namebillboard_)
         return;
 
-    // Check name tag width
-    float name_tag_width = CheckNameTagWidth();
-    QRect name_rect(0, 0, 300, 60);
-    if (name_tag_width > name_rect.width())
-    {
-        name_rect.setWidth(name_tag_width);
-        qreal jee = name_tag_width / 1200;
-        bb_name_size_view = QSizeF(jee, bb_name_size_view.height());
-    }
+    UpdateBillboardSize();
 
     // Get pixmap with text rendered to it.
-    QPixmap pixmap1 = GetPixmap(*namewidget_, name_rect);
-    QPixmap pixmap2 = GetPixmap(*buttonswidget_, QRect(0,0,80,120));
+    QPixmap pixmap1 = GetPixmap(*namewidget_);
+    QPixmap pixmap2 = GetPixmap(*buttonswidget_); //, QRect(0,0,80,120));
     if (pixmap1.isNull()||pixmap2.isNull())
         return;
 
@@ -546,14 +553,7 @@ void EC_HoveringWidget::Redraw()
         assert(material.get());
         OgreRenderer::SetTextureUnitOnMaterial(material, hoveringTexture2Name_);
     }
-}
-
-int EC_HoveringWidget::CheckNameTagWidth() const
-{
-    QFontMetrics metric(namewidget_->label->font());
-    int label_width = metric.width(namewidget_->label->text());
-    label_width += metric.averageCharWidth() * 4;
-    return label_width;
+    namebillboard_->setDimensions(bb_name_size_view.width(), bb_name_size_view.height());
 }
 
 void EC_HoveringWidget::RegisterActions()
@@ -564,41 +564,32 @@ void EC_HoveringWidget::RegisterActions()
         entity->ConnectAction("MouseHover", this, SLOT(HoveredOver()));
 }
 
-QPixmap EC_HoveringWidget::GetPixmap(QWidget &w, const QRect &dimensions)
+QPixmap EC_HoveringWidget::GetPixmap(QWidget &w)
 {
     if (renderer_.expired())
         return 0;
 
-    // Create transparent pixmap
-    QPixmap pixmap(dimensions.size());
+    QPixmap pixmap(w.size());
     pixmap.fill(Qt::transparent);
-
-    int x, y;
-    if (namewidget_ == &w)
-    {
-        QFontMetrics metric(namewidget_->label->font());
-        int label_width = metric.width(namewidget_->label->text());
-        label_width += metric.averageCharWidth()*2;
-        int label_height = metric.height() + 10;
-
-        w.setMaximumSize(label_width, label_height);
-        w.setMinimumSize(label_width, label_height);
-
-        x = (dimensions.width() - label_width) / 2;
-        y = (dimensions.height() - label_height) / 2;
-    }
-    else
-    {
-        w.setGeometry(dimensions);
-        w.setMaximumSize(dimensions.size());
-        w.setMinimumSize(dimensions.size());
-
-        x = dimensions.x();
-        y = dimensions.y();
-    }
 
     // Init painter with pixmap as the paint device
     QPainter painter(&pixmap);
-    w.render(&painter, QPoint(x,y), w.rect());
+    w.render(&painter, QPoint(0,0), w.rect());
     return pixmap;
+}
+
+void EC_HoveringWidget::UpdateBillboardSize()
+{
+    namewidget_->resize(1,1); // HACK: minimizes the widget size
+
+    // HACK: This ensure that QWidget::width will return correct value
+    QPixmap temp(10,10);
+    QPainter painter(&temp);
+    namewidget_->adjustSize();
+    namewidget_->render(&painter);  
+    namewidget_->render(&painter);  
+    namewidget_->render(&painter);
+
+    qreal bb_width = namewidget_->width() * bb_name_size_view.height() / namewidget_->height();
+    bb_name_size_view = QSizeF(bb_width, bb_name_size_view.height());
 }

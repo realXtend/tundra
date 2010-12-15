@@ -78,7 +78,6 @@ LinkEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
 LinkEntityComponent(EntityComponents/EC_Light EC_Light)
 LinkEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 LinkEntityComponent(EntityComponents/EC_TtsVoice EC_TtsVoice)
-LinkEntityComponent(EntityComponents/EC_3DGizmo EC_3DGizmo)
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule AvatarModule RexCommon
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Asset)

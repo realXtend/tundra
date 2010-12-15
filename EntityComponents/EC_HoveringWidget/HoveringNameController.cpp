@@ -5,11 +5,13 @@
 
 #include <QPushButton>
 #include <QMouseEvent>
+#include <QPixmap>
 
 HoveringNameController::HoveringNameController() :
-    text_padding_(30.0f)
+    text_padding_(30.0f),
+    pixmap_(0)
 {
-    Ui::HoveringName::setupUi(this);
+    Ui::hoveringName::setupUi(this);
 }
 
 HoveringNameController::~HoveringNameController()
@@ -18,5 +20,23 @@ HoveringNameController::~HoveringNameController()
 
 void HoveringNameController::SetText(const QString &text)
 {
-    label->setText(text);
+    text_ = text;
+    textLabel->setText(text);
+}
+
+QString HoveringNameController::GetText() const
+{
+    return text_;
+}
+
+void HoveringNameController::SetPixmap(QPixmap* pixmap)
+{
+    pixmap_ = pixmap;
+    if (pixmap_)
+        pixmapLabel->setPixmap(*pixmap_);
+}
+
+QPixmap* HoveringNameController::GetPixmap()
+{
+    return pixmap_;
 }
