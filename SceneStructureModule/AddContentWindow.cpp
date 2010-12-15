@@ -368,7 +368,7 @@ void AddContentWindow::DeselectAllAssets()
 
 void AddContentWindow::AddContent()
 {
-    const QString &storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
+    QString storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
     AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageName);
     if (!dest)
     {
@@ -528,7 +528,7 @@ void AddContentWindow::CheckIfColumnIsEditable(QTreeWidgetItem *item, int column
 
 void AddContentWindow::RewriteDestinationNames()
 {
-    const QString &storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
+    QString storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
     AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageName);
     if (!dest)
     {
