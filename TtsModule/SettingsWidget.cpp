@@ -25,6 +25,8 @@ namespace Tts
         testPhrase = settings.value("Tts/test_phrase", "Hello world!").toString();
         publishOwnVoice = settings.value("Tts/publish_own_voice", false).toBool();
         useAvatarSpecificVoices = settings.value("Tts/use_avatar_specific_voices", false).toBool();
+        publishOwnVoice = false; // todo: remove when avatar ec sync is implemented
+        useAvatarSpecificVoices = false; // todo: remove when avatar ec sync is implemented
     }
 
     void Settings::Save()
