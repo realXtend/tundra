@@ -329,7 +329,11 @@ void AssetTreeWidget::SaveAssetDialogClosed(int result)
                 filename += QDir::separator() + assetName;
             }
 
-            item->Asset()->SaveToFile(filename);
+            QString param;
+            if (item->Asset()->Type().contains("texture", Qt::CaseInsensitive))
+                param = filename.right(filename.size() - filename.lastIndexOf('.') - 1);
+
+            item->Asset()->SaveToFile(filename, param);
         }
 }
 
