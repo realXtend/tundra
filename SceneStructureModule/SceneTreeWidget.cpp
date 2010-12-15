@@ -1488,7 +1488,8 @@ void SceneTreeWidget::SaveAssetAs()
 
         fileDialog = QtUtils::SaveFileDialogNonModal("",
             tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
-    } else
+    }
+    else
     {
         QtUtils::DirectoryDialogNonModal(tr("Select Directory"), "", 0, this, SLOT(SaveAssetDialogClosed(int)));
     }

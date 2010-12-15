@@ -374,6 +374,12 @@ void AddContentWindow::AddContent()
     if (!dest)
     {
         LogError("Could not retrieve asset storage " + storageName.toStdString() + ".");
+
+        // Regenerate storage combo box items to make sure that we're up-to-date.
+        storageComboBox->clear();
+        foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+            storageComboBox->addItem(storage->ToString(), storage->Name());
+
         return;
     }
 
@@ -561,13 +567,11 @@ void AddContentWindow::RewriteDestinationNames()
 
 void AddContentWindow::HandleUploadCompleted(IAssetUploadTransfer *transfer)
 {
-    assert(transfer);
-//    LogDebug("Upload completed, " + transfer->sourceFilename.toStdString() + " -> " + transfer->destinationName.toStdString());
+    ///\todo update progress bar when the feature is available.
 }
 
 void AddContentWindow::HandleUploadFailed(IAssetUploadTransfer *transfer)
 {
-    assert(transfer);
-//    LogDebug("Upload failed for " + transfer->sourceFilename.toStdString() + "/" + transfer->destinationName.toStdString());
+    ///\todo update progress bar when the feature is available.
 }
 

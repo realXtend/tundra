@@ -11,11 +11,11 @@
 #include "AssetTreeWidget.h"
 #include "AddContentWindow.h"
 #include "SupportedFileTypes.h"
+#include "RequestNewAssetDialog.h"
 
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "AssetCache.h"
-#include "IAssetTypeFactory.h"
 #include "QtUtils.h"
 
 #ifdef _WINDOWS
@@ -188,6 +188,10 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     QAction *importAction = new QAction(tr("Import..."), menu);
     connect(importAction, SIGNAL(triggered()), SLOT(Import()));
     menu->addAction(importAction);
+
+    QAction *requestNewAssetAction = new QAction(tr("Request new asset..."), menu);
+    connect(requestNewAssetAction, SIGNAL(triggered()), SLOT(RequestNewAsset()));
+    menu->addAction(requestNewAssetAction);
 }
 
 QList<AssetItem *> AssetTreeWidget::GetSelection() const
@@ -281,9 +285,21 @@ void AssetTreeWidget::OpenFileDialogClosed(int result)
 
 void AssetTreeWidget::RequestNewAsset()
 {
-    QStringList types;
-    foreach(AssetTypeFactoryPtr factory, framework->Asset()->GetAssetTypeFactories())
-        types << factory->Type();
+    RequestNewAssetDialog *dialog = new RequestNewAssetDialog(framework->Asset(), this);
+    connect(dialog, SIGNAL(finished(int)), SLOT(RequestNewAssetDialogClosed(int)));
+    dialog->show();
+}
+
+void AssetTreeWidget::RequestNewAssetDialogClosed(int result)
+{
+    RequestNewAssetDialog *dialog = qobject_cast<RequestNewAssetDialog*>(sender());
+    if (!dialog)
+        return;
+
+    if (result != QDialog::Accepted)
+        return;
+
+    framework->Asset()->RequestAsset(dialog->Source(), dialog->Type());
 }
 
 void AssetTreeWidget::Export()
