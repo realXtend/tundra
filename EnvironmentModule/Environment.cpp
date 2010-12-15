@@ -89,6 +89,9 @@ void Environment::CreateEnvironment()
 {
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeIdLocal());
+
+    // The environment entity exists due to legacy from Taiga. It is bad design to create the entity here.
+    entity->SetTemporary(true);
     active_scene->EmitEntityCreated(entity);
     activeEnvEntity_ = entity;
 
