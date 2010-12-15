@@ -38,6 +38,7 @@ bool IAsset::LoadFromCache()
 
 void IAsset::Unload()
 {
+    LogDebug("IAsset::Unload called for asset \"" + name.toStdString() + "\".");
     DoUnload();
     emit Unloaded(this);
 }

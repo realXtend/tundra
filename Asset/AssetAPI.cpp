@@ -371,7 +371,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         bool success = LoadFileToVector(assetFileInCache.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
         {
-            LogError("AssetAPI::RequestAsset: Failed to load asset from cache!");
+            LogError("AssetAPI::RequestAsset: Failed to load asset \"" + assetFileInCache.toStdString() + "\" from cache!");
             return AssetTransferPtr();
         }
         transfer->source.ref = assetRef;
@@ -625,13 +625,13 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
         AssetDependenciesCompleted(transfer);
 }
 
-void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer)
+void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 {
     assert(transfer);
     if (!transfer)
         return;
 
-    LogError("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" failed!");
+    LogError("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" failed! Reason: \"" + reason.toStdString() + "\"");
 
     ///\todo In this function, there is a danger of reaching an infinite recursion. Remember recursion parents and avoid infinite loops. (A -> B -> C -> A)
 
@@ -640,15 +640,18 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer)
         LogError("AssetAPI: Asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" transfer failed, but no corresponding AssetTransferPtr was tracked by AssetAPI!");
 
     // Signal any listeners that this asset transfer failed.
-    transfer->EmitAssetFailed();
+    transfer->EmitAssetFailed(reason);
 
     // Propagate the failure of this asset transfer to all assets which depend on this asset.
     std::vector<AssetPtr> dependents = FindDependents(transfer->source.ref);
     for(size_t i = 0; i < dependents.size(); ++i)
     {
-        AssetTransferPtr transfer = GetPendingTransfer(dependents[i]->Name());
-        if (transfer.get())
-            AssetTransferFailed(transfer.get());
+        AssetTransferPtr dependentTransfer = GetPendingTransfer(dependents[i]->Name());
+        if (dependentTransfer.get())
+        {
+            QString failReason = "Transfer of dependency " + transfer->source.ref + " failed due to reason: \"" + reason + "\"";
+            AssetTransferFailed(dependentTransfer.get(), failReason);
+        }
     }
 
     pendingDownloadRequests.erase(transfer->source.ref);

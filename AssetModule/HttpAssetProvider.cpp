@@ -101,8 +101,9 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         }
         else
         {
-            LogError("Http get for address \"" + reply->url().toString().toStdString() + "\" returned an error: \"" + reply->errorString().toStdString() + "\"");
-            framework->Asset()->AssetTransferFailed(transfer.get());
+            QString error = "Http GET for address \"" + reply->url().toString() + "\" returned an error: \"" + reply->errorString() + "\"";
+//            LogError(error.toStdString());
+            framework->Asset()->AssetTransferFailed(transfer.get(), error);
         }
         transfers.erase(iter);
         break;
