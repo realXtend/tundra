@@ -27,6 +27,31 @@ DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
 
 namespace fs = boost::filesystem;
 
+typedef QMap<QString, QString> RefMap;
+
+void ReplaceReferences(QByteArray &material, const RefMap &refs)
+{
+    QString matString(material);
+    QStringList lines = matString.split("\n");
+    for(int i = 0; i < lines.size(); ++i)
+    {
+        int idx = lines[i].indexOf("texture ");
+        if (idx != -1)
+        {
+            QString texName = lines[i].mid(idx + 8).trimmed();
+            texName = AssetAPI::ExtractFilenameFromAssetRef(texName); ///\todo This line is wrong and should be removed.
+            // There is a problem in the refmap that it doesn't store the original assetrefs, but stores the filenames
+            // without paths. Therefore we need to do the comparison here also without paths.
+            RefMap::const_iterator it = refs.find(texName);
+            if (it != refs.end())
+                //lines[i] = "texture " + it.value();
+                lines[i].replace(texName, it.value());
+        }
+    }
+
+    material = lines.join("\n").toAscii();
+}
+
 // Entity tree widget column index enumeration.
 const int cColumnEntityCreate = 0; ///< Create column index.
 const int cColumnEntityId = 1; ///< ID column index.
@@ -102,30 +127,6 @@ public:
 
     AssetDesc desc; ///< Asset description of the item.
 };
-
-typedef QMap<QString, QString> RefMap;
-
-void ReplaceReferences(QByteArray &material, const RefMap &refs)
-{
-    QString matString(material);
-    QStringList lines = matString.split("\n");
-    for(int i = 0; i < lines.size(); ++i)
-    {
-        int idx = lines[i].indexOf("texture ");
-        if (idx != -1)
-        {
-            QString texName = lines[i].mid(idx + 8).trimmed();
-            texName = AssetAPI::ExtractFilenameFromAssetRef(texName); ///\todo This line is wrong and should be removed.
-            // There is a problem in the refmap that it doesn't store the original assetrefs, but stores the filenames
-            // without paths. Therefore we need to do the comparison here also without paths.
-            RefMap::const_iterator it = refs.find(texName);
-            if (it != refs.end())
-                lines[i] = "texture " + it.value();
-        }
-    }
-
-    material = lines.join("\n").toAscii();
-}
 
 AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
@@ -430,16 +431,15 @@ void AddContentWindow::AddContent()
     }
 
     // Rewrite asset refs
-/*
-    QMutableListIterator<AssetDesc> rewriteIt(newDesc.assets);
+    QMutableMapIterator<QString, AssetDesc> rewriteIt(newDesc.assets);
     while(rewriteIt.hasNext())
     {
         rewriteIt.next();
-        if (rewriteIt.value().typeName == "material")
+        if (rewriteIt.value().typeName.contains("material", Qt::CaseInsensitive))
             ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
             ReplaceReferences(rewriteIt.value().data, refs);
     }
-*/
+
     Scene::ScenePtr destScene = scene.lock();
     if (!destScene)
         return;
