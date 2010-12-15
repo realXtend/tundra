@@ -40,7 +40,6 @@ class EC_OpenSimPresence : public IComponent
 {
 
     Q_OBJECT
-
     DECLARE_EC(EC_OpenSimPresence);
 
 public slots:

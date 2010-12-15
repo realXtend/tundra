@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_Interfaces_CommunicationsService_h
@@ -177,8 +178,10 @@ namespace Communications
         signals:
             /// When text message is received from in-world chat. The origin of the message 
             /// can be self or other participant
-            void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
-
+//$ BEGIN_MOD $
+//$ MOD_DESCRIPTION from_uuid argument added for the component $
+			void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message,const QString& from_uuid);
+//$ END_MOD $
             /// When user closes world connections
             void Closed();
             //void ParticipantJoined(ParticipantInterface* participant);

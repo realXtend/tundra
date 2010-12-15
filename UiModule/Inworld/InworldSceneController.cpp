@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -83,6 +84,7 @@ namespace UiServices
             return 0;
         }
 
+
         // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
         // signal to a slot which handles the deletion. This must be done because closing
         // proxy window in our system doesn't yield closeEvent, but hideEvent instead.
@@ -111,6 +113,7 @@ namespace UiServices
             all_proxy_widgets_in_scene_.append(widget);
             connect(widget, SIGNAL(destroyed(QObject*)), SLOT(ProxyDestroyed(QObject*)));
         }
+
 
         // \todo Find a proper solution to the problem
         // Proxy widget doesn't get input without main frame resisizing for unknow reason.

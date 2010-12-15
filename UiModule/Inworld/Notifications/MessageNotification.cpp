@@ -9,6 +9,7 @@
 
 #include "MemoryLeakCheck.h"
 
+
 namespace UiServices
 {
     MessageNotification::MessageNotification(const QString &message, int hide_in_msec) :
@@ -32,5 +33,6 @@ namespace UiServices
 
         content_widget->setLayout(v_layout);
         SetCentralWidget(content_widget);
+
     }
 }

@@ -1,3 +1,5 @@
+//$ HEADER_MOD_FILE $
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -147,6 +149,11 @@
 #ifdef EC_Movable_ENABLED
 #include "EC_Movable.h"
 #endif
+//$ BEGIN_MOD $
+#ifdef EC_TtsVoice_ENABLED
+#include "EC_TtsVoice.h"
+#endif
+//$ END_MOD $
 #ifdef EC_VideoSource_ENABLED
 #include "EC_VideoSource.h"
 #endif
@@ -252,6 +259,12 @@ void RexLogicModule::Load()
 #ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_Movable);
 #endif
+
+//$ BEGIN_MOD $
+#ifdef EC_TtsVoice_ENABLED
+    DECLARE_MODULE_EC(EC_TtsVoice);
+#endif
+//$ END_MOD $
 #ifdef EC_VideoSource_ENABLED
     DECLARE_MODULE_EC(EC_VideoSource);
 #endif
@@ -1050,6 +1063,14 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 
 #endif
     }
+//$ BEGIN_MOD $
+//$ MOD_DESCRIPTION if an entity has the ec_ttsvoice, when the user clicks on it, the entity play the message $
+/*#ifdef EC_TtsVoice_ENABLED
+	boost::shared_ptr<EC_TtsVoice> tts_voice = entity->GetComponent<EC_TtsVoice>();
+    if (tts_voice)
+        tts_voice->SpeakMessage();
+#endif
+//$ END_MOD $*/
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const

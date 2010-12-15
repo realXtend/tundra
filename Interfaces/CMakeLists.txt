@@ -6,8 +6,11 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB MOC_FILES CommunicationsService.h UiSettingsServiceInterface.h
     MediaPlayerService.h WorldBuildingServiceInterface.h RenderServiceInterface.h
-    UiServiceInterface.h UiWidgetProperties.h UiProxyWidget.h LoginServiceInterface.h WorldLogicInterface.h
+#$ BEGIN_MOD $
+#$ MOD_DESCRIPTION TtsServiceInterface added $
+    UiServiceInterface.h UiWidgetProperties.h UiProxyWidget.h LoginServiceInterface.h WorldLogicInterface.h TtsServiceInterface.h
     ConsoleCommandServiceInterface.h ISoundService.h InputServiceInterface.h IOpenSimSceneService.h)
+#$ END_MOD $
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 MocFolder ()

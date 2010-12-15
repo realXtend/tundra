@@ -1,3 +1,4 @@
+#$HEADER_MOD_FILE$
 # Define target name and output directory
 init_target (UiModule OUTPUT modules/core)
 
@@ -43,11 +44,16 @@ use_package (POCO)
 use_package (CURL)
 use_package (XMLRPC)
 use_package (OGRE)
-use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui Input)
-
+#$BEGIN_MOD$
+#$MOD_DESCRIPTION TtsModule EntityComponents/EC_TtsVoice EntityComponents/EC_OpenSimPresence added$ 
+use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui TtsModule Input EntityComponents/EC_TtsVoice EntityComponents/EC_OpenSimPresence)
+#$END_MOD$
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule)
+#$BEGIN_MOD$
+#$MOD_DESCRIPTION EC_TtsVoice EC_OpenSimPresence added$
+link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule EC_TtsVoice EC_OpenSimPresence)
+#$END_MOD$
 link_package (BOOST)
 link_package (QT4)
 link_package (POCO)
@@ -59,6 +65,7 @@ link_ogre()
 if (DYNAMIC_LOGIN_SCENE)
    add_definitions (-DDYNAMIC_LOGIN_SCENE)
 endif (DYNAMIC_LOGIN_SCENE)
+
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

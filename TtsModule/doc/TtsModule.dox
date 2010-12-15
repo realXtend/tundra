@@ -1,0 +1,89 @@
+/**
+
+\page TtsModule TTS module
+
+
+\section Text Text to Speech module
+
+
+This module integrates a speech synthesis system into Naali.
+
+
+Speech synthesis is the artificial production of human speech, and a text-to-speech system converts language text into speech. 
+One of the most important TTS System is the OpenSource Festival Speech Synthesis System developed by the University of Edinburgh.
+
+The project has also a side-project called Festvox which aims to make the building of new synthetic voices more systemic and better documented, 
+making it possible for anyone to build a new voice.
+
+The number of (free) voices is limited as well as their quality. Anyway, available voices in the integration are:
+
+
+- Spanish:
+
+    Male (Pedro) and female (Silvia) Guadalinex voices. (-ES1, -ES2)
+
+- English:
+
+    Two female (-EN2, -EN4) and four male voices (-EN1, -EN3, -EN5, -EN6) from Carnegie Mellon University adapted by the HTS working group.
+
+- Catalan
+
+    Still not working, from FestCat project.
+
+- Finnish 
+
+    The Department of General Linguistics at the University of Helsinki developed a male voice (-FI).
+
+
+The addition of new voices is quite simple, adding voice databases to /voices folder and making small changes in the code, adding voice tags (-lang).
+
+
+So, this module provides synthesis functionallity to Naali thanks to \ref TtsService "TTS Service". It's possible to synthetize both text-files and strings obtaining audible, WAV or PHO (phonetic) output.
+See available methods in the \ref Tts::TtsService "TTS service file".
+
+The module also creates a new component called EC_TtsVoice. With the component, scene entities can be used to synthetize text, configuring voice database (-lang) and message.
+
+
+Apart from the component, which can be used to generate audio content easily, any module or application can use TTS service. 
+
+
+\subsection Useful Useful links:
+
+- http://en.wikipedia.org/wiki/Speech_synthesis
+- http://www.cstr.ed.ac.uk/projects/festival/
+- http://festvox.org/
+- http://forja.guadalinex.org/projects/hispavoces/
+- http://hts.sp.nitech.ac.jp/
+- http://gps-tsc.upc.es/veu/festcat/
+- http://www.ling.helsinki.fi/suopuhe/index.shtml
+
+\section Howto How To use it
+Like every other modules which registers a service, the use of the module is done using that service. For example:
+
+\code
+	tts_service_ = framework_->GetService<Tts::TtsServiceInterface>();
+		if (!tts_service_)
+			return;
+		tts_service_->Text2Speech(message, Tts::Voices.EN4);
+\endcode
+
+\section example Example applications
+
+
+\subsection TTS-In-World-Chat In-World TTS Chat:
+
+Communication widget has been extended enabling the synthesis of the in world chat, being possible to enable or disable your and others synthesis. It's also the place to configure your own voice 
+and listen a demo before choosing it.
+
+Until the avatar has the TTS voice configuration, voice information goes with the message adding a header before this is sent to the network. This will be changed in the near future.
+
+For more information about this application go to \ref InWorldTTS "In-World TTS information page".
+
+\subsection Notification Notification TTS:
+
+\ref NotificationTTS "Notification TTS" module takes notifications and synthetizes using english woman voice (-EN4).
+
+
+
+
+*/
