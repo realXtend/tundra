@@ -28,7 +28,7 @@
 
 AssetItem::AssetItem(const AssetPtr &asset, QTreeWidgetItem *parent) :
     QTreeWidgetItem(parent),
-        assetPtr(asset)
+    assetPtr(asset)
 {
     setText(0, asset->Name());
 }
@@ -47,8 +47,8 @@ AssetTreeWidget::AssetTreeWidget(Foundation::Framework *fw, QWidget *parent) :
 {
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setSelectionBehavior(QAbstractItemView::SelectItems);
-//    setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
-//    setDropIndicatorShown(true);
+    setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
+    setDropIndicatorShown(true);
 }
 
 AssetTreeWidget::~AssetTreeWidget()
@@ -108,12 +108,20 @@ void AssetTreeWidget::dropEvent(QDropEvent *e)
         QStringList filenames;
         foreach(QUrl url, data->urls())
             if (!GetResourceTypeFromResourceFileName(url.path().toStdString().c_str()).isEmpty())
-                filenames << url.path();
+            {
+                QString filename = url.path();
+#ifdef _WINDOWS
+                // We have '/' as the first char on windows and the filename
+                // is not identified as a file properly. But on other platforms the '/' is valid/required.
+                filename = filename.mid(1);
+#endif
+                filenames << filename;
+            }
 
         if (!filenames.isEmpty())
         {
             e->acceptProposedAction();
-            //Upload(filenames);
+            Upload(filenames);
         }
     }
     else
@@ -163,6 +171,9 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
         connect(unloadAction, SIGNAL(triggered()), SLOT(Unload()));
 
         QAction *openFileLocationAction = new QAction(tr("Open file location"), menu);
+#ifndef _WINDOWS
+        openFileLocationAction->setDisabled(true);
+#endif
         menu->addAction(openFileLocationAction);
 
         connect(openFileLocationAction, SIGNAL(triggered()), SLOT(OpenFileLocation()));
@@ -265,9 +276,7 @@ void AssetTreeWidget::OpenFileDialogClosed(int result)
     if (dialog->selectedFiles().isEmpty())
         return;
 
-    AddContentWindow *addContent = new AddContentWindow(framework, framework->GetDefaultWorldScene());
-    addContent->AddFiles(dialog->selectedFiles());
-    addContent->show();
+    Upload(dialog->selectedFiles());
 }
 
 void AssetTreeWidget::RequestNewAsset()
@@ -337,8 +346,11 @@ void AssetTreeWidget::SaveAssetDialogClosed(int result)
         }
 }
 
-void AssetTreeWidget::Upload()
+void AssetTreeWidget::Upload(const QStringList &files)
 {
+    AddContentWindow *addContent = new AddContentWindow(framework, framework->GetDefaultWorldScene());
+    addContent->AddFiles(files);
+    addContent->show();
 }
 
 void AssetTreeWidget::OpenFileLocation()
