@@ -214,13 +214,12 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
         LogError("No EC_Mesh was created!");
 
     // Fill the name attributes
-/*
     EC_Name * namePtr = checked_static_cast<EC_Name *>(newentity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
     if (namePtr)
-        namePtr->name.Set(name, AttributeChange::Disconnected);
+        ///\todo Use name of scenedesc?
+        namePtr->name.Set(QString(meshleafname.c_str()).replace(".mesh", ""), AttributeChange::Disconnected);
     else
         LogError("No EC_Name was created!");
-*/
 
     // All components have been loaded/modified. Trigger change for them now.
     foreach(ComponentPtr c, newentity->GetComponentVector())
