@@ -145,7 +145,13 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->move(100, 100);
 
     profilerWindow_->resize(650, 530);
-    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, true, true);
+//$ BEGIN_MOD $
+#ifdef PLAYER_VIEWER
+    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, false, false); //Force to be inside, if is in settings file outside, it wont be visible in player view
+#else
+	UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, true, true);
+#endif
+//$ END_MOD $
     connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
 	//$ BEGIN_MOD $

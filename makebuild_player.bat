@@ -67,3 +67,4 @@ del buildplayer\modules\core\SupportModules*
 del buildplayer\modules\core\SupportModules*
 del buildplayer\modules\core\TelepathyIMModule*
 del buildplayer\modules\core\PhononPlayerModule*
+del buildplayer\modules\core\LibraryModule*

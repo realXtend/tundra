@@ -138,5 +138,6 @@ namespace CoreUi
     {
         //emit CancelClicked();
         //AnimatedHide();
+		panel_->ToggleSettingsVisibility(true);
     }
 }

@@ -847,7 +847,7 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
 
     buffer.resize(idx);
 
-    qDebug() << "BINARY MESSAGE MACRO DEFINED";
+    //qDebug() << "BINARY MESSAGE MACRO DEFINED";
 
     conn->SendGenericMessageBinary("ECSync", strings, buffer);
 #else

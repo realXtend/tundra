@@ -48,6 +48,7 @@ namespace CoreUi
         CacheSettingsWidget *GetCacheSettingsWidget() const { return cache_settings_widget_; }
 		//$ BEGIN_MOD $
 		void CreateOptionalControls();
+		void ToggleSettingsVisibility(bool visible);
 		//$ END_MOD $
 
     private slots:
@@ -57,7 +58,7 @@ namespace CoreUi
         void ControlButtonClicked(UiServices::ControlButtonType type);
 
         // Internal handling of settings widget
-        void ToggleSettingsVisibility(bool visible);
+        //void ToggleSettingsVisibility(bool visible);
         void ToggleTeleportVisibility(bool visible);
         void CheckSettingsButtonStyle();
         void CheckTeleportButtonStyle();

@@ -325,7 +325,10 @@ void RexLogicModule::Initialize()
 void RexLogicModule::PostInitialize()
 {
 	//$ BEGIN_MOD $
-	camera_control_widget_ = CameraControlPtr(new CameraControl(this)); //Done here when UiExternalModule is available
+	//Done here when UiExternalModule is available and if is not player_viewer
+#ifndef PLAYER_VIEWER
+	camera_control_widget_ = CameraControlPtr(new CameraControl(this));
+#endif
 	//$ END_MOD $
 
     EventManagerPtr eventMgr = framework_->GetEventManager();
@@ -718,23 +721,6 @@ Avatar::AvatarControllablePtr RexLogicModule::GetAvatarControllable() const
 PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
 {
     return primitive_;
-}
-
-//XXX \todo add dll exports or fix by some other way (e.g. qobjects)
-//wrappers for calling stuff elsewhere in logic module from outside (python api module)
-void RexLogicModule::SetAvatarYaw(float newyaw)
-{
-    GetAvatarControllable()->SetYaw(newyaw);
-}
-
-void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
-{
-    GetAvatarControllable()->SetRotation(newrot);
-}
-
-void RexLogicModule::SetCameraYawPitch(float newyaw, float newpitch)
-{
-    camera_controllable_->SetYawPitch(newyaw, newpitch);
 }
 
 void RexLogicModule::LogoutAndDeleteWorld()

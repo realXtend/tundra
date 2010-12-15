@@ -203,7 +203,6 @@ namespace WorldBuilding
 
         QList<QWidget*> toggle_visibility_widgets_;
         QList<QWidget*> python_deleted_widgets_;
-		QList<QWidget*> panel_widgets_;
 
 		QTimer *viewport_poller_;
         bool override_server_time_;
@@ -224,6 +223,8 @@ namespace WorldBuilding
 		Ui_ObjectManipulationsWidget asset_ui_;
 		//! The elements os Asset widget is inside or outside of build 
 		bool inside_;
+
+		QList<QWidget*> panel_widgets_;
 //$ END_MOD $
     };
 }

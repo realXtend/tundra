@@ -15,6 +15,9 @@ namespace UiExternalServices
 	   owner_(owner),
 	   qWin_(qWin),
 	   entitySelected_(0),
+	   currentScene(0),
+	   scene_event_category_(0),
+	   menu_asset(0),
 	   edit_mode_(true)
 	   {		   
 		   //qWin_=dynamic_cast<QMainWindow*>(owner_->framework_->Ui()->MainWindow());
