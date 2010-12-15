@@ -7,7 +7,7 @@
 
 #include "StableHeaders.h"
 
-void TreeWidgetSearch(QTreeWidget *treeWidget, const QString &filter)
+void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter)
 {
     QString f = filter.trimmed();
     bool expand = f.size() >= 3;
@@ -23,7 +23,7 @@ void TreeWidgetSearch(QTreeWidget *treeWidget, const QString &filter)
             {
                 item->setHidden(false);
             }
-            else if (item->text(0).contains(filter, Qt::CaseInsensitive))
+            else if (item->text(column).contains(filter, Qt::CaseInsensitive))
             {
                 item->setHidden(false);
                 alreadySetVisible.insert(item);
