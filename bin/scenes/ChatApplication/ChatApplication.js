@@ -83,9 +83,8 @@ proxy.visible = false;
 proxy.windowFlags = 0;
 
 var chatControl;
-serverComponent = me.GetComponentRaw("EC_DynamicComponent", "server");
 
-if (serverComponent)
+if (server.IsRunning())
 {
 	print("Starting Chat Server");
 	chatControl = new ServerControl();
