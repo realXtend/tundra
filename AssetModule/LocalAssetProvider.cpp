@@ -166,7 +166,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 
         QString ref = transfer->source.ref;
 
-        AssetModule::LogDebug("New local asset request: " + ref.toStdString());
+//        AssetModule::LogDebug("New local asset request: " + ref.toStdString());
 
         // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
         if (ref.startsWith("file://"))
@@ -182,8 +182,9 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         QString path = GetPathForAsset(ref, &storage);
         if (path.isEmpty())
         {
-            AssetModule::LogWarning("Failed to find local asset with filename \"" + ref.toStdString() + "\"!");
-            framework->Asset()->AssetTransferFailed(transfer.get());
+            QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
+//            AssetModule::LogWarning(reason.toStdString());
+            framework->Asset()->AssetTransferFailed(transfer.get(), reason);
             continue;
         }
     
@@ -193,8 +194,9 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
         {
-            AssetModule::LogError("Failed to read asset data for asset \"" + ref.toStdString() + "\" from file \"" + absoluteFilename.toStdString() + "\"");
-            framework->Asset()->AssetTransferFailed(transfer.get());
+            QString reason = "Failed to read asset data for asset \"" + ref + "\" from file \"" + absoluteFilename + "\"";
+//            AssetModule::LogError(reason.toStdString());
+            framework->Asset()->AssetTransferFailed(transfer.get(), reason);
             continue;
         }
         
@@ -203,7 +205,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         transfer->SetCachingBehavior(false, absoluteFilename.toStdString().c_str());
 
         transfer->storage = storage;
-        AssetModule::LogDebug("Downloaded asset \"" + ref.toStdString() + "\" from file " + absoluteFilename.toStdString());
+//        AssetModule::LogDebug("Downloaded asset \"" + ref.toStdString() + "\" from file " + absoluteFilename.toStdString());
 
         // Signal the Asset API that this asset is now successfully downloaded.
         framework->Asset()->AssetTransferCompleted(transfer.get());

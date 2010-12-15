@@ -47,7 +47,7 @@ public:
 
     void EmitAssetLoaded();
 
-    void EmitAssetFailed();
+    void EmitAssetFailed(QString reason);
 
     /// Stores the raw asset bytes for this asset.
     std::vector<u8> rawAssetData;
@@ -80,7 +80,7 @@ signals:
     void Loaded(AssetPtr asset);
 
     /// Emitted when this transfer failed.
-    void Failed(IAssetTransfer *transfer);
+    void Failed(IAssetTransfer *transfer, QString reason);
 
 private:
     bool cachingAllowed;
