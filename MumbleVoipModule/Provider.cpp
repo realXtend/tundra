@@ -287,8 +287,12 @@ namespace MumbleVoip
             return "";
        
         Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+        if (!user_avatar)
+            return "";
 
         boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
+        if (!presence)
+            return "";
 
         return presence->agentId.ToQString();
     }
