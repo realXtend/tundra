@@ -17,8 +17,6 @@
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
 #include "EC_OgreCustomObject.h"
-#include "EC_OgreLight.h"
-#include "EC_OgreParticleSystem.h"
 
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
@@ -1460,8 +1458,9 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
         {
         case 32: // light
         {
+            //! \todo Regression: reimplement using EC_Light
             // If light component doesn't exist, create it.
-            entity->GetOrCreateComponent(EC_OgreLight::TypeNameStatic());
+            // entity->GetOrCreateComponent(EC_OgreLight::TypeNameStatic());
                 
             // Read the data.
             Color color = ReadColorFromBytes(extra_params_data, idx);
@@ -1484,6 +1483,8 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
 
 void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, float radius, float falloff)
 {
+    //! \todo Regression: reimplement using EC_Light
+    /*
     if (radius < 0.001)
         radius = 0.001f;
 
@@ -1521,6 +1522,7 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, floa
 
     light->SetColor(color);
     light->SetAttenuation(max_radius, 0.0f, linear, quad);
+    */
 }
 
 void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color)

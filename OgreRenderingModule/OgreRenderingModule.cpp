@@ -5,11 +5,9 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "EC_OgreLight.h"
 #include "EC_OgreSky.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "EC_OgreParticleSystem.h"
 #include "EC_AnimationController.h"
 #include "EC_OgreEnvironment.h"
 #include "EC_OgreCamera.h"
@@ -56,11 +54,9 @@ namespace OgreRenderer
     {
         DECLARE_MODULE_EC(EC_Placeable);
         DECLARE_MODULE_EC(EC_Mesh);
-        DECLARE_MODULE_EC(EC_OgreLight);
         DECLARE_MODULE_EC(EC_OgreSky);
         DECLARE_MODULE_EC(EC_OgreCustomObject);
         DECLARE_MODULE_EC(EC_OgreMovableTextOverlay);
-        DECLARE_MODULE_EC(EC_OgreParticleSystem);
         DECLARE_MODULE_EC(EC_AnimationController);
         DECLARE_MODULE_EC(EC_OgreEnvironment);
         DECLARE_MODULE_EC(EC_OgreCamera);
