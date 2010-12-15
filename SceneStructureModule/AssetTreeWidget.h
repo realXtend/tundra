@@ -102,6 +102,11 @@ private slots:
     /// 
     void RequestNewAsset();
 
+    /// Called by RequestNewAssetDialog when it's closed.
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
+    */
+    void RequestNewAssetDialogClosed(int result);
+
     /// Exports selected asset(s).
     void Export();
 
