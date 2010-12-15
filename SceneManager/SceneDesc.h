@@ -8,7 +8,7 @@
 #ifndef incl_SceneManager_SceneDesc_h
 #define incl_SceneManager_SceneDesc_h
 
-#include <set>
+#include <QMap>
 
 /// Description of asset.
 struct AssetDesc
@@ -115,7 +115,7 @@ struct SceneDesc
     QString name; ///< Name.
     bool viewEnabled; ///< Is scene view enabled (ie. rendering-related components actually create stuff)
     QList<EntityDesc> entities; ///< List of entities the scene has.
-    std::set<AssetDesc> assets; ///< List of assets the scene refers to.
+    QMap<QString, AssetDesc> assets; ///< Map of of assets the scene refers to, AssetDesc::source used as key.
 
     /// Returns true if the scene description has no entities, false otherwise.
     bool IsEmpty() const { return entities.isEmpty(); }

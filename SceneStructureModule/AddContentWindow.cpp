@@ -255,7 +255,7 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
         QString type = GetResourceTypeFromResourceFileName(file.toStdString().c_str());
         ad.typeName = type.isEmpty() ? "Binary" : type;
         ad.destinationName = fs::path(file.toStdString()).leaf().c_str();
-        desc.assets.insert(ad);
+        desc.assets[ad.source]= ad;
     }
 
     sceneDesc = desc;
@@ -294,7 +294,7 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     entityTreeWidget->setSortingEnabled(true);
 }
 
-void AddContentWindow::AddAssets(const std::set<AssetDesc> &assetDescs)
+void AddContentWindow::AddAssets(const QMap<QString, AssetDesc> &assetDescs)
 {
     assetTreeWidget->setSortingEnabled(false);
 
@@ -392,6 +392,14 @@ void AddContentWindow::AddContent()
         ++eit;
     }
 
+    // Rewrite components asset refs
+    foreach(EntityDesc ed, newDesc.entities)
+        foreach(ComponentDesc cd, ed.components)
+            foreach(AttributeDesc ad, cd.attributes)
+                if (ad.typeName == "assetreference")
+                     ad.value = dest->GetFullAssetURL(newDesc.assets[ad.value].destinationName);
+                    // After the above lines the asset reference attribute descs do not point to the original source assets.
+
     RefMap refs;
     QTreeWidgetItemIterator ait(assetTreeWidget);
     while(*ait)
@@ -402,9 +410,9 @@ void AddContentWindow::AddContent()
         {
             if (aitem->checkState(cColumnAssetUpload) == Qt::Unchecked)
             {
-                std::set<AssetDesc>::const_iterator ai = newDesc.assets.find(aitem->desc);
-                if (ai != newDesc.assets.end())
-                    newDesc.assets.erase(ai);
+                bool removed = newDesc.assets.remove(aitem->desc.source);
+                if (!removed)
+                    LogDebug("Coulnd't find and remove " + aitem->desc.source.toStdString() + "from asset map.");
             }
             else
             {

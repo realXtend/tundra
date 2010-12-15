@@ -830,21 +830,14 @@ namespace Scene
                             {
                                 AssetDesc ad;
                                 ad.typeName = a->GetNameString().c_str();
-                                ad.source = value;
                                 ad.dataInMemory = false;
 
                                 // Rewrite source refs for asset descs, if necessary.
                                 QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                                QString outFilePath;
-                                AssetAPI::FileQueryResult res = framework_->Asset()->QueryFileLocation(ad.source, basePath, outFilePath);
-                                if (res == AssetAPI::FileQueryLocalFileFound)
-                                    ad.source = outFilePath;
+                                framework_->Asset()->QueryFileLocation(value, basePath, ad.source);
+                                ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
-                                QString filepath = QDir::fromNativeSeparators(value);
-                                int idx = filepath.lastIndexOf("/");
-                                ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
-
-                                sceneDesc.assets.insert(ad);
+                                sceneDesc.assets[ad.source] = ad;
                             }
                         }
                     }
@@ -951,20 +944,14 @@ namespace Scene
                                         {
                                             AssetDesc ad;
                                             ad.typeName = a->GetNameString().c_str();
-                                            ad.source = value;
+                                            ad.dataInMemory = false;
 
                                             // Rewrite source refs for asset descs, if necessary.
                                             QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
-                                            QString outFilePath;
-                                            AssetAPI::FileQueryResult res = framework_->Asset()->QueryFileLocation(ad.source, basePath, outFilePath);
-                                            if (res == AssetAPI::FileQueryLocalFileFound)
-                                                ad.source = outFilePath;
+                                            framework_->Asset()->QueryFileLocation(value, basePath, ad.source);
+                                            ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
-                                            QString filepath = QDir::fromNativeSeparators(value);
-                                            int idx = filepath.lastIndexOf("/");
-                                            ad.destinationName = (idx != -1) ? filepath.mid(idx + 1).trimmed() : filepath.trimmed();
-
-                                            sceneDesc.assets.insert(ad);
+                                            sceneDesc.assets[ad.source] = ad;
                                         }
                                     }
                                 }

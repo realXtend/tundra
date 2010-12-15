@@ -1215,23 +1215,23 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
 {
     foreach(QString filename, meshFiles)
     {
-        AssetDesc meshAssetDesc;
-        //meshAssetDesc.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + filename;
-        meshAssetDesc.dataInMemory = false;
-        meshAssetDesc.source = filename;
-        meshAssetDesc.typeName = "mesh";
-        meshAssetDesc.destinationName = fs::path(filename.toStdString()).leaf().c_str();//meshAssetDesc.source;
-        desc.assets.insert(meshAssetDesc);
+        AssetDesc ad;
+        //ad.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + filename;
+        ad.dataInMemory = false;
+        ad.source = filename;
+        ad.typeName = "mesh";
+        ad.destinationName = fs::path(filename.toStdString()).leaf().c_str();//meshAssetDesc.source;
+        desc.assets[ad.source] = ad;
     }
 
     foreach(QString skeleton, skeletons)
     {
-        AssetDesc skeletonAssetDesc;
-        skeletonAssetDesc.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + skeleton; // This is already an absolute path. Don't use QueryFileLocation.
-        skeletonAssetDesc.dataInMemory = false;
-        skeletonAssetDesc.typeName = "skeleton";
-        skeletonAssetDesc.destinationName = skeleton;
-        desc.assets.insert(skeletonAssetDesc);
+        AssetDesc ad;
+        ad.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + skeleton; // This is already an absolute path. Don't use QueryFileLocation.
+        ad.dataInMemory = false;
+        ad.typeName = "skeleton";
+        ad.destinationName = skeleton;
+        desc.assets[ad.source] = ad;
     }
 
     // Get all materials scripts from all material script files.
@@ -1245,20 +1245,20 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     // Find the used materials and create material assets descs even if the files don't exist.
     foreach(QString matName, usedMaterials)
     {
-        AssetDesc matDesc;
-        matDesc.typeName = "material";
-        matDesc.subname = matName;
-        matDesc.dataInMemory = true;
-        matDesc.destinationName = matName + ".material";
+        AssetDesc ad;
+        ad.typeName = "material";
+        ad.subname = matName;
+        ad.dataInMemory = true;
+        ad.destinationName = matName + ".material";
 
         foreach(MaterialInfo mat, allMaterials)
             if (mat.name == matName)
             {
-                matDesc.source = mat.source;
-                matDesc.data = mat.data.toAscii();
+                ad.source = mat.source;
+                ad.data = mat.data.toAscii();
             }
 
-        desc.assets.insert(matDesc);
+            desc.assets[ad.source] = ad;
     }
 
     // Process materials for textures.
@@ -1270,14 +1270,14 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     // Add texture asset descs.
     foreach(QString tex, all_textures)
     {
-        AssetDesc textureAssetDesc;
-        textureAssetDesc.typeName = "texture";
-        textureAssetDesc.dataInMemory = false;
-        AssetAPI::FileQueryResult result = AssetAPI::QueryFileLocation(tex, path, textureAssetDesc.source);
+        AssetDesc ad;
+        ad.typeName = "texture";
+        ad.dataInMemory = false;
+        AssetAPI::FileQueryResult result = AssetAPI::QueryFileLocation(tex, path, ad.source);
         if (result == AssetAPI::FileQueryLocalFileMissing)
             LogWarning("Texture file \"" + tex.toStdString() + "\" cannot be found from path \"" + path.toStdString() + "\"!");
-        textureAssetDesc.destinationName = AssetAPI::ExtractFilenameFromAssetRef(tex); // The destination name must be local to the destination asset storage.
-        desc.assets.insert(textureAssetDesc);
+        ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(tex); // The destination name must be local to the destination asset storage.
+        desc.assets[ad.source] = ad;
     }
 }
 

@@ -178,7 +178,7 @@ void AssetsWindow::RemoveAsset(AssetPtr asset)
 
 void AssetsWindow::Search(const QString &filter)
 {
-    TreeWidgetSearch(treeWidget, filter);
+    TreeWidgetSearch(treeWidget, 0, filter);
 }
 
 void AssetsWindow::ExpandOrCollapseAll()

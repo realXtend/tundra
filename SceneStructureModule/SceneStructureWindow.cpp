@@ -632,7 +632,7 @@ void SceneStructureWindow::Sort(const QString &criteria)
 
 void SceneStructureWindow::Search(const QString &filter)
 {
-    TreeWidgetSearch(treeWidget, filter);
+    TreeWidgetSearch(treeWidget, 0, filter);
 }
 
 void SceneStructureWindow::ExpandOrCollapseAll()
