@@ -1,8 +1,8 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   AssetTreeWidget.cpp
- *  @brief  Tree widget showing all available assets.
+ *  @file   RequestNewAssetDialog.cpp
+ *  @brief  Dialog for requesting new asset from arbitrary source.
  */
 
 #include "StableHeaders.h"

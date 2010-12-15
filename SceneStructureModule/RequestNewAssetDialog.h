@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   RequestNewAssetDialog.h
- *  @brief  
+ *  @brief  Dialog for requesting new asset from arbitrary source.
  */
 
 #ifndef incl_SceneStructureModule_RequestNewAssetDialog_h
@@ -15,7 +15,9 @@ class QComboBox;
 
 class AssetAPI;
 
-///
+/// Dialog for requesting new asset from arbitrary source.
+/** The dialog is deleted when it's closed.
+*/
 class RequestNewAssetDialog : public QDialog
 {
     Q_OBJECT
@@ -35,7 +37,7 @@ public:
     QString Type() const;
 
 protected:
-    /// QWidget override.
+    /// QWidget override. Deletes the window.
     void hideEvent(QHideEvent *e);
 
 private:

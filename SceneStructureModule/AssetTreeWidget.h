@@ -44,9 +44,6 @@ public:
     */
     AssetTreeWidget(Foundation::Framework *fw, QWidget *parent = 0);
 
-    /// Destructor.
-    virtual ~AssetTreeWidget();
-
 protected:
     /// QWidget override. Show context menu with asset-spesific actions.
     void contextMenuEvent(QContextMenuEvent *e);
@@ -99,10 +96,10 @@ private slots:
     */
     void OpenFileDialogClosed(int result);
 
-    /// 
+    /// Opens Request New Asset dialog.
     void RequestNewAsset();
 
-    /// Called by RequestNewAssetDialog when it's closed.
+    /// Called by Request New Asset dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */
     void RequestNewAssetDialogClosed(int result);
@@ -115,7 +112,7 @@ private slots:
     */
     void SaveAssetDialogClosed(int result);
 
-    ///
+    /// Opens Add Content window with the provided @files added to it.
     /** @param files List of filenames.
     */
     void Upload(const QStringList &files);

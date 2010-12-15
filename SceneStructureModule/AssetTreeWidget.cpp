@@ -51,10 +51,6 @@ AssetTreeWidget::AssetTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     setDropIndicatorShown(true);
 }
 
-AssetTreeWidget::~AssetTreeWidget()
-{
-}
-
 void AssetTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 {
     // Do mousePressEvent so that the right item gets selected before we show the menu
@@ -72,7 +68,6 @@ void AssetTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 
     contextMenu->popup(e->globalPos());
 }
-
 
 void AssetTreeWidget::dragEnterEvent(QDragEnterEvent *e)
 {
