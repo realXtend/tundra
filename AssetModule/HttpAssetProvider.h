@@ -45,6 +45,9 @@ public:
     /// Starts an asset upload from the given file in memory to the given storage.
     virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
+    /// Issues a http DELETE request for the given asset.
+    virtual void DeleteAssetFromStorage(QString assetRef);
+
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
 

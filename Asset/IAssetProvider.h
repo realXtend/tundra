@@ -59,6 +59,10 @@ public:
         \param frametime Seconds since last frame */
     virtual void Update(f64 frametime) {}
 
+    /// Issues an asset deletion request to the asset storage and provider this asset resides in.
+    /// If the asset provider supports this feature, it will delete the asset from the source.
+    virtual void DeleteAssetFromStorage(QString assetRef) {}
+
     /// Returns the list of all asset storages registered into this asset provider.
     virtual std::vector<AssetStoragePtr> GetStorages() const = 0;
 
