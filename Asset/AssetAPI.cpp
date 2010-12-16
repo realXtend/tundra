@@ -207,6 +207,28 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 
 }
 
+void AssetAPI::DeleteAssetFromStorage(QString assetRef)
+{
+    AssetPtr asset = GetAsset(assetRef);
+
+    AssetProviderPtr provider = (asset.get() ? asset->GetAssetProvider() : AssetProviderPtr());
+    if (!provider.get())
+        provider = GetProviderForAssetRef(assetRef); // If the actual AssetPtr didn't specify the originating provider, try to guess it from the assetRef string.
+
+    // We're erasing the asset from the storage, so also clean it from memory and disk source to avoid any leftovers from remaining in the system.
+    if (asset.get())
+        ForgetAsset(asset, true);
+
+    if (!provider.get())
+    {
+        LogError("AssetAPI::DeleteAssetFromStorage called on asset \"" + assetRef.toStdString() + "\", but the originating provider was not set!");
+        // Remove this asset from memory and from the disk source, the best we can do for it.
+        return;
+    }
+
+    provider->DeleteAssetFromStorage(assetRef);
+}
+
 AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
 {
     if (!filename || strlen(filename) == 0)
@@ -564,7 +586,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 //        transfer->asset->EmitDecoded
         transfer->EmitAssetDecoded();
         transfer->asset->EmitLoaded();
-//        transfer->EmitAssetLoaded();
+        transfer->EmitAssetLoaded();
         pendingDownloadRequests.erase(transfer->source.ref);
         currentTransfers.erase(transfer->source.ref);
 

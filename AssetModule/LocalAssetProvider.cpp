@@ -106,6 +106,14 @@ void LocalAssetProvider::Update(f64 frametime)
     CompletePendingFileDownloads();
 }
 
+void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
+{
+    if (!assetRef.isEmpty())
+        QFile::remove(assetRef); ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
+
+    AssetModule::LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
+}
+
 void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
 {
     ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
