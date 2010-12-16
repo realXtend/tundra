@@ -586,7 +586,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 //        transfer->asset->EmitDecoded
         transfer->EmitAssetDecoded();
         transfer->asset->EmitLoaded();
-//        transfer->EmitAssetLoaded();
+        transfer->EmitAssetLoaded();
         pendingDownloadRequests.erase(transfer->source.ref);
         currentTransfers.erase(transfer->source.ref);
 
