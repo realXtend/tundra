@@ -43,8 +43,7 @@ public:
     /** @param assetRef The asset reference (a filename or a full URL) to request. The name of the resulting asset is the same as the asset reference
               that is used to load it.
         @param assetType The type of the asset to request. This can be null if the assetRef itself identifies the asset type.
-        @return A pointer to the created asset transfer, or null if the transfer could not be initiated.
-    */
+        @return A pointer to the created asset transfer, or null if the transfer could not be initiated. */
     AssetTransferPtr RequestAsset(QString assetRef, QString assetType = "");
 
     /// Same as RequestAsset(assetRef, assetType), but provided for convenience with the AssetReference type.
@@ -54,8 +53,7 @@ public:
     /** Example: GetProviderForAssetRef("local://my.mesh") will return an instance of LocalAssetProvider.
         @param assetRef The asset reference name to query a provider for.
         @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
-                        used to more completely specify the type.
-    */
+                        used to more completely specify the type. */
     AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
 
     /// Registers a type factory for creating assets of the type governed by the factory.
@@ -67,8 +65,7 @@ public:
                     using the AssetAPI::RegisterAssetTypeFactory function.
         @param name Specifies the name to give to the new asset. This name must be unique in the system, or this call will fail.
                     Use GetAsset(name) to query if an asset with the given name exists, and the AssetAPI::GenerateUniqueAssetName 
-                    to guarantee the creation of a unique asset name.
-    */
+                    to guarantee the creation of a unique asset name. */
     AssetPtr CreateNewAsset(QString type, QString name);
 
     /// Loads an asset from a local file.
@@ -77,8 +74,7 @@ public:
     /// Generates a new asset name that is guaranteed to be unique in the system.
     /** @param assetTypePrefix The type of the asset to use as a human-readable visual prefix identifier for the name. May be empty.
         @param assetNamePrefix A name prefix that is added to the asset name for visual identification. May be empty.
-        @return A string of the form "Asset_<assetTypePrefix>_<assetNamePrefix>_<number>".
-    */
+        @return A string of the form "Asset_<assetTypePrefix>_<assetNamePrefix>_<number>". */
     QString GenerateUniqueAssetName(QString assetTypePrefix, QString assetNamePrefix);
 
     /// Generates an absolute path name to a file on the local system that is guaranteed to be writable to and nonexisting. This file can be used as temporary workspace
@@ -160,9 +156,9 @@ public:
     void ForgetAsset(AssetPtr asset, bool removeDiskSource);
 
     /// Sends an asset deletion request to the remote asset storage the asset resides in.
-    ///\todo Implement.
-    /// @note Calling DeleteAssetFromStorage on an asset will unload it from the system. Do not dereference the asset after calling this function.
-    void DeleteAssetFromStorage(AssetPtr asset) { /* N/I. */ }
+    /// @note Calling DeleteAssetFromStorage on an asset will unload it from the system, *and* delete the disk source of this asset. Do not dereference 
+    /// the asset after calling this function. After calling this function, the asset will be gone from everywhere!
+    void DeleteAssetFromStorage(QString assetRef);
 
     /// Uploads an asset to an asset storage.
     /** @param filename The source file to load the asset from.

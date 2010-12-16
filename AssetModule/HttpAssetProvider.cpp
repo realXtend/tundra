@@ -32,7 +32,9 @@ QString HttpAssetProvider::Name()
 
 bool HttpAssetProvider::IsValidRef(QString assetRef, QString)
 {
-    return assetRef.trimmed().startsWith("http://");
+    assetRef = assetRef.trimmed();
+
+    return assetRef.startsWith("http://") || assetRef.startsWith("https://");
 }
         
 AssetTransferPtr HttpAssetProvider::RequestAsset(QString assetRef, QString assetType)
@@ -76,8 +78,26 @@ AssetUploadTransferPtr HttpAssetProvider::UploadAssetFromFileInMemory(const u8 *
     return transfer;
 }
 
+void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
+{
+    assetRef = assetRef.trimmed();
+    if (!IsValidRef(assetRef))
+    {
+        LogError("HttpAssetProvider::DeleteAssetFromStorage: Cannot delete asset from invalid URL \"" + assetRef.toStdString() + "\"!");
+        return;
+    }
+    QNetworkRequest request;
+    request.setUrl(QUrl(assetRef));
+    request.setRawHeader("User-Agent", "realXtend Naali");
+
+    QNetworkReply *reply = networkAccessManager->deleteResource(request);
+}
+
 void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
 {
+    // QNetworkAccessManager requires us to delete the QNetworkReply, or it will leak.
+    reply->deleteLater();
+
     switch(reply->operation())
     {
     case QNetworkAccessManager::GetOperation:
@@ -134,6 +154,12 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         uploadTransfers.erase(iter);
         break;
     }
+    case QNetworkAccessManager::DeleteOperation:
+        if (reply->error() == QNetworkReply::NoError)
+            LogInfo("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" returned successfully.");
+        else
+            LogError("Http DELETE to address \"" + reply->url().toString().toStdString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
+        break;
     default:
         LogInfo("Unknown operation for address \"" + reply->url().toString().toStdString() + "\" finished with result: \"" + reply->errorString().toStdString() + "\"");
         break;
