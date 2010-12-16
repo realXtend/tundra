@@ -2,6 +2,7 @@
 #include "OgreMaterialAsset.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
+#include "OgreMaterialUtils.h"
 #include "Renderer.h"
 
 using namespace OgreRenderer;

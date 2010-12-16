@@ -346,8 +346,6 @@ namespace OgreRenderer
         // Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
     };
-
-    bool ProcessBraces(const std::string& line, int& braceLevel);
 }
 
 #endif
