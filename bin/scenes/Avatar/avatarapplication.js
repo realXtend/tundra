@@ -57,6 +57,7 @@ function ServerHandleUserConnected(connectionID, user)
 {
     var avatarEntityName = "Avatar" + connectionID;
     var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController"]);
+    avatarEntity.SetTemporary(true); // We never want to save the avatar entities to disk.
     avatarEntity.SetName(avatarEntityName);
     avatarEntity.SetDescription(user.GetProperty("username"));
 

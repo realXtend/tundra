@@ -210,7 +210,7 @@ public:
 
     /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and
     /// also fail any transfers of assets which depended on this transfer.
-    void AssetTransferFailed(IAssetTransfer *transfer);
+    void AssetTransferFailed(IAssetTransfer *transfer, QString reason);
 
     /// Called by each AssetProvider to notify the Asset API that an asset upload transfer has completed. Do not call this function from client code.
     void AssetUploadTransferCompleted(IAssetUploadTransfer *transfer);
