@@ -22,12 +22,13 @@ namespace Foundation
         Q_OBJECT
 
     public slots:
-        /// Returns user's avatar entity, as a QObject* which works for py & js which don't know about boost shared pointers
+        /// @note Deprecated in Tundra.
         virtual Scene::Entity* GetUserAvatarEntityRaw() const 
         {
             return GetUserAvatarEntity().get();
         }
 
+        /// @note Deprecated in Tundra.
         virtual Scene::Entity* GetCameraEntityRaw() const 
         {
             return GetCameraEntity().get();
@@ -41,9 +42,11 @@ namespace Foundation
         virtual ~WorldLogicInterface() {}
 
         /// Returns user's avatar entity.
+        /// @note Deprecated in Tundra.
         virtual Scene::EntityPtr GetUserAvatarEntity() const = 0;
 
         /// Returns currently active camera entity.
+        /// @note Deprecated in Tundra.
         virtual Scene::EntityPtr GetCameraEntity() const = 0;
 
         /// Returns entity with certain entity component in it or null if not found.
