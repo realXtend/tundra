@@ -26,6 +26,7 @@ ComponentManager::ComponentManager(Foundation::Framework *framework) : framework
     attributeTypes_.push_back("uint");
     attributeTypes_.push_back("quaternion");
     attributeTypes_.push_back("assetreference");
+    attributeTypes_.push_back("assetreferencelist");
     attributeTypes_.push_back("qvariant");
     attributeTypes_.push_back("qvariantlist");
     attributeTypes_.push_back("transform");
@@ -146,6 +147,8 @@ IAttribute *ComponentManager::CreateAttribute(IComponent*owner, const std::strin
         attribute = new Attribute<Quaternion>(owner, name.c_str());
     else if(typeName == "assetreference")
         attribute = new Attribute<AssetReference>(owner, name.c_str());
+    else if(typeName == "assetreferencelist")
+        attribute = new Attribute<AssetReferenceList>(owner, name.c_str());
     else if(typeName == "qvariant")
         attribute = new Attribute<QVariant>(owner, name.c_str());
     else if(typeName == "qvariantlist")
