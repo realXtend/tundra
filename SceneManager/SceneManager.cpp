@@ -649,9 +649,8 @@ namespace Scene
             Entity* entity = ret[i];
             EmitEntityCreated(entity, change);
             // All entities & components have been loaded. Trigger change for them now.
-            const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-            for(uint j = 0; j < components.size(); ++j)
-                components[j]->ComponentChanged(change);
+            foreach(ComponentPtr comp, entity->GetComponentVector())
+                comp->ComponentChanged(change);
         }
         
         return ret;
@@ -669,10 +668,15 @@ namespace Scene
 
         foreach(EntityDesc e, desc.entities)
         {
+            entity_id_t id;
             if (e.id.isEmpty())
-                continue;
+                if (e.local)
+                    id = GetNextFreeIdLocal();
+                else
+                    id = GetNextFreeId();
+            else
+                id = ParseString<entity_id_t>(e.id.toStdString());
 
-            entity_id_t id = ParseString<entity_id_t>(e.id.toStdString());
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
                 if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.

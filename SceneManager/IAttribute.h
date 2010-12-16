@@ -18,8 +18,8 @@
 
 namespace kNet
 {
-class DataSerializer;
-class DataDeserializer;
+    class DataSerializer;
+    class DataDeserializer;
 }
 
 class IComponent;

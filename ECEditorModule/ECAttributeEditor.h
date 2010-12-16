@@ -327,13 +327,13 @@ template<> void ECAttributeEditor<QString>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<QString>::Initialize();
 template<> void ECAttributeEditor<QString>::Set(QtProperty *property);
 
-template<> void ECAttributeEditor<QVariant>::Update(IAttribute *attr);
-template<> void ECAttributeEditor<QVariant>::Initialize();
-template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property);
-
 template<> void ECAttributeEditor<Transform>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<Transform>::Initialize();
 template<> void ECAttributeEditor<Transform>::Set(QtProperty *property);
+
+template<> void ECAttributeEditor<QVariant>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<QVariant>::Initialize();
+template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property);
 
 template<> void ECAttributeEditor<QVariantList >::Update(IAttribute *attr);
 template<> void ECAttributeEditor<QVariantList >::Initialize();
@@ -342,5 +342,9 @@ template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property);
 template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<AssetReference>::Initialize();
 template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property);
+
+template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<AssetReferenceList>::Initialize();
+template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property);
 
 #endif
