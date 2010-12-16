@@ -52,21 +52,13 @@ void Client::Update(f64 frametime)
 
 void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password)
 {
-    // Create one kind of hardcoded logindata containing username & password
-    QDomDocument xml;
-    QDomElement rootElem = xml.createElement("login");
-    QDomElement usernameElem = xml.createElement("username");
-    usernameElem.setAttribute("value", username);
-    QDomElement passwordElem = xml.createElement("password");
-    passwordElem.setAttribute("value", password);
-    rootElem.appendChild(usernameElem);
-    rootElem.appendChild(passwordElem);
-    xml.appendChild(rootElem);
+    SetLoginProperty("username", username);
+    SetLoginProperty("password", password);
     
-    Login(address, port, xml.toString());
+    Login(address, port);
 }
 
-void Client::Login(const QString& address, unsigned short port, const QString& loginData)
+void Client::Login(const QString& address, unsigned short port)
 {
     if (owner_->IsServer())
     {
@@ -74,7 +66,6 @@ void Client::Login(const QString& address, unsigned short port, const QString& l
         return;
     }
     
-    logindata_ = loginData;
     reconnect_ = false;
     
     owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, kNet::SocketOverTCP);
@@ -103,11 +94,45 @@ void Client::Logout(bool fail)
     
     if (fail)
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_LOGIN_FAILED, 0);
+    else // An user deliberately disconnected from the world, and not due to a connection error.
+    {
+        // Clear all the login properties we used for this session, so that the next login session will start from an
+        // empty set of login properties (just-in-case).
+        properties.clear();
+    }
 }
 
 bool Client::IsConnected() const
 {
     return loginstate_ == LoggedIn;
+}
+
+void Client::SetLoginProperty(QString key, QString value)
+{
+    key = key.trimmed();
+    value = value.trimmed();
+    if (value.isEmpty())
+        properties.erase(key);
+    properties[key] = value;
+}
+
+QString Client::GetLoginProperty(QString key)
+{
+    return properties[key.trimmed()];
+}
+
+QString Client::LoginPropertiesAsXml()
+{
+    QDomDocument xml;
+    QDomElement rootElem = xml.createElement("login");
+    for(std::map<QString, QString>::iterator iter = properties.begin(); iter != properties.end(); ++iter)
+    {
+        QDomElement elem = xml.createElement(iter->first.toStdString().c_str());
+        elem.setAttribute("value", iter->second.toStdString().c_str());
+        rootElem.appendChild(elem);
+    }
+    xml.appendChild(rootElem);
+    return xml.toString();
 }
 
 void Client::CheckLogin()
@@ -121,7 +146,9 @@ void Client::CheckLogin()
         {
             loginstate_ = ConnectionEstablished;
             MsgLogin msg;
-            msg.loginData = StringToBuffer(logindata_.toStdString());
+            emit AboutToConnect(); // This signal is used as a 'function call'. Any interested party can fill in
+            // new content to the login properties of the client object, which will then be sent out on the line below.
+            msg.loginData = StringToBuffer(LoginPropertiesAsXml().toStdString());
             connection->Send(msg);
         }
         break;
@@ -207,7 +234,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             event_data.user_id_ = msg.userID;
             framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
             
-            emit Connected(msg.userID);
+            emit Connected();
         }
         reconnect_ = true;
     }

@@ -23,7 +23,7 @@ void IAssetTransfer::EmitAssetLoaded()
     */
 }
 
-void IAssetTransfer::EmitAssetFailed()
+void IAssetTransfer::EmitAssetFailed(QString reason)
 {
-    emit Failed(this);
+    emit Failed(this, reason);
 }

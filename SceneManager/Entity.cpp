@@ -474,7 +474,8 @@ namespace Scene
                 act->Trigger(params[0], params[1], params[2], params.mid(3));
         }
 
-        GetScene()->EmitActionTriggered(this, action, params, t);
+        if (GetScene())
+            GetScene()->EmitActionTriggered(this, action, params, t);
     }
 
     void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params)
