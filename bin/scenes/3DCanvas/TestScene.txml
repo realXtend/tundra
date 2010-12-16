@@ -1,5 +1,36 @@
 <!DOCTYPE Scene>
 <scene>
+ <entity id="2">
+  <component type="EC_Name" sync="1">
+   <attribute value="WaterPlane" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_WaterPlane" sync="1">
+   <attribute value="5000" name="x-size"/>
+   <attribute value="5000" name="y-size"/>
+   <attribute value="20" name="Depth"/>
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 0 0 0" name="Rotation"/>
+   <attribute value="0.000199999995" name="U factor"/>
+   <attribute value="0.000199999995" name="V factor"/>
+   <attribute value="10" name="Segments in x"/>
+   <attribute value="10" name="Segments in y"/>
+   <attribute value="Ocean" name="Material"/>
+   <attribute value="" name="Material ref"/>
+   <attribute value="0.200000003 0.400000006 0.349999994 1" name="Fog color"/>
+   <attribute value="100" name="Fog start dist."/>
+   <attribute value="2000" name="Fog end dist."/>
+   <attribute value="3" name="Fog mode"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="0,0,36,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+ </entity>
  <entity id="11">
   <component type="EC_Name" sync="1">
    <attribute value="Terrain" name="name"/>
@@ -19,23 +50,6 @@
    <attribute value="" name="Texture 3"/>
    <attribute value="" name="Texture 4"/>
    <attribute value="local://terrain.ntf" name="Heightmap"/>
-  </component>
- </entity>
- <entity id="1">
-  <component type="EC_EnvironmentLight" sync="1">
-   <attribute value="0.641283333 0.641283333 0.641283333 1" name="Sun color"/>
-   <attribute value="0.341466963 0.341466963 0.341466963 3" name="Ambient color"/>
-   <attribute value="0.930000007 1 0.129999995 1" name="Sun diffuse color"/>
-   <attribute value="0.966118634 -0.190995097 -0.173596129" name="Sun direction vector"/>
-   <attribute value="true" name="Use fixed time"/>
-   <attribute value="0.200000003" name="Current time"/>
-   <attribute value="true" name="Sun cast shadows"/>
-   <attribute value="true" name="Use Caelum"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="Environment" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
   </component>
  </entity>
  <entity id="6">
@@ -67,6 +81,23 @@
    <attribute value="0" name="Refresh per sec"/>
    <attribute value="800" name="Page width"/>
    <attribute value="600" name="Page height"/>
+  </component>
+ </entity>
+ <entity id="1">
+  <component type="EC_EnvironmentLight" sync="1">
+   <attribute value="0.641283333 0.641283333 0.641283333 1" name="Sun color"/>
+   <attribute value="0.341466963 0.341466963 0.341466963 3" name="Ambient color"/>
+   <attribute value="0.930000007 1 0.129999995 1" name="Sun diffuse color"/>
+   <attribute value="0.966118634 -0.190995097 -0.173596129" name="Sun direction vector"/>
+   <attribute value="true" name="Use fixed time"/>
+   <attribute value="0.200000003" name="Current time"/>
+   <attribute value="true" name="Sun cast shadows"/>
+   <attribute value="true" name="Use Caelum"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Environment" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
   </component>
  </entity>
 </scene>
