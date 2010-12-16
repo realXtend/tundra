@@ -41,6 +41,7 @@ void HideVertices(Ogre::Entity*, std::set<uint> vertices_to_hide);
 Ogre::Bone* GetAvatarBone(Scene::Entity* entity, const std::string& bone_name);
 void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position);
 std::string LookupAsset(const AvatarAsset& asset, const AvatarAssetMap& asset_map);
+std::string LookupMaterial(const AvatarMaterial& material, const AvatarAssetMap& asset_map);
 
 // Regrettable magic value
 static const float FIXED_HEIGHT_OFFSET = -0.87f;
@@ -228,6 +229,7 @@ void SetupMeshAndMaterials(Scene::Entity* entity)
 {
     EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
+    const AvatarAssetMap& assetMap = appearance->GetAssetMap();
     
     // Mesh needs to be cloned if there are attachments which need to hide vertices
     bool need_mesh_clone = false;
@@ -244,10 +246,10 @@ void SetupMeshAndMaterials(Scene::Entity* entity)
         }
     }
     
-    std::string meshName = LookupAsset(appearance->GetMesh(), appearance->GetAssetMap());
-    std::string skeletonName = LookupAsset(appearance->GetSkeleton(), appearance->GetAssetMap());
+    std::string meshName = LookupAsset(appearance->GetMesh(), assetMap);
+    std::string skeletonName = LookupAsset(appearance->GetSkeleton(), assetMap);
     // If skeleton name is local, ie. not an asset, do not set it explicitly
-    if (skeletonName == appearance->GetSkeleton().name_)
+    if (assetMap.find(appearance->GetSkeleton().name_) == assetMap.end())
         skeletonName = "";
     
     if (!skeletonName.empty())
@@ -262,7 +264,7 @@ void SetupMeshAndMaterials(Scene::Entity* entity)
     
     for (uint i = 0; i < materials.size(); ++i)
     {
-        mesh->SetMaterial(i, LookupAsset(materials[i].asset_, appearance->GetAssetMap()));
+        mesh->SetMaterial(i, LookupMaterial(materials[i], assetMap));
     }
     
     // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
@@ -278,6 +280,7 @@ void SetupAttachments(Scene::Entity* entity)
 {
     EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
+    const AvatarAssetMap& assetMap = appearance->GetAssetMap();
     
     mesh->RemoveAllAttachments();
     
@@ -286,11 +289,11 @@ void SetupAttachments(Scene::Entity* entity)
     for (uint i = 0; i < attachments.size(); ++i)
     {
         // Setup attachment meshes
-        mesh->SetAttachmentMesh(i, LookupAsset(attachments[i].mesh_, appearance->GetAssetMap()), attachments[i].bone_name_, attachments[i].link_skeleton_);
+        mesh->SetAttachmentMesh(i, LookupAsset(attachments[i].mesh_, assetMap), attachments[i].bone_name_, attachments[i].link_skeleton_);
         // Setup attachment mesh materials
         for (uint j = 0; j < attachments[i].materials_.size(); ++j)
         {
-            mesh->SetAttachmentMaterial(i, j, LookupAsset(attachments[i].materials_[j].asset_, appearance->GetAssetMap()));
+            mesh->SetAttachmentMaterial(i, j, LookupMaterial(attachments[i].materials_[j], assetMap));
         }
         mesh->SetAttachmentPosition(i, attachments[i].transform_.position_);
         mesh->SetAttachmentOrientation(i, attachments[i].transform_.orientation_);
@@ -636,4 +639,24 @@ std::string LookupAsset(const AvatarAsset& asset, const AvatarAssetMap& asset_ma
         return i->second;
     else
         return asset.name_;
+}
+
+std::string LookupMaterial(const AvatarMaterial& material, const AvatarAssetMap& asset_map)
+{
+    std::string matName = material.asset_.name_;
+    
+    AvatarAssetMap::const_iterator i = asset_map.find(matName);
+    if (i != asset_map.end())
+        return i->second;
+    // If asset name had no .material in it, append and try again
+    if (matName.find(".material") == std::string::npos)
+    {
+        matName.append(".material");
+        i = asset_map.find(matName);
+        if (i != asset_map.end())
+            return i->second;
+    }
+    
+    // If no match in assetmap, just return the original name
+    return material.asset_.name_;
 }
