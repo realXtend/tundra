@@ -35,7 +35,10 @@ namespace Asset
         /// Performs time-based update 
         /*! \param frametime Seconds since last frame */
         virtual void Update(f64 frametime);
-                
+
+        /// Deletes this asset from file.
+        virtual void DeleteAssetFromStorage(QString assetRef);
+
         /// Adds the given directory as an asset storage.
         /*! \param directory The paht name for the directory to add.
             \param storageName A human-readable name for the storage. This is used in the UI to the user, but is not an ID of any kind.
