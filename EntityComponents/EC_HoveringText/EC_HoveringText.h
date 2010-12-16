@@ -12,6 +12,7 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
+#include "OgreModuleFwd.h"
 
 #include <QVector3D>
 #include <QFont>
@@ -20,22 +21,15 @@
 
 #include "Color.h"
 
-namespace OgreRenderer
-{
-    class Renderer;
-}
+class QTimeLine;
 
 namespace Ogre
 {
-    class SceneNode;
     class BillboardSet;
     class Billboard;
 }
 
-QT_BEGIN_NAMESPACE
-class QTimeLine;
-QT_END_NAMESPACE
-
+/// Shows a hovering text attached to an entity.
 /**
 <table class="header">
 <tr>
@@ -78,10 +72,10 @@ Registered by RexLogic::RexLogicModule.
 <li>"show": Shows the hovering text.
 <li>"AnimatedShow": Shows the hovering text with animation.
 <li>"Clicked": Hovering text is clicked. Toggles the visibility.
-	@param msec_to_show Time to show in milliseconds.
+    @param msec_to_show Time to show in milliseconds.
 <li>"AnimatedHide": Hides the hovering text with animation.
 <li>"ShowMessage": Sets the text to be shown.
-	@param text Text to be shown.
+    @param text Text to be shown.
 <li>"IsVisible": Returns if the hovering text is visible or not.
    @true If the hovering text is visible, false if it's hidden or not initialized properly.
 </ul>
@@ -98,10 +92,6 @@ Does not emit any actions.
 <b>Depends on components Placeable</b>.  
 </table>
 */
-
-
-
-/// Shows a hovering text attached to an entity.
 class EC_HoveringText : public IComponent
 {
     Q_OBJECT
@@ -116,41 +106,40 @@ public:
     /// Destructor.
     ~EC_HoveringText();
 
-	virtual bool IsSerializable() const { return true; }
+    virtual bool IsSerializable() const { return true; }
 
+    Q_PROPERTY(QString textAttr READ gettextAttr WRITE settextAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, textAttr);
 
-	Q_PROPERTY(QString textAttr READ gettextAttr WRITE settextAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(QString, textAttr);
+    Q_PROPERTY(QString fontAttr READ getfontAttr WRITE setfontAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, fontAttr);
 
-	Q_PROPERTY(QString fontAttr READ getfontAttr WRITE setfontAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(QString, fontAttr);
+    Q_PROPERTY(int fontSizeAttr READ getfontSizeAttr WRITE setfontSizeAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, fontSizeAttr);
 
-	Q_PROPERTY(int fontSizeAttr READ getfontSizeAttr WRITE setfontSizeAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(int, fontSizeAttr);
-
-	Q_PROPERTY(Color fontColorAttr READ getfontColorAttr WRITE setfontColorAttr);
+    Q_PROPERTY(Color fontColorAttr READ getfontColorAttr WRITE setfontColorAttr);
     DEFINE_QPROPERTY_ATTRIBUTE(Color, fontColorAttr);
 
-	Q_PROPERTY(Color backgroundColorAttr READ getbackgroundColorAttr WRITE setbackgroundColorAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(Color, backgroundColorAttr);
+    Q_PROPERTY(Color backgroundColorAttr READ getbackgroundColorAttr WRITE setbackgroundColorAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, backgroundColorAttr);
 
-	Q_PROPERTY(Color borderColorAttr READ getborderColorAttr WRITE setborderColorAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(Color, borderColorAttr);
+    Q_PROPERTY(Color borderColorAttr READ getborderColorAttr WRITE setborderColorAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, borderColorAttr);
 
     Q_PROPERTY(float borderThicknessAttr READ getborderThicknessAttr WRITE setborderThicknessAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(float, borderThicknessAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, borderThicknessAttr);
 
-	Q_PROPERTY(Vector3df positionAttr READ getpositionAttr WRITE setpositionAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, positionAttr);
+    Q_PROPERTY(Vector3df positionAttr READ getpositionAttr WRITE setpositionAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, positionAttr);
     
-	Q_PROPERTY(bool usingGradAttr READ getusingGradAttr WRITE setusingGradAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(bool, usingGradAttr);
+    Q_PROPERTY(bool usingGradAttr READ getusingGradAttr WRITE setusingGradAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, usingGradAttr);
 
-	Q_PROPERTY(Color gradStartAttr READ getgradStartAttr WRITE setgradStartAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(Color, gradStartAttr);
-	
-	Q_PROPERTY(Color gradEndAttr READ getgradEndAttr WRITE setgradEndAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(Color, gradEndAttr);
+    Q_PROPERTY(Color gradStartAttr READ getgradStartAttr WRITE setgradStartAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, gradStartAttr);
+    
+    Q_PROPERTY(Color gradEndAttr READ getgradEndAttr WRITE setgradEndAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, gradEndAttr);
 
     /// Clears the 3D subsystem resources for this object.
     void Destroy();
@@ -220,7 +209,7 @@ private slots:
 
     /// Redraws the hovering text with the current text, font and color.
     void Redraw();
-	void UpdateSignals();
+    void UpdateSignals();
 
     //! Emitted when some of the attributes has been changed.
     void AttributeUpdated(IComponent *component, IAttribute *attribute);
@@ -230,7 +219,7 @@ private:
     QPixmap GetTextPixmap();
 
     /// Renderer pointer.
-    boost::weak_ptr<OgreRenderer::Renderer> renderer_;
+    OgreRenderer::RendererWeakPtr renderer_;
 
     /// Ogre billboard set.
     Ogre::BillboardSet *billboardSet_;
