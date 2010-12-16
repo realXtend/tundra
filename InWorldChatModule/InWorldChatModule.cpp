@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -312,14 +311,6 @@ void InWorldChatModule::HandleChatFromSimulatorMessage(ProtocolUtilities::NetInM
     std::string message = msg.ReadString();
     if (message.size() < 1)
         return;
-//$ BEGIN_MOD $
-	/// Removes voice info if any - compatibility with "TTS users"
-	const QString labelClose = "</voice>";
-	const int labelCloseSize = labelClose.size();
-	int closePosition = message.find(">",7); //finds > (last from <voice> tag)
-
-	message.erase(0, closePosition+1);
-//$ END_MOD $
     if (logging_)
     {
         if (!logFile_)

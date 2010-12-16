@@ -43,8 +43,8 @@ namespace WorldBuilding
         viewport_poller_(new QTimer(this)),
         override_server_time_(false),
 //$ BEGIN_MOD $
-		editToolbar_(0),
-		propertyWidget_(0),
+        editToolbar_(0),
+        propertyWidget_(0),
 		assignWidget_(0),
 		inside_(false)
 //$ END_MOD $

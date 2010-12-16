@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -113,7 +112,6 @@ namespace UiServices
             all_proxy_widgets_in_scene_.append(widget);
             connect(widget, SIGNAL(destroyed(QObject*)), SLOT(ProxyDestroyed(QObject*)));
         }
-
 
         // \todo Find a proper solution to the problem
         // Proxy widget doesn't get input without main frame resisizing for unknow reason.

@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_UiModule_CommunicationWidget_h
@@ -85,16 +84,7 @@ namespace CoreUi
         void UninitializeInWorldVoice();
 
         void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message, const QString& uuid);
-	    
-		/** Message parser (voice+msg) calls TTS Service
-		\param message Message directly from network with time stamp and so on.
-		\param from_uuid
-		\todo Redefine with components. */
 		void SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface &message, const QString& from_uuid);
-		//void GetAvatarVoiceComponent();
-		//void UpdateAvatarVoice(Tts::Voice voice);
-//$ END_MOD $
-
 
     private:
         Foundation::Framework* framework_;
@@ -104,7 +94,7 @@ namespace CoreUi
         QStackedLayout *stacked_layout_;
         QTextBrowser *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
-        UiProxyWidget *im_proxy_; //,*tts_proxy_;
+        UiProxyWidget *im_proxy_;
 
         Communications::InWorldChat::SessionInterface* in_world_chat_session_;
         CommUI::VoiceToolWidget* voice_tool_;

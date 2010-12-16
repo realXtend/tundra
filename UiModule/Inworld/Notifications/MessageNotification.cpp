@@ -4,11 +4,9 @@
 #include "DebugOperatorNew.h"
 
 #include "MessageNotification.h"
-
 #include <QPlainTextEdit>
 
 #include "MemoryLeakCheck.h"
-
 
 namespace UiServices
 {
@@ -33,6 +31,5 @@ namespace UiServices
 
         content_widget->setLayout(v_layout);
         SetCentralWidget(content_widget);
-
     }
 }

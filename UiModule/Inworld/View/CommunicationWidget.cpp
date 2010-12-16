@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -16,6 +15,10 @@
 #include "EC_OpenSimPresence.h"
 #include "RexUUID.h"
 #include "SceneManager.h"
+#include "VoiceToolWidget.h"
+#include "TtsServiceInterface.h"
+#include "Entity.h"
+#include "WorldLogicInterface.h"
 
 #include <QWidget>
 #include <QStackedLayout>
@@ -26,11 +29,6 @@
 #include <QTextBrowser>
 #include <QSettings>
 
-#include "VoiceToolWidget.h"
-#include "TtsServiceInterface.h"
-#include "TtsModule.h"
-#include "Entity.h"
-#include "WorldLogicInterface.h"
 #include "DebugOperatorNew.h"
 
 namespace
@@ -412,16 +410,16 @@ namespace CoreUi
                     history_view_text_edit_->clear();
                 }
 
-				in_world_chat_session_ = comm->InWorldChatSession();
+                in_world_chat_session_ = comm->InWorldChatSession();
                 if (!in_world_chat_session_)
                     return;
                 connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)),
                     SLOT(UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
             }
 
-       		tts_service_ = framework_->GetService<Tts::TtsServiceInterface>();
-	        if (tts_service_)
-           		connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)), SLOT(SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
+       	    tts_service_ = framework_->GetService<Tts::TtsServiceInterface>();
+            if (tts_service_)
+                connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)), SLOT(SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
         }
     }
 

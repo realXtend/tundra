@@ -52,10 +52,7 @@ namespace RexLogic
             //TextMessage message(AvatarName(from_uuid), text, IsSelfAvatarUUID(from_uuid));
             TextMessage* message = new TextMessage(from_name, text, IsSelfAvatarUUID(from_uuid));
             messages_.append(message);
-//$ BEGIN_MOD $
-//$ MOD_DESCRIPTION uuid argument added $
             emit Communications::InWorldChat::SessionInterface::TextMessageReceived(*message,from_uuid);
-//$ END_MOD $
         }
 
         bool Session::IsSelfAvatarUUID(QString uuid)

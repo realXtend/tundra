@@ -1,4 +1,3 @@
-#$ HEADER_MOD_FILE $
 # Set project name
 project(naali-viewer)
 
