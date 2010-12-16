@@ -1,0 +1,34 @@
+<!DOCTYPE Scene>
+<scene>
+  <entity id="6">
+    <component type="EC_Placeable" sync="1">
+      <attribute value="0 0 0" name="Position"/>
+      <attribute value="1 1 1" name="Scale"/>
+      <attribute value="0,13.7596,65.07,0,0,0,10,10,10" name="Transform"/>
+      <attribute value="false" name="Show bounding box"/>
+      <attribute value="true" name="Visible"/>
+    </component>
+    <component type="EC_Mesh" sync="1">
+      <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+      <attribute value="local://screen.mesh" name="Mesh ref"/>
+      <attribute value="" name="Skeleton ref"/>
+      <attribute value="local://screen_frames.material;local://screen.material" name="Mesh materials"/>
+      <attribute value="0" name="Draw distance"/>
+      <attribute value="false" name="Cast shadows"/>
+    </component>
+    <component type="EC_Name" sync="1">
+      <attribute value="screen" name="name"/>
+      <attribute value="" name="description"/>
+      <attribute value="false" name="user-defined"/>
+    </component>
+    <component type="EC_3DCanvasSource" sync="1">
+      <attribute value="http://www.realxtend.org/doxygen/" name="Source"/>
+      <attribute value="1" name="Submesh"/>
+      <attribute value="true" name="Show 2D on click"/>
+      <attribute value="true" name="Sync 2D browsing"/>
+      <attribute value="0" name="Refresh per sec"/>
+      <attribute value="800" name="Page width"/>
+      <attribute value="600" name="Page height"/>
+    </component>
+  </entity>
+</scene>
