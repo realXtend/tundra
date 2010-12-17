@@ -3,12 +3,13 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
-#include "IAttribute.h"
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
+
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "Transform.h"
 #include "AssetReference.h"
 
@@ -108,7 +109,8 @@ void ECAttributeEditorBase::RemoveComponent(ComponentPtr component)
         disconnect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), 
                    this, SLOT(AttributeChanged(IAttribute*)));
     }
-    if(!components_.size())
+
+    if (components_.isEmpty())
         deleteLater();
 }
 
@@ -132,7 +134,19 @@ void ECAttributeEditorBase::AttributeChanged(IAttribute* attribute)
     }
 }
 
-IAttribute *ECAttributeEditorBase::FindAttribute(ComponentPtr component)
+void ECAttributeEditorBase::MultiEditValueSelected(const QString &value) 
+{
+    ComponentWeakPtr comp;
+    foreach(comp, components_)
+        if(!comp.expired())
+        {
+            IAttribute *attribute = FindAttribute(comp.lock());
+            if(attribute)
+                attribute->FromString(value.toStdString(), AttributeChange::Default);
+        }
+}
+
+IAttribute *ECAttributeEditorBase::FindAttribute(ComponentPtr component) const
 {
     PROFILE(ECAttributeEditor_FindAttribute);
     if(component)
@@ -830,7 +844,7 @@ template<> void ECAttributeEditor<Transform>::Set(QtProperty *property)
                 float value = property->valueText().toFloat(&success);
                 if(!success)
                 {
-                    ECEditorModule::LogError("Failed to convert the property value in float format.");
+                    LogError("Failed to convert the property value in float format.");
                     return;
                 }
 
@@ -934,7 +948,7 @@ template<> void ECAttributeEditor<QVariant>::Update(IAttribute *attr)
 
 //-------------------------QVARIANTLIST ATTRIBUTE TYPE---------------------------
 
-template<> void ECAttributeEditor<QVariantList >::Initialize()
+template<> void ECAttributeEditor<QVariantList>::Initialize()
 {
     ECAttributeEditorBase::PreInitialize();
     if(!useMultiEditor_)
@@ -979,7 +993,7 @@ template<> void ECAttributeEditor<QVariantList >::Initialize()
     emit EditorChanged(name_);
 }
 
-template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property)
+template<> void ECAttributeEditor<QVariantList>::Set(QtProperty *property)
 {
     if (listenEditorChangedSignal_)
     {
@@ -1008,7 +1022,7 @@ template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property)
     }
 }
 
-template<> void ECAttributeEditor<QVariantList >::Update(IAttribute *attr)
+template<> void ECAttributeEditor<QVariantList>::Update(IAttribute *attr)
 {
     if(!useMultiEditor_)
     {
@@ -1105,6 +1119,40 @@ template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property)
 
 template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
 {
+    if (!useMultiEditor_)
+    {
+        Attribute<AssetReferenceList> *attribute = 0;
+        if (!attr)
+            attribute = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(components_[0].lock()));
+        else
+            attribute = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
+        if (!attribute)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer to Attribute<AssetReferenceList> format.");
+            return;
+        }
+
+        QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
+        QList<QtProperty*> children = rootProperty_->subProperties();
+        const AssetReferenceList &value = attribute->Get();
+        //! @todo It tends to be heavy operation to reinitialize all ui elements when new parameters have been added.
+        //! replace this so that only single vector's element is added/deleted from the editor.
+        if (value.Size() + 1 != children.size())
+        {
+            UnInitialize();
+            Initialize();
+        }
+
+        if (value.Size() <= children.size())
+            for(uint i = 0; i < value.Size(); ++i)
+                stringManager->setValue(children[i], value[i].ref);
+    }
+    else
+        UpdateMultiEditorValue(attr);
+}
+
+template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
+{
     ECAttributeEditorBase::PreInitialize();
     if (!useMultiEditor_)
     {
@@ -1119,17 +1167,17 @@ template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
         rootProperty_->setPropertyName(name_);
         if (rootProperty_)
         {
-            QtProperty *childProperty = 0;
             // Get number of elements in attribute array and create for property for each array element.
             ComponentPtr comp = components_[0].lock();
             Attribute<AssetReferenceList> *attribute = dynamic_cast<Attribute<AssetReferenceList> *>(FindAttribute(comp));
             if (!attribute)
             {
-                LogWarning("Failed to update attribute value in ECEditor. Couldn't dynamic_cast attribute pointer to Attribute<QVariantList> format.");
+                LogWarning("Failed to update attribute value in ECEditor. Couldn't dynamic_cast attribute pointer to Attribute<AssetReferenceList> format.");
                 return;
             }
 
-            AssetReferenceList refList = attribute->Get();
+            QtProperty *childProperty = 0;
+            const AssetReferenceList &refList = attribute->Get();
             for(uint i = 0; i < refList.Size(); ++i)
             {
                 childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
@@ -1141,32 +1189,6 @@ template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
 
             Update();
             QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
-        }
-
-        owner_->setFactoryForManager(stringManager, lineEditFactory);
-    }
-    else
-        InitializeMultiEditor();
-
-    emit EditorChanged(name_);
-}
-
-template<> void ECAttributeEditor<AssetReferenceList>::Initialize()
-{
-    ECAttributeEditorBase::PreInitialize();
-    if (!useMultiEditor_)
-    {
-        QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
-        LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
-        propertyMgr_ = stringManager;
-        factory_ = lineEditFactory;
-
-        rootProperty_ = propertyMgr_->addProperty(name_);
-        assert(rootProperty_);
-        if (rootProperty_)
-        {
-            Update();
-            connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), SLOT(PropertyChanged(QtProperty*)));
         }
 
         owner_->setFactoryForManager(stringManager, lineEditFactory);
