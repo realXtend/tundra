@@ -381,18 +381,21 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                     {
                         QString subname;
 
-                        ///\todo This string manipulation/crafting doesn't work for .zip files, only for materials and COLLADA files
-                        int slashIdx = value.lastIndexOf("/");
-                        int dotIdx = value.lastIndexOf(".");
-                        QString str = value.mid(slashIdx + 1, dotIdx - slashIdx - 1);
+                        if (!keysWithSubname.isEmpty())
+                        {
+                            ///\todo This string manipulation/crafting doesn't work for .zip files, only for materials and COLLADA files
+                            int slashIdx = value.lastIndexOf("/");
+                            int dotIdx = value.lastIndexOf(".");
+                            QString str = value.mid(slashIdx + 1, dotIdx - slashIdx - 1);
 
-                        foreach(SceneDesc::AssetMapKey key, keysWithSubname)
-                            if (str == key.second)
-                            {
-                                value = key.first;
-                                subname = key.second;
-                                break;
-                            }
+                            foreach(SceneDesc::AssetMapKey key, keysWithSubname)
+                                if (value == key.first && str == key.second)
+                                {
+                                    value = key.first;
+                                    subname = key.second;
+                                    break;
+                                }
+                        }
 
                         SceneDesc::AssetMapKey key = qMakePair(value, subname);
                         if (sceneDesc.assets.contains(key))
