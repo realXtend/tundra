@@ -44,8 +44,11 @@ void ReplaceReferences(QByteArray &material, const RefMap &refs)
             // without paths. Therefore we need to do the comparison here also without paths.
             RefMap::const_iterator it = refs.find(texName);
             if (it != refs.end())
-                //lines[i] = "texture " + it.value();
-                lines[i].replace(texName, it.value());
+            {
+                lines[i] = "texture " + it.value();
+                for(int spaceIdx = 0; spaceIdx < idx; ++spaceIdx)
+                    lines[i].prepend(" ");
+            }
         }
     }
 
