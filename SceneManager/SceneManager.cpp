@@ -825,8 +825,9 @@ namespace Scene
                         AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
                         compDesc.attributes.append(attrDesc);
 
-                        if ((typeName == "assetreference" || (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference"))
-                            && !a->ToString().empty())
+                        if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
+                            (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference")) &&
+                            !a->ToString().empty())
                         {
                             // We might have multiple references, ";" used as a separator.
                             QStringList values = QString(a->ToString().c_str()).split(";");
@@ -841,7 +842,7 @@ namespace Scene
                                 framework_->Asset()->QueryFileLocation(value, basePath, ad.source);
                                 ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
-                                sceneDesc.assets[ad.source] = ad;
+                                sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
                             }
                         }
                     }
@@ -939,8 +940,9 @@ namespace Scene
                                     AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
                                     compDesc.attributes.append(attrDesc);
 
-                                    if ((typeName == "assetreference" || (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference"))
-                                        && !a->ToString().empty())
+                                    if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
+                                        (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference")) &&
+                                        !a->ToString().empty())
                                     {
                                         // We might have multiple references, ";" used as a separator.
                                         QStringList values = QString(a->ToString().c_str()).split(";");
@@ -955,7 +957,7 @@ namespace Scene
                                             framework_->Asset()->QueryFileLocation(value, basePath, ad.source);
                                             ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
-                                            sceneDesc.assets[ad.source] = ad;
+                                            sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
                                         }
                                     }
                                 }

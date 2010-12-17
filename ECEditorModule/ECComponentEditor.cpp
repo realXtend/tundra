@@ -52,7 +52,7 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
     else if(type == "transform")
         attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, editor);
     else
-        LogError("Unknown attribute type " + type.toStdString() + "for ECAttributeEditorBase creation.");
+        LogError("Unknown attribute type " + type.toStdString() + " for ECAttributeEditorBase creation.");
 
     return attributeEditor;
 }

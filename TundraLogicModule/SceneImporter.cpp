@@ -28,14 +28,6 @@ namespace fs = boost::filesystem;
 namespace TundraLogic
 {
 
-/*
-struct MeshInfo
-{
-    std::string name_;
-    unsigned filesize_;
-};
-*/
-
 bool ProcessBraces(const std::string& line, int& braceLevel)
 {
     if (line == "{")
@@ -193,9 +185,9 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
         LogError("No EC_Placeable was created!");
 
     // Fill the mesh attributes
-    QVector<QVariant> materials;
+    AssetReferenceList materials;
     foreach(QString matName, material_names)
-        materials.push_back(prefix + matName + ".material");
+        materials.Append(prefix + matName + ".material");
 
     EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
     if (meshPtr)
@@ -203,7 +195,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
         meshPtr->meshRef.Set(AssetReference(prefix + QString(meshleafname.c_str())), AttributeChange::Disconnected);
         if (!skeleton_name.isEmpty())
             meshPtr->skeletonRef.Set(AssetReference(prefix + skeleton_name), AttributeChange::Disconnected);
-        meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), AttributeChange::Disconnected);
+        meshPtr->meshMaterial.Set(materials, AttributeChange::Disconnected);
 
         if (inspect)
             meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), AttributeChange::Disconnected);
@@ -430,14 +422,14 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         skeletons << skeletonName;
 
     // Construct entity name from the mesh file name.
-    int start = meshleafname.lastIndexOf(".mesh");
-    int end = meshleafname.length();
-    QString meshEntityName = meshleafname.remove(start, end - start);
+    int idx = meshleafname.lastIndexOf(".mesh");
+    QString meshEntityName = meshleafname;
+    meshEntityName.remove(idx, meshleafname.length() - idx);
 
     EntityDesc entityDesc = { "", meshEntityName };
     ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
     ComponentDesc placeableDesc = { EC_Placeable::TypeNameStatic() };
-    ComponentDesc nameDesc = { EC_Name::TypeNameStatic(), meshEntityName };
+    ComponentDesc nameDesc = { EC_Name::TypeNameStatic() };
 
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     QStringList meshFiles(QStringList() << filename);
@@ -454,20 +446,19 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     ComponentManagerPtr mgr = scene_->GetFramework()->GetComponentManager();
 
     // Fill the mesh attributes
-    QVector<QVariant> materials;
+    AssetReferenceList materials;
     foreach(QString matName, materialNames)
-        materials.push_back(/*prefix + */matName + ".material");
+        materials.Append(AssetReference(path + "/" + matName + ".material"));
 
     // Mesh
     ComponentPtr meshPtr = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
     EC_Mesh *mesh = checked_static_cast<EC_Mesh *>(meshPtr.get());
     if (mesh)
     {
-        mesh->meshRef.Set(AssetReference(/*prefix + */meshleafname), AttributeChange::Disconnected);
+        mesh->meshRef.Set(AssetReference(path + "/" + meshleafname), AttributeChange::Disconnected);
+        mesh->meshMaterial.Set(materials, AttributeChange::Disconnected);
         if (!skeletonName.isEmpty())
-            mesh->skeletonRef.Set(AssetReference(/*prefix + */ skeletonName), AttributeChange::Disconnected);
-
-        mesh->meshMaterial.Set(QList<QVariant>::fromVector(materials), AttributeChange::Disconnected);
+            mesh->skeletonRef.Set(AssetReference(path + "/" + skeletonName), AttributeChange::Disconnected);
 
         foreach(IAttribute *a, mesh->GetAttributes())
         {
@@ -489,7 +480,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     EC_Name *name = checked_static_cast<EC_Name *>(namePtr.get());
     if (name)
     {
-        name->name.Set(meshleafname, AttributeChange::Disconnected);
+        name->name.Set(meshEntityName, AttributeChange::Disconnected);
         foreach(IAttribute *a, name->GetAttributes())
         {
             AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
@@ -1122,7 +1113,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                     {
                         namePtr->name.Set(node_name_qstr, change);
                         
-                        QVector<QVariant> materials;
+                        QVector<QString> materials;
                         QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
                         if (!subentities_elem.isNull())
                         {
@@ -1147,12 +1138,8 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                             // If no subentity element, use the inspected material names we stored earlier
                             const QStringList& default_materials = mesh_default_materials_[orig_mesh_name.c_str()];
                             materials.resize(default_materials.size());
-                            for (uint i = 0; i < default_materials.size(); ++i)
-                            {
-                                QString material_name = default_materials[i] + ".material";
-                                material_name = prefix + material_name;
-                                materials[i] = material_name;
-                            }
+                            for(uint i = 0; i < default_materials.size(); ++i)
+                                materials[i] =  prefix + default_materials[i] + ".material";
                         }
                         
                         Transform entity_transform;
@@ -1182,7 +1169,12 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                         
                         placeablePtr->transform.Set(entity_transform, change);
                         meshPtr->meshRef.Set(AssetReference(mesh_name), change);
-                        meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), change);
+
+                        AssetReferenceList materialRefs;
+                        foreach(QString material, materials)
+                            materialRefs.Append(AssetReference(material));
+
+                        meshPtr->meshMaterial.Set(materialRefs, change);
                         meshPtr->castShadows.Set(cast_shadows, change);
 
                         if (new_entity)
@@ -1215,22 +1207,21 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     foreach(QString filename, meshFiles)
     {
         AssetDesc ad;
-        //ad.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + filename;
-        ad.dataInMemory = false;
         ad.source = filename;
+        ad.dataInMemory = false;
         ad.typeName = "mesh";
         ad.destinationName = fs::path(filename.toStdString()).leaf().c_str();//meshAssetDesc.source;
-        desc.assets[ad.source] = ad;
+        desc.assets[qMakePair(ad.source, ad.subname)] = ad;
     }
 
     foreach(QString skeleton, skeletons)
     {
         AssetDesc ad;
-        ad.source = path /*QString(path.branch_path().string().c_str())*/ + "/" + skeleton; // This is already an absolute path. Don't use QueryFileLocation.
+        ad.source = path + "/" + skeleton; // This is already an absolute path. Don't use QueryFileLocation.
         ad.dataInMemory = false;
         ad.typeName = "skeleton";
         ad.destinationName = skeleton;
-        desc.assets[ad.source] = ad;
+        desc.assets[qMakePair(ad.source, ad.subname)] = ad;
     }
 
     // Get all materials scripts from all material script files.
@@ -1257,7 +1248,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
                 ad.data = mat.data.toAscii();
             }
 
-            desc.assets[ad.source] = ad;
+            desc.assets[qMakePair(ad.source, ad.subname)] = ad;
     }
 
     // Process materials for textures.
@@ -1276,7 +1267,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
         if (result == AssetAPI::FileQueryLocalFileMissing)
             LogWarning("Texture file \"" + tex.toStdString() + "\" cannot be found from path \"" + path.toStdString() + "\"!");
         ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(tex); // The destination name must be local to the destination asset storage.
-        desc.assets[ad.source] = ad;
+        desc.assets[qMakePair(ad.source, ad.subname)] = ad;
     }
 }
 

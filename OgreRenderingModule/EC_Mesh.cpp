@@ -940,18 +940,18 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 //        if(!HasMaterialsChanged())
 //            return;
 
-        QVariantList materials = meshMaterial.Get();
+        AssetReferenceList materials = meshMaterial.Get();
 
         // Reallocate the number of material asset reflisteners.
-        while(materialAssets.size() > materials.size())
+        while(materialAssets.size() > materials.Size())
             materialAssets.pop_back();
-        while(materialAssets.size() < materials.size())
+        while(materialAssets.size() < materials.Size())
             materialAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
 
-        for(size_t i = 0; i < materials.size(); ++i)
+        for(int i = 0; i < materials.Size(); ++i)
         {
             connect(materialAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
-            materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].toString());
+            materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].ref);
         }
     }
     else if((attribute == &skeletonRef) && (!skeletonRef.Get().ref.isEmpty()))
@@ -1048,9 +1048,9 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 
     bool assetUsed = false;
 
-    QVariantList materialList = meshMaterial.Get();
-    for(int i = 0; i < materialList.size(); ++i)
-        if (materialList[i].toString() == ogreMaterial->Name())
+    AssetReferenceList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.Size(); ++i)
+        if (materialList[i].ref == ogreMaterial->Name())
         {
             SetMaterial(i, ogreMaterial->Name());
             assetUsed = true;
@@ -1060,31 +1060,32 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     {
         LogWarning("Warning: EC_Mesh::OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
             meshRef.Get().ref.toStdString() + ", but no submesh refers to the given material! The references are: ");
-        for(int i = 0; i < materialList.size(); ++i)
-            LogWarning(QString::number(i).toStdString() + ": " + materialList[i].toString().toStdString());
+        for(int i = 0; i < materialList.Size(); ++i)
+            LogWarning(QString::number(i).toStdString() + ": " + materialList[i].ref.toStdString());
     }
 }
 
 void EC_Mesh::ApplyMaterial()
 {
-    QVariantList materialList = meshMaterial.Get();
-    for(int i = 0; i < materialList.size(); ++i)
-        if (!materialList[i].toString().isEmpty())
-            SetMaterial(i, materialList[i].toString());
+    AssetReferenceList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.Size(); ++i)
+        if (!materialList[i].ref.isEmpty())
+            SetMaterial(i, materialList[i].ref);
 }
 
 bool EC_Mesh::HasMaterialsChanged() const
 {
-    if(!entity_ || !meshMaterial.Get().size())
+    if(!entity_ || !meshMaterial.Get().Size())
         return false;
-    QVariantList materials = meshMaterial.Get();
+
+    AssetReferenceList materials = meshMaterial.Get();
     for(uint i = 0; i < entity_->getNumSubEntities(); i++)
     {
         // No point to continue if all materials are not set.
-        if(i >= materials.size())
+        if(i >= materials.Size())
             break;
 
-        if(entity_->getSubEntity(i)->getMaterial()->getName() != SanitateAssetIdForOgre(materials[i].toString().toStdString()))
+        if(entity_->getSubEntity(i)->getMaterial()->getName() != SanitateAssetIdForOgre(materials[i].ref.toStdString()))
             return true;
     }
     return false;

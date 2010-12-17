@@ -9,6 +9,7 @@
 #define incl_SceneManager_SceneDesc_h
 
 #include <QMap>
+#include <QPair>
 
 /// Description of asset.
 struct AssetDesc
@@ -101,7 +102,7 @@ struct EntityDesc
 /// Description of scene.
 struct SceneDesc
 {
-    /// Origin file type
+    /// Origin file type.
     enum Type
     {
         Naali, ///< Naali XML or binary scene
@@ -110,12 +111,15 @@ struct SceneDesc
         OpenAsset ///< OpenAsset
     };
 
+    typedef QPair<QString, QString> AssetMapKey; ///< source-subname pair used to idenfity assets.
+    typedef QMap<AssetMapKey, AssetDesc> AssetMap; ///< Map of assets.
+
     QString filename; ///< Name of the file from which the description was created.
     Type type; ///< Type
     QString name; ///< Name.
     bool viewEnabled; ///< Is scene view enabled (ie. rendering-related components actually create stuff)
     QList<EntityDesc> entities; ///< List of entities the scene has.
-    QMap<QString, AssetDesc> assets; ///< Map of of assets the scene refers to, AssetDesc::source used as key.
+    AssetMap assets; ///< Map of unique assets.
 
     /// Returns true if the scene description has no entities, false otherwise.
     bool IsEmpty() const { return entities.isEmpty(); }
