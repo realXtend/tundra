@@ -95,16 +95,28 @@ bool EC_RigidBody::SetShapeFromVisibleMesh()
 
 void EC_RigidBody::SetLinearVelocity(const Vector3df& velocity)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     linearVelocity.Set(velocity, AttributeChange::Default);
 }
 
 void EC_RigidBody::SetAngularVelocity(const Vector3df& velocity)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     angularVelocity.Set(velocity, AttributeChange::Default);
 }
 
 void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     // If force is very small, do not wake up the body and apply
     if (force.getLength() < cForceThreshold)
         return;
@@ -123,6 +135,10 @@ void EC_RigidBody::ApplyForce(const Vector3df& force, const Vector3df& position)
 
 void EC_RigidBody::ApplyTorque(const Vector3df& torque)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     // If torque is very small, do not wake up the body and apply
     if (torque.getLength() < cTorqueThreshold)
         return;
@@ -138,6 +154,10 @@ void EC_RigidBody::ApplyTorque(const Vector3df& torque)
 
 void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& position)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     // If impulse is very small, do not wake up the body and apply
     if (impulse.getLength() < cImpulseThreshold)
         return;
@@ -156,6 +176,10 @@ void EC_RigidBody::ApplyImpulse(const Vector3df& impulse, const Vector3df& posit
 
 void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     // If impulse is very small, do not wake up the body and apply
     if (torqueImpulse.getLength() < cTorqueThreshold)
         return;
@@ -171,6 +195,10 @@ void EC_RigidBody::ApplyTorqueImpulse(const Vector3df& torqueImpulse)
 
 void EC_RigidBody::Activate()
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     if (!body_)
         CreateBody();
     if (body_)
@@ -187,6 +215,10 @@ bool EC_RigidBody::IsActive()
 
 void EC_RigidBody::ResetForces()
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     if (!body_)
         CreateBody();
     if (body_)
@@ -295,7 +327,7 @@ void EC_RigidBody::RemoveCollisionShape()
 
 void EC_RigidBody::CreateBody()
 {
-    if ((!world_) || (body_))
+    if ((!world_) || (!GetParentEntity()) || (body_))
         return;
     
     CheckForPlaceableAndTerrain();
@@ -317,7 +349,7 @@ void EC_RigidBody::CreateBody()
 
 void EC_RigidBody::ReaddBody()
 {
-    if ((!body_) || (!world_))
+    if ((!world_) || (!GetParentEntity()) || (!body_))
         return;
     
     btVector3 localInertia;
@@ -535,6 +567,10 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
 
 void EC_RigidBody::SetRotation(const Vector3df& rotation)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     disconnected_ = true;
     
     EC_Placeable* placeable = placeable_.lock().get();
@@ -561,6 +597,10 @@ void EC_RigidBody::SetRotation(const Vector3df& rotation)
 
 void EC_RigidBody::Rotate(const Vector3df& rotation)
 {
+    // Cannot modify server-authoritative physics object
+    if (!HasAuthority())
+        return;
+    
     disconnected_ = true;
     
     EC_Placeable* placeable = placeable_.lock().get();
@@ -607,6 +647,15 @@ void EC_RigidBody::GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax)
     body_->getAabb(aabbMin, aabbMax);
     outAabbMin.set(aabbMin.x(), aabbMin.y(), aabbMin.z());
     outAabbMax.set(aabbMax.x(), aabbMax.y(), aabbMax.z());
+}
+
+bool EC_RigidBody::HasAuthority() const
+{
+    // If this is a server-authoritative object, get position changes through the transform attribute, do not actually respond to Bullet
+    if ((!world_) || ((world_->IsClient()) && (!GetParentEntity()->IsLocal())))
+        return false;
+    
+    return true;
 }
 
 void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
@@ -741,6 +790,10 @@ void EC_RigidBody::GetProperties(btVector3& localInertia, float& m, int& collisi
     // Trimesh shape can not move
     if (shapeType.Get() == Shape_TriMesh)
         m = 0.0f;
+    // On client, all server-side entities become static to not desync or try to send updates we should not
+    if (!HasAuthority())
+        m = 0.0f;
+    
     if ((shape_) && (m > 0.0f))
         shape_->calculateLocalInertia(m, localInertia);
     
@@ -759,3 +812,4 @@ void EC_RigidBody::EmitPhysicsCollision(Scene::Entity* otherEntity, const Vector
 {
     emit PhysicsCollision(otherEntity, position, normal, distance, impulse, newCollision);
 }
+
