@@ -898,8 +898,8 @@ void SceneTreeWidget::Paste()
                         ComponentPtr component = framework->GetComponentManager()->CreateComponent(type, name);
                         if (component)
                         {
-                            component->DeserializeFrom(componentElem, AttributeChange::Default);
                             entity->AddComponent(component);
+                            component->DeserializeFrom(componentElem, AttributeChange::Default);
                         }
                     }
 

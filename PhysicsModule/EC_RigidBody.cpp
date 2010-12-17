@@ -679,6 +679,8 @@ void EC_RigidBody::RequestMesh()
     if (collisionMesh.isEmpty() && parent) // We use the mesh ref in EC_Mesh as the collision mesh ref if no collision mesh is set in EC_RigidBody.
     {
         boost::shared_ptr<EC_Mesh> mesh = parent->GetComponent<EC_Mesh>();
+        if (!mesh)
+            return;
         collisionMesh = mesh->meshRef.Get().ref.trimmed();
     }
 
