@@ -979,6 +979,12 @@ void EC_Mesh::OnComponentRemoved(IComponent* component, AttributeChange::Type ch
 void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
 {
     OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(asset.get());
+    if (!mesh)
+    {
+        LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but downloaded asset was not of type OgreMeshAsset!");
+        return;
+    }
+
     QString ogreMeshName = mesh->Name();
     if (mesh)
     {
@@ -1000,14 +1006,16 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
     OgreSkeletonAsset *skeletonAsset = dynamic_cast<OgreSkeletonAsset*>(asset.get());
     if (!skeletonAsset)
     {
-        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
+            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
         return;
     }
 
     Ogre::SkeletonPtr skeleton = skeletonAsset->ogreSkeleton;
     if (skeleton.isNull())
     {
-        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Skeleton pointer was null!");
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
+            asset->Name().toStdString() + "\", but Ogre::Skeleton pointer was null!");
         return;
     }
 
@@ -1040,9 +1048,12 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
 void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 {
     OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset.get());
-    assert(ogreMaterial);
     if (!ogreMaterial)
+    {
+        LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
+            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
         return;
+    }
 
     Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
 
