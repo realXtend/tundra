@@ -396,6 +396,10 @@ void EC_RigidBody::getWorldTransform(btTransform &worldTrans) const
 
 void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
 {
+    // Cannot modify server-authoritative physics object, rather get the transform changes through placeable attributes
+    if (!HasAuthority())
+        return;
+    
     EC_Placeable* placeable = placeable_.lock().get();
     if (!placeable)
         return;
@@ -651,7 +655,6 @@ void EC_RigidBody::GetAabbox(Vector3df &outAabbMin, Vector3df &outAabbMax)
 
 bool EC_RigidBody::HasAuthority() const
 {
-    // If this is a server-authoritative object, get position changes through the transform attribute, do not actually respond to Bullet
     if ((!world_) || ((world_->IsClient()) && (!GetParentEntity()->IsLocal())))
         return false;
     
