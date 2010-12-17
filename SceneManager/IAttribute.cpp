@@ -19,7 +19,7 @@
 #include <QStringList>
 #include <QScriptEngine>
 
-#include "kNet.h"
+#include <kNet.h>
 
 using namespace kNet;
 
@@ -103,6 +103,20 @@ template<> std::string Attribute<Color>::ToString() const
 template<> std::string Attribute<AssetReference>::ToString() const
 {
     return Get().ref.toStdString();
+}
+
+template<> std::string Attribute<AssetReferenceList>::ToString() const
+{
+    std::string stringValue = "";
+    AssetReferenceList values = Get();
+    for(int i = 0; i < values.Size(); ++i)
+    {
+        stringValue += values[i].ref.toStdString();
+        if (i < values.Size() - 1)
+            stringValue += ";";
+    }
+
+    return stringValue;
 }
 
 template<> std::string Attribute<QVariant>::ToString() const
@@ -202,6 +216,11 @@ template<> std::string Attribute<Color>::TypeName() const
 template<> std::string Attribute<AssetReference>::TypeName() const
 {
     return "assetreference";
+}
+
+template<> std::string Attribute<AssetReferenceList>::TypeName() const
+{
+    return "assetreferencelist";
 }
 
 template<> std::string Attribute<QVariant>::TypeName() const
@@ -340,6 +359,20 @@ template<> void Attribute<AssetReference>::FromString(const std::string& str, At
     Set(AssetReference(str.c_str()), change);
 }
 
+template<> void Attribute<AssetReferenceList>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    AssetReferenceList value;
+    QString strValue = QString::fromStdString(str);
+    QStringList components = strValue.split(';');
+    for(int i = 0; i < components.size(); i++)
+        value.Append(AssetReference(components[i]));
+    if (value.Size() == 1)
+        if (value[0].ref.trimmed().isEmpty())
+            value.RemoveLast();
+
+    Set(value, change);
+}
+
 template<> void Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
 {
     QVariant value(QString(str.c_str()));
@@ -445,12 +478,17 @@ template<> void Attribute<AssetReference>::FromQVariant(const QVariant &variant,
     Set(qvariant_cast<AssetReference>(variant), change);
 }
 
+template<> void Attribute<AssetReferenceList>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<AssetReferenceList>(variant), change);
+}
+
 template<> void Attribute<QVariant>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
     Set(variant, change);
 }
 
-template<> void Attribute<QVariantList >::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+template<> void Attribute<QVariantList>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
     Set(qvariant_cast<QVariantList>(variant), change);
 }
@@ -510,6 +548,11 @@ template<> QVariant Attribute<Color>::ToQVariant() const
 template<> QVariant Attribute<AssetReference>::ToQVariant() const
 {
     return QVariant::fromValue<AssetReference>(Get());
+}
+
+template<> QVariant Attribute<AssetReferenceList>::ToQVariant() const
+{
+    return QVariant::fromValue<AssetReferenceList>(Get());
 }
 
 template<> QVariant Attribute<QVariant>::ToQVariant() const
@@ -577,6 +620,11 @@ template<> void Attribute<Color>::FromScriptValue(const QScriptValue &value, Att
 template<> void Attribute<AssetReference>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
     Set(qScriptValueToValue<AssetReference>(value), change);
+}
+
+template<> void Attribute<AssetReferenceList>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<AssetReferenceList>(value), change);
 }
 
 template<> void Attribute<QVariant>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
@@ -666,6 +714,13 @@ template<> void Attribute<AssetReference>::ToBinary(kNet::DataSerializer& dest) 
     dest.AddString(value_.ref.toStdString());
 }
 
+template<> void Attribute<AssetReferenceList>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<u8>(value_.Size());
+    for(int i = 0; i < value_.Size(); ++i)
+        dest.AddString(value_[i].ref.toStdString());
+}
+
 template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
 {
     std::string str = value_.toString().toStdString();
@@ -676,10 +731,7 @@ template<> void Attribute<QVariantList>::ToBinary(kNet::DataSerializer& dest) co
 {
     dest.Add<u8>(value_.size());
     for (uint i = 0; i < value_.size(); ++i)
-    {
-        std::string str = value_[i].toString().toStdString();
-        dest.AddString(str);
-    }
+        dest.AddString(value_[i].toString().toStdString());
 }
 
 template<> void Attribute<Transform>::ToBinary(kNet::DataSerializer& dest) const
@@ -768,6 +820,16 @@ template<> void Attribute<AssetReference>::FromBinary(kNet::DataDeserializer& so
 {
     AssetReference value;
     value.ref = source.ReadString().c_str();
+    Set(value, change);
+}
+
+template<> void Attribute<AssetReferenceList>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    AssetReferenceList value;
+    u8 numValues = source.Read<u8>();
+    for(u32 i = 0; i < numValues; ++i)
+        value.Append(AssetReference(source.ReadString().c_str()));
+
     Set(value, change);
 }
 
@@ -893,6 +955,10 @@ template<> void Attribute<Color>::Interpolate(IAttribute* start, IAttribute* end
 }
 
 template<> void Attribute<AssetReference>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
+template<> void Attribute<AssetReferenceList>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
 }
 
