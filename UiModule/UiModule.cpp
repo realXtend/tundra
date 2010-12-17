@@ -260,12 +260,20 @@ namespace UiServices
 
         Input *inputService = framework_->GetInput();
 
+<<<<<<< HEAD
 #ifndef PLAYER_VIEWER
          const QKeySequence toggleEther = inputService->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
          if (key->keyCode == toggleEther)
              ui_state_machine_->ToggleEther();
 #endif
 		const QKeySequence toggleWorldChat = inputService->KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
+=======
+        const QKeySequence toggleEther = inputService->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
+        const QKeySequence toggleWorldChat = inputService->KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
+
+        if (key->keyCode == toggleEther)
+            ui_state_machine_->ToggleEther();
+>>>>>>> Line endings fix
 
         if (key->keyCode == toggleWorldChat)
             inworld_scene_controller_->SetFocusToChat();		
