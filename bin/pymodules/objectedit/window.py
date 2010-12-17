@@ -32,23 +32,11 @@ class ObjectEditWindow:
     ICON_OK = "pymodules/objectedit/ok-small.png"
     ICON_CANCEL = "pymodules/objectedit/cancel-small.png" 
 
-    ICON_X_FIRST = "pymodules/objectedit/align_x_first.png"
-    ICON_X_LAST = "pymodules/objectedit/align_x_last.png"
-    ICON_X_SPACED = "pymodules/objectedit/align_x_spaced.png"
-    ICON_X_RANDOM = "pymodules/objectedit/align_x_random.png"
+    ICON_FIRST = "pymodules/objectedit/align_first.png"
+    ICON_LAST = "pymodules/objectedit/align_last.png"
+    ICON_SPACED = "pymodules/objectedit/align_spaced.png"
+    ICON_RANDOM = "pymodules/objectedit/align_random.png"
 
-    ICON_Y_FIRST = "pymodules/objectedit/align_y_first.png"
-    ICON_Y_LAST = "pymodules/objectedit/align_y_last.png"
-    ICON_Y_SPACED = "pymodules/objectedit/align_y_spaced.png"
-    ICON_Y_RANDOM = "pymodules/objectedit/align_y_random.png"
-
-    ICON_Z_FIRST = "pymodules/objectedit/align_z_first.png"
-    ICON_Z_LAST = "pymodules/objectedit/align_z_last.png"
-    ICON_Z_SPACED = "pymodules/objectedit/align_z_spaced.png"
-    ICON_Z_RANDOM = "pymodules/objectedit/align_z_random.png"
-
-    ICON_XYZ_RANDOM = "pymodules/objectedit/align_xyz_random.png"
-    
     def __init__(self, controller):
         self.controller = controller
         loader = QUiLoader()
@@ -89,28 +77,28 @@ class ObjectEditWindow:
 
         align_x_vert = QVBoxLayout()
         align_x_vert.setContentsMargins(0,0,0,0)
-        align_x_first = self.getButton("Align X First", self.ICON_X_FIRST, None, self.controller.do_align_axis_x_first)
-        align_x_last = self.getButton("Align X Last", self.ICON_X_LAST, None, self.controller.do_align_axis_x_last)
-        align_x_spaced = self.getButton("Align X Spaced", self.ICON_X_SPACED, None, self.controller.do_align_axis_x_spaced)
-        align_x_random = self.getButton("Align X Random", self.ICON_X_RANDOM, None, self.controller.do_align_axis_x_random)
+        align_x_first = self.getButton("Align X First", self.ICON_FIRST, None, self.controller.do_align_axis_x_first)
+        align_x_last = self.getButton("Align X Last", self.ICON_LAST, None, self.controller.do_align_axis_x_last)
+        align_x_spaced = self.getButton("Align X Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_x_spaced)
+        align_x_random = self.getButton("Align X Random", self.ICON_RANDOM, None, self.controller.do_align_axis_x_random)
 
         align_y_vert = QVBoxLayout()
         align_y_vert.setContentsMargins(0,0,0,0)
-        align_y_first = self.getButton("Align Y First", self.ICON_Y_FIRST, None, self.controller.do_align_axis_y_first)
-        align_y_last = self.getButton("Align Y Last", self.ICON_Y_LAST, None, self.controller.do_align_axis_y_last)
-        align_y_spaced = self.getButton("Align Y Spaced", self.ICON_Y_SPACED, None, self.controller.do_align_axis_y_spaced)
-        align_y_random = self.getButton("Align Y Random", self.ICON_Y_RANDOM, None, self.controller.do_align_axis_y_random)
+        align_y_first = self.getButton("Align Y First", self.ICON_FIRST, None, self.controller.do_align_axis_y_first)
+        align_y_last = self.getButton("Align Y Last", self.ICON_LAST, None, self.controller.do_align_axis_y_last)
+        align_y_spaced = self.getButton("Align Y Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_y_spaced)
+        align_y_random = self.getButton("Align Y Random", self.ICON_RANDOM, None, self.controller.do_align_axis_y_random)
 
         align_z_vert = QVBoxLayout()
         align_z_vert.setContentsMargins(0,0,0,0)
-        align_z_first = self.getButton("Align Z First", self.ICON_X_FIRST, None, self.controller.do_align_axis_z_first)
-        align_z_last = self.getButton("Align Z Last", self.ICON_X_LAST, None, self.controller.do_align_axis_z_last)
-        align_z_spaced = self.getButton("Align Z Spaced", self.ICON_X_SPACED, None, self.controller.do_align_axis_z_spaced)
-        align_z_random = self.getButton("Align Z Random", self.ICON_X_RANDOM, None, self.controller.do_align_axis_z_random)
+        align_z_first = self.getButton("Align Z First", self.ICON_FIRST, None, self.controller.do_align_axis_z_first)
+        align_z_last = self.getButton("Align Z Last", self.ICON_LAST, None, self.controller.do_align_axis_z_last)
+        align_z_spaced = self.getButton("Align Z Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_z_spaced)
+        align_z_random = self.getButton("Align Z Random", self.ICON_RANDOM, None, self.controller.do_align_axis_z_random)
 
         align_xyz_vert = QVBoxLayout()
         align_xyz_vert.setContentsMargins(0,0,0,0)
-        align_xyz_random = self.getButton("Align XYZ Random", self.ICON_XYZ_RANDOM, None, self.controller.do_align_random)
+        align_xyz_random = self.getButton("Align XYZ Random", self.ICON_RANDOM, None, self.controller.do_align_random)
 
         align_x_vert.addWidget(align_x_first)
         align_x_vert.addWidget(align_x_last)
