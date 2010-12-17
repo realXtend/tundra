@@ -350,10 +350,10 @@ namespace WorldBuilding
             if (mesh_browse)
                 ui_helper_->AddBrowsePair("animation", mesh_browse, widget);
         }
-        /*else if (type_compare == "align")
+        else if (type_compare == "align")
         {
             label_title = "Align Tools";
-        }*/
+        }
         else
             create_widgets = false;
 
