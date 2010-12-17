@@ -265,7 +265,7 @@ namespace MumbleVoip
             return; 
         }
 
-        if (user->Channel()->FullName() != current_mumble_channel_)
+        if (user->GetChannel()->FullName() != current_mumble_channel_)
         {
             other_channel_users_.append(user);
             return; 
@@ -289,7 +289,7 @@ namespace MumbleVoip
         if (user->IsLeft())
             return;
 
-        if (user->Channel()->FullName() == current_mumble_channel_)
+        if (user->GetChannel()->FullName() == current_mumble_channel_)
         {
             foreach(MumbleLib::User* u, other_channel_users_)
             {
