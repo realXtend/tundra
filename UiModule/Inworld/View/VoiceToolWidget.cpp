@@ -92,16 +92,20 @@ namespace CommUI
 
         if (in_world_voice_session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
         {
-            voice_users_info_widget_->hide();
-            voice_state_widget_->hide();
+            if (voice_users_info_widget_)
+                voice_users_info_widget_->hide();
+            if (voice_state_widget_)
+                voice_state_widget_->hide();
             if (voice_controller_proxy_widget_)
                 voice_controller_proxy_widget_->hide();
             return;
         }
         else
         {
-            voice_users_info_widget_->show();
-            voice_state_widget_->show();
+            if (voice_users_info_widget_)
+                voice_users_info_widget_->show();
+            if (voice_state_widget_)
+                voice_state_widget_->show();
         }
 
         if (in_world_voice_session_->IsAudioSendingEnabled())
