@@ -131,6 +131,8 @@ class ObjectEdit(Component):
             self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
             self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
             self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
+	    self.cpp_python_handler.PassWidget("Align", self.window.align_widget)
+
             # Check if build mode is active, required on python restarts
             self.on_activate_editing(self.cpp_python_handler.IsBuildingActive())
             

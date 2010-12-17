@@ -65,6 +65,17 @@ class ObjectEditWindow:
         box.addWidget(button_cancel)
         self.mesh_widget = QWidget()
         self.mesh_widget.setLayout(box)
+
+	#begin align buttons
+	align_box = QHBoxLayout()
+	align_box.setContentsMargins(0,0,0,0)
+	align_box.addWidget(buttons.PyPushButton("one"))
+	align_box.addWidget(buttons.PyPushButton("two"))
+	align_box.addWidget(buttons.PyPushButton("three"))
+	self.align_widget = QWidget()
+	self.align_widget.setLayout(align_box)
+	print "====== align stuff inited"
+	#end align buttons
         
         # Sound line edit and buttons
         self.soundline = lines.SoundAssetidEditline(controller) 
@@ -168,6 +179,7 @@ class ObjectEditWindow:
         self.soundline.update_soundradius(ent.prim.SoundRadius)
         self.soundline.update_soundvolume(ent.prim.SoundVolume)
         self.updateAnimation(ent)
+        self.updateAlign(ent)
         self.updateMaterialTab(ent)
         self.updatingSelection = True
         self.update_guivals(ent)
@@ -178,6 +190,7 @@ class ObjectEditWindow:
         self.meshline.update_text("")
         self.soundline.update_text("")
         self.updateAnimation()
+        self.updateAlign()
         
     def update_guivals(self, ent):
         if ent is not None:
@@ -207,6 +220,12 @@ class ObjectEditWindow:
         if self.controller.cpp_python_handler != None:
             self.controller.cpp_python_handler.SetRotateValues(x_val, y_val, z_val)
     
+    def updateAlign(self, ent = None):
+        self.align_widget.setVisible(False)
+        if not ent:
+            return
+        self.align_widget.setVisible(True)
+
     def updateAnimation(self, ent = None):
         # Hide by default
         self.animation_widget.setVisible(False)
