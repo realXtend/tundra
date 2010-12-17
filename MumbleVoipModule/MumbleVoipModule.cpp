@@ -266,9 +266,9 @@ namespace MumbleVoip
             ApplicationManager::StartMumbleClient(server_url);
             return Console::ResultSuccess("Mumbe client started.");
         }
-        catch(QString &e)
+        catch(Exception &e)
         {
-            QString error_message = QString("Cannot start Mumble client: %1").arg(e);
+            QString error_message = QString("Cannot start Mumble client: %1").arg(e.what());
             return Console::ResultFailure(error_message.toStdString());        
         }
     }
@@ -291,9 +291,9 @@ namespace MumbleVoip
             context_id_for_link_plugin_ = info.context_id;
             QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
         }
-        catch(QString &e)
+        catch(Exception &e)
         {
-            QString messge = QString("Cannot start Mumble client: %1").arg(e);
+            QString messge = QString("Cannot start Mumble client: %1").arg(e.what());
             LogError(messge.toStdString());
             return;
         }
