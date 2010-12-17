@@ -52,7 +52,7 @@ namespace MumbleLib
         virtual int Id() const;
 
         //! @return channel of where user is
-        virtual Channel* Channel() const;
+        virtual Channel* GetChannel() const;
 
         //! @return true is user is speaking
         virtual bool IsSpeaking() const;
