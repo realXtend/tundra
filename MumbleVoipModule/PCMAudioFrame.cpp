@@ -54,7 +54,7 @@ namespace MumbleVoip
     int PCMAudioFrame::SampleAt(int i)
     {
         if (i >= SampleCount() || i < 0)
-            throw std::exception("Out of bounds");
+            throw QString("Out of bounds");
 
         switch(sample_width_)
         {
@@ -69,7 +69,7 @@ namespace MumbleVoip
             return data[i];
             }
         default:
-            throw std::exception("Sample witdth is not supported");
+            throw QString("Sample witdth is not supported");
         }
     }
 
@@ -91,7 +91,7 @@ namespace MumbleVoip
             }
             break;
         default:
-            throw std::exception("Sample witdth is not supported");
+            throw QString("Sample witdth is not supported");
         }
     }
 
