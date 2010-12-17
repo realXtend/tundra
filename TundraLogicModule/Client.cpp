@@ -13,6 +13,7 @@
 #include "SyncManager.h"
 #include "TundraMessages.h"
 #include "TundraEvents.h"
+#include "PhysicsModule.h"
 
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"
@@ -227,6 +228,10 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         if (!reconnect_)
         {
             Scene::ScenePtr scene = framework_->CreateScene("TundraClient", true);
+            // Create physics world in client (non-authoritative) mode
+            Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
+            physics->CreatePhysicsWorldForScene(scene, true);
+            
             framework_->SetDefaultWorldScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
             

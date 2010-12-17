@@ -87,13 +87,9 @@ bool Server::Start(unsigned short port)
         framework_->SetDefaultWorldScene(scene);
         owner_->GetSyncManager()->RegisterToScene(scene);
         
-        // We are server, so create physics world for the scene
+        // Create an authoritative physics world
         Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
-        if (physics)
-        {
-            Physics::PhysicsWorld* world = physics->CreatePhysicsWorldForScene(scene);
-            world->SetGravity(Vector3df(0.0f,0.0f,-9.81f));
-        }
+        physics->CreatePhysicsWorldForScene(scene, false);
         
         //! \todo Hack - find better way and remove! Allow environment also on server by sending a fake connect event
         Events::TundraConnectedEventData event_data;

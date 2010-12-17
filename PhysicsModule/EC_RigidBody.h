@@ -292,6 +292,9 @@ public slots:
 
     btRigidBody* GetRigidBody() const { return body_; }
     
+    //! Return whether have authority. On the client, returns false for non-local objects.
+    bool HasAuthority() const;
+    
 private slots:
     //! Called when the parent entity has been set.
     void UpdateSignals();
