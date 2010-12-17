@@ -20,11 +20,7 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
 
     //can't do immediately here, 'cause getcomponent crashes
     //.. is not allowed to get other components in the creation of a component. ok?
-    if (ViewEnabled())
-    {
-         framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
-        //ScheduleRender();
-    }
+    framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
 }
 
 EC_RttTarget::~EC_RttTarget()
