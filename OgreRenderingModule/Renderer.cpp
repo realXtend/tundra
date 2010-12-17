@@ -642,6 +642,7 @@ namespace OgreRenderer
                         std::cout << "SubRect Lock Failed!" << std::endl;
 #endif
                         return;
+/*
                         HRESULT hr = surface->LockRect(&lock, 0, 0);
                         if (FAILED(hr))
                         {
@@ -650,6 +651,7 @@ namespace OgreRenderer
 #endif
                             return;
                         }
+*/
                     }
                     assert(lock.Pitch >= desc.Width*4);
                 }
@@ -1325,11 +1327,10 @@ namespace OgreRenderer
     {
         Ogre::SceneManager* sceneManager = scenemanager_;
         // Debug mode Ogre might assert due to illegal shadow camera AABB, with empty scene. Disable shadows in debug mode.
-        #ifdef _DEBUG
+#ifdef _DEBUG
             sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
             return;
-        #endif
-
+#else
         bool using_pssm = (shadowquality_ == Shadows_High);
         bool soft_shadow = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "soft_shadow", false);
         
@@ -1444,21 +1445,6 @@ namespace OgreRenderer
                 gaussianListeners_.push_back(gaussianListener);
             }
         }
+#endif
     }
-
-    bool ProcessBraces(const std::string& line, int& braceLevel)
-    {
-        if (line == "{")
-        {
-            ++braceLevel;
-            return true;
-        } 
-        else if (line == "}")
-        {
-            --braceLevel;
-            return true;
-        }
-        else return false;
-    }
-
 }

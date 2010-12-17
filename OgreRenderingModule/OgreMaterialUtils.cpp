@@ -365,4 +365,19 @@ namespace OgreRenderer
             }
         }
     }
+
+    bool ProcessBraces(const std::string& line, int& braceLevel)
+    {
+        if (line == "{")
+        {
+            ++braceLevel;
+            return true;
+        } 
+        else if (line == "}")
+        {
+            --braceLevel;
+            return true;
+        }
+        else return false;
+    }
 }
