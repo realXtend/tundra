@@ -5,15 +5,14 @@
 
 #include "ForwardDefines.h"
 #include "Vector3D.h"
-#include "CoreStringUtils.h"
 #include "IComponent.h"
 #include "Transform.h"
 #include "AssetReference.h"
-
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
 
 #include <QObject>
+#include <QVariant>
 #include <map>
 
 class QtDoublePropertyManager;
@@ -24,12 +23,6 @@ class QtAbstractEditorFactoryBase;
 class QtAbstractPropertyBrowser;
 
 class Color;
-struct AssetReference;
-struct Transform;
-
-class IComponent;
-typedef boost::shared_ptr<IComponent> ComponentPtr;
-typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
 
 typedef unsigned char MetaDataFlag;
 enum MetaDataFlags
@@ -99,19 +92,7 @@ signals:
 private slots:
     //! Called when user has picked one of the multiselect values.
     //! @param value new value that has been picked.
-    void MultiEditValueSelected(const QString &value) 
-    {
-        ComponentWeakPtr comp;
-        foreach(comp, components_)
-        {
-            if(!comp.expired())
-            {
-                IAttribute *attribute = FindAttribute(comp.lock());
-                if(attribute)
-                    attribute->FromString(value.toStdString(), AttributeChange::Default);
-            }
-        }
-    }
+    void MultiEditValueSelected(const QString &value);
 
     //! Listens if any of editor's values has been changed and the value change need to forward to the a attribute.
     void PropertyChanged(QtProperty *property){ Set(property); }
@@ -134,7 +115,7 @@ protected:
     void UnInitialize();
 
     //! Try to find attribute in component and if found return it's pointer.
-    IAttribute *FindAttribute(ComponentPtr component);
+    IAttribute *FindAttribute(ComponentPtr component) const;
     QList<ComponentWeakPtr>::iterator FindComponent(ComponentPtr component);
 
     QtAbstractPropertyBrowser *owner_;
@@ -174,10 +155,7 @@ public:
         listenEditorChangedSignal_ = true;
     }
 
-    ~ECAttributeEditor()
-    {
-        
-    }
+    ~ECAttributeEditor() {}
 
 private:
     //! Override from ECAttributeEditorBase
@@ -327,20 +305,24 @@ template<> void ECAttributeEditor<QString>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<QString>::Initialize();
 template<> void ECAttributeEditor<QString>::Set(QtProperty *property);
 
-template<> void ECAttributeEditor<QVariant>::Update(IAttribute *attr);
-template<> void ECAttributeEditor<QVariant>::Initialize();
-template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property);
-
 template<> void ECAttributeEditor<Transform>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<Transform>::Initialize();
 template<> void ECAttributeEditor<Transform>::Set(QtProperty *property);
 
-template<> void ECAttributeEditor<QVariantList >::Update(IAttribute *attr);
-template<> void ECAttributeEditor<QVariantList >::Initialize();
-template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property);
+template<> void ECAttributeEditor<QVariant>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<QVariant>::Initialize();
+template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property);
+
+template<> void ECAttributeEditor<QVariantList>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<QVariantList>::Initialize();
+template<> void ECAttributeEditor<QVariantList>::Set(QtProperty *property);
 
 template<> void ECAttributeEditor<AssetReference>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<AssetReference>::Initialize();
 template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property);
+
+template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<AssetReferenceList>::Initialize();
+template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property);
 
 #endif

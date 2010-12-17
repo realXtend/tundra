@@ -167,6 +167,20 @@ QScriptValue toScriptValueAssetReference(QScriptEngine *engine, const AssetRefer
     return obj;
 }
 
+void fromScriptValueAssetReferenceList(const QScriptValue &obj, AssetReferenceList &s)
+{
+    ///\todo Implement
+//    s.ref = obj.property("ref").toString();
+}
+
+QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetReferenceList &s)
+{
+    QScriptValue obj = engine->newObject();
+    ///\todo Implement
+//    obj.setProperty("ref", QScriptValue(engine, s.ref));
+    return obj;
+}
+
 void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
 {
 }
@@ -204,6 +218,12 @@ QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
     return engine->toScriptValue(newAssetRef);
 }
 
+QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine)
+{
+    AssetReferenceList newAssetRefList;
+    return engine->toScriptValue(newAssetRefList);
+}
+
 void RegisterNaaliCoreMetaTypes()
 {
     qRegisterMetaType<Color>("Color");
@@ -211,6 +231,7 @@ void RegisterNaaliCoreMetaTypes()
     qRegisterMetaType<Quaternion>("Quaternion");
     qRegisterMetaType<Transform>("Transform");
     qRegisterMetaType<AssetReference>("AssetReference");
+    qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
 }
 
 void ExposeNaaliCoreTypes(QScriptEngine *engine)
@@ -223,6 +244,7 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueQQuaternion, fromScriptValueQQuaternion);
     qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
+    qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
 
     //qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
     int id = qRegisterMetaType<IAttribute*>("IAttribute*");
@@ -242,4 +264,7 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("Transform", ctorTransform);
     QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
     engine->globalObject().setProperty("AssetReference", ctorAssetReference);
+    QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);
+    engine->globalObject().setProperty("AssetReferenceList", ctorAssetReferenceList);
+
 }

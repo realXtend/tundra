@@ -11,6 +11,8 @@
 #include "IComponent.h"
 #include "Transform.h"
 #include "AssetReference.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditorBase")
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>
@@ -45,8 +47,12 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, editor);
     else if(type == "assetreference")
         attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, editor);
+    else if(type == "assetreferencelist")
+        attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, editor);
     else if(type == "transform")
         attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, editor);
+    else
+        LogError("Unknown attribute type " + type.toStdString() + "for ECAttributeEditorBase creation.");
 
     return attributeEditor;
 }
