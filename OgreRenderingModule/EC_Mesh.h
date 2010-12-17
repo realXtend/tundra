@@ -35,8 +35,8 @@ Registered by OgreRenderer::OgreRenderingModule.
 <div>Mesh asset reference (handles resource request automatically).</div>
 <li>AssetReference: skeletonRef
 <div>Skeleton asset reference (handles resource request automatically).</div>
-<li>QVariantList: meshMaterial
-<div>Mesh material ref is a string list that can contain x number of materials and each material is applied to.</div> 
+<li>AssetReferenceList: meshMaterial
+<div>Mesh material asset reference list, material requests are handled automaticly.</div> 
 <li>float: drawDistance
 <div>Distance where the mesh is shown from the camera.</div> 
 <li>bool: castShadows
@@ -145,7 +145,6 @@ class OGRE_MODULE_API EC_Mesh : public IComponent
 
 public:
     //! Transformation attribute is used to do some position, rotation and scale adjustments.
-    //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
@@ -157,10 +156,9 @@ public:
     Q_PROPERTY(AssetReference skeletonRef READ getskeletonRef WRITE setskeletonRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, skeletonRef);
 
-    //! Mesh material id list that can contain x number of materials, material requests are handled automaticly.
-    //! @todo replace std::vector to QVariantList.
-    Q_PROPERTY(QVariantList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
-    DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, meshMaterial);
+    //! Mesh material asset reference list, material requests are handled automaticly.
+    Q_PROPERTY(AssetReferenceList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, meshMaterial);
 
     //! Mesh draw distance.
     Q_PROPERTY(float drawDistance READ getdrawDistance WRITE setdrawDistance);
@@ -169,7 +167,7 @@ public:
     //! Will the mesh cast shadows.
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
-    
+
     //! Set component as serializable.
     /*! Note that despite this, in OpenSim worlds, the network sync will be disabled from the component,
         as mesh attributes are being transmitted through RexPrimData instead.

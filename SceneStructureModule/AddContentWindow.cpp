@@ -243,6 +243,10 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
     AddAssets(desc.assets);
 }
 
+void AddContentWindow::AddDescriptions(const QList<SceneDesc> &descs)
+{
+}
+
 void AddContentWindow::AddFiles(const QStringList &fileNames)
 {
     assetTreeWidget->setSortingEnabled(false);
@@ -256,7 +260,7 @@ void AddContentWindow::AddFiles(const QStringList &fileNames)
         QString type = GetResourceTypeFromResourceFileName(file.toStdString().c_str());
         ad.typeName = type.isEmpty() ? "Binary" : type;
         ad.destinationName = fs::path(file.toStdString()).leaf().c_str();
-        desc.assets[ad.source]= ad;
+        desc.assets[qMakePair(ad.source, ad.subname)]= ad;
     }
 
     sceneDesc = desc;
@@ -295,7 +299,7 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     entityTreeWidget->setSortingEnabled(true);
 }
 
-void AddContentWindow::AddAssets(const QMap<QString, AssetDesc> &assetDescs)
+void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 {
     assetTreeWidget->setSortingEnabled(false);
 
@@ -345,6 +349,60 @@ void AddContentWindow::AddAssets(const QMap<QString, AssetDesc> &assetDescs)
 
     // Sort asset items initially so that erroneous are first
     assetTreeWidget->sortItems(cColumnAssetUpload, Qt::AscendingOrder);
+}
+
+void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest)
+{
+//    QString path(fs::path(newDesc.filename.toStdString()).branch_path().string().c_str());
+
+    QList<SceneDesc::AssetMapKey> keysWithSubname;
+    foreach(SceneDesc::AssetMapKey key, sceneDesc.assets.keys())
+        if (!key.second.isEmpty())
+            keysWithSubname.append(key);
+
+    QMutableListIterator<EntityDesc > edIt(sceneDesc.entities);
+    while(edIt.hasNext())
+    {
+        QMutableListIterator<ComponentDesc> cdIt(edIt.next().components);
+        while(cdIt.hasNext())
+        {
+            QMutableListIterator<AttributeDesc> adIt(cdIt.next().attributes);
+            while(adIt.hasNext())
+            {
+                adIt.next();
+                if (adIt.value().typeName == "assetreference" || adIt.value().typeName == "assetreferencelist")
+                {
+                    QStringList values = adIt.value().value.split(";");
+                    QStringList newValues;
+                    foreach(QString value, values)
+                    {
+                        QString subname;
+
+                        ///\todo This string manipulation/crafting doesn't work for .zip files, only for materials and COLLADA files
+                        int slashIdx = value.lastIndexOf("/");
+                        int dotIdx = value.lastIndexOf(".");
+                        QString str = value.mid(slashIdx + 1, dotIdx - slashIdx - 1);
+
+                        foreach(SceneDesc::AssetMapKey key, keysWithSubname)
+                            if (str == key.second)
+                            {
+                                value = key.first;
+                                subname = key.second;
+                                break;
+                            }
+
+                        SceneDesc::AssetMapKey key = qMakePair(value, subname);
+                        if (sceneDesc.assets.contains(key))
+                            newValues << dest->GetFullAssetURL(sceneDesc.assets[key].destinationName);
+                    }
+
+                    if (!newValues.isEmpty())
+                        adIt.value().value = newValues.join(";");
+                    // After the above lines the asset reference attribute descs do not point to the original source assets.
+                }
+            }
+        }
+    }
 }
 
 void AddContentWindow::SelectAllEntities()
@@ -399,13 +457,8 @@ void AddContentWindow::AddContent()
         ++eit;
     }
 
-    // Rewrite components asset refs
-    foreach(EntityDesc ed, newDesc.entities)
-        foreach(ComponentDesc cd, ed.components)
-            foreach(AttributeDesc ad, cd.attributes)
-                if (ad.typeName == "assetreference")
-                     ad.value = dest->GetFullAssetURL(newDesc.assets[ad.value].destinationName);
-                    // After the above lines the asset reference attribute descs do not point to the original source assets.
+    // Rewrite components' asset refs
+    RewriteAssetReferences(newDesc, dest);
 
     RefMap refs;
     QTreeWidgetItemIterator ait(assetTreeWidget);
@@ -417,7 +470,7 @@ void AddContentWindow::AddContent()
         {
             if (aitem->checkState(cColumnAssetUpload) == Qt::Unchecked)
             {
-                bool removed = newDesc.assets.remove(aitem->desc.source);
+                bool removed = newDesc.assets.remove(qMakePair(aitem->desc.source, aitem->desc.subname));
                 if (!removed)
                     LogDebug("Coulnd't find and remove " + aitem->desc.source.toStdString() + "from asset map.");
             }
@@ -437,7 +490,7 @@ void AddContentWindow::AddContent()
     }
 
     // Rewrite asset refs
-    QMutableMapIterator<QString, AssetDesc> rewriteIt(newDesc.assets);
+    QMutableMapIterator<SceneDesc::AssetMapKey, AssetDesc> rewriteIt(newDesc.assets);
     while(rewriteIt.hasNext())
     {
         rewriteIt.next();
@@ -488,8 +541,10 @@ void AddContentWindow::AddContent()
     switch(newDesc.type)
     {
     case SceneDesc::Naali:
+    case SceneDesc::OgreMesh:
         entities = destScene->CreateContentFromSceneDescription(newDesc, false, AttributeChange::Default);
         break;
+/*
     case SceneDesc::OgreMesh:
     {
         fs::path path(newDesc.filename.toStdString());
@@ -502,6 +557,7 @@ void AddContentWindow::AddContent()
             entities << entity.get();
         break;
     }
+*/
     case SceneDesc::OgreScene:
     {
         fs::path path(newDesc.filename.toStdString());

@@ -795,7 +795,7 @@ namespace Environment
                 d_spin_box->show();
                 //d_spin_box->setValue(param.distance);
                 if ( skyBox != 0)
-                    d_spin_box->setValue(skyBox->distanceAttr.Get());
+                    d_spin_box->setValue(skyBox->distance.Get());
 
                 apply_button = new QPushButton(properties_frame);
                 apply_button->setObjectName("apply_properties_button");
@@ -1529,28 +1529,28 @@ namespace Environment
             QLineEdit *text_field = editor_widget_->findChild<QLineEdit *>("sky_texture_line_edit_" + QString("%1").arg(index));
             if(text_field)
             {
-                if(text_field->text() != "")
+                if (text_field->text() != "")
                 {
-                    if(sky_type_ == SKYTYPE_BOX)
+                    if (sky_type_ == SKYTYPE_BOX)
                     {
                         EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
-                        if ( skyBox != 0)
+                        if (skyBox != 0)
                         {
-                           QVariantList lst = skyBox->textureAttr.Get();
-                           lst[index-1] = text_field->text();
-                           skyBox->textureAttr.Set(lst, AttributeChange::Default);
+                           AssetReferenceList lst = skyBox->textureRefs.Get();
+                           lst.refs[index-1] = QVariant::fromValue(AssetReference(text_field->text()));
+                           skyBox->textureRefs.Set(lst, AttributeChange::Default);
                         }
                     }
-                    else if ( sky_type_ == SKYTYPE_PLANE)
+                    else if (sky_type_ == SKYTYPE_PLANE)
                     {
                         EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
-                        if (skyPlane != 0 )
+                        if (skyPlane != 0)
                             skyPlane->textureRef.Set(AssetReference(text_field->text()), AttributeChange::Default);
                     }
-                    else if(sky_type_ == SKYTYPE_DOME )
+                    else if (sky_type_ == SKYTYPE_DOME)
                     {
                         EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome >();
-                        if ( skyDome != 0 )
+                        if (skyDome != 0)
                             skyDome->textureRef.Set(AssetReference(text_field->text()), AttributeChange::Default);
                     }
                 }
@@ -1570,13 +1570,13 @@ namespace Environment
             EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
             if ( skyBox != 0)
             {
-                QVariantList lst = skyBox->textureAttr.Get();
-                for ( int i =0; i < lst.size() && i < 6; ++i)
+                AssetReferenceList lst = skyBox->textureRefs.Get();
+                for(int i =0; i < lst.Size() && i < 6; ++i)
                 {
                     QString line_edit_name = "sky_texture_line_edit_" + QString("%1").arg(i + 1);
                     QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
-                    if ( texture_line_edit != 0)
-                        texture_line_edit->setText(lst[i].toString());
+                    if (texture_line_edit != 0)
+                        texture_line_edit->setText(lst[i].ref);
                 }
             }
         }
@@ -1622,11 +1622,8 @@ namespace Environment
                         QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
 
                         EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox>();
-                        if ( skyBox != 0 && dspin_box != 0)
-                        {
-                            skyBox->distanceAttr.Set(dspin_box->value(), AttributeChange::Default);
-                        }
-                            
+                        if (skyBox != 0 && dspin_box != 0)
+                            skyBox->distance.Set(dspin_box->value(), AttributeChange::Default);
                         break;
                     }
                 case SKYTYPE_DOME:

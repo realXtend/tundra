@@ -6,13 +6,9 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "Declare_EC.h"
-#include "CoreTypes.h"
-#include "RexTypes.h"
 #include "Quaternion.h"
 #include "AssetReference.h"
 #include "OgreModuleFwd.h"
-
-#include <QVariant>
 
 namespace Environment
 {
@@ -27,23 +23,26 @@ Registered by Enviroment::EnvironmentModule.
 
 <h3> Using component to syncronize sky in Taiga </h3>
 
-Currently (not in Tundra) EC_SkyBox component can be used to syncronize sky in Taiga worlds. This can be done
-so that user creates entity and sets entity EC_Name-component. If this component name is set as "SkyEnvironment" our current implementation
-will create automagically a EC_SkyBox-component on it. This component is now usable for every users and all changes on it will be transfered 
-to all users. This syncronized sky plane component can also edit through environment editor (in world tools). Currently Caelum must be disabled 
-before these features can be used.
+Currently (not in Tundra) EC_SkyBox component can be used to syncronize sky in Taiga worlds.
+This can be done so that user creates entity and sets entity EC_Name-component.
+
+If this component name is set as "SkyEnvironment" our current implementation will create automatically
+a EC_SkyBox-component on it. This component is now usable for every user and all changes on it will be replicated.
+This syncronized sky plane component can also be edited by using environment editor (in world tools).
+
+Currently Caelum must be disabled before these features can be used.
 
 <b>Attributes</b>:
 <ul>
 <li> AssetReference: materialRef.
 <div> Sky material reference.</div>
-<li> QVariantList : textureAttr.
+<li> AssetReferenceList : textureRefs.
 <div>Sky texture references.</div>
-<li> Quaternion : orientationAttr
+<li> Quaternion : orientation
 <div> Optional parameter to specify the orientation of the box. </div>
-<li> float : distanceAttr.
+<li> float : distance
 <div> Distance in world coordinates from the camera to each plane of the box. </div>
-<li> bool : drawFirstAttr.
+<li> bool : drawFirst
 <div> If true, the box is drawn before all other geometry in the scene. </div>
 
 </ul>
@@ -53,7 +52,7 @@ before these features can be used.
     {
         Q_OBJECT
         DECLARE_EC(EC_SkyBox);
-    
+
     public:
         virtual ~EC_SkyBox();
 
@@ -64,38 +63,33 @@ before these features can be used.
         Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
 
         /// Sky texture references.
-        DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, textureAttr);
-        Q_PROPERTY(QVariantList textureAttr READ gettextureAttr WRITE settextureAttr); 
+        DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, textureRefs);
+        Q_PROPERTY(AssetReferenceList textureRefs READ gettextureRefs WRITE settextureRefs);
 
         /// Distance in world coordinates from the camera to each plane of the box.
-        DEFINE_QPROPERTY_ATTRIBUTE(float, distanceAttr);
-        Q_PROPERTY(float distanceAttr READ getdistanceAttr WRITE setdistanceAttr); 
+        DEFINE_QPROPERTY_ATTRIBUTE(float, distance);
+        Q_PROPERTY(float distance READ getdistance WRITE setdistance);
 
         /// Optional parameter to specify the orientation of the box.
-        DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientationAttr);
-        Q_PROPERTY(Quaternion orientationAttr READ getorientationAttr WRITE setorientationAttr); 
+        DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientation);
+        Q_PROPERTY(Quaternion orientation READ getorientation WRITE setorientation);
 
          /// Defines that is sky drawn first
-        DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirstAttr);
-        Q_PROPERTY(bool drawFirstAttr READ getdrawFirstAttr WRITE setdrawFirstAttr); 
-       
-    public slots: 
-        
-         /// Called If some of the attributes has been changed.
-        void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+        DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirst);
+        Q_PROPERTY(bool drawFirst READ getdrawFirst WRITE setdrawFirst);
+
+    public slots:
+        /// Called If some of the attributes has been changed.
+        void AttributeUpdated(IAttribute* attribute);
+
+        /// Disables the sky box.
         void DisableSky();
+
     private:
-       /** 
-        * Constuctor.
-        * @param module Module where component belongs.
-        **/
-        explicit EC_SkyBox(IModule *module);
-    
-       /**
-        * Helper function which is used to update sky plane state. 
-        *
+        /// Constuctor.
+        /** @param module Module where component belongs.
         */
-        void ChangeSkyBox(IAttribute* attribute);
+        explicit EC_SkyBox(IModule *module);
 
         void CreateSky();
         void SetTextures();
@@ -104,7 +98,7 @@ before these features can be used.
         float lastDistance_;
         bool lastDrawFirst_;
         Quaternion lastOrientation_;
-        QVariantList lastTextures_;
+        AssetReferenceList lastTextures_;
 
         /// Renderer
         OgreRenderer::RendererWeakPtr renderer_;

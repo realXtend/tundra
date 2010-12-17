@@ -70,112 +70,108 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &f
 
 QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
 {
-    QList<Scene::Entity *> ret;
-    SceneDesc sceneDesc;
+    return InstantiateContent(QStringList(QStringList() << filename), worldPos, desc, clearScene);
+}
 
-    if (!IsSupportedFileType(filename))
-    {
-        LogError("Unsupported file extension: " + filename.toStdString());
-        return ret;
-    }
+QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringList &filenames, Vector3df worldPos, const SceneDesc &desc, bool clearScene)
+{
+    QList<Scene::Entity *> ret;
 
     const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
     if (!scene)
+    {
+        LogError("Could not retrieve default world scene.");
         return ret;
-/*
-    if (queryPosition)
-    {
-        bool ok;
-        QString posString = QInputDialog::getText(0, tr("Position"), tr("position (x;y;z):"), QLineEdit::Normal, "0.00;0.00;0.00", &ok);
-        posString = posString.trimmed();
-        if (!ok)
-            return ret;
+    }
 
-        if (posString.isEmpty())
-            posString = "0;0;0";
-        posString.replace(',', '.');
-        QStringList pos = posString.split(';');
-        if (pos.size() > 0)
-            worldPos.x = pos[0].toFloat();
-        if (pos.size() > 1)
-            worldPos.y = pos[1].toFloat();
-        if (pos.size() > 2)
-            worldPos.z = pos[2].toFloat();
-    }
-*/
-    if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
-    {
-        //boost::filesystem::path path(filename.toStdString());
-        //std::string dirname = path.branch_path().string();
+    QList<SceneDesc> sceneDescs;
 
-        TundraLogic::SceneImporter importer(scene);
-        sceneDesc = importer.GetSceneDescForScene(filename);
-        ///\todo Take into account asset sources.
-        /*
-        ret = importer.Import(filename.toStdString(), dirname, "./data/assets",
-            Transform(worldPos, Vector3df(), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
-        if (ret.empty())
-            LogError("Import failed");
-        else
-            LogInfo("Import successful. " + ToString(ret.size()) + " entities created.");
-        */
-    }
-    else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
+    foreach(QString filename, filenames)
     {
-        boost::filesystem::path path(filename.toStdString());
-        std::string dirname = path.branch_path().string();
-
-        TundraLogic::SceneImporter importer(scene);
-        sceneDesc = importer.GetSceneDescForMesh(filename);
-/*
-        Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
-            Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
-        if (entity)
-            ret << entity.get();
-
-        return ret;
-*/
-    }
-    else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
-    {
-//        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
-        sceneDesc = scene->GetSceneDescFromXml(filename);
-    }
-    else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
-    {
-//        ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
-        sceneDesc = scene->GetSceneDescFromBinary(filename);
-    }
-    else
-    {
-#ifdef ASSIMP_ENABLED
-        boost::filesystem::path path(filename.toStdString());
-        AssImp::OpenAssetImport assimporter;
-        QString extension = QString(path.extension().c_str()).toLower();
-        if (assimporter.IsSupportedExtension(extension))
+        if (!IsSupportedFileType(filename))
         {
-            std::string dirname = path.branch_path().string();
-            std::vector<AssImp::MeshData> meshNames;
-            assimporter.GetMeshData(filename, meshNames);
+            LogError("Unsupported file extension: " + filename.toStdString());
+            continue;
+        }
 
-            TundraLogic::SceneImporter sceneimporter(scene);
-            for (size_t i=0 ; i<meshNames.size() ; ++i)
-            {
-                Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
-                    std::string(), "local://", AttributeChange::Default, false, meshNames[i].name_.toStdString());
-                if (entity)
-                    ret.append(entity.get());
-            }
+        if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
+        {
+            //boost::filesystem::path path(filename.toStdString());
+            //std::string dirname = path.branch_path().string();
+
+            TundraLogic::SceneImporter importer(scene);
+//            sceneDesc = importer.GetSceneDescForScene(filename);
+            sceneDescs.append(importer.GetSceneDescForScene(filename));
+/*
+            ret = importer.Import(filename.toStdString(), dirname, "./data/assets",
+                Transform(worldPos, Vector3df(), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
+            if (ret.empty())
+                LogError("Import failed");
+            else
+                LogInfo("Import successful. " + ToString(ret.size()) + " entities created.");
+*/
+        }
+        else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
+        {
+//            boost::filesystem::path path(filename.toStdString());
+//            std::string dirname = path.branch_path().string();
+
+            TundraLogic::SceneImporter importer(scene);
+            sceneDescs.append(importer.GetSceneDescForMesh(filename));
+//            sceneDesc = importer.GetSceneDescForMesh(filename);
+/*
+            Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
+                Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
+            if (entity)
+                ret << entity.get();
 
             return ret;
+*/
         }
+        else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
+        {
+//        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
+//            sceneDesc = scene->GetSceneDescFromXml(filename);
+            sceneDescs.append(scene->GetSceneDescFromXml(filename));
+        }
+        else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
+        {
+//        ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
+//            sceneDesc = scene->GetSceneDescFromBinary(filename);
+            sceneDescs.append(scene->GetSceneDescFromXml(filename));
+        }
+        else
+        {
+#ifdef ASSIMP_ENABLED
+            boost::filesystem::path path(filename.toStdString());
+            AssImp::OpenAssetImport assimporter;
+            QString extension = QString(path.extension().c_str()).toLower();
+            if (assimporter.IsSupportedExtension(extension))
+            {
+                std::string dirname = path.branch_path().string();
+                std::vector<AssImp::MeshData> meshNames;
+                assimporter.GetMeshData(filename, meshNames);
+
+                TundraLogic::SceneImporter sceneimporter(scene);
+                for (size_t i=0 ; i<meshNames.size() ; ++i)
+                {
+                    Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
+                        std::string(), "local://", AttributeChange::Default, false, meshNames[i].name_.toStdString());
+                    if (entity)
+                        ret.append(entity.get());
+                }
+
+                return ret;
+            }
 #endif
+        }
     }
 
-    if (!sceneDesc.IsEmpty())
+    if (!sceneDescs.isEmpty())
     {
         AddContentWindow *addContent = new AddContentWindow(framework_, scene);
-        addContent->AddDescription(sceneDesc);
+//        addContent->AddDescription(sceneDesc);
+        addContent->AddDescription(sceneDescs[0]);
         if (worldPos != Vector3df())
             addContent->AddPosition(worldPos);
         addContent->move((framework_->Ui()->MainWindow()->pos()) + QPoint(400, 200));
