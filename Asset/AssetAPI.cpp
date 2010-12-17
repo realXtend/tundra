@@ -1,5 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "DebugOperatorNew.h"
 #include "AssetAPI.h"
 #include "Framework.h"
 #include "IAssetTransfer.h"
@@ -17,6 +18,7 @@
 #include "Platform.h"
 #include <QDir>
 #include <QFileSystemWatcher>
+#include "MemoryLeakCheck.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
@@ -703,7 +705,7 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
         connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)));
         connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), req.transfer.get(), SIGNAL(Decoded(AssetPtr)));
         connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), req.transfer.get(), SIGNAL(Loaded(AssetPtr)));
-        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*)));
+        connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), req.transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)));
     }
 }
 
