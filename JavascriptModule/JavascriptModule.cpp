@@ -20,7 +20,7 @@
 #include "SceneManager.h"
 #include "Input.h"
 #include "UiServiceInterface.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include "Frame.h"
 #include "Console.h"
 #include "ConsoleCommandServiceInterface.h"

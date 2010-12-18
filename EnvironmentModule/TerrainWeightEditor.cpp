@@ -440,7 +440,7 @@ namespace Environment
         if(!scene_manager_)
         {
             Scene::ScenePtr ptr = env_module_->GetFramework()->GetDefaultWorldScene();
-            if(ptr.get())
+            if(ptr)
                 scene_manager_ = ptr.get();
         }
          return scene_manager_;

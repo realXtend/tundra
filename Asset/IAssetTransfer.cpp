@@ -8,7 +8,7 @@ void IAssetTransfer::EmitAssetDownloaded()
 
 void IAssetTransfer::EmitAssetDecoded()
 {
-//    if (this->asset.get())
+//    if (this->asset)
 //        emit Decoded(this->asset);
 }
 
@@ -16,7 +16,7 @@ void IAssetTransfer::EmitAssetLoaded()
 {
     emit Loaded(this->asset);
     /*
-    if (this->asset.get())
+    if (this->asset)
     {
         this->asset->EmitLoaded();
     }

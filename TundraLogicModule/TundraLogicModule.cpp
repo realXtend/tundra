@@ -89,7 +89,7 @@ void TundraLogicModule::PostInitialize()
         
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
-    if (!kristalliModule_.get())
+    if (!kristalliModule_)
     {
         throw Exception("Fatal: could not get KristalliProtocolModule");
     }
@@ -115,7 +115,7 @@ void TundraLogicModule::Update(f64 frametime)
             /// assume we are running a "dedicated" server, and start the server automatically on default port
             ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
             ModuleWeakPtr uiModule = framework_->GetModuleManager()->GetModule("UI");
-            if ((!loginModule.lock().get()) && (!uiModule.lock().get()))
+            if ((!loginModule.lock()) && (!uiModule.lock()))
             {
                 LogInfo("Started server by default");
                 server_->Start(cDefaultPort);

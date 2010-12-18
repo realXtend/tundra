@@ -76,7 +76,7 @@ private:
     request_tag_t request_tag_;
     QString inventoryId_;
     QString assetId_;
-    sound_id_t soundId_;
+//    sound_id_t soundId_;
 
     QWidget     *mainWidget_;
     QPushButton *okButton_;

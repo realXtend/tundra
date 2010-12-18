@@ -40,7 +40,7 @@ namespace MumbleVoip
         if (framework_ &&  framework_->GetServiceManager())
         {
             boost::shared_ptr<Communications::ServiceInterface> communication_service = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Service::ST_Communications).lock();
-            if (communication_service.get())
+            if (communication_service)
                 communication_service->Register(*this);
         }
 
@@ -295,7 +295,7 @@ namespace MumbleVoip
 
     QString Provider::GetUsername()
     {
-        if (world_stream_.get())
+        if (world_stream_)
             return world_stream_->GetInfo().agentID.ToQString();
         else
             return "";

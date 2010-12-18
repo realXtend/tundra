@@ -438,7 +438,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
         foreach(EntityItem *eItem, selection.entities)
         {
             Scene::EntityPtr entity = eItem->Entity();
-            assert(entity.get());
+            assert(entity);
             if (entity)
             {
                 QDomElement entity_elem = scene_doc.createElement("entity");
@@ -761,7 +761,7 @@ void SceneTreeWidget::NewEntity()
 
     // Create entity.
     Scene::EntityPtr entity = scene.lock()->CreateEntity(id, QStringList(), changeType);
-    assert(entity.get());
+    assert(entity);
     scene.lock()->EmitEntityCreated(entity, changeType);
 }
 
@@ -811,7 +811,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
         }
 
         comp = framework->GetComponentManager()->CreateComponent(dialog->GetTypeName(), dialog->GetName());
-        assert(comp.get());
+        assert(comp);
         if (comp)
         {
             comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
@@ -1211,7 +1211,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
             foreach(EntityItem *eItem, sel.entities)
             {
                 Scene::EntityPtr entity = eItem->Entity();
-                assert(entity.get());
+                assert(entity);
                 if (entity)
                     entity->SerializeToBinary(dest);
             }
@@ -1543,9 +1543,9 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
 
     AssetTransferPtr transfer = transfer_->shared_from_this();
     assert(filesaves_.contains(transfer));
-    assert(transfer.get());
+    assert(transfer);
 
-    if (!transfer->resourcePtr.get())
+    if (!transfer->resourcePtr)
     {
         // This means the asset was loaded through the new Asset API, in which case the resourcePtr is null, and the 'asset' member
         // points to the actual loaded asset. For a migration period, we'll need to check both pointers.

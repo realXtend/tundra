@@ -6,7 +6,7 @@
 //#include "CommunicationsService.h"
 //#include <QGraphicsProxyWidget>
 #include "ui_MicrophoneAdjustment.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include <QTimer>
 
 namespace Foundation

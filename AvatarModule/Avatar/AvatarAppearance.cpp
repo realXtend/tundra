@@ -1172,7 +1172,7 @@ namespace Avatar
         // Fix mesh & skeleton
         FixupResource(mesh, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
         // If mesh is local, need to setup the skeleton & materials
-        if (!mesh.resource_.lock().get())
+        if (!mesh.resource_.lock())
         {
             Ogre::MeshPtr ogremesh = OgreRenderer::GetLocalMesh(mesh.name_);
             if (!ogremesh.isNull())
@@ -1259,7 +1259,7 @@ namespace Avatar
             return;
         }
         
-        if (!asset.resource_.lock().get())
+        if (!asset.resource_.lock())
         {
             AvatarAssetMap::const_iterator i = asset_map.find(asset.name_);
             if (i != asset_map.end())
@@ -1286,7 +1286,7 @@ namespace Avatar
             fixed_mat_name.append(".material");
         
         // First find resource for the material itself
-        if (!mat.asset_.resource_.lock().get())
+        if (!mat.asset_.resource_.lock())
         {
             AvatarAssetMap::const_iterator i = asset_map.find(fixed_mat_name);
             if (i != asset_map.end())
@@ -1296,7 +1296,7 @@ namespace Avatar
             }
         }
         // If couldn't still be found, it's a local resource. In that case, fixup the default texture names for eventual export
-        if (!mat.asset_.resource_.lock().get()) 
+        if (!mat.asset_.resource_.lock()) 
         {
             if (!mat.textures_.size())
             {
@@ -1351,7 +1351,7 @@ namespace Avatar
             mat.textures_.resize(orig_textures.size());
         for (uint i = 0; i < mat.textures_.size(); ++i)
         {
-            if (!mat.textures_[i].resource_.lock().get())
+            if (!mat.textures_[i].resource_.lock())
             {
                 // Fill in name if not specified
                 if ((mat.textures_[i].name_.empty()) && (i < orig_textures.size()))
@@ -1365,7 +1365,7 @@ namespace Avatar
                 }
             }
             // If we found the texture, modify the material to use it.
-            if (mat.textures_[i].resource_.lock().get())
+            if (mat.textures_[i].resource_.lock())
             {
                 Ogre::MaterialPtr ogremat = mat_res->GetMaterial();
                 OgreRenderer::ReplaceTextureOnMaterial(ogremat, mat.textures_[i].name_, mat.textures_[i].resource_.lock()->GetId());
@@ -1729,7 +1729,7 @@ namespace Avatar
         Ogre::MaterialPtr ogre_mat;
 
         // Resource-based or local?
-        if (material.asset_.resource_.lock().get())
+        if (material.asset_.resource_.lock())
         {
             // In inventory mode, being resource based means it already exists on the server, do not store again
             if (inventorymode)
@@ -1892,7 +1892,7 @@ namespace Avatar
         ExportAsset new_export_asset;
         
         // If it's loaded from resource, we should be able to get at the original raw asset data for export
-        if (asset.resource_.lock().get())
+        if (asset.resource_.lock())
         {
             // In inventory mode, being resource based means it already exists on the server, do not store again
             if (inventorymode)

@@ -54,7 +54,7 @@
 #include "LoginServiceInterface.h"
 #include "Frame.h"
 #include "Console.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
 #include "NaaliMainWindow.h"
@@ -66,7 +66,6 @@
 #include "Camera/CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
-#include "EntityComponent/EC_AttachedSound.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_Mesh.h"
@@ -286,7 +285,7 @@ namespace PythonScript
                 value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
 
                 const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName.c_str());
-                assert(scene.get());
+                assert(scene);
                 if (scene)
                 {
                     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
@@ -1843,13 +1842,12 @@ namespace PythonScript
 
             PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
 //            PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
-            PythonQt::self()->registerClass(&ISoundService::staticMetaObject);
+            PythonQt::self()->registerClass(&AudioAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Input::staticMetaObject);
 
             //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Mesh::staticMetaObject);
-            PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);

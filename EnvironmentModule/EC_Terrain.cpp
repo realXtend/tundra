@@ -186,38 +186,38 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
 /*
     else if (changedAttribute == texture0.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture1.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture2.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture3.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture4.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     } */
     else if (changedAttribute == heightMap.GetNameString())
@@ -1187,8 +1187,8 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
         return;
     }
 //    Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
-//    assert(terrainMaterial.get());
- //   if(terrainMaterial.get())
+//    assert(terrainMaterial);
+ //   if(terrainMaterial)
 //    {
         OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
 //        emit TerrainTextureChanged(); ///\todo Regression here. Re-enable this so that the EnvironmentEditor texture viewer can see the textures?
@@ -1247,7 +1247,7 @@ void EC_Terrain::AttachTerrainRootNode()
 
     // If this entity has an EC_Placeable, make sure it is the parent of this terrain component.
     boost::shared_ptr<EC_Placeable> pos = GetParentEntity()->GetComponent<EC_Placeable>();
-    if (pos.get())
+    if (pos)
     {
         Ogre::SceneNode *parent = pos->GetSceneNode();
         parent->addChild(rootNode);

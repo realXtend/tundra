@@ -80,8 +80,8 @@ namespace Environment
         DebugDumpOgreTextureInfo(textureName);
 
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
-        assert(terrainMaterial.get());
-        if(terrainMaterial.get())
+        assert(terrainMaterial);
+        if(terrainMaterial)
         {
             OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
             emit TerrainTextureChanged();
@@ -640,7 +640,7 @@ namespace Environment
     EC_Terrain *Terrain::GetTerrainComponent()
     {
         Scene::EntityPtr entity = GetTerrainEntity().lock();
-        if (!entity.get())
+        if (!entity)
             return 0;
         return entity->GetComponent<EC_Terrain>().get();
     }

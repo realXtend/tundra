@@ -24,15 +24,10 @@ DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
 using namespace Foundation;
 
-AssetAPI::AssetAPI(Foundation::Framework *owner)
-:framework(owner)
+AssetAPI::AssetAPI()
+:assetCache(0),
+diskSourceChangeWatcher(0)
 {
-    const char cDefaultAssetCachePath[] = "/assetcache";
-
-    assetCache = new AssetCache((owner->GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
-    diskSourceChangeWatcher = new QFileSystemWatcher();
-    connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)));
-
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
@@ -43,6 +38,15 @@ AssetAPI::~AssetAPI()
 {
     delete assetCache;
     delete diskSourceChangeWatcher;
+}
+
+void AssetAPI::OpenAssetCache(QString directory)
+{
+    SAFE_DELETE(assetCache);
+    SAFE_DELETE(diskSourceChangeWatcher);
+    assetCache = new AssetCache(directory.toStdString().c_str());
+    diskSourceChangeWatcher = new QFileSystemWatcher();
+    connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)));
 }
 
 std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
@@ -184,7 +188,7 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
 
 void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 {
-    if (!asset.get())
+    if (!asset)
         return;
 
     emit AssetAboutToBeRemoved(asset);
@@ -214,14 +218,14 @@ void AssetAPI::DeleteAssetFromStorage(QString assetRef)
     AssetPtr asset = GetAsset(assetRef);
 
     AssetProviderPtr provider = (asset.get() ? asset->GetAssetProvider() : AssetProviderPtr());
-    if (!provider.get())
+    if (!provider)
         provider = GetProviderForAssetRef(assetRef); // If the actual AssetPtr didn't specify the originating provider, try to guess it from the assetRef string.
 
     // We're erasing the asset from the storage, so also clean it from memory and disk source to avoid any leftovers from remaining in the system.
-    if (asset.get())
+    if (asset)
         ForgetAsset(asset, true);
 
-    if (!provider.get())
+    if (!provider)
     {
         LogError("AssetAPI::DeleteAssetFromStorage called on asset \"" + assetRef.toStdString() + "\", but the originating provider was not set!");
         // Remove this asset from memory and from the disk source, the best we can do for it.
@@ -239,11 +243,11 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, Asset
     if (!assetName || strlen(assetName) == 0)
         throw Exception("AssetAPI::UploadAssetFromFile failed! No destination asset name given!");
 
-    if (!destination.get())
+    if (!destination)
         throw Exception("AssetAPI::UploadAssetFromFile failed! The passed destination asset storage was null!");
 
     AssetProviderPtr provider = destination->provider.lock();
-    if (!provider.get())
+    if (!provider)
         throw Exception("AssetAPI::UploadAssetFromFile failed! The provider pointer of the passed destination asset storage was null!");
 
     std::vector<u8> data;
@@ -265,15 +269,15 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, siz
     if (!assetName || strlen(assetName) == 0)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! No destination asset name given!");
 
-    if (!destination.get())
+    if (!destination)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The passed destination asset storage was null!");
 
     AssetProviderPtr provider = destination->provider.lock();
-    if (!provider.get())
+    if (!provider)
         throw Exception("AssetAPI::UploadAssetFromFileInMemory failed! The provider pointer of the passed destination asset storage was null!");
 
     AssetUploadTransferPtr transfer = provider->UploadAssetFromFileInMemory(data, numBytes, destination, assetName);
-    if (transfer.get())
+    if (transfer)
         currentUploadTransfers[transfer->destinationStorage.lock()->GetFullAssetURL(assetName)] = transfer;
 
     return transfer;
@@ -378,7 +382,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 
     // Find the AssetProvider that will fulfill this request.
     AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
-    if (!provider.get())
+    if (!provider)
     {
         LogError("AssetAPI::RequestAsset: Failed to find a provider for asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
         return AssetTransferPtr();
@@ -409,7 +413,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         transfer = provider->RequestAsset(assetRef, assetType);
     }
 
-    if (!transfer.get())
+    if (!transfer)
     {
         LogError("AssetAPI::RequestAsset: Failed to request asset \"" + assetRef.toStdString() + "\", type: \"" + assetType.toStdString() + "\"");
         return AssetTransferPtr();
@@ -448,7 +452,7 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
 {
     AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->Type());
-    if (existingFactory.get())
+    if (existingFactory)
         return; ///\todo Log out warning.
 
     assert(factory->Type() == factory->Type().trimmed());
@@ -471,7 +475,7 @@ QString AssetAPI::GenerateUniqueAssetName(QString assetTypePrefix, QString asset
     for(int i = 0; i < 10000; ++i) // The intent is to loop 'infinitely' until a name is found, but do an artificial limit to avoid voodoo bugs.
     {
         assetName = assetTypePrefix + "_" + assetNamePrefix + (assetNamePrefix.isEmpty() ? "" : "_") + QString::number(uniqueRunningAssetCounter++);
-        if (!GetAsset(assetName).get())
+        if (!GetAsset(assetName))
             return assetName;
     }
     assert(false);
@@ -505,13 +509,13 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
     }
 
     AssetTypeFactoryPtr factory = GetAssetTypeFactory(type);
-    if (!factory.get())
+    if (!factory)
     {
         LogError("AssetAPI:CreateNewAsset: Cannot create asset of type \"" + type.toStdString() + "\", name: \"" + name.toStdString() + "\". No type factory registered for the type!");
         return AssetPtr();
     }
     AssetPtr asset = factory->CreateEmptyAsset(this, name.toStdString().c_str());
-    if (!asset.get())
+    if (!asset)
     {
         LogError("AssetAPI:CreateNewAsset: IAssetTypeFactory::CreateEmptyAsset(type \"" + type.toStdString() + "\", name: \"" + name.toStdString() + "\") failed to create asset!");
         return AssetPtr();
@@ -582,7 +586,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
 //    LogDebug("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" succeeded.");
 
-    if (transfer->asset.get()) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
+    if (transfer->asset) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
 //        transfer->asset->EmitDecoded
@@ -602,7 +606,7 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     // We've finished an asset data download, now create an actual instance of an asset of that type.
     transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
-    if (!transfer->asset.get())
+    if (!transfer->asset)
     {
         LogError("AssetAPI: Failed to create new asset of type \"" + transfer->assetType.toStdString() + "\" and name \"" + transfer->source.ref.toStdString() + "\"");
         return;
@@ -671,7 +675,7 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
     for(size_t i = 0; i < dependents.size(); ++i)
     {
         AssetTransferPtr dependentTransfer = GetPendingTransfer(dependents[i]->Name());
-        if (dependentTransfer.get())
+        if (dependentTransfer)
         {
             QString failReason = "Transfer of dependency " + transfer->source.ref + " failed due to reason: \"" + reason + "\"";
             AssetTransferFailed(dependentTransfer.get(), failReason);
@@ -700,7 +704,7 @@ void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer
         PendingDownloadRequest req = iter->second;
 
         AssetTransferPtr transfer = RequestAsset(req.assetRef, req.assetType);
-        if (!transfer.get())
+        if (!transfer)
             return; ///\todo Evaluate the path to take here.
         connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), req.transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)));
         connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), req.transfer.get(), SIGNAL(Decoded(AssetPtr)));
@@ -728,7 +732,7 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
     transfer->EmitAssetDecoded();
 
     // This asset is now completely finished, and all its dependencies have been loaded.
-    if (transfer->asset.get())
+    if (transfer->asset)
         transfer->asset->EmitLoaded();
 
     pendingDownloadRequests.erase(transfer->source.ref);
@@ -764,7 +768,7 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
             continue;
 
         AssetPtr existing = GetAsset(refs[i].ref);
-        if (existing.get())
+        if (existing)
             asset->DependencyLoaded(existing);
         else // We don't have the given asset yet, request it.
         {
@@ -809,7 +813,7 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
             continue;
 
         AssetPtr existing = GetAsset(refs[i].ref);
-        if (!existing.get())
+        if (!existing)
             ++numDependencies;
     }
 
@@ -894,8 +898,10 @@ namespace
 
 QString GetResourceTypeFromResourceFileName(const char *name)
 {
+    ///\todo This whole function is to be removed, and moved into the asset type providers for separate access. -jj.
+
     QString file(name);
-    file = file.trimmed();
+    file = file.trimmed().toLower();
     if (file.endsWith(".mesh"))
         return "OgreMesh";
     if (file.endsWith(".skeleton"))
@@ -922,6 +928,9 @@ QString GetResourceTypeFromResourceFileName(const char *name)
 
     if (file.endsWith(".ntf"))
         return "Terrain";
+
+    if (file.endsWith(".wav") || file.endsWith(".ogg") || file.endsWith(".mp3"))
+        return "Audio";
 
     // Unknown type.
     return "";

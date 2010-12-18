@@ -150,7 +150,7 @@ private slots:
 
     //! Remove component or attribute based on selected QTreeWidgeItem.
     /*! If selected TreeWidgetItem is a root item, then we can assume that we want to remove component.
-     *  But if item has parent setted, we can assume that selected item is attribute or it's value is selected.
+     *  But if item has parent set, we can assume that selected item is attribute or it's value is selected.
      */
     void OnDeleteAction();
 

@@ -429,7 +429,7 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
     foreach(Scene::EntityPtr entity, users)
     {
         boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity->GetComponent<EC_OpenSimPresence>();
-        assert(ec_presence.get());
+        assert(ec_presence);
         if (ec_presence->GetFullName().toStdString() == params[0])
         {
             user_presence = ec_presence;

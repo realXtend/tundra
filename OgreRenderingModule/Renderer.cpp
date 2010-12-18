@@ -184,7 +184,7 @@ namespace OgreRenderer
 
     void Renderer::RemoveLogListener()
     {
-        if (log_listener_.get())
+        if (log_listener_)
         {
             Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
             log_listener_.reset();

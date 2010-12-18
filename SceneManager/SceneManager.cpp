@@ -384,7 +384,7 @@ namespace Scene
         QDomElement scene_elem = scene_doc.createElement("scene");
 
         for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-            if ((iter->second.get()) && (!iter->second->IsTemporary()))
+            if ((iter->second) && (!iter->second->IsTemporary()))
                 iter->second->SerializeToXML(scene_doc, scene_elem);
 
         scene_doc.appendChild(scene_elem);
@@ -439,13 +439,13 @@ namespace Scene
         // Count non-temporary entities
         uint num_entities = 0;
         for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-            if ((iter->second.get()) && (!iter->second->IsTemporary()))
+            if ((iter->second) && (!iter->second->IsTemporary()))
                 num_entities++;
 
         dest.Add<u32>(num_entities);
 
         for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-            if ((iter->second.get()) && (!iter->second->IsTemporary()))
+            if ((iter->second) && (!iter->second->IsTemporary()))
                 iter->second->SerializeToBinary(dest);
 
         bytes.resize(dest.BytesFilled());
@@ -691,7 +691,7 @@ namespace Scene
             }
 
             EntityPtr entity = CreateEntity(id);
-            assert(entity.get());
+            assert(entity);
             if (entity)
             {
                 foreach(ComponentDesc c, e.components)
@@ -700,7 +700,7 @@ namespace Scene
                         continue;
 
                     ComponentPtr comp = entity->GetOrCreateComponent(c.typeName, c.name);
-                    assert(comp.get());
+                    assert(comp);
                     if (!comp)
                         continue;
 

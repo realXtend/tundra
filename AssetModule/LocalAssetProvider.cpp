@@ -227,7 +227,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
         AssetUploadTransferPtr transfer = pendingUploads.back();
         pendingUploads.pop_back();
 
-        LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage *>(transfer->destinationStorage.lock().get());
+        LocalAssetStoragePtr storage = boost::dynamic_pointer_cast<LocalAssetStorage>(transfer->destinationStorage.lock());
         if (!storage)
         {
             AssetModule::LogError("Invalid IAssetStorage specified for file upload in LocalAssetProvider!");

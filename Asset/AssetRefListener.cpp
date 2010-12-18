@@ -28,7 +28,7 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
     assetRef = assetRef.trimmed();
 
     AssetTransferPtr transfer = assetApi->RequestAsset(assetRef);
-    if (!transfer.get())
+    if (!transfer)
         return; ///\todo Log out warning.
 
     connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(EmitDownloaded(IAssetTransfer*)), Qt::UniqueConnection);
@@ -36,7 +36,7 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
 //    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(EmitLoaded(AssetPtr)), Qt::UniqueConnection);
 
     AssetPtr assetData = asset.lock();
-    if (assetData.get())
+    if (assetData)
         disconnect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SIGNAL(Loaded(AssetPtr)));
     asset = AssetPtr();
 }
@@ -48,8 +48,8 @@ void AssetRefListener::EmitDownloaded(IAssetTransfer *transfer)
         return;
 
     AssetPtr assetData = transfer->asset;
-    assert(assetData.get());
-    if (!assetData.get())
+    assert(assetData);
+    if (!assetData)
         return;
     asset = assetData;
     

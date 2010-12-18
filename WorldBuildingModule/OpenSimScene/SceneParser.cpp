@@ -528,7 +528,7 @@ namespace WorldBuilding
         foreach(Scene::Entity *entity, entities)
         {
             ComponentPtr export_component = entity->GetComponent(EC_DynamicComponent::TypeNameStatic(), export_component_name_);
-            if (export_component.get())
+            if (export_component)
                 entity->RemoveComponent(export_component, AttributeChange::Disconnected);
         }
     }

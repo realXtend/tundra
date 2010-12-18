@@ -146,7 +146,7 @@ namespace MumbleVoip
         if (!audio_sending_was_enabled)
         {
             boost::shared_ptr<ISoundService> sound_service = SoundService();
-            if (sound_service.get())
+            if (sound_service)
             {
                 int frequency = SAMPLE_RATE;
                 bool sixteenbit = true;
@@ -168,7 +168,7 @@ namespace MumbleVoip
         if (audio_sending_was_enabled)
         {
             boost::shared_ptr<ISoundService> sound_service = SoundService();
-            if (sound_service.get())
+            if (sound_service)
                 sound_service->StopRecording();
 
             emit StopSendingAudio();
@@ -415,7 +415,7 @@ namespace MumbleVoip
     QString Session::GetAvatarFullName(QString uuid) const
     {
         Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-        if (current_scene.get())
+        if (current_scene)
         {
             for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
             {
@@ -510,7 +510,7 @@ namespace MumbleVoip
     void Session::PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame)
     {
         boost::shared_ptr<ISoundService> sound_service = SoundService();
-        if (!sound_service.get())
+        if (!sound_service)
             return;    
 
         ISoundService::SoundBuffer sound_buffer;
@@ -562,12 +562,12 @@ namespace MumbleVoip
 
         ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
-        if (!service_manager.get())
+        if (!service_manager)
             return boost::shared_ptr<ISoundService>();
 
         boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
 
-        if (!sound_service.get())
+        if (!sound_service)
             return boost::shared_ptr<ISoundService>();
 
         return sound_service;

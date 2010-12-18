@@ -86,7 +86,7 @@ void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::T
 void EC_Script::ScriptAssetLoaded(AssetPtr asset_)
 {
     ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(asset_);
-    if (!asset.get())
+    if (!asset)
     {
         LogError("EC_Script::ScriptAssetLoaded: Loaded asset of type other than ScriptAsset!");
         return;

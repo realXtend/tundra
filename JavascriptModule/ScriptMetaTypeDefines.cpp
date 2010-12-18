@@ -16,7 +16,8 @@
 #include "Frame.h"
 #include "Console.h"
 #include "SceneManager.h"
-#include "ISoundService.h"
+#include "Audio.h"
+#include "SoundChannel.h"
 #include "InputContext.h"
 #include "RenderServiceInterface.h"
 #include "CommunicationsService.h"
@@ -62,6 +63,10 @@ Q_DECLARE_METATYPE(Frame*);
 Q_DECLARE_METATYPE(ScriptConsole*);
 Q_DECLARE_METATYPE(Command*);
 Q_DECLARE_METATYPE(DelayedSignal*);
+
+//! Naali Audio API object.
+Q_DECLARE_METATYPE(AudioAPI*);
+Q_DECLARE_METATYPE(SoundChannel*);
 
 //! Naali renderer defines
 Q_DECLARE_METATYPE(RaycastResult*);
@@ -113,6 +118,22 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
 
 }
 
+template<typename T>
+QScriptValue qScriptValueFromBoostSharedPtr(QScriptEngine *engine, const boost::shared_ptr<T> &ptr)
+{
+    return engine->newVariant(QVariant(ptr));
+}
+
+template<typename T>
+void qScriptValueToBoostSharedPtr(const QScriptValue &value, boost::shared_ptr<T> &ptr)
+{   
+    ptr = value.toVariant().value<boost::shared_ptr<T> >();
+}
+
+
+Q_DECLARE_METATYPE(AssetPtr);
+Q_DECLARE_METATYPE(SoundChannelPtr);
+
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
     // Input metatypes.
@@ -145,6 +166,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Frame*>(engine);
     qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
 
+    qRegisterMetaType<AssetPtr>("AssetPtr");
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAsset>, qScriptValueToBoostSharedPtr<IAsset>);
+
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
@@ -154,10 +178,14 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     
     // Sound metatypes.
     qRegisterMetaType<sound_id_t>("sound_id_t");
-    qRegisterMetaType<ISoundService::SoundState>("SoundState");
-    qRegisterMetaType<ISoundService::SoundState>("ISoundService::SoundState");
-    qRegisterMetaType<ISoundService::SoundType>("SoundType");
-    qRegisterMetaType<ISoundService::SoundType>("ISoundService::SoundType");
+    qRegisterMetaType<SoundChannel::SoundState>("SoundState");
+    qRegisterMetaType<SoundChannelPtr>("SoundChannelPtr");
+    qScriptRegisterQObjectMetaType<SoundChannel*>(engine);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<SoundChannel>, qScriptValueToBoostSharedPtr<SoundChannel>);
+    
+    qRegisterMetaType<SoundChannel::SoundState>("SoundChannel::SoundState");
+    qRegisterMetaType<SoundChannel::SoundType>("SoundType");
+    qRegisterMetaType<SoundChannel::SoundType>("SoundChannel::SoundType");
 
     // Renderer metatypes
     qScriptRegisterQObjectMetaType<RaycastResult*>(engine);

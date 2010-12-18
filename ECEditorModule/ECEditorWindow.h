@@ -59,7 +59,7 @@ public:
         setFont(font);
     }*/
 private:
-    //Weak pointer to entity switch will get released and setted to null when QObject's destructor is called.
+    //Weak pointer to entity switch will get released and set to null when QObject's destructor is called.
     QPointer<Scene::Entity> entity_ptr_;
 };
 

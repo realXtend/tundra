@@ -38,7 +38,7 @@ bool IAsset::LoadFromCache()
 
 void IAsset::Unload()
 {
-    LogDebug("IAsset::Unload called for asset \"" + name.toStdString() + "\".");
+//    LogDebug("IAsset::Unload called for asset \"" + name.toStdString() + "\".");
     DoUnload();
     emit Unloaded(this);
 }
@@ -95,7 +95,7 @@ std::vector<AssetReference> IAsset::FindReferencesRecursive() const
         {
             refs.insert(ref);
             AssetPtr asset = assetAPI->GetAsset(ref.ref);
-            if (asset.get())
+            if (asset)
             {
                 std::vector<AssetReference> newRefs = asset->FindReferences();
                 unwalkedRefs.insert(unwalkedRefs.end(), newRefs.begin(), newRefs.end());                
@@ -166,7 +166,7 @@ void IAsset::EmitLoaded()
     emit Loaded(shared_from_this());
 
     AssetTransferPtr t = transfer.lock();
-    if (t.get())
+    if (t)
     {
         assert(t->asset.get() == this);
         t->EmitAssetLoaded();

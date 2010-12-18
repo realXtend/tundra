@@ -70,7 +70,7 @@ namespace OpensimIM
         if (state_ != STATE_OPEN)
             throw Exception("Chat session is closed");
 
-        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get()); ///\bug Thread-unsafe use of .lock().get()
 
         if (rexlogic_ == NULL)
             throw Exception("Cannot send IM message, RexLogicModule is not found");
@@ -93,7 +93,7 @@ namespace OpensimIM
 
     void ChatSession::SendPublicChatMessage(const QString &text)
     {
-        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get()); ///\bug Thread-unsafe use of .lock().get()
 
         if (rexlogic_ == NULL)
             throw Exception("Cannot send text message, RexLogicModule is not found");

@@ -7,6 +7,7 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 #include "AssetReference.h"
+#include "AudioFwd.h"
 
 // Undef PlaySound from WIN32 API
 #ifdef PlaySound
@@ -19,14 +20,15 @@
 <tr>
 <td>
 <h2>Sound</h2>
-Represents in-world sound source. To apply a new sound sound, user should change ref attribute 
-and ISoundService should handle resource request for you. To play the sound there are two options:
-1. trigger sound by setting trigger sound attribute to true or 2. directly call PlaySound slot method.
+Represents in-world sound source. The audio clip to play is specified in the soundRef attribute. Setting
+the soundRef attribute does not immediately trigger sound playback. Use the "PlaySound" action to do it.
 
-@note If component cant find EC_Placeable component in entity, sound is treated as AmbientSound.
+@note If the spatial attribute is true, and th entity this EC_Sound is part of contains an EC_Placeable 
+    component, this sound clip is treated as a spatial (3D) sound. Otherwise, the sound is treated as a
+    nonpositional (ambient) sound.
 
 @note If sound attributes has been changed while the audio clip is on playing state, user needs to call
-UpdateSoundSettings() to apply those changes into the SoundService.
+UpdateSoundSettings() to apply those changes into the Audio API.
 
 Registered by RexLogic::RexLogicModule.
 
@@ -42,6 +44,10 @@ Registered by RexLogic::RexLogicModule.
 <div>Sound gain value should be between 0.0-1.0</div> 
 <li>bool: loopSound
 <div>Do we want to loop the sound until the stop sound is called.</div> 
+<li>bool: spatial
+<div>If true, the audio source is played back as a spatial (3D) sound source. This requires a 
+EC_Placeable component to be present in the same entity as this EC_Sound component. Otherwise,
+the sound is played back as a nonspatial audio clip.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -93,6 +99,9 @@ public:
     Q_PROPERTY(bool loopSound READ getloopSound WRITE setloopSound);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, loopSound);
 
+    Q_PROPERTY(bool spatial READ getspatial WRITE setspatial);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, spatial);
+
 public slots:
     /// Starts playing the sound.
     void PlaySound();
@@ -100,8 +109,11 @@ public slots:
     /// Stops playing the sound.
     void StopSound();
 
-    //! Get each attribute value and send them over to sound service.
+    /// Get each attribute value and send them over to sound service.
     void UpdateSoundSettings();
+
+    /// Finds from the current scene the SoundListener that is currently active, or null if no SoundListener is active.
+    Scene::EntityPtr GetActiveSoundListener();
 
 private slots:
     void UpdateSignals();
@@ -115,7 +127,7 @@ private:
     explicit EC_Sound(IModule *module);
     ComponentPtr FindPlaceable() const;
 
-    sound_id_t sound_id_;
+    SoundChannelPtr soundChannel;
 };
 
 #endif
