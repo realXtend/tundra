@@ -29,7 +29,6 @@ namespace ProtocolUtilities
 namespace RexLogic
 {
     class RexLogicModule;
-    class EC_AttachedSound;
 
     class Primitive : public QObject
     {

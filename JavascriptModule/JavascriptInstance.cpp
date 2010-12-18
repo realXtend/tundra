@@ -88,7 +88,7 @@ QString JavascriptInstance::LoadScript(const QString &fileName)
     if (module_)
     {
         ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(module_->GetFramework()->Asset()->GetAsset(fileName));
-        if (asset.get())
+        if (asset)
             return asset->scriptContent;
     }
 

@@ -303,7 +303,7 @@ namespace Environment
 
         // Update height map image when terrain object emit GeometryUpdated signal.
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(terrain.get())
+        if(terrain)
             QObject::connect(terrain.get(), SIGNAL(HeightmapGeometryUpdated()), this, SLOT(UpdateTerrain()));
 
         // Button Signals
@@ -375,7 +375,7 @@ namespace Environment
 
         // Making sure that when terrain textures are changed we load new terrain textures to editor window aswell.
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(terrain.get())
+        if(terrain)
             QObject::connect(terrain.get(), SIGNAL(TerrainTextureChanged()), this, SLOT(UpdateTerrainTextures()));
         else
             EnvironmentModule::LogError("Fail to connect TerrainTextureChanged signal cause terrain pointer was null.");
@@ -424,7 +424,7 @@ namespace Environment
         // Sky tab window connections.
         SkyPtr sky = environment_module_->GetSkyHandler();
 
-        if(sky.get())
+        if(sky)
         {
             QObject::connect(sky.get(), SIGNAL(SkyTypeChanged()), this, SLOT(UpdateSkyType()));
 
@@ -738,7 +738,7 @@ namespace Environment
             return;
 
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         if(sky_type_ == sky_type)
@@ -1177,7 +1177,7 @@ namespace Environment
     void EnvironmentEditor::UpdateSunLightColor(const QColor& color)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         QWidget* widget = GetCurrentPage();
@@ -1213,7 +1213,7 @@ namespace Environment
     void EnvironmentEditor::UpdateAmbientLightColor(const QColor& color)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         QWidget* widget = GetCurrentPage();
@@ -1361,7 +1361,7 @@ namespace Environment
     void EnvironmentEditor::UpdateSunDirection(double value)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         // Sun direction
@@ -1432,7 +1432,7 @@ namespace Environment
    {
         assert(environment_module_);
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         
@@ -1484,7 +1484,7 @@ namespace Environment
     void EnvironmentEditor::UpdateSkyType()
     {
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         // Ask what type of sky is in use and chage it.
@@ -1517,7 +1517,7 @@ namespace Environment
     {
         assert(environment_module_);
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
@@ -1562,7 +1562,7 @@ namespace Environment
     {
         assert(environment_module_);
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         if(sky_type_ == SKYTYPE_BOX)
@@ -1603,7 +1603,7 @@ namespace Environment
     void EnvironmentEditor::ChangeSkyProperties()
     {
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
@@ -1710,7 +1710,7 @@ namespace Environment
     {
         assert(environment_module_);
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         for(uint i = 0; i < cNumberOfTerrainTextures; i++)
@@ -1734,7 +1734,7 @@ namespace Environment
     void EnvironmentEditor::UpdateTerrainTextures()
     {
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         QLineEdit *line_edit = 0;
@@ -1763,7 +1763,7 @@ namespace Environment
     {
         assert(environment_module_);
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         const QLineEdit *sender = qobject_cast<QLineEdit *>(QObject::sender());
@@ -1798,7 +1798,7 @@ namespace Environment
     {
         assert(environment_module_);
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         const QPushButton *sender = qobject_cast<QPushButton *>(QObject::sender());
@@ -1912,7 +1912,7 @@ namespace Environment
         }
 
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         CreateHeightmapImage();
@@ -1988,7 +1988,7 @@ namespace Environment
         {
             assert(environment_module_);
             TerrainPtr terrain = environment_module_->GetTerrainHandler();
-            if(!terrain.get())
+            if(!terrain)
                 return;
 
             Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
@@ -2090,7 +2090,7 @@ namespace Environment
         {
             assert(environment_module_);
             TerrainPtr terrain = environment_module_->GetTerrainHandler();
-            if(!terrain.get())
+            if(!terrain)
                 return;
 
             QLineEdit *line_edit = 0;
@@ -2208,7 +2208,7 @@ namespace Environment
             return;
 
         TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(!terrain.get())
+        if(!terrain)
             return;
 
         Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
@@ -2442,7 +2442,7 @@ namespace Environment
     void EnvironmentEditor::SetGroundFog()
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         QDoubleSpinBox* fog_ground_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_red_dSpinBox");
@@ -2465,7 +2465,7 @@ namespace Environment
     void EnvironmentEditor::SetWaterFog()
     {
         WaterPtr water = environment_module_->GetWaterHandler();
-        if(!water.get())
+        if(!water)
             return;
 
         QDoubleSpinBox* fog_water_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_red_dSpinBox");
@@ -2487,7 +2487,7 @@ namespace Environment
     void EnvironmentEditor::SetGroundFogDistance()
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         QDoubleSpinBox* fog_ground_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_start_distance_dSpinBox");
@@ -2501,7 +2501,7 @@ namespace Environment
     void EnvironmentEditor::SetWaterFogDistance()
     {
         WaterPtr water = environment_module_->GetWaterHandler();
-        if(!water.get())
+        if(!water)
             return;
 
         QDoubleSpinBox* fog_water_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_start_distance_dSpinBox");
@@ -2514,7 +2514,7 @@ namespace Environment
     void EnvironmentEditor::ToggleFogOverride()
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
 
         if ( environment->GetFogColorOverride() )
@@ -2527,7 +2527,7 @@ namespace Environment
     {
         assert(environment_module_);
         SkyPtr sky = environment_module_->GetSkyHandler();
-        if(!sky.get())
+        if(!sky)
             return;
 
         QCheckBox *enable_sky_checkbox = editor_widget_->findChild<QCheckBox *>("sky_toggle_box");
@@ -2572,7 +2572,7 @@ namespace Environment
     void EnvironmentEditor::TimeOfDayOverrideChanged(int state)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        if(!environment)
             return;
         if (state == 1)
             state = 2;
@@ -2603,7 +2603,7 @@ namespace Environment
     void EnvironmentEditor::TimeValueChanged(int new_value)
     {
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if (!environment.get())
+        if (!environment)
             return;
         if (!environment->GetTimeOverride())
             return;

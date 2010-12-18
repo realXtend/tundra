@@ -433,7 +433,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
         comp_ptr = comp->shared_from_this();
     } catch(...)
     {
-        LogError("Fail to add new component to ECBroser. Make sure that component's parent entity is setted.");
+        LogError("Fail to add new component to ECBroser. Make sure that component's parent entity is set.");
         return;
     }
 
@@ -464,7 +464,7 @@ void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
         comp_ptr = comp->shared_from_this();
     } catch(...)
     {
-        LogError("Fail to remove component from ECBroser. Make sure that component's parent entity is setted.");
+        LogError("Fail to remove component from ECBroser. Make sure that component's parent entity is set.");
         return;
     } 
 
@@ -885,7 +885,7 @@ void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
     for(std::vector<ComponentWeakPtr>::iterator iter = componentsToDelete.begin(); iter != componentsToDelete.end(); ++iter)
     {
         ComponentPtr comp = iter->lock();
-        if (comp.get())
+        if (comp)
         {
             Scene::Entity *entity = comp->GetParentEntity();
             if (entity)

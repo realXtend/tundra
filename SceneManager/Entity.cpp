@@ -442,7 +442,7 @@ namespace Scene
     {
         EntityAction *action = Action(name);
         assert(action);
-        connect(action, SIGNAL(Triggered(QString, QString, QString, QStringList)), receiver, member);
+        connect(action, SIGNAL(Triggered(QString, QString, QString, QStringList)), receiver, member, Qt::UniqueConnection);
     }
 
     void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QString &p1, const QString &p2, const QString &p3)

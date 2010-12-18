@@ -357,7 +357,7 @@ namespace RexLogic
             return;
 
         Scene::EntityPtr cam_entity = scene->CreateEntity(scene->GetNextFreeId());
-        if (!cam_entity.get())
+        if (!cam_entity)
             return;
 
         cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));

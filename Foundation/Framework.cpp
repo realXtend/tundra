@@ -18,10 +18,11 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "NaaliApplication.h"
 #include "CoreException.h"
-#include "../Input/Input.h"
-#include "ISoundService.h"
+#include "Input.h"
 #include "Frame.h"
 #include "AssetAPI.h"
+#include "GenericAssetFactory.h"
+#include "Audio.h"
 #include "Console.h"
 #include "UiServiceInterface.h"
 
@@ -138,8 +139,14 @@ namespace Foundation
             initialized_ = true;
 
             ui = new NaaliUi(this);
-            asset = new AssetAPI(this);
             connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+
+            asset = new AssetAPI();
+            const char cDefaultAssetCachePath[] = "/assetcache";
+            asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
+
+            audio = new AudioAPI(); // Audio API depends on the Asset API, so must be loaded after Asset API is.
+            asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
 
             input = new Input(this);
 
@@ -148,6 +155,7 @@ namespace Foundation
             RegisterDynamicObject("input", input);
             RegisterDynamicObject("console", console);
             RegisterDynamicObject("asset", asset);
+            RegisterDynamicObject("audio", audio);
         }
     }
 
@@ -340,6 +348,12 @@ namespace Foundation
             {
                 PROFILE(Input_Update);
                 input->Update(frametime);
+            }
+
+            // Process all audio playback.
+            {
+                PROFILE(Audio_Update);
+                audio->Update(frametime);
             }
 
             // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
@@ -715,14 +729,9 @@ namespace Foundation
         return console;
     }
 
-    ISoundService *Framework::Audio() const
+    AudioAPI *Framework::Audio() const
     {
-        boost::shared_ptr<ISoundService> sound_logic = GetServiceManager()->
-                GetService<ISoundService>(Service::ST_Sound).lock();
-        if (!sound_logic.get())
-//            throw Exception("Fatal: Sound service not present!");
-            RootLogWarning("Framework::Audio(): Sound service not present!");
-        return sound_logic.get();
+        return audio;
     }
 
     AssetAPI *Framework::Asset() const

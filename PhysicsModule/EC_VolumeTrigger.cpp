@@ -179,7 +179,7 @@ void EC_VolumeTrigger::CheckForRigidBody()
     if (!parent)
         return;
     
-    if (!rigidbody_.lock().get())
+    if (!rigidbody_.lock())
     {
         boost::shared_ptr<EC_RigidBody> rigidbody = parent->GetComponent<EC_RigidBody>();
         if (rigidbody)

@@ -71,7 +71,7 @@ EC_Avatar::~EC_Avatar()
 
 void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
 {
-    if (!asset.get())
+    if (!asset)
         return;
 
     Scene::Entity* entity = GetParentEntity();
@@ -79,7 +79,7 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
         return;
 
     AvatarDescAssetPtr avatarAsset = boost::dynamic_pointer_cast<AvatarDescAsset>(asset);
-    if (!avatarAsset.get())
+    if (!avatarAsset)
         return;
 
     // Create components the avatar needs, with network sync disabled, if they don't exist yet
@@ -103,10 +103,8 @@ void EC_Avatar::AttributeUpdated(IAttribute *attribute)
             return;
 
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(ref.toStdString().c_str(), ASSETTYPENAME_GENERIC_AVATAR_XML.c_str());
-        if (transfer.get())
-        {
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)));
-        }
     }
 }
 

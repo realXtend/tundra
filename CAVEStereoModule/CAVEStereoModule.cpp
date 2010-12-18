@@ -43,10 +43,10 @@ namespace CAVEStereo
     void CAVEStereoModule::PostInitialize()
     {
         OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-        if(rendererModule)
+        if (rendererModule)
         {
             OgreRenderer::RendererPtr renderer = rendererModule->GetRenderer();
-            if(renderer.get())
+            if (renderer)
             {
                 stereo_ = new StereoController(renderer.get(),this);
                 cave_ = new CAVEManager(renderer.get());

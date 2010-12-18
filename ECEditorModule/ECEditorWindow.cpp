@@ -269,8 +269,8 @@ void ECEditorWindow::PasteEntity()
     // First we need to check if component is holding EC_OgrePlacable component to tell where entity should be located at.
     //! \todo local only server wont save those objects.
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-    assert(scene.get());
-    if(!scene.get())
+    assert(scene);
+    if(!scene)
         return;
     
     QDomDocument temp_doc;
@@ -284,15 +284,15 @@ void ECEditorWindow::PasteEntity()
             return;
         QString id = ent_elem.attribute("id");
         Scene::EntityPtr originalEntity = scene->GetEntity(ParseString<entity_id_t>(id.toStdString()));
-        if(!originalEntity.get())
+        if(!originalEntity)
         {
             LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
             return;
         }
 
         Scene::EntityPtr entity = scene->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
-        assert(entity.get());
-        if(!entity.get())
+        assert(entity);
+        if(!entity)
             return;
 
         bool hasPlaceable = false;
@@ -807,7 +807,7 @@ void ECEditorWindow::ComponentDialogFinished(int result)
         }
 
         comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypeName(), dialog->GetName());
-        assert(comp.get());
+        assert(comp);
         if (comp)
         {
             comp->SetNetworkSyncEnabled(dialog->GetSynchronization());

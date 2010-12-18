@@ -8,7 +8,7 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "ModuleManager.h"
-#include "ISoundService.h"
+#include "Audio.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -28,7 +28,7 @@ AudioPreviewEditor::AudioPreviewEditor(Foundation::Framework *framework,
     framework_(framework),
     assetType_(asset_type),
     inventoryId_(inventory_id),
-    soundId_(0),
+//    soundId_(0),
     request_tag_(0),
     okButton_(0),
     playButton_(0),
@@ -123,7 +123,7 @@ void AudioPreviewEditor::Closed()
 }
 
 void AudioPreviewEditor::PlaySound()
-{
+{/* ///\todo Regression. Reimplement. -jj.
     //If sound asset is not ready yet no need to play it.
     if(assetId_.size() <= 0)
         return;
@@ -170,10 +170,13 @@ void AudioPreviewEditor::PlaySound()
             }
         }
     }
+    */
 }
 
 void AudioPreviewEditor::TimerTimeout()
 {
+///\todo Regression. Reimplement. -jj.
+/*
     //If sound asset is not ready yet no need to play it.
     if(assetId_.size() <= 0 || soundId_ == 0)
         return;
@@ -193,6 +196,7 @@ void AudioPreviewEditor::TimerTimeout()
             playButton_->setText(tr("Play"));
         }
     }
+*/
 }
 
 void AudioPreviewEditor::resizeEvent(QResizeEvent *ev)

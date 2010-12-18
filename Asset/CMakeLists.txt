@@ -13,7 +13,7 @@ set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules(Core Foundation RexCommon Interfaces Ui)
+use_modules(Core Foundation Interfaces Ui)
 
 build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 

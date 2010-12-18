@@ -34,9 +34,15 @@ class AssetAPI : public QObject
     Q_OBJECT
 
 public:
-    explicit AssetAPI(Foundation::Framework *owner);
+    AssetAPI();
 
     ~AssetAPI();
+
+    /// Opens the internal Asset API asset cache to the given directory. When the Asset API starts up, the asset cache is not created. This allows
+    /// the Asset API to be operated in a mode that does not perform writes to the disk when assets are fetched. This will cause assets fetched from
+    /// remote hosts to have a null disk source.
+    /// \note Once the asset cache has been created with a call to this function, there is no way to close the asset cache (except to close and restart).
+    void OpenAssetCache(QString directory);
 
     /// Requests the given asset to be downloaded. The transfer will go to a pending transfers queue
     /// and will be processed when possible.
@@ -274,8 +280,6 @@ private:
     /// to process, but are internally filled by the Asset API. This member vector is needed to be able to delay the requests and virtual completions
     /// by one frame, so that the client gets a chance to connect his handler's Qt signals to the AssetTransferPtr slots.
     std::vector<AssetTransferPtr> readyTransfers;
-
-    Foundation::Framework *framework;
 
     /// Contains all known asset storages in the system.
     std::vector<AssetStoragePtr> storages;

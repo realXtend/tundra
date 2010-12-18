@@ -85,7 +85,7 @@ namespace Avatar
 
         *existing = false;
         entity = CreateNewAvatarEntity(entityid);
-        assert(entity.get());
+        assert(entity);
         if (!entity)
             return entity;
 
@@ -278,7 +278,7 @@ namespace Avatar
         /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         if (!framework_)
             return;
-        if (!framework_->GetDefaultWorldScene().get())
+        if (!framework_->GetDefaultWorldScene())
             return;
 
         // The data contents:

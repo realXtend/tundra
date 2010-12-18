@@ -6,7 +6,7 @@
 #include "MicrophoneAdjustmentWidget.h"
 #include "Settings.h"
 #include "PCMAudioFrame.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include "MumbleDefines.h"
 
 #include "MemoryLeakCheck.h"
@@ -48,19 +48,14 @@ namespace MumbleVoip
 
         ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
-        if (!service_manager.get())
-            return;
-
-        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
-
-        if (!sound_service.get())
+        if (!service_manager)
             return;
 
         int frequency = SAMPLE_RATE;
         bool sixteenbit = true;
         bool stereo = false;
         int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS_/1000;
-        sound_service->StartRecording("", frequency, sixteenbit, stereo, buffer_size);
+        framework_->Audio()->StartRecording("", frequency, sixteenbit, stereo, buffer_size);
     }
 
     void MicrophoneAdjustmentWidget::HandleRecordedAudio()
@@ -70,12 +65,12 @@ namespace MumbleVoip
 
         ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
-        if (!service_manager.get())
+        if (!service_manager)
             return;
 
-        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
+        AudioAPI *sound_service = framework_->Audio();
 
-        if (!sound_service.get())
+        if (!sound_service)
             return;
 
         int bytes_per_frame = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
@@ -100,7 +95,7 @@ namespace MumbleVoip
 
         ServiceManagerPtr service_manager = framework_->GetServiceManager();
 
-        if (!service_manager.get())
+        if (!service_manager)
             return ;
 
         boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();

@@ -90,7 +90,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
     request.setUrl(QUrl(assetRef));
     request.setRawHeader("User-Agent", "realXtend Naali");
 
-    QNetworkReply *reply = networkAccessManager->deleteResource(request);
+    networkAccessManager->deleteResource(request);
 }
 
 void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
@@ -110,7 +110,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
             return;
         }
         HttpAssetTransferPtr transfer = iter->second;
-        assert(transfer.get());
+        assert(transfer);
 
         transfer->rawAssetData.clear();
 
@@ -148,7 +148,7 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         {
             LogError("Http upload to address \"" + reply->url().toString().toStdString() + "\" failed with an error: \"" + reply->errorString().toStdString() + "\"");
             ///\todo Call the following when implemented:
-//            framework->Asset()->AssetUploadTransferFailed(transfer.get());
+//            framework->Asset()->AssetUploadTransferFailed(transfer);
         }
 
         uploadTransfers.erase(iter);

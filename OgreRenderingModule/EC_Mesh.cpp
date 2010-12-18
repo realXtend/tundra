@@ -964,7 +964,7 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
  //           return;
 
   //      AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
-   //     if (transfer.get())
+   //     if (transfer)
     //        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
         skeletonAsset->HandleAssetRefChange(&skeletonRef);
     }
@@ -997,7 +997,7 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
     SetMesh(ogreMeshName);
 
     // Force a re-application of the skeleton on this mesh. ///\todo This path should be re-evaluated to see if we have potential performance issues here. -jj.
-    if (skeletonAsset->Asset().get())
+    if (skeletonAsset->Asset())
         OnSkeletonAssetLoaded(skeletonAsset->Asset());
 }
 

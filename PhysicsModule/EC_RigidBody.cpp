@@ -243,7 +243,7 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
     if (!parent)
         return;
     
-    if (!placeable_.lock().get())
+    if (!placeable_.lock())
     {
         boost::shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
         if (placeable)
@@ -252,7 +252,7 @@ void EC_RigidBody::CheckForPlaceableAndTerrain()
             connect(placeable.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
         }
     }
-    if (!terrain_.lock().get())
+    if (!terrain_.lock())
     {
         boost::shared_ptr<Environment::EC_Terrain> terrain = parent->GetComponent<Environment::EC_Terrain>();
         if (terrain)
@@ -441,14 +441,7 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
         LogError("EC_RigidBody::OnCollisionMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
 
     Ogre::Mesh *mesh = meshAsset->ogreMesh.get();
-/* Old asset download path:
-    OgreRenderer::OgreMeshResource *resource = dynamic_cast<OgreRenderer::OgreMeshResource *>(transfer->resourcePtr.get());
-    assert(resource);
-    if (!resource)
-        return;
 
-    Ogre::Mesh* mesh = resource->GetMesh().getPointer();
-*/
     if (mesh)
     {
         if (shapeType.Get() == Shape_TriMesh)

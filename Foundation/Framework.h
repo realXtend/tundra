@@ -22,10 +22,10 @@ class QGraphicsView;
 class QWidget;
 class QObject;
 
-class ISoundService;
 class UiServiceInterface;
 class Frame;
 class Input;
+class AudioAPI;
 class AssetAPI;
 class ScriptConsole;
 
@@ -281,7 +281,7 @@ namespace Foundation
         ScriptConsole *Console() const;
 
         /// Returns the Naali core API Audio object.
-        ISoundService *Audio() const;
+        AudioAPI *Audio() const;
 
         /// Returns the default scene.
         Scene::SceneManager* DefaultScene() const;
@@ -398,14 +398,17 @@ namespace Foundation
         //! Provides console access for scripting languages.
         ScriptConsole *console;
 
-        //! The Naali UI API.
+        /// The Naali UI API.
         NaaliUi *ui;
 
-        //! The Naali Input API.
+        /// The Naali Input API.
         Input *input;
 
         /// This object represents the Naali core Asset API.
         AssetAPI *asset;
+
+        /// The Naali Audio API.
+        AudioAPI *audio;
 
         /// Command line arguments as supplied by the operating system.
         int argc_;

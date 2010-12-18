@@ -32,7 +32,7 @@ public:
     QString AssetRef()
     { 
         boost::shared_ptr<IAssetStorage> storage = destinationStorage.lock();
-        if (!storage.get())
+        if (!storage)
             return "";
         return storage->GetFullAssetURL(destinationName);
     }

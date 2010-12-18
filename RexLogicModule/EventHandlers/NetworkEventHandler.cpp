@@ -37,7 +37,7 @@
 #endif
 
 #include "ServiceManager.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include "ScriptServiceInterface.h" // LoadURL webview opening code is not on the py side, experimentally at least
 
 namespace RexLogic
@@ -227,7 +227,7 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(NetworkEventInboundData* da
 
     // Create the "World" scene.
     boost::shared_ptr<ProtocolModuleInterface> sp = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock();
-    if (!sp.get())
+    if (!sp)
     {
         RexLogicModule::LogError("NetworkEventHandler: Could not acquire Protocol Module!");
         return false;
@@ -366,6 +366,7 @@ bool NetworkEventHandler::HandleOSNE_KillObject(NetworkEventInboundData* data)
 
 bool NetworkEventHandler::HandleOSNE_PreloadSound(NetworkEventInboundData* data)
 {
+/* ///\todo Regression. Reimplement using the new Asset API. -jj.
     NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -375,21 +376,22 @@ bool NetworkEventHandler::HandleOSNE_PreloadSound(NetworkEventInboundData* data)
         msg.ReadUUID(); // ObjectID
         msg.ReadUUID(); // OwnerID
         std::string asset_id = msg.ReadUUID().ToString(); // Sound asset ID
-/* ///\todo Regression. Reimplement using the new Asset API. -jj.
+
         // Preload the sound asset into cache, the sound service will get it from there when actually needed.
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
             owner_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
         if (asset_service)
             asset_service->RequestAsset(asset_id, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
-*/
         --instance_count;
     }
-
+*/
     return false;
 }
 
 bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
 {
+/* ///\todo Regression. Reimplement using the new Asset API. -jj.
+
     NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -429,7 +431,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
 
     sound_id_t new_sound = soundsystem->PlaySound3D(QString::fromStdString(asset_id), ISoundService::Triggered, false, position);
     soundsystem->SetGain(new_sound, gain);
-
+*/
     return false;
 }
 

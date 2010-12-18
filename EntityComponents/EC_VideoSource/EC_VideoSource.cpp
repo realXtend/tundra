@@ -266,7 +266,7 @@ void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
     {
         if (!videoSourceUrl.Get().isEmpty())
         {
-            // Play video if video source url has been setted and if sound has been triggered or looped.
+            // Play video if video source url has been set and if sound has been triggered or looped.
             if (getplaybackState() == PS_Play && !playing_canvas_)
             {
                 Play();
@@ -436,7 +436,7 @@ void EC_VideoSource::UpdateSignals()
 {
     if (!GetParentEntity())
     {
-        LogError("Couldn't update singals cause component dont have parent entity setted.");
+        LogError("Couldn't update singals cause component dont have parent entity set.");
         return;
     }
     Scene::SceneManager *scene = GetParentEntity()->GetScene();

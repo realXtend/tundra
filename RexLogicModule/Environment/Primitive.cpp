@@ -10,7 +10,6 @@
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "EntityComponent/EC_FreeData.h"
-#include "EntityComponent/EC_AttachedSound.h"
 #include "Environment/Primitive.h"
 
 #include "EC_Placeable.h"
@@ -25,7 +24,7 @@
 #include "SceneEvents.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "SceneManager.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include "GenericMessageUtils.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
@@ -1539,7 +1538,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
     else
     {
         ComponentPtr component = entity->GetOrCreateComponent(EC_HoveringText::TypeNameStatic(), "llSetText");
-        assert(component.get());
+        assert(component);
         EC_HoveringText &hoveringText = *(checked_static_cast<EC_HoveringText *>(component.get()));
         hoveringText.SetTextColor(color);
         hoveringText.ShowMessage(QString::fromUtf8(text.c_str()));
@@ -1715,7 +1714,7 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
 /*            ///\todo Regression. Reimplement using the new Asset API. -jj.
 void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
-    assert(res.get());
+    assert(res);
     if (!res)
         return;
     assert(res->GetType() == OgreRenderer::OgreTextureResource::GetTypeStatic());
@@ -1756,7 +1755,7 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
 /*
 void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
-    assert(res.get());
+    assert(res);
     if (!res) 
         return;
     assert(res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic());
@@ -2054,6 +2053,9 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
 
 void Primitive::HandleAmbientSound(entity_id_t entityid)
 {
+///\todo Regression. Reimplement using the Audio API. -jj.
+    /*
+
     boost::shared_ptr<ISoundService> soundsystem =
         rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Service::ST_Sound).lock();
     if (!soundsystem)
@@ -2084,7 +2086,7 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
         sound_id_t rex_ambient_sound = sounds[EC_AttachedSound::RexAmbientSound];
         if (rex_ambient_sound)
         {
-            QString sound_name = soundsystem->GetSoundName(rex_ambient_sound);
+            QString sound_name = ""; //soundsystem->GetSoundName(rex_ambient_sound); ///\todo Regression. Reimplement using the Audio API. -jj.
             if (sound_name.toStdString() == prim->SoundID)
                 same = true;
         }
@@ -2097,14 +2099,16 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
             {
                 position = placeable->GetPosition();
             }        
-            rex_ambient_sound = soundsystem->PlaySound3D(QString::fromStdString(prim->SoundID), ISoundService::Ambient, false, position);
+
+            ///\todo Regression. Reimplement using the Audio API. -jj.
+
+//            rex_ambient_sound = soundsystem->PlaySound3D(QString::fromStdString(prim->SoundID), ISoundService::Ambient, false, position);
             // The ambient sounds will always loop
-            soundsystem->SetLooped(rex_ambient_sound, true);
-            
+//            soundsystem->SetLooped(rex_ambient_sound, true);            
             // Now add the sound to entity
-            attachedsound->AddSound(rex_ambient_sound, EC_AttachedSound::RexAmbientSound); 
+//            attachedsound->AddSound(rex_ambient_sound, EC_AttachedSound::RexAmbientSound); 
         }
-        
+
         // Adjust the range & gain parameters
         if (rex_ambient_sound)
         {
@@ -2122,10 +2126,13 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
             soundsystem->SetGain(rex_ambient_sound, prim->SoundVolume);
         }
     }
+        */
 }
 
 bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData* data)
 {
+///\todo Regression. Reimplement using the Audio API. -jj.
+    /*
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -2163,12 +2170,15 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
     // Note that because we use the OpenSimAttachedSound sound slot, any previous sound in that slot
     // will be stopped.
     attachedsound->AddSound(new_sound, EC_AttachedSound::OpenSimAttachedSound);
+    */
 
     return false;
 }
 
 bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData* data)
 {
+///\todo Regression. Reimplement using the Audio API. -jj.
+    /*
     ProtocolUtilities::NetInMessage &msg = *data->message;
     msg.ResetReading();
 
@@ -2191,7 +2201,7 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     const std::vector<sound_id_t>& sounds = attachedsound->GetSounds();
     for (uint i = 0; i < sounds.size(); ++i)
         soundsystem->SetGain(sounds[i], gain);
-
+*/
     return false;
 }
 

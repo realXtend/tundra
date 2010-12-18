@@ -46,8 +46,8 @@ Framework *IModule::GetFramework() const
 void IModule::RegisterConsoleCommand(const Console::Command &command)
 {
     boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
-    //assert(console.get());
-    if (!console.get())
+    //assert(console);
+    if (!console)
     {
         Poco::Logger::get(Name()).error(std::string("Error: Unable to register console command ") + command.name_ + std::string(". Console service not loaded!"));
         return;
@@ -74,9 +74,9 @@ void IModule::InitializeInternal()
         // If you hit this assert, you're trying to register console commands before the console service even exists.
         // Workarounds: 1) Add a dependency to ConsoleModule into your module XML file (not preferred)
         //              2) Use RegisterConsoleCommand instead of AutoRegisterConsoleCommand to register the console command.
-        if (!console.get())
+        if (!console)
             Poco::Logger::get(Name()).error("Critical: Console service not loaded yet! Console command registration failed!");
-//        assert(console.get()); 
+//        assert(console); 
         if (GetFramework()->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand) && console.get())
             for(CommandVector::iterator it = console_commands_.begin(); it != console_commands_.end(); ++it)
                 console->RegisterCommand(*it);

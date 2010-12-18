@@ -31,7 +31,6 @@
 #include "EventHandlers/AvatarEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
-#include "EntityComponent/EC_AttachedSound.h"
 
 //#ifdef EC_FreeData_ENABLED
 #include "EntityComponent/EC_FreeData.h"
@@ -76,7 +75,7 @@
 #include "ServiceManager.h"
 #include "ComponentManager.h"
 #include "IEventData.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include "Input.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
@@ -197,8 +196,6 @@ void RexLogicModule::Load()
 //#ifdef EC_FreeData_ENABLED
     DECLARE_MODULE_EC(EC_FreeData);
 //#endif
-
-    DECLARE_MODULE_EC(EC_AttachedSound);
 
     // External EC's
 #ifdef EC_Highlight_ENABLED
@@ -523,7 +520,7 @@ void RexLogicModule::Uninitialize()
 void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
-    if (!renderer.get())
+    if (!renderer)
         return;
 
     Ogre::Camera *camera = renderer->GetCurrentCamera();
@@ -906,7 +903,7 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
     foreach(Scene::EntityPtr entity, entities)
     {
         boost::shared_ptr<EC_HoveringText> overlay = entity->GetComponent<EC_HoveringText>();
-        assert(overlay.get());
+        assert(overlay);
         if (visible)
             overlay->Show();
         else
@@ -989,7 +986,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         boost::shared_ptr<EC_AnimationController> animctrl = entity.GetComponent<EC_AnimationController>();
         if (animctrl)
             animctrl->Update(frametime);
-
+/** \todo Regression. Reimplement using the EC_Sound component. -jj.
         // Attached sound update
         boost::shared_ptr<EC_Placeable> placeable = entity.GetComponent<EC_Placeable>();
         boost::shared_ptr<EC_AttachedSound> sound = entity.GetComponent<EC_AttachedSound>();
@@ -998,6 +995,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
             sound->Update(frametime);
             sound->SetPosition(placeable->GetPosition());
         }
+*/
     }
 }
 
@@ -1038,7 +1036,7 @@ bool RexLogicModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 {
     Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-    if (!current_scene.get() || !users_avatar.get())
+    if (!current_scene || !users_avatar)
         return;
 
     Scene::EntityList all_avatars = current_scene->GetEntitiesWithComponent("EC_OpenSimPresence");
@@ -1114,7 +1112,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, RaycastResult *resu
     EC_OgreCamera * camera = 0;
 
     Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-    if (!current_scene.get())
+    if (!current_scene)
         return ret_val;
 
     Scene::SceneManager::iterator iter = current_scene->begin();
@@ -1279,7 +1277,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
                     // If we didn't have the higihlight component yet, create one now.
                     entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Highlight"));
                     highlight = entity.GetComponent<EC_Highlight>();
-                    assert(highlight.get());
+                    assert(highlight);
                 }
 
                 if (highlight->IsVisible())

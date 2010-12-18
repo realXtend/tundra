@@ -95,7 +95,7 @@ namespace Asset
             return Console::ResultFailure("Usage: RequestAsset(uuid,assettype)");
 
         AssetTransferPtr transfer = framework_->Asset()->RequestAsset(params[0].c_str(), params[1].c_str());
-        if (transfer.get())
+        if (transfer)
             return Console::ResultSuccess();
         else
             return Console::ResultFailure();
@@ -106,7 +106,7 @@ namespace Asset
         if (params.size() != 2)
             return Console::ResultFailure("Usage: AddHttpStorage(url, name). For example: AddHttpStorage(http://www.google.com/, google)");
 
-        if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>().get())
+        if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>())
             return Console::ResultFailure();
 
         framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(params[0].c_str(), params[1].c_str());

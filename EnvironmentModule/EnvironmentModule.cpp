@@ -213,7 +213,7 @@ namespace Environment
         {
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
-                if (GetFramework()->GetDefaultWorldScene().get())
+                if (GetFramework()->GetDefaultWorldScene())
                 {
                     CreateEnvironment();
                     CreateTerrain();
@@ -286,11 +286,11 @@ namespace Environment
             if (tex)
             {
                 // Pass the texture asset to the terrain manager - the texture might be in the terrain.
-                if (terrain_.get())
+                if (terrain_)
                     terrain_->OnTextureReadyEvent(res);
 
                 // Pass the texture asset to the sky manager - the texture might be in the sky.
-                if (sky_.get())
+                if (sky_)
                     sky_->OnTextureReadyEvent(res);
             }
             Foundation::TextureInterface *decoded_tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
@@ -336,7 +336,7 @@ namespace Environment
         {
         case RexNetMsgLayerData:
         {
-            if(terrain_.get())
+            if(terrain_)
                 return terrain_->HandleOSNE_LayerData(netdata);
         }
         case RexNetMsgGenericMessage:
@@ -364,7 +364,7 @@ namespace Environment
                     }
                 }
             }
-            else if(methodname == "RexSky" && sky_.get())
+            else if(methodname == "RexSky" && sky_)
             {
                 return GetSkyHandler()->HandleRexGM_RexSky(netdata);
             }
@@ -405,7 +405,7 @@ namespace Environment
                 std::string message = msg.ReadString();
                 bool draw = ParseBool(message);
                 if (draw)
-                    if (water_.get())
+                    if (water_)
                         water_->CreateWaterGeometry();
                     else
                         CreateWater();
@@ -612,7 +612,7 @@ namespace Environment
 
         // Water height.
         float water_height = msg.ReadF32();
-        if(water_.get())
+        if(water_)
             water_->SetWaterHeight(water_height, AttributeChange::LocalOnly);
 
         msg.SkipToNextVariable(); // BillableFactor
@@ -639,7 +639,7 @@ namespace Environment
         TerrainStartRanges[2] = msg.ReadF32();
         TerrainStartRanges[3] = msg.ReadF32();
 
-        if(terrain_.get())
+        if(terrain_)
         {
             terrain_->SetTerrainTextures(terrain);
             terrain_->SetTerrainHeightValues(TerrainStartHeights, TerrainStartRanges);
@@ -670,13 +670,13 @@ namespace Environment
 
     void EnvironmentModule::SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, float seconds, float height)
     {
-        if (currentWorldStream_.get())
+        if (currentWorldStream_)
             currentWorldStream_->SendModifyLandPacket(x, y, brush, action, seconds, height);
     }
 
     void EnvironmentModule::SendTextureHeightMessage(float start_height, float height_range, uint corner)
     {
-        if (currentWorldStream_.get())
+        if (currentWorldStream_)
         {
             currentWorldStream_->SendTextureHeightsMessage(start_height, height_range, corner);
             waiting_for_regioninfomessage_ = true;
@@ -685,7 +685,7 @@ namespace Environment
 
     void EnvironmentModule::SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, uint texture_index)
     {
-        if (currentWorldStream_.get())
+        if (currentWorldStream_)
         {
             currentWorldStream_->SendTextureDetail(new_texture_id, texture_index);
             waiting_for_regioninfomessage_ = true;
