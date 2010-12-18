@@ -2,7 +2,7 @@ import rexviewer as r
 import naali
 
 import PythonQt
-from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel, QComboBox
+from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel, QComboBox, QGridLayout
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize, Qt
 import math
@@ -72,63 +72,62 @@ class ObjectEditWindow:
         self.mesh_widget.setLayout(box)
 
         #begin align buttons
-        align_box = QHBoxLayout()
+        align_box = QGridLayout()
         align_box.setContentsMargins(0,0,0,0)
+        align_box.setSpacing(3)
 
-        align_x_vert = QVBoxLayout()
-        align_x_vert.setContentsMargins(0,0,0,0)
+        xlabel = QLabel("X")
+        ylabel = QLabel("Y")
+        zlabel = QLabel("Z")
+        xyzlabel = QLabel("XYZ")
+
+        firstlabel = QLabel("First")
+        lastlabel = QLabel("Last")
+        spacedlabel = QLabel("Spaced")
+        randomlabel = QLabel("Random")
+
         align_x_first = self.getButton("Align X First", self.ICON_FIRST, None, self.controller.do_align_axis_x_first)
         align_x_last = self.getButton("Align X Last", self.ICON_LAST, None, self.controller.do_align_axis_x_last)
         align_x_spaced = self.getButton("Align X Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_x_spaced)
         align_x_random = self.getButton("Align X Random", self.ICON_RANDOM, None, self.controller.do_align_axis_x_random)
 
-        align_y_vert = QVBoxLayout()
-        align_y_vert.setContentsMargins(0,0,0,0)
         align_y_first = self.getButton("Align Y First", self.ICON_FIRST, None, self.controller.do_align_axis_y_first)
         align_y_last = self.getButton("Align Y Last", self.ICON_LAST, None, self.controller.do_align_axis_y_last)
         align_y_spaced = self.getButton("Align Y Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_y_spaced)
         align_y_random = self.getButton("Align Y Random", self.ICON_RANDOM, None, self.controller.do_align_axis_y_random)
 
-        align_z_vert = QVBoxLayout()
-        align_z_vert.setContentsMargins(0,0,0,0)
         align_z_first = self.getButton("Align Z First", self.ICON_FIRST, None, self.controller.do_align_axis_z_first)
         align_z_last = self.getButton("Align Z Last", self.ICON_LAST, None, self.controller.do_align_axis_z_last)
         align_z_spaced = self.getButton("Align Z Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_z_spaced)
         align_z_random = self.getButton("Align Z Random", self.ICON_RANDOM, None, self.controller.do_align_axis_z_random)
 
-        align_xyz_vert = QVBoxLayout()
-        align_xyz_vert.setContentsMargins(0,0,0,0)
         align_xyz_random = self.getButton("Align XYZ Random", self.ICON_RANDOM, None, self.controller.do_align_random)
 
-        align_x_vert.addWidget(align_x_first)
-        align_x_vert.addWidget(align_x_last)
-        align_x_vert.addWidget(align_x_spaced)
-        align_x_vert.addWidget(align_x_random)
-        align_x_widget = QWidget()
-        align_x_widget.setLayout(align_x_vert)
+        align_box.addWidget(firstlabel, 1, 0)
+        align_box.addWidget(lastlabel, 2, 0)
+        align_box.addWidget(spacedlabel, 3, 0)
+        align_box.addWidget(randomlabel, 4, 0)
 
-        align_y_vert.addWidget(align_y_first)
-        align_y_vert.addWidget(align_y_last)
-        align_y_vert.addWidget(align_y_spaced)
-        align_y_vert.addWidget(align_y_random)
-        align_y_widget = QWidget()
-        align_y_widget.setLayout(align_y_vert)
+        align_box.addWidget(xlabel, 0, 1)
+        align_box.addWidget(align_x_first, 1, 1)
+        align_box.addWidget(align_x_last, 2, 1)
+        align_box.addWidget(align_x_spaced, 3, 1)
+        align_box.addWidget(align_x_random, 4, 1)
 
-        align_z_vert.addWidget(align_z_first)
-        align_z_vert.addWidget(align_z_last)
-        align_z_vert.addWidget(align_z_spaced)
-        align_z_vert.addWidget(align_z_random)
-        align_z_widget = QWidget()
-        align_z_widget.setLayout(align_z_vert)
+        align_box.addWidget(ylabel, 0, 2)
+        align_box.addWidget(align_y_first, 1, 2)
+        align_box.addWidget(align_y_last, 2, 2)
+        align_box.addWidget(align_y_spaced, 3, 2)
+        align_box.addWidget(align_y_random, 4, 2)
 
-        align_xyz_vert.addWidget(align_xyz_random)
-        align_xyz_widget = QWidget()
-        align_xyz_widget.setLayout(align_xyz_vert)
+        align_box.addWidget(zlabel, 0, 3)
+        align_box.addWidget(align_z_first, 1, 3)
+        align_box.addWidget(align_z_last, 2, 3)
+        align_box.addWidget(align_z_spaced, 3, 3)
+        align_box.addWidget(align_z_random, 4, 3)
 
-        align_box.addWidget(align_x_widget)
-        align_box.addWidget(align_y_widget)
-        align_box.addWidget(align_z_widget)
-        align_box.addWidget(align_xyz_widget)
+        align_box.addWidget(xyzlabel, 0, 4)
+        align_box.addWidget(align_xyz_random,4,4)
 
         self.align_widget = QWidget()
         self.align_widget.setLayout(align_box)

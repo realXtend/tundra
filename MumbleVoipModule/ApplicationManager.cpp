@@ -5,6 +5,7 @@
 
 #include "ApplicationManager.h"
 #include <QDesktopServices>
+#include "CoreException.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -23,13 +24,13 @@ namespace MumbleVoip
         if (!url.isValid())
         {
             QString error_message = QString("Url '%1' is invalid.").arg(server_url);
-            throw std::exception(error_message.toStdString().c_str());
+            throw Exception(error_message.toStdString().c_str());
         }
         
         if (! QDesktopServices::openUrl(server_url))
         {
             QString error_message = QString("Cannot find handler application for url: %1").arg(server_url);
-            throw std::exception(error_message.toStdString().c_str());
+            throw Exception(error_message.toStdString().c_str());
         }
         ApplicationManager::start_count_++;
     }
