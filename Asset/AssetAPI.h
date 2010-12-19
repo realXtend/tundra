@@ -38,6 +38,84 @@ public:
 
     ~AssetAPI();
 
+public:
+    /// Registers a type factory for creating assets of the type governed by the factory.
+    void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
+
+    /// Returns all registered asset type factories. You can use this list to query which asset types the system can handle.
+    std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() { return assetTypeFactories; }
+
+    typedef std::map<QString, AssetPtr> AssetMap;
+
+    /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
+    AssetMap &GetAllAssets() { return assets; }
+
+    /// Returns the asset provider of the given type.
+    /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
+    template<typename T>
+    boost::shared_ptr<T> GetAssetProvider();
+
+    /// Registers a new asset provider to the Asset API. Use this to add a new provider type you have instantiated to the system.
+    void RegisterAssetProvider(AssetProviderPtr provider);
+
+    /// Returns all the asset providers that are registered to the Asset API.
+    std::vector<AssetProviderPtr> GetAssetProviders() const;
+
+    /// Returns the known asset storage instances in the system.
+    std::vector<AssetStoragePtr> GetAssetStorages() const;
+
+    /// Uploads an asset from the given data pointer in memory to an asset storage.
+    /** @param data A pointer to raw source data in memory.
+        @param numBytes The amount of data in the data array.
+        @param destination The asset storage to upload the asset to.
+        @param assetName The name to give to the asset in the storage.
+        @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
+
+        @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
+    AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
+
+    /// Returns all the currently ongoing or waiting asset transfers.
+    std::vector<AssetTransferPtr> PendingTransfers();
+
+    /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
+    /// it yourself.
+    void Update(f64 frametime);
+
+    /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
+    void AssetTransferCompleted(IAssetTransfer *transfer);
+
+    /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and
+    /// also fail any transfers of assets which depended on this transfer.
+    void AssetTransferFailed(IAssetTransfer *transfer, QString reason);
+
+    /// Called by each AssetProvider to notify the Asset API that an asset upload transfer has completed. Do not call this function from client code.
+    void AssetUploadTransferCompleted(IAssetUploadTransfer *transfer);
+
+    void AssetDependenciesCompleted(AssetTransferPtr transfer);
+
+    void NotifyAssetDependenciesChanged(AssetPtr asset);
+
+    /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
+    std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
+
+    class QStringLessThanNoCase
+    {
+    public:
+        bool operator()(const QString &a, const QString b) const
+        {
+            return QString::compare(a, b, Qt::CaseInsensitive) < 0;
+        }
+    };
+
+    /// Specifies the different possible results for AssetAPI::QueryFileLocation.
+    enum FileQueryResult
+    {
+        FileQueryLocalFileFound, ///< The asset reference specified a local filesystem file, and the absolute path name for it was found.
+        FileQueryLocalFileMissing, ///< The asset reference specified a local filesystem file, but there was no file in that location.
+        FileQueryExternalFile ///< The asset reference points to a file in an external source, which cannot be checked for existence (too costly performance-wise).
+    };
+
+public slots:
     /// Opens the internal Asset API asset cache to the given directory. When the Asset API starts up, the asset cache is not created. This allows
     /// the Asset API to be operated in a mode that does not perform writes to the disk when assets are fetched. This will cause assets fetched from
     /// remote hosts to have a null disk source.
@@ -61,9 +139,6 @@ public:
         @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
                         used to more completely specify the type. */
     AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
-
-    /// Registers a type factory for creating assets of the type governed by the factory.
-    void RegisterAssetTypeFactory(AssetTypeFactoryPtr factory);
 
     /// Creates a new empty unloaded asset of the given type and name.
     /** This function uses the Asset type factories to create an instance of the proper asset class.
@@ -91,9 +166,6 @@ public:
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
 
-    /// Returns all registered asset type factories. You can use this list to query which asset types the system can handle.
-    std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() { return assetTypeFactories; }
-
     /// Returns the given asset by full URL ref if it exists, or null otherwise.
     /// @note The "name" of an asset is in most cases the URL ref of the asset, so use this function to query an asset by name.
     AssetPtr GetAsset(QString assetRef);
@@ -101,38 +173,11 @@ public:
     /// Returns the given asset by the specified SHA-1 content hash. If no such asset exists, returns null.
     AssetPtr GetAssetByHash(QString assetHash);
 
-    typedef std::map<QString, AssetPtr> AssetMap;
-
-    /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
-    AssetMap &GetAllAssets() { return assets; }
-
     /// Returns the asset cache object that genereates a disk source for all assets.
     AssetCache *GetAssetCache() { return assetCache; }
 
-    /// Returns the asset provider of the given type.
-    /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
-    template<typename T>
-    boost::shared_ptr<T> GetAssetProvider();
-
-    /// Registers a new asset provider to the Asset API. Use this to add a new provider type you have instantiated to the system.
-    void RegisterAssetProvider(AssetProviderPtr provider);
-
-    /// Returns all the asset providers that are registered to the Asset API.
-    std::vector<AssetProviderPtr> GetAssetProviders() const;
-
     /// Returns the asset storage of the given name.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
-
-    /// Returns the known asset storage instances in the system.
-    std::vector<AssetStoragePtr> GetAssetStorages() const;
-
-    /// Specifies the different possible results for AssetAPI::QueryFileLocation.
-    enum FileQueryResult
-    {
-        FileQueryLocalFileFound, ///< The asset reference specified a local filesystem file, and the absolute path name for it was found.
-        FileQueryLocalFileMissing, ///< The asset reference specified a local filesystem file, but there was no file in that location.
-        FileQueryExternalFile ///< The asset reference points to a file in an external source, which cannot be checked for existence (too costly performance-wise).
-    };
 
     /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
     /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
@@ -175,25 +220,12 @@ public:
         @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
     AssetUploadTransferPtr UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
 
-    /// Uploads an asset from the given data pointer in memory to an asset storage.
-    /** @param data A pointer to raw source data in memory.
-        @param numBytes The amount of data in the data array.
-        @param destination The asset storage to upload the asset to.
-        @param assetName The name to give to the asset in the storage.
-        @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
-
-        @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
-    AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
-
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
     /** Use this to clear the client's memory from all assets.
         @note There may be any number of strong references to assets in other parts of code, in which case the assets are not deleted
         until the refcounts drop to zero.
         @note Do not dereference any asset pointers that might have been left over after calling this function. */
     void ForgetAllAssets();
-
-    /// Returns all the currently ongoing or waiting asset transfers.
-    std::vector<AssetTransferPtr> PendingTransfers();
 
     /// Returns a pointer to an existing asset transfer if one is in-progress for the given assetRef. Returns a null pointer if no transfer exists, in which
     /// case the asset may already have been loaded to the system (or not). It can be that an asset is loaded to the system, but one or more of its dependencies
@@ -203,41 +235,12 @@ public:
     /// request is needed. AssetAPI will optimize away any duplicate transfers to the same asset.
     AssetTransferPtr GetPendingTransfer(QString assetRef);
 
-    /// Performs internal tick-based updates of the whole asset system. This function is intended to be called only by the core, do not call
-    /// it yourself.
-    void Update(f64 frametime);
-
-    /// Called by each AssetProvider to notify the Asset API that an asset transfer has completed. Do not call this function from client code.
-    void AssetTransferCompleted(IAssetTransfer *transfer);
-
-    /// Called by each AssetProvider to notify the Asset API that the asset transfer finished in a failure. The Asset API will erase this transfer and
-    /// also fail any transfers of assets which depended on this transfer.
-    void AssetTransferFailed(IAssetTransfer *transfer, QString reason);
-
-    /// Called by each AssetProvider to notify the Asset API that an asset upload transfer has completed. Do not call this function from client code.
-    void AssetUploadTransferCompleted(IAssetUploadTransfer *transfer);
-
-    void AssetDependenciesCompleted(AssetTransferPtr transfer);
-
-    void NotifyAssetDependenciesChanged(AssetPtr asset);
-
     /// Starts an asset transfer for each dependency the given asset has.
     void RequestAssetDependencies(AssetPtr transfer);
 
     /// An utility function that counts the number of dependencies the given asset has to other assets that have not been loaded in.
     int NumPendingDependencies(AssetPtr asset);
 
-    /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
-    std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
-
-    class QStringLessThanNoCase
-    {
-    public:
-        bool operator()(const QString &a, const QString b) const
-        {
-            return QString::compare(a, b, Qt::CaseInsensitive) < 0;
-        }
-    };
 signals:
     /// Emitted for each new asset that was created and added to the system. When this signal is triggered, the dependencies of an asset
     /// may not yet have been loaded.
