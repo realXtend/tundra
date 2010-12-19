@@ -739,6 +739,12 @@ namespace Foundation
         return asset;
     }
 
+    QObject *Framework::GetModuleQObj(const QString &name)
+    {
+        ModuleWeakPtr module = GetModuleManager()->GetModule(name.toStdString());
+        return dynamic_cast<QObject*>(module.lock().get());
+    }
+
     bool Framework::RegisterDynamicObject(QString name, QObject *object)
     {
         if (name.length() == 0 || !object)

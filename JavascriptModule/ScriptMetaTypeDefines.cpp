@@ -21,6 +21,8 @@
 #include "InputContext.h"
 #include "RenderServiceInterface.h"
 #include "CommunicationsService.h"
+#include "NaaliMainWindow.h"
+#include "NaaliGraphicsView.h"
 
 #include "EntityAction.h"
 
@@ -37,7 +39,6 @@ Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QTimer, QObject*);
 
-
 ///\todo Remove these two and move to Input API once NaaliCore is merged.
 //! Naali input defines
 Q_DECLARE_METATYPE(MouseEvent*)
@@ -46,6 +47,8 @@ Q_DECLARE_METATYPE(InputContext*)
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
+Q_DECLARE_METATYPE(NaaliMainWindow*);
+Q_DECLARE_METATYPE(NaaliGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
@@ -179,6 +182,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAsset>, qScriptValueToBoostSharedPtr<IAsset>);
 
     // Ui metatypes.
+    qScriptRegisterQObjectMetaType<NaaliMainWindow*>(engine);
+    qScriptRegisterQObjectMetaType<NaaliGraphicsView*>(engine);
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
     //Add support to create proxy widgets in javascript side.

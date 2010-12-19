@@ -70,18 +70,18 @@ public slots:
     */
     static bool IsSupportedFileType(const QString &filename);
 
-private:
-    SceneStructureWindow *sceneWindow; ///< Scene Structure window.
-    QPointer<AssetsWindow> assetsWindow;///< Assets window.
-    boost::shared_ptr<InputContext> inputContext; ///< Input context.
-
-private slots:
     /// Shows Scene Structure window.
     void ShowSceneStructureWindow();
 
     /// Shows Assets window.
     void ShowAssetsWindow();
 
+private:
+    SceneStructureWindow *sceneWindow; ///< Scene Structure window.
+    QPointer<AssetsWindow> assetsWindow;///< Assets window.
+    boost::shared_ptr<InputContext> inputContext; ///< Input context.
+
+private slots:
     /// Handles KeyPressed() signal from input context.
     /** @param e Key event.
     */

@@ -2,8 +2,7 @@
 // !ref: local://JoinWidget.ui
 
 engine.ImportExtension("qt.core");
-
-engine.IncludeFile("print.js");
+engine.ImportExtension("qt.gui");
 
 //Server side of the ChatApplication
 //Server shows the ChatWidget, but it's not able to use it to send own messages
@@ -84,7 +83,7 @@ var proxy = new UiProxyWidget(widget);
                   
 uiservice.AddProxyWidgetToScene(proxy);
 proxy.x = 10;
-proxy.y = 10;
+proxy.y = 25;
 proxy.visible = true;
 proxy.windowFlags = 0;
 
