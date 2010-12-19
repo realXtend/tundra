@@ -52,6 +52,7 @@ public:
 
     QString BaseURL() const { return "local://"; }
 
+    QString ToString() const { return Name() + " (" + directory + ")"; }
 private:
 
     void operator=(const LocalAssetStorage &);

@@ -1,4 +1,9 @@
+// !ref: local://ChatWidget.ui
+// !ref: local://JoinWidget.ui
+
 engine.ImportExtension("qt.core");
+
+engine.IncludeFile("print.js");
 
 //Server side of the ChatApplication
 //Server shows the ChatWidget, but it's not able to use it to send own messages
@@ -72,19 +77,20 @@ ClientControl.prototype.ReceiveServerMessage = function(msg)
 
 print("Loading ChatApplication");
 
-var widget = uiservice.LoadFromFile(".\\scenes\\ChatApplication\\ChatWidget.ui", false);	
+var widget = uiservice.LoadFromFile("local://ChatWidget.ui", false);
 var chatLog = findChild(widget, "chatLog");
 var lineEdit = findChild(widget, "lineEdit");
 var proxy = new UiProxyWidget(widget);
-uiservice.AddWidgetToScene(proxy);
+                  
+uiservice.AddProxyWidgetToScene(proxy);
 proxy.x = 10;
 proxy.y = 10;
-proxy.visible = false;
+proxy.visible = true;
 proxy.windowFlags = 0;
 
 var chatControl;
 
-if (server.IsRunning())
+if (server.IsRunning())               
 {
 	print("Starting Chat Server");
 	chatControl = new ServerControl();
@@ -103,12 +109,12 @@ else
   var username = client.GetLoginProperty("username");
   if (username.length == 0)
   {
-  	var joinWidget = uiservice.LoadFromFile(".\\scenes\\ChatApplication\\JoinWidget.ui", false);	
+  	var joinWidget = uiservice.LoadFromFile("local://JoinWidget.ui", false);	
   	var btn = findChild(joinWidget, "pushJoin");
   	var lineUser = findChild(joinWidget, "lineUserName");
   
   	var joinProxy = new UiProxyWidget(joinWidget);
-  	uiservice.AddWidgetToScene(joinProxy);
+  	uiservice.AddProxyWidgetToScene(joinProxy);
   	joinProxy.x = 50;
   	joinProxy.y = 50;
   	joinProxy.visible = true;

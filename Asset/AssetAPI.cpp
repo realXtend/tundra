@@ -133,6 +133,16 @@ AssetAPI::FileQueryResult AssetAPI::QueryFileLocation(QString sourceRef, QString
     return FileQueryLocalFileMissing;
 }
 
+AssetAPI::AssetRefType AssetAPI::ParseAssetRefType(QString assetRef)
+{
+    assetRef = assetRef.trimmed();
+    if (assetRef.startsWith("local://", Qt::CaseInsensitive) || assetRef.startsWith("file://", Qt::CaseInsensitive))
+        return AssetRefLocalUrl;
+    if (assetRef.contains("://"))
+        return AssetRefExternalUrl;
+    return AssetRefLocalPath; ///\todo This is not right. Implement more exact parsing.
+}
+
 QString AssetAPI::ExtractFilenameFromAssetRef(QString ref)
 {
     using namespace std;
@@ -931,6 +941,9 @@ QString GetResourceTypeFromResourceFileName(const char *name)
 
     if (file.endsWith(".wav") || file.endsWith(".ogg") || file.endsWith(".mp3"))
         return "Audio";
+
+    if (file.endsWith(".ui"))
+        return "QtUiFile";
 
     // Unknown type.
     return "";

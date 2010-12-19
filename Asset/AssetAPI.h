@@ -115,6 +115,15 @@ public:
         FileQueryExternalFile ///< The asset reference points to a file in an external source, which cannot be checked for existence (too costly performance-wise).
     };
 
+    enum AssetRefType
+    {
+        AssetRefLocalPath,      ///< The assetRef points to the local filesystem, e.g "C:\myassets\texture.png".
+        AssetRefLocalUrl,       ///< The assetRef points to the local filesystem, using a local specifier like local://.
+        AssetRefExternalUrl,    ///< The assetRef points to a location external to the system, using a URL protocol specifier.
+        AssetRefDefaultStorage, ///< The assetRef points to the default system storage.
+        AssetRefNamedStorage    ///< The assetRef points to an explicitly named storage.
+    };
+
 public slots:
     /// Opens the internal Asset API asset cache to the given directory. When the Asset API starts up, the asset cache is not created. This allows
     /// the Asset API to be operated in a mode that does not perform writes to the disk when assets are fetched. This will cause assets fetched from
@@ -183,6 +192,9 @@ public slots:
     /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
                usually the local path of the scene content that is being added. */
     static FileQueryResult QueryFileLocation(QString sourceRef, QString baseDirectory, QString &outFilePath);
+
+    /// Examines the given assetRef and returns what kind of assetRef it is. ///\todo This function is only partially implemented.
+    static AssetRefType ParseAssetRefType(QString assetRef);
 
     /// Parses the local filename of the given assetRef. For example: ExtractLocalName("C:\assets\my.mesh") will return "my.mesh",
     /// ExtractLocalName("local://xxx.png") will return "xxx.png"). ExtractLocalName("local://collada.dae/subMeshName") will
