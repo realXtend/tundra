@@ -38,7 +38,7 @@ void ScriptAsset::ParseReferences()
     std::string content = scriptContent.toStdString();
     boost::sregex_iterator searchEnd;
 
-    boost::regex expression("!ref:\\s*(.*)\\s*(\\n|$)");
+    boost::regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;

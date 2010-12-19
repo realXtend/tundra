@@ -7,6 +7,8 @@
 #include "UiService.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
+#include "AssetAPI.h"
+#include "GenericAssetFactory.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -30,9 +32,11 @@ void UiServiceModule::Initialize()
         return;
     // Register UI service.
     assert(GetFramework()->Ui()->GraphicsView());
-    service_ = boost::shared_ptr<UiService>(new UiService(GetFramework()->Ui()->GraphicsView()));
+    service_ = boost::shared_ptr<UiService>(new UiService(framework_, GetFramework()->Ui()->GraphicsView()));
     framework_->GetServiceManager()->RegisterService(Service::ST_Gui, service_);
     framework_->RegisterDynamicObject("uiservice", service_.get());
+
+    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<BinaryAsset>("QtUiFile")));
 }
 
 void UiServiceModule::PostInitialize()
