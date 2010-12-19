@@ -290,6 +290,10 @@ namespace Foundation
         Scene::SceneManager* Scene(const QString& name) const;
         
         AssetAPI *Asset() const;
+
+        /// Returns the given module, if it is loaded into the system, and if it derives from QObject.
+        QObject *GetModuleQObj(const QString &name);
+
         /// Stores the given QObject as a dynamic property into the Framework. This is done to implement
         /// easier script access for QObject-based interface objects.
         /// @param name The name to use for the property. Fails if name is an empty string.
