@@ -59,12 +59,12 @@ public:
     virtual bool IsSerializable() const { return true; }
 
 public slots:
+    void PrepareRtt();
     void SetAutoUpdated(bool val);
 
 private slots:
     void AttributeUpdated(IAttribute* attribute);
     //void UpdateRtt();
-    void PrepareRtt();
 
 private:
     //! constructor

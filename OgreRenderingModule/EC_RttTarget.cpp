@@ -20,11 +20,8 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
 
     //can't do immediately here, 'cause getcomponent crashes
     //.. is not allowed to get other components in the creation of a component. ok?
-    if (ViewEnabled())
-    {
-         framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
-        //ScheduleRender();
-    }
+    //framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
+    //.. resorting to manual call to PrepareRtt now
 }
 
 EC_RttTarget::~EC_RttTarget()
@@ -42,6 +39,9 @@ EC_RttTarget::~EC_RttTarget()
 
 void EC_RttTarget::PrepareRtt()
 {
+    if (!ViewEnabled())
+      return;
+
     //\todo XXX make these attributes, and reconfig via AttributeUpdated when they change
     uint width = 400;
     uint height = 300;
@@ -78,7 +78,7 @@ void EC_RttTarget::PrepareRtt()
         vp->setVisibilityMask(0x2);
 
         render_texture->update(false);
-        tex_->getBuffer()->getRenderTarget()->setAutoUpdated(false);
+        tex_->getBuffer()->getRenderTarget()->setAutoUpdated(false); 
     }
 
     else
