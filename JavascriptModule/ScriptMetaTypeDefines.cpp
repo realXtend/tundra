@@ -119,9 +119,18 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
 }
 
 template<typename T>
+static QScriptValue DereferenceBoostSharedPtr(QScriptContext *context, QScriptEngine *engine)
+{
+    boost::shared_ptr<T> ptr = context->thisObject().toVariant().value<boost::shared_ptr<T> >();
+    return engine->newQObject(ptr.get());
+}
+
+template<typename T>
 QScriptValue qScriptValueFromBoostSharedPtr(QScriptEngine *engine, const boost::shared_ptr<T> &ptr)
 {
-    return engine->newVariant(QVariant(ptr));
+    QScriptValue v = engine->newVariant(QVariant::fromValue<boost::shared_ptr<T> >(ptr));
+    v.setProperty("get", engine->newFunction(DereferenceBoostSharedPtr<T>), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+    return v;
 }
 
 template<typename T>

@@ -93,17 +93,17 @@ void EC_Sound::PlaySound()
     {
         soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->GetPosition(), audioAsset, SoundChannel::Triggered);
         if (soundChannel)
-        {
-            soundChannel->SetGain(soundGain.Get());
-            soundChannel->SetLooped(loopSound.Get());
             soundChannel->SetRange(soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
-        }
     }
     else // Play back sound as a nonpositional sound, if no EC_Placeable was found or if spatial was not set.
     {
         soundChannel = GetFramework()->Audio()->PlaySound(audioAsset, SoundChannel::Ambient);
-        if (soundChannel)
-            soundChannel->SetGain(soundGain.Get());
+    }
+
+    if (soundChannel)
+    {
+        soundChannel->SetGain(soundGain.Get());
+        soundChannel->SetLooped(loopSound.Get());
     }
 }
 
