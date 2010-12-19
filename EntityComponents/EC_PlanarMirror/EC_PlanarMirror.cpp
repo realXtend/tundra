@@ -123,7 +123,7 @@ void EC_PlanarMirror::Initialize()
     QString texname = target->gettargettexture();
     Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().getByName(Ogre::String(texname.toStdString()));
     
-    if (!tex)
+    if (!tex.get())
     {
         LogError("Texture called " + texname.toStdString() +  " not found. EC_PlanarMirror can't function. (Propably something wrong in the EC_RttTarget).");
         return;
