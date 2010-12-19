@@ -138,15 +138,17 @@ Scene::EntityPtr EC_Sound::GetActiveSoundListener()
         {
 #ifndef _DEBUG
             assert(ec->GetParentEntity());
-            return ec->GetParentEntity()->shared_from_this;
+            return ec->GetParentEntity()->shared_from_this();
 #else
             ++numActiveListeners;
 #endif
         }
     }
 
+#ifdef _DEBUG
     if (numActiveListeners != 1)
         LogWarning("Warning: When playing back positional 3D audio, " + QString::number(numActiveListeners).toStdString() + " active sound listeners were found!");
+#endif
     return Scene::EntityPtr();
 }
 
