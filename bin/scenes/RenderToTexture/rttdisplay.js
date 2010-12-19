@@ -1,4 +1,4 @@
-var rtt = undefined; //to keep the ref to the comp. what happens when it is removed? clean js execption?
+var rtt = null; //to keep the ref to the comp. what happens when it is removed? clean js execption?
 
 function init() {
     //this could be just a straight setup script with no funcs,

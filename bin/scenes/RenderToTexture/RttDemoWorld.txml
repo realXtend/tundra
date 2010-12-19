@@ -4,7 +4,7 @@
   <component type="EC_Placeable" sync="1">
    <attribute value="0 0 0" name="Position"/>
    <attribute value="1 1 1" name="Scale"/>
-   <attribute value="0,127,50,0,0,-90,133,100,100" name="Transform"/>
+   <attribute value="0,200,0,-90,-90,-90,100,100,133" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
