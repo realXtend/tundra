@@ -551,7 +551,7 @@ void EC_HoveringWidget::Redraw()
         material = mgr.getByName(buttonsmaterialName_);
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureFiltering(Ogre::TFO_ANISOTROPIC);
         assert(material.get());
-        OgreRenderer::SetTextureUnitOnMaterial(material, hoveringTexture?2Name_);
+        OgreRenderer::SetTextureUnitOnMaterial(material, hoveringTexture2Name_);
     }
     namebillboard_->setDimensions(bb_name_size_view.width(), bb_name_size_view.height());
 }
