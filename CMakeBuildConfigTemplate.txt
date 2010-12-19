@@ -127,8 +127,6 @@ add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
 #add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
 add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
 add_subdirectory(CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
-add_subdirectory (TtsModule)
-add_subdirectory (NotificationTTS)
 add_subdirectory (UiExternalModule)
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule 
@@ -138,6 +136,8 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by
 
 if (MSVC)
    add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+   add_subdirectory (TtsModule)
+   add_subdirectory (NotificationTTS)
 endif()
 
 add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined). Depends on OgreRenderingModule and InventoryModule. 
