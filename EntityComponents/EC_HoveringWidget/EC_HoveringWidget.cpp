@@ -323,7 +323,7 @@ void EC_HoveringWidget::UpdateAnimationStep(int step)
 
     Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
     Ogre::MaterialPtr material = mgr.getByName(namematerialName_);
-    assert(material);
+    assert(material.get());
 
     material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(
         Ogre::LBX_BLEND_MANUAL, Ogre::LBS_TEXTURE, Ogre::LBS_MANUAL, 1.0, 0.0, alpha);
@@ -545,13 +545,13 @@ void EC_HoveringWidget::Redraw()
         Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
         Ogre::MaterialPtr material = mgr.getByName(namematerialName_);
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureFiltering(Ogre::TFO_ANISOTROPIC);
-        assert(material);
+        assert(material.get());
         OgreRenderer::SetTextureUnitOnMaterial(material, hoveringTexture1Name_);
 
         material = mgr.getByName(buttonsmaterialName_);
         material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureFiltering(Ogre::TFO_ANISOTROPIC);
-        assert(material);
-        OgreRenderer::SetTextureUnitOnMaterial(material, hoveringTexture2Name_);
+        assert(material.get());
+        OgreRenderer::SetTextureUnitOnMaterial(material, hoveringTexture?2Name_);
     }
     namebillboard_->setDimensions(bb_name_size_view.width(), bb_name_size_view.height());
 }
