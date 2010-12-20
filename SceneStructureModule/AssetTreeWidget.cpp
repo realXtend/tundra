@@ -130,7 +130,6 @@ void AssetTreeWidget::AddAvailableActions(QMenu *menu)
     {
         QMenu *deleteMenu = new QMenu(tr("Delete"), menu);
         QAction *deleteSourceAction = new QAction(tr("Delete from source"), deleteMenu);
-        deleteSourceAction->setDisabled(true);
         QAction *deleteCacheAction = new QAction(tr("Delete from cache"), deleteMenu);
         QAction *forgetAction = new QAction(tr("Forget asset"), deleteMenu);
 
@@ -205,10 +204,25 @@ QList<AssetItem *> AssetTreeWidget::GetSelection() const
 
 void AssetTreeWidget::DeleteFromSource()
 {
-/*
-    foreach(AssetItem *item, GetSelection())
-        framework->Asset()->ForgetAsset(asset, false);
-*/
+    int ret = QMessageBox::warning(
+        this,
+        tr("Delete From Source"),
+        tr("Are you sure want to delete the selected asset(s) permanently from the source?"),
+        QMessageBox::Ok | QMessageBox::Cancel,
+        QMessageBox::Cancel);
+
+    if (ret == QMessageBox::Ok)
+    {
+        // AssetAPI::DeleteAssetFromStorage() signals will start deletion of tree widget asset items:
+        // Gather the asset refs to a separate list beforehand in order to prevent crash.
+        QStringList assetRefs;
+        foreach(AssetItem *item, GetSelection())
+            if (item->Asset())
+                assetRefs << item->Asset()->Name();
+
+        foreach(QString ref, assetRefs)
+            framework->Asset()->DeleteAssetFromStorage(ref);
+    }
 }
 
 void AssetTreeWidget::DeleteFromCache()
