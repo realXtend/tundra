@@ -145,7 +145,7 @@ namespace Foundation
             const char cDefaultAssetCachePath[] = "/assetcache";
             asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
 
-            audio = new AudioAPI(); // Audio API depends on the Asset API, so must be loaded after Asset API is.
+            audio = new AudioAPI(asset); // Audio API depends on the Asset API, so must be loaded after Asset API is.
             asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
 
             input = new Input(this);

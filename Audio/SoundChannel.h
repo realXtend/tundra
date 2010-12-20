@@ -44,21 +44,37 @@ public:
     /** Note: after a sound buffer is added, channel will remain in pending state even if there is no 
         more sound data for the moment. This is to ensure that the sound system will not automatically
         dispose of the channel. */ 
-    void AddBuffer(const SoundBuffer &buffer);
+    void AddBuffer(AudioAssetPtr buffer);
+//    void AddBuffer(const SoundBuffer &buffer);
     
-    /// Set positional state
+    /// Adjusts positional status of channel
+    /** \param id Channel id
+        \param positional Positional status */
     void SetPositional(bool enable);
-    /// Set looped state
+    /// Adjusts looping status of channel
+    /** \param id Channel id
+        \param looped Whether to loop */
     void SetLooped(bool enable);
     /// Set position
     void SetPosition(const Vector3df& pos);
-    /// Set pitch.
+    /// Adjusts pitch of channel
+    /** \param id Channel id
+        \param pitch Pitch relative to sound's original pitch (1.0 = original) */
     void SetPitch(float pitch);
-    /// Set gain.
+    /// Adjusts gain of channel
+    /** \param id Channel id
+        \param gain New gain value, 1.0 = full volume, 0.0 = silence */
     void SetGain(float gain);
     /// Set master gain.
     void SetMasterGain(float master_gain);
-    /// Set range parameters
+    /// Adjusts range parameters of positional sound channel.
+    /** \param id Channel id
+        \param inner_radius Within inner radius, sound will be played at gain
+        \param outer_radius Outside outer radius, sound will be silent
+        \param rolloff Rolloff power factor. 1.0 = linear, 2.0 = distance squared 
+        Between radiuses, attenuation will be interpolated and raised to power of rolloff
+        If outer_radius is 0, there will be no attenuation (sound is always played at gain)
+        Also, for non-positional channels the range parameters have no effect. */
     void SetRange(float inner_radius, float outer_radius, float rolloff);
     /// Stop.
     void Stop();
@@ -68,11 +84,15 @@ public:
     SoundState GetState() const { return state_; }
     /// Return name/id of sound that's playing, empty if nothing playing
     QString GetSoundName() const;
-    /// Return sound type
+    /// Gets type of sound played/pending on channel (triggered/ambient etc.)
     SoundType GetSoundType() const { return type_; }
-    /// Return sound gain.
+    /// Get gain of channel. If channel wasn't found return -1.
+    /** \param id Channel id
+     *  \return Channel's gain. */
     float GetGain() const {return gain_;}
-    /// Return sound pitch.
+    /// Get sound channel pitch.
+    /** \param id Channel id
+        \return Channel's pitch value. */
     float GetPitch() const {return pitch_;}
 
     sound_id_t GetChannelId() const { return channelId; }
@@ -97,7 +117,7 @@ private:
     /// OpenAL handle
     ALuint handle_;
     /// Sounds buffers pending to be played
-    std::list<AudioAssetWeakPtr> pending_sounds_;
+    std::list<AudioAssetPtr> pending_sounds_;
     /// Currently playing sound buffers
     std::vector<AudioAssetPtr> playing_sounds_;
     /// Pitch
