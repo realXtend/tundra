@@ -29,6 +29,10 @@ LoginWidget::LoginWidget(const QMap<QString,QString> &login_data) :
     connect(pushButton_Connect, SIGNAL(clicked()), SLOT(ParseInputAndConnect()));
     connect(pushButton_Exit, SIGNAL(clicked()), SLOT(Exit()));
 
+    // Specific for Tundra: Hide the start location to not to confuse users.
+    label_StartLocation->hide();
+    lineEdit_StartLocation->hide();
+
     connect(lineEdit_WorldAddress, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
     connect(lineEdit_StartLocation, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
     connect(lineEdit_Username, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
