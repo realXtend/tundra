@@ -13,6 +13,7 @@
 #include <QColor>
 #include <QVector3D>
 #include <QQuaternion>
+#include <QScriptValueIterator>
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
@@ -169,15 +170,25 @@ QScriptValue toScriptValueAssetReference(QScriptEngine *engine, const AssetRefer
 
 void fromScriptValueAssetReferenceList(const QScriptValue &obj, AssetReferenceList &s)
 {
-    ///\todo Implement
-//    s.ref = obj.property("ref").toString();
+    QScriptValueIterator it(obj);
+  
+    while (it.hasNext()) {
+        it.next();
+        AssetReference reference(it.value().toString());
+        s.Append(reference);
+    }
+    
 }
 
 QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetReferenceList &s)
 {
     QScriptValue obj = engine->newObject();
-    ///\todo Implement
-//    obj.setProperty("ref", QScriptValue(engine, s.ref));
+  
+    for( int i = 0; i < s.refs.size(); ++i)
+    {
+        obj.setProperty(i, QScriptValue(engine, s.refs[i].toString()));
+    }
+
     return obj;
 }
 
