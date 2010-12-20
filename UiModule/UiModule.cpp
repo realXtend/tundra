@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -132,6 +133,7 @@ namespace UiServices
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");
     }
 
+
     void UiModule::PostInitialize()
     {
         SubscribeToEventCategories();
@@ -158,6 +160,15 @@ namespace UiServices
             connect(worldLogic, SIGNAL(AboutToDeleteWorld()), SLOT(TakeEtherScreenshots()));
         else
             LogWarning("Could not get world logic service.");
+
+		//$ BEGIN_MOD $
+		//We create and add the settings panel - Not in this version..
+		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+		if (!uiExternal)
+			inworld_scene_controller_->GetControlPanelManager()->CreateOptionalControls();
+		//$ END_MOD $
+
+		ui_scene_service_->CreateSettingsPanel();
     }
 
     void UiModule::Uninitialize()
@@ -249,15 +260,17 @@ namespace UiServices
 
         Input *inputService = framework_->GetInput();
 
-        const QKeySequence toggleEther = inputService->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
-        const QKeySequence toggleWorldChat = inputService->KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
-
-        if (key->keyCode == toggleEther)
-            ui_state_machine_->ToggleEther();
+#ifndef PLAYER_VIEWER
+         const QKeySequence toggleEther = inputService->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
+         if (key->keyCode == toggleEther)
+             ui_state_machine_->ToggleEther();
+#endif
+		const QKeySequence toggleWorldChat = inputService->KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
 
         if (key->keyCode == toggleWorldChat)
-            inworld_scene_controller_->SetFocusToChat();
+            inworld_scene_controller_->SetFocusToChat();		
     }
+
 
     void UiModule::OnSceneChanged(const QString &old_name, const QString &new_name)
     {

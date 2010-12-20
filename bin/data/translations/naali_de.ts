@@ -48,23 +48,41 @@ Duration: %1 sec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New Avatar</source>
+        <source>Add New Attachement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New Attach</source>
+        <source>Create New Avatar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Revert</source>
+        <source>Revert All Changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save</source>
+        <source>Save To Server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save Local Copy</source>
+        <source>Save To Disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AvatarInfoWidget</name>
+    <message>
+        <source>AvatarInfoWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AvatarToolbar</name>
+    <message>
+        <source>AvatarToolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exit Avatar Editing</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -254,6 +272,30 @@ p, li { white-space: pre-wrap; }
         <source>Add new view (Advanced)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Presets:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>BNAVE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>V-CAVE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MiniCave</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom setup:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Views:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CacheSettingsWidget</name>
@@ -295,6 +337,89 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Texture cache will store decoded textures to disc. This will speed up world loading. Default is to cache only j2p textures as they take the most time decoding. If above checkbox is unchecked youll cache also the more common fomats like jpg/png/bmp. Might be woth trying with slow PC. Minimum size: 20 mb Maximum size: 9000 mb.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CameraControl</name>
+    <message>
+        <source>Camera Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tripod</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>free</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>focus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>avatar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LeftFrame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ZoomFrame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>plus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>minus</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RightFrame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>backward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>st_left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>st_right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>forward</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -525,6 +650,14 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Connecting to %1 with %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid format for user name field: The rexauth user name must be in the form &apos;account@server.com&apos;, and contain no spaces.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invalid format for user name field: The OpenSim user name must be in the form &apos;firstname lastname&apos;, and contain exactly one space in between.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1387,14 +1520,6 @@ QLabel {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2193,13 +2318,6 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
-    <name>RexLogic::AvatarEditor</name>
-    <message>
-        <source>Avatar Editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>ScriptDialog</name>
     <message>
         <source>Dialog</source>
@@ -2568,6 +2686,61 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
     </message>
 </context>
 <context>
+    <name>TtsChatWidgetClass</name>
+    <message>
+        <source>Text To Speech Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Own voice configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Language: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spanish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Catalan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Finnish</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>English</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gender:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Demo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Chat Synthesis Configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable others voice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable own voice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>UICanvasTestEdit</name>
     <message>
         <source>Selected object</source>
@@ -2786,6 +2959,31 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
     </message>
     <message>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>toolContainerWidget</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>name</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>toolManagerWidget</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>voiceToolWidget</name>
+    <message>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

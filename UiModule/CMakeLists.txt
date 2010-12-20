@@ -43,11 +43,9 @@ use_package (POCO)
 use_package (CURL)
 use_package (XMLRPC)
 use_package (OGRE)
-use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui Input)
-
+use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui Input EntityComponents/EC_OpenSimPresence EntityComponents/EC_DynamicComponent )
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
-
-link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule)
+link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule EC_OpenSimPresence EC_DynamicComponent)
 link_package (BOOST)
 link_package (QT4)
 link_package (POCO)
@@ -59,6 +57,7 @@ link_ogre()
 if (DYNAMIC_LOGIN_SCENE)
    add_definitions (-DDYNAMIC_LOGIN_SCENE)
 endif (DYNAMIC_LOGIN_SCENE)
+
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

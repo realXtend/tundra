@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $ 
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -34,9 +35,12 @@ namespace CoreUi
         // Create the root menu
         root_menu_ = new GroupNode(true, "RootNode", "", -20, 5);
         category_map_["Root"] = root_menu_;
-        layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
+//$ BEGIN_MOD $
+//$ MOD_DESCRIPTION Not used until one module needs to put a widget in the scene and an option on the menu, so we do it later if needed $ 
+		/*layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         connect(root_menu_, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
-                SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
+                SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));*/
+//$ END_MOD $ 
     }
 
     MenuManager::~MenuManager()
@@ -46,7 +50,14 @@ namespace CoreUi
 
     void MenuManager::AddMenuGroup(const QString &name, const QString &icon, qreal hgap, qreal vgap)
     {
-        ///\todo Remove this hack at some point.
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION Someone needs to render something in the screen $ 
+		layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
+        connect(root_menu_, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
+                SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
+		//$ END_MOD $   
+
+		///\todo Remove this hack at some point.
         QString hack_icon;
         QString base_url = "./data/ui/images/menus/";
         if (name == "Server Tools")
@@ -64,11 +75,15 @@ namespace CoreUi
         connect(group_node, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
 
-        Sort();
+        Sort(); 
     }
 
     void MenuManager::AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon)
     {
+//$ BEGIN_MOD $
+		if(!root_menu_->isVisible())
+			root_menu_->setVisible(true);
+//$ END_MOD $
         ActionNode *child_node = new ActionNode(name, icon);
         ///\todo hack protection for menu crashing when root having more than 5 items.
         /// Remove when Qt 4.7 supposedly fixes this.
@@ -94,7 +109,7 @@ namespace CoreUi
         connect(child_node, SIGNAL(ActionButtonClicked(const QUuid&)), SLOT(ActionNodeClicked(const QUuid&)));
         layout_manager_->AddItemToScene(child_node);
 
-        Sort();
+		Sort();
     }
 
     void MenuManager::RemoveMenuItem(QGraphicsProxyWidget *controlled_widget)
@@ -114,8 +129,17 @@ namespace CoreUi
         while(it.hasNext())
         {
             recovered_node = it.next().value()->RemoveChildNode(remove_id);
-            if (recovered_node)
+			if (recovered_node){
+//$ BEGIN_MOD $
+//$ MOD_DESCRIPTION Removes the category if it is empty $ 
+				if(it.value()->GetChildNodeList().count()==0){
+					root_menu_->RemoveChildNode(it.value()->GetID());
+					layout_manager_->RemoveItemFromScene(category_map_[it.key()]);
+					category_map_.remove(it.key());
+				}
+//$ END_MOD $
                 break;
+			}
         }
 
         if (recovered_node)
@@ -124,8 +148,13 @@ namespace CoreUi
             disconnect(recovered_node, SIGNAL(ActionButtonClicked(const QUuid&)), this, SLOT(ActionNodeClicked(const QUuid&)));
             layout_manager_->RemoveItemFromScene(recovered_node);
         }
-
-        Sort();
+//$ BEGIN_MOD $
+//$ MOD_DESCRIPTION Removes the Root Menu if it is empty $ 
+		if(controller_map_.empty())
+			root_menu_->setVisible(false);
+		else
+			Sort();
+//$ END_MOD $
     }
 
     void MenuManager::ActionNodeClicked(const QUuid &id)

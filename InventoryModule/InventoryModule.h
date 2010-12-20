@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -80,6 +81,12 @@ namespace Inventory
         void CloseItemPropertiesWindow(const QString &inventory_id, bool save_changes = false);
 
         InventoryDataModelType GetInventoryType() const { return inventoryType_; }
+
+//$ BEGIN_MOD $
+	private slots:
+		//! Action for EditToolBar
+		void ActionToolBarInventory();
+//$ END_MOD $
 
     private:
         Q_DISABLE_COPY(InventoryModule);

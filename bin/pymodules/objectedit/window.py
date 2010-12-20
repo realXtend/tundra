@@ -2,7 +2,7 @@ import rexviewer as r
 import naali
 
 import PythonQt
-from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel, QComboBox
+from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel, QComboBox, QGridLayout
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize, Qt
 import math
@@ -31,7 +31,12 @@ class ObjectEditWindow:
     ICON_FOLDER = "pymodules/objectedit/folder.png"
     ICON_OK = "pymodules/objectedit/ok-small.png"
     ICON_CANCEL = "pymodules/objectedit/cancel-small.png" 
-    
+
+    ICON_FIRST = "pymodules/objectedit/align_first.png"
+    ICON_LAST = "pymodules/objectedit/align_last.png"
+    ICON_SPACED = "pymodules/objectedit/align_spaced.png"
+    ICON_RANDOM = "pymodules/objectedit/align_random.png"
+
     def __init__(self, controller):
         self.controller = controller
         loader = QUiLoader()
@@ -65,6 +70,70 @@ class ObjectEditWindow:
         box.addWidget(button_cancel)
         self.mesh_widget = QWidget()
         self.mesh_widget.setLayout(box)
+
+        #begin align buttons
+        align_box = QGridLayout()
+        align_box.setContentsMargins(0,0,0,0)
+        align_box.setSpacing(3)
+
+        xlabel = QLabel("X")
+        ylabel = QLabel("Y")
+        zlabel = QLabel("Z")
+        xyzlabel = QLabel("XYZ")
+
+        firstlabel = QLabel("First")
+        lastlabel = QLabel("Last")
+        spacedlabel = QLabel("Spaced")
+        randomlabel = QLabel("Random")
+
+        align_x_first = self.getButton("Align X First", self.ICON_FIRST, None, self.controller.do_align_axis_x_first)
+        align_x_last = self.getButton("Align X Last", self.ICON_LAST, None, self.controller.do_align_axis_x_last)
+        align_x_spaced = self.getButton("Align X Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_x_spaced)
+        align_x_random = self.getButton("Align X Random", self.ICON_RANDOM, None, self.controller.do_align_axis_x_random)
+
+        align_y_first = self.getButton("Align Y First", self.ICON_FIRST, None, self.controller.do_align_axis_y_first)
+        align_y_last = self.getButton("Align Y Last", self.ICON_LAST, None, self.controller.do_align_axis_y_last)
+        align_y_spaced = self.getButton("Align Y Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_y_spaced)
+        align_y_random = self.getButton("Align Y Random", self.ICON_RANDOM, None, self.controller.do_align_axis_y_random)
+
+        align_z_first = self.getButton("Align Z First", self.ICON_FIRST, None, self.controller.do_align_axis_z_first)
+        align_z_last = self.getButton("Align Z Last", self.ICON_LAST, None, self.controller.do_align_axis_z_last)
+        align_z_spaced = self.getButton("Align Z Spaced", self.ICON_SPACED, None, self.controller.do_align_axis_z_spaced)
+        align_z_random = self.getButton("Align Z Random", self.ICON_RANDOM, None, self.controller.do_align_axis_z_random)
+
+        align_xyz_random = self.getButton("Align XYZ Random", self.ICON_RANDOM, None, self.controller.do_align_random)
+
+        align_box.addWidget(firstlabel, 1, 0)
+        align_box.addWidget(lastlabel, 2, 0)
+        align_box.addWidget(spacedlabel, 3, 0)
+        align_box.addWidget(randomlabel, 4, 0)
+
+        align_box.addWidget(xlabel, 0, 1)
+        align_box.addWidget(align_x_first, 1, 1)
+        align_box.addWidget(align_x_last, 2, 1)
+        align_box.addWidget(align_x_spaced, 3, 1)
+        align_box.addWidget(align_x_random, 4, 1)
+
+        align_box.addWidget(ylabel, 0, 2)
+        align_box.addWidget(align_y_first, 1, 2)
+        align_box.addWidget(align_y_last, 2, 2)
+        align_box.addWidget(align_y_spaced, 3, 2)
+        align_box.addWidget(align_y_random, 4, 2)
+
+        align_box.addWidget(zlabel, 0, 3)
+        align_box.addWidget(align_z_first, 1, 3)
+        align_box.addWidget(align_z_last, 2, 3)
+        align_box.addWidget(align_z_spaced, 3, 3)
+        align_box.addWidget(align_z_random, 4, 3)
+
+        align_box.addWidget(xyzlabel, 0, 4)
+        align_box.addWidget(align_xyz_random,4,4)
+
+        self.align_widget = QWidget()
+        self.align_widget.setLayout(align_box)
+        self.align_widget.hide()
+        print "====== align stuff inited"
+        #end align buttons
         
         # Sound line edit and buttons
         self.soundline = lines.SoundAssetidEditline(controller) 
@@ -92,7 +161,7 @@ class ObjectEditWindow:
         box_buttons.addWidget(soundRadius)
         box_buttons.addWidget(self.label_volume)
         box_buttons.addWidget(soundVolume)
-        box_buttons.addWidget(soundbutton_browse)        
+        box_buttons.addWidget(soundbutton_browse)
         box_buttons.addWidget(soundbutton_ok)
         box_buttons.addWidget(soundbutton_cancel)
 
@@ -162,12 +231,16 @@ class ObjectEditWindow:
         self.mainTabList = {}
         self.currentlySelectedTreeWidgetItem = []
 
-    def selected(self, ent, keepold=False):
+    def selected(self, ent, keepold=False, multiple=False):
         self.meshline.update_text(ent.prim.MeshID)
         self.soundline.update_text(ent.prim.SoundID)
         self.soundline.update_soundradius(ent.prim.SoundRadius)
         self.soundline.update_soundvolume(ent.prim.SoundVolume)
         self.updateAnimation(ent)
+        if multiple:
+            self.updateAlign(True)
+        else:
+            self.updateAlign(False)
         self.updateMaterialTab(ent)
         self.updatingSelection = True
         self.update_guivals(ent)
@@ -178,6 +251,7 @@ class ObjectEditWindow:
         self.meshline.update_text("")
         self.soundline.update_text("")
         self.updateAnimation()
+        self.updateAlign(False)
         
     def update_guivals(self, ent):
         if ent is not None:
@@ -207,6 +281,12 @@ class ObjectEditWindow:
         if self.controller.cpp_python_handler != None:
             self.controller.cpp_python_handler.SetRotateValues(x_val, y_val, z_val)
     
+    def updateAlign(self, visible):
+        if visible:
+            self.align_widget.setVisible(True)
+        else:
+            self.align_widget.setVisible(False)
+
     def updateAnimation(self, ent = None):
         # Hide by default
         self.animation_widget.setVisible(False)

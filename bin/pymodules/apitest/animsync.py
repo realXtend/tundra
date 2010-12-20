@@ -110,8 +110,8 @@ class AnimationSync(circuits.BaseComponent):
                 print "ent with DynamicComponent doesn't have animation"
                 return
 
-            #print a
             animname = self.comp.GetAttribute('animname') or "Wave"
+            print "ANIMSYNC applying timepos:", animname, v
             a.SetAnimationTimePosition(animname, v)
             self.widget.value = v * 100 #needs changetypes to work well, i guess
             

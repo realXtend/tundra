@@ -98,9 +98,11 @@
 #include <QApplication>
 #include <QGraphicsView>
 #include <QWebView>
+#include <QStringList>
 //#include <QDebug>
 
 #include <MediaPlayerService.h>
+#include <CommunicationsService.h>
 #include <WorldBuildingServiceInterface.h>
 
 #include "PythonQtScriptingConsole.h"
@@ -626,6 +628,23 @@ namespace PythonScript
         return 0;
     }
 
+    Communications::ServiceInterface* PythonScriptModule::GetCommunicationsService() const
+    {
+        Foundation::Framework* framework = PythonScript::self()->GetFramework();
+        if (!framework)
+        {
+            PythonScriptModule::LogCritical("Framework object doesn't exist!");
+            return 0;
+        }
+
+        Communications::ServiceInterface *service = framework_->GetService<Communications::ServiceInterface>();
+        if (service)
+            return service;
+
+        PythonScriptModule::LogError("Cannot find CommunicationsServiceInterface implementation.");
+        return 0;
+    }
+
     void PythonScriptModule::RemoveQtDynamicProperty(QObject* qobj, char* propname)
     {
         qobj->setProperty(propname, QVariant());
@@ -765,6 +784,9 @@ namespace PythonScript
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
         PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule());
+		//$ BEGIN_MOD $
+
+		//$ END_MOD $
         return pythonqtconsole;
     }
 }
@@ -811,25 +833,6 @@ PyObject* SendChat(PyObject *self, PyObject *args)
     Py_RETURN_TRUE;
 }
 
-static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        float x, y, z, w;
-
-        if(!PyArg_ParseTuple(args, "ffff", &x, &y, &z, &w))
-        {
-            PyErr_SetString(PyExc_ValueError, "Value error, need x, y, z, w params");
-            return NULL;
-        }
-        std::cout << "Sending newrot..." << std::endl;
-        Quaternion newrot(x, y, z, w); //seriously, is this how constructing a quat works!?
-        rexlogic->SetAvatarRotation(newrot);
-    }
-
-    Py_RETURN_NONE;
-}
 
 //returns the entity(id) at the position (x, y), if nothing there, returns None
 //\todo XXX renderer is a qobject now, rc should be made a slot there and this removed.
@@ -1305,60 +1308,6 @@ PyObject* RemoveEntity(PyObject *self, PyObject *value)
             framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
 */
 
-//XXX logic CameraControllable has GetPitch, perhaps should have SetPitch too
-PyObject* SetCameraYawPitch(PyObject *self, PyObject *args) 
-{
-    float newyaw, newpitch;
-    float y, p;
-    if(!PyArg_ParseTuple(args, "ff", &y, &p)) {
-        PyErr_SetString(PyExc_ValueError, "New camera yaw and pitch expected as float, float.");
-        return NULL;
-    }
-    newyaw = (float) y;
-    newpitch = (float) p;
-
-    //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        //boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
-        //cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
-        //cam->AddTime((float) 0.1);
-        //cam->SetPitch(p); //have a linking prob with this
-        rexlogic->SetCameraYawPitch(y, p);
-    }
-    
-    //was with renderer, worked but required overriding rexlogic :p
-    //{
-    //    Ogre::Camera *camera = renderer->GetCurrentCamera();
-    //    camera->yaw(Ogre::Radian(newyaw));
-    //    camera->pitch(Ogre::Radian(newpitch));
-    //}
-    else
-    {
-        PyErr_SetString(PyExc_RuntimeError, "No logic module, no cameracontrollable.");
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
-}
-
-PyObject* GetCameraYawPitch(PyObject *self, PyObject *args) 
-{
-    float yaw, pitch;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic->GetCameraControllable();
-        pitch = cam->GetPitch();
-        yaw = 0; //XXX not implemented yet (?)
-
-        return Py_BuildValue("ff", (float)yaw, float(pitch));
-    }
-    //else - no logic module. can that ever happen?)
-    return NULL; //rises py exception
-}
-
 PyObject* PyLogInfo(PyObject *self, PyObject *args) 
 {
     const char* message;    
@@ -1410,73 +1359,6 @@ PyObject* PyLogError(PyObject *self, PyObject *args)
         PythonScript::self()->LogError(message);
     Py_RETURN_NONE;
 }
-
-PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
-{
-    float newyaw;
-
-    float y;
-    if(!PyArg_ParseTuple(args, "f", &y)) {
-        PyErr_SetString(PyExc_ValueError, "New avatar yaw expected as float.");
-        return NULL;
-    }
-    newyaw = (float) y;
-
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        //rexlogic_->GetServerConnection()->IsConnected();
-        //had linking problems with these, hopefully can be solved somehow easily.
-        //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
-        //boost::shared_ptr<RexLogic::AvatarControllable> avc = rexlogic_->GetAvatarControllable();
-        //avc->SetYaw(newyaw);
-        //f64 t = (f64) 0.01;
-        //avc->AddTime(t);
-        //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
-        rexlogic->SetAvatarYaw(newyaw);
-    }
-    
-    else
-    {
-        PyErr_SetString(PyExc_RuntimeError, "No logic module, no AvatarControllable.");
-        return NULL;
-    }
-
-    Py_RETURN_NONE;
-}
-
-//PyObject* CreateCanvas(PyObject *self, PyObject *args)
-//{        
-//    if (!PythonScript::self()->GetFramework())//PythonScript::staticframework)
-//    {
-//        //std::cout << "Oh crap staticframework is not there! (py)" << std::endl;
-//        PythonScript::self()->LogInfo("PythonScript's framework is not present!");
-//        return NULL;
-//    }
-//
-//    int imode;
-//
-//    if(!PyArg_ParseTuple(args, "i", &imode))
-//    {
-//        PyErr_SetString(PyExc_ValueError, "Getting the mode failed, need 0 / 1");
-//        return NULL;   
-//    }
-//    
-//    boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-//    boost::shared_ptr<QtUI::UICanvas> canvas_;
-//    
-//    if ( qt_module.get() == 0)
-//        return NULL;
-//    
-//    QtUI::UICanvas::DisplayMode rMode = (QtUI::UICanvas::DisplayMode) imode;
-//    canvas_ = qt_module->CreateCanvas(rMode).lock();
-//
-//    QtUI::UICanvas* qcanvas = canvas_.get();
-//    
-//    PyObject* can = PythonQt::self()->wrapQObject(qcanvas);
-//
-//    return can;
-//}
 
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
@@ -1670,23 +1552,11 @@ static PyMethodDef EmbMethods[] = {
     {"removeEntity", (PyCFunction)RemoveEntity, METH_VARARGS,
     "Creates a new entity with the given ID, and returns it."},
 
-    {"getCameraYawPitch", (PyCFunction)GetCameraYawPitch, METH_VARARGS,
-    "Returns the camera yaw and pitch."},
-
-    {"setCameraYawPitch", (PyCFunction)SetCameraYawPitch, METH_VARARGS,
-    "Sets the camera yaw and pitch."},
-
-    {"setAvatarYaw", (PyCFunction)SetAvatarYaw, METH_VARARGS,
-    "Changes the avatar yaw with the given amount. Keys left/right are -1/+1."},    
-
     {"rayCast", (PyCFunction)RayCast, METH_VARARGS,
     "RayCasting from camera to point (x,y)."},
 
     {"switchCameraState", (PyCFunction)SwitchCameraState, METH_VARARGS,
     "Switching the camera mode from free to thirdperson and back again."},
-
-    {"setAvatarRotation", (PyCFunction)SetAvatarRotation, METH_VARARGS,
-    "Rotating the avatar."},
 
     {"sendEvent", (PyCFunction)SendEvent, METH_VARARGS,
     "Send an event id (WIP other stuff)."},
@@ -1821,6 +1691,14 @@ namespace PythonScript
             PythonQt::self()->addDecorators(new QuaternionDecorator());
             PythonQt::self()->registerCPPClass("Quaternion");
 
+            // For some reason: plain registerClass doosn't work for these classes.
+            // Possible reason is that they are just interfaces
+            QStringList list;
+            list << "Communications::ServiceInterface";
+            list << "InWorldVoice::SessionInterface";
+            list << "InWorldVoice::ParticipantInterface";
+            list << "Communications::InWorldVoice::ParticipantInterface";
+            PythonQt::self()->registerQObjectClassNames(list);
             pythonqt_inited = true;
         }
 

@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -168,8 +169,8 @@ namespace OgreRenderer
             else
                 OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
 
-        if (framework_->Ui() && framework_->Ui()->MainWindow())
-            framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();
+        if (framework_->Ui() && framework_->Ui()->CentralWindow())
+            framework_->Ui()->CentralWindow()->SaveWindowSettingsToFile();
 
         framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
 
@@ -313,10 +314,18 @@ namespace OgreRenderer
 
     void Renderer::SetFullScreen(bool value)
     {
-        if(value)
+		//$ BEGIN_MOD $
+		//UiServiceInterface *ui = framework_->Ui(); //GetService<UiServiceInterface>();
+        if (framework_->Ui()->CentralWindow())
+            framework_->Ui()->CentralWindow()->ToggleFullScreen();
+
+		//ui->ToggleFullScreen();
+
+		//$ END_MOD $
+        /*if(value)
             framework_->Ui()->MainWindow()->showFullScreen();
         else
-            framework_->Ui()->MainWindow()->showNormal();
+            framework_->Ui()->MainWindow()->showNormal();*/
     }
 
     void Renderer::SetShadowQuality(ShadowQuality newquality)

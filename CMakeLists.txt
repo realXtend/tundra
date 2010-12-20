@@ -132,8 +132,29 @@ include(Sagase)
 include(ModuleSetup)
 include(ConfigurePackages)
 
-# Disable unnecessary build types
-set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
+if (MSVC)
+  SET (PLAYER_VIEWER 1)
+endif ()
+
+# setup Naali Player Configuration
+if (PLAYER_VIEWER EQUAL 1)  
+  set_property(GLOBAL PROPERTY DEBUG_CONFIGURATIONS Debug DebugPlayer)  
+  SET( CMAKE_CXX_FLAGS_RELEASEPLAYER "-DNDEBUG -DPLAYER_VIEWER /O2 /Ob2 /MD" CACHE STRING "Flags used by the C++ compiler during maintainer builds." FORCE )
+  SET( CMAKE_C_FLAGS_RELEASEPLAYER "-DNDEBUG -DPLAYER_VIEWER /O2 /Ob2 /MD" CACHE STRING "Flags used by the C compiler during maintainer builds." FORCE )
+  SET( CMAKE_EXE_LINKER_FLAGS_RELEASEPLAYER "/INCREMENTAL:NO" CACHE STRING "Flags used for linking binaries during maintainer builds." FORCE )
+  SET( CMAKE_SHARED_LINKER_FLAGS_RELEASEPLAYER "/INCREMENTAL:NO" CACHE STRING "Flags used by the shared libraries linker during maintainer builds." FORCE )
+
+  SET( CMAKE_CXX_FLAGS_DEBUGPLAYER "-D_DEBUG -DPLAYER_VIEWER /Zi /Od /RTC1 /MDd" CACHE STRING "Flags used by the C++ compiler during maintainer builds." FORCE )
+  SET( CMAKE_C_FLAGS_DEBUGPLAYER "-D_DEBUG -DPLAYER_VIEWER /Zi /Od /RTC1 /MDd" CACHE STRING "Flags used by the C compiler during maintainer builds." FORCE )
+  SET( CMAKE_EXE_LINKER_FLAGS_DEBUGPLAYER "/debug" CACHE STRING "Flags used for linking binaries during maintainer builds." FORCE )
+  SET( CMAKE_SHARED_LINKER_FLAGS_DEBUGPLAYER "/debug" CACHE STRING "Flags used by the shared libraries linker during maintainer builds." FORCE )
+
+  # Disable unnecessary build types
+  set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;ReleasePlayer;Debug;DebugPlayer" CACHE STRING "Configurations" FORCE)
+else ()
+  # Disable unnecessary build types
+  set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
+endif(PLAYER_VIEWER EQUAL 1)
 
 # In Visual Studio, use unicode character set
 if (MSVC)
@@ -170,6 +191,7 @@ link_directories(Input)
 link_directories(Ui)
 link_directories(Asset)
 link_directories(SceneManager) # This will be renamed to Scene.
+
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.

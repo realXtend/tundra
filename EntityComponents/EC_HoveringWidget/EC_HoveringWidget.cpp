@@ -581,6 +581,15 @@ QPixmap EC_HoveringWidget::GetPixmap(QWidget &w)
 void EC_HoveringWidget::UpdateBillboardSize()
 {
     namewidget_->resize(1,1); // HACK: minimizes the widget size
+
+    // HACK: This ensure that QWidget::width will return correct value
+    QPixmap temp(10,10);
+    QPainter painter(&temp);
+    namewidget_->adjustSize();
+    namewidget_->render(&painter);  
+    namewidget_->render(&painter);  
+    namewidget_->render(&painter);
+
     qreal bb_width = namewidget_->width() * bb_name_size_view.height() / namewidget_->height();
     bb_name_size_view = QSizeF(bb_width, bb_name_size_view.height());
 }

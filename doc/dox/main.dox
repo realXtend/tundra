@@ -420,4 +420,13 @@ Very simple light-weight UI module with no high-level functionality (menus etc. 
 </td>
 </tr>
 </table>
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h3>TtsModule</h3>
+TTS Module registers \ref Tts::TtsService "TTS Service" providing methods to syntethize text or text-files, converting them into audio, WAV or phonetic information.
+<p>For more info, and to know how to use it, read the \ref Tts:TtsService "service documentation" and the \ref TtsModule "TTS module page".
+</td>
+</tr>
+</table>
 */

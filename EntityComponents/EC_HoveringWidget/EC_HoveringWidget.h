@@ -43,6 +43,7 @@ class DetachedWidgetController;
 /// Shows given text hovering above user avatar entity
 /// - Automatically keeps visible billboard sceen size to be static
 /// - Icon can be set to left side of text label
+
 class EC_HoveringWidget : public IComponent
 {
     Q_OBJECT

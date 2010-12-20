@@ -20,14 +20,14 @@ public:
 
 public slots:
     void SetText(const QString& text);
+    QString GetText() const;
     void SetPixmap(QPixmap* icon);
     QPixmap* GetPixmap();
 
 private:
     float text_padding_;
     QPixmap* pixmap_;
-
-
+    QString text_;
 };
 
 #endif

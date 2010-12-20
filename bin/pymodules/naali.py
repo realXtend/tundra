@@ -57,11 +57,16 @@ renderer = _pythonscriptmodule.GetRenderer()
 worldlogic = _pythonscriptmodule.GetWorldLogic()
 inputcontext = _pythonscriptmodule.GetInputContext()
 mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
+communicationsservice = _pythonscriptmodule.GetCommunicationsService()
 frame = _naali.GetFrame()
 console = _naali.Console()
 input = _naali.GetInput()
 audio = _naali.Audio()
 ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
+try:
+    library = _naali.library
+except:
+    pass
 framework = _naali
 
 # Returns EntityAction pointer by the name

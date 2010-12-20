@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -64,15 +65,18 @@ void OgreAssetEditorModule::PostInitialize()
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
 
-    materialWizard_ = new MaterialWizard;
+//$ BEGIN_MOD $   
+    materialWizard_ = new MaterialWizard(0,framework_);
+	materialWizard_->setWindowTitle("Material");
+//$ END_MOD $  
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
     uiService_ = framework_->GetServiceManager()->GetService<UiServiceInterface>(Service::ST_Gui);
     if (!uiService_.expired())
     {
-        UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
-        uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material Wizard"), tr("World Tools"),
+        UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_, true, true);
+        uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material"), tr("Create"),
             "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }

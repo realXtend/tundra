@@ -114,7 +114,8 @@ namespace CAVEStereo
 
     void ExternalRenderWindow::keyPressEvent(QKeyEvent *e)
     {
-        if(e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_F)
+       /*Managed from Ogrerendere to MainWindos
+	   if(e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_F)
         {
             if(!isFullScreen())
             {
@@ -125,6 +126,7 @@ namespace CAVEStereo
                 showNormal();
             }
         }
+		*/
 
     }
 }

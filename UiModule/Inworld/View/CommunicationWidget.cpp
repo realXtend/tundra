@@ -11,6 +11,14 @@
 #include "VoiceUsersWidget.h"
 #include "UiServiceInterface.h"
 #include "VoiceControllerWidget.h"
+#include "EC_DynamicComponent.h"
+#include "EC_OpenSimPresence.h"
+#include "RexUUID.h"
+#include "SceneManager.h"
+#include "VoiceToolWidget.h"
+#include "TtsServiceInterface.h"
+#include "Entity.h"
+#include "WorldLogicInterface.h"
 
 #include <QWidget>
 #include <QStackedLayout>
@@ -19,8 +27,7 @@
 #include <QApplication>
 #include <QGraphicsScene>
 #include <QTextBrowser>
-
-#include "VoiceToolWidget.h"
+#include <QSettings>
 
 #include "DebugOperatorNew.h"
 
@@ -82,7 +89,10 @@ namespace CoreUi
         resizing_horizontal_(false),
         resizing_vertical_(false),
         in_world_chat_session_(0),
-        voice_tool_(0)
+        voice_tool_(0),
+        tts_other_messages_(false),
+        tts_own_messages_(false),
+        default_avatar_tts_voice_("")
     {
         Initialise();
         ChangeView(viewmode_);
@@ -129,7 +139,6 @@ namespace CoreUi
         tool_manager_ = new ToolManagerWidget();
         this->voiceLayoutH->addWidget(tool_manager_);
         tool_manager_->show();
-
         if (framework_ &&  framework_->GetServiceManager())
         {
             Communications::ServiceInterface *comm = framework_->GetService<Communications::ServiceInterface>();
@@ -139,7 +148,7 @@ namespace CoreUi
                 connect(comm, SIGNAL(InWorldVoiceUnavailable()), SLOT(UninitializeInWorldVoice()) );
                 connect(comm, SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
                 connect(comm, SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) );
-            }
+			}
         }
     }
 
@@ -234,6 +243,64 @@ namespace CoreUi
         if (in_world_chat_session_)
             in_world_chat_session_->SendTextMessage(message);
     }
+
+	void CommunicationWidget::SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface &message, const QString& from_uuid)
+	{
+        /// @todo signal when settings are changed so we do not have to read each time we have a new message to play
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Tts");
+        tts_own_messages_ = settings.value("Tts/play_own_chat_messages", false).toBool();
+        tts_other_messages_ = settings.value("Tts/play_other_chat_messages", false).toBool();
+        own_tts_voice_ = settings.value("Tts/own_voice", "").toString();
+        default_avatar_tts_voice_ = settings.value("Tts/other_default_voice", "").toString();
+        bool avatar_spesific_voices = settings.value("Tts/use_avatar_specific_voices", false).toBool();
+
+        if (message.IsOwnMessage())
+        {
+            if (tts_own_messages_)
+            {
+                tts_service_->Text2Speech(message.Text(), own_tts_voice_);
+            }
+        }
+        else
+        {
+            if (tts_other_messages_)
+            {
+                if (avatar_spesific_voices)
+                {
+                    QList<Scene::Entity*> entities = framework_->DefaultScene()->GetEntitiesWithComponentRaw("EC_OpenSimPresence");
+                    foreach(Scene::Entity* ent, entities)
+                    {
+                        EC_OpenSimPresence* presence = ent->GetComponent<EC_OpenSimPresence>().get();
+                        if (!presence)
+                            continue;
+
+                        qDebug() << "TTS VOICE COMPONENT AT" << presence->agentId.ToQString() << " ### " << from_uuid;
+                        if (presence->agentId.ToQString() == from_uuid)
+                        {
+
+                            //Scene::Entity::ComponentVector components = ent->GetComponents("EC_DynamicComponent");
+                            //foreach(Scene::IComponent* c, components)
+                            //{
+
+                            //}
+
+                            IComponent* tts_voice_comp = ent->GetComponent("EC_DynamicComponent", "EC_TtsVoice").get();
+                            if (!tts_voice_comp)
+                                continue;
+
+                            EC_DynamicComponent* tts_voice = dynamic_cast<EC_DynamicComponent*>(tts_voice_comp);
+                            QString avatar_voice = tts_voice->GetAttribute("avatar voice").toString();
+                            tts_service_->Text2Speech(message.Text(), avatar_voice);
+                            return;
+                        }
+                    }
+                }
+
+                tts_service_->Text2Speech(message.Text(), default_avatar_tts_voice_);
+                return;
+            }
+        }
+	}
 
     void CommunicationWidget::hoverMoveEvent(QGraphicsSceneHoverEvent *mouse_hover_move_event)
     {
@@ -346,10 +413,13 @@ namespace CoreUi
                 in_world_chat_session_ = comm->InWorldChatSession();
                 if (!in_world_chat_session_)
                     return;
-
-                connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&)),
-                    SLOT(UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface&)) );
+                connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)),
+                    SLOT(UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
             }
+
+       	    tts_service_ = framework_->GetService<Tts::TtsServiceInterface>();
+            if (tts_service_)
+                connect(in_world_chat_session_, SIGNAL(TextMessageReceived(const Communications::InWorldChat::TextMessageInterface&,const QString&)), SLOT(SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface&,const QString&)) );
         }
     }
 
@@ -362,7 +432,7 @@ namespace CoreUi
         tool_manager_->AddToolWidget("Voice", voice_tool_);
     }
 
-    void CommunicationWidget::UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message)
+    void CommunicationWidget::UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message,const QString& uuid)
     {
         QString hour_str = QString::number(message.TimeStamp().time().hour());
         QString minute_str = QString::number(message.TimeStamp().time().minute());
@@ -378,9 +448,7 @@ namespace CoreUi
         tool_manager_->RemoveToolWidget(voice_tool_);
         voice_tool_ = 0; // Object deleted by tool_manager_->RemoveToolWidget() function call
     }
-
-    // NormalChatViewWidget : QWidget
-
+	
     NormalChatViewWidget::NormalChatViewWidget(QWidget *parent) :
         QWidget(parent)
     {
@@ -432,3 +500,4 @@ namespace CoreUi
         emit DestroyMe(this);
     }
 }
+

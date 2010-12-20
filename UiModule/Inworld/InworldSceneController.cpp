@@ -83,6 +83,7 @@ namespace UiServices
             return 0;
         }
 
+
         // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
         // signal to a slot which handles the deletion. This must be done because closing
         // proxy window in our system doesn't yield closeEvent, but hideEvent instead.
@@ -96,7 +97,7 @@ namespace UiServices
     {
         // Add to scene
         if (widget->isVisible())
-            widget->hide();
+           widget->hide();
 
         // If no position has been set for Qt::Dialog widget, use default one so that the window's title
         // bar - or any other critical part, doesn't go outside the view.
@@ -130,24 +131,12 @@ namespace UiServices
 
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
-        ///\todo This string comparison is awful, get rid of this.
-        if ( name.contains("inv", Qt::CaseInsensitive))
-        {
-            UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
-            control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
-        }
-        else
-            menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
+		menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
     }
 
     void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
-        ///\todo This string comparison is awful, get rid of this.
-        //if (name== "Inventory")
-        if ( name.contains("inv", Qt::CaseInsensitive) )
-            control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
-        //else if (name== "Avatar Editor")
-        else if ( name.contains("avatar", Qt::CaseSensitive) )
+        if  ( name.contains("avatar", Qt::CaseSensitive) )
            control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
         else
             menu_manager_->AddMenuItem(widget, name, menu, icon);

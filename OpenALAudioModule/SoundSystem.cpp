@@ -32,7 +32,8 @@ namespace OpenALAudio
         next_channel_id_(0),
         sound_cache_size_(DEFAULT_SOUND_CACHE_SIZE),
         update_time_(0),
-        listener_position_(0.0, 0.0, 0.0)
+        listener_position_(0.0, 0.0, 0.0),
+        microphone_adjusted(false)
     {
         sound_cache_size_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "sound_cache_size", DEFAULT_SOUND_CACHE_SIZE);
         
@@ -725,6 +726,9 @@ namespace OpenALAudio
         alcCaptureStart(capture_device_);
         
         OpenALAudioModule::LogInfo("Opened OpenAL recording device " + name.toStdString());
+
+        AdjustMicrophoneLevel();
+
         return true;
     }
     
@@ -732,6 +736,7 @@ namespace OpenALAudio
     {
         if (capture_device_)
         {
+            AdjustMicrophoneLevel();
             alcCaptureStop(capture_device_);
             alcCaptureCloseDevice(capture_device_);
             capture_device_ = 0;
@@ -761,5 +766,63 @@ namespace OpenALAudio
         
         alcCaptureSamples(capture_device_, buffer, samples);
         return samples * capture_sample_size_;
+    }
+
+    void SoundSystem::AdjustMicrophoneLevel()
+    {
+#ifdef WIN32
+        HRESULT hr;
+        IMMDeviceEnumerator *deviceEnumerator = NULL;
+        hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (LPVOID *)&deviceEnumerator);
+        IMMDevice *defaultDevice = NULL;
+
+        hr = deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &defaultDevice);
+        
+        IMMDeviceCollection *deviceCollection;
+        hr = deviceEnumerator->EnumAudioEndpoints(eAll, DEVICE_STATE_ACTIVE, &deviceCollection);
+        UINT count;
+        deviceCollection->GetCount(&count);
+        for (UINT i = 0; i < count; i++)
+        {
+            IMMDevice *deviceAt = NULL;
+            deviceCollection->Item(i, &deviceAt);
+
+            IAudioEndpointVolume *endpointVolume = NULL;
+            hr = deviceAt->Activate(__uuidof(IAudioEndpointVolume), CLSCTX_INPROC_SERVER, NULL, (LPVOID *)&endpointVolume);
+
+            IPropertyStore *propertyStore;
+            propertyStore = NULL;
+            deviceAt->OpenPropertyStore(STGM_READ, &propertyStore);
+            PROPVARIANT    varName;
+            PropVariantInit(&varName);
+            propertyStore->GetValue(PKEY_Device_FriendlyName, &varName);
+            wchar_t* deviceFriendlyName;
+            const char* cstr;
+            if (varName.vt == VT_LPWSTR)
+            {
+                deviceFriendlyName = varName.pwszVal;
+                cstr = (char*)deviceFriendlyName;
+                QString device_name(cstr);
+                if (device_name.startsWith("M"))
+                {
+                    LPGUID context;
+                    context = NULL;
+                    if(!microphone_adjusted)
+                    {
+                        endpointVolume->GetMasterVolumeLevelScalar(&microphone_level);
+
+                        endpointVolume->SetMasterVolumeLevelScalar(0.90, context);
+                        microphone_adjusted = true;
+                    } else
+                    {
+                        endpointVolume->SetMasterVolumeLevelScalar(microphone_level, context);
+                        microphone_adjusted = false;
+                    }
+                }
+            }
+        }
+        deviceEnumerator->Release();
+        deviceEnumerator = NULL;
+#endif
     }
 }

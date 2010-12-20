@@ -278,7 +278,9 @@ void RexLogicModule::Initialize()
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
     obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
-    camera_control_widget_ = CameraControlPtr(new CameraControl(this));
+	//$ BEGIN_MOD $
+	//camera_control_widget_ = CameraControlPtr(new CameraControl(this)); //Done in PostInitialize, when UiExternalModule is available
+	//$ END_MOD $
     
     SceneInteract *sceneInteract = new SceneInteract(framework_);
     QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
@@ -309,6 +311,13 @@ void RexLogicModule::Initialize()
 // virtual
 void RexLogicModule::PostInitialize()
 {
+	//$ BEGIN_MOD $
+	//Done here when UiExternalModule is available and if is not player_viewer
+#ifndef PLAYER_VIEWER
+	camera_control_widget_ = CameraControlPtr(new CameraControl(this));
+#endif
+	//$ END_MOD $
+
     EventManagerPtr eventMgr = framework_->GetEventManager();
     eventMgr->RegisterEventSubscriber(this, 104);
 
@@ -699,23 +708,6 @@ Avatar::AvatarControllablePtr RexLogicModule::GetAvatarControllable() const
 PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
 {
     return primitive_;
-}
-
-//XXX \todo add dll exports or fix by some other way (e.g. qobjects)
-//wrappers for calling stuff elsewhere in logic module from outside (python api module)
-void RexLogicModule::SetAvatarYaw(float newyaw)
-{
-    GetAvatarControllable()->SetYaw(newyaw);
-}
-
-void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
-{
-    GetAvatarControllable()->SetRotation(newrot);
-}
-
-void RexLogicModule::SetCameraYawPitch(float newyaw, float newpitch)
-{
-    camera_controllable_->SetYawPitch(newyaw, newpitch);
 }
 
 void RexLogicModule::LogoutAndDeleteWorld()

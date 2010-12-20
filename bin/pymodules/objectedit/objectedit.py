@@ -1,4 +1,3 @@
-
 """
 A gui tool for editing.
 
@@ -35,15 +34,18 @@ from naali import renderer #naali.renderer for FrustumQuery, hopefully all ex-re
 try:
     window
     manipulator 
+    at
 except: #first run
     try:
         import window
         import manipulator
+        import aligntools.align as at
     except ImportError, e:
         print "couldn't load window and manipulator:", e
 else:
     window = reload(window)
     manipulator = reload(manipulator)
+    at = reload(at)
     
 def editable(ent): #removed this from PyEntity
     return ent.HasComponent('EC_OpenSimPrim')
@@ -131,6 +133,8 @@ class ObjectEdit(Component):
             self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
             self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
             self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
+	    self.cpp_python_handler.PassWidget("Align", self.window.align_widget)
+
             # Check if build mode is active, required on python restarts
             self.on_activate_editing(self.cpp_python_handler.IsBuildingActive())
             
@@ -214,7 +218,7 @@ class ObjectEdit(Component):
         self.deselect_all()
         ent, children = self.baseselect(ent)
         self.sels.append(ent)
-        self.window.selected(ent, False)
+        self.window.selected(ent, False, len(self.sels)>1)
         self.canmove = True
         self.highlightChildren(children)
 
@@ -778,3 +782,42 @@ class ObjectEdit(Component):
         
     def setUseLocalTransform(self, local):
         self.useLocalTransform = local
+
+    def do_align_axis_x_first(self):
+        at.align_on_x_first(self.sels)
+
+    def do_align_axis_x_last(self):
+        at.align_on_x_last(self.sels)
+
+    def do_align_axis_x_spaced(self):
+        at.align_on_x_spaced(self.sels)
+
+    def do_align_axis_x_random(self):
+        at.align_random_x(self.sels)
+
+    def do_align_axis_y_first(self):
+        at.align_on_y_first(self.sels)
+
+    def do_align_axis_y_last(self):
+        at.align_on_y_last(self.sels)
+
+    def do_align_axis_y_spaced(self):
+        at.align_on_y_spaced(self.sels)
+
+    def do_align_axis_y_random(self):
+        at.align_random_y(self.sels)
+
+    def do_align_axis_z_first(self):
+        at.align_on_z_first(self.sels)
+
+    def do_align_axis_z_last(self):
+        at.align_on_z_last(self.sels)
+
+    def do_align_axis_z_spaced(self):
+        at.align_on_z_spaced(self.sels)
+
+    def do_align_axis_z_random(self):
+        at.align_random_z(self.sels)
+
+    def do_align_random(self):
+        at.align_random(self.sels)
