@@ -1,14 +1,15 @@
-!define VERSION "0.3.4.1"
+!define VERSION "1.0a-preview"
+!include "fileassoc.nsh"
 
-Name "Naali ${VERSION}"
+Name "Tundra ${VERSION}"
 
 Page directory
 Page instfiles
 
-InstallDir "$PROGRAMFILES\Naali ${VERSION}"
+InstallDir "$PROGRAMFILES\Tundra ${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "Naali-0.3.4.1.exe"
+OutFile "Tundra-1.0a-preview.exe"
 
 XPStyle on
 
@@ -18,19 +19,21 @@ Section ""
   SetOutPath $INSTDIR
   File /r build\*.*
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
-                   "DisplayName" "Naali"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
+                   "DisplayName" "Tundra"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
                    "DisplayVersion" "${VERSION}"
 
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali" \
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
                    "UninstallString" "$INSTDIR\uninstaller.exe"
 
-  # register url scheme handler				   
-  WriteRegStr HKCR "realxtend" "" "URL:realXtend Protocol"
-  WriteRegStr HKCR "realxtend" "URL Protocol" ""
-  WriteRegStr HKCR "realxtend\shell\open\command" "" "$INSTDIR\viewer.exe %1"
+  # Register file extensions for .txml and .tbin.
+  !insertmacro APP_ASSOCIATE "txml" "Tundra.Scenexmlfile" "Tundra XML Scene File" "$INSTDIR\data\ui\images\naali_icon.ico,0" "Open in Tundra Server" "$INSTDIR\server.exe --file $\"%1$\""
+  !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenexmlfile" "openviewer" "Open Tundra Viewer in this directory" "$INSTDIR\viewer.exe --storage $\"%1$\""
+
+  !insertmacro APP_ASSOCIATE "tbin" "Tundra.Scenebinfile" "Tundra Binary Scene File" "$INSTDIR\data\ui\images\naali_icon.ico,0" "Open in Tundra Server" "$INSTDIR\server.exe --file $\"%1$\""
+  !insertmacro APP_ASSOCIATE_ADDVERB "Tundra.Scenebinfile" "openviewer" "Open Tundra Viewer in this directory" "$INSTDIR\viewer.exe --storage $\"%1$\""
   
   ExecWait '"$INSTDIR\oalinst.exe"'
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
@@ -45,10 +48,11 @@ SectionEnd
 
 Section "Start Menu Shortcuts"
   SetShellVarContext all
-  CreateDirectory "$SMPROGRAMS\Naali ${VERSION}"
-  CreateShortCut "$SMPROGRAMS\Naali ${VERSION}\Naali ${VERSION}.lnk" "$INSTDIR\viewer.exe"
-  CreateShortCut "$SMPROGRAMS\Naali ${VERSION}\Readme.lnk" "$INSTDIR\readme.txt"
-  CreateShortCut "$SMPROGRAMS\Naali ${VERSION}\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
+  CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Server.lnk" "$INSTDIR\server.exe"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Viewer.lnk" "$INSTDIR\viewer.exe"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Readme.lnk" "$INSTDIR\readme.txt"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
 SectionEnd
 
 Section "Uninstall"
@@ -60,11 +64,15 @@ Section "Uninstall"
   
   #SetShellVarContext all
   #RMDir /r "$APPDATA\Roaming\realXtend"
-  #RMDir /r "$SMPROGRAMS\Naali ${VERSION}"
+  #RMDir /r "$SMPROGRAMS\Tundra ${VERSION}"
 
   #SetShellVarContext current
   #RMDir /r "$APPDATA\Roaming\realXtend"
-  #RMDir /r "$SMPROGRAMS\Naali ${VERSION}"
+  #RMDir /r "$SMPROGRAMS\Tundra ${VERSION}"
 
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali"
+  # Unassociate file extension handlers 
+  !insertmacro APP_UNASSOCIATE "txml" "Tundra.Scenexmlfile"
+  !insertmacro APP_UNASSOCIATE "tbin" "Tundra.Scenebinfile"
+
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra"
 SectionEnd
