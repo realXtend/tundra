@@ -383,7 +383,7 @@ void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
         {
             if((*iter)->isDynamic_)
             {
-                QAction *addAttribute = new QAction(tr("Add new attribute"), menu_);
+                QAction *addAttribute = new QAction(tr("Add new attribute..."), menu_);
                 QObject::connect(addAttribute, SIGNAL(triggered()), this, SLOT(CreateAttribute()), Qt::UniqueConnection);
                 menu_->addAction(addAttribute);
             }
