@@ -4,6 +4,7 @@
 #include "EC_RttTarget.h"
 #include "OgreRenderingModule.h"
 #include "EC_OgreCamera.h"
+#include "OgreMaterialUtils.h"
 #include "Frame.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
@@ -13,29 +14,34 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_RttTarget");
 EC_RttTarget::EC_RttTarget(IModule* module) :
   IComponent(module->GetFramework()),
   targettexture(this, "Target texture", "RttTex")
-    //    owner_(checked_static_cast<OgreRenderer::OgreRenderingModule*>(module))
 {
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*)));
 
     //can't do immediately here, 'cause getcomponent crashes
     //.. is not allowed to get other components in the creation of a component. ok?
-    if (ViewEnabled())
-    {
-         framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(SetupRtt()));
-        //ScheduleRender();
-    }
+    //framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
+    //.. resorting to manual call to PrepareRtt now
 }
 
 EC_RttTarget::~EC_RttTarget()
 {
+  //XXX didn't have a ref to renderer here yet. is this really required?
+  //if(renderer_.expired())
+  //      return;
+
     //if (!image_rendering_texture_name_.empty())
-  Ogre::TextureManager::getSingleton().remove(targettexture.Get().toStdString());
-  //does this remove also the rendertarget with the viewports etc?
+    Ogre::TextureManager::getSingleton().remove(targettexture.Get().toStdString());
+    //does this remove also the rendertarget with the viewports etc? seems so?
+    
+    Ogre::MaterialManager::getSingleton().remove(material_name_);
 }
 
-void EC_RttTarget::SetupRtt()
+void EC_RttTarget::PrepareRtt()
 {
+    if (!ViewEnabled())
+      return;
+
     //\todo XXX make these attributes, and reconfig via AttributeUpdated when they change
     uint width = 400;
     uint height = 300;
@@ -50,34 +56,51 @@ void EC_RttTarget::SetupRtt()
 
     ec_camera->GetCamera()->setAspectRatio(Ogre::Real(width) / Ogre::Real(height));
 
-    tex = Ogre::TextureManager::getSingleton().getByName(targettexture.Get().toStdString());
-    if (tex.isNull())
+    tex_ = Ogre::TextureManager::getSingleton().getByName(targettexture.Get().toStdString());
+    if (tex_.isNull())
     {
-        tex = Ogre::TextureManager::getSingleton()
+        tex_ = Ogre::TextureManager::getSingleton()
           .createManual(
                         targettexture.Get().toStdString(), 
                         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                         Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
     }
 
-    Ogre::RenderTexture *render_texture = tex->getBuffer()->getRenderTarget();
+    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
     if (render_texture)
     {
         render_texture->removeAllViewports();
         Ogre::Viewport *vp = 0;
         vp = render_texture->addViewport(ec_camera->GetCamera());
         // Exclude ui overlays
-        //vp->setOverlaysEnabled(false);
+        vp->setOverlaysEnabled(false);
         // Exclude highlight mesh from rendering
-        //vp->setVisibilityMask(0x2);
+        vp->setVisibilityMask(0x2);
 
         render_texture->update(false);
-        tex->getBuffer()->getRenderTarget()->setAutoUpdated(true); //false);
+        tex_->getBuffer()->getRenderTarget()->setAutoUpdated(false); 
     }
 
     else
         LogError("render target texture getting failed.");
 
+    //create material to show the texture
+    material_name_ = targettexture.Get().toStdString() + "_mat"; //renderer_.lock()->GetUniqueObjectName("EC_BillboardWidget_mat");
+    OgreRenderer::CloneMaterial("HoveringText", material_name_); //would LitTextured be the right thing? XXX \todo
+    Ogre::MaterialManager &material_manager = Ogre::MaterialManager::getSingleton();
+    Ogre::MaterialPtr material = material_manager.getByName(material_name_);
+    OgreRenderer::SetTextureUnitOnMaterial(material, targettexture.Get().toStdString());    
+}
+
+void EC_RttTarget::SetAutoUpdated(bool val)
+{
+    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
+    if (render_texture)
+    {
+         tex_->getBuffer()->getRenderTarget()->setAutoUpdated(val);
+    }
+    else
+        LogError("render target texture getting failed.");
 }
 
 /*void EC_RttTarget::ScheduleRender()
@@ -96,7 +119,7 @@ void EC_RttTarget::UpdateRtt()
     LogInfo("Rtt update");
 
     // Get rendering texture and update it
-    Ogre::RenderTexture *render_texture = tex->getBuffer()->getRenderTarget();
+    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
     if (render_texture)
     {
         render_texture->update(false);

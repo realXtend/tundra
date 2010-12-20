@@ -14,10 +14,10 @@
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "OgreMaterialUtils.h"
-#include "OgreMaterialResource.h"
-#include "OgreTextureResource.h"
+#include "OgreMaterialAsset.h"
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
+#include "TextureAsset.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Terrain")
 
 #include <Ogre.h>
@@ -68,7 +68,7 @@ EC_Terrain::EC_Terrain(IModule* module) :
     material.Set(AssetReference("local://RexTerrainPCF.material"), AttributeChange::Disconnected);
 
     heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
-    connect(heightMapAsset.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded(IAssetTransfer *)));
+    connect(heightMapAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(TerrainAssetLoaded(AssetPtr)));
 }
 
 EC_Terrain::~EC_Terrain()
@@ -186,33 +186,40 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        if (transfer)
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
+/*
     else if (changedAttribute == texture0.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        if (transfer)
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture1.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        if (transfer)
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture2.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        if (transfer)
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture3.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        if (transfer)
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture4.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
+        if (transfer)
+            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+    } */
     else if (changedAttribute == heightMap.GetNameString())
     {
         heightMapAsset->HandleAssetRefChange(attribute);
@@ -229,18 +236,14 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     ///\todo Delete the old unused textures.
 }
 
-void EC_Terrain::MaterialAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreRenderer::OgreMaterialResource *ogreMaterial = dynamic_cast<OgreRenderer::OgreMaterialResource *>(transfer->resourcePtr.get());
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset_.get());
     assert(ogreMaterial);
     if (!ogreMaterial)
         return;
 
-    Ogre::MaterialPtr material = ogreMaterial->GetMaterial();
+    Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
     
     ///\todo We can't free here, since something else might be using the material.
 //    Ogre::MaterialManager::getSingleton().remove(currentMaterial.toStdString()); // Free up the old material.
@@ -262,33 +265,26 @@ void EC_Terrain::MaterialAssetLoaded(IAssetTransfer *transfer)
 */
 }
 
-void EC_Terrain::TextureAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::TextureAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
+    /*
+    TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(asset_.get());
+    if (!textureAsset)
         return;
 
-    OgreRenderer::OgreTextureResource *ogreTexture = dynamic_cast<OgreRenderer::OgreTextureResource *>(transfer->resourcePtr.get());
-    assert(ogreTexture);
-    if (!ogreTexture)
-        return;
-
-    Ogre::TexturePtr texture = ogreTexture->GetTexture();
+    Ogre::TexturePtr texture = textureAsset->ogreTexture;
     
     if (transfer->source == texture0.Get()) SetTerrainMaterialTexture(0, texture->getName().c_str());
     else if (transfer->source == texture1.Get()) SetTerrainMaterialTexture(1, texture->getName().c_str());
     else if (transfer->source == texture2.Get()) SetTerrainMaterialTexture(2, texture->getName().c_str());
     else if (transfer->source == texture3.Get()) SetTerrainMaterialTexture(3, texture->getName().c_str());
     else if (transfer->source == texture4.Get()) SetTerrainMaterialTexture(4, texture->getName().c_str());
+    */
 }
 
-void EC_Terrain::TerrainAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(transfer->asset);
+    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(asset_);
     if (!assetData.get() || assetData->data.size() == 0)
         return;
 
@@ -1191,8 +1187,8 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
         return;
     }
 //    Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
-//    assert(terrainMaterial.get());
- //   if(terrainMaterial.get())
+//    assert(terrainMaterial);
+ //   if(terrainMaterial)
 //    {
         OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
 //        emit TerrainTextureChanged(); ///\todo Regression here. Re-enable this so that the EnvironmentEditor texture viewer can see the textures?
@@ -1251,7 +1247,7 @@ void EC_Terrain::AttachTerrainRootNode()
 
     // If this entity has an EC_Placeable, make sure it is the parent of this terrain component.
     boost::shared_ptr<EC_Placeable> pos = GetParentEntity()->GetComponent<EC_Placeable>();
-    if (pos.get())
+    if (pos)
     {
         Ogre::SceneNode *parent = pos->GetSceneNode();
         parent->addChild(rootNode);

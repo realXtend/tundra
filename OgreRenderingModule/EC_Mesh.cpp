@@ -8,9 +8,9 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "OgreConversionUtils.h"
-#include "OgreMeshResource.h"
-#include "OgreMaterialResource.h"
-#include "OgreSkeletonResource.h"
+#include "OgreSkeletonAsset.h"
+#include "OgreMeshAsset.h"
+#include "OgreMaterialAsset.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
 
@@ -35,11 +35,17 @@ EC_Mesh::EC_Mesh(IModule* module) :
     castShadows(this, "Cast shadows", false),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     entity_(0),
-    adjustment_node_(0),
-    attached_(false)
+    bone_tagpoint_(0),
+    bone_parent_mesh_(0),
+    bone_attached_mesh_(0),
+    attached_(false),
+    attached_to_bone_(false)
 {
     static AttributeMetadata drawDistanceData("", "0", "10000");
     drawDistance.SetMetadata(&drawDistanceData);
+    static AttributeMetadata materialMetadata;
+    materialMetadata.elementType = "assetreference";
+    meshMaterial.SetMetadata(&materialMetadata);
 
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
@@ -47,6 +53,11 @@ EC_Mesh::EC_Mesh(IModule* module) :
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+
+    meshAsset = AssetRefListenerPtr(new AssetRefListener());
+    connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    skeletonAsset = AssetRefListenerPtr(new AssetRefListener());
+    connect(skeletonAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 }
 
 EC_Mesh::~EC_Mesh()
@@ -195,7 +206,7 @@ void EC_Mesh::SetDrawDistance(float draw_distance)
     drawDistance.Set(draw_distance, AttributeChange::LocalOnly);
 }
 
-bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
+bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
 {
     if (!ViewEnabled())
         return false;
@@ -203,6 +214,8 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     if (renderer_.expired())
         return false;
     RendererPtr renderer = renderer_.lock();
+
+    std::string mesh_name = meshResourceName.trimmed().toStdString();
 
     RemoveMesh();
 
@@ -268,6 +281,9 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
 
             adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         }
+
+        // Force a re-apply of all materials to this new mesh.
+        ApplyMaterial();
     }
     catch (Ogre::Exception& e)
     {
@@ -276,15 +292,9 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
     }
     
     AttachEntity();
-    
     emit OnMeshChanged();
     
     return true;
-}
-
-bool EC_Mesh::SetMesh(const QString& mesh_name) 
-{
-    return SetMesh(mesh_name.toStdString(), false);
 }
 
 bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
@@ -366,9 +376,15 @@ void EC_Mesh::RemoveMesh()
 
     if (entity_)
     {
+        if (attached_to_bone_)
+            DetachMeshFromBone();
+        
         RemoveAllAttachments();
         DetachEntity();
-
+        
+        if (bone_attached_mesh_)
+            bone_attached_mesh_->DetachMeshFromBone();
+        
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         scene_mgr->destroyEntity(entity_);
         
@@ -563,6 +579,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
     try
     {
         entity_->getSubEntity(index)->setMaterialName(SanitateAssetIdForOgre(material_name));
+        emit OnMaterialChanged(index, QString(material_name.c_str()));
     }
     catch (Ogre::Exception& e)
     {
@@ -575,13 +592,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
 
 bool EC_Mesh::SetMaterial(uint index, const QString& material_name) 
 {
-    if (SetMaterial(index, material_name.toStdString()))
-    {
-        emit OnMaterialChanged(index, material_name);
-        return true;
-    }
-    else
-        return false;
+    return SetMaterial(index, material_name.toStdString());
 }
 
 bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name)
@@ -724,11 +735,33 @@ void EC_Mesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
     max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
 }
 
+QVector3D EC_Mesh::GetWorldSize() const
+{
+    QVector3D size(0,0,0);
+    if (!entity_ || !adjustment_node_ || !placeable_)
+        return size;
+
+    // Get mesh bounds and scale it to the scene node
+    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
+    Ogre::AxisAlignedBox bbox = entity_->getMesh()->getBounds();
+    bbox.scale(adjustment_node_->getScale());
+
+    // Get size and take placeable scale into consideration to get real naali inworld size
+    const Ogre::Vector3& bbsize = bbox.getSize();
+    const Vector3df &placeable_scale = placeable->GetScale();
+    // Swap y and z to make it align with other naali vectors
+    size = QVector3D(bbsize.x*placeable_scale.x, bbsize.z*placeable_scale.z, bbsize.y*placeable_scale.y);
+    return size;
+}
+
 void EC_Mesh::DetachEntity()
 {
+    if (attached_to_bone_)
+        return;
+    
     if ((!attached_) || (!entity_) || (!placeable_))
         return;
-
+    
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::SceneNode* node = placeable->GetSceneNode();
     adjustment_node_->detachObject(entity_);
@@ -738,9 +771,12 @@ void EC_Mesh::DetachEntity()
 
 void EC_Mesh::AttachEntity()
 {
+    if (attached_to_bone_)
+        return;
+    
     if ((attached_) || (!entity_) || (!placeable_))
         return;
-
+    
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::SceneNode* node = placeable->GetSceneNode();
     node->addChild(adjustment_node_);
@@ -846,16 +882,20 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
     }
     else if (attribute == &nodeTransformation)
     {
-        if (adjustment_node_)
+        Ogre::Node* adjustmentTarget = adjustment_node_;
+        if (bone_tagpoint_)
+            adjustmentTarget = bone_tagpoint_;
+        
+        if (adjustmentTarget)
         {
             Transform newTransform = nodeTransformation.Get();
-            adjustment_node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
+            adjustmentTarget->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
             Quaternion adjust(DEGTORAD * newTransform.rotation.x,
                               DEGTORAD * newTransform.rotation.y,
                               DEGTORAD * newTransform.rotation.z);
             // Let's not assume the needed haxor adjustment here, but let user specify it as necessary
             //adjust = Quaternion(PI/2, 0, PI) * adjust;
-            adjustment_node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+            adjustmentTarget->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
             
             // Prevent Ogre exception from zero scale
             if (newTransform.scale.x < 0.0000001f)
@@ -865,7 +905,7 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             if (newTransform.scale.z < 0.0000001f)
                 newTransform.scale.z = 0.0000001f;
             
-            adjustment_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
+            adjustmentTarget->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         }
     }
     else if (attribute == &meshRef)
@@ -874,19 +914,21 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             return;
             
         //Ensure that mesh is requested only when it's has actually changed.
-        if(entity_)
-            if(QString::fromStdString(entity_->getMesh()->getName()) == meshRef.Get().ref/*meshResourceId.Get()*/)
-                return;
-
+//        if(entity_)
+ //           if(QString::fromStdString(entity_->getMesh()->getName()) == meshRef.Get().ref/*meshResourceId.Get()*/)
+  //              return;
+/*
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(meshRef.Get());
         if (transfer)
         {
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnMeshAssetLoaded()), Qt::UniqueConnection);
         }
         else
         {
             RemoveMesh();
         }
+        */
+        meshAsset->HandleAssetRefChange(&meshRef);
     }
     else if (attribute == &meshMaterial)
     {
@@ -894,19 +936,22 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             return;
         
         // We won't request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
-        if(!HasMaterialsChanged())
-            return;
+        // This logic shouldn't be necessary anymore. -jj.
+//        if(!HasMaterialsChanged())
+//            return;
 
-        QVariantList materials = meshMaterial.Get();
-        materialRequests.clear();
-        for(uint i = 0; i < materials.size(); i++)
+        AssetReferenceList materials = meshMaterial.Get();
+
+        // Reallocate the number of material asset reflisteners.
+        while(materialAssets.size() > materials.Size())
+            materialAssets.pop_back();
+        while(materialAssets.size() < materials.Size())
+            materialAssets.push_back(boost::shared_ptr<AssetRefListener>(new AssetRefListener));
+
+        for(int i = 0; i < materials.Size(); ++i)
         {
-            AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(materials[i].toString());
-            if (transfer.get())
-            {
-                connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnMaterialAssetLoaded()), Qt::UniqueConnection);
-                materialRequests[i] = materials[i].toString();
-            }
+            connect(materialAssets[i].get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+            materialAssets[i]->HandleAssetRefChange(framework_->Asset(), materials[i].ref);
         }
     }
     else if((attribute == &skeletonRef) && (!skeletonRef.Get().ref.isEmpty()))
@@ -915,12 +960,13 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
             return;
         
         // If same name skeleton already set no point to do it again.
-        if (entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonRef.Get().ref/*skeletonId.Get()*/.toStdString())
-            return;
+//        if (entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonRef.Get().ref/*skeletonId.Get()*/.toStdString())
+ //           return;
 
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
-        if (transfer.get())
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(OnSkeletonAssetLoaded()), Qt::UniqueConnection);
+  //      AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(skeletonRef.Get().ref);
+   //     if (transfer)
+    //        connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(OnSkeletonAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+        skeletonAsset->HandleAssetRefChange(&skeletonRef);
     }
 }
 
@@ -930,44 +976,48 @@ void EC_Mesh::OnComponentRemoved(IComponent* component, AttributeChange::Type ch
         SetPlaceable(ComponentPtr());
 }
 
-void EC_Mesh::OnMeshAssetLoaded()
+void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreMeshResource *resource = dynamic_cast<OgreMeshResource *>(transfer->resourcePtr.get());
-    if (!resource)
+    OgreMeshAsset *mesh = dynamic_cast<OgreMeshAsset*>(asset.get());
+    if (!mesh)
     {
-        LogWarning("Failed to handle mesh resource ready event cause resource pointer was null.");
+        LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but downloaded asset was not of type OgreMeshAsset!");
         return;
     }
 
-    SetMesh(meshRef.Get().ref);
+    QString ogreMeshName = mesh->Name();
+    if (mesh)
+    {
+        if (mesh->ogreMesh.get())
+            ogreMeshName = mesh->ogreMesh->getName().c_str();
+        else
+            LogError("EC_Mesh::OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
+    }
 
-    // Hack to request materials & skeleton now
-    AttributeUpdated(&meshMaterial);
-    AttributeUpdated(&skeletonRef);
+    SetMesh(ogreMeshName);
+
+    // Force a re-application of the skeleton on this mesh. ///\todo This path should be re-evaluated to see if we have potential performance issues here. -jj.
+    if (skeletonAsset->Asset())
+        OnSkeletonAssetLoaded(skeletonAsset->Asset());
 }
 
-void EC_Mesh::OnSkeletonAssetLoaded()
+void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreSkeletonResource *resource = dynamic_cast<OgreSkeletonResource *>(transfer->resourcePtr.get());
-    if (!resource)
+    OgreSkeletonAsset *skeletonAsset = dynamic_cast<OgreSkeletonAsset*>(asset.get());
+    if (!skeletonAsset)
     {
-        LogWarning("Failed to handle skeleton resource ready event because resource pointer was null.");
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
+            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
         return;
     }
 
-    Ogre::SkeletonPtr skeleton = resource->GetSkeleton();
-    if(skeleton.isNull())
+    Ogre::SkeletonPtr skeleton = skeletonAsset->ogreSkeleton;
+    if (skeleton.isNull())
+    {
+        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
+            asset->Name().toStdString() + "\", but Ogre::Skeleton pointer was null!");
         return;
+    }
 
     if(!entity_)
     {
@@ -992,60 +1042,117 @@ void EC_Mesh::OnSkeletonAssetLoaded()
     }
 
     // Now we have to recreate the entity to get proper animations etc.
-    SetMesh(entity_->getMesh()->getName(), false);
+    SetMesh(entity_->getMesh()->getName().c_str(), false);
 }
 
-void EC_Mesh::OnMaterialAssetLoaded()
+void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 {
-    IAssetTransfer *transfer = dynamic_cast<IAssetTransfer*>(sender());
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreMaterialResource *resource = dynamic_cast<OgreMaterialResource *>(transfer->resourcePtr.get());
-    if (!resource)
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset.get());
+    if (!ogreMaterial)
     {
-        LogWarning("Failed to handle material resource ready event because resource pointer was null.");
+        LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
+            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
         return;
     }
 
-    //! a bit hackish way to get materials in right order.
-    bool found = false;
-    uint index = 0;
-    QMap<int, QString>::iterator it = materialRequests.begin();
-    for(; it != materialRequests.end(); ++it)
-    {
-        if(*it == QString(resource->GetId().c_str()))
+    Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
+
+    bool assetUsed = false;
+
+    AssetReferenceList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.Size(); ++i)
+        if (materialList[i].ref == ogreMaterial->Name())
         {
-            index = it.key();
-            found = true;
-            break;
+            SetMaterial(i, ogreMaterial->Name());
+            assetUsed = true;
         }
-    }
 
-    if(found)
+    if (!assetUsed)
     {
-        if (index > meshMaterial.Get().size()) 
-            return;
-        
-        materialRequests.erase(it);
-        SetMaterial(index, QString(resource->GetMaterial()->getName().c_str()));
+        LogWarning("Warning: EC_Mesh::OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
+            meshRef.Get().ref.toStdString() + ", but no submesh refers to the given material! The references are: ");
+        for(int i = 0; i < materialList.Size(); ++i)
+            LogWarning(QString::number(i).toStdString() + ": " + materialList[i].ref.toStdString());
     }
+}
+
+void EC_Mesh::ApplyMaterial()
+{
+    AssetReferenceList materialList = meshMaterial.Get();
+    for(int i = 0; i < materialList.Size(); ++i)
+        if (!materialList[i].ref.isEmpty())
+            SetMaterial(i, materialList[i].ref);
 }
 
 bool EC_Mesh::HasMaterialsChanged() const
 {
-    if(!entity_ || !meshMaterial.Get().size())
+    if(!entity_ || !meshMaterial.Get().Size())
         return false;
-    QVariantList materials = meshMaterial.Get();
+
+    AssetReferenceList materials = meshMaterial.Get();
     for(uint i = 0; i < entity_->getNumSubEntities(); i++)
     {
         // No point to continue if all materials are not set.
-        if(i >= materials.size())
+        if(i >= materials.Size())
             break;
 
-        if(entity_->getSubEntity(i)->getMaterial()->getName() != SanitateAssetIdForOgre(materials[i].toString().toStdString()))
+        if(entity_->getSubEntity(i)->getMaterial()->getName() != SanitateAssetIdForOgre(materials[i].ref.toStdString()))
             return true;
     }
     return false;
 }
+
+bool EC_Mesh::AttachMeshToBone(QObject* targetMesh, const QString& boneName)
+{
+    if (!entity_)
+        return false;
+    
+    // First make sure that the target mesh is valid, and the bone can be found
+    EC_Mesh* targetMeshPtr = dynamic_cast<EC_Mesh*>(targetMesh);
+    if (!targetMeshPtr)
+        return false;
+    Ogre::Entity* targetEntity = targetMeshPtr->GetEntity();
+    if (!targetEntity)
+        return false;
+    std::string boneNameStd = boneName.toStdString();
+    Ogre::SkeletonInstance* skeleton = targetEntity->getSkeleton();
+    if (!skeleton)
+        return false;
+    if (!skeleton->hasBone(boneNameStd))
+        return false;
+    
+    // We are ready to go. Detach the entity from its normal scene node first
+    DetachMeshFromBone();
+    DetachEntity();
+    
+    bone_tagpoint_ = targetEntity->attachObjectToBone(boneNameStd, entity_);
+    bone_parent_mesh_ = targetMeshPtr;
+    bone_parent_mesh_->bone_attached_mesh_ = this;
+    attached_to_bone_ = true;
+    
+    // Force the adjustment for the tagpoint now
+    AttributeUpdated(&nodeTransformation);
+    
+    return true;
+}
+
+void EC_Mesh::DetachMeshFromBone()
+{
+    if ((!entity_) || (!attached_to_bone_) || (!bone_parent_mesh_))
+        return;
+    
+    Ogre::Entity* targetEntity = bone_parent_mesh_->GetEntity();
+    if (targetEntity)
+        targetEntity->detachObjectFromBone(entity_);
+    else
+        return;
+    
+    bone_parent_mesh_->bone_attached_mesh_ = 0;
+    bone_parent_mesh_ = 0;
+    attached_to_bone_ = false;
+    bone_tagpoint_ = 0;
+    
+    // Reattach entity to normal placeable
+    AttachEntity();
+}
+

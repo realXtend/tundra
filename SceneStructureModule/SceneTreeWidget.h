@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   SceneTreeView.h
+ *  @file   SceneTreeWidget.h
  *  @brief  Tree widget showing the scene structure.
  */
 
@@ -10,107 +10,22 @@
 
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
-#include "EntityAction.h"
 #include "AssetFwd.h"
 
 #include <QTreeWidget>
 #include <QPointer>
 #include <QMenu>
 
-namespace ECEditor
-{
-    class ECEditorWindow;
-}
-
-struct InvokeItem;
-class IArgumentType;
-class IAssetTransfer;
-
 class QWidget;
 class QFileDialog;
 
-/// Tree widget item representing an entity.
-class EntityItem : public QTreeWidgetItem
-{
-public:
-    /// Constructor.
-    /** @param entity Entity pointer.
-    */
-    explicit EntityItem(const Scene::EntityPtr &entity);
+class ECEditorWindow;
+class IArgumentType;
+class IAssetTransfer;
+class EntityItem;
 
-    /// Returns pointer to the entity this item represents.
-    Scene::EntityPtr Entity() const;
-
-    /// Return Entity ID of the entity associated with this tree widget item.
-    entity_id_t Id() const;
-
-private:
-    entity_id_t id; ///< Entity ID associated with this tree widget item.
-    Scene::EntityWeakPtr ptr; ///< Weak pointer to the component this item represents.
-};
-
-/// Tree widget item representing a component.
-class ComponentItem : public QTreeWidgetItem
-{
-public:
-    /// Constructor.
-    /** @param comp Component pointer.
-        @param parent Parent entity item.
-    */
-    ComponentItem(const ComponentPtr &comp, EntityItem *parent);
-
-    /// Returns pointer to the entity this item represents.
-    ComponentPtr Component() const;
-
-    /// Returns the parent entity item.
-    EntityItem *Parent() const;
-
-    QString typeName; ///< Type name.
-    QString name; ///< Name, if applicable.
-
-private:
-    ComponentWeakPtr ptr; ///< Weak pointer to the component this item represents.
-    EntityItem *parentItem; ///< Parent entity item.
-};
-
-/// Tree widget item representing an asset reference.
-class AssetItem : public QTreeWidgetItem
-{
-public:
-    /// Constructor.
-    /** @param name Name of the asset reference attribute.
-        @param ref Asset reference URI.
-        @param parent Parent item.
-    */
-    AssetItem(const QString &name, const QString &ref, QTreeWidgetItem *parent = 0);
-
-    QString name; ///< Name of the attribute.
-    QString id; ///< ID.
-    QString type; ///< Type.
-};
-
-/// Represents selection of selected scene tree widget items.
-struct Selection
-{
-    /// Returns true if no entity or component items selected.
-    bool IsEmpty() const;
-
-    /// Returns true if selection contains entities;
-    bool HasEntities() const;
-
-    /// Returns true if selected contains components.
-    bool HasComponents() const;
-
-    /// Returns true if selection contains assets.
-    bool HasAssets() const;
-
-    /// Returns list containing unique entity ID's of both selected entities and parent entities of selected components
-    QList<entity_id_t> EntityIds() const;
-
-    QList<EntityItem *> entities; ///< List of selected entities.
-    QList<ComponentItem *> components; ///< List of selected components.
-    QList<AssetItem *> assets; ///< List of selected asset refs
-};
+struct InvokeItem;
+struct Selection;
 
 /// Context menu for SceneTreeWidget.
 class Menu : public QMenu
@@ -125,6 +40,7 @@ public:
 
     /// Is shift currently held down.
     bool shiftDown;
+
 private:
     /// QWidget override. Checks if shift is pressed.
     void keyPressEvent(QKeyEvent *e);
@@ -191,49 +107,37 @@ private:
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
 
-        /// Loads invoke history from config file.
+    /// Loads invoke history from config file.
     void LoadInvokeHistory();
 
-    /// Saves incoke history to config file.
+    /// Saves invoke history to config file.
     void SaveInvokeHistory();
 
     /// Return most recently used InvokeItem.
     InvokeItem *FindMruItem() const;
 
-    /// Framework pointer.
-    Foundation::Framework *framework;
+    /// Returns all asset references for the specified entity item.
+    QSet<QString> GetAssetRefs(const EntityItem *eItem) const;
 
-    /// Scene which we are showing the in tree widget currently.
-    Scene::SceneWeakPtr scene;
-
-    /// This widget's "own" EC editor.
-    QPointer<ECEditor::ECEditorWindow> ecEditor;
-
-    /// Maximum count of invoke history items.
-    int historyMaxItemCount;
-
-    /// Number of visible invoke items in the context-menu.
-    int numberOfInvokeItemsVisible;
-
-    /// Keeps track of the latest opened file save/open dialog, so that we won't multiple open at the same time.
-    QPointer<QFileDialog> fileDialog;
-
-    /// Keeps track of recently invoked entity actions and functions.
-    QList<InvokeItem> invokeHistory;
-
-    /// Context menu.
-    QPointer<Menu> contextMenu;
+    Foundation::Framework *framework; ///< Framework pointer.
+    Scene::SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
+    QList<QPointer<ECEditorWindow> > ecEditors; ///< This EC editors owned by this widget.
+    int historyMaxItemCount; ///< Maximum count of invoke history items.
+    int numberOfInvokeItemsVisible; ///< Number of visible invoke items in the context-menu.
+    QPointer<QFileDialog> fileDialog; ///< Keeps track of the latest opened file save/open dialog.
+    QList<InvokeItem> invokeHistory; ///< Keeps track of recently invoked entity actions and functions.
+    QPointer<Menu> contextMenu; ///< Context menu.
 
     //! Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
-    QMap<AssetTransferPtr, QString> filesaves_;
+    QMap<QString, QString> filesaves_;
 
     //! Used by 'Export all', a list of assets that have already been saved, so assets are not saved multiple times.
-    //! Multiple assets can reference reference another asset, so each asset must be saved only once.
-    //! This must be cleared before starting any assets saving operations
+    /*! Multiple assets can reference reference another asset, so each asset must be saved only once.
+        This must be cleared before starting any assets saving operations.
+    */
     QSet<QString> saved_assets_;
 
-    //! if true, when saving assets, also saves references
-    bool fetch_references_;
+    bool fetch_references_; //!< if true, when saving assets, also saves references
 
 private slots:
     /// Opens selected entities in EC editor window. An existing editor window is used if possible.
@@ -250,7 +154,7 @@ private slots:
     */
     void OnItemEdited(QTreeWidgetItem *item, int);
 
-    void CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *);
+//    void CloseEditor(QTreeWidgetItem *,QTreeWidgetItem *);
 
     /// Creates a new entity.
     void NewEntity();
@@ -334,7 +238,10 @@ private slots:
     */
     void SaveAssetDialogClosed(int result);
 
-    void AssetLoaded(IAssetTransfer *transfer);
+    void AssetLoaded(AssetPtr asset);
+
+    /// If editor is destoyed this method ensures that that object is erased from the list.
+    void ECEditorDestroyed(QObject *obj);
 };
 
 

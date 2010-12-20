@@ -74,7 +74,7 @@ private:
 
     QScriptEngine *engine_; ///< Qt script engine.
     
-    static QString LoadScript(const QString &fileName);
+    QString LoadScript(const QString &fileName);
 
     // The script content for a JavascriptInstance is loaded either using the Asset API or 
     // using an absolute path name from the local file system.

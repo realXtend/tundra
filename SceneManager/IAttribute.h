@@ -18,25 +18,26 @@
 
 namespace kNet
 {
-class DataSerializer;
-class DataDeserializer;
+    class DataSerializer;
+    class DataDeserializer;
 }
 
 class IComponent;
 class QScriptValue;
 
-//! Attribute metadata contains information about the attribute: description (e.g. "color" or "direction",
-/*! possible min and max values, mapping of enumeration signatures and values, and interpolation mode.
- *
- *  Usage example (we're assuming that you have attribute "Attribute<float> range" as member variable):
- *
- *  EC_Example() : range(this, "example attribute", -1.f);
- *  {
- *      static AttributeMetadata metadata("this attribute is used as an example", "-128.3", "256.7")
- *      range.SetMetadata(&metadata);
- *  }
- *
- */
+//! Attribute metadata contains information about the attribute.
+/*! The metadata includes information such as description (e.g. "color" or "direction",
+    possible min and max values and mapping of enumeration signatures and values.
+
+    Usage example (we're assuming that you have attribute "Attribute<float> range" as member variable):
+    @code
+    EC_Example() : range(this, "example attribute", -1.f);
+    {
+        static AttributeMetadata metadata("this attribute is used as an example", "-128.3", "256.7")
+        range.SetMetadata(&metadata);
+    }
+    @endcode
+*/
 class AttributeMetadata
 {
 public:
@@ -53,18 +54,19 @@ public:
 
     //! Constructor.
     /*! \param desc Description.
-     *  \param min Minimum value.
-     *  \param max Maximum value.
-     *  \param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
-        \param interpolation Interpolation mode for clients
+        \param min Minimum value.
+        \param max Maximum value.
+        \param step_ Step value.
+        \param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
+        \param interpolation_ Interpolation mode for clients
      */
-    AttributeMetadata(const QString &desc_, const QString &min_ = "", const QString &max_ = "", const QString &step_ = "", 
-        const EnumDescMap_t &enums_ = EnumDescMap_t(), InterpolationMode interpolation_ = None) :
-        description(desc_),
-        minimum(min_),
-        maximum(max_),
+    AttributeMetadata(const QString &desc, const QString &min = "", const QString &max = "", const QString &step_ = "", 
+        const EnumDescMap_t &enum_desc = EnumDescMap_t(), InterpolationMode interpolation_ = None) :
+        description(desc),
+        minimum(min),
+        maximum(max),
         step(step_),
-        enums(enums_),
+        enums(enum_desc),
         interpolation(interpolation_)
     {
     }
@@ -84,9 +86,12 @@ public:
     //! Step value.
     QString step;
 
+    //! Describes the type for individual elements of this attribute (in case there are multiple, e.g. in the case of QVariantList).
+    QString elementType;
+
     //! Interpolation mode for clients
     InterpolationMode interpolation;
-    
+
     //! Mapping of enumeration's signatures (in readable form) and actual values.
     EnumDescMap_t enums;
 
@@ -125,14 +130,13 @@ public:
     //! Read attribute from string for XML deserialization
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
 
+    //! Returns the type name of the data stored in this attribute.
+    virtual std::string TypeName() const = 0;
     //! Write attribute to binary for binary serialization
     virtual void ToBinary(kNet::DataSerializer& dest) const = 0;
     
     //! Read attribute from binary for binary deserialization
     virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change) = 0;
-
-    //! Returns the type of the data stored in this attribute.
-    virtual std::string TypenameToString() const = 0;
 
     //! Returns the value as QVariant (For scripts).
     virtual QVariant ToQVariant() const = 0;
@@ -273,7 +277,7 @@ public:
     virtual void Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change);
     
     //! Returns the type of the data stored in this attribute.
-    virtual std::string TypenameToString() const;
+    virtual std::string TypeName() const;
 
     //! Returns the value as QVariant (For scripts).
     virtual QVariant ToQVariant() const;

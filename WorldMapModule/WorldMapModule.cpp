@@ -251,7 +251,7 @@ namespace WorldMap
             return;
 
         Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();        
-        if (!current_scene.get())
+        if (!current_scene)
             return;
 
         using namespace Foundation;
@@ -286,7 +286,7 @@ namespace WorldMap
                 position = ogre_placeable->GetPosition(); 
                 direction = q*Vector3df::UNIT_X;
 
-                worldmap_widget_->UpdateAvatarPosition(position, presence_component->agentId.ToQString(), presence_component->GetFullName().c_str());
+                worldmap_widget_->UpdateAvatarPosition(position, presence_component->agentId.ToQString(), presence_component->GetFullName());
             }
         }
                 

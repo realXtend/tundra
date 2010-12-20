@@ -22,8 +22,6 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-<li>Cameraref? Or uses cam in the same entity?
-<div>Name of the compositor (Ogre resource name), f.ex. "HDR"</div>
 <li>QString targettexture
 <div>Name of the target texture where to render the image
 </ul>
@@ -50,10 +48,8 @@ class EC_RttTarget : public IComponent
     Q_OBJECT
     
     DECLARE_EC(EC_RttTarget);
-public:
-    //Q_PROPERTY(QString compositorref READ getcompositorref WRITE setcompositorref);
-    //DEFINE_QPROPERTY_ATTRIBUTE(QString, compositorref);
 
+public:
     Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, targettexture);
 
@@ -62,10 +58,13 @@ public:
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }
 
+public slots:
+    void PrepareRtt();
+    void SetAutoUpdated(bool val);
+
 private slots:
     void AttributeUpdated(IAttribute* attribute);
     //void UpdateRtt();
-    void SetupRtt();
 
 private:
     //! constructor
@@ -76,7 +75,8 @@ private:
     //! Owner module of this component
     //OgreRenderer::OgreRenderingModule *owner_;
 
-    Ogre::TexturePtr tex;
+    Ogre::TexturePtr tex_;
+    std::string material_name_;
     //void ScheduleRender();
 };
 

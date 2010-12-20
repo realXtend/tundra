@@ -9,7 +9,16 @@ Naali offers several mechanisms for adding scripts to your application. You can
 
 \section NaaliPython Creating Naali modules using Python
 
-\todo write this section.
+PythonScriptModule manages so-called Naali Python modules, which are basically similar in purpose to the native C++ modules. They are however not visible to the C++ code like actual Naali modules are, but can only be called from C++ modules by doing tricks with either the Python module system or Qt signals. This is the first Naali scripting system, used to develop the C++ internals of the core and other modules so that they expose the APIs which are common to all scripting mechanisms now.
+
+Naali Python modules are application level scripts, similar to the application level Javascripts explained below as in not being associated with any specific scenes or entities. They have some unique features: 1) Capability to receive internal Naali events (not exposed to JS at all) and 2) A plugin system which supports live reloading of code. Also Naali currently ships with a copy of the Python standard library, and of the small Circuits event library which is used to implement the forwarding Naali C++ events and the reloadable module support. Internal Naali events are currently necessary to for example handle logout & login to scenes when teleporting, when using Opensimulator servers. E.g. editing code needs to clear selection state upon logout. For the future the plan is to provide all this via Qt mechanism from the Core API.
+
+These modules reside in bin/pymodules/ and the ones enabled in any *.ini file in that directory are loaded at startup (or upon pymodule reload). By convention, default.ini configures what is enabled by default in releases, and you can use whatever.ini to add your own. To register your module to the system, it must have a subclass of circuits.BaseComponent. Then add the name of that class to a .ini file. For an example of a minimal pymodule, see bin/pymodules/usr/sleeper.py . Another small example is bin/pymodules/apitest/pythonqt_gui.py which features using Naali UI API and Qt widgets.
+
+The 'naali' namespace (Python module) is used to expose Naali internals (the Core API) to Python, and 'PythonQt' exposes all of Qt. So you can say 'import naali' or 'import PythonQt' to get to use those.
+An interactive Python shell is included, which is handy for learning and testing API commands as it has an autocompletion GUI. The shell is currently not integrated to menus, but is opened with the 'alt-.' keycombo. For reloading all pymodules live, without needing to logout or restart Naali, press F11. To support reloading in your own module, you must implement a on_exit handler that removes references to your objects elsewhere in Naali (typically GUI widgets you have added) -- otherwise the code does not get refreshed.
+
+Several bundled features of Naali releases are implemented with this system, including the 3d editing of objects, Opensimulator estate management and the Ogre scene import & publishing functionality for the Taiga server. Also the Naali web browser GUI with the basic navigation buttons, and the old means to have web pages in the scene as MediaURLs and the LSL LoadURL command are implemented in corresponding Naali pymodules. Additionally, disabled by default, there is a web (http) server for serving live camera images, and a WebSocket server to allow connecting to Naali from browser based clients.
 
 \section NaaliApplicationQtScripts Writing Application Scripts using QtScript
 
@@ -37,15 +46,15 @@ Each script receives a predefined object called <b>engine</b>. This object repre
 
 <table style="width: 50%; margin: 20px; background-color: #F0F0FF; border: 1px solid black; border-spacing: 0px; ">
 <tr style="border-style: none;"><td style="border-style: none;">
-<span style="font-weight: bold; font-size: 1.15em;">engine.IncludeFile(filename)</span>
+<span style="font-weight: bold; font-size: 1.15em;">engine.IncludeFile(assetRef)</span>
 
-Includes the given .js file and executes it in the current engine context.
+Includes the given .js file and executes it in the current engine context. 
  
-QtScript (or ECMAScript/JavaScript) does not have a built-in <b>include</b> keyword. In Naali, you can however use the <b>engine.IncludeFile(filename.js)</b> function to execute another .js file at the point where engine.IncludeFile is called.
+QtScript (or ECMAScript/JavaScript) does not have a built-in <b>include</b> keyword. In Naali, you can however use this command to execute another .js file at the point where engine.IncludeFile is called.
 
-Note that inclusion of the same file multiple times during script execution is automatically prevented.
+The parameter <i>assetRef</i> can either be an asset reference URL or an absolute path on a local filesystem, e.g. "local://myscript.js", "http://www.someserver.com/myscript.js" and "C:/Tundra/myscript.js" are all valid.  If you specify a local filename, each client looks the file up locally and there is no network asset transfers included.
 
-\todo Currently, the filename that is specified into IncludeFile is interpreted locally, relative to the current working directory (the bin/ directory), but in the future, the Naali asset system will be used.
+Note that inclusion of the same file multiple times during script execution is automatically prevented. It is as if each .js file had a #pragma once clause in them.
 
 </td></tr></table>
 
@@ -88,8 +97,13 @@ This function prints the given lines of text directly to console stdout. This ou
 
 </td></tr></table>
 
+\section QtScriptExplicitRef Specifying Asset Dependencies
 
-\section CoreAPIObjects The Core API Objects.
+When parsing the script file, Tundra takes any strings found in each engine.IncludeFile() function call, and interprets them as asset references. This means that if you have for example a line engine.IncludeFile("http://myserver.com/myscript.js"), this script file is loaded in before the main script is executed.
+
+Asset dependencies can be also explicitly speficied. This specification is stored in a commented out line, in the form <i>// !ref: http://myserver.com/myscript.js</i>.
+
+\section CoreAPIObjects The Core API Objects
 
 The whole \ref CoreAPIList "Naali Core API" is exposed to QtScript through the following variable names:
  - The UI API: \ref NaaliUi "ui".

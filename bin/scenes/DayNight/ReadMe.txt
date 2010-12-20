@@ -1,2 +1,3 @@
-This is a sample script which contains test world which have a terrain and entity which has EC_EnvironmentLight - component. Same entity contains EC_Script which runs Javascript which
-changes world time between 0.0 - 1.0. 
+This sample demonstrates the EC_EnvironmentLight component. This component is used to define the global environmental lighting of the scene.
+
+In this sample, a script is used to show how to animate the day-night cycle of the scene.

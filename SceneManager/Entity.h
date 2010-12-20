@@ -8,6 +8,7 @@
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "EntityAction.h"
+#include <boost/enable_shared_from_this.hpp>
 
 #include "kNetFwd.h"
 
@@ -47,7 +48,7 @@ namespace Scene
 
         \ingroup Scene_group
     */
-    class Entity : public QObject
+    class Entity : public QObject, public boost::enable_shared_from_this<Entity>
     {
         Q_OBJECT
         Q_PROPERTY (uint Id READ GetId)
@@ -204,9 +205,6 @@ namespace Scene
         {
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
         }
-
-        //! Return entity's shared pointer.
-        EntityPtr GetSharedPtr() const;
 
         //! Returns the unique id of this entity
         entity_id_t GetId() const { return id_; }

@@ -4,6 +4,7 @@
 #define incl_OgreRenderer_EC_Placeable_h
 
 #include "IComponent.h"
+#include "IAttribute.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Transform.h"
@@ -64,8 +65,25 @@ class OGRE_MODULE_API EC_Placeable : public IComponent
     DECLARE_EC(EC_Placeable);
 
     Q_OBJECT
+    
+public:
     Q_PROPERTY(QVector3D Position READ GetQPosition WRITE SetQPosition)
+    
+    //! position Attribute.
+    //! @note Propose to replace Transform when also attributes for rotation and scale have been added.
+    //! @todo Merge Position and position properties, favouring Attribute version.
+    Q_PROPERTY(QVector3D position READ getposition WRITE setposition)
+    Attribute<QVector3D> position;
+    QVector3D getposition() const { return position.Get(); }
+    void setposition(QVector3D value) { SetQPosition(value); }
+    
+    
     Q_PROPERTY(QVector3D Scale READ GetQScale WRITE SetQScale)
+    Q_PROPERTY(QVector3D scale READ getscale WRITE setscale)
+    Attribute<QVector3D> scale;
+    QVector3D getscale() const { return scale.Get(); }
+    void setscale(QVector3D value) { SetQScale(value); }
+    
     Q_PROPERTY(QQuaternion Orientation READ GetQOrientation WRITE SetQOrientation)
     Q_PROPERTY(QVector3D LocalXAxis READ GetQLocalXAxis)
     Q_PROPERTY(QVector3D LocalYAxis READ GetQLocalYAxis)
@@ -75,7 +93,6 @@ class OGRE_MODULE_API EC_Placeable : public IComponent
     Q_PROPERTY(float Roll READ GetRoll)
     Q_PROPERTY(int SelectPriority READ GetSelectPriority WRITE SetSelectPriority)
 
-public:
     //! Transformation attribute for position, rotation and scale adjustments.
     //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
     Q_PROPERTY(Transform transform READ gettransform WRITE settransform);

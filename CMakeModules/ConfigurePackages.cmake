@@ -7,16 +7,16 @@
 
 macro (configure_boost)
     if (MSVC)
-	    set(Boost_USE_MULTITHREADED ON) # test by mattiku
-        set (Boost_USE_STATIC_LIBS ON)
+	    set(Boost_USE_MULTITHREADED TRUE)
+        set(Boost_USE_STATIC_LIBS TRUE)
     else ()
-        set (Boost_USE_STATIC_LIBS OFF)
+        set(Boost_USE_STATIC_LIBS FALSE)
     endif ()
 
     if (APPLE)
-            set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_program_options boost_unit_test_framework)
+            set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_regex boost_program_options)
     else ()
-            set (BOOST_COMPONENTS date_time filesystem system thread program_options unit_test_framework)
+            set (BOOST_COMPONENTS date_time filesystem system thread regex program_options)
     endif ()
  
     sagase_configure_package (BOOST 
@@ -166,6 +166,7 @@ macro (configure_ogre)
         # Ogre built from sources
         include_directories($ENV{OGRE_HOME}/include) 
         include_directories($ENV{OGRE_HOME}/include/RenderSystems/Direct3D9/include)
+        include_directories($ENV{OGRE_HOME}/RenderSystems/Direct3D9/include)
         # Ogre official sdk
         include_directories($ENV{OGRE_HOME}/include/OGRE) 
         include_directories($ENV{OGRE_HOME}/include/OGRE/RenderSystems/Direct3D9)

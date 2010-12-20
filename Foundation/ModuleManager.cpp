@@ -17,6 +17,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("ModuleManager")
 #include <Poco/Environment.h>
 #include <Poco/UnicodeConverter.h>
 
+#include <QDir>
+
 #include "MemoryLeakCheck.h"
 
 namespace fs = boost::filesystem;
@@ -168,7 +170,9 @@ void ModuleManager::LoadAvailableModules()
     }
     catch (Exception)
     {
-        throw Exception("Failed to load modules, modules directory not found."); // can be considered fatal
+        std::string error = "Failed to load modules, modules directory not found. Current working directory: " + QDir::currentPath().toStdString();
+        RootLogError(error);
+        throw Exception(error.c_str()); // can be considered fatal
     }
 
     // Now parse all the definition files we found.

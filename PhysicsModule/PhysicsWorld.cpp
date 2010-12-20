@@ -20,13 +20,14 @@ void TickCallback(btDynamicsWorld *world, btScalar timeStep)
     static_cast<Physics::PhysicsWorld*>(world->getWorldUserInfo())->ProcessPostTick(timeStep);
 }
 
-PhysicsWorld::PhysicsWorld(PhysicsModule* owner) :
+PhysicsWorld::PhysicsWorld(PhysicsModule* owner, bool isClient) :
     collisionConfiguration_(0),
     collisionDispatcher_(0),
     broadphase_(0),
     solver_(0),
     world_(0),
-    physicsUpdatePeriod_(1.0f / 60.0f)
+    physicsUpdatePeriod_(1.0f / 60.0f),
+    isClient_(isClient)
 {
     collisionConfiguration_ = new btDefaultCollisionConfiguration();
     collisionDispatcher_ = new btCollisionDispatcher(collisionConfiguration_);

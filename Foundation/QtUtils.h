@@ -25,6 +25,7 @@ namespace QtUtils
         @param slot Slot on initiator object, to which dialog's finished() signal will be 
                connected. Result value will be 1 if OK was pressed. Use sender() and dynamic 
                cast to QFileDialog to get to know the chosen file(s)
+        @param multipleFiles Do we want to be able to select multiple files.
         @return The created file dialog
     */
     QFileDialog* OpenFileDialogNonModal(
@@ -33,7 +34,8 @@ namespace QtUtils
         const QString& dir,
         QWidget* parent,
         QObject* initiator,
-        const char* slot);
+        const char* slot,
+        bool multipleFiles = false);
 
     /// Opens a non-modal file save dialog
     /** @param filter The files to be shown.

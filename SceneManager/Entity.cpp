@@ -280,14 +280,6 @@ namespace Scene
         return false;
     }
 
-    EntityPtr Entity::GetSharedPtr() const
-    {
-        EntityPtr ptr;
-        if(scene_)
-            ptr = scene_->GetEntity(GetId());
-        return ptr;
-    };
-
     bool Entity::HasComponent(const QString &type_name, const QString& name) const
     {
         for(size_t i=0 ; i<components_.size() ; ++i)
@@ -450,7 +442,7 @@ namespace Scene
     {
         EntityAction *action = Action(name);
         assert(action);
-        connect(action, SIGNAL(Triggered(QString, QString, QString, QStringList)), receiver, member);
+        connect(action, SIGNAL(Triggered(QString, QString, QString, QStringList)), receiver, member, Qt::UniqueConnection);
     }
 
     void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QString &p1, const QString &p2, const QString &p3)
@@ -482,7 +474,8 @@ namespace Scene
                 act->Trigger(params[0], params[1], params[2], params.mid(3));
         }
 
-        GetScene()->EmitActionTriggered(this, action, params, t);
+        if (GetScene())
+            GetScene()->EmitActionTriggered(this, action, params, t);
     }
 
     void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params)

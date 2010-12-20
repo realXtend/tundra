@@ -11,17 +11,23 @@ class TextureAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    TextureAsset(const QString &type_, const QString &name_)
-    :IAsset(type_, name_)
+    TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
+    :IAsset(owner, type_, name_)
     {
     }
 
-    virtual bool LoadFromFileInMemory(const u8 *data_, size_t numBytes);
+    ~TextureAsset();
 
-    void Unload();
+    virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
+
+    virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
+
+    virtual void DoUnload();
 
     /// Returns an empty list - textures do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
+
+//    void RegenerateAllMipLevels();
 
     /// This points to the loaded texture asset, if it is present.
     Ogre::TexturePtr ogreTexture;

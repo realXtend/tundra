@@ -8,7 +8,6 @@
 #ifndef incl_RexLogicModule_Primitive_h
 #define incl_RexLogicModule_Primitive_h
 
-#include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 #include "IComponent.h"
@@ -30,7 +29,6 @@ namespace ProtocolUtilities
 namespace RexLogic
 {
     class RexLogicModule;
-    class EC_AttachedSound;
 
     class Primitive : public QObject
     {
@@ -51,6 +49,9 @@ namespace RexLogic
         bool HandleRexGM_RexFreeData(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundData* data);
+
+        bool HandleECGM_ECData(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleECGM_ECRemove(ProtocolUtilities::NetworkEventInboundData* data);
         
         bool HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData *data);
         bool HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData *data);
@@ -72,6 +73,12 @@ namespace RexLogic
         ///\todo Move to WorldStream?
         void SendRexFreeData(entity_id_t entityid);
 
+        // Send EC data of an entity to server
+        void SendECData(entity_id_t entityid, IComponent * component);
+
+        // Send EC data to server when an entity is removed
+        void SendECRemove(entity_id_t entityid, IComponent * component);
+
         // Start listening to Scene's EC notification signals
         void RegisterToComponentChangeSignals(Scene::ScenePtr scene);
         
@@ -91,6 +98,11 @@ namespace RexLogic
         void OnPrimNameChanged(const EC_OpenSimPrim& prim);
         //! When prim description has changed
         void OnPrimDescriptionChanged(const EC_OpenSimPrim& prim);
+
+        //! When new component is added
+        void OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+        //! When component is removed
+        void OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     private:
         //! The owning module.
@@ -121,6 +133,12 @@ namespace RexLogic
         
         //! handle rexfreedata
         void HandleRexFreeData(entity_id_t entityid, const std::string& freedata);
+
+        //! handle ECSync data
+        void HandleECData(entity_id_t entityid, const uint8_t* primdata, const int primdata_size);
+
+        //! handle ECRemove data
+        void HandleECRemove(entity_id_t entityid, StringVector freedata);
         
         //! handles changes in rex ambient sound parameters.
         void HandleAmbientSound(entity_id_t entityid);
@@ -150,13 +168,13 @@ namespace RexLogic
         void HandleExtraParams(const entity_id_t &entity_id, const uint8_t *extra_params_data);
 
         //! handles mesh resource being ready
-        void HandleMeshReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleMeshReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         //! handles skeleton resource (used in conjunction with a mesh) being ready
-        void HandleSkeletonReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleSkeletonReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         //! handles particle script resource being ready
-        void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         /** Attachs a light component to a prim.
             @param entity Entity pointer of the prim.
@@ -175,9 +193,9 @@ namespace RexLogic
         void AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color);
 
         //! handles mesh or prim texture resource being ready
-        void HandleTextureReady(entity_id_t entity, Foundation::ResourcePtr res);
+//        void HandleTextureReady(entity_id_t entity, Foundation::ResourcePtr res);
 
-        void HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res);
+//        void HandleMaterialResourceReady(entity_id_t entityid, Foundation::ResourcePtr res);
 
         //! handles prim size and visibility
         void HandlePrimScaleAndVisibility(entity_id_t entityid);

@@ -35,7 +35,7 @@ namespace OpensimIM
 
     void FriendRequest::Accept()
     {
-        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());///\bug Thread-unsafe use of .lock().get()
 
         if (rexlogic_ == NULL)
             throw Exception("Cannot accept Opensim friend request, RexLogicModule is not found");
@@ -57,7 +57,7 @@ namespace OpensimIM
 
     void FriendRequest::Reject()
     {
-        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+        RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());///\bug Thread-unsafe use of .lock().get()
 
         if (rexlogic_ == NULL)
             throw Exception("Cannot reject Opensim friend request, RexLogicModule is not found");

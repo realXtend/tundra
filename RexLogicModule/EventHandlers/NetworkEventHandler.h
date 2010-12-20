@@ -125,6 +125,10 @@ namespace RexLogic
         //! \param data Network event data.
         bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData *data);
 
+        //! Handles GrantGodlikePowers network message.
+        //! \param data Network event data.
+        bool HandleOSNE_GrantGodlikePowers(ProtocolUtilities::NetworkEventInboundData *data);
+
         //! Owner module.
         RexLogicModule *owner_;
 

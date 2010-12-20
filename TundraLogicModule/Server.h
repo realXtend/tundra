@@ -69,6 +69,11 @@ public:
     void SetActionSender(UserConnection* user);
     
 signals:
+    //! A user is connecting. This is your chance to deny access.
+    /*! Call user->Disconnect() to deny access and kick the user out
+     */ 
+    void UserAboutToConnect(int connectionID, UserConnection* connection);
+     
     //! A user has connected (and authenticated)
     void UserConnected(int connectionID, UserConnection* connection);
     

@@ -3,9 +3,9 @@
 #include "Foundation.h"
 #include "ModuleManager.h"
 
-#include "HttpUtilities.h"
-
 #include "DebugOperatorNew.h"
+
+#include <QDir>
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
@@ -99,12 +99,14 @@ int run (int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
+    printf("Starting up server. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
+    for(int i = 0; i < argc; ++i)
+        printf("argv[%d]: %s\n", i, argv[i]);
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     try
 #endif
     {
-        HttpUtilities::InitializeHttp(); 
         Foundation::Framework fw(argc, argv);
         if (fw.Initialized())
         {
@@ -112,8 +114,6 @@ int run (int argc, char **argv)
 
             fw.Go();
         }
-        
-        HttpUtilities::UninitializeHttp();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch (std::exception& e)
@@ -192,7 +192,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v0.3.0";
+    WCHAR* szVersion = L"Tundra_v1.0a-preview-server";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;

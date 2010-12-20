@@ -13,19 +13,7 @@
 #include <QStringList>
 
 namespace RexTypes
-{    
-    bool ParseBool(const std::string &value)
-    {
-        std::string testedvalue = value;
-        boost::algorithm::to_lower(testedvalue);
-        return (boost::algorithm::starts_with(testedvalue,"true") || boost::algorithm::starts_with(testedvalue,"1")); 
-    }
-    
-    bool ParseBool(const QString &value)
-    {
-        return ParseBool(value.toStdString());
-    }
-    
+{
     Quaternion GetProcessedQuaternion(const uint8_t* bytes)
     {    
         uint16_t *rot = reinterpret_cast<uint16_t*>((uint16_t*)&bytes[0]);

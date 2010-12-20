@@ -160,6 +160,10 @@ class DotScene:
                 #entity = self.findNodes(node, 'entity')
                 newNode.entityName = newNode.entityNode.getAttribute("name")
                 newNode.entityMeshFile = newNode.entityNode.getAttribute("meshFile")
+                if newNode.entityNode.hasAttribute("collisionFile"):
+                    newNode.entityCollisionFile = newNode.entityNode.getAttribute("collisionFile")
+                if newNode.entityNode.hasAttribute("collisionPrim"):
+                    newNode.entityCollisionPrim = newNode.entityNode.getAttribute("collisionPrim")
                 newNode.entityStatic = newNode.entityNode.getAttribute("static")
                 #except err:
                 #    print "parsing id or mesh data failed", err

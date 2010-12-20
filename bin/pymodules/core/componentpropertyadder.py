@@ -19,7 +19,7 @@ compshorthand = {
     'EC_SoundRuler': 'soundruler',
     'EC_Name': 'ecname',
     'EC_Ruler': 'ruler',
-    'EC_3DGizmo': 'gizmo',
+    'EC_Gizmo': 'gizmo',
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):

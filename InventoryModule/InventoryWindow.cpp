@@ -348,7 +348,7 @@ void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString
 
     boost::shared_ptr<UiServices::UiModule> ui_module =
         framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (ui_module.get())
+    if (ui_module)
     {
         QPointF pos = mainWidget_->mapToGlobal(QPoint(0, 0));
         pos.setX(pos.x() + offset_);

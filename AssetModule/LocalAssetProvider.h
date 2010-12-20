@@ -6,72 +6,40 @@
 #include <boost/enable_shared_from_this.hpp>
 #include "ThreadTaskManager.h"
 #include "AssetModuleApi.h"
-#include "AssetProviderInterface.h"
+#include "IAssetProvider.h"
 #include "AssetFwd.h"
-
-namespace HttpUtilities
-{
-    class HttpTaskResult;
-}
 
 namespace Asset
 {
     class LocalAssetStorage;
 
     /// LocalAssetProvider provides Naali scene to use assets from the local file system with 'local://' reference.
-    class ASSET_MODULE_API LocalAssetProvider : public QObject, public Foundation::AssetProviderInterface, public boost::enable_shared_from_this<LocalAssetProvider>
+    class ASSET_MODULE_API LocalAssetProvider : public QObject, public IAssetProvider, public boost::enable_shared_from_this<LocalAssetProvider>
     {
-            Q_OBJECT;
+        Q_OBJECT;
 
     public:
         explicit LocalAssetProvider(Foundation::Framework* framework);
         
         virtual ~LocalAssetProvider();
         
-        //! Returns name of asset provider
-        virtual const std::string& Name();
+        /// Returns name of asset provider
+        virtual QString Name();
         
-        //! Checks an asset id for validity
+        /// Checks an asset id for validity
         /*! \return true if this asset provider can handle the id */
-        virtual bool IsValidRef(const std::string& asset_id, const std::string& asset_type);
-        
-        //! Requests an asset for "download"
-        /*! \param asset_id Asset UUID
-            \param asset_type Asset type
-            \param tag Asset request tag, allocated by AssetService
-            \return true if asset ID was valid and file could be found (ASSET_READY will be sent in that case) */
-        virtual bool RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag);
-        
+        virtual bool IsValidRef(QString assetRef, QString assetType);
+                
         virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
 
-        //! Returns whether a certain asset is already being "downloaded". Returns always false.
-        virtual bool InProgress(const std::string& asset_id);
-        
-        //! Queries status of asset "download"
-        /*! \param asset_id Asset UUID
-            \param size Variable to receive asset size (if known, 0 if unknown)
-            \param received Variable to receive amount of bytes received
-            \param received_continuous Variable to receive amount of continuous bytes received from the start
-            \return false will always be returned (not supported) */
-        virtual bool QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous);
-        
-        //! Gets incomplete asset
-        /*! If transfer not in progress or not enough bytes received, will return empty pointer
-            
-            \param asset_id Asset UUID
-            \param asset_type Asset type
-            \param received Minimum continuous bytes received from the start
-            \return Null pointer will always be returned (not supported) */
-        virtual Foundation::AssetInterfacePtr GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received);   
-        
-        //! Returns information about current asset transfers
-        virtual Foundation::AssetTransferInfoVector GetTransferInfo() { return Foundation::AssetTransferInfoVector(); }
-        
-        //! Performs time-based update 
+        /// Performs time-based update 
         /*! \param frametime Seconds since last frame */
         virtual void Update(f64 frametime);
-                
-        //! Adds the given directory as an asset storage.
+
+        /// Deletes this asset from file.
+        virtual void DeleteAssetFromStorage(QString assetRef);
+
+        /// Adds the given directory as an asset storage.
         /*! \param directory The paht name for the directory to add.
             \param storageName A human-readable name for the storage. This is used in the UI to the user, but is not an ID of any kind.
             \param recursive If true, all the subfolders of the given folder are added as well. */
@@ -79,35 +47,31 @@ namespace Asset
 
         virtual std::vector<AssetStoragePtr> GetStorages() const;
 
-        virtual IAssetUploadTransfer *UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
-
-        virtual IAssetUploadTransfer *UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
+        virtual AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     private:
-        //! Get a path for asset, using all the search directories
-        QString GetPathForAsset(const QString &localFilename);
-
-        //! Asset event category
-        event_category_id_t event_category_;
-        
-        //! Framework
-        Foundation::Framework* framework_;
-        
         typedef boost::shared_ptr<LocalAssetStorage> LocalAssetStoragePtr;
 
-        //! Asset directories to search, may be recursive or not
+        /// Finds a path where the file localFilename can be found. Searches through all local storages.
+        /// @param storage [out] Receives the local storage that contains the asset.
+        QString GetPathForAsset(const QString &localFilename, LocalAssetStoragePtr *storage);
+        
+        /// Framework
+        Foundation::Framework *framework;
+        
+        /// Asset directories to search, may be recursive or not
         std::vector<LocalAssetStoragePtr> storages;
 
-        //! The following asset uploads are pending to be completed by this provider.
+        /// The following asset uploads are pending to be completed by this provider.
         std::vector<AssetUploadTransferPtr> pendingUploads;
 
-        //! The following asset downloads are pending to be completed by this provider.
+        /// The following asset downloads are pending to be completed by this provider.
         std::vector<AssetTransferPtr> pendingDownloads;
 
-        //! Takes all the pending file download transfers and finishes them.
+        /// Takes all the pending file download transfers and finishes them.
         void CompletePendingFileDownloads();
 
-        //! Takes all the pending file upload transfers and finishes them.
+        /// Takes all the pending file upload transfers and finishes them.
         void CompletePendingFileUploads();
 
     private slots:

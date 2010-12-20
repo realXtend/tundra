@@ -3,9 +3,9 @@
  <entity id="2">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
@@ -22,7 +22,7 @@
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
    <attribute value="1" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
@@ -44,15 +44,15 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ECSound\CollisionSound.js" name="Script ref"/>
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
   </component>
  </entity>
  <entity id="3">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
@@ -69,7 +69,7 @@
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
    <attribute value="1" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
@@ -91,15 +91,15 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ECSound\CollisionSound.js" name="Script ref"/>
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
   </component>
  </entity>
  <entity id="4">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
@@ -116,7 +116,7 @@
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
    <attribute value="1" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
@@ -138,15 +138,15 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ECSound\CollisionSound.js" name="Script ref"/>
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
   </component>
  </entity>
  <entity id="5">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
@@ -163,7 +163,7 @@
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
    <attribute value="1" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
@@ -185,15 +185,15 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ECSound\CollisionSound.js" name="Script ref"/>
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
   </component>
  </entity>
  <entity id="6">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
@@ -210,7 +210,7 @@
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
    <attribute value="1" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
@@ -232,15 +232,15 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ECSound\CollisionSound.js" name="Script ref"/>
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
   </component>
  </entity>
  <entity id="7">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
@@ -257,7 +257,7 @@
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
    <attribute value="1" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
@@ -279,15 +279,15 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ECSound\CollisionSound.js" name="Script ref"/>
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
   </component>
  </entity>
  <entity id="8">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
    <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
@@ -304,7 +304,7 @@
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
+   <attribute value="local://boxA.mesh" name="Collision mesh ref"/>
    <attribute value="1" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
@@ -326,7 +326,7 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ECSound\CollisionSound.js" name="Script ref"/>
+   <attribute value="local://CollisionSound.js" name="Script ref"/>
   </component>
  </entity>
  <entity id="12">
@@ -338,7 +338,7 @@
   <component type="EC_Script" sync="1">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ECSound\ScriptControl.js" name="Script ref"/>
+   <attribute value="local://ScriptControl.js" name="Script ref"/>
   </component>
  </entity>
  <entity id="180">
@@ -353,13 +353,13 @@
    <attribute value="16" name="Grid Height"/>
    <attribute value="0.129999995" name="Tex. U scale"/>
    <attribute value="0.129999995" name="Tex. V scale"/>
-   <attribute value="file://RexTerrainPCF.material" name="Material"/>
+   <attribute value="local://RexTerrainPCF.material" name="Material"/>
    <attribute value="" name="Texture 0"/>
    <attribute value="" name="Texture 1"/>
    <attribute value="" name="Texture 2"/>
    <attribute value="" name="Texture 3"/>
    <attribute value="" name="Texture 4"/>
-   <attribute value="file://terrain.ntf" name="Heightmap"/>
+   <attribute value="local://terrain.ntf" name="Heightmap"/>
   </component>
   <component type="EC_RigidBody" sync="1">
    <attribute value="0" name="Mass"/>

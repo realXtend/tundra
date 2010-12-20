@@ -4,7 +4,6 @@
 #define incl_RexLogic_EC_AvatarAppearance_h
 
 #include "IComponent.h"
-#include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 #include "AvatarModuleApi.h"
@@ -23,8 +22,6 @@ public:
     std::string name_;
     //! Asset resource id
     std::string resource_id_;
-    //! Resource (once it has been loaded)
-    Foundation::ResourceWeakPtr resource_;
     
     const std::string& GetLocalOrResourceName() const;
 };
@@ -328,7 +325,7 @@ public:
 private:
     EC_AvatarAppearance(IModule* module);
     AppearanceModifier* FindModifier(const std::string& name, AppearanceModifier::ModifierType type);
-            
+    
     //! Avatar mesh
     AvatarAsset mesh_;
     //! Avatar skeleton

@@ -31,7 +31,7 @@ namespace CommunicationsService
     void CommunicationsModule::Initialize() 
     {
         communications_service_ = Service::IntancePtr();
-        if (!communications_service_.get())
+        if (!communications_service_)
         {
             QString message("Cannot get communications service intance.");
             LogError(message.toStdString());
@@ -49,7 +49,7 @@ namespace CommunicationsService
 //        CommunicationsWidget = new CommunicationsWidget();
         // Create Communication widgets
         //boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        //if (ui_module.get())
+        //if (ui_module)
         {
             //im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
             //if (im_ui_proxy_widget_)
@@ -59,7 +59,7 @@ namespace CommunicationsService
 
     void CommunicationsModule::Uninitialize()
     {
-        if (communications_service_.get())
+        if (communications_service_)
         {
             framework_->GetServiceManager()->UnregisterService(communications_service_);
             QString message("Communications service unregistered.");

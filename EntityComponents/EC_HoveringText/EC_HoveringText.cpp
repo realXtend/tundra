@@ -18,7 +18,7 @@
 #include "LoggingFunctions.h"
 #include "SceneManager.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_HoveringText");
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -45,16 +45,13 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     textAttr(this, "Text"),
     fontAttr(this, "Font", "Arial"),
     fontColorAttr(this, "Font Color"),
-    fontSizeAttr(this, "Font Size", 100),	
+    fontSizeAttr(this, "Font Size", 100),    
     backgroundColorAttr(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
     positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
     gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
     gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
     borderColorAttr(this, "Border Color", Color(0.0f,0.0f,0.0f,1.0f)),
     borderThicknessAttr(this, "Border Thickness", 0.0)
-
-
-
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 
@@ -65,7 +62,7 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
     connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_HoveringText::~EC_HoveringText()
@@ -75,7 +72,7 @@ EC_HoveringText::~EC_HoveringText()
 
 void EC_HoveringText::Destroy()
 {
-	boost::shared_ptr<OgreRenderer::Renderer> renderer = renderer_.lock();
+    OgreRenderer::RendererPtr renderer = renderer_.lock();
     if (renderer)
     {
         try{
@@ -88,29 +85,29 @@ void EC_HoveringText::Destroy()
         } catch(...)
         {
         }
-		try{
-		if (billboardSet_ && billboard_)
-			billboardSet_->removeBillboard(billboard_);
+        try{
+        if (billboardSet_ && billboard_)
+            billboardSet_->removeBillboard(billboard_);
         } catch(...)
         {
         }
-		try{
-		
-		if (billboardSet_)
-		{
-			Ogre::SceneManager *scene = renderer->GetSceneManager();
-			if (scene)
-				scene->destroyBillboardSet(billboardSet_);
-		}
+        try{
+        
+        if (billboardSet_)
+        {
+            Ogre::SceneManager *scene = renderer->GetSceneManager();
+            if (scene)
+                scene->destroyBillboardSet(billboardSet_);
+        }
 
         } catch(...)
         {
         }
     }
 
-	billboard_ = 0;
-	billboardSet_ = 0;
-	textureName_ = "";
+    billboard_ = 0;
+    billboardSet_ = 0;
+    textureName_ = "";
     materialName_ = "";
 }
 
@@ -118,6 +115,11 @@ void EC_HoveringText::SetPosition(const Vector3df& position)
 {
     if (billboard_)
         billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
+}
+
+void EC_HoveringText::SetPosition(const QVector3D &position)
+{
+    SetPosition(Vector3df(position.x(), position.y(), position.z()));
 }
 
 void EC_HoveringText::SetFont(const QFont &font)
@@ -135,7 +137,7 @@ void EC_HoveringText::SetTextColor(const QColor &color)
 void EC_HoveringText::SetBackgroundColor(const QColor &color)
 {
     backgroundColor_ = color;
-	//using_gradient_ = false;
+    //using_gradient_ = false;
     Redraw();
 }
 
@@ -143,7 +145,7 @@ void EC_HoveringText::SetBackgroundGradient(const QColor &start_color, const QCo
 {
     bg_grad_.setColorAt(0.0, start_color);
     bg_grad_.setColorAt(1.0, end_color);
-	//using_gradient_ = true;
+    //using_gradient_ = true;
 }
 
 void EC_HoveringText::Show()
@@ -268,7 +270,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (text.isNull() || text.isEmpty())
         return;
 
-	//textAttr.Set(text);
+    //textAttr.Set(text);
     Redraw();
 }
 
@@ -354,7 +356,7 @@ QPixmap EC_HoveringText::GetTextPixmap()
 //    const int max_width = viewport->getActualWidth()/4;
 //    int max_height = viewport->getActualHeight()/10;
 
-	//if (renderer_.expired() || text_.isEmpty() || text_ == " ")
+    //if (renderer_.expired() || text_.isEmpty() || text_ == " ")
     if (renderer_.expired())
         return 0;
 
@@ -391,15 +393,12 @@ QPixmap EC_HoveringText::GetTextPixmap()
     Color col = borderColorAttr.Get();
     borderCol.setRgbF(col.r, col.g, col.b, col.a);
 
-
-    
     // Draw background rect
     QPen borderPen;
     borderPen.setColor(borderCol);
     borderPen.setWidthF(borderThicknessAttr.Get());
     painter.setPen(borderPen);
     painter.drawRoundedRect(rect, 20.0, 20.0);
-    
 
     // Draw text
     painter.setPen(textColor_);
@@ -426,43 +425,38 @@ void EC_HoveringText::AttributeUpdated(IComponent *component, IAttribute *attrib
         return;
 
     QString attrName = QString::fromStdString(attribute->GetNameString());
-   
-	if(QString::fromStdString(fontAttr.GetNameString()) == attrName ||QString::fromStdString(fontSizeAttr.GetNameString()) == attrName)
+    if(QString::fromStdString(fontAttr.GetNameString()) == attrName ||QString::fromStdString(fontSizeAttr.GetNameString()) == attrName)
     {
-		SetFont(QFont(fontAttr.Get(), fontSizeAttr.Get()));
+        SetFont(QFont(fontAttr.Get(), fontSizeAttr.Get()));
+    }
+    else if(QString::fromStdString(backgroundColorAttr.GetNameString()) == attrName)
+    {
+        Color col = backgroundColorAttr.Get();
+        backgroundColor_.setRgbF(col.r, col.g, col.b, col.a);
+    }
+    else if(QString::fromStdString(fontColorAttr.GetNameString()) == attrName)
+    {
+        Color col = fontColorAttr.Get();
+        textColor_.setRgbF(col.r, col.g, col.b, col.a);
+    }
+    else if(QString::fromStdString(positionAttr.GetNameString()) == attrName)
+    {
+        SetPosition(positionAttr.Get());
+    }
+    else if(QString::fromStdString(gradEndAttr.GetNameString()) == attrName ||
+        QString::fromStdString(gradStartAttr.GetNameString()) == attrName ||
+        QString::fromStdString(gradEndAttr.GetNameString()) == attrName)
+    {
+        QColor colStart;
+        QColor colEnd;
+        Color col = gradStartAttr.Get();
+        colStart.setRgbF(col.r, col.g, col.b);
+        col = gradEndAttr.Get();
+        colEnd.setRgbF(col.r, col.g, col.b);
+        SetBackgroundGradient(colStart, colEnd);
     }
 
-	else if(QString::fromStdString(backgroundColorAttr.GetNameString()) == attrName)
-	{
-		Color col = backgroundColorAttr.Get();
-		backgroundColor_.setRgbF(col.r, col.g, col.b, col.a);
-	}
-
-	else if(QString::fromStdString(fontColorAttr.GetNameString()) == attrName)
-	{		
-		Color col = fontColorAttr.Get();		
-		textColor_.setRgbF(col.r, col.g, col.b, col.a);
-	}
-			
-	else if(QString::fromStdString(positionAttr.GetNameString()) == attrName)
-	{
-		SetPosition(positionAttr.Get());
-	}
-
-	else if(QString::fromStdString(gradEndAttr.GetNameString()) == attrName || QString::fromStdString(gradStartAttr.GetNameString()) == attrName || QString::fromStdString(gradEndAttr.GetNameString()) == attrName)
-	{
-		QColor colStart;
-		QColor colEnd;
-		Color col = gradStartAttr.Get();
-		colStart.setRgbF(col.r, col.g, col.b);
-		col = gradEndAttr.Get();
-		colEnd.setRgbF(col.r, col.g, col.b);
-		SetBackgroundGradient(colStart, colEnd);
-	}
-
-	// Repaint the new text with new appearance.
-	ShowMessage(textAttr.Get());
-
+    // Repaint the new text with new appearance.
+    ShowMessage(textAttr.Get());
 }
-
 

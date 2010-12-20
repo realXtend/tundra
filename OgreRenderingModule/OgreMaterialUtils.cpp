@@ -7,7 +7,6 @@
 
 #include "StableHeaders.h"
 #include "OgreMaterialUtils.h"
-#include "OgreMaterialResource.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include <Ogre.h>
@@ -365,5 +364,20 @@ namespace OgreRenderer
                 OgreRenderingModule::LogDebug("Failed to remove Ogre material:" + std::string(e.what()));
             }
         }
+    }
+
+    bool ProcessBraces(const std::string& line, int& braceLevel)
+    {
+        if (line == "{")
+        {
+            ++braceLevel;
+            return true;
+        } 
+        else if (line == "}")
+        {
+            --braceLevel;
+            return true;
+        }
+        else return false;
     }
 }

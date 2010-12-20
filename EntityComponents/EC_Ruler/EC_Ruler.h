@@ -63,7 +63,7 @@ Registered by RexLogic::RexLogicModule.
 <li>"EndDrag": Call EndDrag to tell the code we're done for now.
 <li>"UpdateRuler": Callback for OnChanged from ECEditor. 
 </ul>
- 	
+     
 
 <b>Reacts on the following actions:</b>
 <ul>
@@ -92,6 +92,7 @@ public:
     
     enum Type
     {
+        Null,
         Rotation,
         Scale,
         Translation,

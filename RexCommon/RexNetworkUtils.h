@@ -23,9 +23,6 @@ namespace RexTypes
     bool IsValidVelocityVector(const Vector3df &pos);
     bool IsValidOrientation(const Quaternion& orientation);
 
-    bool ParseBool(const std::string &value);
-    bool ParseBool(const QString &value);
-    
     // Helper functions for reading values from byteblob:
 
     //! \todo Remove, not serialization-safe. (bool assumed 8bit.)

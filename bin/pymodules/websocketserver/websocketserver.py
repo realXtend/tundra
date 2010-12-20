@@ -106,7 +106,7 @@ def handle_clients(ws):
         print msg
 
         if msg is None:
-            # if there is no message the client has quit. 
+            # if there is no message the client will quit. 
             break
 
         try:

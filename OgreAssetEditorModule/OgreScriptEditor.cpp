@@ -11,12 +11,10 @@
 
 #include "OgreScriptEditor.h"
 #include "OgreAssetEditorModule.h"
-#include "OgreMaterialResource.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
 
 #include "Framework.h"
-#include "AssetEvents.h"
 #include "Inventory/InventoryEvents.h"
 #include "UiServiceInterface.h"
 
@@ -146,6 +144,8 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
 
     if (edit_raw)
     {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
         QString script(QByteArray((const char*)asset->GetData(), asset->GetSize()));
         if (script.isEmpty() && script.isNull())
         {
@@ -159,6 +159,7 @@ void OgreScriptEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
 
         CreateTextEdit();
         textEdit_->setText(script);
+*/
     }
 }
 

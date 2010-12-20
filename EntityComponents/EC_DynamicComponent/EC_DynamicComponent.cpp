@@ -69,7 +69,7 @@ void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_eleme
     AttributeVector::const_iterator iter = attributes_.begin();
     while(iter != attributes_.end())
     {
-        WriteAttribute(doc, comp_element, (*iter)->GetNameString().c_str(), (*iter)->ToString().c_str(), (*iter)->TypenameToString().c_str());
+        WriteAttribute(doc, comp_element, (*iter)->GetNameString().c_str(), (*iter)->ToString().c_str(), (*iter)->TypeName().c_str());
         iter++;
     }
 }
@@ -327,7 +327,7 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
     {
         // Compare attribute names and type and if they mach continue iteration if not components aren't exatly the same.
         if((*iter1)->GetNameString() == (*iter2)->GetNameString() &&
-           (*iter1)->TypenameToString() == (*iter2)->TypenameToString())
+           (*iter1)->TypeName() == (*iter2)->TypeName())
         {
             if(iter1 != myAttributeVector.end())
                 iter1++;
@@ -382,7 +382,7 @@ void EC_DynamicComponent::SerializeToBinary(kNet::DataSerializer& dest) const
     while(iter != attributes_.end())
     {
         dest.AddString((*iter)->GetNameString());
-        dest.AddString((*iter)->TypenameToString());
+        dest.AddString((*iter)->TypeName());
         dest.AddString((*iter)->ToString());
         ++iter;
     }

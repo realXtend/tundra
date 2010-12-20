@@ -10,6 +10,7 @@
 
 #include "AddContentWindow.h"
 #include "SceneStructureModule.h"
+#include "TreeWidgetUtils.h"
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -23,6 +24,36 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
 
 #include "MemoryLeakCheck.h"
+
+namespace fs = boost::filesystem;
+
+typedef QMap<QString, QString> RefMap;
+
+void ReplaceReferences(QByteArray &material, const RefMap &refs)
+{
+    QString matString(material);
+    QStringList lines = matString.split("\n");
+    for(int i = 0; i < lines.size(); ++i)
+    {
+        int idx = lines[i].indexOf("texture ");
+        if (idx != -1)
+        {
+            QString texName = lines[i].mid(idx + 8).trimmed();
+            texName = AssetAPI::ExtractFilenameFromAssetRef(texName); ///\todo This line is wrong and should be removed.
+            // There is a problem in the refmap that it doesn't store the original assetrefs, but stores the filenames
+            // without paths. Therefore we need to do the comparison here also without paths.
+            RefMap::const_iterator it = refs.find(texName);
+            if (it != refs.end())
+            {
+                lines[i] = "texture " + it.value();
+                for(int spaceIdx = 0; spaceIdx < idx; ++spaceIdx)
+                    lines[i].prepend(" ");
+            }
+        }
+    }
+
+    material = lines.join("\n").toAscii();
+}
 
 // Entity tree widget column index enumeration.
 const int cColumnEntityCreate = 0; ///< Create column index.
@@ -74,11 +105,7 @@ public:
     */
     explicit AssetWidgetItem(const AssetDesc &adesc) : desc(adesc)
     {
-        setCheckState(cColumnAssetUpload, Qt::Checked);
-        setText(cColumnAssetTypeName, desc.typeName);
-        setText(cColumnAssetSourceName, desc.filename);
-        setText(cColumnAssetSubname, desc.subname);
-        setText(cColumnAssetDestName, desc.destinationName);
+        RewriteText();
     }
 
     /// QTreeWidgetItem override. Peforms case-insensitive comparison.
@@ -91,29 +118,18 @@ public:
             return text(column).toLower() < rhs.text(column).toLower();
     }
 
-    AssetDesc desc; ///< Asset description of the item.
-};
-
-typedef QMap<QString, QString> RefMap;
-
-void ReplaceReferences(QByteArray &material, const RefMap &refs)
-{
-    QString matString(material);
-    QStringList lines = matString.split("\n");
-    for(int i = 0; i < lines.size(); ++i)
+    /// Rewrites the items visible text accordingly to the asset description the item owns.
+    void RewriteText()
     {
-        int idx = lines[i].indexOf("texture ");
-        if (idx != -1)
-        {
-            QString texName = lines[i].mid(idx + 8).trimmed();
-            RefMap::const_iterator it = refs.find(texName);
-            if (it != refs.end())
-                lines[i].replace(it.key(), it.value());
-        }
+        setCheckState(cColumnAssetUpload, Qt::Checked);
+        setText(cColumnAssetTypeName, desc.typeName);
+        setText(cColumnAssetSourceName, desc.source);
+        setText(cColumnAssetSubname, desc.subname);
+        setText(cColumnAssetDestName, desc.destinationName);
     }
 
-    material = lines.join("\n").toAscii();
-}
+    AssetDesc desc; ///< Asset description of the item.
+};
 
 AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent) :
     QWidget(parent),
@@ -166,7 +182,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     storageComboBox = new QComboBox;
     // Get available asset storages.
     foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
-        storageComboBox->addItem(storage->Name());
+        storageComboBox->addItem(storage->ToString(), storage->Name());
 
     layout->addWidget(assetLabel);
     layout->addWidget(assetTreeWidget);
@@ -225,13 +241,42 @@ AddContentWindow::~AddContentWindow()
 void AddContentWindow::AddDescription(const SceneDesc &desc)
 {
     sceneDesc = desc;
-//    std::set<AttributeDesc> assetRefs;
 
-    // Disable sorting while we insert items.
+    AddEntities(desc.entities);
+    AddAssets(desc.assets);
+}
+
+void AddContentWindow::AddDescriptions(const QList<SceneDesc> &descs)
+{
+}
+
+void AddContentWindow::AddFiles(const QStringList &fileNames)
+{
     assetTreeWidget->setSortingEnabled(false);
+
+    SceneDesc desc;
+    foreach(QString file, fileNames)
+    {
+        AssetDesc ad;
+        ad.source = file;
+        ad.dataInMemory = false;
+        QString type = GetResourceTypeFromResourceFileName(file.toStdString().c_str());
+        ad.typeName = type.isEmpty() ? "Binary" : type;
+        ad.destinationName = fs::path(file.toStdString()).leaf().c_str();
+        desc.assets[qMakePair(ad.source, ad.subname)]= ad;
+    }
+
+    sceneDesc = desc;
+
+    AddAssets(desc.assets);
+}
+
+void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
+{
+    // Disable sorting while we insert items.
     entityTreeWidget->setSortingEnabled(false);
 
-    foreach(EntityDesc e, desc.entities)
+    foreach(EntityDesc e, entityDescs)
     {
         EntityWidgetItem *eItem = new EntityWidgetItem(e);
         entityTreeWidget->addTopLevelItem(eItem);
@@ -243,10 +288,10 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
             QTreeWidgetItem *cItem = new QTreeWidgetItem;
             cItem->setText(0, c.typeName + " " + c.name);
             eItem->addChild(cItem);
-            */
+*/
 
             // Gather non-empty asset references. They're shown in their own tree widget.
-            /*
+/*
             foreach(AttributeDesc a, c.attributes)
                 if (a.typeName == "assetreference" && !a.value.isEmpty())
                     assetRefs.insert(a);
@@ -254,23 +299,36 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
 */
     }
 
-    // Add asset references. Do not show duplicates.
-    std::set<AssetDesc> assets;
-    foreach(AssetDesc a, desc.assets)
-        assets.insert(a);
+    entityTreeWidget->setSortingEnabled(true);
+}
 
-    foreach(AssetDesc a, assets)
+void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
+{
+    assetTreeWidget->setSortingEnabled(false);
+
+    foreach(AssetDesc a, assetDescs)
     {
         AssetWidgetItem *aItem = new AssetWidgetItem(a);
         assetTreeWidget->addTopLevelItem(aItem);
 
-        // If asset reference file not found, mark the item red and disable it.
-        // If it's external reference, mark the item gray and disable it.
-        QString basePath(boost::filesystem::path(a.filename.toStdString()).branch_path().string().c_str());
+        QString basePath(fs::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
         QString outFilePath;
-        AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.filename, basePath, outFilePath);
+        AssetAPI::FileQueryResult res = framework->Asset()->QueryFileLocation(a.source, basePath, outFilePath);
+        /*if (res == AssetAPI::FileQueryLocalFileFound)
+        {
+            // If file is found locally rewrite the source for asset desc.
+            QList<AssetDesc>::iterator ai = qFind(sceneDesc.assets.begin(), sceneDesc.assets.end(), aItem->desc);
+            if (ai != sceneDesc.assets.end())
+            {
+                aItem->desc.source = outFilePath;
+                aItem->RewriteText();
+                (*ai).source = outFilePath;
+            }
+        }
+        */
         if ((a.typeName == "material" && a.data.isEmpty()) || res == AssetAPI::FileQueryLocalFileMissing)
         {
+            // File not found, mark the item red and disable it.
             aItem->setBackgroundColor(cColumnAssetSourceName, Qt::red);
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
@@ -278,76 +336,114 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
         }
         else if (res == AssetAPI::FileQueryExternalFile)
         {
+            // External reference, mark the item gray and disable it.
             aItem->setBackgroundColor(cColumnAssetSourceName, Qt::gray);
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);
         }
-
-        /*
-        QList<AssetDesc>::const_iterator ai = qFind(sceneDesc.assets, aitem->desc);
-        if (ai != newDesc.assets.end())
-            sceneDesc.assets.removeOne(*ai);
-        */
     }
 
     RewriteDestinationNames();
 
     // Enable sorting, resize header sections to contents.
     assetTreeWidget->setSortingEnabled(true);
-    entityTreeWidget->setSortingEnabled(true);
     assetTreeWidget->header()->resizeSections(QHeaderView::ResizeToContents);
 
     // Sort asset items initially so that erroneous are first
     assetTreeWidget->sortItems(cColumnAssetUpload, Qt::AscendingOrder);
 }
 
+void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest)
+{
+//    QString path(fs::path(newDesc.filename.toStdString()).branch_path().string().c_str());
+
+    QList<SceneDesc::AssetMapKey> keysWithSubname;
+    foreach(SceneDesc::AssetMapKey key, sceneDesc.assets.keys())
+        if (!key.second.isEmpty())
+            keysWithSubname.append(key);
+
+    QMutableListIterator<EntityDesc > edIt(sceneDesc.entities);
+    while(edIt.hasNext())
+    {
+        QMutableListIterator<ComponentDesc> cdIt(edIt.next().components);
+        while(cdIt.hasNext())
+        {
+            QMutableListIterator<AttributeDesc> adIt(cdIt.next().attributes);
+            while(adIt.hasNext())
+            {
+                adIt.next();
+                if (adIt.value().typeName == "assetreference" || adIt.value().typeName == "assetreferencelist")
+                {
+                    QStringList values = adIt.value().value.split(";");
+                    QStringList newValues;
+                    foreach(QString value, values)
+                    {
+                        QString subname;
+
+                        if (!keysWithSubname.isEmpty())
+                        {
+                            ///\todo This string manipulation/crafting doesn't work for .zip files, only for materials and COLLADA files
+                            int slashIdx = value.lastIndexOf("/");
+                            int dotIdx = value.lastIndexOf(".");
+                            QString str = value.mid(slashIdx + 1, dotIdx - slashIdx - 1);
+
+                            foreach(SceneDesc::AssetMapKey key, keysWithSubname)
+                                if (value == key.first && str == key.second)
+                                {
+                                    value = key.first;
+                                    subname = key.second;
+                                    break;
+                                }
+                        }
+
+                        SceneDesc::AssetMapKey key = qMakePair(value, subname);
+                        if (sceneDesc.assets.contains(key))
+                            newValues << dest->GetFullAssetURL(sceneDesc.assets[key].destinationName);
+                    }
+
+                    if (!newValues.isEmpty())
+                        adIt.value().value = newValues.join(";");
+                    // After the above lines the asset reference attribute descs do not point to the original source assets.
+                }
+            }
+        }
+    }
+}
+
 void AddContentWindow::SelectAllEntities()
 {
-    QTreeWidgetItemIterator it(entityTreeWidget);
-    while(*it)
-    {
-        (*it)->setCheckState(cColumnEntityCreate, Qt::Checked);
-        ++it;
-    }
+    TreeWidgetSetCheckStateForAllItems(entityTreeWidget, cColumnEntityCreate, Qt::Checked);
 }
 
 void AddContentWindow::DeselectAllEntities()
 {
-    QTreeWidgetItemIterator it(entityTreeWidget);
-    while(*it)
-    {
-        (*it)->setCheckState(cColumnEntityCreate, Qt::Unchecked);
-        ++it;
-    }
+    TreeWidgetSetCheckStateForAllItems(entityTreeWidget, cColumnEntityCreate, Qt::Unchecked);
 }
 
 void AddContentWindow::SelectAllAssets()
 {
-    QTreeWidgetItemIterator it(assetTreeWidget);
-    while(*it)
-    {
-        (*it)->setCheckState(cColumnAssetUpload, Qt::Checked);
-        ++it;
-    }
+    TreeWidgetSetCheckStateForAllItems(assetTreeWidget, cColumnAssetUpload, Qt::Checked);
 }
 
 void AddContentWindow::DeselectAllAssets()
 {
-    QTreeWidgetItemIterator it(assetTreeWidget);
-    while(*it)
-    {
-        (*it)->setCheckState(cColumnAssetUpload, Qt::Unchecked);
-        ++it;
-    }
+    TreeWidgetSetCheckStateForAllItems(assetTreeWidget, cColumnAssetUpload, Qt::Unchecked);
 }
 
 void AddContentWindow::AddContent()
 {
-    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageComboBox->currentText());
+    QString storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
+    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageName);
     if (!dest)
     {
-        LogError("Could not retrieve asset storage " + storageComboBox->currentText().toStdString() + ".");
+        LogError("Could not retrieve asset storage " + storageName.toStdString() + ".");
+
+        // Regenerate storage combo box items to make sure that we're up-to-date.
+        storageComboBox->clear();
+        foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+            storageComboBox->addItem(storage->ToString(), storage->Name());
+
         return;
     }
 
@@ -357,7 +453,7 @@ void AddContentWindow::AddContent()
     while(*eit)
     {
         EntityWidgetItem *eitem = dynamic_cast<EntityWidgetItem *>(*eit);
-        if (eitem && eitem->checkState(0) == Qt::Unchecked)
+        if (eitem && eitem->checkState(cColumnEntityCreate) == Qt::Unchecked)
         {
             QList<EntityDesc>::const_iterator ei = qFind(newDesc.entities, eitem->desc);
             if (ei != newDesc.entities.end())
@@ -366,6 +462,9 @@ void AddContentWindow::AddContent()
 
         ++eit;
     }
+
+    // Rewrite components' asset refs
+    RewriteAssetReferences(newDesc, dest);
 
     RefMap refs;
     QTreeWidgetItemIterator ait(assetTreeWidget);
@@ -377,9 +476,9 @@ void AddContentWindow::AddContent()
         {
             if (aitem->checkState(cColumnAssetUpload) == Qt::Unchecked)
             {
-                QList<AssetDesc>::const_iterator ai = qFind(newDesc.assets, aitem->desc);
-                if (ai != newDesc.assets.end())
-                    newDesc.assets.removeOne(*ai);
+                bool removed = newDesc.assets.remove(qMakePair(aitem->desc.source, aitem->desc.subname));
+                if (!removed)
+                    LogDebug("Coulnd't find and remove " + aitem->desc.source.toStdString() + "from asset map.");
             }
             else
             {
@@ -387,8 +486,8 @@ void AddContentWindow::AddContent()
                 ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
                 if (aitem->desc.typeName == "texture")
                 {
-                    int idx = aitem->desc.filename.lastIndexOf("/");
-                    refs[aitem->desc.filename.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
+                    int idx = aitem->desc.source.lastIndexOf("/");
+                    refs[aitem->desc.source.mid(idx != -1 ? idx + 1 : 0).trimmed()] = aitem->desc.destinationName;
                 }
             }
         }
@@ -397,11 +496,11 @@ void AddContentWindow::AddContent()
     }
 
     // Rewrite asset refs
-    QMutableListIterator<AssetDesc> rewriteIt(newDesc.assets);
+    QMutableMapIterator<SceneDesc::AssetMapKey, AssetDesc> rewriteIt(newDesc.assets);
     while(rewriteIt.hasNext())
     {
         rewriteIt.next();
-        if (rewriteIt.value().typeName == "material")
+        if (rewriteIt.value().typeName.contains("material", Qt::CaseInsensitive))
             ///\todo This logic will be removed in the future, as we need it generic for any types of assets.
             ReplaceReferences(rewriteIt.value().data, refs);
     }
@@ -418,27 +517,23 @@ void AddContentWindow::AddContent()
     {
         try
         {
-            IAssetUploadTransfer *transfer = 0;
+            AssetUploadTransferPtr transfer;
 
-            if (!ad.filename.isEmpty() && ad.data.isEmpty())
+            if (ad.dataInMemory)
             {
-//                LogDebug("Starting upload of ."+ ad.filename.toStdString());
-                transfer = framework->Asset()->UploadAssetFromFile(ad.filename.toStdString().c_str(),
-                    dest, ad.destinationName.toStdString().c_str());
-            }
-            else if (/*ad.filename.isEmpty() && */!ad.data.isEmpty())
-            {
-//                LogDebug("Starting upload of ."+ ad.destinationName.toStdString());
                 transfer = framework->Asset()->UploadAssetFromFileInMemory((const u8*)QString(ad.data).toStdString().c_str(),
                     ad.data.size(), dest, ad.destinationName.toStdString().c_str());
             }
             else
-                LogError("Could not upload.");
+            {
+                transfer = framework->Asset()->UploadAssetFromFile(ad.source.toStdString().c_str(),
+                    dest, ad.destinationName.toStdString().c_str());
+            }
 
             if (transfer)
             {
-                connect(transfer, SIGNAL(Completed(IAssetUploadTransfer *)), SLOT(HandleUploadCompleted(IAssetUploadTransfer *)));
-                connect(transfer, SIGNAL(Failed(IAssetUploadTransfer *)), SLOT(HandleUploadFailed(IAssetUploadTransfer *)));
+                connect(transfer.get(), SIGNAL(Completed(IAssetUploadTransfer *)), SLOT(HandleUploadCompleted(IAssetUploadTransfer *)));
+                connect(transfer.get(), SIGNAL(Failed(IAssetUploadTransfer *)), SLOT(HandleUploadFailed(IAssetUploadTransfer *)));
             }
         }
         catch(const Exception &e)
@@ -452,11 +547,13 @@ void AddContentWindow::AddContent()
     switch(newDesc.type)
     {
     case SceneDesc::Naali:
+    case SceneDesc::OgreMesh:
         entities = destScene->CreateContentFromSceneDescription(newDesc, false, AttributeChange::Default);
         break;
+/*
     case SceneDesc::OgreMesh:
     {
-        boost::filesystem::path path(newDesc.filename.toStdString());
+        fs::path path(newDesc.filename.toStdString());
         std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(destScene);
@@ -466,9 +563,10 @@ void AddContentWindow::AddContent()
             entities << entity.get();
         break;
     }
+*/
     case SceneDesc::OgreScene:
     {
-        boost::filesystem::path path(newDesc.filename.toStdString());
+        fs::path path(newDesc.filename.toStdString());
         std::string dirname = path.branch_path().string();
 
         TundraLogic::SceneImporter importer(destScene);
@@ -506,10 +604,11 @@ void AddContentWindow::CheckIfColumnIsEditable(QTreeWidgetItem *item, int column
 
 void AddContentWindow::RewriteDestinationNames()
 {
-    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageComboBox->currentText());
+    QString storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
+    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageName);
     if (!dest)
     {
-        LogError("Could not retrieve asset storage " + storageComboBox->currentText().toStdString() + ".");
+        LogError("Could not retrieve asset storage " + storageName.toStdString() + ".");
         return;
     }
 
@@ -530,13 +629,11 @@ void AddContentWindow::RewriteDestinationNames()
 
 void AddContentWindow::HandleUploadCompleted(IAssetUploadTransfer *transfer)
 {
-    assert(transfer);
-//    LogDebug("Upload completed, " + transfer->sourceFilename.toStdString() + " -> " + transfer->destinationName.toStdString());
+    ///\todo update progress bar when the feature is available.
 }
 
 void AddContentWindow::HandleUploadFailed(IAssetUploadTransfer *transfer)
 {
-    assert(transfer);
-//    LogDebug("Upload failed for " + transfer->sourceFilename.toStdString() + "/" + transfer->destinationName.toStdString());
+    ///\todo update progress bar when the feature is available.
 }
 

@@ -6,7 +6,7 @@
 #include "EC_AnimationController.h"
 #include "Entity.h"
 #include "OgreRenderingModule.h"
-#include "RexNetworkUtils.h"
+#include "CoreStringUtils.h"
 
 #include <Ogre.h>
 
@@ -16,7 +16,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_AnimationController")
 #include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
-using namespace RexTypes;
 
 EC_AnimationController::EC_AnimationController(IModule* module) :
     IComponent(module->GetFramework()),
@@ -301,21 +300,30 @@ void EC_AnimationController::ResetState()
     animations_.clear();
 }
 
+/// Finds an animation state from Ogre::AnimationStateSet by name, performing a case-insensitive name search.
+/// \note This function is O(n), while normal set search would be O(logN) or O(1).
+Ogre::AnimationState *OgreAnimStateSetFindNoCase(Ogre::AnimationStateSet *set, const QString &animState)
+{
+    if (!set)
+        return 0;
+
+    Ogre::AnimationStateIterator iter = set->getAnimationStateIterator();
+    while(iter.hasMoreElements())
+    {
+        Ogre::AnimationState *s = iter.getNext();
+        if (QString::compare(s->getAnimationName().c_str(), animState, Qt::CaseInsensitive) == 0)
+            return s;
+    }
+
+    return 0;
+}
+
 Ogre::AnimationState* EC_AnimationController::GetAnimationState(Ogre::Entity* entity, const QString& name)
 {
     if (!entity)
         return 0;
         
-    Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
-    if (!anims)
-        return 0;
-    
-    std::string namestd = name.toStdString();
-    
-    if (anims->hasAnimationState(namestd))
-        return anims->getAnimationState(namestd);
-    else
-        return 0;
+    return OgreAnimStateSetFindNoCase(entity->getAllAnimationStates(), name);
 }
 
 bool EC_AnimationController::EnableExclusiveAnimation(const QString& name, bool looped, float fadein, float fadeout, bool high_priority)
@@ -325,7 +333,7 @@ bool EC_AnimationController::EnableExclusiveAnimation(const QString& name, bool 
     while (i != animations_.end())
     {
         const QString& other_name = i->first;
-        if (other_name != name)
+        if (!(QString::compare(other_name, name, Qt::CaseInsensitive) == 0))
         {
             i->second.phase_ = PHASE_FADEOUT;
             i->second.fade_period_ = fadeout;

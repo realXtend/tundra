@@ -209,7 +209,7 @@ QStringList EC_OpenSimPrim::GetChildren()
     foreach(Scene::EntityPtr entity, prims)
     {
         boost::shared_ptr<EC_OpenSimPrim> prim = entity->GetComponent<EC_OpenSimPrim>();
-        assert(prim.get());
+        assert(prim);
         if (prim->getParentId() == getLocalId())
         {
             QString id;

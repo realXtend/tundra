@@ -5,6 +5,7 @@
 
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
+#include "ECEditorModuleApi.h"
 
 #include <QObject>
 #include <QPointer>
@@ -12,110 +13,120 @@
 class TreeWidgetItemExpandMemory;
 typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
 
-namespace ECEditor
+class ECEditorWindow;
+class EcXmlEditorWidget;
+
+//! EC Editor module
+/*! \defgroup ECEditorModuleClient ECEditorModule Client interface.
+ *  EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
+ */
+class ECEDITOR_MODULE_API ECEditorModule : public QObject, public IModule
 {
-    class ECEditorWindow;
-    class EcXmlEditorWidget;
+    Q_OBJECT
 
-    //! EC Editor module
-    /*! \defgroup ECEditorModuleClient ECEditorModule Client interface.
-     *  EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
+public:
+    //! Constructor.
+    ECEditorModule();
+
+    //! Destructor 
+    virtual ~ECEditorModule();
+
+    //! IModuleImpl overrides.
+    void Load();
+    void Initialize();
+    void PostInitialize();
+    void Uninitialize();
+    void Update(f64 frametime);
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
+
+    //! Show EC editor window.
+    //Console::CommandResult ShowWindow(const StringVector &params);
+
+    Console::CommandResult ShowDocumentation(const StringVector &params);
+
+    //! Added for testing EC_DynamicComponent.
+    /*! @param params Params should be following:
+     *  0 = entity id.
+     *  1 = operation (add or rem)
+     *  2 = component type.(ec. EC_DynamicComponent)
+     *  3 = attribute name.
+     *  4 = attribute type. !Only rem dont use in rem operation.
+     *  5 = attribute value. !Only rem dont use in rem operation.
      */
-    class ECEditorModule : public QObject, public IModule
-    {
-        Q_OBJECT
+    Console::CommandResult EditDynamicComponent(const StringVector &params);
 
-    public:
-        //! Constructor.
-        ECEditorModule();
+    ECEditorWindow *GetActiveECEditor() const;
 
-        //! Destructor 
-        virtual ~ECEditorModule();
+    //! returns name of this module. Needed for logging.
+    static const std::string &NameStatic() { return name_static_; }
 
-        //! IModuleImpl overrides.
-        void Load();
-        void Initialize();
-        void PostInitialize();
-        void Uninitialize();
-        void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
+    //! Logging functions.
+    MODULE_LOGGING_FUNCTIONS
 
-        //! Show EC editor window.
-        Console::CommandResult ShowWindow(const StringVector &params);
+    /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
+    /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
+        collapsed items similar.
+    */
+    ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
-        Console::CommandResult ShowDocumentation(const StringVector &params);
+public slots:
+    // This mehtod is called when new ECEditorWindow isntance is created.
+    //void RegisterECEditor(ECEditorWindow *editor);
+    //void UnregisterECEditor();
+    void ECEditorFocusChanged(ECEditorWindow *editor);
 
-        //! Added for testing EC_DynamicComponent.
-        /*! @param params Params should be following:
-         *  0 = entity id.
-         *  1 = operation (add or rem)
-         *  2 = component type.(ec. EC_DynamicComponent)
-         *  3 = attribute name.
-         *  4 = attribute type. !Only rem dont use in rem operation.
-         *  5 = attribute value. !Only rem dont use in rem operation.
-         */
-        Console::CommandResult EditDynamicComponent(const StringVector &params);
+    void AddEditorWindowToUI();
 
-        //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return name_static_; }
+    //! Creates EC attribute XML editor widget for entity.
+    //! \param entity Entity pointer.
+    void CreateXmlEditor(Scene::EntityPtr entity);
 
-        //! Logging functions.
-        MODULE_LOGGING_FUNCTIONS
+    //! Creates EC attribute XML editor widget for entity.
+    //! \param entities List of entity pointers.
+    void CreateXmlEditor(const QList<Scene::EntityPtr> &entities);
 
-        /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
-        /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
-            collapsed items similar.
-        */
-        ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
+    //! Creates EC attribute XML editor widget for component.
+    //! \param component Component pointer.
+    void CreateXmlEditor(ComponentPtr component);
 
-    public slots:
-        void AddEditorWindowToUI();
+    //! Creates EC attribute XML editor widget for component.
+    //! \param components List of component pointers.
+    void CreateXmlEditor(const QList<ComponentPtr> &components);
 
-        //! Creates EC attribute XML editor widget for entity.
-        //! \param entity Entity pointer.
-        void CreateXmlEditor(Scene::EntityPtr entity);
+private:
+    //! Static name of the module
+    static std::string name_static_;
 
-        //! Creates EC attribute XML editor widget for entity.
-        //! \param entities List of entity pointers.
-        void CreateXmlEditor(const QList<Scene::EntityPtr> &entities);
+    //! Id for Scene event category
+    event_category_id_t scene_event_category_;
 
-        //! Creates EC attribute XML editor widget for component.
-        //! \param component Component pointer.
-        void CreateXmlEditor(ComponentPtr component);
+    //! Id for NetworkState event category
+    event_category_id_t network_state_event_category_;
 
-        //! Creates EC attribute XML editor widget for component.
-        //! \param components List of component pointers.
-        void CreateXmlEditor(const QList<ComponentPtr> &components);
+    //! EC XML editor window
+    QPointer<EcXmlEditorWidget> xmlEditor_;
 
-    private:
-        //! Static name of the module
-        static std::string name_static_;
+    /// Input context.
+    boost::shared_ptr<InputContext> inputContext;
 
-        //! Id for Scene event category
-        event_category_id_t scene_event_category_;
+    /// Tree widget item expand memory keeps track of which items in EC editor are expanded.
+    ExpandMemoryPtr expandMemory;
 
-        //! Id for NetworkState event category
-        event_category_id_t network_state_event_category_;
+    /// Active ECEditorWindow.
+    QPointer<ECEditorWindow> active_editor_;
+    /// ECEditorModule will create it's own ECEditorWindow instance while it's initializing. 
+    /// To avoid a memory leak, we store that pointer.
+    QPointer<ECEditorWindow> common_editor_;
 
-        //! EC editor window
-        ECEditorWindow* editor_window_;
+private slots:
+    /// Handles KeyPressed() signal from input context.
+    /** @param e Key event.
+    */
+    void HandleKeyPressed(KeyEvent *e);
 
-        //! EC XML editor window
-        QPointer<EcXmlEditorWidget> xmlEditor_;
-
-        /// Input context.
-        boost::shared_ptr<InputContext> inputContext;
-
-        /// Tree widget item expand memory keeps track of which items in EC editor are expanded.
-        ExpandMemoryPtr expandMemory;
-
-    private slots:
-        /// Handles KeyPressed() signal from input context.
-        /** @param e Key event.
-        */
-        void HandleKeyPressed(KeyEvent *e);
-    };
-}
+    // When active_editor is destroyed we need to set it's pointer back to null.
+    void ActiveECEditorDestroyed(QObject *obj = 0);
+};
 
 #endif
 

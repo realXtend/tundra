@@ -50,7 +50,7 @@ class PHYSICS_MODULE_API PhysicsWorld : public QObject
     Q_OBJECT
     
 public:
-    PhysicsWorld(PhysicsModule* owner);
+    PhysicsWorld(PhysicsModule* owner, bool isClient);
     virtual ~PhysicsWorld();
     
     //! Step the physics world. May trigger several internal simulation substeps, according to the deltatime given.
@@ -89,6 +89,9 @@ public slots:
     //! Return the Bullet world object
     btDynamicsWorld* GetWorld() const;
     
+    //! Return whether the physics world is for a client scene. Client scenes only simulate local entities' motion on their own.
+    bool IsClient() const { return isClient_; }
+    
 signals:
     //! A physics collision has happened between two entities. 
     /*! Note: both rigidbodies participating in the collision will also emit a signal separately. 
@@ -122,6 +125,9 @@ private:
     
     //! Length of internal physics timestep
     float physicsUpdatePeriod_;
+    
+    //! Client scene flag
+    bool isClient_;
     
     //! Previous frame's collisions. We store these to know whether the collision was new or "ongoing"
     std::set<std::pair<btCollisionObject*, btCollisionObject*> > previousCollisions_;

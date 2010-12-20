@@ -139,11 +139,11 @@ void mainPS(float4 pos    : POSITION,
 	  float4 shadowTex2 : TEXCOORD6,
 #endif
 #endif
-		  uniform sampler2D map0 : register(s0), //extra tex, not used atm
-          uniform sampler2D map1 : register(s1), //Detail0
-          uniform sampler2D map2 : register(s2), //Detail1
-          uniform sampler2D map3 : register(s3), //Detail2
-          uniform sampler2D map4 : register(s4), //Detail3
+		  uniform sampler2D map0 : register(s0), //Detail0
+          uniform sampler2D map1 : register(s1), //Detail1
+          uniform sampler2D map2 : register(s2), //Detail2
+          uniform sampler2D map3 : register(s3), //Detail3
+          uniform sampler2D map4 : register(s4), //extra tex, not used atm
           uniform sampler2D shadowMap0 : register(s5),
 #ifdef PSSM_SHADOWS
 	  uniform sampler2D shadowMap1 : register(s6),
@@ -152,10 +152,10 @@ void mainPS(float4 pos    : POSITION,
           out float4 col: COLOR)
 {
     //Get texture and their volumes
-    float4 c1 = tex2D(map1, tex12.xy) * texVol.x;
-    float4 c2 = tex2D(map2, tex12.zw) * texVol.y;
-    float4 c3 = tex2D(map3, tex34.xy) * texVol.z;
-    float4 c4 = tex2D(map4, tex34.zw) * texVol.w;
+    float4 c1 = tex2D(map0, tex12.xy) * texVol.x;
+    float4 c2 = tex2D(map1, tex12.zw) * texVol.y;
+    float4 c3 = tex2D(map2, tex34.xy) * texVol.z;
+    float4 c4 = tex2D(map3, tex34.zw) * texVol.w;
 
     float lightness = 1.f;
 #ifdef SHADOW_MAPPING
