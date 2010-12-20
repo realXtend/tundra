@@ -129,11 +129,12 @@ private:
     QPointer<Menu> contextMenu; ///< Context menu.
 
     //! Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
-    QMap<AssetTransferPtr, QString> filesaves_;
+    QMap<QString, QString> filesaves_;
 
     //! Used by 'Export all', a list of assets that have already been saved, so assets are not saved multiple times.
-    //! Multiple assets can reference reference another asset, so each asset must be saved only once.
-    //! This must be cleared before starting any assets saving operations
+    /*! Multiple assets can reference reference another asset, so each asset must be saved only once.
+        This must be cleared before starting any assets saving operations.
+    */
     QSet<QString> saved_assets_;
 
     bool fetch_references_; //!< if true, when saving assets, also saves references
