@@ -46,9 +46,14 @@ class SceneDataManager:
         self.olMaterials = []
         self.hasCopyFiles = False
         
+        materialFound = False
         if(self.hasMaterialFile(scenefile)):
-            self.readMeshes()
+            materialFound = True
+        if(self.hasSceneMaterialFile(scenefile)):
+            materialFound = True
+        if(materialFound):
             self.readTextures()
+            self.readMeshes()
             # assume 1 material file
             self.materials.append(os.path.basename(self.materialFile))
             self.hasCopyFiles = True
@@ -57,13 +62,18 @@ class SceneDataManager:
 		elems = self.xmlDoc.getElementsByTagName('externals')
 		for f in elems[0].getElementsByTagName('file'):
 			self.materials.append(f.getAttribute('name'))
-		
-					
 
     def hasMaterialFile(self, scenefile):
         mfile = scenefile[:-6] + ".material"
         return os.access(mfile, os.F_OK)
         
+    def hasSceneMaterialFile(self, scenefile):
+        p = os.path.dirname(scenefile)
+        scenematerial = p + os.path.sep + "Scene.material"
+        if( os.access(scenematerial, os.F_OK)):
+            self.materialFile = scenematerial
+            return True
+        return False
         
     def copyFilesToDirs(self):
         for m in self.meshes:

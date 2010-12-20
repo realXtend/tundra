@@ -75,7 +75,19 @@ class DotSceneManager:
             self.setOgreNodeScale(oNode, x, y ,z)
         
     def test(self):
-        # print "test"
+        print "--"
+        print self.xshift, self.yshift, self.zshift
+        print self.centerPoint
+        print self.startcenterX ,self.startcenterY ,self.startcenterZ
+
+        for k, on in self.nodes.iteritems():
+            print "------------------------------"
+            print on.entityName
+            print on.position
+            print on.orientation
+            print on.naali_ent.placeable.Position
+            print on.naali_ent.placeable.Orientation
+            on.naali_ent.placeable.Orientation = on.orientation
         pass
         
     def setOgreNodePosition(self, on, x, y ,z):

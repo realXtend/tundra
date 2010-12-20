@@ -33,6 +33,9 @@ self.dotscene = DotScene(self.fileName, self.sceneManager, rootnode)
 class DotScene:
     def __init__ (self, fileName, sceneManager, rootNode=None, prefix = ''):
         self.fileName = fileName
+        self.blendScene = False
+        if(fileName.endswith(".blend.scene")):
+            self.blendScene = True
         self.sceneManager = sceneManager
         self.cameras = []
         self.lights = []
@@ -62,7 +65,8 @@ class DotScene:
                 realName =  node.attributes['name'].nodeValue
                 # create new scene node
                 newNode = self.rootNode.createChildSceneNode() # self.prefix + realName)
-
+                newNode.blendSceneNode = self.blendScene
+                
                 #position it
                 pos = findNodes(node, 'position')[0].attributes
                 newNode.position = Vector(float(pos['x'].nodeValue), float(pos['y'].nodeValue), float(pos['z'].nodeValue))
@@ -149,7 +153,7 @@ class DotScene:
                     ##attachMe.setFOVy ( ogre.Radian( fov ) )  #fOVy = fov
                     
                     self.cameras.append ( attachMe )
-                    print 'added camera: "%s" fov: %f type: %s clipping: %f,%f' % (name, fov, projectionType,attachMe.nearClipDistance,attachMe.farClipDistance)
+                    #print 'added camera: "%s" fov: %f type: %s clipping: %f,%f' % (name, fov, projectionType,attachMe.nearClipDistance,attachMe.farClipDistance)
                 except IndexError:
                     pass
                 

@@ -205,6 +205,16 @@ class SceneUploader:
         saver = SceneSaver()
         saver.save(dstSceneFile, ds.dotscenemanager.nodes)
         
+        # copy  rex file
+        rexFile = ds.fileName[:-6] + ".rex"
+        rexDstFile = dstSceneFile[:-6] + ".rex"
+        # print "--------------"
+        # print rexFile
+        # print rexDstFile
+        # print "--------------"
+        if(self.fileExists(rexFile)==True):
+            shutil.copyfile(rexFile, rexDstFile)
+        
         for k, oNode in ds.dotscenemanager.nodes.iteritems():
             #print k
             self.handleNodePath(oNode.entityMeshFile)

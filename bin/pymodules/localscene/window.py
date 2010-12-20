@@ -124,6 +124,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.checkBoxLockScale = self.gui.findChild("QCheckBox", "checkBoxLockScale")
         self.checkBoxToCenter = self.gui.findChild("QCheckBox", "checkBoxToCenter")
         self.checkBoxRotationPoint = self.gui.findChild("QCheckBox", "checkBoxRotationPoint")
+        self.checkBoxToCenter = self.gui.findChild("QCheckBox", "checkBoxToCenter")
 
         # server end scene editing
         self.btnLoadServerSceneList = self.gui.findChild("QPushButton", "pushButtonLoadServerSceneList")
@@ -170,6 +171,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.chkBoxFlipZY.connect("toggled(bool)", self.checkBoxZYToggled)
         self.checkBoxHighlight.connect("toggled(bool)", self.checkBoxHighlightToggled)
         self.checkBoxLockScale.connect("toggled(bool)", self.checkBoxLockScaleToggled)
+        self.checkBoxToCenter.connect("toggled(bool)", self.checkBoxToCenterToggled)
 
         self.btnLoadServerSceneList.connect("clicked(bool)", self.btnLoadServerSceneListClicked)
         self.btnLoadServerScene.connect("clicked(bool)", self.btnLoadServerSceneClicked)
@@ -344,6 +346,10 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
 
     def checkBoxLockScaleToggled(self, enabled):
         self.sizeLock = enabled
+        
+    def checkBoxToCenterToggled(self, enabled):
+        self.controller.dsManager.test()
+        pass
 
 # Server side scene handlers
 
