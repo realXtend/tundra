@@ -80,7 +80,6 @@ namespace MumbleVoip
         void SendRecordedAudio();
         void PlaybackReceivedAudio();
         void PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame);
-        boost::shared_ptr<ISoundService> SoundService();
         void ApplyMicrophoneLevel(PCMAudioFrame* frame);
         //virtual void AddChannel(EC_VoiceChannel* channel);
         //virtual void RemoveChannel(EC_VoiceChannel* channel);
@@ -100,7 +99,7 @@ namespace MumbleVoip
         double speaker_voice_activity_;
         MumbleLib::User* self_user_;
         QString current_mumble_channel_;
-        QMap<int, sound_id_t> audio_playback_channels_;
+        QMap<int, SoundChannelPtr> audio_playback_channels_;
         std::string recording_device_;
         Settings* settings_;
         bool local_echo_mode_; // if true then acudio is only played locally

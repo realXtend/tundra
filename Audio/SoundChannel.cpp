@@ -80,18 +80,9 @@ void SoundChannel::Play(AudioAssetPtr audioAsset)
     buffered_mode_ = false;
 }
 
-void SoundChannel::AddBuffer(const SoundBuffer& buffer)
+void SoundChannel::AddBuffer(AudioAssetPtr buffer)
 {
-    ///\todo Regression. reimplement. -jj.
-    /*
-    // Construct a sound from the buffer
-    SoundPtr new_sound(new Sound("buffer"));
-    new_sound->LoadFromBuffer(buffer);
-    // If failed for some reason (out of memory?), bail out
-    if (!new_sound->GetHandle())
-        return;
-    
-    pending_sounds_.push_back(new_sound);
+    pending_sounds_.push_back(buffer);
     
     // Buffered mode should not loop
     SetLooped(false);
@@ -100,7 +91,6 @@ void SoundChannel::AddBuffer(const SoundBuffer& buffer)
     if (state_ == Stopped)
         state_ = Pending;
     buffered_mode_ = true;
-    */
 }
 
 bool SoundChannel::CreateSource()
@@ -156,7 +146,7 @@ QString SoundChannel::GetSoundName() const
     AudioAssetPtr asset = playing_sounds_.size() > 0 ? playing_sounds_.front() : AudioAssetPtr();
     if (asset)
         return asset->Name();
-    asset = pending_sounds_.size() > 0 ? pending_sounds_.front().lock() : AudioAssetPtr();
+    asset = pending_sounds_.size() > 0 ? pending_sounds_.front() : AudioAssetPtr();
     if (asset)
         return asset->Name();
     
@@ -286,7 +276,7 @@ void SoundChannel::SetAttenuatedGain()
 void SoundChannel::QueueBuffers()
 {
     // See that we do have waiting sounds and they're ready to play
-    AudioAssetPtr pending = pending_sounds_.size() > 0 ? pending_sounds_.front().lock() : AudioAssetPtr();
+    AudioAssetPtr pending = pending_sounds_.size() > 0 ? pending_sounds_.front() : AudioAssetPtr();
 
     if (!pending)
         return;
@@ -304,7 +294,7 @@ void SoundChannel::QueueBuffers()
     // Buffer pending sounds, move them to playing vector
     while(pending_sounds_.size() > 0)
     {
-        AudioAssetPtr sound = pending_sounds_.front().lock();
+        AudioAssetPtr sound = pending_sounds_.front();
         if (!sound)
         {
             pending_sounds_.pop_front();
