@@ -11,6 +11,7 @@
 #include <QWidget>
 
 #include "ForwardDefines.h"
+#include "AssetFwd.h"
 #include "SceneDesc.h"
 #include "Vector3D.h"
 
@@ -36,21 +37,48 @@ public:
     */
     explicit AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent = 0);
 
-    ///
+    /// Destructor.
     ~AddContentWindow();
 
-    /// Add scene descrition to be shown the tree widgets.
+    /// Adds scene descrition to be shown in the window.
     /** @param desc Scene description.
     */
     void AddDescription(const SceneDesc &desc);
 
-    /// 
-    /** @param pos
+    /// Adds multiple scene descritions to be shown in the window.
+    /** @param desc Scene description.
+    */
+    void AddDescriptions(const QList<SceneDesc> &descs);
+
+    /// Adds files to be shown in the window.
+    /** @param fileNames List of files.
+    */
+    void AddFiles(const QStringList &fileNames);
+
+    /// Add offset position which will be applied to the created entities.
+    /** @param pos Position.
     */
     void AddPosition(const Vector3df &pos) { position = pos; }
 
 private:
     Q_DISABLE_COPY(AddContentWindow)
+
+    /// Creates entity items to the entity tree widget.
+    /** @param entityDescs List of entity descriptions.
+    */
+    void AddEntities(const QList<EntityDesc> &entityDescs);
+
+    /// Creates asset items to the asset tree widget.
+    /** @param assetDescs List of assets descriptions.
+    */
+    void AddAssets(const SceneDesc::AssetMap &assetDescs);
+
+    /// Rewrites values of AssetReference or AssetReferenceList attributes.
+    /** @param sceneDesc Scene description.
+        @param dest Destination asset storage.
+    */
+    void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest);
+
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
     Foundation::Framework *framework; ///< Framework.

@@ -34,14 +34,14 @@ namespace CommunicationUI
     {
         QMap<QString, QString> id_to_name;
         Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-        if (current_scene.get())
+        if (current_scene)
         {
             for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
             {
                 Scene::Entity &entity = *iter->second;
                 EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
                 if (presence_component)
-                    id_to_name.insert(presence_component->agentId.ToQString(), presence_component->GetFullName().c_str());
+                    id_to_name.insert(presence_component->agentId.ToQString(), presence_component->GetFullName());
             }
             return id_to_name;
         }
@@ -66,7 +66,7 @@ namespace CommunicationUI
     void EventHandler::UpdateAvatarPosition()
     {
         Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-        if (!current_scene.get())
+        if (!current_scene)
             return;
 
         for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)

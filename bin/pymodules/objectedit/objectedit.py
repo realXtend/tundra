@@ -372,8 +372,6 @@ class ObjectEdit(Component):
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
 
-        self.manipulator.initManipulation(ent, results, self.sels)
-        self.usingManipulator = True
 
         if ent is not None:
             if not self.manipulator.compareIds(ent.Id) and editable(ent): #ent.Id != self.selection_box.Id and 
@@ -390,7 +388,8 @@ class ObjectEdit(Component):
 
                 elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
-                    
+            self.manipulator.initManipulation(ent, results, self.sels)
+            self.usingManipulator = True
         else:
             self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
             self.canmove = False

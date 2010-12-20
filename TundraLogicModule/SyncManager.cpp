@@ -22,7 +22,7 @@
 #include "MsgEntityAction.h"
 #include "EC_DynamicComponent.h"
 
-#include "kNet.h"
+#include <kNet.h>
 
 #include <cstring>
 
@@ -384,8 +384,11 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
         foreach(UserConnection* c, owner_->GetKristalliModule()->GetUserConnections())
         {
-            //TundraLogicModule::LogInfo("peer " + action.toStdString());
-            c->connection->Send(msg);
+            if (c->properties["authenticated"] == "true")
+            {
+                //TundraLogicModule::LogInfo("peer " + action.toStdString());
+                c->connection->Send(msg);
+            }
         }
     }
 }
@@ -397,7 +400,9 @@ void SyncManager::OnUserActionTriggered(UserConnection* user, Scene::Entity *ent
         return; // Should never happen
     if ((!entity) || (!user))
         return;
-        
+    if (user->properties["authenticated"] != "true")
+        return; // Not yet authenticated, do not receive actions
+    
     // Craft EntityAction message.
     MsgEntityAction msg;
     msg.entityId = entity->GetId();
@@ -577,7 +582,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                     if (attribute)
                                     {
                                         updAttribute.attributeName = StringToBuffer((*k).toStdString());
-                                        updAttribute.attributeType = StringToBuffer(attribute->TypenameToString());
+                                        updAttribute.attributeType = StringToBuffer(attribute->TypeName());
                                         updAttribute.attributeData.resize(64 * 1024);
                                         DataSerializer dest((char*)&updAttribute.attributeData[0], updAttribute.attributeData.size());
                                         attribute->ToBinary(dest);
@@ -1020,7 +1025,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                         if (attr)
                         {
                             // If wrong type of attribute, delete and recreate
-                            if (attr->TypenameToString() != attrTypeName.toStdString())
+                            if (attr->TypeName() != attrTypeName.toStdString())
                             {
                                 dynComp->RemoveAttribute(attrName, AttributeChange::Disconnected);
                                 attr = dynComp->CreateAttribute(attrTypeName, attrName, AttributeChange::Disconnected);

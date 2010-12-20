@@ -13,6 +13,7 @@
 #include <QColor>
 #include <QVector3D>
 #include <QQuaternion>
+#include <QScriptValueIterator>
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
@@ -145,7 +146,7 @@ QScriptValue toScriptValueIAttribute(QScriptEngine *engine, const IAttribute *&s
     if(s)
     {
         obj.setProperty("name", QScriptValue(engine, QString::fromStdString(s->GetNameString())));
-        obj.setProperty("typename", QScriptValue(engine, QString::fromStdString(s->TypenameToString())));
+        obj.setProperty("typename", QScriptValue(engine, QString::fromStdString(s->TypeName())));
         obj.setProperty("value", QScriptValue(engine, QString::fromStdString(s->ToString())));
     }
     else
@@ -164,6 +165,30 @@ QScriptValue toScriptValueAssetReference(QScriptEngine *engine, const AssetRefer
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("ref", QScriptValue(engine, s.ref));
+    return obj;
+}
+
+void fromScriptValueAssetReferenceList(const QScriptValue &obj, AssetReferenceList &s)
+{
+    QScriptValueIterator it(obj);
+  
+    while (it.hasNext()) {
+        it.next();
+        AssetReference reference(it.value().toString());
+        s.Append(reference);
+    }
+    
+}
+
+QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetReferenceList &s)
+{
+    QScriptValue obj = engine->newObject();
+  
+    for( int i = 0; i < s.refs.size(); ++i)
+    {
+        obj.setProperty(i, QScriptValue(engine, s.refs[i].toString()));
+    }
+
     return obj;
 }
 
@@ -204,6 +229,12 @@ QScriptValue createAssetReference(QScriptContext *ctx, QScriptEngine *engine)
     return engine->toScriptValue(newAssetRef);
 }
 
+QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine)
+{
+    AssetReferenceList newAssetRefList;
+    return engine->toScriptValue(newAssetRefList);
+}
+
 void RegisterNaaliCoreMetaTypes()
 {
     qRegisterMetaType<Color>("Color");
@@ -211,6 +242,7 @@ void RegisterNaaliCoreMetaTypes()
     qRegisterMetaType<Quaternion>("Quaternion");
     qRegisterMetaType<Transform>("Transform");
     qRegisterMetaType<AssetReference>("AssetReference");
+    qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
 }
 
 void ExposeNaaliCoreTypes(QScriptEngine *engine)
@@ -223,6 +255,7 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, toScriptValueQQuaternion, fromScriptValueQQuaternion);
     qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
+    qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
 
     //qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
     int id = qRegisterMetaType<IAttribute*>("IAttribute*");
@@ -242,4 +275,7 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("Transform", ctorTransform);
     QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
     engine->globalObject().setProperty("AssetReference", ctorAssetReference);
+    QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);
+    engine->globalObject().setProperty("AssetReferenceList", ctorAssetReferenceList);
+
 }

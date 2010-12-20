@@ -90,6 +90,7 @@ void FunctionInvoker::Invoke(QObject *obj, const QString &function, const QVaria
             return;
         }
 
+        arg->FromQVariant(p);
         args.push_back(arg->Value());
     }
 

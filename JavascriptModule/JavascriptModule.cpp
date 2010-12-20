@@ -20,7 +20,7 @@
 #include "SceneManager.h"
 #include "Input.h"
 #include "UiServiceInterface.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include "Frame.h"
 #include "Console.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -91,6 +91,18 @@ void JavascriptModule::PostInitialize()
     
     // Initialize startup scripts
     LoadStartupScripts();
+
+    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
+
+    if (programOptions.count("run"))
+    {
+        commandLineStartupScript_ = programOptions["run"].as<std::string>();
+        JavascriptInstance *jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
+        PrepareScriptInstance(jsInstance);
+        startupScripts_.push_back(jsInstance);
+        jsInstance->Run();
+    }
+
 }
 
 void JavascriptModule::Uninitialize()
@@ -103,25 +115,6 @@ void JavascriptModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-bool JavascriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-{
-    if (category_id == frameworkEventCategory_)
-    {
-        if (event_id == Foundation::PROGRAM_OPTIONS)
-        {
-            Foundation::ProgramOptionsEvent *po_event = static_cast<Foundation::ProgramOptionsEvent*>(data);
-            if (po_event->options.count("run"))
-            {
-                commandLineStartupScript_ = po_event->options["run"].as<std::string>();
-                JavascriptInstance* jsInstance = new JavascriptInstance(commandLineStartupScript_.c_str(), this);
-                PrepareScriptInstance(jsInstance);
-                startupScripts_.push_back(jsInstance);
-                jsInstance->Run();
-            }
-        }
-    }
-    return false;
-}
 
 Console::CommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
 {
@@ -207,7 +200,17 @@ void JavascriptModule::ScriptAssetChanged(ScriptAssetPtr newScript)
     if (newScript->Name().endsWith(".js") || scriptType == "js") // We're positively using QtScript.
     {
         JavascriptInstance *jsInstance = new JavascriptInstance(newScript, this);
-        jsInstance->SetOwnerComponent(sender->GetSharedPtr());
+        ComponentPtr comp;
+        try
+        {
+            comp = sender->shared_from_this();
+        } catch(...)
+        {
+            LogError("Couldn't update component name, cause parent entity was null.");
+            return;
+        }
+
+        jsInstance->SetOwnerComponent(comp);
         sender->SetScriptInstance(jsInstance);
 
         // Register all core APIs and names to this script engine.

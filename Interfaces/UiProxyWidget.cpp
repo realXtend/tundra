@@ -28,15 +28,16 @@ UiProxyWidget::UiProxyWidget(QWidget *widget, Qt::WindowFlags flags):
     fade_animation_(0)
 {
     QString name = "UiProxyWidget";
-    if (!widget->objectName().isEmpty())
+    if (widget && !widget->objectName().isEmpty())
         name.append(":" + widget->objectName());
-    else if (widget->windowTitle().isEmpty())
+    else if (widget && widget->windowTitle().isEmpty())
         name.append(":" + widget->windowTitle());
     setObjectName(name);
 
     // Embed widget to this proxy widget.
     setWidget(widget);
-    widget->installEventFilter(this);
+    if (widget)
+        widget->installEventFilter(this);
 
     // Init effects and animations
     if (windowFlags() != Qt::Widget)

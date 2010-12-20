@@ -369,7 +369,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
     // Asset download related handlers.
     if (inventoryType_ == IDMT_OpenSim)
     {
-        if (!inventory_.get())
+        if (!inventory_)
             return false;
 
         OpenSimInventoryDataModel *osmodel = checked_static_cast<OpenSimInventoryDataModel *>(inventory_.get());
@@ -500,10 +500,10 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 {
     using namespace RexTypes;
 
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
-    if (!inventory_.get())
+    if (!inventory_)
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!.");
 
     if (inventoryType_ != IDMT_OpenSim)
@@ -550,10 +550,10 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 
 Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector &params)
 {
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
-    if (!inventory_.get())
+    if (!inventory_)
         return Console::ResultFailure("Inventory doesn't exist. Can't upload!");
 
     if (inventoryType_ != IDMT_OpenSim)
@@ -575,10 +575,10 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
 
 Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector &params)
 {
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
-    if (!inventory_.get())
+    if (!inventory_)
         return Console::ResultFailure("Inventory doesn't exist.");
 
     if (!service_)

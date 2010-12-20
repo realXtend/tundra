@@ -133,15 +133,16 @@ void KristalliProtocolModule::Update(f64 frametime)
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
     if (serverConnection)
-    {
         serverConnection->Process();
 
-        // Our client->server connection is never kept partially open.
-        // That is, at the moment the server write-closes the connection, we also write-close the connection.
-        // Check here if the server has write-closed, and also write-close our end if so.
-        if (!serverConnection->IsReadOpen() && serverConnection->IsWriteOpen())
-            serverConnection->Disconnect(0);
-    }
+    // Note: Calling the above serverConnection->Process() may set serverConnection to null if the connection gets disconnected.
+    // Therefore, in the code below, we cannot assume serverConnection is non-null, and must check it again.
+
+    // Our client->server connection is never kept partially open.
+    // That is, at the moment the server write-closes the connection, we also write-close the connection.
+    // Check here if the server has write-closed, and also write-close our end if so.
+    if (serverConnection && !serverConnection->IsReadOpen() && serverConnection->IsWriteOpen())
+        serverConnection->Disconnect(0);
     
     // Process server incoming connections & messages if server up
     if (server)
@@ -216,6 +217,10 @@ void KristalliProtocolModule::PerformConnection()
 
 void KristalliProtocolModule::Disconnect()
 {
+    // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
+    serverIp = "";
+    reconnectTimer.Stop();
+    
     if (serverConnection)
     {
         serverConnection->Disconnect();
@@ -224,10 +229,7 @@ void KristalliProtocolModule::Disconnect()
         serverConnection = 0;
     }
 
-    // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
-    serverIp = "";
-    
-    reconnectTimer.Stop();
+
 }
 
 bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLayer transport)

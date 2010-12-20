@@ -15,3 +15,9 @@
    
  For more info please visit:
    http://mumble.sourceforge.net/Murmurguide
+   
+   
+  -- To use Murmur VOIP in your Tundra world --
+  
+   To enable Murmur VOIP in Tundra, you need to build Tundra with CommunicationsModule and MumbleVoipModule enabled. To add VOIP capabilities to a scene,
+   follow the example .txml file specified in this folder.

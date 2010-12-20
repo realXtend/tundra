@@ -69,6 +69,7 @@ add_subdirectory(Server)
 add_subdirectory(Input)
 add_subdirectory(Ui)
 add_subdirectory(Asset)
+add_subdirectory(Audio)
 
 add_subdirectory(KristalliProtocolModule)
 add_subdirectory(TundraLogicModule)
@@ -96,8 +97,9 @@ AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
 AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
 AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
 AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
-AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
 AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
+AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
+AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 
 # The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
@@ -119,7 +121,6 @@ add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
 
 # The following are not core modules, but you cannot do anything practical without
 # having them, so they are effectively required.
-add_subdirectory(TextureDecoderModule)  # Required with OpenSim.
 add_subdirectory(ProtocolModuleOpenSim) # Required with OpenSim.
 add_subdirectory(ProtocolModuleTaiga)   # Required with OpenSim.
 
@@ -131,21 +132,20 @@ else()
 endif()
     
 # The following are optional.
-add_subdirectory(OpenALAudioModule)     # Enables audio playback.
 add_subdirectory(ECEditorModule)        # Tool for editing Naali scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
-add_subdirectory(InventoryModule)       # OpenSim and Taiga WebDAV inventory.
+#add_subdirectory(InventoryModule)       # OpenSim and Taiga WebDAV inventory.
 if (OGREASSETEDITOR)
-	add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
+    add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()
 add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
 add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
 add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
-add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
-add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
-add_subdirectory(CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
+#add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
+#add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
+#add_subdirectory(CAVEStereoModule)     # Implements CAVE and Stereoscopy functionality
 add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
 if (OPENASSETIMPORT)
-	add_subdirectory(OpenAssetImport)    	# Allows import of various mesh file formats
+    add_subdirectory(OpenAssetImport)        # Allows import of various mesh file formats
 endif()
 
 

@@ -116,7 +116,7 @@ namespace Ether
         void EtherSceneController::LoadStaticEther(EtherLoginNotifier *login_notifier, QMap<QString,QString> stored_login_data)
         {
             // Static login space widgets
-            classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data);
+			classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data, login_notifier->GetFramework());
             classical_login_widget_->RemoveEtherButton();
 
             classic_login_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
@@ -294,7 +294,7 @@ namespace Ether
         void EtherSceneController::LoadClassicLoginWidget(EtherLoginNotifier *login_notifier, bool default_view, QMap<QString,QString> stored_login_data)
         {
             // Classical login widgets
-            classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data);
+            classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data, login_notifier->GetFramework());
             classic_login_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
             classic_login_proxy_->setZValue(100);
             classic_login_proxy_->setWidget(classical_login_widget_);

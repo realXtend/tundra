@@ -13,8 +13,8 @@
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "SceneManager.h"
-#include "ISoundService.h"
 #include "LoggingFunctions.h"
+#include "Audio.h"
 #include "Frame.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
@@ -25,8 +25,6 @@ EC_SoundListener::EC_SoundListener(IModule *module):
 {
     // By default, this component is NOT network-serialized
     SetNetworkSyncEnabled(false);
-
-    soundService_ = GetFramework()->GetServiceManager()->GetService<ISoundService>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
@@ -50,8 +48,8 @@ void EC_SoundListener::RetrievePlaceable()
 
 void EC_SoundListener::Update()
 {
-    if (active.Get() && !placeable_.expired() && !soundService_.expired())
-        soundService_.lock()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
+    if (active.Get() && !placeable_.expired())
+        GetFramework()->Audio()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
 }
 
 void EC_SoundListener::OnActiveChanged()
@@ -59,7 +57,7 @@ void EC_SoundListener::OnActiveChanged()
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
     {
-        LogError("Failed on OnActiveChanged method cause default world scene wasn't setted.");
+        LogError("Failed on OnActiveChanged method cause default world scene wasn't set.");
         return;
     }
 

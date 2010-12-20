@@ -44,7 +44,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>15</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="timing">
          <attribute name="title">

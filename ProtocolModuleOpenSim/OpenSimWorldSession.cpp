@@ -57,7 +57,7 @@ namespace OpenSimProtocol
         ProtocolUtilities::ConnectionThreadState *thread_state)
     {
         boost::shared_ptr<ProtocolModuleOpenSim> spOpenSim = networkOpensim_.lock();
-        if (spOpenSim.get())
+        if (spOpenSim)
         {
             spOpenSim->SetAuthenticationType(ProtocolUtilities::AT_OpenSim);
             OpenSimLoginThread *loginWorker = spOpenSim->GetLoginWorker();

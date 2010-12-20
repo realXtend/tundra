@@ -6,6 +6,11 @@
 #include "ui_WebLoginWidget.h"
 #include "WebLoginPermanentCookie.h"
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace CoreUi
 {
     namespace Classical
@@ -16,7 +21,7 @@ namespace CoreUi
         Q_OBJECT
 
         public:
-            WebLoginWidget(QWidget *parent);
+			WebLoginWidget(QWidget *parent, Foundation::Framework *framework);
             ~WebLoginWidget();
             WebLoginPermanentCookie* permanentCookieStore;
 
@@ -34,6 +39,9 @@ namespace CoreUi
 
         private:
             QString address_;
+			
+			//! Framework
+			Foundation::Framework *framework_;
 
         signals:
             void WebLoginInfoReceived(QWebFrame *);

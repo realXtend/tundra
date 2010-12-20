@@ -7,6 +7,7 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "PythonQtScriptingConsole.h"
+#include "ScriptAsset.h"
 
 #include <QObject>
 #include <QList>
@@ -48,6 +49,11 @@ namespace MediaPlayer
     class ServiceInterface;
 }
 
+namespace Communications
+{
+    class ServiceInterface;
+}
+
 class UiProxyWidget;
 
 namespace PythonScript
@@ -68,13 +74,16 @@ namespace PythonScript
         InputContext* GetInputContext() const { return input.get(); }
         InputContext* CreateInputContext(const QString &name, int priority = 100);
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
+        Communications::ServiceInterface* GetCommunicationsService() const;
+        
         void RemoveQtDynamicProperty(QObject* qobj, char* propname);
         QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate);
-        /** Prepares Python script instance used with EC_Script for execution.
-            The script is executed instantly only if the runOnLoad attribute of the script EC is true.
-            @param filename Filename of the script.
+
+        /// Prepares Python script instance used with EC_Script for execution.
+        /** The script is executed instantly only if the runOnLoad attribute of the script EC is true.
+            @param scriptAsset Script asset.
         */
-        void LoadScript(const QString &filename);
+        void LoadScript(ScriptAssetPtr scriptAsset);
 
         PythonQtScriptingConsole* CreateConsole();
 
@@ -167,6 +176,8 @@ namespace PythonScript
         InputContextPtr input;
 
         QList<InputContextPtr> created_inputs_;
+
+        void ProcessCommandLineOptions();
 
     private slots:
         /** Called when new component is added to the active scene.

@@ -10,6 +10,8 @@
 #include "Ether/EtherLoginNotifier.h"
 #include "ui_ClassicalLoginWidget.h"
 
+#include "Framework.h";
+
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
@@ -18,10 +20,11 @@ namespace CoreUi
     {
         ClassicalLoginWidget::ClassicalLoginWidget(
             Ether::Logic::EtherLoginNotifier *login_notifier,
-            QMap<QString,QString> stored_login_data) :
+            QMap<QString,QString> stored_login_data,
+			Foundation::Framework *framework) :
             login_notifier_(login_notifier),
-            traditional_widget_(new TraditionalLoginWidget(this, stored_login_data)),
-            web_login_(new WebLoginWidget(this))
+            traditional_widget_(new TraditionalLoginWidget(this, stored_login_data)),			
+            web_login_(new WebLoginWidget(this, framework))
         {
             setupUi(this);
             tabWidget->addTab(traditional_widget_, " Login");

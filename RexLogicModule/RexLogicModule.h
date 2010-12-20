@@ -69,7 +69,6 @@ namespace RexLogic
     class InputEventHandler;
     class SceneEventHandler;
     class NetworkStateEventHandler;
-    class FrameworkEventHandler;
     class AvatarEventHandler;
     class Primitive;
     class CameraControllable;
@@ -220,6 +219,8 @@ namespace RexLogic
 
         ObjectCameraControllerPtr GetObjectCameraController() { return obj_camera_controller_; }
         CameraControlPtr GetCameraControlWidget() { return camera_control_widget_; }
+		
+		void SendAvatarUrl();
 
     public slots:
         //! logout from server and delete current scene
@@ -287,9 +288,6 @@ namespace RexLogic
 
         //! Event handler for scene events.
         SceneEventHandler *scene_handler_;
-
-        //! event handler for framework events
-        FrameworkEventHandler *framework_handler_;
 
         //! event handler for avatar events
         AvatarEventHandler *avatar_event_handler_;

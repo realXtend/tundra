@@ -22,10 +22,10 @@ class QGraphicsView;
 class QWidget;
 class QObject;
 
-class ISoundService;
 class UiServiceInterface;
 class Frame;
 class Input;
+class AudioAPI;
 class AssetAPI;
 class ScriptConsole;
 
@@ -78,6 +78,9 @@ namespace Foundation
             so all options will be taken in effect properly.
         */
         void ParseProgramOptions();
+
+        //! Returns the command line options specified as command-line options when starting up Naali.
+        const boost::program_options::variables_map &ProgramOptions() const { return commandLineVariables; }
 
         //! Do post-initialization steps. No need to call if using Framework::Go().
         /*! This function can be used if you wish to use the framework without main loop.
@@ -278,7 +281,7 @@ namespace Foundation
         ScriptConsole *Console() const;
 
         /// Returns the Naali core API Audio object.
-        ISoundService *Audio() const;
+        AudioAPI *Audio() const;
 
         /// Returns the default scene.
         Scene::SceneManager* DefaultScene() const;
@@ -287,6 +290,10 @@ namespace Foundation
         Scene::SceneManager* Scene(const QString& name) const;
         
         AssetAPI *Asset() const;
+
+        /// Returns the given module, if it is loaded into the system, and if it derives from QObject.
+        QObject *GetModuleQObj(const QString &name);
+
         /// Stores the given QObject as a dynamic property into the Framework. This is done to implement
         /// easier script access for QObject-based interface objects.
         /// @param name The name to use for the property. Fails if name is an empty string.
@@ -368,15 +375,11 @@ namespace Foundation
         //! profiler
         Profiler profiler_;
 #endif
-        //! program options
-        boost::program_options::variables_map cm_options_;
+        /// program options
+        boost::program_options::variables_map commandLineVariables;
 
-        //! program option descriptions
-        boost::program_options::options_description cm_descriptions_;
-
-        //! command line arguments as supplied by the operating system
-        int argc_;
-        char **argv_;
+        /// program option descriptions
+        boost::program_options::options_description commandLineDescriptions;
 
         //! Frame timer.
         boost::timer timer;
@@ -399,43 +402,44 @@ namespace Foundation
         //! Provides console access for scripting languages.
         ScriptConsole *console;
 
-        //! The Naali UI API.
+        /// The Naali UI API.
         NaaliUi *ui;
 
-        //! The Naali Input API.
+        /// The Naali Input API.
         Input *input;
 
         /// This object represents the Naali core Asset API.
         AssetAPI *asset;
 
+        /// The Naali Audio API.
+        AudioAPI *audio;
+
+        /// Command line arguments as supplied by the operating system.
+        int argc_;
+        char **argv_;
     };
 
     ///\todo Refactor-remove these. -jj.
     namespace
     {
-        const event_id_t PROGRAM_OPTIONS = 1;
         const event_id_t NETWORKING_REGISTERED = 2;
         const event_id_t WORLD_STREAM_READY = 3;
+		const event_id_t WEB_LOGIN_DATA_RECEIVED = 4;
     }
 
-    //! Contains pre-parsed program options and non-parsed command line arguments.
-    /*! Options contains program options pre-parsed by framework. If modules wish
-        to use their own command line arguments, the arguments are also supplied.
-        ///\todo Refactor-remove these. -jj.
-    */
-    class ProgramOptionsEvent : public IEventData
+    class WebLoginDataEvent : public IEventData
     {
-        ProgramOptionsEvent();
+        WebLoginDataEvent();
     public:
-        ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av) :
-            options(vars), argc(ac), argv(av) { }
-        //! parsed program options
-        const boost::program_options::variables_map &options;
-        //! command line arguments as supplied by the operating system
-        int argc;
-        char **argv;
+		WebLoginDataEvent(const QString firstname, const QString lastname, const QString avatar_address, const QString world_address) :
+            firstname_(firstname), lastname_(lastname), avatar_address_(avatar_address), world_address_(world_address) { }
+        
+		QString firstname_;
+		QString lastname_;
+		QString avatar_address_;
+		QString world_address_;
     };
+
 }
 
 #endif
-

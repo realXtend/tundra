@@ -302,7 +302,7 @@ void Input::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Ke
     for(; start != registeredInputContexts.end(); ++start)
     {
         boost::shared_ptr<InputContext> context = start->lock();
-        if (context.get())
+        if (context)
             context->TriggerKeyReleaseEvent(keyCode);
     }
 
@@ -810,7 +810,7 @@ void Input::Update(float frametime)
         iter != registeredInputContexts.end(); ++iter)
     {
         boost::shared_ptr<InputContext> inputContext = (*iter).lock();
-        if (inputContext.get())
+        if (inputContext)
             inputContext->UpdateFrame();
     }
 }

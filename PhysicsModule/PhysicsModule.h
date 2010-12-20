@@ -6,9 +6,9 @@
 #include "PhysicsModuleApi.h"
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
-#include "RexTypes.h"
-#include "SceneManager.h"
-#include "LinearMath/btIDebugDraw.h"
+#include "ForwardDefines.h"
+
+#include <LinearMath/btIDebugDraw.h>
 
 #include <QObject>
 
@@ -100,7 +100,10 @@ public:
     boost::shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
     
     //! Create a physics world for a scene
-    Physics::PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene);
+    /*! \param scene Scene into which to create
+        \param isClient If true, physics will be only simulated for local entities
+     */
+    Physics::PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene, bool isClient);
     
     //! Return the physics world for a scene if it exists
     Physics::PhysicsWorld* GetPhysicsWorldForScene(Scene::ScenePtr scene);

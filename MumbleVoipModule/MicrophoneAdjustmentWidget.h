@@ -6,7 +6,7 @@
 //#include "CommunicationsService.h"
 //#include <QGraphicsProxyWidget>
 #include "ui_MicrophoneAdjustment.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include <QTimer>
 
 namespace Foundation
@@ -42,7 +42,7 @@ namespace MumbleVoip
         Settings* settings_;
         QTimer read_audio_timer_;
         Foundation::Framework* framework_;
-        sound_id_t sound_id_;
+        SoundChannelPtr sound_id_;
         double voice_activity_level_;
         double microphone_level_;
     };

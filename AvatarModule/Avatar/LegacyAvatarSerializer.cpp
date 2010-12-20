@@ -5,10 +5,6 @@
 #include "RexTypes.h"
 #include "RexNetworkUtils.h"
 #include "OgreConversionUtils.h"
-#include "OgreImageTextureResource.h"
-#include "OgreMaterialResource.h"
-#include "OgreMeshResource.h"
-#include "OgreSkeletonResource.h"
 #include "RexNetworkUtils.h"
 #include "HttpUtilities.h"
 #include "XMLUtilities.h"
@@ -412,6 +408,16 @@ namespace Avatar
             AvatarModule::LogError("Attachment without name element");
             result.second = "Attachment missing name element";
             return result;
+        }
+        
+        // Awesome new feature: we may define material for attachment
+        QDomElement material = elem.firstChildElement("material");
+        while (!material.isNull())
+        {
+            AvatarMaterial newMat;
+            newMat.asset_.name_ = material.attribute("name").toStdString();
+            attachment.materials_.push_back(newMat);
+            material = material.nextSiblingElement("material");
         }
 
         QDomElement category = elem.firstChildElement("category");
@@ -832,7 +838,7 @@ namespace Avatar
         QDomElement name_elem = dest.createElement("name");
         SetAttribute(name_elem, "value", attachment.name_);
         elem.appendChild(name_elem);
-      
+        
         QDomElement mesh_elem = dest.createElement("mesh");
         SetAttribute(mesh_elem, "name", attachment.mesh_.name_);
         int link = 0;
@@ -840,6 +846,13 @@ namespace Avatar
             link = 1;
         SetAttribute(mesh_elem, "linkskeleton", link);
         elem.appendChild(mesh_elem);
+        
+        for (unsigned i = 0; i < attachment.materials_.size(); ++i)
+        {
+            QDomElement material_elem = dest.createElement("material");
+            SetAttribute(material_elem, "name", attachment.materials_[i].asset_.name_);
+            elem.appendChild(material_elem);
+        }
         
         QDomElement category_elem = dest.createElement("category");
         SetAttribute(category_elem, "name", attachment.category_);

@@ -50,7 +50,6 @@ typedef int service_type_t;
 typedef unsigned int entity_id_t;
 typedef unsigned int event_category_id_t;
 typedef unsigned int event_id_t;
-typedef unsigned int sound_id_t;
 
 namespace
 {

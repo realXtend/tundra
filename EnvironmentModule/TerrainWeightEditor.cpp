@@ -15,6 +15,7 @@
 #include "UiProxyWidget.h"
 #include "UiServiceInterface.h"
 
+
 #include "ConsoleCommandServiceInterface.h"
 namespace Environment
 {
@@ -397,6 +398,8 @@ namespace Environment
             return;
 
         QImage map  = CreateImageFromCanvases();
+        if(map.isNull())
+            return;
         
         if(map.format() != QImage::Format_ARGB32)
         {
@@ -437,7 +440,7 @@ namespace Environment
         if(!scene_manager_)
         {
             Scene::ScenePtr ptr = env_module_->GetFramework()->GetDefaultWorldScene();
-            if(ptr.get())
+            if(ptr)
                 scene_manager_ = ptr.get();
         }
          return scene_manager_;
@@ -449,6 +452,10 @@ namespace Environment
             return;
         Scene::EntityList list = scene_manager_->GetEntitiesWithComponent("EC_Terrain");
         Scene::EntityList::const_iterator it = list.begin();
+
+        //Quickfix, we will clone a new material copy for each terrain and assume there does not exist previous materialclones
+        int i = 0;
+        Ogre::String mat_name;
         while(it!= list.end())
         {
             boost::shared_ptr<EC_Terrain> ptr = (*it)->GetComponent<EC_Terrain>();
@@ -460,7 +467,26 @@ namespace Environment
             {
                 ptr->material.Set(AssetReference("Rex/TerrainPCF"/*, "OgreMaterial"*/), AttributeChange::Disconnected);
             }
+            Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName(mat_name);
+            if(mat.get())
+            {
+                if(i>0)
+                {
+                    //So we have several terrains, need to create more materials
+                    mat_name += Ogre::StringConverter::toString(i);
+                }
+                Ogre::MaterialPtr new_mat =Ogre::MaterialManager::getSingleton().getByName(mat_name);
+                if(!new_mat.get())
+                {
+                    new_mat =  mat->clone(mat_name);
+                }
+                if(new_mat.get())
+                {
+                    ptr->material.Set(QString(new_mat->getName().c_str()),AttributeChange::Default);
+                }
+            }
             it++;
+            i++;
         }
     }
 

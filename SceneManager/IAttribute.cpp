@@ -9,17 +9,17 @@
 
 #include "IAttribute.h"
 #include "IComponent.h"
-#include "AssetInterface.h"
 #include "Core.h"
 #include "CoreStdIncludes.h"
 #include "Transform.h"
 #include "AssetReference.h"
 
+#include <QVector3D>
 #include <QVariant>
 #include <QStringList>
 #include <QScriptEngine>
 
-#include "kNet.h"
+#include <kNet.h>
 
 using namespace kNet;
 
@@ -105,6 +105,20 @@ template<> std::string Attribute<AssetReference>::ToString() const
     return Get().ref.toStdString();
 }
 
+template<> std::string Attribute<AssetReferenceList>::ToString() const
+{
+    std::string stringValue = "";
+    AssetReferenceList values = Get();
+    for(int i = 0; i < values.Size(); ++i)
+    {
+        stringValue += values[i].ref.toStdString();
+        if (i < values.Size() - 1)
+            stringValue += ";";
+    }
+
+    return stringValue;
+}
+
 template<> std::string Attribute<QVariant>::ToString() const
 {
     QVariant value = Get();
@@ -148,69 +162,88 @@ template<> std::string Attribute<Transform>::ToString() const
     return value.toStdString();
 }
 
+template<> std::string Attribute<QVector3D>::ToString() const
+{
+    QVector3D value = Get();
+    
+    return ::ToString<float>(value.x()) + " " +
+        ::ToString<float>(value.y()) + " " +
+        ::ToString<float>(value.z());
+}
+
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
 
-template<> std::string Attribute<int>::TypenameToString() const
+template<> std::string Attribute<int>::TypeName() const
 {
     return "int";
 }
 
-template<> std::string Attribute<uint>::TypenameToString() const
+template<> std::string Attribute<uint>::TypeName() const
 {
     return "uint";
 }
 
-template<> std::string Attribute<float>::TypenameToString() const
+template<> std::string Attribute<float>::TypeName() const
 {
     return "real";
 }
 
-template<> std::string Attribute<QString>::TypenameToString() const
+template<> std::string Attribute<QString>::TypeName() const
 {
     return "string";
 }
 
-template<> std::string Attribute<bool>::TypenameToString() const
+template<> std::string Attribute<bool>::TypeName() const
 {
     return "bool";
 }
 
-template<> std::string Attribute<Vector3df>::TypenameToString() const
+template<> std::string Attribute<Vector3df>::TypeName() const
 {
     return "vector3df";
 }
 
-template<> std::string Attribute<Quaternion>::TypenameToString() const
+template<> std::string Attribute<Quaternion>::TypeName() const
 {
     return "quaternion";
 }
 
-template<> std::string Attribute<Color>::TypenameToString() const
+template<> std::string Attribute<Color>::TypeName() const
 {
     return "color";
 }
 
-template<> std::string Attribute<AssetReference>::TypenameToString() const
+template<> std::string Attribute<AssetReference>::TypeName() const
 {
     return "assetreference";
 }
 
-template<> std::string Attribute<QVariant>::TypenameToString() const
+template<> std::string Attribute<AssetReferenceList>::TypeName() const
+{
+    return "assetreferencelist";
+}
+
+template<> std::string Attribute<QVariant>::TypeName() const
 {
     return "qvariant";
 }
 
-template<> std::string Attribute<QVariantList >::TypenameToString() const
+template<> std::string Attribute<QVariantList >::TypeName() const
 {
     return "qvariantlist";
 }
 
-template<> std::string Attribute<Transform>::TypenameToString() const
+template<> std::string Attribute<Transform>::TypeName() const
 {
     return "transform";
 }
 
-// FROMSTRING TEMPLATE IMPLEMENTATIONS.
+template<> std::string Attribute<QVector3D>::TypeName() const
+{
+    return "qvector3d";
+}
+
+    // FROMSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::FromString(const std::string& str, AttributeChange::Type change)
 {
@@ -326,6 +359,20 @@ template<> void Attribute<AssetReference>::FromString(const std::string& str, At
     Set(AssetReference(str.c_str()), change);
 }
 
+template<> void Attribute<AssetReferenceList>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    AssetReferenceList value;
+    QString strValue = QString::fromStdString(str);
+    QStringList components = strValue.split(';');
+    for(int i = 0; i < components.size(); i++)
+        value.Append(AssetReference(components[i]));
+    if (value.Size() == 1)
+        if (value[0].ref.trimmed().isEmpty())
+            value.RemoveLast();
+
+    Set(value, change);
+}
+
 template<> void Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
 {
     QVariant value(QString(str.c_str()));
@@ -365,6 +412,23 @@ template<> void Attribute<Transform>::FromString(const std::string& str, Attribu
         result.SetScale(values[6], values[7], values[8]);
     }
     Set(result, change);
+}
+
+template<> void Attribute<QVector3D>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    StringVector components = SplitString(str, ' ');
+    if (components.size() == 3)
+    {
+        try
+        {
+            QVector3D value;
+            value.setX(ParseString<float>(components[0]));
+            value.setY(ParseString<float>(components[1]));
+            value.setZ(ParseString<float>(components[2]));
+            Set(value, change);
+        }
+        catch (...) {}
+    }
 }
 
     // FROMQVARIANT TEMPLATE IMPLEMENTATIONS.
@@ -414,19 +478,29 @@ template<> void Attribute<AssetReference>::FromQVariant(const QVariant &variant,
     Set(qvariant_cast<AssetReference>(variant), change);
 }
 
+template<> void Attribute<AssetReferenceList>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<AssetReferenceList>(variant), change);
+}
+
 template<> void Attribute<QVariant>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
     Set(variant, change);
 }
 
-template<> void Attribute<QVariantList >::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+template<> void Attribute<QVariantList>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
     Set(qvariant_cast<QVariantList>(variant), change);
 }
 
 template<> void Attribute<Transform>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
-    Set(qvariant_cast<Transform>(variant), change); 
+    Set(qvariant_cast<Transform>(variant), change);
+}
+
+template <> void Attribute<QVector3D>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<QVector3D>(variant), change);
 }
 
     // TOQVARIANT TEMPLATE IMPLEMENTATIONS.
@@ -476,6 +550,11 @@ template<> QVariant Attribute<AssetReference>::ToQVariant() const
     return QVariant::fromValue<AssetReference>(Get());
 }
 
+template<> QVariant Attribute<AssetReferenceList>::ToQVariant() const
+{
+    return QVariant::fromValue<AssetReferenceList>(Get());
+}
+
 template<> QVariant Attribute<QVariant>::ToQVariant() const
 {
     return Get();
@@ -489,6 +568,11 @@ template<> QVariant Attribute<QVariantList >::ToQVariant() const
 template<> QVariant Attribute<Transform>::ToQVariant() const
 {
     return QVariant::fromValue<Transform>(Get());
+}
+
+template<> QVariant Attribute<QVector3D>::ToQVariant() const
+{
+    return QVariant::fromValue<QVector3D>(Get());
 }
 
     // FROMSCRIPTVALUE TEMPLATE IMPLEMENTATIONS.
@@ -538,6 +622,11 @@ template<> void Attribute<AssetReference>::FromScriptValue(const QScriptValue &v
     Set(qScriptValueToValue<AssetReference>(value), change);
 }
 
+template<> void Attribute<AssetReferenceList>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<AssetReferenceList>(value), change);
+}
+
 template<> void Attribute<QVariant>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
     Set(qScriptValueToValue<QVariant>(value), change);
@@ -551,6 +640,11 @@ template<> void Attribute<QVariantList>::FromScriptValue(const QScriptValue &val
 template<> void Attribute<Transform>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
     Set(qScriptValueToValue<Transform>(value), change);
+}
+
+template<> void Attribute<QVector3D>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QVector3D>(value), change);
 }
 // TOBINARY TEMPLATE IMPLEMENTATIONS.
 
@@ -592,6 +686,13 @@ template<> void Attribute<Vector3df>::ToBinary(kNet::DataSerializer& dest) const
     dest.Add<float>(value_.z);
 }
 
+template<> void Attribute<QVector3D>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<float>(value_.x());
+    dest.Add<float>(value_.y());
+    dest.Add<float>(value_.z());
+}
+
 template<> void Attribute<Quaternion>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<float>(value_.x);
@@ -613,6 +714,13 @@ template<> void Attribute<AssetReference>::ToBinary(kNet::DataSerializer& dest) 
     dest.AddString(value_.ref.toStdString());
 }
 
+template<> void Attribute<AssetReferenceList>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<u8>(value_.Size());
+    for(int i = 0; i < value_.Size(); ++i)
+        dest.AddString(value_[i].ref.toStdString());
+}
+
 template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
 {
     std::string str = value_.toString().toStdString();
@@ -623,10 +731,7 @@ template<> void Attribute<QVariantList>::ToBinary(kNet::DataSerializer& dest) co
 {
     dest.Add<u8>(value_.size());
     for (uint i = 0; i < value_.size(); ++i)
-    {
-        std::string str = value_[i].toString().toStdString();
-        dest.AddString(str);
-    }
+        dest.AddString(value_[i].toString().toStdString());
 }
 
 template<> void Attribute<Transform>::ToBinary(kNet::DataSerializer& dest) const
@@ -682,6 +787,15 @@ template<> void Attribute<Vector3df>::FromBinary(kNet::DataDeserializer& source,
     Set(value, change);
 }
 
+template<> void Attribute<QVector3D>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    QVector3D value;
+    value.setX(source.Read<float>());
+    value.setY(source.Read<float>());
+    value.setZ(source.Read<float>());
+    Set(value, change);
+}
+
 template<> void Attribute<Color>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     Color value;
@@ -706,6 +820,16 @@ template<> void Attribute<AssetReference>::FromBinary(kNet::DataDeserializer& so
 {
     AssetReference value;
     value.ref = source.ReadString().c_str();
+    Set(value, change);
+}
+
+template<> void Attribute<AssetReferenceList>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    AssetReferenceList value;
+    u8 numValues = source.Read<u8>();
+    for(u32 i = 0; i < numValues; ++i)
+        value.Append(AssetReference(source.ReadString().c_str()));
+
     Set(value, change);
 }
 
@@ -795,6 +919,11 @@ template<> void Attribute<Vector3df>::Interpolate(IAttribute* start, IAttribute*
     }
 }
 
+template<> void Attribute<QVector3D>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+    // Not implemented. Favor the above instead.
+}
+
 template<> void Attribute<Quaternion>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
     Attribute<Quaternion>* startQuat = dynamic_cast<Attribute<Quaternion>*>(start);
@@ -826,6 +955,10 @@ template<> void Attribute<Color>::Interpolate(IAttribute* start, IAttribute* end
 }
 
 template<> void Attribute<AssetReference>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
+template<> void Attribute<AssetReferenceList>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
 {
 }
 

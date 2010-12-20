@@ -1,5 +1,16 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
+
+#include <Poco/LocalDateTime.h>
+
+std::wstring ToWString(const std::string &str)
+{
+    std::wstring w_str(str.length(), L' ');
+    std::copy(str.begin(), str.end(), w_str.begin());
+    return w_str;
+}
 
 std::string BufferToString(const std::vector<s8>& buffer)
 {
@@ -16,6 +27,39 @@ std::vector<s8> StringToBuffer(const std::string& str)
     if (str.size())
         memcpy(&ret[0], &str[0], str.size());
     return ret;
+}
+
+//! Get the current time as a string.
+std::string GetLocalTimeString()
+{
+    Poco::LocalDateTime *time = new Poco::LocalDateTime();
+    std::stringstream ss;
+    
+    ss << std::setw(2) << time->hour() << std::setfill('0') << ":" <<
+        std::setw(2) << time->minute() << std::setfill('0') << ":" <<
+        std::setw(2) << time->second() << std::setfill('0');
+        
+    SAFE_DELETE(time);
+    
+    return ss.str();
+}
+
+//! Get the current date and time as a string.
+std::string GetLocalDateTimeString()
+{
+    Poco::LocalDateTime *time = new Poco::LocalDateTime();
+    std::stringstream ss;
+    
+    ss << std::setw(2) << time->day() << std::setfill('0') << "/" <<
+        std::setw(2) << time->month() << std::setfill('0') << "/" <<
+        std::setw(4) << time->year() << std::setfill('0') << " " <<
+        std::setw(2) << time->hour() << std::setfill('0') << ":" <<
+        std::setw(2) << time->minute() << std::setfill('0') << ":" <<
+        std::setw(2) << time->second() << std::setfill('0');
+    
+    SAFE_DELETE(time);
+    
+    return ss.str();
 }
 
 StringVector SplitString(const std::string& str, char separator)
@@ -113,3 +157,16 @@ uint GetHash(const QString& str)
 {
     return GetHash(str.toStdString());
 }
+
+bool ParseBool(const std::string &value)
+{
+    std::string testedvalue = value;
+    boost::algorithm::to_lower(testedvalue);
+    return (boost::algorithm::starts_with(testedvalue,"true") || boost::algorithm::starts_with(testedvalue,"1")); 
+}
+
+bool ParseBool(const QString &value)
+{
+    return ParseBool(value.toStdString());
+}
+

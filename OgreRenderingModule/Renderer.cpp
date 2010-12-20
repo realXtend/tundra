@@ -5,7 +5,6 @@
 
 #include "Renderer.h"
 #include "RendererEvents.h"
-#include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "EC_Placeable.h"
@@ -138,7 +137,6 @@ namespace OgreRenderer
         viewport_(0),
         object_id_(0),
         group_id_(0),
-        resource_handler_(ResourceHandlerPtr(new ResourceHandler(this, framework))),
         config_filename_(config),
         plugins_filename_(plugins),
         ray_query_(0),
@@ -179,7 +177,6 @@ namespace OgreRenderer
         foreach(GaussianListener* listener, gaussianListeners_)
             SAFE_DELETE(listener);
 
-        resource_handler_.reset();
         root_.reset();
         SAFE_DELETE(c_handler_);
         SAFE_DELETE(renderWindow);
@@ -187,7 +184,7 @@ namespace OgreRenderer
 
     void Renderer::RemoveLogListener()
     {
-        if (log_listener_.get())
+        if (log_listener_)
         {
             Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
             log_listener_.reset();
@@ -318,7 +315,6 @@ namespace OgreRenderer
 
     void Renderer::PostInitialize()
     {
-        resource_handler_->PostInitialize();
     }
 
     void Renderer::SetFullScreen(bool value)
@@ -646,6 +642,7 @@ namespace OgreRenderer
                         std::cout << "SubRect Lock Failed!" << std::endl;
 #endif
                         return;
+/*
                         HRESULT hr = surface->LockRect(&lock, 0, 0);
                         if (FAILED(hr))
                         {
@@ -654,6 +651,7 @@ namespace OgreRenderer
 #endif
                             return;
                         }
+*/
                     }
                     assert(lock.Pitch >= desc.Width*4);
                 }
@@ -1112,6 +1110,11 @@ namespace OgreRenderer
         return l;
     }
 
+    bool Renderer::IsEntityVisible(uint ent_id)
+    {
+        return (visible_entities_.find(ent_id) != visible_entities_.end());
+    }
+
     Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const
     {
         return renderWindow->OgreRenderWindow();
@@ -1119,22 +1122,7 @@ namespace OgreRenderer
 
     std::string Renderer::GetUniqueObjectName(const std::string &prefix)
     {
-        return prefix + "/" + ToString<uint>(object_id_++);
-    }
-
-    ResourcePtr Renderer::GetResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->GetResource(id, type);
-    }
-
-    request_tag_t Renderer::RequestResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->RequestResource(id, type);
-    }
-
-    void Renderer::RemoveResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->RemoveResource(id, type);
+        return prefix + "_" + ToString<uint>(object_id_++);
     }
 
     void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
@@ -1339,11 +1327,10 @@ namespace OgreRenderer
     {
         Ogre::SceneManager* sceneManager = scenemanager_;
         // Debug mode Ogre might assert due to illegal shadow camera AABB, with empty scene. Disable shadows in debug mode.
-        #ifdef _DEBUG
+#ifdef _DEBUG
             sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
             return;
-        #endif
-
+#else
         bool using_pssm = (shadowquality_ == Shadows_High);
         bool soft_shadow = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "soft_shadow", false);
         
@@ -1458,5 +1445,6 @@ namespace OgreRenderer
                 gaussianListeners_.push_back(gaussianListener);
             }
         }
+#endif
     }
 }

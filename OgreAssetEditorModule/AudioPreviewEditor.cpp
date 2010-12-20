@@ -8,8 +8,7 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "ModuleManager.h"
-#include "ISoundService.h"
-#include "AssetInterface.h"
+#include "Audio.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -29,7 +28,7 @@ AudioPreviewEditor::AudioPreviewEditor(Foundation::Framework *framework,
     framework_(framework),
     assetType_(asset_type),
     inventoryId_(inventory_id),
-    soundId_(0),
+//    soundId_(0),
     request_tag_(0),
     okButton_(0),
     playButton_(0),
@@ -46,6 +45,8 @@ AudioPreviewEditor::~AudioPreviewEditor()
 
 void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+    /*
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)
     {
@@ -59,10 +60,13 @@ void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
             request_tag_ = sound_service->RequestSoundResource(QString::fromStdString(asset->GetId()));
         }
     }
+    */
 }
 
 void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res) 
 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+    /*
     if(request_tag_ == res->tag_)
     {
         SoundResource *sound = dynamic_cast<SoundResource *>(res->resource_.get());
@@ -104,6 +108,7 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
             assetId_ = QString(sound->GetId().c_str());
         }
     }
+    */
 }
 
 void AudioPreviewEditor::Closed()
@@ -118,7 +123,7 @@ void AudioPreviewEditor::Closed()
 }
 
 void AudioPreviewEditor::PlaySound()
-{
+{/* ///\todo Regression. Reimplement. -jj.
     //If sound asset is not ready yet no need to play it.
     if(assetId_.size() <= 0)
         return;
@@ -165,10 +170,13 @@ void AudioPreviewEditor::PlaySound()
             }
         }
     }
+    */
 }
 
 void AudioPreviewEditor::TimerTimeout()
 {
+///\todo Regression. Reimplement. -jj.
+/*
     //If sound asset is not ready yet no need to play it.
     if(assetId_.size() <= 0 || soundId_ == 0)
         return;
@@ -188,6 +196,7 @@ void AudioPreviewEditor::TimerTimeout()
             playButton_->setText(tr("Play"));
         }
     }
+*/
 }
 
 void AudioPreviewEditor::resizeEvent(QResizeEvent *ev)
