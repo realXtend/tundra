@@ -17,7 +17,6 @@ namespace MumbleVoip
         QWidget(),
         framework_(framework),
         settings_(settings),
-        sound_id_(0),
         voice_activity_level_(0)
     {
         setupUi(this);
@@ -90,7 +89,7 @@ namespace MumbleVoip
 
     void MicrophoneAdjustmentWidget::PlaybackAudioFrame(PCMAudioFrame* frame)
     {
-        if (!framework_)
+        if (!framework_ || !framework_->Audio())
             return ;
 
         ServiceManagerPtr service_manager = framework_->GetServiceManager();
@@ -98,28 +97,23 @@ namespace MumbleVoip
         if (!service_manager)
             return ;
 
-        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Service::ST_Sound).lock();
-
-        if (!sound_service)
-            return ;
-
-        ISoundService::SoundBuffer sound_buffer;
+        SoundBuffer sound_buffer;
         
-        sound_buffer.data_.resize(frame->DataSize());
-        memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->DataSize());
+        sound_buffer.data.resize(frame->DataSize());
+        memcpy(&sound_buffer.data[0], frame->DataPtr(), frame->DataSize());
 
-        sound_buffer.frequency_ = frame->SampleRate();
+        sound_buffer.frequency = frame->SampleRate();
         if (frame->SampleWidth() == 16)
-            sound_buffer.sixteenbit_ = true;
+            sound_buffer.is16Bit = true;
         else
-            sound_buffer.sixteenbit_ = false;
+            sound_buffer.is16Bit = false;
         
         if (frame->Channels() == 2)
-            sound_buffer.stereo_ = true;
+            sound_buffer.stereo = true;
         else
-            sound_buffer.stereo_ = false;
+            sound_buffer.stereo = false;
 
-        sound_id_ = sound_service->PlaySoundBuffer(sound_buffer, ISoundService::Voice, sound_id_);
+        sound_id_ = framework_->Audio()->PlaySoundBuffer(sound_buffer, SoundChannel::Voice, sound_id_);
     }
 
     void MicrophoneAdjustmentWidget::UpdateUI()
