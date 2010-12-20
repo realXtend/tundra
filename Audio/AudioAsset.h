@@ -36,6 +36,9 @@ public:
     /// @param frequency Specifies the number of samples per second in the input data buffer, e.g. 44100, or 48000.
     bool LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool stereo, bool is16Bit, int frequency);
 
+    /// A convenience function to access LoadFromRawPCMWavData.
+    bool LoadFromSoundBuffer(const SoundBuffer &buffer);
+
     /// Recreates the internal OpenAL audio buffer object, if it doesn't exist.
     /// Returns true on success, false otherwise.
     bool CreateBuffer();

@@ -99,6 +99,17 @@ bool AudioAsset::LoadFromRawPCMWavData(const u8 *data, size_t numBytes, bool ste
     return true;
 }
 
+bool AudioAsset::LoadFromSoundBuffer(const SoundBuffer &buffer)
+{
+    if (buffer.data.size() == 0)
+    {
+        LogError("Null data passed in AudioAsset::LoadFromSoundBuffer!");
+        return false;
+    }
+
+    return LoadFromRawPCMWavData(&buffer.data[0], buffer.data.size(), buffer.stereo, buffer.is16Bit, buffer.frequency);
+}
+
 bool AudioAsset::CreateBuffer()
 {
     if (!handle)
