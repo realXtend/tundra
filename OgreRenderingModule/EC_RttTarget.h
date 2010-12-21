@@ -53,6 +53,12 @@ public:
     Q_PROPERTY(QString targettexture READ gettargettexture WRITE settargettexture);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, targettexture);
 
+    Q_PROPERTY(int size_x READ getsize_x WRITE setsize_x);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, size_x);
+
+    Q_PROPERTY(int size_y READ getsize_y WRITE setsize_y);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, size_y);
+
     virtual ~EC_RttTarget();
 
     //! Set component as serializable.

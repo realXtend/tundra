@@ -13,7 +13,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_RttTarget");
 
 EC_RttTarget::EC_RttTarget(IModule* module) :
   IComponent(module->GetFramework()),
-  targettexture(this, "Target texture", "RttTex")
+  targettexture(this, "Target texture", "RttTex"),
+  size_x(this, "Texture size x", 400),
+  size_y(this, "Texture size y", 300)
 {
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*)));
@@ -26,6 +28,9 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
 
 EC_RttTarget::~EC_RttTarget()
 {
+    if (!ViewEnabled())
+        return;
+
   //XXX didn't have a ref to renderer here yet. is this really required?
   //if(renderer_.expired())
   //      return;
@@ -40,11 +45,11 @@ EC_RttTarget::~EC_RttTarget()
 void EC_RttTarget::PrepareRtt()
 {
     if (!ViewEnabled())
-      return;
+        return;
 
-    //\todo XXX make these attributes, and reconfig via AttributeUpdated when they change
-    uint width = 400;
-    uint height = 300;
+    //\todo XXX reconfig via AttributeUpdated when these change
+    int x = size_x.Get();
+    int y = size_y.Get();
 
     // Get the camera ec
     EC_OgreCamera *ec_camera = this->GetParentEntity()->GetComponent<EC_OgreCamera>().get();
@@ -54,7 +59,7 @@ void EC_RttTarget::PrepareRtt()
         return; //XXX note: doesn't reschedule, so won't start working if cam added afterwards
     }
 
-    ec_camera->GetCamera()->setAspectRatio(Ogre::Real(width) / Ogre::Real(height));
+    ec_camera->GetCamera()->setAspectRatio(Ogre::Real(x) / Ogre::Real(y));
 
     tex_ = Ogre::TextureManager::getSingleton().getByName(targettexture.Get().toStdString());
     if (tex_.isNull())
@@ -63,7 +68,7 @@ void EC_RttTarget::PrepareRtt()
           .createManual(
                         targettexture.Get().toStdString(), 
                         Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-                        Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+                        Ogre::TEX_TYPE_2D, x, y, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
     }
 
     Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
@@ -94,6 +99,9 @@ void EC_RttTarget::PrepareRtt()
 
 void EC_RttTarget::SetAutoUpdated(bool val)
 {
+    if (!ViewEnabled())
+        return;
+
     Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
     if (render_texture)
     {
