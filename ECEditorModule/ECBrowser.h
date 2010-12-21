@@ -169,11 +169,6 @@ private:
      */
     ComponentGroup *FindSuitableGroup(ComponentPtr comp);
 
-    //! Try to find component group for spesific QTreeWidgetItem.
-    /*! @param item QTreeWidgetItem that we want to use to find a right component group.
-     */
-    //ComponentGroupList::iterator FindSuitableGroup(const QTreeWidgetItem &item);
-
     //! Add new component to existing component group if same type of component have been already added to editor,
     /*! if component type is not included, create new component group and add it to editor.
      *  @param comp a new component that we want to add into the enity.
@@ -203,7 +198,6 @@ private:
 
     typedef QMap<QTreeWidgetItem*, ComponentGroup*> TreeItemToComponentGroup;
     TreeItemToComponentGroup itemToComponentGroups_;
-    //ComponentGroupList componentGroups_;
     typedef QList<Scene::EntityWeakPtr> EntityWeakPtrList;
     EntityWeakPtrList entities_;
     QMenu *menu_;
