@@ -188,6 +188,13 @@ public slots:
     /// Returns the asset storage of the given name.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
 
+    /// Returns the AssetStorage that should be used by default when assets are requested by their local name only, e.g. when an assetRef only contains
+    /// a string "texture.png" and nothing else.
+    AssetStoragePtr GetDefaultAssetStorage() const;
+
+    /// Sets the asset storage to be used when assets are requested by their local names.
+    void SetDefaultAssetStorage(AssetStoragePtr storage);
+
     /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
     /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
                usually the local path of the scene content that is being added. */
@@ -206,6 +213,16 @@ public slots:
         \todo It is the intent that "local://collada.dae/subMeshName" would return "collada.dae" and "file.zip/path1/path2/my.mesh"
         would return "file.zip", but this hasn't been implemented (since those aren't yet supported). */
     static QString ExtractFilenameFromAssetRef(QString ref);
+
+    /// Tries to extract the AssetStorage name that is specified in this assetRef. Assumes that ParseAssetRefType(ref) == AssetRefNamedStorage.
+    /// Returns the name of the asset storage contained in the assetRef.
+    static QString ExtractAssetStorageFromAssetRef(QString ref);
+
+    /// Removes the explicitly named asset storage from this assetRef, and returns the local name of the asset.
+    static QString RemoveAssetStorageFromAssetRef(QString ref);
+
+    /// Parses an assetRef that uses a named storage specifier, and returns an absolute assetRef pointing to the same asset in that storage.
+    QString LookupAssetRefToStorage(QString ref);
 
     /// Recursively iterates through the given path and all its subdirectories and tries to find the given file.
     /** Returns the absolute path for that file, if it exists. The path contains the filename,
@@ -298,6 +315,9 @@ private:
 
     /// Contains all known asset storages in the system.
     std::vector<AssetStoragePtr> storages;
+
+    /// Specifies the storage to use for asset requests with local name only.
+    AssetStorageWeakPtr defaultStorage;
 
     /// Stores all the registered asset type factories in the system.
     std::vector<AssetTypeFactoryPtr> assetTypeFactories;
