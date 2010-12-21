@@ -5,6 +5,7 @@
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
 
+#include "SceneManager.h"
 #include "CoreStringUtils.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
