@@ -185,18 +185,17 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 //    storageComboBox->addItem(tr("Don't adjust"), "DoNotAdjust");
     storageComboBox->addItem(tr("Default storage"), "DefaultStorage");
     AssetStoragePtr def = framework->Asset()->GetDefaultAssetStorage();
-    int idx = 0;
-    foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+    std::vector<AssetStoragePtr> storages = framework->Asset()->GetAssetStorages();
+    for(size_t i = 0; i < storages.size(); ++i)
     {
-        storageComboBox->addItem(storage->ToString(), storage->Name());
-        if (def && storage == def)
+        storageComboBox->addItem(storages[i]->ToString(), storages[i]->Name());
+        if (def && storages[i] == def)
         {
             QFont font = QApplication::font();
             font.setBold(true);
-            storageComboBox->setItemData(idx, font, Qt::FontRole);
-            storageComboBox->setCurrentIndex(idx);
+            storageComboBox->setItemData(i+1, font, Qt::FontRole); // i+1 as we already have the default storage item
+            storageComboBox->setCurrentIndex(i+1);
         }
-        ++idx;
     }
 
     layout->addWidget(assetLabel);
