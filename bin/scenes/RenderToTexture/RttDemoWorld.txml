@@ -1,10 +1,31 @@
 <!DOCTYPE Scene>
 <scene>
+ <entity id="11">
+  <component type="EC_Name" sync="1">
+   <attribute value="Terrain" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Terrain" sync="1">
+   <attribute value="-127,-127,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="24" name="Grid Width"/>
+   <attribute value="24" name="Grid Height"/>
+   <attribute value="0.0500000007" name="Tex. U scale"/>
+   <attribute value="0.0500000007" name="Tex. V scale"/>
+   <attribute value="local://RexTerrainPCF.material" name="Material"/>
+   <attribute value="local://" name="Texture 0"/>
+   <attribute value="local://" name="Texture 1"/>
+   <attribute value="local://" name="Texture 2"/>
+   <attribute value="local://" name="Texture 3"/>
+   <attribute value="local://" name="Texture 4"/>
+   <attribute value="local://terrain.ntf" name="Heightmap"/>
+  </component>
+ </entity>
  <entity id="8">
   <component type="EC_Placeable" sync="1">
    <attribute value="0 0 0" name="Position"/>
    <attribute value="1 1 1" name="Scale"/>
-   <attribute value="0,200,0,-90,-90,-90,100,100,133" name="Transform"/>
+   <attribute value="0,200,75,-90,-90,-90,100,100,133" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -25,6 +46,18 @@
    <attribute value="" name="Type"/>
    <attribute value="true" name="Run on load"/>
    <attribute value="local://rttdisplay.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="2">
+  <component type="EC_Name" sync="1">
+   <attribute value="Instructions" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://instructions.js" name="Script ref"/>
   </component>
  </entity>
 </scene>
