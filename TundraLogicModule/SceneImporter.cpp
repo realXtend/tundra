@@ -5,6 +5,7 @@
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
 
+#include "SceneManager.h"
 #include "CoreStringUtils.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -484,7 +485,7 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
         foreach(IAttribute *a, name->GetAttributes())
         {
             AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
-            placeableDesc.attributes.append(attrDesc);
+            nameDesc.attributes.append(attrDesc);
         }
     }
 

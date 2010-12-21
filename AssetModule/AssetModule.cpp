@@ -71,7 +71,10 @@ namespace Asset
                 boost::filesystem::path scenepath(startup_scene_);
                 std::string dirname = scenepath.branch_path().string();
                 if (!dirname.empty())
-                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname, "Scene Local", true);
+                {
+                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname, "Scene", true);
+                    framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage("Scene"));
+                }
             }
         }
 
@@ -84,7 +87,10 @@ namespace Asset
                 boost::filesystem::path scenepath(startup_scene_);  
                 std::string dirname = scenepath.branch_path().string();
                 if (!dirname.empty())
-                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname, "Scene Local", true);
+                {
+                    framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname, "Scene", true);
+                    framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage("Scene"));
+                }
             }
         }
     }
@@ -110,6 +116,8 @@ namespace Asset
             return Console::ResultFailure();
 
         framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(params[0].c_str(), params[1].c_str());
+        framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage(params[1].c_str()));
+       
         return Console::ResultSuccess();
     }
 }

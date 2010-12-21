@@ -119,6 +119,9 @@ void SceneStructureWindow::ShowComponents(bool show)
 {
     showComponents = show;
     treeWidget->showComponents =show;
+
+    treeWidget->setSortingEnabled(false);
+
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
@@ -131,12 +134,16 @@ void SceneStructureWindow::ShowComponents(bool show)
         ClearAssetReferences();
         CreateAssetReferences();
     }
+
+    treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::ShowAssetReferences(bool show)
 {
     showAssets = show;
     //treeWidget->showAssets = show;
+
+    treeWidget->setSortingEnabled(false);
 
     if (scene.expired())
     {
@@ -148,6 +155,8 @@ void SceneStructureWindow::ShowAssetReferences(bool show)
         ClearAssetReferences();
     else
         CreateAssetReferences();
+
+    treeWidget->setSortingEnabled(true);
 }
 
 void SceneStructureWindow::changeEvent(QEvent* e)
@@ -212,7 +221,7 @@ void SceneStructureWindow::CreateAssetReferences()
                     continue;
 
                 foreach(IAttribute *attr, comp->GetAttributes())
-                    if (attr->TypeName() == "assetreference")
+                    if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
                         CreateAssetItem(cItem, attr);
             }
         }
@@ -221,7 +230,7 @@ void SceneStructureWindow::CreateAssetReferences()
             // Create asset ref items as children of entity items.
             foreach(ComponentPtr comp, entity->GetComponentVector())
                 foreach(IAttribute *attr, comp->GetAttributes())
-                    if (attr->TypeName() == "assetreference")
+                    if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
                         CreateAssetItem(eItem, attr);
         }
     }
@@ -312,7 +321,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
 //#endif
             // Add possible asset references.
             foreach(IAttribute *attr, comp->GetAttributes())
-                if (attr->TypeName() == "assetreference")
+                if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
                     CreateAssetItem(cItem, attr);
         }
     }
@@ -345,12 +354,26 @@ void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* co
 void SceneStructureWindow::CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr)
 {
     Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-    if (!assetRef)
-        return;
-
-    AssetRefItem *aItem = new AssetRefItem(attr, parentItem);
-    aItem->setHidden(!showAssets);
-    parentItem->addChild(aItem);
+    if (assetRef)
+    {
+        AssetRefItem *aItem = new AssetRefItem(attr, parentItem);
+        aItem->setHidden(!showAssets);
+        parentItem->addChild(aItem);
+    }
+    else
+    {
+        Attribute<AssetReferenceList> *assetRefList = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
+        if (assetRefList)
+        {
+            AssetReferenceList refs = assetRefList->Get();
+            for(int i = 0; i < refs.Size(); ++i)
+            {
+                AssetRefItem *aItem = new AssetRefItem(attr->GetName(), refs[i].ref, parentItem);
+                aItem->setHidden(!showAssets);
+                parentItem->addChild(aItem);
+            }
+        }
+    }
 }
 
 void SceneStructureWindow::DecorateEntityItem(Scene::Entity *entity, QTreeWidgetItem *item) const
@@ -431,8 +454,7 @@ void SceneStructureWindow::DecorateComponentItem(IComponent *comp, QTreeWidgetIt
 
 void SceneStructureWindow::AddAssetReference(IAttribute *attr)
 {
-    Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-    if (!assetRef)
+    if (!dynamic_cast<Attribute<AssetReference> *>(attr) && !dynamic_cast<Attribute<AssetReferenceList> *>(attr))
         return;
 
     EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(sender());
@@ -492,29 +514,37 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
 
 void SceneStructureWindow::RemoveAssetReference(IAttribute *attr)
 {
-    Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-    if (!assetRef)
-        return;
-
     EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(sender());
     if (!dc)
         return;
 
-    AssetRefItem *assetItem = 0;
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
-        if (a && (/*a->type == assetRef->Get().type && */a->id == assetRef->Get().ref))
-        {
-            assetItem = a;
-            break;
-        }
+    AssetReferenceList assetRefs;
+    if (dynamic_cast<Attribute<AssetReference> *>(attr))
+        assetRefs.Append(dynamic_cast<Attribute<AssetReference> *>(attr)->Get().ref);
+    else if (dynamic_cast<Attribute<AssetReferenceList> *>(attr))
+        assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr)->Get();
+    else
+        return;
 
-        ++it;
+    for(int i = 0; i < assetRefs.Size(); ++i)
+    {
+        //AssetRefItem *assetItem = 0;
+        QTreeWidgetItemIterator it(treeWidget);
+        while(*it)
+        {
+            AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
+            if (a && (/*a->type == assetRef->Get().type && */a->id == assetRefs[i].ref))
+            {
+                //assetItem = a;
+                SAFE_DELETE(a);
+                break;
+            }
+
+            ++it;
+        }
     }
 
-    SAFE_DELETE(assetItem);
+//    SAFE_DELETE(assetItem);
 }
 
 void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)

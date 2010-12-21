@@ -83,8 +83,16 @@ AssetRefItem::AssetRefItem(IAttribute *attr, QTreeWidgetItem *parent) :
     Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
     assert(assetRef);
     this->name = assetRef->GetName();
-    this->id = assetRef->Get().ref;
+    id = assetRef->Get().ref;
     SetText(assetRef);
+}
+
+AssetRefItem::AssetRefItem(const QString &name, const QString &ref, QTreeWidgetItem *parent) :
+    QTreeWidgetItem(parent)
+{
+    this->name = name;
+    id = ref;
+    setText(0, QString("%1: %2").arg(name).arg(ref));
 }
 
 void AssetRefItem::SetText(IAttribute *attr)

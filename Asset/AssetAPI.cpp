@@ -70,6 +70,25 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
     return AssetStoragePtr();
 }
 
+AssetStoragePtr AssetAPI::GetDefaultAssetStorage() const
+{
+    AssetStoragePtr defStorage = defaultStorage.lock();
+    if (defStorage)
+        return defStorage;
+
+    // If no default storage set, return the first one on the list.
+    std::vector<AssetStoragePtr> storages = GetAssetStorages();
+    if (storages.size() > 0)
+        return storages[0];
+
+    return AssetStoragePtr();
+}
+
+void AssetAPI::SetDefaultAssetStorage(const AssetStoragePtr &storage)
+{
+    defaultStorage = storage;
+}
+
 std::vector<AssetStoragePtr> AssetAPI::GetAssetStorages() const
 {
     std::vector<AssetStoragePtr> storages;
@@ -140,7 +159,13 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRefType(QString assetRef)
         return AssetRefLocalUrl;
     if (assetRef.contains("://"))
         return AssetRefExternalUrl;
-    return AssetRefLocalPath; ///\todo This is not right. Implement more exact parsing.
+    if (assetRef.contains(":/") || assetRef.contains(":\\"))
+        return AssetRefLocalPath; // Windows-style local path \bug This is not exact.
+    if (assetRef.startsWith("/"))
+        return AssetRefLocalPath; // Unix-style local path.
+    if (assetRef.contains(":"))
+        return AssetRefNamedStorage;
+    return AssetRefDefaultStorage;
 }
 
 QString AssetAPI::ExtractFilenameFromAssetRef(QString ref)
@@ -153,6 +178,25 @@ QString AssetAPI::ExtractFilenameFromAssetRef(QString ref)
     end = max(end, s.lastIndexOf('/')+1);
     end = max(end, s.lastIndexOf('\\')+1);
     return s.mid(end);
+}
+
+QString AssetAPI::ExtractAssetStorageFromAssetRef(QString ref)
+{
+// We're assuming the following here.
+//    assert(!ref.contains("://")); 
+
+    ref = ref.trimmed();
+    if (!ref.contains(":"))
+        return "";
+    return ref.left(ref.indexOf(":"));
+}
+
+QString AssetAPI::RemoveAssetStorageFromAssetRef(QString ref)
+{
+    ref = ref.trimmed();
+    if (!ref.contains(":"))
+        return ref;
+    return ref.mid(ref.indexOf(":")+1);
 }
 
 QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
@@ -390,6 +434,9 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         return pendingRequest.transfer; ///\bug Problem. When we return this structure, the client will connect to this.
     }
 
+    // Turn named storage (and default storage) specifiers to absolute specifiers.
+    assetRef = LookupAssetRefToStorage(assetRef);
+
     // Find the AssetProvider that will fulfill this request.
     AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
     if (!provider)
@@ -415,6 +462,8 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         transfer->source.ref = assetRef;
         transfer->assetType = assetType;
         transfer->storage = AssetStorageWeakPtr(); // Note: Unfortunately when we load an asset from cache, we don't get the information about which storage it's supposed to come from.
+        transfer->provider = provider;
+        transfer->SetCachingBehavior(false, assetFileInCache);
         LogDebug("AssetAPI::RequestAsset: Loaded asset \"" + assetRef.toStdString() + "\" from disk cache instead of having to use asset provider."); 
         readyTransfers.push_back(transfer); // There is no assetprovider that will "push" the AssetTransferCompleted call. We have to remember to do it ourselves.
     }
@@ -451,12 +500,60 @@ AssetProviderPtr AssetAPI::GetProviderForAssetRef(QString assetRef, QString asse
     if (assetType.length() == 0)
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
+    // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
+    AssetRefType assetRefType = ParseAssetRefType(assetRef);
+    if (assetRefType == AssetRefDefaultStorage)
+    {
+        AssetStoragePtr defaultStorage = GetDefaultAssetStorage();
+        AssetProviderPtr defaultProvider = (defaultStorage ? defaultStorage->provider.lock() : AssetProviderPtr());
+        if (defaultProvider)
+            return defaultProvider;
+        // If no default provider, intentionally fall through to lookup each asset provider in turn.
+    }
+    else if (assetRefType == AssetRefNamedStorage) // The asset ref explicitly points to a named storage. Use the provider for that storage.
+    {
+        AssetStoragePtr storage = GetAssetStorage(ExtractAssetStorageFromAssetRef(assetRef));
+        AssetProviderPtr provider = (storage ? storage->provider.lock() : AssetProviderPtr());
+        return provider;
+    }
+
     std::vector<AssetProviderPtr> providers = GetAssetProviders();
     for(size_t i = 0; i < providers.size(); ++i)
         if (providers[i]->IsValidRef(assetRef, assetType))
             return providers[i];
 
     return AssetProviderPtr();
+}
+
+QString AssetAPI::LookupAssetRefToStorage(QString assetRef)
+{
+    // If the assetRef is by local filename without a reference to a provider or storage, use the default asset storage in the system for this assetRef.
+    AssetRefType assetRefType = ParseAssetRefType(assetRef);
+    switch(assetRefType)
+    {
+    case AssetRefLocalPath:
+    case AssetRefLocalUrl:
+    case AssetRefExternalUrl:
+        return assetRef;
+    case AssetRefDefaultStorage:
+        {
+            AssetStoragePtr defaultStorage = GetDefaultAssetStorage();
+            if (!defaultStorage)
+                return assetRef; // Failed to find the provider, just use the ref as it was, and hope. (It might still be satisfied by the local storage).
+            return defaultStorage->GetFullAssetURL(assetRef);
+        }
+        break;
+    case AssetRefNamedStorage: // The asset ref explicitly points to a named storage. Use the provider for that storage.
+        {
+            AssetStoragePtr storage = GetAssetStorage(ExtractAssetStorageFromAssetRef(assetRef));
+            if (!storage)
+                return assetRef; // Failed to find the provider, just use the ref as it was, and hope.
+            return storage->GetFullAssetURL(RemoveAssetStorageFromAssetRef(assetRef));
+        }
+        break;
+    }
+    assert(false);
+    return assetRef;
 }
 
 void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
@@ -698,6 +795,8 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 
 void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)
 {
+    uploadTransfer->EmitTransferCompleted();
+
     QString assetRef = uploadTransfer->AssetRef();
     // We've completed an asset upload transfer. See if there is an asset download transfer that is waiting
     // for this upload to complete. 

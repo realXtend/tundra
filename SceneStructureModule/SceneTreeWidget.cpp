@@ -1282,35 +1282,31 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
     if (!directory.exists())
         return;
 
-
     QSet<QString> assets;
     Selection sel = GetSelection();
     if (!sel.HasEntities())
     {
         // Export all assets
-        for (int i = 0; i < topLevelItemCount(); ++i)
+        for(int i = 0; i < topLevelItemCount(); ++i)
         {
             EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(i));
-            if (!eItem)
-                continue;
-
-            assets.unite(GetAssetRefs(eItem));
+            if (eItem)
+                assets.unite(GetAssetRefs(eItem));
         }
     }
     else
     {
         // Export assets for selected entities
-        foreach (EntityItem *eItem, sel.entities)
-        {
+        foreach(EntityItem *eItem, sel.entities)
             assets.unite(GetAssetRefs(eItem));
-        }
     }
 
     saved_assets_.clear();
     fetch_references_ = true;
     //! \todo This is in theory a better way to get all assets in a sceene, but not all assets are currently available with this method
     //!       Once all assets are properly shown in this widget, it would be better to do it this way -cm
-    /*QTreeWidgetItemIterator it(this);
+/*
+    QTreeWidgetItemIterator it(this);
     while (*it)
     {
         AssetItem *aItem = dynamic_cast<AssetItem*>((*it));
@@ -1319,18 +1315,18 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
             assets.insert(aItem->id);
         }
         ++it;
-    }*/
-
+    }
+*/
 
     foreach(const QString &assetid, assets)
     {
         AssetTransferPtr transfer = framework->Asset()->RequestAsset(assetid);
 
         QString filename = directory.absolutePath();
-        QString assetName = assetid.right(assetid.size() - assetid.lastIndexOf("://") - 3);
-        filename += QDir::separator() + assetName;
+        QString assetName = AssetAPI::ExtractFilenameFromAssetRef(assetid);
+        filename += "/" + assetName;
 
-        filesaves_.insert(transfer, filename);
+        filesaves_.insert(transfer->source.ref, filename);
         connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
@@ -1340,6 +1336,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
     assert(scene.lock());
     QSet<QString> assets;
 
+    ///\todo use eItem->Entity()
     Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
     if (entity)
     {
@@ -1350,6 +1347,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
             if (!cItem)
                 continue;
 
+            ///\todo use cItem->Component()
             ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
             if (!comp)
                 continue;
@@ -1362,8 +1360,16 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
                         if (assetRef)
                             assets.insert(assetRef->Get().ref);
                     }
+                    else if (attr->TypeName() == "assetreferencelist")
+                    {
+                        Attribute<AssetReferenceList> *assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr);
+                        if (assetRefs)
+                            for(int i = 0; i < assetRefs->Get().Size(); ++i)
+                                assets.insert(assetRefs->Get()[i].ref);
+                    }
         }
     }
+
     return assets;
 }
 
@@ -1484,10 +1490,8 @@ void SceneTreeWidget::SaveAssetAs()
 
     if (sel.assets.size() == 1)
     {
-        assetName = sel.assets[0]->id.right(sel.assets[0]->id.size() - sel.assets[0]->id.lastIndexOf("://") - 3);
-
-        fileDialog = QtUtils::SaveFileDialogNonModal("",
-            tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
+        assetName = AssetAPI::ExtractFilenameFromAssetRef(sel.assets[0]->id);
+        fileDialog = QtUtils::SaveFileDialogNonModal("", tr("Save Asset As"), assetName, 0, this, SLOT(SaveAssetDialogClosed(int)));
     }
     else
     {
@@ -1525,39 +1529,33 @@ void SceneTreeWidget::SaveAssetDialogClosed(int result)
         QString filename = files[0];
         if (isDir)
         {
-            QString assetName = aItem->id.right(aItem->id.size() - aItem->id.lastIndexOf("://") - 3);
-            filename += QDir::separator() + assetName;
+            QString assetName = AssetAPI::ExtractFilenameFromAssetRef(aItem->id);
+            filename += "/" + assetName;
         }
 
-        filesaves_.insert(transfer, filename);
+        filesaves_.insert(transfer->source.ref, filename);
         connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
     }
 }
 
 void SceneTreeWidget::AssetLoaded(AssetPtr asset)
 {
-#if 0 ///\todo Removed due to regression. Reimplement using the new Asset API. -jj.
-    assert(transfer_);
-    if (!transfer_)
-        return;
-
-    AssetTransferPtr transfer = transfer_->shared_from_this();
-    assert(filesaves_.contains(transfer));
-    assert(transfer);
-
-    if (!transfer->resourcePtr)
+    assert(asset.get());
+    if (!asset)
     {
-        // This means the asset was loaded through the new Asset API, in which case the resourcePtr is null, and the 'asset' member
-        // points to the actual loaded asset. For a migration period, we'll need to check both pointers.
-        LogWarning("TODO: SceneTreeWidget::AssetLoaded: Received an asset transfer with null resourcePtr. Implement support for this.");
+        LogError("Null asset pointer.");
         return;
     }
 
-    QString filename = filesaves_.take(transfer);
+    QString filename = filesaves_.take(asset->Name());
     if (!saved_assets_.contains(filename))
     {
         saved_assets_.insert(filename);
-        if (!transfer->resourcePtr->Export(filename.toStdString()))
+
+        QString param;
+        if (asset->Type().contains("texture", Qt::CaseInsensitive))
+            param = filename.right(filename.size() - filename.lastIndexOf('.') - 1);
+        if (!asset->SaveToFile(filename, param))
         {
             LogError("Could not save asset to file " + filename.toStdString() + ".");
             QMessageBox box(QMessageBox::Warning, tr("Save asset"), tr("Failed to save asset."), QMessageBox::Ok);
@@ -1566,22 +1564,18 @@ void SceneTreeWidget::AssetLoaded(AssetPtr asset)
         }
 
         if (fetch_references_)
-        {
-            const Foundation::ResourceReferenceVector &refs = transfer->resourcePtr->GetReferences();
-            Foundation::ResourceReferenceVector::const_iterator i = refs.begin();
-            for ( ; i != refs.end() ; ++i)
-            {
-                QString id = QString(i->id_.c_str());
-                if (!saved_assets_.contains(id))
+            foreach(AssetReference ref, asset->FindReferences())
+                if (!saved_assets_.contains(ref.ref))
                 {
-                    AssetTransferPtr transfer = framework->Asset()->RequestAsset(id, QString(i->type_.c_str()));
-                    filesaves_.insert(transfer, filename);
-                    connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(AssetLoaded(IAssetTransfer *)));
+                    AssetTransferPtr transfer = framework->Asset()->RequestAsset(ref.ref);
+                    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AssetLoaded(AssetPtr)));
+
+                    QString oldAssetName = AssetAPI::ExtractFilenameFromAssetRef(filename);
+                    QString newAssetName = AssetAPI::ExtractFilenameFromAssetRef(ref.ref);
+                    filename.replace(oldAssetName, newAssetName);
+                    filesaves_.insert(transfer->source.ref, filename);
                 }
-            }
-        }
     }
-#endif
 }
 
 void SceneTreeWidget::ECEditorDestroyed(QObject *obj)
