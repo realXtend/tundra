@@ -50,7 +50,7 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
     gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
     gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
-    borderColorAttr(this, "Border Color", Color(0.0f,0.0f,0.0f,1.0f)),
+    borderColorAttr(this, "Border Color", Color(0.0f,0.0f,0.0f,0.0f)),
     borderThicknessAttr(this, "Border Thickness", 0.0)
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
@@ -72,6 +72,9 @@ EC_HoveringText::~EC_HoveringText()
 
 void EC_HoveringText::Destroy()
 {
+    if (!ViewEnabled())
+        return;
+
     OgreRenderer::RendererPtr renderer = renderer_.lock();
     if (renderer)
     {
@@ -113,6 +116,9 @@ void EC_HoveringText::Destroy()
 
 void EC_HoveringText::SetPosition(const Vector3df& position)
 {
+    if (!ViewEnabled())
+        return;
+
     if (billboard_)
         billboard_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
 }
@@ -150,12 +156,18 @@ void EC_HoveringText::SetBackgroundGradient(const QColor &start_color, const QCo
 
 void EC_HoveringText::Show()
 {
+    if (!ViewEnabled())
+        return;
+
     if (billboardSet_)
         billboardSet_->setVisible(true);
 }
 
 void EC_HoveringText::AnimatedShow()
 {
+    if (!ViewEnabled())
+        return;
+
     if (visibility_animation_timeline_->state() == QTimeLine::Running ||
         visibility_timer_->isActive() || IsVisible())
         return;
@@ -169,6 +181,9 @@ void EC_HoveringText::AnimatedShow()
 
 void EC_HoveringText::Clicked(int msec_to_show)
 {
+    if (!ViewEnabled())
+        return;
+
     if (visibility_timer_->isActive())
         visibility_timer_->stop();
     else
@@ -180,12 +195,18 @@ void EC_HoveringText::Clicked(int msec_to_show)
 
 void EC_HoveringText::Hide()
 {
+    if (!ViewEnabled())
+        return;
+
     if (billboardSet_)
         billboardSet_->setVisible(false);
 }
 
 void EC_HoveringText::AnimatedHide()
 {
+    if (!ViewEnabled())
+        return;
+
     if (visibility_animation_timeline_->state() == QTimeLine::Running ||
         visibility_timer_->isActive() || !IsVisible())
         return;
@@ -219,6 +240,9 @@ void EC_HoveringText::AnimationFinished()
 
 bool EC_HoveringText::IsVisible() const
 {
+    if (!ViewEnabled())
+        return false;
+
     if (billboardSet_)
         return billboardSet_->isVisible();
     else
@@ -227,6 +251,8 @@ bool EC_HoveringText::IsVisible() const
 
 void EC_HoveringText::ShowMessage(const QString &text)
 {
+    if (!ViewEnabled())
+        return;
     if (renderer_.expired())
         return;
 
@@ -276,6 +302,9 @@ void EC_HoveringText::ShowMessage(const QString &text)
 
 void EC_HoveringText::Redraw()
 {
+    if (!ViewEnabled())
+        return;
+
     if (renderer_.expired() || !billboardSet_ || !billboard_)
         return;
 
@@ -356,9 +385,12 @@ QPixmap EC_HoveringText::GetTextPixmap()
 //    const int max_width = viewport->getActualWidth()/4;
 //    int max_height = viewport->getActualHeight()/10;
 
+    if (!ViewEnabled())
+        return QPixmap();
+
     //if (renderer_.expired() || text_.isEmpty() || text_ == " ")
     if (renderer_.expired())
-        return 0;
+        return QPixmap();
 
     QRect max_rect(0, 0, 1024, 512);
 
