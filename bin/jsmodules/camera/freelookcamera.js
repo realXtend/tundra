@@ -14,6 +14,7 @@ if (!me.HasComponent("EC_OgreCamera"))
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
     var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
     var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
+    soundlistener.active = true;    
 
     camera.AutoSetPlaceable();
 
