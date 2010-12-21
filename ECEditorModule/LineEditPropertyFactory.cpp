@@ -1,7 +1,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "LineEditPropertyFactory.h"
-#include "functionInvoker.h"
+#include "FunctionInvoker.h"
 
 #include <QLineEdit>
 #include <QPushButton>
