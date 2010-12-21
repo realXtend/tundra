@@ -5,6 +5,9 @@ function init() {
     //but is apparently executed too early -- e.g. the camera is not there yet.
     //so have to wrap in a func and make a trick to run with a delay
 
+    //could also have a camera in the scene xml with this component,
+    //but here instead am using the pre-existing default cam
+    //to make the demo simple, i.e. can just move the cam to see rtt working
     var cam = scene.GetEntityByNameRaw("FreeLookCamera");
     cam.GetOrCreateComponentRaw("EC_RttTarget");
     rtt = cam.rtttarget;
