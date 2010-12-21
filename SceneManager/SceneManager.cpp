@@ -825,12 +825,13 @@ namespace Scene
                         AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
                         compDesc.attributes.append(attrDesc);
 
+                        QString attrValue = QString(a->ToString().c_str()).trimmed();
                         if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
                             (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference")) &&
-                            !a->ToString().empty())
+                            !attrValue.isEmpty())
                         {
                             // We might have multiple references, ";" used as a separator.
-                            QStringList values = QString(a->ToString().c_str()).split(";");
+                            QStringList values = attrValue.split(";");
                             foreach(QString value, values)
                             {
                                 AssetDesc ad;
@@ -940,12 +941,13 @@ namespace Scene
                                     AttributeDesc attrDesc = { typeName, a->GetNameString().c_str(), a->ToString().c_str() };
                                     compDesc.attributes.append(attrDesc);
 
+                                    QString attrValue = QString(a->ToString().c_str()).trimmed();
                                     if ((typeName == "assetreference" || typeName == "assetreferencelist" || 
                                         (a->HasMetadata() && a->GetMetadata()->elementType == "assetreference")) &&
-                                        !a->ToString().empty())
+                                        !attrValue.isEmpty())
                                     {
                                         // We might have multiple references, ";" used as a separator.
-                                        QStringList values = QString(a->ToString().c_str()).split(";");
+                                        QStringList values = attrValue.split(";");
                                         foreach(QString value, values)
                                         {
                                             AssetDesc ad;

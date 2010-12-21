@@ -48,7 +48,7 @@ public:
     /// Adds multiple scene descritions to be shown in the window.
     /** @param desc Scene description.
     */
-    void AddDescriptions(const QList<SceneDesc> &descs);
+//    void AddDescriptions(const QList<SceneDesc> &descs);
 
     /// Adds files to be shown in the window.
     /** @param fileNames List of files.

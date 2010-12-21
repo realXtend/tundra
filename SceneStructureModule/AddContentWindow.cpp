@@ -261,9 +261,11 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
     AddAssets(desc.assets);
 }
 
+/*
 void AddContentWindow::AddDescriptions(const QList<SceneDesc> &descs)
 {
 }
+*/
 
 void AddContentWindow::AddFiles(const QStringList &fileNames)
 {
