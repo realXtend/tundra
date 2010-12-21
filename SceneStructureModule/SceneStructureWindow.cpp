@@ -514,29 +514,37 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
 
 void SceneStructureWindow::RemoveAssetReference(IAttribute *attr)
 {
-    Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
-    if (!assetRef)
-        return;
-
     EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(sender());
     if (!dc)
         return;
 
-    AssetRefItem *assetItem = 0;
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
-        if (a && (/*a->type == assetRef->Get().type && */a->id == assetRef->Get().ref))
-        {
-            assetItem = a;
-            break;
-        }
+    AssetReferenceList assetRefs;
+    if (dynamic_cast<Attribute<AssetReference> *>(attr))
+        assetRefs.Append(dynamic_cast<Attribute<AssetReference> *>(attr)->Get().ref);
+    else if (dynamic_cast<Attribute<AssetReferenceList> *>(attr))
+        assetRefs = dynamic_cast<Attribute<AssetReferenceList> *>(attr)->Get();
+    else
+        return;
 
-        ++it;
+    for(int i = 0; i < assetRefs.Size(); ++i)
+    {
+        //AssetRefItem *assetItem = 0;
+        QTreeWidgetItemIterator it(treeWidget);
+        while(*it)
+        {
+            AssetRefItem *a = dynamic_cast<AssetRefItem *>(*it);
+            if (a && (/*a->type == assetRef->Get().type && */a->id == assetRefs[i].ref))
+            {
+                //assetItem = a;
+                SAFE_DELETE(a);
+                break;
+            }
+
+            ++it;
+        }
     }
 
-    SAFE_DELETE(assetItem);
+//    SAFE_DELETE(assetItem);
 }
 
 void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)

@@ -193,7 +193,7 @@ public slots:
     AssetStoragePtr GetDefaultAssetStorage() const;
 
     /// Sets the asset storage to be used when assets are requested by their local names.
-    void SetDefaultAssetStorage(AssetStoragePtr storage);
+    void SetDefaultAssetStorage(const AssetStoragePtr &storage);
 
     /// Performs a lookup of the given source asset reference, and returns in outFilePath the absolute path of that file, if it was found.
     /** @param baseDirectory You can give a single base directory to this function to use as a "current directory" for the local file lookup. This is
@@ -314,7 +314,7 @@ private:
     std::vector<AssetTransferPtr> readyTransfers;
 
     /// Contains all known asset storages in the system.
-    std::vector<AssetStoragePtr> storages;
+//    std::vector<AssetStoragePtr> storages;
 
     /// Specifies the storage to use for asset requests with local name only.
     AssetStorageWeakPtr defaultStorage;

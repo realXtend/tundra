@@ -77,13 +77,14 @@ AssetStoragePtr AssetAPI::GetDefaultAssetStorage() const
         return defStorage;
 
     // If no default storage set, return the first one on the list.
+    std::vector<AssetStoragePtr> storages = GetAssetStorages();
     if (storages.size() > 0)
         return storages[0];
 
     return AssetStoragePtr();
 }
 
-void AssetAPI::SetDefaultAssetStorage(AssetStoragePtr storage)
+void AssetAPI::SetDefaultAssetStorage(const AssetStoragePtr &storage)
 {
     defaultStorage = storage;
 }
