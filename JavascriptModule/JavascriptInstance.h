@@ -56,6 +56,11 @@ public:
     */
     void SetOwnerComponent(const ComponentPtr &owner) { owner_ = owner; }
 
+    //! Whether this instance executed trusted code or not. 
+    /** By default everything loaded remotely (with e.g. http) is untrusted,
+        and not exposed anything with system access (can not load qt dlls to get qt networking etc). */
+    bool trusted_;
+
 public slots:
     /// Loads a given script in engine. This function can be used to create a property as you could include js-files.
     /** Multiple inclusion of same file is prevented. (by using simple string compare)

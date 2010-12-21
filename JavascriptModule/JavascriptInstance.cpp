@@ -14,6 +14,7 @@
 #include "EC_Script.h"
 #include "IModule.h"
 #include "AssetAPI.h"
+#include "IAssetProvider.h" //to check if the code was loaded from a local or remote storage
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
@@ -56,8 +57,22 @@ void JavascriptInstance::Load()
     // Can't specify both a file source and an Asset API source.
     assert(sourceFile.isEmpty() || scriptRef_.get() == 0);
 
+    //determine based on code origin whether it can be trusted with system access or not
+    if (scriptRef_.get()) 
+    {
+        AssetProviderPtr provider = scriptRef_.get()->GetAssetProvider();
+        if (provider->Name() == "Local")
+            trusted_ = true;
+        else
+            trusted_ = false;
+    }
+    
+
     if (sourceFile.length() > 0)
+    {
         program_ = LoadScript(sourceFile);
+        trusted_ = true; //this is a local file directly, right?
+    }
 
     // Do we even have a script to execute?
     if (program_.isEmpty() && (!scriptRef_.get() || scriptRef_->scriptContent.isEmpty()))
@@ -232,6 +247,13 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
         LogWarning(("JavascriptInstance::ImportExtension(" + scriptExtensionName + ") failed, QScriptEngine==null!").toStdString());
         return;
     }
+
+    if (!trusted_)
+    {
+        LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance.");
+        return;
+    }
+
 
     QScriptValue success = engine_->importExtension(scriptExtensionName);
     if (!success.isUndefined()) // Yes, importExtension returns undefinedValue if the import succeeds. http://doc.qt.nokia.com/4.7/qscriptengine.html#importExtension
