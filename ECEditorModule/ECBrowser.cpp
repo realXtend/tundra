@@ -127,7 +127,7 @@ QObjectList ECBrowser::GetSelectedComponents() const
 {
     if (treeWidget_ && treeWidget_->currentItem())
     {
-        TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(treeWidget_->currentItem());
+        TreeItemToComponentGroup::const_iterator iter = itemToComponentGroups_.find(treeWidget_->currentItem());
         if (iter != itemToComponentGroups_.end())
         {
             QObjectList components;
