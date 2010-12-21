@@ -69,7 +69,15 @@ struct AssetReferenceList
     }
 
     /// Returns true if @c rhs is equal to this list, otherwise false.
-    bool operator ==(const AssetReferenceList &rhs) const { return this->refs == rhs.refs; }
+    bool operator ==(const AssetReferenceList &rhs) const 
+    {
+        if (this->refs.size() != rhs.refs.size())
+            return false;
+        for(unsigned int i = 0; i < this->refs.size(); ++i)
+            if (this->refs[i].toString() != rhs.refs[i].toString())
+                return false;
+        return true;
+    }
 
     /// Returns true if @c rhs is not equal to this list, otherwise false.
     bool operator !=(const AssetReferenceList &rhs) const { return !(*this == rhs); }
