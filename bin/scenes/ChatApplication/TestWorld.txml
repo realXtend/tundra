@@ -1,5 +1,17 @@
 <!DOCTYPE Scene>
 <scene>
+ <entity id="2">
+  <component type="EC_Name" sync="1">
+   <attribute value="Instructions" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://instructions.js" name="Script ref"/>
+  </component>
+ </entity>
  <entity id="1">
   <component type="EC_Name" sync="1">
    <attribute value="ChatApplication" name="name"/>
@@ -9,150 +21,8 @@
   <component type="EC_Script" sync="1" name="ChatApplication">
    <attribute value="js" name="Type"/>
    <attribute value="true" name="Run on load"/>
-   <attribute value=".\scenes\ChatApplication\ChatApplication.js" name="Script ref"/>
+   <attribute value="local://ChatApplication.js" name="Script ref"/>
   </component>
   <component type="EC_DynamicComponent" sync="0" name="server"/>
- </entity>
- <entity id="2">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="boxA" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="-14.7663,1.65381,2.50123,-179.992,-0.00600731,38.6425,5,5,5" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-  </component>
-  <component type="EC_RigidBody" sync="1">
-   <attribute value="3" name="Mass"/>
-   <attribute value="0" name="Shape type"/>
-   <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
-   <attribute value="0.5" name="Friction"/>
-   <attribute value="0" name="Restitution"/>
-   <attribute value="0" name="Linear damping"/>
-   <attribute value="0" name="Angular damping"/>
-   <attribute value="1 1 1" name="Linear factor"/>
-   <attribute value="1 1 1" name="Angular factor"/>
-   <attribute value="false" name="Phantom"/>
-   <attribute value="false" name="Draw Debug"/>
-   <attribute value="0.00265177921 -0.00138409575 0.0286104679" name="Linear velocity"/>
-   <attribute value="0.0610882677 0.0895264447 0.00770564517" name="Angular velocity"/>
-  </component>
- </entity>
- <entity id="3">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="boxA" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="36.4991,-38.1386,2.50176,89.9826,0.0245105,-134.693,5,5,5" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-  </component>
-  <component type="EC_RigidBody" sync="1">
-   <attribute value="3" name="Mass"/>
-   <attribute value="0" name="Shape type"/>
-   <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
-   <attribute value="0.5" name="Friction"/>
-   <attribute value="0" name="Restitution"/>
-   <attribute value="0" name="Linear damping"/>
-   <attribute value="0" name="Angular damping"/>
-   <attribute value="1 1 1" name="Linear factor"/>
-   <attribute value="1 1 1" name="Angular factor"/>
-   <attribute value="false" name="Phantom"/>
-   <attribute value="false" name="Draw Debug"/>
-   <attribute value="-0.00964397844 0.0068786568 0.00129711628" name="Linear velocity"/>
-   <attribute value="0.0241694227 0.023422718 -0.0269892104" name="Angular velocity"/>
-  </component>
- </entity>
- <entity id="4">
-  <component type="EC_Mesh" sync="1">
-   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="file://boxA.mesh" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="file://crate_texture.material" name="Mesh materials"/>
-   <attribute value="0" name="Draw distance"/>
-   <attribute value="true" name="Cast shadows"/>
-  </component>
-  <component type="EC_Name" sync="1">
-   <attribute value="boxA" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="29.4079,92.7539,2.49641,0.00544974,-0.00708027,59.6624,5,5,5" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-  </component>
-  <component type="EC_RigidBody" sync="1">
-   <attribute value="3" name="Mass"/>
-   <attribute value="0" name="Shape type"/>
-   <attribute value="1 1 1" name="Size"/>
-   <attribute value="file://boxA.mesh" name="Collision mesh ref"/>
-   <attribute value="0.5" name="Friction"/>
-   <attribute value="0" name="Restitution"/>
-   <attribute value="0" name="Linear damping"/>
-   <attribute value="0" name="Angular damping"/>
-   <attribute value="1 1 1" name="Linear factor"/>
-   <attribute value="1 1 1" name="Angular factor"/>
-   <attribute value="false" name="Phantom"/>
-   <attribute value="false" name="Draw Debug"/>
-   <attribute value="-8.71377997e-005 -0.0103167351 -0.143853948" name="Linear velocity"/>
-   <attribute value="-0.121716149 0.360909313 0.0170330033" name="Angular velocity"/>
-  </component>
- </entity>
- <entity id="180">
-  <component type="EC_Name" sync="1">
-   <attribute value="terrain" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_Terrain" sync="1">
-   <attribute value="-128,-128,0,0,0,0,1,1,1" name="Transform"/>
-   <attribute value="16" name="Grid Width"/>
-   <attribute value="16" name="Grid Height"/>
-   <attribute value="0.129999995" name="Tex. U scale"/>
-   <attribute value="0.129999995" name="Tex. V scale"/>
-   <attribute value="file://RexTerrainPCF.material" name="Material"/>
-   <attribute value="" name="Texture 0"/>
-   <attribute value="" name="Texture 1"/>
-   <attribute value="" name="Texture 2"/>
-   <attribute value="" name="Texture 3"/>
-   <attribute value="" name="Texture 4"/>
-   <attribute value="file://terrain.ntf" name="Heightmap"/>
-  </component>
-  <component type="EC_RigidBody" sync="1">
-   <attribute value="0" name="Mass"/>
-   <attribute value="5" name="Shape type"/>
-   <attribute value="1 1 1" name="Size"/>
-   <attribute value="" name="Collision mesh ref"/>
-   <attribute value="0.5" name="Friction"/>
-   <attribute value="0" name="Restitution"/>
-   <attribute value="0" name="Linear damping"/>
-   <attribute value="0" name="Angular damping"/>
-   <attribute value="1 1 1" name="Linear factor"/>
-   <attribute value="1 1 1" name="Angular factor"/>
-   <attribute value="false" name="Phantom"/>
-   <attribute value="false" name="Draw Debug"/>
-   <attribute value="0 0 0" name="Linear velocity"/>
-   <attribute value="0 0 0" name="Angular velocity"/>
-  </component>
  </entity>
 </scene>
