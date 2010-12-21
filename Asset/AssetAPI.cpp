@@ -794,6 +794,8 @@ void AssetAPI::AssetTransferFailed(IAssetTransfer *transfer, QString reason)
 
 void AssetAPI::AssetUploadTransferCompleted(IAssetUploadTransfer *uploadTransfer)
 {
+    uploadTransfer->EmitTransferCompleted();
+
     QString assetRef = uploadTransfer->AssetRef();
     // We've completed an asset upload transfer. See if there is an asset download transfer that is waiting
     // for this upload to complete. 
