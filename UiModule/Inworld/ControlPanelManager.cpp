@@ -129,30 +129,30 @@ namespace CoreUi
         {
             case UiServices::Settings:
             {
-                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
+                /*ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
                 ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Teleport]);
                 if (action_notifications)
                     action_notifications->RequestHide();
                 if (action_teleport)
-                    action_teleport->RequestHide();
+                    action_teleport->RequestHide();*/
                 break;
             }
             case UiServices::Teleport:
             {
                 ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
-                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
+                //ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
                 if (action_notifications)
                     action_notifications->RequestHide();
-                if (action_settings)
-                    action_settings->RequestHide();
+                //if (action_settings)
+                //   action_settings->RequestHide();
                 break;
             }
             case UiServices::Notifications:
             {
-                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
+                //ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
                 ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Teleport]);
-                if (action_settings)
-                    action_settings->RequestHide();
+                //if (action_settings)
+                //    action_settings->RequestHide();
                 if (action_teleport)
                     action_teleport->RequestHide();
                 break;
