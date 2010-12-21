@@ -9,10 +9,17 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("AssetCache")
 
 QString SanitateAssetRefForCache(QString assetRef)
-{
+{ 
     assetRef.replace("/", "_");
     assetRef.replace("\\", "_");
     assetRef.replace(":", "_");
+    assetRef.replace("*", "_");
+    assetRef.replace("?", "_");
+    assetRef.replace("\"", "_");
+    assetRef.replace("'", "_");
+    assetRef.replace("<", "_");
+    assetRef.replace(">", "_");
+    assetRef.replace("|", "_");
     return assetRef;
 }
 
