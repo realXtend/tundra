@@ -76,8 +76,9 @@ private:
     /// Rewrites values of AssetReference or AssetReferenceList attributes.
     /** @param sceneDesc Scene description.
         @param dest Destination asset storage.
+        @param useDefaultStorage Do we want to use the default asset storage.
     */
-    void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest);
+    void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage);
 
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
