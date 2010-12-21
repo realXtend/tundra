@@ -4,6 +4,7 @@
 #define incl_TundraLogicModule_Server_h
 
 #include "Core.h"
+#include "TundraLogicModuleApi.h"
 #include "ForwardDefines.h"
 
 #include "kNet.h"
@@ -31,7 +32,7 @@ namespace TundraLogic
 
 class TundraLogicModule;
 
-class Server : public QObject
+class TUNDRALOGIC_MODULE_API Server : public QObject
 {
     Q_OBJECT
     
