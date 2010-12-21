@@ -1,0 +1,40 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1">
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="local://boxA.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="true" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="TooltipBox" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="-10,10,30,-0.0942868,-3.76036,4.73495,5,5,5" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+  </component>
+  <component type="EC_HoveringText" sync="1" name="TooltipText">
+   <attribute value="Tooltip example" name="Text"/>
+   <attribute value="Arial" name="Font"/>
+   <attribute value="100" name="Font Size"/>
+   <attribute value="0 0 0 0" name="Font Color"/>
+   <attribute value="1 1 1 0" name="Background Color"/>
+   <attribute value="0 0 0 0" name="Border Color"/>
+   <attribute value="0" name="Border Thickness"/>
+   <attribute value="0 0 1" name="Position"/>
+   <attribute value="false" name="Use Gradiant"/>
+   <attribute value="0 0 0 1" name="Gradient Start"/>
+   <attribute value="1 1 1 1" name="Gradient End"/>
+  </component>
+  <component type="EC_Script" sync="1" name="Tooltip">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="http://an.org/realxtend/tooltip.js" name="Script ref"/>
+  </component>
+ </entity>
+</scene>
