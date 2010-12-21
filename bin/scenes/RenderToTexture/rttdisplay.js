@@ -8,6 +8,8 @@ function init() {
     var cam = scene.GetEntityByNameRaw("FreeLookCamera");
     cam.GetOrCreateComponentRaw("EC_RttTarget");
     rtt = cam.rtttarget;
+    rtt.size_x = 800;
+    rtt.size_y = 600;
     rtt.PrepareRtt();
     rtt.SetAutoUpdated(true);
 
