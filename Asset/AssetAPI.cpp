@@ -148,6 +148,7 @@ AssetAPI::FileQueryResult AssetAPI::QueryFileLocation(QString sourceRef, QString
 
     // Do a recursive lookup through all local asset providers and the given base directory.
     ///\todo Implement this. Can't query the LocalAssetProviders here directly (wrong direction for dependency chain).
+    outFilePath = sourceRef; ///<\todo review
 
     return FileQueryLocalFileMissing;
 }
