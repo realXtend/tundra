@@ -54,6 +54,42 @@ EC_Terrain::EC_Terrain(IModule* module) :
 {
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
+    static AttributeMetadata heightRefMetadata;
+    AttributeMetadata::ButtonInfoList heightRefButtons;
+    heightRefButtons.push_back(AttributeMetadata::ButtonInfo(heightMap.GetName(), "V", "View"));
+    heightRefMetadata.buttons = heightRefButtons;
+    heightMap.SetMetadata(&heightRefMetadata);
+
+    static AttributeMetadata texRefMetadata0;
+    AttributeMetadata::ButtonInfoList texRefButtons;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture0.GetName(), "V", "View"));
+    texRefMetadata0.buttons = texRefButtons;
+    texture0.SetMetadata(&texRefMetadata0);
+    texRefButtons.clear();
+
+    static AttributeMetadata texRefMetadata1;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture1.GetName(), "V", "View"));
+    texRefMetadata1.buttons = texRefButtons;
+    texture1.SetMetadata(&texRefMetadata1);
+    texRefButtons.clear();
+
+    static AttributeMetadata texRefMetadata2;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture2.GetName(), "V", "View"));
+    texRefMetadata2.buttons = texRefButtons;
+    texture2.SetMetadata(&texRefMetadata2);
+    texRefButtons.clear();
+
+    static AttributeMetadata texRefMetadata3;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture3.GetName(), "V", "View"));
+    texRefMetadata3.buttons = texRefButtons;
+    texture3.SetMetadata(&texRefMetadata3);
+    texRefButtons.clear();
+
+    static AttributeMetadata texRefMetadata4;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture4.GetName(), "V", "View"));
+    texRefMetadata4.buttons = texRefButtons;
+    texture4.SetMetadata(&texRefMetadata4);
+
     xPatches.Set(1, AttributeChange::Disconnected);
     yPatches.Set(1, AttributeChange::Disconnected);
     patches.resize(1);
@@ -74,6 +110,34 @@ EC_Terrain::EC_Terrain(IModule* module) :
 EC_Terrain::~EC_Terrain()
 {
     Destroy();
+}
+
+void EC_Terrain::View(const QString &attributeName)
+{
+    if (texture0.GetName() == attributeName)
+    {
+        /// \todo add implementation
+    }
+    else if(texture1.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
+    else if(texture2.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
+    else if(texture3.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
+    else if(texture4.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
+    else if(heightMap.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
 }
 
 void EC_Terrain::UpdateSignals()

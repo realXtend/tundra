@@ -30,6 +30,12 @@ EC_SkyBox::EC_SkyBox(IModule *module) :
 {
      connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
 
+     static AttributeMetadata materialRefMetadata;
+     AttributeMetadata::ButtonInfoList materialRefButtons;
+     materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.GetName(), "V", "View"));
+     materialRefMetadata.buttons = materialRefButtons;
+     materialRef.SetMetadata(&materialRefMetadata);
+
      // Find out default textures.
      renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
@@ -108,6 +114,11 @@ void EC_SkyBox::CreateSky()
     {
         LogError("Could not set SkyBox: " + std::string(e.what()));
     }
+}
+
+void EC_SkyBox::View(const QString &attributeName)
+{
+    /// @todo implement this.
 }
 
 void EC_SkyBox::AttributeUpdated(IAttribute* attribute)

@@ -47,10 +47,38 @@ public:
         Interpolate
     };
 
+    //! ButtonInfo structure will contain all information need to create a QPushButtons to ECEditor.
+    struct ButtonInfo
+    {
+        //! Constructor.
+        /*! \param object_name QPushButton's object name.
+            \param button_text QPushButton's text/icon.
+            \param method_name IComponent's public slot method name.
+         */
+        ButtonInfo(const QString &object_name, const QString &button_text, const QString &method_name):
+            objectName(object_name),
+            text(button_text),
+            method(method_name){}
+
+        bool operator ==(const ButtonInfo &rhs) const 
+        {
+            return this->objectName == rhs.objectName &&
+                   this->text == rhs.text &&
+                   this->method == rhs.method;
+        }
+        bool operator !=(const ButtonInfo &rhs) const { return !(*this == rhs); }
+        bool operator <(const ButtonInfo &rhs) const { return objectName < rhs.objectName; }
+
+        QString objectName;
+        QString text;
+        QString method;
+    };
+
+    typedef QList<ButtonInfo> ButtonInfoList;
     typedef std::map<int, std::string> EnumDescMap_t;
 
     //! Default constructor.
-    AttributeMetadata() {}
+    AttributeMetadata() : interpolation(None) {}
 
     //! Constructor.
     /*! \param desc Description.
@@ -85,6 +113,9 @@ public:
 
     //! Step value.
     QString step;
+
+    //! List of all buttons wanted to shown on the editor (works with string attributes).
+    ButtonInfoList buttons;
 
     //! Describes the type for individual elements of this attribute (in case there are multiple, e.g. in the case of QVariantList).
     QString elementType;

@@ -11,10 +11,8 @@
 
 ComponentGroup::ComponentGroup(ComponentPtr component,
                                ECComponentEditor *editor,
-                               QTreeWidgetItem *listItem,
                                bool isDynamic):
     editor_(editor),
-    browserListItem_(listItem),
     isDynamic_(isDynamic)
 {
     assert(component);

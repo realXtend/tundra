@@ -38,8 +38,7 @@ ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
     useMultiEditor_(false),
     metaDataFlag_(0)
 {
-    if(FindAttribute(component))
-        components_.push_back(ComponentWeakPtr(component));
+    AddComponent(component);
 }
 
 ECAttributeEditorBase::~ECAttributeEditorBase()
@@ -97,6 +96,7 @@ void ECAttributeEditorBase::AddComponent(ComponentPtr component)
         connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), 
                 this, SLOT(AttributeChanged(IAttribute*)),
                 Qt::UniqueConnection);
+        emit OnComponentAdded(rootProperty_, component.get());
     }
 }
 
@@ -105,6 +105,7 @@ void ECAttributeEditorBase::RemoveComponent(ComponentPtr component)
     ComponentWeakPtrList::iterator iter = FindComponent(component);
     if(iter != components_.end())
     {
+        emit OnComponentRemoved(rootProperty_, component.get());
         components_.erase(iter);
         disconnect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), 
                    this, SLOT(AttributeChanged(IAttribute*)));
@@ -656,6 +657,24 @@ template<> void ECAttributeEditor<QString>::Initialize()
     {
         QtStringPropertyManager *qStringPropertyManager = new QtStringPropertyManager(this);
         LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
+        if (components_.size())
+        {
+            ComponentPtr comp = components_[0].lock();
+            if (comp)
+            {
+                IAttribute *attr = comp->GetAttribute(name_);
+                if (attr && attr->HasMetadata())
+                {
+                    AttributeMetadata *meta = attr->GetMetadata();
+                    lineEditFactory->SetComponents(rootProperty_, components_);
+                    lineEditFactory->AddButtons(meta->buttons);
+                }
+            }
+        }
+
+        connect(this, SIGNAL(OnComponentAdded(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentAdded(QtProperty*, IComponent*)));
+        connect(this, SIGNAL(OnComponentRemoved(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentRemoved(QtProperty*, IComponent*)));
+
         propertyMgr_ = qStringPropertyManager;
         factory_ = lineEditFactory;
         rootProperty_ = qStringPropertyManager->addProperty(name_);
@@ -1019,6 +1038,7 @@ template<> void ECAttributeEditor<QVariantList>::Set(QtProperty *property)
             if(value[value.size() - 1] == "")
                 value.pop_back();
         SetValue(value);
+        Update();
     }
 }
 
@@ -1092,6 +1112,23 @@ template<> void ECAttributeEditor<AssetReference>::Initialize()
         LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
         propertyMgr_ = stringManager;
         factory_ = lineEditFactory;
+
+        if (components_.size())
+        {
+            ComponentPtr comp = components_[0].lock();
+            if (comp)
+            {
+                IAttribute *attr = comp->GetAttribute(name_);
+                if (attr && attr->HasMetadata())
+                {
+                    AttributeMetadata *meta = attr->GetMetadata();
+                    lineEditFactory->SetComponents(rootProperty_, components_);
+                    lineEditFactory->AddButtons(meta->buttons);
+                }
+            }
+        }
+        connect(this, SIGNAL(OnComponentAdded(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentAdded(QtProperty*, IComponent*)));
+        connect(this, SIGNAL(OnComponentRemoved(QtProperty*, IComponent*)), lineEditFactory, SLOT(ComponentRemoved(QtProperty*, IComponent*)));
 
         rootProperty_ = propertyMgr_->addProperty(name_);
         assert(rootProperty_);
@@ -1229,6 +1266,7 @@ template<> void ECAttributeEditor<AssetReferenceList>::Set(QtProperty *property)
                 value.RemoveLast();
 
         SetValue(value);
+        Update();
     }
 }
 

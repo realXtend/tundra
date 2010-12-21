@@ -361,6 +361,9 @@ signals:
     void TerrainRegenerated();
     
 private slots:
+    //! Open asset editor for given asset attribute.
+    void View(const QString &attributeName);
+
     //! Emitted when the parrent entity has been set.
     void UpdateSignals();
 

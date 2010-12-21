@@ -174,6 +174,13 @@ void ECEditorWindow::ClearEntities()
     RefreshPropertyBrowser();
 }
 
+QObjectList ECEditorWindow::GetSelectedComponents() const
+{
+    if (browser_)
+        return browser_->GetSelectedComponents();
+    return QObjectList();
+}
+
 void ECEditorWindow::DeleteEntitiesFromList()
 {
     if ((entity_list_) && (entity_list_->hasFocus()))
@@ -428,11 +435,11 @@ foreach(QObjectWeakPtr o, dialog->Objects())
     }
 }
 
-void ECEditorWindow::HighlightEntities(IComponent *component)
+void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
 {
     QSet<entity_id_t> entities;
     foreach(Scene::EntityPtr entity, GetSelectedEntities())
-        if (entity->GetComponent(component->TypeName(), component->Name()))
+        if (entity->GetComponent(type, name))
             entities.insert(entity->GetId());
     BoldEntityListItems(entities);
 }
@@ -548,7 +555,7 @@ void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
 void ECEditorWindow::ShowXmlEditorForEntity()
 {
     QList<Scene::EntityPtr> entities = GetSelectedEntities();
-    std::vector<EntityComponentSelection> selection;// = GetSelectedComponents();
+    std::vector<EntityComponentSelection> selection;
     for(uint i = 0; i < entities.size(); i++)
     {
         EntityComponentSelection entityComponent;
@@ -732,7 +739,9 @@ void ECEditorWindow::Initialize()
         // signals from attribute browser to editor window.
         connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
         connect(browser_, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
-        connect(browser_, SIGNAL(ComponentSelected(IComponent *)), SLOT(HighlightEntities(IComponent *)));
+        connect(browser_, SIGNAL(ComponentSelected(const QString&, const QString &)), SLOT(HighlightEntities(const QString&, const QString&)));
+        connect(browser_, SIGNAL(ComponentSelected(const QString&, const QString &)),
+                SIGNAL(ComponentSelectionChanged(const QString&, const QString&)), Qt::UniqueConnection);
         browser_->SetItemExpandMemory(framework_->GetModule<ECEditorModule>()->ExpandMemory());
     }
 
@@ -747,7 +756,7 @@ void ECEditorWindow::Initialize()
         connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
 
     // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
-    connect(framework_, SIGNAL(DefaultWorldSceneChanged(const Scene::ScenePtr &)), SLOT(DefaultSceneChanged(const Scene::ScenePtr &)));
+    connect(framework_, SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)), SLOT(DefaultSceneChanged(Scene::SceneManager *)));
 
     ECEditorModule *module = framework_->GetModule<ECEditorModule>();
     if (module)
@@ -763,13 +772,13 @@ void ECEditorWindow::Initialize()
     }
 }
 
-void ECEditorWindow::DefaultSceneChanged(const Scene::ScenePtr &scene)
+void ECEditorWindow::DefaultSceneChanged(Scene::SceneManager *scene)
 {
     assert(scene);
     //! todo disconnect previous scene connection.
-    connect(scene.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
+    connect(scene, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
             SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
-    connect(scene.get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
+    connect(scene, SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
             SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)), Qt::UniqueConnection);
 }
 

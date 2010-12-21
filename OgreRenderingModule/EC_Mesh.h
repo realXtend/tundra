@@ -176,6 +176,9 @@ public:
     virtual ~EC_Mesh();
 
 public slots:
+    //! open mesh preview window and display the mesh asset.
+    void View(const QString &attributeName);
+
     //! automatically find the placeable and set it
     void AutoSetPlaceable();
     

@@ -69,6 +69,13 @@ EC_Script::EC_Script(IModule *module):
     runOnLoad(this, "Run on load", false),
     scriptInstance_(0)
 {
+    static AttributeMetadata scriptRefData;
+    AttributeMetadata::ButtonInfoList scriptRefButtons;
+    scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("runScriptButton", "P", "Run"));
+    scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("stopScriptButton", "S", "Unload"));
+    scriptRefData.buttons = scriptRefButtons;
+    scriptRef.SetMetadata(&scriptRefData);
+
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));

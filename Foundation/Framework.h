@@ -318,7 +318,7 @@ namespace Foundation
         /// Emmitted when default world scene changes.
         /** @param scene new default world scene object.
         */
-        void DefaultWorldSceneChanged(const Scene::ScenePtr &scene);
+        void DefaultWorldSceneChanged(Scene::SceneManager *scene);
 
     public slots:
         //! Signal the framework to exit

@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QVariantList>
 
 class TreeWidgetItemExpandMemory;
 typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
@@ -70,9 +71,8 @@ public:
     ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
 public slots:
-    // This mehtod is called when new ECEditorWindow isntance is created.
-    //void RegisterECEditor(ECEditorWindow *editor);
-    //void UnregisterECEditor();
+    //! ECEditor has gained a focus event and need to set as active editor.
+    //! @param editor editor that has focus.
     void ECEditorFocusChanged(ECEditorWindow *editor);
 
     void AddEditorWindowToUI();
@@ -92,6 +92,16 @@ public slots:
     //! Creates EC attribute XML editor widget for component.
     //! \param components List of component pointers.
     void CreateXmlEditor(const QList<ComponentPtr> &components);
+
+    //! Ask active ECEditor about what components are currently selected.
+    //! If edtior isn't initialized or any components aren't selected from the editor, method will return emtpy list.
+    QObjectList GetSelectedComponents() const;
+
+    QVariantList GetSelectedEntities() const;
+
+signals:
+    //! To tell the script when a new component is selected from ECEditorWindow.
+    void ComponentSelectionChanged(const QString &type, const QString &name);
 
 private:
     //! Static name of the module

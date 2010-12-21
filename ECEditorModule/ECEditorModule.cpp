@@ -44,6 +44,7 @@ void ECEditorModule::Load()
 
 void ECEditorModule::Initialize()
 {
+    GetFramework()->RegisterDynamicObject("eceditor", this);
     expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_->GetDefaultConfig()));
 }
 
@@ -112,15 +113,19 @@ void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
     if (editor == active_editor_ && !editor)
         return;
 
-    // Unfocus previously active editor.
+    // Unfocus previously active editor and disconnect all signals from that editor.
     if (active_editor_)
     {
         active_editor_->SetFocus(false);
         disconnect(active_editor_, SIGNAL(destroyed(QObject*)), this, SLOT(ActiveECEditorDestroyed(QObject*)));
+        disconnect(active_editor_, SIGNAL(ComponentSelectionChanged(const QString&, const QString&)),
+                   this, SIGNAL(ComponentSelectionChanged(const QString&, const QString&)));
     }
     active_editor_ = editor;
     active_editor_->SetFocus(true);
     connect(active_editor_, SIGNAL(destroyed(QObject*)), SLOT(ActiveECEditorDestroyed(QObject*)), Qt::UniqueConnection);
+    connect(active_editor_, SIGNAL(ComponentSelectionChanged(const QString&, const QString&)),
+            this, SIGNAL(ComponentSelectionChanged(const QString&, const QString&)), Qt::UniqueConnection);
 }
 
 void ECEditorModule::AddEditorWindowToUI()
@@ -249,20 +254,43 @@ void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)
     CreateXmlEditor(entities);
 }
 
+QObjectList ECEditorModule::GetSelectedComponents() const
+{
+    if (active_editor_)
+        return active_editor_->GetSelectedComponents();
+    return QObjectList();
+}
+
+QVariantList ECEditorModule::GetSelectedEntities() const
+{
+    if (active_editor_)
+    {
+        QList<Scene::EntityPtr> entities = active_editor_->GetSelectedEntities();
+        QVariantList retEntities;
+        for(uint i = 0; i < entities.size(); ++i)
+            retEntities.push_back(QVariant(entities[i]->GetId()));
+        return retEntities;
+    }
+    return QVariantList();
+}
+
 void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
 {
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
+    //UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
+    NaaliUi *ui = GetFramework()->Ui();
     if (entities.empty() || !ui)
         return;
 
     if (!xmlEditor_)
     {
         xmlEditor_ = new EcXmlEditorWidget(framework_);
-        ui->AddWidgetToScene(xmlEditor_);
+        xmlEditor_->setParent(ui->MainWindow());
+        xmlEditor_->setWindowFlags(Qt::Tool);
+        //ui->AddWidgetToScene(xmlEditor_);
     }
 
     xmlEditor_->SetEntity(entities);
-    ui->BringWidgetToFront(xmlEditor_);
+    //ui->BringWidgetToFront(xmlEditor_);
 }
 
 void ECEditorModule::CreateXmlEditor(ComponentPtr component)
@@ -274,18 +302,20 @@ void ECEditorModule::CreateXmlEditor(ComponentPtr component)
 
 void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
 {
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (components.empty() || !ui)
+    NaaliUi *ui = GetFramework()->Ui();
+    if (!components.empty() && !ui)
         return;
 
     if (!xmlEditor_)
     {
         xmlEditor_ = new EcXmlEditorWidget(framework_);
-        ui->AddWidgetToScene(xmlEditor_);
+        xmlEditor_->setParent(ui->MainWindow());
+        xmlEditor_->setWindowFlags(Qt::Tool);
+        //ui->AddWidgetToScene(xmlEditor_);
     }
 
     xmlEditor_->SetComponent(components);
-    ui->BringWidgetToFront(xmlEditor_);
+    //ui->BringWidgetToFront(xmlEditor_);
 }
 
 void ECEditorModule::HandleKeyPressed(KeyEvent *e)

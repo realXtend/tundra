@@ -28,6 +28,11 @@ EC_Sound::EC_Sound(IModule *module):
 {
     static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain.SetMetadata(&metaData);
+    static AttributeMetadata soundRefMetadata;
+    AttributeMetadata::ButtonInfoList soundRefButtons;
+    soundRefButtons.push_back(AttributeMetadata::ButtonInfo(soundRef.GetName(), "V", "View"));
+    soundRefMetadata.buttons = soundRefButtons;
+    soundRef.SetMetadata(&soundRefMetadata);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
@@ -61,6 +66,11 @@ void EC_Sound::PositionChange(const QVector3D &pos)
 {
     if (soundChannel)
         soundChannel->SetPosition(Vector3df(pos.x(), pos.y(), pos.z()));
+}
+
+void EC_Sound::View(const QString &attributeName)
+{
+    //! @todo Add implementation.
 }
 
 void EC_Sound::PlaySound()

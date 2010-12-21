@@ -27,6 +27,12 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     castShadows(this, "Cast shadows", false),
     renderingDistance(this, "Rendering distance", 0.0f)
 {
+    static AttributeMetadata particleRefMetadata;
+    AttributeMetadata::ButtonInfoList particleRefButtons;
+    particleRefButtons.push_back(AttributeMetadata::ButtonInfo(particleRef.GetName(), "V", "View"));
+    particleRefMetadata.buttons = particleRefButtons;
+    particleRef.SetMetadata(&particleRefMetadata);
+
     renderer_ = GetFramework()->GetServiceManager()->GetService<Renderer>();
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeUpdated(IAttribute*)));
@@ -35,6 +41,11 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
 EC_ParticleSystem::~EC_ParticleSystem()
 {
     DeleteParticleSystems();
+}
+
+void EC_ParticleSystem::View(const QString &attributeName)
+{
+    //! @todo add implementation.
 }
 
 void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
