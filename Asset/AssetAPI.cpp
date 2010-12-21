@@ -374,7 +374,9 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     if (assetType.isEmpty())
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
-    assetRef = assetRef.trimmed();
+    // Turn named storage (and default storage) specifiers to absolute specifiers.
+    assetRef = LookupAssetRefToStorage(assetRef);
+
     if (assetRef.isEmpty())
     {
         // Removed this print - seems like a bad idea to print out this warning, since there are lots of scenes with null assetrefs.
@@ -433,9 +435,6 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
         pendingDownloadRequests[assetRef] = pendingRequest;
         return pendingRequest.transfer; ///\bug Problem. When we return this structure, the client will connect to this.
     }
-
-    // Turn named storage (and default storage) specifiers to absolute specifiers.
-    assetRef = LookupAssetRefToStorage(assetRef);
 
     // Find the AssetProvider that will fulfill this request.
     AssetProviderPtr provider = GetProviderForAssetRef(assetRef, assetType);
@@ -855,6 +854,7 @@ void AssetAPI::NotifyAssetDependenciesChanged(AssetPtr asset)
     std::vector<AssetReference> refs = asset->FindReferences();
     for(size_t i = 0; i < refs.size(); ++i)
     {
+        // Turn named storage (and default storage) specifiers to absolute specifiers.
         QString ref = refs[i].ref;
         if (ref.isEmpty())
             continue;
@@ -876,13 +876,13 @@ void AssetAPI::RequestAssetDependencies(AssetPtr asset)
         if (ref.isEmpty())
             continue;
 
-        AssetPtr existing = GetAsset(refs[i].ref);
+        AssetPtr existing = GetAsset(ref);
         if (existing)
             asset->DependencyLoaded(existing);
         else // We don't have the given asset yet, request it.
         {
             LogInfo("Asset " + asset->ToString().toStdString() + " depends on asset " + ref.toStdString() + " which has not been loaded yet. Requesting..");
-            RequestAsset(refs[i].ref);
+            RequestAsset(ref);
         }
     }
 }
