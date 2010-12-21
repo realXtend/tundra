@@ -1,8 +1,6 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
-engine.IncludeFile("print.js");
-
 var menu = ui.MainWindow().menuBar();
 menu.clear();
 
@@ -24,6 +22,9 @@ if (framework.GetModuleQObj("DebugStats"))
 
 if (framework.GetModuleQObj("Environment"))
   viewMenu.addAction("Terrain Editor").triggered.connect(OpenTerrainEditor);
+
+if (framework.GetModuleQObj("PythonScript"))
+  viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
 function NewScene()
 {
@@ -53,4 +54,9 @@ function OpenProfilerWindow()
 function OpenTerrainEditor()
 {
   console.ExecuteCommand("TerrainTextureEditor");
+}
+
+function OpenPythonConsole()
+{
+  console.ExecuteCommand("pythonconsole");
 }

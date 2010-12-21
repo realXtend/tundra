@@ -57,7 +57,14 @@ renderer = _pythonscriptmodule.GetRenderer()
 worldlogic = _pythonscriptmodule.GetWorldLogic()
 inputcontext = _pythonscriptmodule.GetInputContext()
 mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
-communicationsservice = _pythonscriptmodule.GetCommunicationsService()
+
+# the comms service is optional. If it's not present we'll leave it
+# undefined.
+try:
+    communicationsservice = _pythonscriptmodule.GetCommunicationsService()
+except AttributeError:
+    pass
+
 frame = _naali.GetFrame()
 console = _naali.Console()
 input = _naali.GetInput()

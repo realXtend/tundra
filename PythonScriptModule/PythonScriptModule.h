@@ -87,6 +87,9 @@ namespace PythonScript
 
         PythonQtScriptingConsole* CreateConsole();
 
+        /// Shows the Python script console.
+        void ShowConsole();
+
     public:
         PythonScriptModule();
         virtual ~PythonScriptModule();

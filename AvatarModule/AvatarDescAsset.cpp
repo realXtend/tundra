@@ -1,5 +1,6 @@
 #include "StableHeaders.h"
 #include "AvatarDescAsset.h"
+#include "AssetAPI.h"
 
 #include <QDomDocument>
 
@@ -52,9 +53,12 @@ void AvatarDescAsset::ParseReferences()
             while (!asset.isNull())
             {
                 AssetReference newRef;
-                newRef.ref = asset.attribute("id");
+                ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
+                newRef.ref = assetAPI->LookupAssetRefToStorage(asset.attribute("id"));
                 if (!newRef.ref.isEmpty())
+                {
                     assetReferences.push_back(newRef);
+                }
                 
                 asset = asset.nextSiblingElement("asset");
             }

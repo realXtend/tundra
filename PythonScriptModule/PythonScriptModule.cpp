@@ -261,6 +261,8 @@ namespace PythonScript
             "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
             Console::Bind(this, &PythonScriptModule::ConsoleReset)));
 
+        framework_->Console()->RegisterCommand("pythonconsole", "Shows the Python console window.", this, SLOT(ShowConsole()));
+
         ProcessCommandLineOptions();
     }
 
@@ -805,6 +807,12 @@ namespace PythonScript
         NaaliMainWindow *mainWnd = framework_->Ui()->MainWindow();
         PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(mainWnd, PythonQt::self()->getMainModule(), Qt::Tool);
         return pythonqtconsole;
+    }
+
+    void PythonScriptModule::ShowConsole()
+    {
+        PythonQtScriptingConsole *console = CreateConsole();
+        console->show();
     }
 }
 
