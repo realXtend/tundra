@@ -1,5 +1,5 @@
-!define VERSION "1.0a-preview"
 !include "fileassoc.nsh"
+!define VERSION "1.0a-preview"
 
 Name "Tundra ${VERSION}"
 
@@ -20,7 +20,7 @@ Section ""
   File /r build\*.*
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
-                   "DisplayName" "Tundra"
+                   "DisplayName" "Tundra ${VERSION}"
 
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Tundra" \
                    "DisplayVersion" "${VERSION}"
@@ -53,6 +53,18 @@ Section "Start Menu Shortcuts"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Tundra ${VERSION} Viewer.lnk" "$INSTDIR\viewer.exe"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Readme.lnk" "$INSTDIR\readme.txt"
   CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Uninstall.lnk" "$INSTDIR\uninstaller.exe"
+
+  CreateDirectory "$SMPROGRAMS\Tundra ${VERSION}\Demos"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\3DCanvas.lnk" "$INSTDIR\scenes\3DCanvas\TestScene.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Avatar.lnk" "$INSTDIR\scenes\Avatar\avatar.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\ChatApplication.lnk" "$INSTDIR\scenes\ChatApplication\TestWorld.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\DayNight.lnk" "$INSTDIR\scenes\DayNight\TestWorld.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\ECSound.lnk" "$INSTDIR\scenes\ECSound\TestWorld.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\MumbleUI.lnk" "$INSTDIR\scenes\MumbleUI\test_mumble.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Physics.lnk" "$INSTDIR\scenes\Physics\physics.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\RenderToTexture.lnk" "$INSTDIR\scenes\RenderToTexture\RttDemoWorld.txml"
+  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\Tooltip.lnk" "$INSTDIR\scenes\Tooltip\TestWorld.txml"
+#  CreateShortCut "$SMPROGRAMS\Tundra ${VERSION}\Demos\WaterPlane.lnk" "$INSTDIR\scenes\WaterPlane\TestScene.txml"
 SectionEnd
 
 Section "Uninstall"
