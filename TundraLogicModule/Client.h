@@ -4,6 +4,7 @@
 #define incl_TundraLogicModule_Client_h
 
 #include "Core.h"
+#include "TundraLogicModuleApi.h"
 #include "ForwardDefines.h"
 
 #include <QObject>
@@ -32,7 +33,7 @@ namespace TundraLogic
 
 class TundraLogicModule;
 
-class Client : public QObject
+class TUNDRALOGIC_MODULE_API Client : public QObject
 {
     Q_OBJECT
     

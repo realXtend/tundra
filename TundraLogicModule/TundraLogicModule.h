@@ -4,6 +4,7 @@
 #define incl_TundraLogicModule_TundraLogicModule_h
 
 #include "IModule.h"
+#include "TundraLogicModuleApi.h"
 #include "ModuleLoggingFunctions.h"
 
 namespace kNet
@@ -24,7 +25,7 @@ class Client;
 class Server;
 class SyncManager;
 
-class TundraLogicModule : public IModule
+class TUNDRALOGIC_MODULE_API TundraLogicModule : public IModule
 {
 public:
     /// Default constructor.
