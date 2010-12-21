@@ -15,6 +15,7 @@
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 
+#include "SceneManager.h"
 #include "Console.h"
 #include "UiServiceInterface.h"
 #include "Input.h"
