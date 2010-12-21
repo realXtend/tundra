@@ -21,14 +21,12 @@ struct ComponentGroup
 {
     std::vector<ComponentWeakPtr> components_;
     ECComponentEditor *editor_;
-    //QTreeWidgetItem *browserListItem_;
     QString name_;
     QString typeName_;
     bool isDynamic_;
 
     ComponentGroup(ComponentPtr component = ComponentPtr(),
                   ECComponentEditor *editor = 0,
-                  //QTreeWidgetItem *listItem = 0,
                   bool isDynamic = false);
 
     ~ComponentGroup();

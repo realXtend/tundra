@@ -145,13 +145,11 @@ QObjectList ECBrowser::GetSelectedComponents() const
 
 void ECBrowser::clear()
 {
-    //qDeleteAll(componentGroups_);
     for(TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin();
         iter != itemToComponentGroups_.end(); ++iter)
         SAFE_DELETE(iter.value())
     itemToComponentGroups_.clear();
 
-    //componentGroups_.clear();
     entities_.clear();
     QtTreePropertyBrowser::clear();
 }
@@ -452,7 +450,6 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
         // Could add a loop that will continue to find a component that hasn't expired.
         IComponent *comp = (*iter)->components_[0].lock().get();
         if (comp)
-            //emit ComponentSelected(comp.get());
             emit ComponentSelected(comp->TypeName(), comp->Name());
     }
 }
@@ -481,8 +478,6 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
         }
     AddNewComponentToGroup(comp_ptr);
 
-    //std::list<ComponentGroup*>::iterator iter = FindSuitableGroup(comp_ptr);
-    //if (iter != itemToComponentGroups_.end())
     ComponentGroup *group = FindSuitableGroup(comp_ptr);
     if (group)
         group->editor_->UpdateUi();
@@ -514,8 +509,6 @@ void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
         return;
     }
 
-    /*std::list<ComponentGroup*>::iterator iter = FindSuitableGroup(comp_ptr);
-    if (iter != componentGroups_.end())*/
     ComponentGroup *group = FindSuitableGroup(comp_ptr);
     if (group)
         group->editor_->UpdateUi();
@@ -524,24 +517,17 @@ void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
 void ECBrowser::OpenComponentXmlEditor()
 {
     QTreeWidgetItem *item = treeWidget_->currentItem();
-    if(!item)
+    if (!item)
         return;
 
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(item);//begin();
-    //for(; iter != itemToComponentGroups_.end(); iter++)
     if (iter != itemToComponentGroups_.end())
     {
-        /*if(item == (*iter)->browserListItem_)
-        {*/
-        if(!(*iter)->components_.size())
+        if (!(*iter)->components_.size())
             return;
-        ComponentWeakPtr pointer = (*iter)->components_[0];
-        if(!pointer.expired())
-        //{
-            emit ShowXmlEditorForComponent(pointer.lock()->TypeName().toStdString());
-        /*    break;
-        }*/
-        //}
+        ComponentPtr pointer = (*iter)->components_[0].lock();
+        if (pointer)
+            emit ShowXmlEditorForComponent(pointer->TypeName().toStdString());
     }
 }
 
@@ -552,44 +538,24 @@ void ECBrowser::CopyComponent()
     QClipboard *clipboard = QApplication::clipboard();
 
     QTreeWidgetItem *item = treeWidget_->currentItem();
-    if(!item)
+    if (!item)
         return;
 
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(item);
     if (iter != itemToComponentGroups_.end())
     {
-        if(!(*iter)->components_.size())
+        if (!(*iter)->components_.size())
             return;
         // Just take a first component from the componentgroup and copy it's attribute values to clipboard. 
         // Note! wont take account that other components might have different values in their attributes
         ComponentWeakPtr pointer = (*iter)->components_[0];
-        if(!pointer.expired())
+        if (!pointer.expired())
         {
             pointer.lock()->SerializeTo(temp_doc, entity_elem);
             QString xmlText = temp_doc.toString();
             clipboard->setText(xmlText);
-            //break;
         }
     }
-    /*ComponentGroupList::iterator iter = itemToComponentGroups_.begin();
-    for(; iter != itemToComponentGroups_.end(); iter++)
-    {
-        if(item == (*iter)->browserListItem_)
-        {
-            if(!(*iter)->components_.size())
-                return;
-            // Just take a first component from the componentgroup and copy it's attribute values to clipboard. 
-            // Note! wont take account that other components might have different values in their attributes
-            ComponentWeakPtr pointer = (*iter)->components_[0];
-            if(!pointer.expired())
-            {
-                pointer.lock()->SerializeTo(temp_doc, entity_elem);
-                QString xmlText = temp_doc.toString();
-                clipboard->setText(xmlText);
-                break;
-            }
-        }
-    }*/
 }
 
 void ECBrowser::PasteComponent()
@@ -615,7 +581,7 @@ void ECBrowser::PasteComponent()
             ComponentPtr component;
             QString type = comp_elem.attribute("type");
             QString name = comp_elem.attribute("name");
-            if(!entity_ptr->HasComponent(type, name))
+            if (!entity_ptr->HasComponent(type, name))
             {
                 component = framework_->GetComponentManager()->CreateComponent(type, name);
                 entity_ptr->AddComponent(component, AttributeChange::Default);
@@ -631,7 +597,7 @@ void ECBrowser::PasteComponent()
 void ECBrowser::DynamicComponentChanged()
 {
     EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender()); 
-    if(!component) 
+    if (!component) 
     {
         LogError("Fail to dynamic cast sender object to EC_DynamicComponent in DynamicComponentChanged mehtod.");
         return;
@@ -651,8 +617,6 @@ void ECBrowser::DynamicComponentChanged()
     RemoveComponentFromGroup(comp_ptr);
     AddNewComponentToGroup(comp_ptr);
 
-    /*std::list<ComponentGroup*>::iterator iter = FindSuitableGroup(comp_ptr);
-    if (iter != componentGroups_.end())*/
     ComponentGroup *group = FindSuitableGroup(comp_ptr);
     if (group)
         group->editor_->UpdateUi();
@@ -681,7 +645,7 @@ void ECBrowser::ComponentNameChanged(const QString &newName)
 void ECBrowser::CreateAttribute()
 {
     QTreeWidgetItem *item = treeWidget_->currentItem();
-    if(!item)
+    if (!item)
         return;
 
     QTreeWidgetItem *rootItem = item;
@@ -689,13 +653,13 @@ void ECBrowser::CreateAttribute()
         rootItem = rootItem->parent();
 
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(rootItem);
-    if(iter == itemToComponentGroups_.end())
+    if (iter == itemToComponentGroups_.end())
         return;
-    if(!(*iter)->IsDynamic())
+    if (!(*iter)->IsDynamic())
         return;
 
+    //! @todo Should this dialog be converted to modless?
     bool ok = false;
-    //! @todo replace this code with the one that will use Dialog::open method.
     QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
         framework_->GetComponentManager()->GetAttributeTypes(), 0, false, &ok);
     if (!ok)
@@ -707,10 +671,11 @@ void ECBrowser::CreateAttribute()
     std::vector<ComponentWeakPtr> components = (*iter)->components_;
     for(uint i = 0; i < components.size(); i++)
     {
-        if(components[i].expired())
+        ComponentPtr component = components[i].lock();
+        if (component)
             continue;
-        EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(components[i].lock().get());
-        if(dc)
+        EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(component.get());
+        if (dc)
         {
             if(dc->CreateAttribute(typeName, name))
                 dc->ComponentChanged(AttributeChange::Default);
@@ -721,10 +686,10 @@ void ECBrowser::CreateAttribute()
 void ECBrowser::OnDeleteAction()
 {
     QTreeWidgetItem *item = treeWidget_->currentItem();
-    if(!item)
+    if (!item)
         return;
 
-    if(item->parent())
+    if (item->parent())
         DeleteAttribute(item);
     else
         DeleteComponent(item);
@@ -764,11 +729,8 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
         return;
 
     ComponentGroup *comp_group = FindSuitableGroup(comp);
-    //ComponentGroupList::iterator iter = FindSuitableGroup(comp);
-    //if (iter != componentGroups_.end())
     if (comp_group)
     {
-        //ComponentGroup *comp_group = *iter;
         // No point to add same component multiple times.
         if (comp_group->ContainsComponent(comp))
             return;
@@ -830,8 +792,7 @@ void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
         connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)), Qt::UniqueConnection);
     }
 
-    ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor/*, newItem*/, dynamic);
-    //componentGroups_.push_back(compGroup);
+    ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, dynamic);
     itemToComponentGroups_[newItem] = compGroup;
 
     // Connect itemExpanded() and itemCollapsed() signals back so that TreeWidgetItemExpandMemory
@@ -939,13 +900,8 @@ void ECBrowser::DeleteComponent(QTreeWidgetItem *item)
 
     // Find the list of components we want to delete.
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(item);
-    //for(TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.begin(); iter != componentGroups_.end(); iter++)
-    //    if (item == (*iter)->browserListItem_)
     if (iter != itemToComponentGroups_.end())
-    //{
         componentsToDelete = (*iter)->components_;
-    //    break;
-    //}
 
     // Perform the actual deletion.
     for(std::vector<ComponentWeakPtr>::iterator iter = componentsToDelete.begin(); iter != componentsToDelete.end(); ++iter)
