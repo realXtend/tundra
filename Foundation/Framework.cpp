@@ -794,7 +794,7 @@ namespace Foundation
         if(scene != default_scene_)
         {
             default_scene_ = scene;
-            emit DefaultWorldSceneChanged(scene);
+            emit DefaultWorldSceneChanged(default_scene_.get());
         }
     }
 

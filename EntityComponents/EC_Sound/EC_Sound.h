@@ -103,6 +103,9 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(bool, spatial);
 
 public slots:
+    /// Show the asset in asset viewer window.
+    void View(const QString &attributeName);
+
     /// Starts playing the sound.
     void PlaySound();
 

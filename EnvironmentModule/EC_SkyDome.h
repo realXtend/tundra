@@ -110,7 +110,8 @@ lower values are less curved meaning more distortion at the horizons but a bette
         Q_PROPERTY(bool drawFirstAttr READ getdrawFirstAttr WRITE setdrawFirstAttr); 
 
     public slots:
-         /// Called If some of the attributes has been changed.
+        void View(const QString &attributeName);
+         /// Called when component's attribute value has changed.
         void AttributeUpdated(IAttribute* attribute);
         void DisableSky();
 

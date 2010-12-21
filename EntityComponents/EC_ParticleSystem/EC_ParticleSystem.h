@@ -69,6 +69,9 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, renderingDistance);
 
 public slots:
+    //! Open the particle asset in asset viewer.
+    void View(const QString &attributeName);
+
     //! Create a new particle system. Does not delete the old
     void CreateParticleSystem(const QString &systemName);
 

@@ -43,9 +43,16 @@ EC_Mesh::EC_Mesh(IModule* module) :
 {
     static AttributeMetadata drawDistanceData("", "0", "10000");
     drawDistance.SetMetadata(&drawDistanceData);
+
     static AttributeMetadata materialMetadata;
     materialMetadata.elementType = "assetreference";
     meshMaterial.SetMetadata(&materialMetadata);
+
+    static AttributeMetadata meshRefMetadata;
+    AttributeMetadata::ButtonInfoList meshRefButtons;
+    meshRefButtons.push_back(AttributeMetadata::ButtonInfo(meshRef.GetName(), "V", "View"));
+    meshRefMetadata.buttons = meshRefButtons;
+    meshRef.SetMetadata(&meshRefMetadata);
 
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
@@ -93,6 +100,11 @@ void EC_Mesh::SetPlaceable(EC_Placeable* placeable)
 {
      ComponentPtr ptr = placeable->GetParentEntity()->GetComponent(placeable->TypeName(), placeable->Name()); //hack to get the shared_ptr to this component
      SetPlaceable(ptr);
+}
+
+void EC_Mesh::View(const QString &attributeName)
+{
+    // todo add implementation.
 }
 
 void EC_Mesh::AutoSetPlaceable()

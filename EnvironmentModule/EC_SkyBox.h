@@ -79,6 +79,8 @@ Currently Caelum must be disabled before these features can be used.
         Q_PROPERTY(bool drawFirst READ getdrawFirst WRITE setdrawFirst);
 
     public slots:
+        /// View sky assets.
+        void View(const QString &attributeName);
         /// Called If some of the attributes has been changed.
         void AttributeUpdated(IAttribute* attribute);
 

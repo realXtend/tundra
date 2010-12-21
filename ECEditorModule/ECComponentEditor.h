@@ -16,9 +16,8 @@ class QtGroupPropertyManager;
 
 class ECAttributeEditorBase;
 
-//! ECComponentEditor is responsible to create the all attribute editors for each component (Note! each component must contain same attributes).
-/*! ECComponentEditor will only accept same type of components. If the attribute type is supported component editor will create ECAttributeEditor object
- *  and insert it to ECBrower object.
+//! ECComponentEditor is responsible to create the all attribute editors for each component (Note! every component must contain exatly the same attributes).
+/*! If the attribute type is supported in ECAttributeEditor component editor will create a new instance of it and store it to a list.
  *  \ingroup ECEditorModuleClient.
  */
 class ECComponentEditor : public QObject
@@ -34,42 +33,33 @@ public:
     //! Get group property pointer.
     QtProperty *RootProperty() const {return groupProperty_;}
 
-    int ComponentsCount() const { return components_.size(); }
-
-    int AttributeCount() const { return attributeEditors_.size(); }
-
-    //! Add new component into the editor.
+    //! Add new component to the editor.
     void AddNewComponent(ComponentPtr component);
 
     //! Remove component from the editor.
     void RemoveComponent(ComponentPtr component);
 
     void UpdateUi();
-    //void UpdateEditorUI();
 
 public slots:
-    //! slot listenes if attribute editor has been reinitialized and need to added a new QProperty to brower.
+    //! If ECAttributeEditor has been reinitialized ComponentEditor need to add new QProperty to it's GroupProperty.
+    //! This ensures that newly createated attribute eidtor will get displayed on the ECBrowser.
     void OnEditorChanged(const QString &name);
 
-//private slots:
-    //! When component's attribute has been changed, this method is called.
-    //! Method will ask the ECAttributeEditor to update it's fields to new attribute values (UpdateEditorUI).
-    //void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
-
 private:
-    //! Method is trying to find the right attribute type by using a dynamic_cast and if attribute is succefully casted 
-    //! a new ECAttributeEditor instance is created and it's pointer returned to a user. If attribute type is not supported
-    //! the method will return a null pointer.
-    //! @return return attribute pointer if attribute type is supported and if not return null pointer.
+    //! Factory method that is trying to find the right attribute type by using a dynamic_cast and if the attribute is succefully casted 
+    //! new ECAttributeEditor instance is created and returned to user.
+    //! @return ECAttributeEditor object is returned if attribute type is supported by the ECEditor. Incase attribute type
+    //! isn't supported this method will return a null pointer.
     static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser,
                                                         ECComponentEditor *editor,
                                                         ComponentPtr component,
                                                         const QString &name,
                                                         const QString &type);
 
-    //! Initialize editor and create attribute editors.
+    //! Initialize component editor and create attribute editors.
     //! @param component component is used to figure out what attrubtes it contain and what
-    //! attribute editors need to be created to this component editor.
+    //! attribute editors need to get created to this component editor.
     void InitializeEditor(ComponentPtr component);
 
     //! Create new attribute editors for spesific component.

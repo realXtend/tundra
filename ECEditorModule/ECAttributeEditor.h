@@ -36,7 +36,7 @@ enum MetaDataFlags
 };
 
 //! ECAttributeEditorBase class.
-/*! Abstract base class for attribute editing. User can add editable attributes using a AddNewAttribute method.
+/*! Abstract base class for attribute editing. Class is responsible to listen attribute changed signals and update editor's state based on those changes.
  *  \todo Remove QtAbstractPropertyBrowser pointer from the attribute editor, this means that manager and factory connections need to 
  *  be registered in elsewhere eg. inside the ECComponentEditor's addAttribute mehtod.
  *  \ingroup ECEditorModuleClient.
@@ -70,14 +70,6 @@ public:
     void UpdateEditorUI(IAttribute *attr = 0);
 
 public slots:
-    //! Add new attribute to the editor. If attribute has already added do nothing.
-    /*! @param attribute Attribute that we want to add to editor.
-     */
-    //void AddNewAttribute(IAttribute *attribute);
-    //! Remove attribute from the editor.
-    /*! @param attribute Attribute that we want to remove from the editor.
-     */
-    //void RemoveAttribute(IAttribute *attribute);
     void AddComponent(ComponentPtr component);
     void RemoveComponent(ComponentPtr component);
     bool HasComponent(ComponentPtr component);
@@ -88,6 +80,8 @@ signals:
     /*! @param name Attribute name.
      */
     void EditorChanged(const QString &name);
+    void OnComponentAdded(QtProperty*, IComponent *comp);
+    void OnComponentRemoved(QtProperty*, IComponent *comp);
 
 private slots:
     //! Called when user has picked one of the multiselect values.
@@ -104,8 +98,8 @@ protected:
     virtual void Set(QtProperty *property) = 0;
     //! Read attribute value from IAttribute and set it to ui.
     virtual void Update(IAttribute *attr = 0) = 0;
-    //! Checks if all atributes value is same.
-    //! @return return true if all attribute values are same else return false.
+    //! Checks if all atribute values are same.
+    //! @return Return true if all attribute values are same else return false.
     virtual bool HasIdenticalAttributes() const = 0;
 
     void CleanExpiredComponents();
@@ -133,15 +127,14 @@ protected:
 };
 
 //! ECAttributeEditor is a template class that implements attribute editor ui elements for specific attribute type and forward attribute changed to IAttribute objects.
-/*! ECAttributeEditor have support to edit multiple attribute at the same time and extra attribute objects can be passed using a AddNewAttribute method, removing attributes
- *  can be done by using RemoveAttribute mehtod.
- *  To add support for a new attribute types you need to reimpement following methods:
- *   - Initialize: For intializing all ui elements for the editor. In this class the user need to choose right 
- *     PropertyManager and PropertyFactory that are reponssible for registering and creating all visual elements to the QtPropertyBrowser.
- *   - Set: Is a setter funtion for editor to AttributeInterface switch will send all user's
- *     made changes to actual object.
- *   - Update: Getter function between AttributeInterface and Editor. Editor will ask attribute's value and
- *     set it to editor's ui element.
+/*! ECAttributeEditor have support to edit multiple attribute at the same time and extra attribute objects can be passed using a AddComponent method, removing editable components
+ *  can be done via RemoveComponent mehtod.
+ *  To add a new attribute types to the ECEditor you need to define following methods:
+ *   - Initialize: For intializing all ui elements for the editor. In this method the spesific QtPropertyManagers and QtPropertyFactories
+ *     are created and registered to QtAbstractPropertyBrowser object. QtPropertyManager is used to create a new QtProperties. More info can be
+ *     found at QtPropertyBrowser documentation.
+ *   - Set: Setter method that will get editor's value from QtProperty object and pass it to IAttribute.
+ *   - Update: Getter method that will read value from the IAttribute and pass it to Editor using QtProperty's setValue method.
  */
 template<typename T> class ECAttributeEditor : public ECAttributeEditorBase
 {
