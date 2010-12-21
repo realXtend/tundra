@@ -10,6 +10,7 @@
 #include "SceneImporter.h"
 #include "SyncManager.h"
 
+#include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
 #include "ModuleManager.h"

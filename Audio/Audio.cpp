@@ -1,14 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-//#include "StableHeaders.h"
 #include "Audio.h"
-//#include "WavLoader.h"
-//#include "VorbisDecoder.h"
 #include "CoreTypes.h"
-//#include "ConfigurationManager.h"
-//#include "ThreadTaskManager.h"
-//#include "ServiceManager.h"
-//#include "EventManager.h"
+#include "AssetAPI.h"
 #include "AudioAsset.h"
 #include "SoundChannel.h"
 #include "LoggingFunctions.h"
@@ -37,10 +31,6 @@ public:
     uint captureSampleSize;
     /// Active channels
     SoundChannelMap channels;
-    /// Currently loaded sounds
-//    SoundMap sounds;
-    /// Update timer (for cache)
-//    f64 updateTime;
     /// Next channel id
     sound_id_t nextChannelId;
     
@@ -57,9 +47,11 @@ public:
 //    boost::mutex mutex;
 };
 
-AudioAPI::AudioAPI()
-:impl(new AudioApiImpl)
+AudioAPI::AudioAPI(AssetAPI *assetAPI_)
+:impl(new AudioApiImpl),
+assetAPI(assetAPI_)
 {
+    assert(assetAPI);
     impl->initialized = false;
     impl->masterGain = 1.f;
     impl->context = 0;
@@ -74,11 +66,7 @@ AudioAPI::AudioAPI()
     
     // By default, initialize default playback device
     Initialize();
-    
-    // Create vorbis decoder thread task and let the framework thread task manager handle it
-//    VorbisDecoder* decoder = new VorbisDecoder();
-//    framework_->GetThreadTaskManager()->AddThreadTask(Foundation::ThreadTaskPtr(decoder));
-    
+        
     // Set default master gains for sound types
 /*
     masterGain = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "masterGain", 1.0f);
@@ -145,6 +133,19 @@ QStringList AudioAPI::GetPlaybackDevices()
     return names;
 }
 
+AudioAssetPtr AudioAPI::CreateAudioAssetFromSoundBuffer(const SoundBuffer &buffer)
+{
+    // Construct a sound from the buffer
+    AudioAssetPtr new_sound(new AudioAsset(assetAPI, "Audio", "buffer"));
+    new_sound->LoadFromSoundBuffer(buffer);
+
+    // If failed for some reason (out of memory?), bail out
+    if (!new_sound->GetHandle())
+        return AudioAssetPtr();
+
+    return new_sound;
+}
+
 void AudioAPI::Uninitialize()
 {
     if (!impl)
@@ -153,7 +154,6 @@ void AudioAPI::Uninitialize()
     StopRecording();
     
     impl->channels.clear();
-//    sounds.clear();
     
     if (impl->context)
     {
@@ -169,15 +169,7 @@ void AudioAPI::Uninitialize()
     
     impl->initialized = false;
 }
-/*
-SoundChannel::SoundState AudioAPI::GetSoundState(sound_id_t id) const
-{
-    SoundChannelMap::const_iterator i = channels.find(id);
-    if (i == channels.end())
-        return SoundChannel::Stopped;
-    return i->second->GetState();
-}
-*/
+
 std::vector<SoundChannelPtr> AudioAPI::GetActiveSounds() const
 {
     std::vector<SoundChannelPtr> ret;
@@ -192,25 +184,7 @@ std::vector<SoundChannelPtr> AudioAPI::GetActiveSounds() const
     
     return ret;
 }
-/*
-QString AudioAPI::GetSoundName(sound_id_t id) const
-{
-    static QString empty;
-    
-    SoundChannelMap::const_iterator i = channels.find(id);
-    if (i == channels.end())
-        return empty;
-    return QString::fromStdString(i->second->GetSoundName());
-}    
 
-SoundChannel::SoundType AudioAPI::GetSoundType(sound_id_t id) const
-{
-    SoundChannelMap::const_iterator i = channels.find(id);
-    if (i == channels.end())
-        return SoundChannel::Triggered;
-    return i->second->GetSoundType();
-}    
-*/
 void AudioAPI::Update(f64 frametime)
 {   
     if (!impl || !impl->initialized)
@@ -298,137 +272,55 @@ SoundChannelPtr AudioAPI::PlaySound3D(const Vector3df &position, AssetPtr audioA
 
     return channel;
 }
-/*
-sound_id_t AudioAPI::PlaySoundBuffer(const SoundChannel::SoundBuffer& buffer, SoundChannel::SoundType type, sound_id_t channel)
+
+SoundChannelPtr AudioAPI::PlaySoundBuffer(const SoundBuffer &buffer, SoundChannel::SoundType type, SoundChannelPtr channel)
 {
-    if (!initialized)
-        return 0;
+    if (!impl->initialized)
+        return SoundChannelPtr();
         
-    SoundChannelMap::iterator i = channels.find(channel);
-    if (i == channels.end())
+    if (!channel)
     {
-        i = channels.insert(
-            std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel(type)))).first;
+        sound_id_t newId = GetNextSoundChannelID();
+        channel = SoundChannelPtr(new SoundChannel(newId, type));
+        impl->channels.insert(make_pair(newId, channel));
     }
+
+    AudioAssetPtr audioAsset = CreateAudioAssetFromSoundBuffer(buffer);
+
+    channel->SetMasterGain(impl->soundMasterGain[type] * impl->masterGain);
+    channel->SetPositional(false);
+    channel->AddBuffer(audioAsset);
     
-    i->second->SetMasterGain(soundMasterGain[type] * masterGain);
-    i->second->SetPositional(false);
-    i->second->AddBuffer(buffer);
-    
-    return i->first;
+    return channel;
 }
 
-sound_id_t AudioAPI::PlaySoundBuffer3D(const SoundChannel::SoundBuffer& buffer, SoundChannel::SoundType type, Vector3df position, sound_id_t channel)
+SoundChannelPtr AudioAPI::PlaySoundBuffer3D(const SoundBuffer &buffer, SoundChannel::SoundType type, Vector3df position, SoundChannelPtr channel)
 {
-    if (!initialized)
-        return 0;
+    if (!impl->initialized)
+        return SoundChannelPtr();
         
-    SoundChannelMap::iterator i = channels.find(channel);
-    if (i == channels.end())
+    if (!channel)
     {
-        i = channels.insert(
-            std::pair<sound_id_t, SoundChannelPtr>(GetNextSoundChannelID(), SoundChannelPtr(new SoundChannel(type)))).first;
+        sound_id_t newId = GetNextSoundChannelID();
+        channel = SoundChannelPtr(new SoundChannel(newId, type));
+        impl->channels.insert(make_pair(newId, channel));
     }
+
+    AudioAssetPtr audioAsset = CreateAudioAssetFromSoundBuffer(buffer);
+
+    channel->SetMasterGain(impl->soundMasterGain[type] * impl->masterGain);
+    channel->SetPositional(true);
+    channel->SetPosition(position);
+    channel->AddBuffer(audioAsset);
     
-    i->second->SetMasterGain(soundMasterGain[type] * masterGain);
-    i->second->SetPositional(true);
-    i->second->SetPosition(position);
-    i->second->AddBuffer(buffer);
-    
-    return i->first;
+    return channel;
 }
-*/
+
 void AudioAPI::Stop(SoundChannelPtr channel)
 {
     if (channel)
         channel->Stop();
-/*
-    SoundChannelMap::iterator i = channels.find(id);
-    if (i == channels.end())
-        return;    
-        
-    i->second->Stop();
-*/
 }
-/*
-void AudioAPI::SetPitch(sound_id_t id, float pitch)
-{
-    SoundChannelMap::iterator i = channels.find(id);
-    if (i == channels.end())
-        return;
-        
-    i->second->SetPitch(pitch);
-}
-
-float AudioAPI::GetPitch(sound_id_t id) const
-{
-    SoundChannelMap::const_iterator i = channels.find(id);
-    if (i == channels.end())
-    {
-        LogWarning("Fail to find sound channel for id:" + id);
-        return -1.0f;
-    }
-
-    return i->second->GetPitch();
-}
-
-void AudioAPI::SetGain(sound_id_t id, float gain)
-{
-    SoundChannelMap::iterator i = channels.find(id);
-    if (i == channels.end())
-        return;
-    
-    i->second->SetGain(gain);
-}
-
-float AudioAPI::GetGain(sound_id_t id) const
-{
-    SoundChannelMap::const_iterator i = channels.find(id);
-    if (i == channels.end())
-    {
-        LogWarning("Fail to find sound channel for id:" + id);
-        return -1.0f;
-    }
-
-    return i->second->GetGain();
-}
-
-void AudioAPI::SetLooped(sound_id_t id, bool looped)
-{
-    SoundChannelMap::iterator i = channels.find(id);
-    if (i == channels.end())
-        return;
-        
-    i->second->SetLooped(looped);
-}
-
-void AudioAPI::SetPositional(sound_id_t id, bool positional)
-{
-    SoundChannelMap::iterator i = channels.find(id);
-    if (i == channels.end())
-        return;
-     
-    i->second->SetPositional(positional);
-}
-
-void AudioAPI::SetPosition(sound_id_t id, Vector3df position)
-{
-    SoundChannelMap::iterator i = channels.find(id);
-    if (i == channels.end())
-        return;
-    
-    i->second->SetPosition(position);
-}
-
-void AudioAPI::SetRange(sound_id_t id, float inner_radius, float outer_radius, float rolloff)
-{
-    SoundChannelMap::iterator i = channels.find(id);
-    if (i == channels.end())
-        return;
-    
-    i->second->SetRange(inner_radius, outer_radius, rolloff);
-}
-*/
 
 sound_id_t AudioAPI::GetNextSoundChannelID()
 {
@@ -448,196 +340,6 @@ sound_id_t AudioAPI::GetNextSoundChannelID()
     
     return impl->nextChannelId;
 }
-
-#if 0
-SoundPtr AudioAPI::GetSound(const std::string& name, bool local)
-{
-    if (!initialized)
-        return SoundPtr();
-        
-    SoundMap::iterator i = sounds.find(name);
-    if (i != sounds.end())
-    {
-        i->second->ResetAge();
-        return i->second;
-    }
-    
-    if (local)
-    {
-        // Loading of local wav sound
-        std::string name_lower = name;
-        boost::algorithm::to_lower(name_lower);
-        if (name_lower.find(".wav") != std::string::npos)
-        {
-            SoundPtr new_sound(new Sound(name));
-            if (WavLoader::LoadFromFile(new_sound.get(), name))
-            {
-                sounds[name] = new_sound;
-                return new_sound;
-            }
-        }
-        
-        // Loading of local ogg sound
-        if (name_lower.find(".ogg") != std::string::npos)
-        {
-            SoundPtr new_sound(new Sound(name));
-            
-            // See if the file exists. If it does, read it and post a decode request
-            if (DecodeLocalOggFile(new_sound.get(), name))
-            {
-                // Now the sound exists in cache with no data yet. We'll fill in later
-                sounds[name] = new_sound;
-                return new_sound;
-            }
-        }
-    }
-    else
-    {
-                ///\todo Regression. Reimplement using Asset API. -jj.
-/*
-        // Loading of sound from assetdata, assumed to be vorbis compressed stream
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
-        if (asset_service)
-        {
-            SoundPtr new_sound(new Sound(name));
-            sounds[name] = new_sound;
-            
-            // The sound will be filled with data later
-            asset_service->RequestAsset(name, "SoundVorbis");
-            return new_sound;
-        }
-        */
-    }
-    
-    return SoundPtr();
-}
-#endif
-/*
-bool AudioAPI::DecodeLocalOggFile(Sound* sound, const std::string& name)
-{
-    boost::filesystem::path file_path(name);
-    std::ifstream file(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
-    if (!file.is_open())
-    {
-        LogError("Could not open file: " + name + ".");
-        return false;
-    }
-
-    VorbisDecodeRequestPtr new_request(new VorbisDecodeRequest());
-    new_request->name_ = name;
-
-    std::filebuf *pbuf = file.rdbuf();
-    size_t size = pbuf->pubseekoff(0, std::ios::end, std::ios::in);
-    new_request->buffer_.resize(size);
-    pbuf->pubseekpos(0, std::ios::in);
-    pbuf->sgetn((char *)&new_request->buffer_[0], size);
-    file.close();
-    
-    framework_->GetThreadTaskManager()->AddRequest("VorbisDecoder", new_request);
-    return true;
-}
-*/
-
-#if 0
-bool AudioAPI::HandleTaskEvent(event_id_t event_id, IEventData* data)
-{
-    if (event_id != Task::Events::REQUEST_COMPLETED)
-        return false;
-    VorbisDecodeResult* result = dynamic_cast<VorbisDecodeResult*>(data);
-    if (!result || result->task_description_ != "VorbisDecoder")
-        return false;
-
-    // Check if this was for a resource request, if so, stuff the data
-    for (;;)
-    {
-        request_tag_t tag = 0;
-
-        std::map<request_tag_t, std::string>::iterator i = sound_resource_requests_.begin();
-        while (i != sound_resource_requests_.end())
-        {
-            if (i->second == result->name_)
-            {
-                tag = i->first;
-                sound_resource_requests_.erase(i);
-                break;
-            }
-            ++i;
-        }
-/*                     ///\todo Regression. Reimplement using Asset API. -jj.
-
-        if (tag)
-        {
-            // Note: the decoded sound resource is not stored anywhere, just sent in the event wrapped to a smart pointer.
-            // It's up to the caller to do whatever wanted with it.
-            SoundResource* res = new SoundResource(result->name_, result->buffer_);
-            Foundation::ResourcePtr res_ptr(res);
-            
-            Resource::Events::ResourceReady event_data(result->name_, res_ptr, tag);
-            EventManagerPtr event_mgr = framework_->GetEventManager();
-            event_mgr->SendEvent(event_mgr->QueryEventCategory("Resource"), Resource::Events::RESOURCE_READY, &event_data);
-        }
-        else
-            break;
-*/
-    }
-    
-    // If we can find the sound from our cache, and the result contains data, stuff the data into the sound
-    SoundMap::iterator i = sounds.find(result->name_);
-    if (i == sounds.end())
-        return false;
-    // If sound already has data, do not stuff again
-    if (i->second->GetSize() != 0)
-        return true;
-    if (!result->buffer_.data_.size())
-        return true;
-    
-    i->second->LoadFromBuffer(result->buffer_);
-    return true;
-}
-
-bool AudioAPI::HandleAssetEvent(event_id_t event_id, IEventData* data)
-{
-    ///\todo Regression. Reimplement using the Asset API. -jj.
-    return false;
-/*
-    if (event_id != Asset::Events::ASSET_READY)
-        return false;
-    
-    Asset::Events::AssetReady *event_data = checked_static_cast<Asset::Events::AssetReady*>(data);
-    if (event_data->asset_type_ == "SoundVorbis")
-    {
-        bool resource_request = false;
-        
-        if (!event_data->asset_)
-            return false;
-        
-        // Check if this is for a sound resource request; in that case we allow redecode to get the raw sound data
-        if (sound_resource_requests_.find(event_data->tag_) != sound_resource_requests_.end())
-            resource_request = true;
-        
-        // Find the sound from our cache to see if it was already decoded
-        if (!resource_request)
-        {
-            SoundMap::iterator i = sounds.find(event_data->asset_id_);
-            if (i == sounds.end())
-                return false;
-            // If sound already has data, do not queue another decode request
-            if (i->second->GetSize() != 0)
-                return false;
-        }
-        
-        VorbisDecodeRequestPtr new_request(new VorbisDecodeRequest());
-        new_request->name_ = event_data->asset_id_;
-        new_request->buffer_.resize(event_data->asset_->GetSize());
-        //! \todo use asset data directly instead of copying to decode request buffer
-        memcpy(&new_request->buffer_[0], event_data->asset_->GetData(), event_data->asset_->GetSize());
-        framework_->GetThreadTaskManager()->AddRequest("VorbisDecoder", new_request);
-    }
-    
-    return false;
-*/
-}
-#endif
 
 void AudioAPI::SetMasterGain(float masterGain)
 {

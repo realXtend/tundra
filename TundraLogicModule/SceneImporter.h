@@ -3,17 +3,8 @@
 #ifndef incl_TundraLogicModule_SceneImporter_h
 #define incl_TundraLogicModule_SceneImporter_h
 
-#if defined (_WINDOWS)
-#if defined(TUNDRALOGIC_MODULE_EXPORTS)
-#define TUNDRALOGIC_MODULE_API __declspec(dllexport)
-#else
-#define TUNDRALOGIC_MODULE_API __declspec(dllimport)
-#endif
-#else
-#define TUNDRALOGIC_MODULE_API
-#endif
-
-#include "SceneManager.h"
+#include "TundraLogicModuleApi.h"
+#include "SceneFwd.h"
 #include "IAttribute.h"
 #include "Transform.h"
 #include "SceneDesc.h"
@@ -23,11 +14,6 @@
 #include <map>
 
 class QDomElement;
-
-namespace Foundation
-{
-    class Framework;
-}
 
 namespace TundraLogic
 {

@@ -180,9 +180,22 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     QSpacerItem *assetButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     QLabel *storageLabel = new QLabel(tr("Asset storage:"));
     storageComboBox = new QComboBox;
-    // Get available asset storages.
+    // Get available asset storages. Set default storage selected as default.
+    AssetStoragePtr def = framework->Asset()->GetDefaultAssetStorage();
+    int idx = 0;
     foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+    {
         storageComboBox->addItem(storage->ToString(), storage->Name());
+        if (def && storage == def)
+        {
+            idx = storageComboBox->currentIndex();
+            QFont font = QApplication::font();
+            font.setBold(true);
+            storageComboBox->setItemData(idx, font, Qt::FontRole);
+        }
+    }
+
+    storageComboBox->setCurrentIndex(idx);
 
     layout->addWidget(assetLabel);
     layout->addWidget(assetTreeWidget);
