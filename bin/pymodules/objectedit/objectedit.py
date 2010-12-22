@@ -23,7 +23,7 @@ from circuits import Component
 import mathutils as mu
 
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtCore import QFile, Qt
+from PythonQt.QtCore import QFile, Qt, QRect
 from PythonQt.QtGui import QVector3D
 from PythonQt.QtGui import QQuaternion as QQuaternion
 
@@ -109,6 +109,7 @@ class ObjectEdit(Component):
         proxy.setWindowFlags(0) #changing it to Qt::Widget
         
         self.selection_rect.setGeometry(0,0,0,0)
+        self.selection_rect.show()
         self.selection_rect_startpos = None
         
         r.c = self #this is for using objectedit from command.py
@@ -410,6 +411,26 @@ class ObjectEdit(Component):
 
     def on_mouseleftreleased(self, mouseinfo):
         self.left_button_down = False
+        if self.selection_rect_startpos is not None:
+            rect = QRect()
+            rect.setLeft(self.selection_rect_startpos[0])
+            rect.setTop(self.selection_rect_startpos[1])
+            rect.setRight(mouseinfo.x)
+            rect.setBottom(mouseinfo.y)
+            hits = renderer.FrustumQuery(rect) #the wish
+
+            for eid in hits:
+                if not self.validId(eid): continue
+                for entity in self.sels:
+                    if entity.Id == eid:
+                        continue
+                try:
+                    self.multiselect(naali.getEntity(eid))
+                except ValueError:
+                    pass
+
+            self.selection_rect_startpos = None
+            self.selection_rect.setGeometry(0,0,0,0)
         if self.active: #XXX something here?
             if self.sel_activated and self.dragging:
                 for ent in self.sels:
@@ -429,15 +450,6 @@ class ObjectEdit(Component):
         self.manipulator.showManipulator(self.sels)
         self.usingManipulator = False
         
-        if self.selection_rect_startpos is not None:
-            self.selection_rect.hide()
-
-            rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
-            if rectwidth != 0 and rectheight != 0:
-                r.logInfo("The selection rect was at: (" +str(rectx) + ", " +str(recty) + ") and size was: (" +str(rectwidth) +", "+str(rectheight)+")") 
-                self.selection_rect.setGeometry(0,0,0,0)
-            
-            self.selection_rect_startpos = None
     
     def selectionRectDimensions(self, mouseinfo):
         rectx = self.selection_rect_startpos[0]
@@ -520,12 +532,7 @@ class ObjectEdit(Component):
                 if self.selection_rect_startpos is not None:
                     rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
                     self.selection_rect.setGeometry(rectx, recty, rectwidth, rectheight)
-                    self.selection_rect.show() #XXX change?
-                    
-                    rect = self.selection_rect.rect #0,0 - x, y
-                    rect.translate(mouseinfo.x, mouseinfo.y)
-                    hits = renderer.FrustumQuery(rect) #the wish
-
+                    self.selection_rect.show()
                 else:
                     ent = self.active
                     if ent is not None and self.sel_activated and self.canmove:
