@@ -257,11 +257,9 @@ void SceneStructureModule::ShowSceneStructureWindow()
     if (!ui)
         return;
 
-    sceneWindow = new SceneStructureWindow(framework_);
-    //sceneWindow->move(200,200);
-    sceneWindow->SetScene(framework_->GetDefaultWorldScene());
-    sceneWindow->setParent(ui->MainWindow());
+    sceneWindow = new SceneStructureWindow(framework_, ui->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
+    sceneWindow->SetScene(framework_->GetDefaultWorldScene());
     sceneWindow->show();
 
     //ui->AddWidgetToScene(sceneWindow);
@@ -285,8 +283,7 @@ void SceneStructureModule::ShowAssetsWindow()
     if (!ui)
         return;
 
-    assetsWindow = new AssetsWindow(framework_);
-    assetsWindow->setParent(ui->MainWindow());
+    assetsWindow = new AssetsWindow(framework_, ui->MainWindow());
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
 
