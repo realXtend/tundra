@@ -18,7 +18,7 @@ QScriptValue qScriptValueFromQObject(QScriptEngine *engine, Tp const &qobject)
     return engine->newQObject(qobject);
 }
 
-/// @todo qobject_cast needed to replace with dynamic_cast in order to get IComponent type casted work corretly.
+/// @todo qobject_cast needed to replace with dynamic_cast in order to get IComponent type casted.
 /// for some reason qobject_cast will return us a null pointer. Figure out why qobject_cast wont work with IComponent.
 template <typename Tp>
 void qScriptValueToQObject(const QScriptValue &value, Tp &qobject)

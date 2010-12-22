@@ -131,7 +131,7 @@ QObjectList ECBrowser::GetSelectedComponents() const
         if (iter != itemToComponentGroups_.end())
         {
             QObjectList components;
-            for (uint i = 0; (*iter)->components_.size(); ++i)
+            for (uint i = 0; i < (*iter)->components_.size(); ++i)
             {
                 IComponent *comp = (*iter)->components_[i].lock().get();
                 if (comp)
