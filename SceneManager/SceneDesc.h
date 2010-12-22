@@ -102,7 +102,7 @@ struct EntityDesc
 /// Description of scene.
 struct SceneDesc
 {
-    /// Origin file type.
+    /// Origin file type. \todo Delete this enumeration; SceneDesc should be source agnostic.
     enum Type
     {
         Naali, ///< Naali XML or binary scene
