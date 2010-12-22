@@ -248,6 +248,18 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
         return;
     }
 
+    QStringList extension_blacklist;
+    extension_blacklist << "qt.network" << "qt.webkit"; //webkit to not allow scripts to open hidden browsers to do malicious stuff.
+
+    QStringList qtcore_blacklist; //the types in qt.core which are not safe
+    qtcore_blacklist << "QDir" << "QFile" << "QFileSystemWatcher" << "QFileInfo" << "QLibrary" << "QPluginLoader";
+
+    if (!trusted_ && extension_blacklist.contains(scriptExtensionName, Qt::CaseInsensitive))
+    {
+        LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance: " + scriptExtensionName.toStdString());
+        return;
+    }
+
     QScriptValue success = engine_->importExtension(scriptExtensionName);
     if (!success.isUndefined()) // Yes, importExtension returns undefinedValue if the import succeeds. http://doc.qt.nokia.com/4.7/qscriptengine.html#importExtension
         LogWarning(std::string("JavascriptInstance::ImportExtension: Failed to load ") + scriptExtensionName.toStdString() + " plugin for QtScript!");
@@ -255,11 +267,14 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
     if (!trusted_)
     {
         QScriptValue exposed;
-        exposed = engine_->globalObject().property("QDir");
-        if (exposed.isValid())
+        foreach (const QString &blacktype, qtcore_blacklist)
         {
-          engine_->globalObject().setProperty("QDir", QScriptValue::QScriptValue()); //passing an invalid val removes the property, http://doc.qt.nokia.com/4.6/qscriptvalue.html#setProperty
-          LogInfo("JavascriptInstance::ImportExtension: removed QDir from the untrusted context.");
+            exposed = engine_->globalObject().property(blacktype);
+            if (exposed.isValid())
+            {
+                engine_->globalObject().setProperty(blacktype, QScriptValue::QScriptValue()); //passing an invalid val removes the property, http://doc.qt.nokia.com/4.6/qscriptvalue.html#setProperty
+                //LogInfo("JavascriptInstance::ImportExtension: removed a type from the untrusted context: " + blacktype.toStdString());
+            }
         }
     }
 }
