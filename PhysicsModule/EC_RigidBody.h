@@ -10,6 +10,8 @@
 #include "Declare_EC.h"
 #include "AssetFwd.h"
 
+#include "PhysicsModuleApi.h"
+
 #include <QVector>
 
 class btRigidBody;
@@ -112,7 +114,7 @@ Does not emit any actions.
 <b>Depends on the component Placeable, and optionally on Mesh & Terrain to copy the collision shape from them</b>.
 </table>
 */
-class EC_RigidBody : public IComponent, public btMotionState
+class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
 {
     friend class Physics::PhysicsWorld;
     
