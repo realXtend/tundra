@@ -1,0 +1,14 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="1">
+  <component type="EC_Name" sync="1">
+   <attribute value="qtgui" name="name"/>
+   <attribute value="" name="description"/>
+  </component>
+  <component type="EC_Script" sync="1" name="qtgui">
+   <attribute value="js" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://qtgui.js" name="Script ref"/>
+  </component>
+ </entity>
+</scene>
