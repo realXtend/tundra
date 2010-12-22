@@ -419,13 +419,13 @@ class ObjectEdit(Component):
             rect.setBottom(mouseinfo.y)
             hits = renderer.FrustumQuery(rect) #the wish
 
-            for eid in hits:
-                if not self.validId(eid): continue
+            for hit in hits:
+                if not self.validId(hit.Id): continue
                 for entity in self.sels:
-                    if entity.Id == eid:
+                    if entity.Id == hit.Id:
                         continue
                 try:
-                    self.multiselect(naali.getEntity(eid))
+                    self.multiselect(hit)
                 except ValueError:
                     pass
 
