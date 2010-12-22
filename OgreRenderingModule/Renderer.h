@@ -361,6 +361,9 @@ namespace OgreRenderer
 
         // Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
+        
+        // swap float values
+        static void swap(float &x, float &y);
     };
 }
 
