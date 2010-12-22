@@ -31,8 +31,9 @@ class SceneStructureWindow : public QWidget
 public:
     /// Constructs the window.
     /** @param fw Framework.
+        @parent parent Parent widget.
     */
-    explicit SceneStructureWindow(Foundation::Framework *fw);
+    explicit SceneStructureWindow(Foundation::Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
     ~SceneStructureWindow();

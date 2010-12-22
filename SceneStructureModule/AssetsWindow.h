@@ -31,8 +31,9 @@ class AssetsWindow : public QWidget
 public:
     /// Constructs the window.
     /** @param fw Framework.
+        @parent parent Parent widget.
     */
-    explicit AssetsWindow(Foundation::Framework *fw);
+    explicit AssetsWindow(Foundation::Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
     ~AssetsWindow();

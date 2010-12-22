@@ -372,7 +372,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 
 void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage)
 {
-//    QString path(fs::path(newDesc.filename.toStdString()).branch_path().string().c_str());
+    QString path(fs::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
 
     QList<SceneDesc::AssetMapKey> keysWithSubname;
     foreach(SceneDesc::AssetMapKey key, sceneDesc.assets.keys())
@@ -411,6 +411,12 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                                     subname = key.second;
                                     break;
                                 }
+                        }
+                        else
+                        {
+                            QString ref = AssetAPI::ExtractFilenameFromAssetRef(value);
+                            ///\todo Perf hit, find a better way and remove this.
+                            AssetAPI::QueryFileLocation(ref, path, value);
                         }
 
                         SceneDesc::AssetMapKey key = qMakePair(value, subname);

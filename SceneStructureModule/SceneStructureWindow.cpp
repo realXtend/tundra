@@ -32,7 +32,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructureWindow")
 
 using namespace Scene;
 
-SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
+SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw, QWidget *parent) :
+    QWidget(parent),
     framework(fw),
     showComponents(true),
     showAssets(true)

@@ -37,7 +37,8 @@ namespace
     }
 }
 
-AssetsWindow::AssetsWindow(Foundation::Framework *fw) :
+AssetsWindow::AssetsWindow(Foundation::Framework *fw, QWidget *parent) :
+    QWidget(parent),
     framework(fw)
 {
     setAttribute(Qt::WA_DeleteOnClose);

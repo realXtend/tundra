@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   PythonScriptModule.h
+ *  @file   PythonScriptInstance.h
  *  @brief  Python script instance used with EC_Script.
  */
 
@@ -29,6 +29,7 @@ PythonScriptInstance::PythonScriptInstance(const QString &filename, Scene::Entit
 
 void PythonScriptInstance::Load()
 {
+    ///\todo implement
 //    PythonQt::self()->importModule("sys").evalScript("sys.reload(" + filename_ + ")");
 //    context_.evalScript("import sys\nsys.reload('" + moduleName_ + "')");
 //    context_.evalScript("import " + moduleName_ + "\nreload(" + moduleName_ + ")");
@@ -38,6 +39,7 @@ void PythonScriptInstance::Load()
 
 void PythonScriptInstance::Unload()
 {
+    ///\todo implement
 }
 
 void PythonScriptInstance::Run()
@@ -46,6 +48,3 @@ void PythonScriptInstance::Run()
         context_.evalFile(filename_);
 }
 
-void PythonScriptInstance::Stop()
-{
-}
