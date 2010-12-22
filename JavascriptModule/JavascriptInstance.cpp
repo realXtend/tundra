@@ -249,7 +249,7 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
     }
 
     QStringList extension_whitelist; //the search is system wide, so whitelist is best to not leak to 3rd party libs
-    extension_whitelist << "qt.core" << "qt.gui" << "qt.xml" << "qt.xmlpatterns" << "qt.opengl" << "qt.phonon"; //webkit not allowed directly so scripts can't open hidden browsers to do malicious stuff. uitools to be investigated
+    extension_whitelist << "qt.core" << "qt.gui" << "qt.xml" << "qt.xmlpatterns" << "qt.opengl"; //webkit not allowed directly so scripts can't open hidden browsers to do malicious stuff. uitools to be investigated
 
     QStringList qtcore_blacklist; //the types in qt.core which are not safe. should probably be a whitelist too.
     qtcore_blacklist << "QDir" << "QFile" << "QFileSystemWatcher" << "QFileInfo" << "QLibrary" << "QPluginLoader";
