@@ -66,7 +66,7 @@ namespace OgreRenderer
         virtual void Render();
 
         //! Do a frustum query to the world from viewport coordinates.
-        virtual QVariantList FrustumQuery(QRect &viewrect);
+        virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect);
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;

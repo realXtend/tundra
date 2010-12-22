@@ -314,14 +314,14 @@ namespace OgreRenderer
 
     void Renderer::SetFullScreen(bool value)
     {
-		//$ BEGIN_MOD $
-		//UiServiceInterface *ui = framework_->Ui(); //GetService<UiServiceInterface>();
+        //$ BEGIN_MOD $
+        //UiServiceInterface *ui = framework_->Ui(); //GetService<UiServiceInterface>();
         if (framework_->Ui()->CentralWindow())
             framework_->Ui()->CentralWindow()->ToggleFullScreen();
 
-		//ui->ToggleFullScreen();
+        //ui->ToggleFullScreen();
 
-		//$ END_MOD $
+        //$ END_MOD $
         /*if(value)
             framework_->Ui()->MainWindow()->showFullScreen();
         else
@@ -1056,9 +1056,9 @@ namespace OgreRenderer
     }
     
     //qt wrapper / upcoming replacement for the one above
-    QVariantList Renderer::FrustumQuery(QRect &viewrect)
+    QList<Scene::Entity*> Renderer::FrustumQuery(QRect &viewrect)
     {
-        QVariantList l;
+        QList<Scene::Entity*>l;
         float w= (float)renderWindow->OgreRenderWindow()->getWidth();
         float h= (float)renderWindow->OgreRenderWindow()->getHeight();
         float left = (float)(viewrect.left()) / w, right = (float)(viewrect.right()) / w;
@@ -1090,7 +1090,7 @@ namespace OgreRenderer
                 continue;
             }
             if(entity)
-                l << entity->GetId();//std::cout << "Hit MovableObject:" << m << std::endl;
+                l << entity;//->GetId();//std::cout << "Hit MovableObject:" << m << std::endl;
         }
 
         scenemanager_->destroyQuery(query);
