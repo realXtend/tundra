@@ -48,7 +48,7 @@ public:
     /// Adds multiple scene descritions to be shown in the window.
     /** @param desc Scene description.
     */
-    void AddDescriptions(const QList<SceneDesc> &descs);
+//    void AddDescriptions(const QList<SceneDesc> &descs);
 
     /// Adds files to be shown in the window.
     /** @param fileNames List of files.
@@ -76,8 +76,9 @@ private:
     /// Rewrites values of AssetReference or AssetReferenceList attributes.
     /** @param sceneDesc Scene description.
         @param dest Destination asset storage.
+        @param useDefaultStorage Do we want to use the default asset storage.
     */
-    void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest);
+    void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage);
 
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.

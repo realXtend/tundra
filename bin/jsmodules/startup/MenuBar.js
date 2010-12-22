@@ -15,6 +15,11 @@ if (framework.GetModuleQObj("SceneStructure"))
   viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
 }
 
+if (framework.GetModuleQObj("Console"))
+{
+  viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);  
+}
+
 //var eceditorAction = viewMenu.addAction("EC Editor");
 
 if (framework.GetModuleQObj("DebugStats"))
@@ -59,4 +64,9 @@ function OpenTerrainEditor()
 function OpenPythonConsole()
 {
   console.ExecuteCommand("pythonconsole");
+}
+
+function OpenConsoleWindow()
+{
+  framework.GetModuleQObj("Console").ToggleConsole();
 }

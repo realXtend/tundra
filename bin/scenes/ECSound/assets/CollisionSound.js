@@ -41,21 +41,20 @@ else
 }
 function Collision (otherEntity, pos, normal, distance, impulse, newCollision)
 {
-	if (impulse > 3.5)
-		audio.PlaySound("file://Crash.ogg");
+    if (impulse > 3.5)
+    {
+        // To play sound using the Audio API directly, do the following.
+//	    audio.PlaySound(asset.GetAsset("local://Collision.ogg"));
 
-	//With EC_Sound
-	//me.sound.SoundId = "file://Crash.ogg";
-	//me.Exec(1, "PlaySound");
-
+	    // To play a sound clip stored to EC_Sound, do the following.
+        me.sound.SoundId = "local://Collision.ogg";
+	    me.Exec(1, "PlaySound");
+	}
 }
 
 function EntityClicked()
 {
-	print("Clicked");
-	audio.PlaySound("file://Click.ogg");
-	
-	//With EC_Sound	
-	//me.sound.SoundId = "file://Click.ogg";
-	//me.Exec(1, "PlaySound");
+	// To play a sound clip stored to EC_Sound, do the following.
+    me.sound.SoundId = "local://Click.ogg";
+	me.Exec(1, "PlaySound");
 }

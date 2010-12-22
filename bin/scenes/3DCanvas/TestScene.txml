@@ -1,36 +1,5 @@
 <!DOCTYPE Scene>
 <scene>
- <entity id="2">
-  <component type="EC_Name" sync="1">
-   <attribute value="WaterPlane" name="name"/>
-   <attribute value="" name="description"/>
-   <attribute value="false" name="user-defined"/>
-  </component>
-  <component type="EC_WaterPlane" sync="1">
-   <attribute value="5000" name="x-size"/>
-   <attribute value="5000" name="y-size"/>
-   <attribute value="20" name="Depth"/>
-   <attribute value="0 0 0" name="Position"/>
-   <attribute value="1 0 0 0" name="Rotation"/>
-   <attribute value="0.000199999995" name="U factor"/>
-   <attribute value="0.000199999995" name="V factor"/>
-   <attribute value="10" name="Segments in x"/>
-   <attribute value="10" name="Segments in y"/>
-   <attribute value="Ocean" name="Material"/>
-   <attribute value="" name="Material ref"/>
-   <attribute value="0.200000003 0.400000006 0.349999994 1" name="Fog color"/>
-   <attribute value="100" name="Fog start dist."/>
-   <attribute value="2000" name="Fog end dist."/>
-   <attribute value="3" name="Fog mode"/>
-  </component>
-  <component type="EC_Placeable" sync="1">
-   <attribute value="0 0 0" name="Position"/>
-   <attribute value="1 1 1" name="Scale"/>
-   <attribute value="0,0,36,0,0,0,1,1,1" name="Transform"/>
-   <attribute value="false" name="Show bounding box"/>
-   <attribute value="true" name="Visible"/>
-  </component>
- </entity>
  <entity id="11">
   <component type="EC_Name" sync="1">
    <attribute value="Terrain" name="name"/>
@@ -69,7 +38,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Name" sync="1">
-   <attribute value="screen" name="name"/>
+   <attribute value="Screen" name="name"/>
    <attribute value="" name="description"/>
    <attribute value="false" name="user-defined"/>
   </component>
@@ -81,6 +50,49 @@
    <attribute value="0" name="Refresh per sec"/>
    <attribute value="800" name="Page width"/>
    <attribute value="600" name="Page height"/>
+  </component>
+ </entity>
+ <entity id="3">
+  <component type="EC_Name" sync="1">
+   <attribute value="Instructions" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://instructions.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="2">
+  <component type="EC_Name" sync="1">
+   <attribute value="WaterPlane" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_WaterPlane" sync="1">
+   <attribute value="5000" name="x-size"/>
+   <attribute value="5000" name="y-size"/>
+   <attribute value="20" name="Depth"/>
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 0 0 0" name="Rotation"/>
+   <attribute value="0.000199999995" name="U factor"/>
+   <attribute value="0.000199999995" name="V factor"/>
+   <attribute value="10" name="Segments in x"/>
+   <attribute value="10" name="Segments in y"/>
+   <attribute value="Ocean" name="Material"/>
+   <attribute value="" name="Material ref"/>
+   <attribute value="0.200000003 0.400000006 0.349999994 1" name="Fog color"/>
+   <attribute value="100" name="Fog start dist."/>
+   <attribute value="2000" name="Fog end dist."/>
+   <attribute value="3" name="Fog mode"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="0,0,36,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
   </component>
  </entity>
  <entity id="1">

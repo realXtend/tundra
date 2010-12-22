@@ -180,22 +180,23 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     QSpacerItem *assetButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     QLabel *storageLabel = new QLabel(tr("Asset storage:"));
     storageComboBox = new QComboBox;
+
     // Get available asset storages. Set default storage selected as default.
+//    storageComboBox->addItem(tr("Don't adjust"), "DoNotAdjust");
+    storageComboBox->addItem(tr("Default storage"), "DefaultStorage");
     AssetStoragePtr def = framework->Asset()->GetDefaultAssetStorage();
-    int idx = 0;
-    foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+    std::vector<AssetStoragePtr> storages = framework->Asset()->GetAssetStorages();
+    for(size_t i = 0; i < storages.size(); ++i)
     {
-        storageComboBox->addItem(storage->ToString(), storage->Name());
-        if (def && storage == def)
+        storageComboBox->addItem(storages[i]->ToString(), storages[i]->Name());
+        if (def && storages[i] == def)
         {
-            idx = storageComboBox->currentIndex();
             QFont font = QApplication::font();
             font.setBold(true);
-            storageComboBox->setItemData(idx, font, Qt::FontRole);
+            storageComboBox->setItemData(i+1, font, Qt::FontRole); // i+1 as we already have the default storage item
+            storageComboBox->setCurrentIndex(i+1);
         }
     }
-
-    storageComboBox->setCurrentIndex(idx);
 
     layout->addWidget(assetLabel);
     layout->addWidget(assetTreeWidget);
@@ -259,9 +260,11 @@ void AddContentWindow::AddDescription(const SceneDesc &desc)
     AddAssets(desc.assets);
 }
 
+/*
 void AddContentWindow::AddDescriptions(const QList<SceneDesc> &descs)
 {
 }
+*/
 
 void AddContentWindow::AddFiles(const QStringList &fileNames)
 {
@@ -367,7 +370,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
     assetTreeWidget->sortItems(cColumnAssetUpload, Qt::AscendingOrder);
 }
 
-void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest)
+void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage)
 {
 //    QString path(fs::path(newDesc.filename.toStdString()).branch_path().string().c_str());
 
@@ -412,7 +415,10 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
 
                         SceneDesc::AssetMapKey key = qMakePair(value, subname);
                         if (sceneDesc.assets.contains(key))
-                            newValues << dest->GetFullAssetURL(sceneDesc.assets[key].destinationName);
+                            if (useDefaultStorage)
+                                newValues << AssetAPI::ExtractFilenameFromAssetRef(sceneDesc.assets[key].destinationName);
+                            else
+                                newValues << dest->GetFullAssetURL(sceneDesc.assets[key].destinationName);
                     }
 
                     if (!newValues.isEmpty())
@@ -447,7 +453,11 @@ void AddContentWindow::DeselectAllAssets()
 void AddContentWindow::AddContent()
 {
     QString storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
-    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageName);
+    AssetStoragePtr dest;
+    if (storageName == "DefaultStorage")
+        dest = framework->Asset()->GetDefaultAssetStorage();
+    else
+        dest = framework->Asset()->GetAssetStorage(storageName);
     if (!dest)
     {
         LogError("Could not retrieve asset storage " + storageName.toStdString() + ".");
@@ -477,7 +487,8 @@ void AddContentWindow::AddContent()
     }
 
     // Rewrite components' asset refs
-    RewriteAssetReferences(newDesc, dest);
+    bool useDefault = storageName == "DefaultStorage";
+    RewriteAssetReferences(newDesc, dest, useDefault);
 
     RefMap refs;
     QTreeWidgetItemIterator ait(assetTreeWidget);
@@ -491,7 +502,7 @@ void AddContentWindow::AddContent()
             {
                 bool removed = newDesc.assets.remove(qMakePair(aitem->desc.source, aitem->desc.subname));
                 if (!removed)
-                    LogDebug("Coulnd't find and remove " + aitem->desc.source.toStdString() + "from asset map.");
+                    LogDebug("Couldn't find and remove " + aitem->desc.source.toStdString() + "from asset map.");
             }
             else
             {
@@ -618,12 +629,29 @@ void AddContentWindow::CheckIfColumnIsEditable(QTreeWidgetItem *item, int column
 void AddContentWindow::RewriteDestinationNames()
 {
     QString storageName = storageComboBox->itemData(storageComboBox->currentIndex()).toString();
-    AssetStoragePtr dest = framework->Asset()->GetAssetStorage(storageName);
+    AssetStoragePtr dest;
+    bool useDefault = false;
+    if (storageName == "DefaultStorage")
+    {
+        dest = framework->Asset()->GetDefaultAssetStorage();
+        useDefault = true;
+    }
+    else
+        dest = framework->Asset()->GetAssetStorage(storageName);
+
     if (!dest)
     {
         LogError("Could not retrieve asset storage " + storageName.toStdString() + ".");
+
+        // Regenerate storage combo box items to make sure that we're up-to-date.
+        storageComboBox->clear();
+        foreach(AssetStoragePtr storage, framework->Asset()->GetAssetStorages())
+            storageComboBox->addItem(storage->ToString(), storage->Name());
+
         return;
     }
+
+    assetTreeWidget->setSortingEnabled(false);
 
     QTreeWidgetItemIterator it(assetTreeWidget);
     while(*it)
@@ -632,12 +660,17 @@ void AddContentWindow::RewriteDestinationNames()
         assert(aitem);
         if (aitem && !aitem->isDisabled())
         {
-            aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(cColumnAssetDestName).trimmed());
+            if (useDefault)
+                aitem->desc.destinationName = AssetAPI::ExtractFilenameFromAssetRef(aitem->text(cColumnAssetDestName).trimmed());
+            else
+                aitem->desc.destinationName = dest->GetFullAssetURL(aitem->text(cColumnAssetDestName).trimmed());
             aitem->setText(cColumnAssetDestName, aitem->desc.destinationName);
         }
 
         ++it;
     }
+
+    assetTreeWidget->setSortingEnabled(true);
 }
 
 void AddContentWindow::HandleUploadCompleted(IAssetUploadTransfer *transfer)

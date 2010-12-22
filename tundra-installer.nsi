@@ -1,5 +1,5 @@
 !include "fileassoc.nsh"
-!define VERSION "1.0a-preview"
+!define VERSION "1.0-preview"
 
 Name "Tundra ${VERSION}"
 
@@ -9,7 +9,7 @@ Page instfiles
 InstallDir "$PROGRAMFILES\Tundra ${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "Tundra-1.0a-preview.exe"
+OutFile "Tundra-1.0-preview.exe"
 
 XPStyle on
 

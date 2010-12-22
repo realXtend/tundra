@@ -1003,7 +1003,7 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
         if (mesh->ogreMesh.get())
             ogreMeshName = mesh->ogreMesh->getName().c_str();
         else
-            LogError("EC_Mesh::OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
+            LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
     }
 
     SetMesh(ogreMeshName);
@@ -1018,7 +1018,7 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
     OgreSkeletonAsset *skeletonAsset = dynamic_cast<OgreSkeletonAsset*>(asset.get());
     if (!skeletonAsset)
     {
-        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
+        LogError("OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
             asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
         return;
     }
@@ -1026,7 +1026,7 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
     Ogre::SkeletonPtr skeleton = skeletonAsset->ogreSkeleton;
     if (skeleton.isNull())
     {
-        LogError("EC_Mesh::OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
+        LogError("OnSkeletonAssetLoaded: Skeleton asset load finished for asset \"" +
             asset->Name().toStdString() + "\", but Ogre::Skeleton pointer was null!");
         return;
     }
@@ -1063,7 +1063,7 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     if (!ogreMaterial)
     {
         LogError("OnMaterialAssetLoaded: Material asset load finished for asset \"" +
-            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreSkeletonAsset!");
+            asset->Name().toStdString() + "\", but downloaded asset was not of type OgreMaterialAsset!");
         return;
     }
 
@@ -1073,7 +1073,8 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
-        if (materialList[i].ref == ogreMaterial->Name())
+        if (materialList[i].ref == ogreMaterial->Name() ||
+            framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref) == ogreMaterial->Name()) ///<///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
         {
             SetMaterial(i, ogreMaterial->Name());
             assetUsed = true;
@@ -1081,7 +1082,7 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 
     if (!assetUsed)
     {
-        LogWarning("Warning: EC_Mesh::OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
+        LogWarning("OnMaterialAssetLoaded: Trying to apply material \"" + ogreMaterial->Name().toStdString() + "\" to mesh " +
             meshRef.Get().ref.toStdString() + ", but no submesh refers to the given material! The references are: ");
         for(int i = 0; i < materialList.Size(); ++i)
             LogWarning(QString::number(i).toStdString() + ": " + materialList[i].ref.toStdString());

@@ -44,6 +44,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     try
     {
         unsigned short src, dest;
+        ///\bug Crashes if called for a mesh that has null or zero vertices in the vertex buffer, or null or zero indices in the index buffer.
         if (!ogreMesh->suggestTangentVectorBuildParams(Ogre::VES_TANGENT, src, dest))
             ogreMesh->buildTangentVectors(Ogre::VES_TANGENT, src, dest);
     }
