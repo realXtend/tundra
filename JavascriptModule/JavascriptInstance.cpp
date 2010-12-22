@@ -248,13 +248,13 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
         return;
     }
 
-    QStringList extension_blacklist;
-    extension_blacklist << "qt.network" << "qt.webkit"; //webkit to not allow scripts to open hidden browsers to do malicious stuff.
+    QStringList extension_whitelist; //the search is system wide, so whitelist is best to not leak to 3rd party libs
+    extension_whitelist << "qt.core" << "qt.gui" << "qt.xml" << "qt.xmlpatterns" << "qt.opengl" << "qt.phonon"; //webkit not allowed directly so scripts can't open hidden browsers to do malicious stuff. uitools to be investigated
 
-    QStringList qtcore_blacklist; //the types in qt.core which are not safe
+    QStringList qtcore_blacklist; //the types in qt.core which are not safe. should probably be a whitelist too.
     qtcore_blacklist << "QDir" << "QFile" << "QFileSystemWatcher" << "QFileInfo" << "QLibrary" << "QPluginLoader";
 
-    if (!trusted_ && extension_blacklist.contains(scriptExtensionName, Qt::CaseInsensitive))
+    if (!trusted_ && !extension_whitelist.contains(scriptExtensionName, Qt::CaseInsensitive))
     {
         LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance: " + scriptExtensionName.toStdString());
         return;
