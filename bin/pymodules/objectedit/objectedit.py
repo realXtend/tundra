@@ -412,12 +412,7 @@ class ObjectEdit(Component):
     def on_mouseleftreleased(self, mouseinfo):
         self.left_button_down = False
         if self.selection_rect_startpos is not None:
-            rect = QRect()
-            rect.setLeft(self.selection_rect_startpos[0])
-            rect.setTop(self.selection_rect_startpos[1])
-            rect.setRight(mouseinfo.x)
-            rect.setBottom(mouseinfo.y)
-            hits = renderer.FrustumQuery(rect) #the wish
+            hits = renderer.FrustumQuery(self.selection_rect.geometry) #the wish
 
             for hit in hits:
                 if not self.validId(hit.Id): continue
