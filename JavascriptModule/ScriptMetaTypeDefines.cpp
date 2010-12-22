@@ -145,6 +145,7 @@ void qScriptValueToBoostSharedPtr(const QScriptValue &value, boost::shared_ptr<T
 
 Q_DECLARE_METATYPE(AssetPtr);
 Q_DECLARE_METATYPE(SoundChannelPtr);
+Q_DECLARE_METATYPE(InputContextPtr);
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
@@ -152,6 +153,10 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
     qScriptRegisterQObjectMetaType<InputContext*>(engine);
+    //qRegisterMetaType<InputContextPtr>("InputContextPtr");
+    qRegisterMetaType<InputContextPtr>("InputContextPtr");
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<InputContext>,
+                            qScriptValueToBoostSharedPtr<InputContext>);
     qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
     qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");

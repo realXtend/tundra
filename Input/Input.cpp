@@ -205,9 +205,9 @@ void Input::DumpInputContexts()
     }
 }
 
-boost::shared_ptr<InputContext> Input::RegisterInputContext(const char *name, int priority)
+InputContextPtr Input::RegisterInputContext(const QString &name, int priority)
 {
-    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(name, priority);
+    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(name.toStdString().c_str(), priority);
 
     // Do a sorted insert: Iterate and skip through all the input contexts that have a higher
     // priority than the desired new priority.

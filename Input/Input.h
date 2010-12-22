@@ -58,17 +58,17 @@ public:
     /// Called internally by the Framework to update the polling Input API. Not for client use.
     void Update(float frametime);
 
-    /// Creates a new input context with the given name. The name is not an ID, i.e. it does not have to be unique with 
-    /// existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
-    /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
-    boost::shared_ptr<InputContext> RegisterInputContext(const char *name, int priority);
-
     /// Prints the list of input contexts to std::cout, for debugging purposes.
     void DumpInputContexts();
 
     typedef std::map<std::string, QKeySequence> KeyActionsMap;
 
 public slots:
+    /// Creates a new input context with the given name. The name is not an ID, i.e. it does not have to be unique with 
+    /// existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
+    /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
+    InputContextPtr RegisterInputContext(const QString &name, int priority);
+
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
     /// @param visible If true, shows mouse cursor and allows free movement. If false, hides the mouse cursor 
     ///                and switches into relative mouse movement input mode.

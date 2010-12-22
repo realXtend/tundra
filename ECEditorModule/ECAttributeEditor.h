@@ -160,6 +160,8 @@ private:
     //! Override from ECAttributeEditorBase
     virtual void Update(IAttribute *attr = 0);
 
+    //! Method will check if all components are holding same attribute value and if they do return true.
+    //! @todo If some of the components have expired this method will return false. this should get fixed in some way.
     bool HasIdenticalAttributes() const
     {
         //No point to continue if there is only single component added.
@@ -184,7 +186,7 @@ private:
             if (!rsh_attr)
                 continue;
 
-            if (rsh_attr->Get() != lsh_attr->Get())
+            if (lsh_attr->Get() != rsh_attr->Get())
                 return false;
         }
         return true;
