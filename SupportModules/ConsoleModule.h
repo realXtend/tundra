@@ -49,6 +49,9 @@ namespace Console
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
+    public slots:
+        void ToggleConsole();
+
     private:
         //! Type name of the module.
         static std::string type_name_static_;

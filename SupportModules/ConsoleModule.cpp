@@ -58,6 +58,11 @@ namespace Console
         connect(inputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     }
 
+    void ConsoleModule::ToggleConsole()
+    {
+        ui_console_manager_->ToggleConsole();
+    }
+
     void ConsoleModule::HandleKeyEvent(KeyEvent *keyEvent)
     {
         if (keyEvent->keyCode == Qt::Key_F1 && keyEvent->eventType == KeyEvent::KeyPressed)
