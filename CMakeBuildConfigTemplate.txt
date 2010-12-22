@@ -140,7 +140,7 @@ endif()
 add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
 add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
 add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
-#add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
+add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
 #add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
 #add_subdirectory(CAVEStereoModule)     # Implements CAVE and Stereoscopy functionality
 add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
