@@ -248,16 +248,20 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
         return;
     }
 
-    if (!trusted_)
-    {
-        LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance.");
-        return;
-    }
-
-
     QScriptValue success = engine_->importExtension(scriptExtensionName);
     if (!success.isUndefined()) // Yes, importExtension returns undefinedValue if the import succeeds. http://doc.qt.nokia.com/4.7/qscriptengine.html#importExtension
         LogWarning(std::string("JavascriptInstance::ImportExtension: Failed to load ") + scriptExtensionName.toStdString() + " plugin for QtScript!");
+    
+    if (!trusted_)
+    {
+        QScriptValue exposed;
+        exposed = engine_->globalObject().property("QDir");
+        if (exposed.isValid())
+        {
+          engine_->globalObject().setProperty("QDir", QScriptValue::QScriptValue()); //passing an invalid val removes the property, http://doc.qt.nokia.com/4.6/qscriptvalue.html#setProperty
+          LogInfo("JavascriptInstance::ImportExtension: removed QDir from the untrusted context.");
+        }
+    }
 }
 
 void JavascriptInstance::CreateEngine()
