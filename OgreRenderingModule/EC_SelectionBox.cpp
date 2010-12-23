@@ -68,16 +68,18 @@ void EC_SelectionBox::SetBoundingBox(QRect &view)
     bottom = 1 - bottom * 2;
  
     selectionBox_->clear();
-    selectionBox_->begin("",Ogre::RenderOperation::OT_TRIANGLE_STRIP);
-    /*selectionBox_->position(left, top, -1);
-    selectionBox_->position(right, top, -1);
-    selectionBox_->position(right, bottom, -1);
+    selectionBox_->begin("BlueTransparent",Ogre::RenderOperation::OT_TRIANGLE_STRIP);
     selectionBox_->position(left, bottom, -1);
-    selectionBox_->position(left, top, -1);*/
+    selectionBox_->position(right, bottom, -1);
+    selectionBox_->position(left, top, -1);
+    selectionBox_->position(right, top, -1);
+    selectionBox_->end();
+    selectionBox_->begin("",Ogre::RenderOperation::OT_LINE_STRIP);
     selectionBox_->position(left, top, -1);
     selectionBox_->position(right, top, -1);
     selectionBox_->position(right, bottom, -1);
     selectionBox_->position(left, bottom, -1);
+    selectionBox_->position(left, top, -1);
     selectionBox_->end();
     
     selectionBox_->setBoundingBox(Ogre::AxisAlignedBox::BOX_INFINITE);
