@@ -587,6 +587,25 @@ namespace PythonScript
         return 0;
     }
 
+    Scene::Entity* PythonScriptModule::GetActiveCamera() const
+    {
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        if (!scene)
+        {
+            LogError("Failed to find active camera, default world scene wasn't setted.");
+            return 0;
+        }
+
+        foreach(Scene::EntityPtr cam, scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic()))
+            if (cam->GetComponent<EC_OgreCamera>()->IsActive())
+            {
+                return cam.get();
+            }
+
+        LogError("No active camera were found.");
+        return 0;
+    }
+
     Foundation::WorldLogicInterface* PythonScriptModule::GetWorldLogic() const
     {
         Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
@@ -778,7 +797,7 @@ namespace PythonScript
             return;
 
         QString scriptType = script->type.Get().trimmed().toLower();
-        if (scriptType != "js" && scriptType.length() > 0)
+        if (scriptType != "py" && scriptType.length() > 0)
             return; // The user enforced a foreign script type using the EC_Script type field.
 
         if (scriptAsset->Name().endsWith(".py") || scriptType == "py")
