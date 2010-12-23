@@ -1,10 +1,10 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   EC_Ruler.h
- *  @brief  EC_Ruler enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_Placeable and EC_Mesh (if mesh) or
- *          EC_OgreCustomObject (if prim) components available in advance.
+ *  @file   EC_Ruler.cpp
+ *  @brief  EC_Ruler provides visualisation for transformations.
+ *  @note   The entity must have EC_Placeable component available in advance.
+ *
  */
 
 #ifndef incl_EC_Ruler_EC_Ruler_h
@@ -31,8 +31,7 @@ namespace Ogre
 <tr>
 <td>
 <h2>Ruler</h2>
-Ruler enables visual highlighting effect for of scene entity.
-
+Ruler provides visualisation for transformations.
 
 Registered by RexLogic::RexLogicModule.
 
@@ -139,6 +138,7 @@ public slots:
     //! Call StartDrag to initialise some values used to update the selected ruler
     void StartDrag(QVector3D pos, QQuaternion rot, QVector3D scale);
     
+    //! Handle drag event
     void DoDrag(QVector3D pos, QQuaternion rot, QVector3D scale);
     
     //! Call EndDrag to tell the code we're done for now
@@ -152,17 +152,17 @@ private:
     /// @param module Owner module.
     explicit EC_Ruler(IModule *module);
 
-    /// Creates the clone entity used for highlighting from the original.
+    /// Creates the ruler objects.
     void Create();
     
     void SetupRotationRuler();
     void SetupTranslateRuler();
     void SetupScaleRuler();
 
-    /// Shows the highlighting effect.
+    /// Shows the ruler.
     void Show();
 
-    /// Hides the highlighting effect.
+    /// Hides the ruler.
     void Hide();
     
     /// Renderer pointer.
@@ -182,19 +182,30 @@ private:
     Ogre::SceneNode *anchorNode;
  
     
+    /// Name of the ruler static part
     std::string rulerName;
+    /// Name of the ruler dynamic part
     std::string rulerMovingPartName;
+    /// Name of the static scene node
     std::string nodeName;
+    /// Name of the dynamic scene node
     std::string movingNodeName;
     
+    /// Type of the ruler currently shown
     EC_Ruler::Type type;
     
+    /// Start position of entity to which this EC is attached
     QVector3D pos_;
+    /// Start scale of entity to which this EC is attached
     QVector3D scale_;
+    /// Start orientation of entity to which this EC is attached
     QQuaternion rot_;
     
+    /// New position of entity to which this EC is attached
     QVector3D newpos_;
+    /// New scale of entity to which this EC is attached
     QVector3D newscale_;
+    /// New orientation of entity to which this EC is attached
     QQuaternion newrot_;
 };
 
