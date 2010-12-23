@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 #include "StableHeaders.h"
 #include "TerrainWeightEditor.h"
 #include "EnvironmentModule.h"
@@ -15,7 +14,6 @@
 #include "SceneManager.h"
 #include "UiProxyWidget.h"
 #include "UiServiceInterface.h"
-
 
 #include "ConsoleCommandServiceInterface.h"
 namespace Environment
@@ -62,12 +60,8 @@ namespace Environment
 		//$ END_MOD $
         if(editor_proxy == 0)
             return;
-		//$ BEGIN_MOD $
-        //ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"),"Server Tools", "./data/ui/images/menus/edbutton_OBJED_normal.png");
-		ui->AddWidgetToMenu(this, tr("TerrainTexture Weightmap Editor"), "Create", "./data/ui/images/menus/edbutton_OBJED_normal.png");
-		//$ END_MOD $
+		ui->AddWidgetToMenu(this, tr("TerrainTexture Weightmap Editor"), "Scene", "./data/ui/images/menus/edbutton_OBJED_normal.png");
         ui->RegisterUniversalWidget("Weights", editor_proxy);
-
 
         QSpinBox *box = editor_widget_->findChild<QSpinBox*>("brush_size");
         if(box)

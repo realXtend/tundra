@@ -64,7 +64,7 @@ namespace UiExternalServices
 			qWin_->setObjectName("Naali MainWindow");
 
 		   //Create MenuManager and PanelManager and ToolBarManager
-		   menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
+           menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
 		   panel_manager_ = new ExternalPanelManager(qWin_);
 		   toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
 		   
@@ -154,17 +154,17 @@ namespace UiExternalServices
 			LogWarning("Could not connect with Framework to Exit!!!!");  
 
 		//Create Static Toolbar
-		staticToolBar_ = new StaticToolBar("Control Bar",qWin_,framework_);
-		staticToolBar_->setObjectName("Control Bar");
-		toolbar_manager_->AddExternalToolbar(staticToolBar_, "Control Bar");
+		//staticToolBar_ = new StaticToolBar("Control Bar",qWin_,framework_);
+		//staticToolBar_->setObjectName("Control Bar");
+		//toolbar_manager_->AddExternalToolbar(staticToolBar_, "Control Bar");
 
-		UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
-		if (ui_service){
-			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), ui_external_scene_service_.get(), SLOT(SceneChanged(const QString&, const QString&)));
-			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), panel_manager_, SLOT(SceneChanged(const QString&, const QString&)));
-			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), toolbar_manager_, SLOT(SceneChanged(const QString&, const QString&)));
-			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), menu_manager_, SLOT(SceneChanged(const QString&, const QString&)));
-		}	        
+		//UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
+		//if (ui_service){
+		//	connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), ui_external_scene_service_.get(), SLOT(SceneChanged(const QString&, const QString&)));
+		//	connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), panel_manager_, SLOT(SceneChanged(const QString&, const QString&)));
+		//	connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), toolbar_manager_, SLOT(SceneChanged(const QString&, const QString&)));
+		//	connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), menu_manager_, SLOT(SceneChanged(const QString&, const QString&)));
+		//}	        
 	}
 
 	void UiExternalModule::SwitchToEtherScene	(){

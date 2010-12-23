@@ -24,9 +24,6 @@ namespace CoreUi
     public:
         PersonalWidget();
 
-    public slots:
-        void SetAvatarWidget(UiProxyWidget *avatar_widget);
-
     private slots:
         void AvatarToggle();
 

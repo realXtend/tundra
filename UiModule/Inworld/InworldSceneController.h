@@ -69,16 +69,6 @@ namespace UiServices
          */
         void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
-        //! This is an overloaded function.
-        /*! \param widget Widget.
-         *  \param name Name of the menu entry.
-         *  \param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
-         *  \param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
-         *
-         *  \note Doesn't add the widget to the scene.
-         */
-        void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon);
-
         //! Remove a proxy widget from scene if it exist there
         /*! Used for removing your widget from scene. The show/hide toggle button will also be removed from the main panel.
          *  Note: Does not delete the proxy widget, after this is done its safe to delete your QWidget (this will delete the proxy also)
@@ -93,7 +83,7 @@ namespace UiServices
         /** Removes widget from menu.
          *  @param widget The controlled widget.
          */
-        void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget);
+        void RemoveWidgetFromMenu(QWidget *widget);
 
         //! Brings the proxy widget to front in the scene, set focus to it and shows it.
         void BringProxyToFront(QGraphicsProxyWidget *widget) const;

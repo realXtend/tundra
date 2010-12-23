@@ -92,7 +92,7 @@ namespace Library
             UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();                
             UiProxyWidget *lib_proxy = ui->AddWidgetToScene(library_widget_, true, true);
 			//$ BEGIN_MOD $
-			ui->AddWidgetToMenu(lib_proxy, tr("Library"), tr("Create"), "./data/ui/images/menus/edbutton_OBJED_normal.png");	
+			ui->AddWidgetToMenu(lib_proxy, tr("Content Library"), tr("Scene"), "./data/ui/images/menus/edbutton_OBJED_normal.png");	
 			//$ END_MOD $
             ui->RegisterUniversalWidget("Library", lib_proxy);
 

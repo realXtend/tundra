@@ -114,10 +114,7 @@ namespace RexLogic
 			//$ END_MOD $
             proxy_widget_->setMaximumHeight(800);
             proxy_widget_->setMaximumWidth(600);
-			//$ BEGIN_MOD $
-			//ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
-			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "Panels", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
-			//$ END_MOD $
+			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "View", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
 		}
         connect(proxy_widget_, SIGNAL(Visible(bool)), this, SLOT(Visible(bool)));
 	}

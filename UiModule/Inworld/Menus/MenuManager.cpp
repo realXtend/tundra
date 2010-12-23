@@ -78,7 +78,7 @@ namespace CoreUi
         Sort(); 
     }
 
-    void MenuManager::AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon)
+    void MenuManager::AddMenuItem(QWidget *widget, const QString &name, const QString &category, const QString &icon)
     {
 //$ BEGIN_MOD $
 		if(!root_menu_->isVisible())
@@ -112,7 +112,7 @@ namespace CoreUi
 		Sort();
     }
 
-    void MenuManager::RemoveMenuItem(QGraphicsProxyWidget *controlled_widget)
+    void MenuManager::RemoveMenuItem(QWidget *controlled_widget)
     {
         QUuid remove_id = controller_map_.key(controlled_widget);
         if (remove_id.isNull())
@@ -162,7 +162,7 @@ namespace CoreUi
         if (!controller_map_.contains(id))
             return;
 
-        QGraphicsProxyWidget *controlled_widget = controller_map_[id];
+        QWidget *controlled_widget = controller_map_[id];
         if (!controlled_widget)
             return;
 

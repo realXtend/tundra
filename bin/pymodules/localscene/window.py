@@ -28,7 +28,7 @@ class ToolBarWindow():
 
         # uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
         # uiprops.SetMenuGroup(2) #2 is server tools group
-        # uiprops.widget_name_ = "Local Scene"
+        # uiprops.widget_name_ = "Ogre Scene Tool"
 
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         #self.proxywidget = r.createUiProxyWidget(ui, uiprops)
@@ -41,7 +41,7 @@ class ToolBarWindow():
 
         #$ BEGIN_MOD $
         #uism.AddWidgetToMenu(self.proxywidget, "Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
-        uism.AddWidgetToMenu(self.proxywidget, "Scene", "Panels", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
+        uism.AddWidgetToMenu(self.proxywidget, "Ogre Scene Tool", "Scene", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
         #$ END_MOD $
 
         self.inputQueue = queue

@@ -51,7 +51,7 @@ namespace Console
             ui->RegisterUniversalWidget("Console", proxy_widget_);
 //$ BEGIN_MOD $
 			//ui->TransferWidgetOut("ConsoleWidget",false);
-			ui->AddWidgetToMenu(console_widget_, "Console", tr("Panels"),"./data/ui/images/menus/edbutton_ENVED_normal");
+			ui->AddWidgetToMenu(console_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
 //$ END_MOD $  
         }
 

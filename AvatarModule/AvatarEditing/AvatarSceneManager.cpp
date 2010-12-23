@@ -82,8 +82,8 @@ namespace Avatar
 		//$ BEGIN_MOD $ 
 		//Insert action in MenuExternal if available to switch to AvatarEditor
 		//Create Action, insert into menu Create->Avatar
-		QAction *action = new QAction("Avatar",this);
-		if (ui_service->AddExternalMenuAction(action, "Avatar", tr("Create")))
+		QAction *action = new QAction("Avatar Editor",this);
+		if (ui_service->AddExternalMenuAction(action, "Avatar Editor", tr("Personal")))
 			connect(action, SIGNAL(triggered()), SLOT(ToggleScene()));
 				//LogWarning("Could not connect with Avatar scene !!");    
 		//$ END_MOD $ 

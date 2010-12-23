@@ -154,10 +154,7 @@ void DebugStatsModule::AddProfilerWidgetToUi()
 //$ END_MOD $
     connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
-	//$ BEGIN_MOD $
-    //ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
-	ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Panels"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
-	//$ END_MOD $
+	ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }
 
 void DebugStatsModule::StartProfiling(bool visible)

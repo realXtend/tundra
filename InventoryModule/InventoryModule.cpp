@@ -488,7 +488,7 @@ void InventoryModule::CreateInventoryWindow()
 
     UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, true, true);
 	//$ BEGIN_MOD $	
-	ui->AddWidgetToMenu(inventoryWindow_, "Inventory", "Create");
+	ui->AddWidgetToMenu(inventoryWindow_, "Inventory", "Personal");
     //ui->AddWidgetToMenu(inventoryWindow_);
 	//$ END_MOD $
     ui->RegisterUniversalWidget("Inventory", inv_proxy);
@@ -507,12 +507,16 @@ void InventoryModule::CreateInventoryWindow()
     uploadProgressWindow_ = new UploadProgressWindow(this);
 */
 //$ BEGIN_MOD $
-	QToolBar* editToolbar_= ui->GetExternalToolbar("EditToolBar");
-	if(editToolbar_){
-		QAction* inventoryButton_=new QAction(QIcon("./media/icons/inventory.png"),"Inventory",editToolbar_);
-		editToolbar_->addAction(inventoryButton_);
-		connect(inventoryButton_, SIGNAL(triggered()), this, SLOT(ActionToolBarInventory()));
-	}
+    bool create_buttons = false; // todo read from ini
+    if (create_buttons)
+    {
+	    QToolBar* editToolbar_= ui->GetExternalToolbar("EditToolBar");
+	    if(editToolbar_){
+		    QAction* inventoryButton_=new QAction(QIcon("./media/icons/inventory.png"),"Inventory",editToolbar_);
+		    editToolbar_->addAction(inventoryButton_);
+		    connect(inventoryButton_, SIGNAL(triggered()), this, SLOT(ActionToolBarInventory()));
+	    }
+    }
 //$ END_MOD $
 }
 //$ BEGIN_MOD $

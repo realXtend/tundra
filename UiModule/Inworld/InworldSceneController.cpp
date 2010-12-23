@@ -131,15 +131,7 @@ namespace UiServices
 
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
-		menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
-    }
-
-    void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon)
-    {
-        if  ( name.contains("avatar", Qt::CaseSensitive) )
-           control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
-        else
-            menu_manager_->AddMenuItem(widget, name, menu, icon);
+        menu_manager_->AddMenuItem(widget, name, menu, icon);
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
@@ -153,7 +145,7 @@ namespace UiServices
         RemoveProxyWidgetFromScene(widget->graphicsProxyWidget());
     }
 
-    void InworldSceneController::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
+    void InworldSceneController::RemoveWidgetFromMenu(QWidget *widget)
     {
         menu_manager_->RemoveMenuItem(widget);
     }

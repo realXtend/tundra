@@ -61,7 +61,7 @@ namespace WorldBuilding
         {
 			//$ BEGIN_MOD $
             ui->AddWidgetToScene(scene_widget_);
-            ui->AddWidgetToMenu(scene_widget_, "OpenSim Scene Tool", "Panels", "./data/ui/images/menus/edbutton_LSCENE_normal.png");
+            ui->AddWidgetToMenu(scene_widget_, "Naali Scene Tool", "Scene", "./data/ui/images/menus/edbutton_LSCENE_normal.png");
 			//$ END_MOD$
             ui->RegisterUniversalWidget("OpenSim Scene", scene_widget_);
         }

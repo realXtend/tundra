@@ -22,10 +22,6 @@ namespace CoreUi
         CheckStyle(false, "avatarToggle");
     }
 
-    void PersonalWidget::SetAvatarWidget(UiProxyWidget *avatar_widget)
-    {
-    }
-
     void PersonalWidget::AvatarToggle()
     {
         emit ControlButtonClicked(UiServices::Avatar);

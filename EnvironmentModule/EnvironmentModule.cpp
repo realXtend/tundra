@@ -112,11 +112,7 @@ namespace Environment
                 return;
 
             ui->AddWidgetToScene(postprocess_dialog_, true, true);
-			//$ BEGIN_MOD $
-			//ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
-			ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("Panels"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
-			//$ END_MOD $
-           
+			ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("View"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
         }
 
         environment_editor_ = new EnvironmentEditor(this);

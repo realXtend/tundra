@@ -21,8 +21,12 @@ namespace UiExternalServices
 		currentScene(0),
 		framework_(framework)
 	{
-		createActions();
-		addActions();
+        bool create_actions = false; // todo read from ini
+        if (create_actions)
+        {
+            createActions();
+		    addActions();
+        }
 //		CreateMenu();
 	}
 

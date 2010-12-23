@@ -50,7 +50,8 @@ namespace UiExternalServices
 	}
 
 	
-	bool ExternalToolBarManager::AddExternalToolbar(QToolBar *toolbar, const QString &name){
+	bool ExternalToolBarManager::AddExternalToolbar(QToolBar *toolbar, const QString &name)
+    {
 		//Insert a new QToolBar given by a module
 		if (!main_window_ || controller_toolbar_.contains(name))
 			return false;
@@ -90,7 +91,7 @@ namespace UiExternalServices
 		if (!main_window_ || controller_toolbar_.contains(name))
 			return false;
 
-		dynamic_cast<QToolBar*>(controller_toolbar_.value(name))->show();
+		dynamic_cast<QToolBar*>(controller_toolbar_.value(name))->show(); 
 		return true;
 	}
 

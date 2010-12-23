@@ -64,16 +64,17 @@ namespace WorldBuilding
 
 		//Check if UiExternalIsAvailable 
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-		if (ui){
+        bool object_edit_menu_actions = true; /// @todo read from settings etc.
+		if (ui && object_edit_menu_actions){
 			//Create Action, insert into menu Create->Avatar
-			action = new QAction("Object",this);
-			if (ui->AddExternalMenuAction(action, "Object", tr("Create"))){
+			action = new QAction("Create Object",this);
+			if (ui->AddExternalMenuAction(action, "Create Object", tr("Edit"))){
 				//We change scene
 				connect(action, SIGNAL(triggered()), SLOT(ChangeAndCreateObject()));
 			}
 			//Create also an action to switch to Scene in Menu->Panels
-			action2 = new QAction("Modify Object",this);
-			if (ui->AddExternalMenuAction(action2, "Modify Object", tr("Panels"))){
+			action2 = new QAction("Show Build Widgets",this);
+			if (ui->AddExternalMenuAction(action2, "Show Build Widgets", tr("Edit"))){
 				//We change scene
 				connect(action2, SIGNAL(triggered()), SLOT(ShowBuildPanels()));
 				//connect(ui, SIGNAL(SceneChanged(const QString&, const QString &)),
@@ -219,7 +220,6 @@ namespace WorldBuilding
 
     void BuildSceneManager::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
     {
-
 		if (!widget)
             return;
         if (!scene_->isActive())
@@ -799,49 +799,58 @@ namespace WorldBuilding
 	{
 		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-		if(uiExternal && ui){
+        bool create_buttons = true; // todo read from ini
+		if(uiExternal && ui)
+        {
+            if (create_buttons)
+            {
+			      editToolbar_= ui->GetExternalToolbar("EditToolBar"); // HACK: Entering to the build mode causes crash if toolbar doesn't exist!
+                  editToolbar_->hide();
+       //         if (editToolbar_)
+       //         {
+			        //QAction* move=new QAction(QIcon("./media/icons/move.png"),"Move",editToolbar_);
+			        //editToolbar_->addAction(move);
+			        //connect(move, SIGNAL(triggered()), this, SLOT(ActionToolBarMove()));
 
-			editToolbar_= ui->GetExternalToolbar("EditToolBar");
+			        //QAction* scale=new QAction(QIcon("./media/icons/scale.png"),"Scale",editToolbar_);
+			        //editToolbar_->addAction(scale);
+			        //connect(scale, SIGNAL(triggered()), this, SLOT(ActionToolBarScale()));
 
-			QAction* move=new QAction(QIcon("./media/icons/move.png"),"Move",editToolbar_);
-			editToolbar_->addAction(move);
-			connect(move, SIGNAL(triggered()), this, SLOT(ActionToolBarMove()));
+			        //QAction* rotate=new QAction(QIcon("./media/icons/rotate.png"),"Rotate",editToolbar_);
+			        //editToolbar_->addAction(rotate);
+			        //connect(rotate, SIGNAL(triggered()), this, SLOT(ActionToolBarRotate()));
 
-			QAction* scale=new QAction(QIcon("./media/icons/scale.png"),"Scale",editToolbar_);
-			editToolbar_->addAction(scale);
-			connect(scale, SIGNAL(triggered()), this, SLOT(ActionToolBarScale()));
+			        //QAction* create=new QAction(QIcon("./media/icons/create.png"),"Create",editToolbar_);
+			        //editToolbar_->addAction(create);
+			        //connect(create, SIGNAL(triggered()), this, SLOT(ActionToolBarCreate()));
 
-			QAction* rotate=new QAction(QIcon("./media/icons/rotate.png"),"Rotate",editToolbar_);
-			editToolbar_->addAction(rotate);
-			connect(rotate, SIGNAL(triggered()), this, SLOT(ActionToolBarRotate()));
+			        //QAction* assign=new QAction(QIcon("./media/icons/asset.png"),"Asset",editToolbar_);
+			        //editToolbar_->addAction(assign);
+			        //connect(assign, SIGNAL(triggered()), this, SLOT(ActionToolBarAsset()));
 
-			QAction* create=new QAction(QIcon("./media/icons/create.png"),"Create",editToolbar_);
-			editToolbar_->addAction(create);
-			connect(create, SIGNAL(triggered()), this, SLOT(ActionToolBarCreate()));
+			        //QAction* properties=new QAction(QIcon("./media/icons/properties.png"),"Properties",editToolbar_);
+			        //editToolbar_->addAction(properties);
+			        //connect(properties, SIGNAL(triggered()), this, SLOT(ActionToolBarProperties()));
+//                }
 
-			QAction* assign=new QAction(QIcon("./media/icons/asset.png"),"Asset",editToolbar_);
-			editToolbar_->addAction(assign);
-			connect(assign, SIGNAL(triggered()), this, SLOT(ActionToolBarAsset()));
-
-			QAction* properties=new QAction(QIcon("./media/icons/properties.png"),"Properties",editToolbar_);
-			editToolbar_->addAction(properties);
-			connect(properties, SIGNAL(triggered()), this, SLOT(ActionToolBarProperties()));
-
-			//Current World Build
-			QToolBar *worldBuildToolbar= ui->GetExternalToolbar("WorldBuildToolBar");
-			worldBuildToolbar->setIconSize(QSize(76, 32));
-			QAction* worldbuild=new QAction(QIcon("./media/icons/uibutton_BUILD_normal.png"),"WorldBuildScene",worldBuildToolbar);
-			worldBuildToolbar->addAction(worldbuild);
-			connect(worldbuild, SIGNAL(triggered()), this, SLOT(ToggleBuildScene()));
-
-			
+			    //Current World Build
+			    //QToolBar *worldBuildToolbar= ui->GetExternalToolbar("WorldBuildToolBar");
+       //         if (worldBuildToolbar)
+       //         {
+			    //    worldBuildToolbar->setIconSize(QSize(76, 32));
+			    //    //QAction* worldbuild=new QAction(QIcon("./media/icons/uibutton_BUILD_normal.png"),"WorldBuildScene",worldBuildToolbar);
+			    //    //worldBuildToolbar->addAction(worldbuild);
+			    //    //connect(worldbuild, SIGNAL(triggered()), this, SLOT(ToggleBuildScene()));
+       //         }
+            }
 
 			UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
 
 			//Create the Properties Widget
 			propertyWidget_ = property_editor_handler_->CreatePropertyWindow();
 			ui->AddWidgetToScene(propertyWidget_,true,true);
-			ui->AddWidgetToMenu(propertyWidget_,"Properties","Panels");
+			//ui->AddWidgetToMenu(propertyWidget_,"Properties","Panels");
+            ui->AddWidgetToMenu(propertyWidget_,"Object Properties","Edit");
 			
 			//Create the Assign Widget
 			assignWidget_= new QWidget();
@@ -861,20 +870,26 @@ namespace WorldBuilding
 			assignWidget_->setMinimumSize(QSize(300,300));
 			assignWidget_->setWindowTitle("Asset");
 			ui->AddWidgetToScene(assignWidget_,true,true);
-			ui->AddWidgetToMenu(assignWidget_,"Asset","Panels");
+			ui->AddWidgetToMenu(assignWidget_,"Asset","Edit");
 			ui->AddPanelToEditMode(assignWidget_);
 
 			connect(uiExternal,SIGNAL(EditModeChanged(bool)),this,SLOT(ActiveEditMode(bool)));
 		}
 	}
-	void BuildSceneManager::ActiveEditMode(bool active){
-		if(active){
+	void BuildSceneManager::ActiveEditMode(bool active)
+    {
+		if(active)
+        {
 			python_handler_->EmitEditingActivated(true);
-			editToolbar_->setEnabled(true);
-		}else{
+            if (editToolbar_)
+			    editToolbar_->setEnabled(true);
+		}
+        else
+        {
 			python_handler_->EmitEditingActivated(false);
 			ObjectSelected(false);
-			editToolbar_->setEnabled(false);
+            if (editToolbar_)
+			    editToolbar_->setEnabled(false);
 		}
 	}
 	void BuildSceneManager::ActionToolBarMove()

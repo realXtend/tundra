@@ -21,6 +21,7 @@ namespace UiExternalServices
 			controller_actions_(),
 			category_menu_()
 	{
+        root_menu_->setVisible(false); // todo read from ini
     }
 
     ExternalMenuManager::~ExternalMenuManager()
@@ -39,7 +40,8 @@ namespace UiExternalServices
     }
 
 
-	bool ExternalMenuManager::AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon){
+	bool ExternalMenuManager::AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon)
+    {
 		if (menu.isEmpty())  
         {
 			AddMenu("Others");

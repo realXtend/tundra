@@ -25,7 +25,6 @@
 
 namespace UiServices
 {
-//$ BEGIN_MOD $
     UiSceneService::UiSceneService(UiModule *owner) : owner_(owner), moveable_widgets_(new QList<QString>())
     {
         connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
@@ -39,13 +38,12 @@ namespace UiServices
 				this,SLOT(HandleTransferToBuild(const QString&, const QString&)));
 		//Settings Panel, List of panels send when we enter the world
 		//connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)), this,SLOT(SetPanelsList(const QString&, const QString&)));
-//$ END_MOD $
     }
 
     UiSceneService::~UiSceneService()
     {
     }
-//$ BEGIN_MOD $
+
     UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool moveable , bool outside, Qt::WindowFlags flags)
     {
 		bool bydefault=false;
@@ -91,7 +89,6 @@ namespace UiServices
 		//Save the pair
 		proxy_dock_list[widget->windowTitle()]=proxyDock(proxy,dynamic_cast<QDockWidget*>(qdock));
 		return proxy;
-
     }
 
     bool UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
@@ -128,8 +125,8 @@ namespace UiServices
 		//If is outside is because it has been put outside, and also the menu!
 		if(qdock->widget() && uiExternal)
 			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels", moveable_widgets_->contains(widget->windowTitle()));
-		else
-			owner_->GetInworldSceneController()->AddWidgetToMenu(widget, widget->windowTitle(), "", "");
+
+		owner_->GetInworldSceneController()->AddWidgetToMenu(widget, widget->windowTitle(), "", "");
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon)
@@ -144,8 +141,8 @@ namespace UiServices
 				uiExternal->AddExternalMenuPanel(qdock,entry,menu, true);
 			else
 				uiExternal->AddExternalMenuPanel(qdock,entry,menu, false); 
-		else
-			owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
+
+        owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
     }
 
     void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
@@ -154,37 +151,33 @@ namespace UiServices
 		if (!panels_menus_list_.contains(widget->windowTitle()))
 			panels_menus_list_[widget->windowTitle()]=menusPair(menu, icon);
 
-		if(widget->widget())
-			owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
-		else{
-			QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second; 
-			uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
-		}
+	    QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second; 
+	    uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
+        
+        owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
     }
 
     void UiSceneService::RemoveWidgetFromMenu(QWidget *widget)
     {
 		uiExternal = owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-		if(qdock->widget())
-			//To check if available
-			if (uiExternal)
-				uiExternal->RemoveExternalMenuPanel(qdock->widget());
-		else
-			owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget->graphicsProxyWidget());
+
+        //To check if available
+		if (uiExternal)
+			uiExternal->RemoveExternalMenuPanel(qdock->widget());
+
+		owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget);
     }
 
     void UiSceneService::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
     {
 		uiExternal = owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		if(widget->widget())
-			owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget);
-		else{
-			//To check if available
-			if (uiExternal) {
-				QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-				uiExternal->RemoveExternalMenuPanel(qdock->widget());
-			}
+
+        owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget->widget());
+		//To check if available
+		if (uiExternal) {
+			QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
+			uiExternal->RemoveExternalMenuPanel(qdock->widget());
 		}
     }
 
@@ -350,10 +343,10 @@ namespace UiServices
 						owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
 						if (panels_menus_list_.contains(widget->windowTitle())){
 							menusPair par = panels_menus_list_.value(widget->windowTitle());
-							owner_->GetInworldSceneController()->AddWidgetToMenu(proxy, proxy->windowTitle(), par.first, par.second);
+							owner_->GetInworldSceneController()->AddWidgetToMenu(widget, proxy->windowTitle(), par.first, par.second);
 						}
 						else
-							owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
+							owner_->GetInworldSceneController()->AddWidgetToMenu(widget,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
 					}
 				}
 				else {
@@ -368,7 +361,7 @@ namespace UiServices
 					widget=proxy->widget();
 					//Remove panel and menu entry
 					owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy);
-					owner_->GetInworldSceneController()->RemoveWidgetFromMenu(proxy);
+					owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget);
 					proxy->setWidget(0);
 					qdock->setWidget(widget);
 					//Put external panel and menu entry
@@ -430,10 +423,10 @@ namespace UiServices
 						if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
 							if (panels_menus_list_.contains(widget->windowTitle())){
 								menusPair par = panels_menus_list_.value(widget->windowTitle());
-								owner_->GetInworldSceneController()->AddWidgetToMenu(proxy, proxy->windowTitle(), par.first, par.second);
+								owner_->GetInworldSceneController()->AddWidgetToMenu(widget, proxy->windowTitle(), par.first, par.second);
 							}
 							else
-								owner_->GetInworldSceneController()->AddWidgetToMenu(proxy,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
+								owner_->GetInworldSceneController()->AddWidgetToMenu(widget,proxy->windowTitle(),"Panels","./data/ui/images/menus/edbutton_ENVED_normal");
 						}
 					}
 				}
@@ -453,7 +446,7 @@ namespace UiServices
 						widget=proxy->widget();
 						//Remove panel and menu entry
 						owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy);
-						owner_->GetInworldSceneController()->RemoveWidgetFromMenu(proxy);
+						owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget);
 						proxy->setWidget(0);
 						qdock->setWidget(widget);
 						//Put external panel and menu entry
@@ -545,8 +538,8 @@ namespace UiServices
 			AddWidgetToScene(internal_wid, true, true);
 			uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 			//Do that only if uiExternal is available, settings button is placed inscene in the right-top corner by default
-			if (uiExternal)
-				AddWidgetToMenu(internal_wid, "Naali Settings", "Panels","");
+			//if (uiExternal)
+			//	AddWidgetToMenu(internal_wid, "Naali Settings", "Panels","");
 		}
 		//$ END_MOD $
 		/*

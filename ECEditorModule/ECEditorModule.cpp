@@ -75,7 +75,8 @@ namespace ECEditor
         AddEditorWindowToUI();
 //$ BEGIN_MOD $
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-		if(ui){
+        bool create_buttons = false; /// todo read from ini
+		if(ui && create_buttons){
 			QToolBar* editToolbar_= ui->GetExternalToolbar("EditToolBar");
 			if(editToolbar_){
 				QAction* ecEditorButton_=new QAction(QIcon("./media/icons/components.png"),"Components",editToolbar_);
@@ -159,10 +160,7 @@ namespace ECEditor
         connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
 
         // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly.
-		//$ BEGIN_MOD $	
-		//ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
-		ui->AddWidgetToMenu(editor_window_, tr("EC Editor"), tr("Panels"), "./data/ui/images/menus/edbutton_OBJED_normal.png");		
-		//$ END_MOD $        
+		ui->AddWidgetToMenu(editor_window_, tr("EC Editor"), tr("Edit"), "./data/ui/images/menus/edbutton_OBJED_normal.png");		
 		ui->RegisterUniversalWidget("Components", editor_proxy/*editor_window_->graphicsProxyWidget()*/);
     }
 
