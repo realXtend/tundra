@@ -69,6 +69,7 @@ namespace PythonScript
     public slots: //things for the py side to call.
         OgreRenderer::Renderer* GetRenderer() const;
         Foundation::WorldLogicInterface* GetWorldLogic() const;
+        Scene::Entity* GetActiveCamera() const;
         Scene::SceneManager* GetScene(const QString &name) const;
         void RunJavascriptString(const QString &codestr, const QVariantMap &context = QVariantMap());
         InputContext* GetInputContext() const { return input.get(); }

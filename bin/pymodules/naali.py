@@ -30,8 +30,7 @@ def getScene(name):
     return _pythonscriptmodule.GetScene(name)
     
 def getDefaultScene():
-    #XXX should use framework GetDefaultWorldScene
-    return getScene("World")
+    return _naali.DefaultScene()
     
 def createEntity(comptypes = []):
     s = getDefaultScene()
@@ -77,7 +76,7 @@ def action(self, name):
     return self.qent.Action(name)
     
 def getEntity(entid):
-    qent = getScene("World").GetEntityRaw(entid)
+    qent = getDefaultScene().GetEntityRaw(entid)
     if qent is None:
         raise ValueError, "No entity with id %d" % entid
     return qent
@@ -96,4 +95,4 @@ def getUserAvatar():
     return _getAsPyEntity(worldlogic.GetUserAvatarEntityRaw, "No avatar. No scene, not logged in?")
         
 def getCamera():
-    return _getAsPyEntity(worldlogic.GetCameraEntityRaw, "No default camera. No scene?")
+    return _getAsPyEntity(_pythonscriptmodule.GetActiveCamera, "No default camera. No scene?")
