@@ -87,11 +87,14 @@ signals:
     //! User want to add new component for selected entities.
     void CreateNewComponent();
 
-    //! Tell what component is currently selected from the ECBrowser.
-    /*! @param component Pointer to a component that has just been selected.
+    //! This method will tell what component and attribute are currently selected from the ECBrowser.
+    /*! Note! If selected QTreeWidget item isn't attribute or it's children, attribute's type/name is marked as empty string.
+     *  @param compType selected item component type name.
+     *  @param compName selected item component name.
+     *  @param attrType selected item attribute type name (Empty if attribute isn't selected).
+     *  @param attrName selected item attribute name (Empty if attribute isn't selected).
      */
-    void ComponentSelected(IComponent *component);
-    void ComponentSelected(const QString &type, const QString &name);
+    void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
 protected:
     //! Override from QWidget.
@@ -157,10 +160,6 @@ private slots:
      *  But if item has parent set, we can assume that selected item is attribute or it's value is selected.
      */
     void OnDeleteAction();
-
-    void Translate();
-    void Rotate();
-    void Scale();
 
 private:
     //! Try to find the right component group for given component. If right type of component group is found return it's pointer.

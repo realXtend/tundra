@@ -125,9 +125,16 @@ QList<Scene::EntityPtr> ECBrowser::GetEntities() const
 
 QObjectList ECBrowser::GetSelectedComponents() const
 {
-    if (treeWidget_ && treeWidget_->currentItem())
+    QTreeWidgetItem *item = treeWidget_->currentItem();
+    if(!item)
+        return QObjectList();
+    // Go back to the root node.
+    while(item->parent())
+        item = item->parent();
+
+    if (treeWidget_ && item)
     {
-        TreeItemToComponentGroup::const_iterator iter = itemToComponentGroups_.find(treeWidget_->currentItem());
+        TreeItemToComponentGroup::const_iterator iter = itemToComponentGroups_.find(item);
         if (iter != itemToComponentGroups_.end())
         {
             QObjectList components;
@@ -438,19 +445,32 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
     PROFILE(ECBrowser_SelectionChanged);
 
     QTreeWidgetItem *item = current;
+    QTreeWidgetItem *attribute_item = current;
     if(!item)
         return;
     // Go back to the root node.
     while(item->parent())
+    {
+        attribute_item = item;
         item = item->parent();
+    }
 
     TreeItemToComponentGroup::iterator iter = itemToComponentGroups_.find(item);
     if(iter != itemToComponentGroups_.end())
     {
-        // Could add a loop that will continue to find a component that hasn't expired.
+        QString attributeName;
+        QString attributeType;
+        if ((*iter)->editor_)
+        {
+            attributeType = (*iter)->editor_->GetAttributeType(attribute_item->text(0));
+            if (!attributeType.isNull())
+                attributeName = attribute_item->text(0);
+        }
+
+        // Could add a loop that will continue to find a component that hasn't expired. 
         IComponent *comp = (*iter)->components_[0].lock().get();
         if (comp)
-            emit ComponentSelected(comp->TypeName(), comp->Name());
+            emit SelectionChanged(comp->TypeName(), comp->Name(), attributeType, attributeName);
     }
 }
 
@@ -693,21 +713,6 @@ void ECBrowser::OnDeleteAction()
         DeleteAttribute(item);
     else
         DeleteComponent(item);
-}
-
-void ECBrowser::Translate()
-{
-    
-}
-
-void ECBrowser::Rotate()
-{
-    
-}
-
-void ECBrowser::Scale()
-{
-    
 }
 
 ComponentGroup *ECBrowser::FindSuitableGroup(ComponentPtr comp)

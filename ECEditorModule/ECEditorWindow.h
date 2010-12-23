@@ -179,7 +179,7 @@ signals:
 
     /// Forward ECBrowser's SelectionChanged signal to ECEditorModule, so in script
     /// we know when new selection has occurred.
-    void ComponentSelectionChanged(const QString &type, const QString &name);
+    void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
 protected:
     /// QWidget override.
