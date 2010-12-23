@@ -4,8 +4,8 @@ var openbut = new QPushButton;
 var lockbut = new QPushButton;
 openbut.text = "o init";
 lockbut.text = "l init";
-openbut.show()
-lockbut.show()
+openbut.show();
+lockbut.show();
 
 print("1");
 
@@ -15,7 +15,7 @@ function onChanged() {
 	print("door.js onChanged");
 	var opened = component.GetAttribute('opened');
 	var locked = component.GetAttribute('locked');
-	
+
 	print("Opened: " + opened);
 	openbut.text = opened ? "Close" : "Open";
 	lockbut.text = locked ? "Unlock" : "Lock";
@@ -49,13 +49,12 @@ print("4");
 
 function lock() {
 	print("door.js lock button clicked!");
-	var opened = component.GetAttribute('opened');
 	var locked = component.GetAttribute('locked');
 	print("Locked: " + locked);
 	locked = !locked;
 	component.SetAttribute('locked', locked);
 	component.OnChanged();
-}	
+}
 
 print("5");
 

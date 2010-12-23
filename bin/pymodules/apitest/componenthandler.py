@@ -21,8 +21,9 @@ def register(compname, handlertype):
 import animsync
 register(animsync.COMPNAME, animsync.AnimationSync)
 
-import door
-register(door.COMPNAME, door.DoorHandler)
+#deprecated - see scenes/Door/
+#import door
+#register(door.COMPNAME, door.DoorHandler)
 
 import rotate
 register(rotate.COMPNAME, rotate.RotationHandler)
