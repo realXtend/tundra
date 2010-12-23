@@ -27,10 +27,12 @@ DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditor")
 ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
                                              ComponentPtr component,
                                              const QString &name,
+                                             const QString &type,
                                              QObject *parent):
     QObject(parent),
     owner_(owner),
     name_(name),
+    typeName_(type),
     rootProperty_(0),
     factory_(0),
     propertyMgr_(0),
@@ -46,7 +48,7 @@ ECAttributeEditorBase::~ECAttributeEditorBase()
     UnInitialize();
 }
 
-bool ECAttributeEditorBase::ContainProperty(QtProperty *property) const
+bool ECAttributeEditorBase::ContainsProperty(QtProperty *property) const
 {
     QSet<QtProperty *> properties = propertyMgr_->properties();
     QSet<QtProperty *>::const_iterator iter = properties.find(property);

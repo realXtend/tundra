@@ -49,6 +49,7 @@ public:
     ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
                           ComponentPtr component,
                           const QString &name,
+                          const QString &type,
                           QObject *parent = 0);
 
     virtual ~ECAttributeEditorBase();
@@ -57,13 +58,16 @@ public:
     //! @return attribute type name.
     QString GetAttributeName() const { return name_; }
 
+    //! Get attribute type. If any attributes were not found, return empty string.
+    QString GetAttributeType() const { return typeName_; };
+
     //! Get editor's root property.
     //! @return editor's root property pointer.
     QtProperty *GetProperty() const { return rootProperty_; }
 
-    //! Check if this editor's manager contain this spesific property.
+    //! Check if this editor's manager contains this spesific property.
     //! @param property Property that we are looking for.
-    bool ContainProperty(QtProperty *property) const; 
+    bool ContainsProperty(QtProperty *property) const; 
 
     //! Update editor's ui elements to fit new attribute values, if different component's attribute valeus differ from
     //! each other the editor begin to use multiedit mode and editor need to create new ui elements.
@@ -119,6 +123,7 @@ protected:
     std::vector<QtAbstractEditorFactoryBase*> optionalPropertyFactories_;
     QtProperty *rootProperty_;
     QString name_;
+    QString typeName_;
     bool listenEditorChangedSignal_;
     typedef QList<ComponentWeakPtr> ComponentWeakPtrList;
     ComponentWeakPtrList components_;
@@ -142,8 +147,9 @@ public:
     ECAttributeEditor(QtAbstractPropertyBrowser *owner,
                       ComponentPtr component,
                       const QString &name,
+                      const QString &type,
                       QObject *parent = 0):
-        ECAttributeEditorBase(owner, component, name, parent)
+        ECAttributeEditorBase(owner, component, name, type, parent)
     {
         listenEditorChangedSignal_ = true;
     }

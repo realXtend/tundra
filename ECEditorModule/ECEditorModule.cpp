@@ -118,14 +118,14 @@ void ECEditorModule::ECEditorFocusChanged(ECEditorWindow *editor)
     {
         active_editor_->SetFocus(false);
         disconnect(active_editor_, SIGNAL(destroyed(QObject*)), this, SLOT(ActiveECEditorDestroyed(QObject*)));
-        disconnect(active_editor_, SIGNAL(ComponentSelectionChanged(const QString&, const QString&)),
-                   this, SIGNAL(ComponentSelectionChanged(const QString&, const QString&)));
+        disconnect(active_editor_, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
+                   this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)));
     }
     active_editor_ = editor;
     active_editor_->SetFocus(true);
     connect(active_editor_, SIGNAL(destroyed(QObject*)), SLOT(ActiveECEditorDestroyed(QObject*)), Qt::UniqueConnection);
-    connect(active_editor_, SIGNAL(ComponentSelectionChanged(const QString&, const QString&)),
-            this, SIGNAL(ComponentSelectionChanged(const QString&, const QString&)), Qt::UniqueConnection);
+    connect(active_editor_, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)),
+            this, SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
 }
 
 void ECEditorModule::AddEditorWindowToUI()

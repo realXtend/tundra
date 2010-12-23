@@ -739,9 +739,9 @@ void ECEditorWindow::Initialize()
         // signals from attribute browser to editor window.
         connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
         connect(browser_, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
-        connect(browser_, SIGNAL(ComponentSelected(const QString&, const QString &)), SLOT(HighlightEntities(const QString&, const QString&)));
-        connect(browser_, SIGNAL(ComponentSelected(const QString&, const QString &)),
-                SIGNAL(ComponentSelectionChanged(const QString&, const QString&)), Qt::UniqueConnection);
+        connect(browser_, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)), SLOT(HighlightEntities(const QString&, const QString&)));
+        connect(browser_, SIGNAL(SelectionChanged(const QString&, const QString &, const QString&, const QString&)),
+                SIGNAL(SelectionChanged(const QString&, const QString&, const QString&, const QString&)), Qt::UniqueConnection);
         browser_->SetItemExpandMemory(framework_->GetModule<ECEditorModule>()->ExpandMemory());
     }
 

@@ -7,8 +7,8 @@
 #include "AttributeChangeType.h"
 
 #include <QObject>
-#include <map>
-#include <set>
+#include <QMap>
+#include <QList>
 
 class QtAbstractPropertyBrowser;
 class QtProperty;
@@ -41,6 +41,9 @@ public:
 
     void UpdateUi();
 
+    //! Return attribute type for given name.
+    QString GetAttributeType(const QString &name) const;
+
 public slots:
     //! If ECAttributeEditor has been reinitialized ComponentEditor need to add new QProperty to it's GroupProperty.
     //! This ensures that newly createated attribute eidtor will get displayed on the ECBrowser.
@@ -68,9 +71,9 @@ private:
 
     void UpdateGroupPropertyText();
 
-    typedef std::map<std::string, ECAttributeEditorBase*> AttributeEditorMap;
+    typedef QMap<QString, ECAttributeEditorBase*> AttributeEditorMap;
     AttributeEditorMap attributeEditors_;
-    typedef std::set<ComponentWeakPtr> ComponentSet;
+    typedef QList<ComponentWeakPtr> ComponentSet;
     ComponentSet components_;
     QtProperty *groupProperty_;
     QtGroupPropertyManager *groupPropertyManager_;
