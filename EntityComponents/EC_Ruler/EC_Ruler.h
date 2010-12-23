@@ -33,7 +33,8 @@ namespace Ogre
 <h2>Ruler</h2>
 Ruler provides visualisation for transformations.
 
-Registered by RexLogic::RexLogicModule.
+Declared by RexLogic::RexLogicModule.
+Registered by PythonScriptModule.
 
 <b>Attributes</b>:
 <ul>
