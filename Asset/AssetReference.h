@@ -73,7 +73,7 @@ struct AssetReferenceList
     {
         if (this->refs.size() != rhs.refs.size())
             return false;
-        for(unsigned int i = 0; i < this->refs.size(); ++i)
+        for(uint i = 0; i < (uint)this->refs.size(); ++i)
             if (this->refs[i].value<AssetReference>().ref != rhs.refs[i].value<AssetReference>().ref)
                 return false;
         return true;
