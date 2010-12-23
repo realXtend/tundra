@@ -395,6 +395,9 @@ void AddContentWindow::RewriteAssetReferences(SceneDesc &sceneDesc, const AssetS
                     QStringList newValues;
                     foreach(QString value, values)
                     {
+                        if (value.isEmpty())
+                            continue;
+
                         QString subname;
 
                         if (!keysWithSubname.isEmpty())
