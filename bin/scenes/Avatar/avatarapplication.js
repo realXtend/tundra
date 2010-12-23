@@ -61,8 +61,6 @@ function ServerHandleUserConnected(connectionID, user)
     avatarEntity.SetName(avatarEntityName);
     avatarEntity.SetDescription(user.GetProperty("username"));
 
-    print("Hai. Ur name is " + user.GetProperty("username"));
-
     var script = avatarEntity.script;
     script.type = "js";
     script.runOnLoad = true;
@@ -79,6 +77,8 @@ function ServerHandleUserConnected(connectionID, user)
     placeable.transform = transform;
 
     scene.EmitEntityCreatedRaw(avatarEntity);
+    
+    print(">> Created avatar for " + user.GetProperty("username"));
 }
 
 function ServerHandleUserDisconnected(connectionID, user)

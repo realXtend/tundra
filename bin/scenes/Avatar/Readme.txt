@@ -9,4 +9,7 @@ Then, run the server and load the scene on it by drag-and-dropping avatar.txml t
 command loadscene(avatar.txml)
 
 Next, start one or more clients and connect to the server. Each client should get an avatar that can be controlled
-with WASD + arrows + mouse. Only third person camera is currently implemented.
+with WASD + arrows + mouse. F toggles fly mode, space flies up and C flies down. Space jumps and C sits down when you are not in fly mode.
+Q makes a wave gesture. Mouse scroll and +/- zooms in/out.
+
+Only third person camera is currently implemented. Also note that collisions are disabled when flying for now.
