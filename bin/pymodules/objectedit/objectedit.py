@@ -103,16 +103,26 @@ class ObjectEdit(Component):
         #uiprops.widget_name_ = "Selection Rect"
         
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
-        proxy = r.createUiProxyWidget(self.selection_rect)
+        self.selection_proxy = r.createUiProxyWidget(self.selection_rect)
         uism = naali.ui
-        uism.AddWidgetToScene(proxy)
-        proxy.setWindowFlags(0) #changing it to Qt::Widget
+        uism.AddWidgetToScene(self.selection_proxy)
+        #self.selection_proxy.setWindowFlags(0) #changing it to Qt::Widget
+        if not self.selection_proxy.isVisible(): self.selection_proxy.ToggleVisibility()
+        print self.selection_rect, dir(self.selection_rect)
+        self.selection_proxy.show()
+        self.selection_rect.show()
         
         self.selection_rect.setGeometry(0,0,0,0)
+        self.selection_rect.setVisible(True)
         self.selection_rect.show()
         self.selection_rect_startpos = None
+        print self.selection_proxy.isVisible(), self.selection_rect.isVisible()
         
         r.c = self #this is for using objectedit from command.py
+
+        self.selection_box_entity = None
+        self.selection_box = None
+        self.selection_box_inited = False
         
         # Get world building modules python handler
         self.cpp_python_handler = r.getQWorldBuildingHandler()
@@ -134,7 +144,7 @@ class ObjectEdit(Component):
             self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
             self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
             self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
-	    self.cpp_python_handler.PassWidget("Align", self.window.align_widget)
+            self.cpp_python_handler.PassWidget("Align", self.window.align_widget)
 
             # Check if build mode is active, required on python restarts
             self.on_activate_editing(self.cpp_python_handler.IsBuildingActive())
@@ -353,11 +363,22 @@ class ObjectEdit(Component):
         self.worldstream.SendObjectDelinkPacket(ids)
         self.deselect_all()
 
+    def init_selection_box(self):
+        self.selection_box_entity = naali.createEntity()
+        self.selection_box = self.selection_box_entity.GetOrCreateComponentRaw('EC_SelectionBox')
+        self.selection_box.Hide()
+        self.selection_box_inited = True
+
     def on_mouseleftpressed(self, mouseinfo):
         if not self.windowActive:
             return
+
         if mouseinfo.IsItemUnderMouse():
             return
+
+        if not self.selection_box_inited:
+            self.init_selection_box()
+
         if mouseinfo.HasShiftModifier() and not mouseinfo.HasCtrlModifier() and not mouseinfo.HasAltModifier():
             self.on_multiselect(mouseinfo)
             return
@@ -397,6 +418,7 @@ class ObjectEdit(Component):
             self.usingManipulator = True
         else:
             self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
+            self.selection_box.Show()
             self.canmove = False
             self.deselect_all()
             
@@ -413,6 +435,7 @@ class ObjectEdit(Component):
         self.left_button_down = False
         if self.selection_rect_startpos is not None:
             hits = renderer.FrustumQuery(self.selection_rect.geometry) #the wish
+            self.selection_box.Hide()
 
             for hit in hits:
                 if not self.validId(hit.Id): continue
@@ -527,7 +550,9 @@ class ObjectEdit(Component):
                 if self.selection_rect_startpos is not None:
                     rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
                     self.selection_rect.setGeometry(rectx, recty, rectwidth, rectheight)
+                    self.selection_rect.setVisible(True)
                     self.selection_rect.show()
+                    self.selection_box.SetBoundingBox(self.selection_rect.geometry)
                 else:
                     ent = self.active
                     if ent is not None and self.sel_activated and self.canmove:
@@ -686,6 +711,9 @@ class ObjectEdit(Component):
     
     def on_exit(self):
         r.logInfo("Object Edit exiting..")
+        # remove selection box component and entity
+        self.selection_box_entity.RemoveComponentRaw(self.selection_box)
+        naali.removeEntity(self.selection_box_entity)
         # Connect to key pressed signal from input context
         self.edit_inputcontext.disconnectAll()
         self.deselect_all()
