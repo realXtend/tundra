@@ -12,7 +12,6 @@
 #include "IModule.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
-#include <Ogre.h>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Selected")
 
