@@ -153,6 +153,9 @@
 #ifdef EC_Gizmo_ENABLED
 #include "EC_Gizmo.h"
 #endif
+#ifdef EC_Selected_ENABLED
+#include "EC_Selected.h"
+#endif
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -257,6 +260,9 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_Gizmo_ENABLED
     DECLARE_MODULE_EC(EC_Gizmo);
+#endif
+#ifdef EC_Selected_ENABLED
+    DECLARE_MODULE_EC(EC_Selected);
 #endif
 }
 
