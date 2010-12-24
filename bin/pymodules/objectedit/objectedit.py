@@ -193,6 +193,7 @@ class ObjectEdit(Component):
         self.worldstream.SendObjectSelectPacket(ent.Id)
         #self.updateSelectionBox(ent)
         self.highlight(ent)
+        self.ec_selected(ent)
         self.soundRuler(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
@@ -248,6 +249,7 @@ class ObjectEdit(Component):
         if valid: #the ent is still there, not already deleted by someone else
             self.remove_highlight(ent)
             self.removeSoundRuler(ent)
+            self.remove_selected(ent)
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.Id == ent.Id:
                 self.sels.remove(_ent)
@@ -258,6 +260,7 @@ class ObjectEdit(Component):
             for ent in self.sels:
                 self.remove_highlight(ent)
                 self.removeSoundRuler(ent)
+                self.remove_selected(ent)
                 try:
                     self.worldstream.SendObjectDeselectPacket(ent.Id)
                 except ValueError:
@@ -283,7 +286,27 @@ class ObjectEdit(Component):
             h.Show()
         else:
             r.logInfo("objectedit.highlight called for an already hilited entity: %d" % ent.Id)
+
+    # todo rename to something more sane, or check if this can be merged with def select() elsewhere
+    def ec_selected(self, ent):
+        try:
+            s = ent.selected
+        except AttributeError:
+            s = ent.GetOrCreateComponentRaw("EC_Selected")
+
+        print s
             
+    def remove_selected(self, ent):
+        try:
+            s = ent.selected
+        except:
+            try:
+                r.logInfo("objectedit.remove_selected called for a non-selected entity: %d" % ent.Id)
+            except ValueError:
+                r.logInfo("objectedit.remove_selected called, but entity already removed")
+        else:
+            ent.RemoveComponentRaw(s)
+
     def remove_highlight(self, ent):
         try:
             h = ent.highlight
