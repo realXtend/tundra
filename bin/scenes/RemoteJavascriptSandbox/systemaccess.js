@@ -23,6 +23,6 @@ try {
 
 engine.ImportExtension("qt.network");
 s = new QTcpSocket();
-s.connectToHost("www.realxtend.orge", 80);
+s.connectToHost("www.realxtend.org", 80);
 s.disconnectFromHost();
 print("connected to a remote host, and disconnected");
