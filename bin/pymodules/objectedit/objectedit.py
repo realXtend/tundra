@@ -293,8 +293,6 @@ class ObjectEdit(Component):
             s = ent.selected
         except AttributeError:
             s = ent.GetOrCreateComponentRaw("EC_Selected")
-
-        print s
             
     def remove_selected(self, ent):
         try:
