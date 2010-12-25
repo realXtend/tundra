@@ -134,7 +134,7 @@ class AnimationAssetidEditline(DragDroppableEditline):
         if ent is not None:
             applyanimation(ent, self.text, self.combobox.currentText, self.spinners[0].value) 
             self.deactivateButtons()
-            self.mainedit.window.updateAnimation(ent)
+            self.mainedit.window.update_animation(ent)
 
     def update_animationrate(self, rate):
         ent = self.mainedit.active

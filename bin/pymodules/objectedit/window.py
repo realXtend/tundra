@@ -236,11 +236,11 @@ class ObjectEditWindow:
         self.soundline.update_text(ent.prim.SoundID)
         self.soundline.update_soundradius(ent.prim.SoundRadius)
         self.soundline.update_soundvolume(ent.prim.SoundVolume)
-        self.updateAnimation(ent)
+        self.update_animation(ent)
         if multiple:
-            self.updateAlign(True)
+            self.update_align(True)
         else:
-            self.updateAlign(False)
+            self.update_align(False)
         self.updateMaterialTab(ent)
         self.updatingSelection = True
         self.update_guivals(ent)
@@ -250,8 +250,8 @@ class ObjectEditWindow:
     def deselected(self):
         self.meshline.update_text("")
         self.soundline.update_text("")
-        self.updateAnimation()
-        self.updateAlign(False)
+        self.update_animation()
+        self.update_align(False)
         
     def update_guivals(self, ent):
         if ent is not None:
@@ -281,13 +281,13 @@ class ObjectEditWindow:
         if self.controller.cpp_python_handler != None:
             self.controller.cpp_python_handler.SetRotateValues(x_val, y_val, z_val)
     
-    def updateAlign(self, visible):
+    def update_align(self, visible):
         if visible:
             self.align_widget.setVisible(True)
         else:
             self.align_widget.setVisible(False)
 
-    def updateAnimation(self, ent = None):
+    def update_animation(self, ent = None):
         # Hide by default
         self.animation_widget.setVisible(False)
         self.animationline.update_text("")
