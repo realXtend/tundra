@@ -186,6 +186,7 @@ namespace ECEditor
         QListWidget* entity_list_;
         ECBrowser *browser_;
         AddComponentDialog *component_dialog_;
+        Scene::SceneManager *scene_;
         bool has_focus_;
     };
 }
