@@ -453,7 +453,7 @@ class ObjectEdit(Component):
 
             self.selection_rect_startpos = None
             self.selection_rect.setRect(0,0,0,0)
-            self.selection_box.SetBoundingBox(self.selection_rect)
+            self.selection_box.Hide()
         if self.active: #XXX something here?
             if self.sel_activated and self.dragging:
                 for ent in self.sels:
