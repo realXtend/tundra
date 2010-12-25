@@ -179,6 +179,7 @@ class ObjectEdit(Component):
         self.highlight(ent)
         self.ec_selected(ent)
         self.soundRuler(ent)
+        self.window.selected(ent, False, self.has_multiple_selected_entities())
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
         return ent, children
@@ -214,7 +215,6 @@ class ObjectEdit(Component):
         self.deselect_all()
         ent, children = self.baseselect(ent)
         self.sels.append(ent)
-        self.window.selected(ent, False, len(self.sels)>1)
         self.canmove = True
         self.highlightChildren(children)
 
@@ -518,6 +518,11 @@ class ObjectEdit(Component):
                 if not self.manipulator.compareIds(id):  #and id != self.selection_box.Id:
                     return True
         return False
+    
+    def has_multiple_selected_entities(self):
+        entities = naali.getDefaultScene().GetEntitiesWithComponentRaw('EC_Selected')
+        print "has_multiple_selected_entities:",len(entities), len(entities)>1
+        return len(entities)>1
 
     def on_mousemove(self, mouseinfo):
         """Handle mouse move events. When no button is pressed, just check
