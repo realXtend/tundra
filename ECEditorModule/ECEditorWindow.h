@@ -149,6 +149,10 @@ namespace ECEditor
         /// Listens SceneManager's ActionTriggered signal and if action was "MousePress"
         /// add entity to editor window (assuming that editor has a focus).
         void ActionTriggered(Scene::Entity *entity, const QString &action);
+        
+        /// Listens to SceneManager ComponentAdded signal. If we get an EC_Selected,
+        /// add entity to editor window
+        void ComponentAdded(Scene::Entity* entity, IComponent* comp);
 
         /// Deletes entity.
         void DeleteEntity();

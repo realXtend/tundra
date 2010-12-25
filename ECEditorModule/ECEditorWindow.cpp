@@ -178,6 +178,14 @@ namespace ECEditor
             AddEntity(entity->GetId());
         }
     }
+    
+    void ECEditorWindow::ComponentAdded(Scene::Entity* entity, IComponent* comp)
+    {
+        if(comp->TypeName() == "EC_Selected" && isVisible())
+        {
+            AddEntity(entity->GetId());
+        }
+    }
 
     void ECEditorWindow::DeleteEntity()
     {
@@ -634,6 +642,8 @@ namespace ECEditor
                 SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
         connect(scene_, SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
                 SLOT(ActionTriggered(Scene::Entity *, const QString &)), Qt::UniqueConnection);
+        connect(scene_, SIGNAL(ComponentAdded(Scene::Entity *, IComponent *, AttributeChange::Type)),
+                SLOT(ComponentAdded(Scene::Entity *, IComponent *)));
     }
 
     void ECEditorWindow::ComponentDialogFinished(int result)
