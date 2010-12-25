@@ -194,6 +194,7 @@ namespace WorldBuilding
 
         // Init python handler
         python_handler_ = new PythonHandler(this);
+        connect(python_handler_, SIGNAL(WidgetRecieved(const QString&, QWidget*)), SLOT(HandlePythonWidget(const QString&, QWidget*)));
 
         // Init editor handler
         property_editor_handler_ = new PropertyEditorHandler(ui_helper_, this);
@@ -211,7 +212,6 @@ namespace WorldBuilding
 		if(uiExternal)
 			CreateEditContent();
 //$ END_MOD $
-        connect(python_handler_, SIGNAL(WidgetRecieved(const QString&, QWidget*)), SLOT(HandlePythonWidget(const QString&, QWidget*)));
     }
 
     void BuildSceneManager::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
