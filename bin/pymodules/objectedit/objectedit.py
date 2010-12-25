@@ -59,8 +59,6 @@ class ObjectEdit(Component):
     MANIPULATE_MOVE = 1
     MANIPULATE_SCALE = 2
     MANIPULATE_ROTATE = 3
-    
-    SELECTIONRECT = "pymodules/objectedit/selection.ui"
 
     def __init__(self):
         self.sels = []  
@@ -94,29 +92,15 @@ class ObjectEdit(Component):
         
         self.resetManipulators()
         
-        loader = QUiLoader()
-        selectionfile = QFile(self.SELECTIONRECT)
-        self.selection_rect = loader.load(selectionfile)
+        self.selection_rect = QRect()
         #rectprops = r.createUiWidgetProperty(2)
         #~ print type(rectprops), dir(rectprops)
         #print rectprops.WidgetType
         #uiprops.widget_name_ = "Selection Rect"
         
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
-        self.selection_proxy = r.createUiProxyWidget(self.selection_rect)
-        uism = naali.ui
-        uism.AddWidgetToScene(self.selection_proxy)
-        #self.selection_proxy.setWindowFlags(0) #changing it to Qt::Widget
-        if not self.selection_proxy.isVisible(): self.selection_proxy.ToggleVisibility()
-        print self.selection_rect, dir(self.selection_rect)
-        self.selection_proxy.show()
-        self.selection_rect.show()
         
-        self.selection_rect.setGeometry(0,0,0,0)
-        self.selection_rect.setVisible(True)
-        self.selection_rect.show()
         self.selection_rect_startpos = None
-        print self.selection_proxy.isVisible(), self.selection_rect.isVisible()
         
         r.c = self #this is for using objectedit from command.py
 
@@ -455,8 +439,7 @@ class ObjectEdit(Component):
     def on_mouseleftreleased(self, mouseinfo):
         self.left_button_down = False
         if self.selection_rect_startpos is not None:
-            hits = renderer.FrustumQuery(self.selection_rect.geometry) #the wish
-            self.selection_box.Hide()
+            hits = renderer.FrustumQuery(self.selection_rect) #the wish
 
             for hit in hits:
                 if not self.validId(hit.Id): continue
@@ -469,7 +452,8 @@ class ObjectEdit(Component):
                     pass
 
             self.selection_rect_startpos = None
-            self.selection_rect.setGeometry(0,0,0,0)
+            self.selection_rect.setRect(0,0,0,0)
+            self.selection_box.SetBoundingBox(self.selection_rect)
         if self.active: #XXX something here?
             if self.sel_activated and self.dragging:
                 for ent in self.sels:
@@ -570,10 +554,8 @@ class ObjectEdit(Component):
             if self.left_button_down:
                 if self.selection_rect_startpos is not None:
                     rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
-                    self.selection_rect.setGeometry(rectx, recty, rectwidth, rectheight)
-                    self.selection_rect.setVisible(True)
-                    self.selection_rect.show()
-                    self.selection_box.SetBoundingBox(self.selection_rect.geometry)
+                    self.selection_rect.setRect(rectx, recty, rectwidth, rectheight)
+                    self.selection_box.SetBoundingBox(self.selection_rect)
                 else:
                     ent = self.active
                     if ent is not None and self.sel_activated and self.canmove:
