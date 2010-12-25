@@ -404,7 +404,7 @@ class ObjectEdit(Component):
                 manipulator.initVisuals()
 
 
-        if ent is not None:
+        if ent is not None and self.validId(ent.Id):
             if not self.manipulator.compareIds(ent.Id) and editable(ent): #ent.Id != self.selection_box.Id and 
                 r.eventhandled = self.EVENTHANDLED
                 found = False
@@ -513,7 +513,7 @@ class ObjectEdit(Component):
                     self.canmove = True
             
     def validId(self, id):
-        if id != 0 and id > 50: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
+        if id != 0 and id > 50: #terrain seems to be 4 (on w.r.o:9000) and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
             if id != naali.getUserAvatar().Id: #XXX add other avatar id's check
                 if not self.manipulator.compareIds(id):  #and id != self.selection_box.Id:
                     return True
