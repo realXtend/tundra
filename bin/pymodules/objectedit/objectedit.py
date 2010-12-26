@@ -12,7 +12,6 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 - (WIP, needs network event refactoring) sync changes from over the net to the gui dialog: listen to scene objectupdates
   (this is needed/nice when someone else is moving the same obj at the same time,
    works correctly in slviewer, i.e. the dialogs there update on net updates)
-- hilite the selected object
 (- list all the objects to allow selection from there)
 
 """
