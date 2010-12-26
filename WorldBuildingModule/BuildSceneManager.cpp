@@ -16,6 +16,7 @@
 #include "EC_Placeable.h"
 #include "UiServiceInterface.h"
 #include "NaaliApplication.h"
+#include "SceneManager.h"
 //$ BEGIN_MOD $
 #include "UiExternalServiceInterface.h"
 //$ END_MOD $
@@ -55,6 +56,8 @@ namespace WorldBuilding
 
         InitScene();
         ObjectSelected(false); 
+        
+        connect(framework_, SIGNAL(DefaultWorldSceneChanged(const Scene::ScenePtr &)), SLOT(DefaultSceneChanged(const Scene::ScenePtr&)));
 
 		//$ BEGIN_MOD $
 		//Create Action to Create an object & switch to build scene 
@@ -1048,4 +1051,16 @@ namespace WorldBuilding
 		ui->BringWidgetToFront("Library");
 	}
 //$ END_MOD $
+
+    void BuildSceneManager::ComponentAdded(Scene::Entity* entity, IComponent *comp, AttributeChange::Type change)
+    {
+        if(comp->TypeName()=="EC_Selected") {
+            ObjectSelected(entity);
+        }
+    }
+    
+    void BuildSceneManager::DefaultSceneChanged(const Scene::ScenePtr &scene)
+    {
+        connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)), SLOT(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
+    }
 }

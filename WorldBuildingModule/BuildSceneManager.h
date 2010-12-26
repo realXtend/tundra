@@ -176,6 +176,11 @@ namespace WorldBuilding
 
 		void ShowBuildPanels();
 //$ END_MOD $
+        /*! Listen to component additions, used for selection management. */
+        void ComponentAdded(Scene::Entity* entity, IComponent *comp, AttributeChange::Type change);
+        
+        /*! Listen to default scene changes, so we can connect to ComponentAdded signal for selection management. */
+        void DefaultSceneChanged(const Scene::ScenePtr &scene);
 
     private:
         Foundation::Framework *framework_;
