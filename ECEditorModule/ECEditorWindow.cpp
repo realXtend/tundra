@@ -63,7 +63,6 @@ namespace ECEditor
         entity_list_(0),
         browser_(0),
         component_dialog_(0),
-        scene_(0),
         has_focus_(true)
     {
         Initialize();
@@ -632,17 +631,12 @@ namespace ECEditor
 
     void ECEditorWindow::DefaultSceneChanged(const Scene::ScenePtr &scene)
     {
-        if(scene_) {
-            // we don't want to listen to old signals anymore. Clean up before proceeding.
-            scene_->disconnect(this);
-        }
         assert(scene);
-        scene_ = scene.get();
-        connect(scene_, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
+        connect(scene.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
                 SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
-        connect(scene_, SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
+        connect(scene.get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
                 SLOT(ActionTriggered(Scene::Entity *, const QString &)), Qt::UniqueConnection);
-        connect(scene_, SIGNAL(ComponentAdded(Scene::Entity *, IComponent *, AttributeChange::Type)),
+        connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity *, IComponent *, AttributeChange::Type)),
                 SLOT(ComponentAdded(Scene::Entity *, IComponent *)));
     }
 
