@@ -511,7 +511,6 @@ class ObjectEdit(Component):
     
     def has_multiple_selected_entities(self):
         entities = naali.getDefaultScene().GetEntitiesWithComponentRaw('EC_Selected')
-        print "has_multiple_selected_entities:",len(entities), len(entities)>1
         return len(entities)>1
 
     def on_mousemove(self, mouseinfo):
