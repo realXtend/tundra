@@ -131,6 +131,7 @@ class ObjectEditWindow:
 
         self.align_widget = QWidget()
         self.align_widget.setLayout(align_box)
+        self.align_widget.setEnabled(False)
         self.align_widget.hide()
         print "====== align stuff inited"
         #end align buttons
@@ -283,9 +284,11 @@ class ObjectEditWindow:
     
     def update_align(self, visible):
         if visible:
-            self.align_widget.setVisible(True)
+            #self.align_widget.setVisible(True)
+            self.align_widget.setEnabled(True)
         else:
-            self.align_widget.setVisible(False)
+            #self.align_widget.setVisible(False)
+            self.align_widget.setEnabled(False)
 
     def update_animation(self, ent = None):
         # Hide by default
