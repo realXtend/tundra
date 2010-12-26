@@ -403,7 +403,7 @@ class ObjectEdit(Component):
 
 
         if ent is not None and self.validId(ent.Id):
-            if not self.manipulator.compareIds(ent.Id) and editable(ent): #ent.Id != self.selection_box.Id and 
+            if editable(ent): #ent.Id != self.selection_box.Id and 
                 r.eventhandled = self.EVENTHANDLED
                
                 if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
