@@ -174,7 +174,6 @@ class ObjectEdit(Component):
         
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.Id)
-        #self.updateSelectionBox(ent)
         self.highlight(ent)
         self.ec_selected(ent)
         self.soundRuler(ent)
@@ -334,14 +333,6 @@ class ObjectEdit(Component):
     
     def hideManipulator(self):
         self.manipulator.hideManipulator()
-
-#     def hideSelector(self):
-#         try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
-#             if self.selection_box is not None:
-#                 self.selection_box.placeable.Scale = QVector3D(0.0, 0.0, 0.0)
-#                 self.selection_box.placeable.Position = QVector3D(0.0, 0.0, 0.0)
-#         except RuntimeError, e:
-#             r.logDebug("hideSelector failed")
         
     def getSelectedObjectIds(self):
         ids = []
@@ -403,7 +394,7 @@ class ObjectEdit(Component):
 
 
         if ent is not None and self.validId(ent.Id):
-            if editable(ent): #ent.Id != self.selection_box.Id and 
+            if editable(ent):
                 r.eventhandled = self.EVENTHANDLED
                
                 if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
@@ -505,7 +496,7 @@ class ObjectEdit(Component):
     def validId(self, id):
         if id != 0 and id > 50: #terrain seems to be 4 (on w.r.o:9000) and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
             if id != naali.getUserAvatar().Id: #XXX add other avatar id's check
-                if not self.manipulator.compareIds(id):  #and id != self.selection_box.Id:
+                if not self.manipulator.compareIds(id):
                     return True
         return False
     
@@ -734,10 +725,6 @@ class ObjectEdit(Component):
             self.sels = []
             try:
                 self.manipulator.hideManipulator()
-                #if self.move_arrows is not None:
-                    #ent = self.move_arrows.Id 
-                    #is called by qt also when viewer is exiting,
-                    #when the scene (in rexlogic module) is not there anymore.
             except RuntimeError, e:
                 r.logDebug("on_hide: scene not found")
             else:
@@ -783,12 +770,9 @@ class ObjectEdit(Component):
                     
                 if self.time > self.UPDATE_INTERVAL:
                     try:
-                        #sel_pos = self.selection_box.placeable.Position
                         arr_pos = self.manipulator.getManipulatorPosition()
                         ent_pos = ent.placeable.Position
-                        #if sel_pos != ent_pos:
                         self.time = 0 #XXX NOTE: is this logic correct?
-                        #    self.selection_box.placeable.Position = ent_pos
                         if arr_pos != ent_pos:
                             self.manipulator.moveTo(self.sels)
                     except RuntimeError, e:
