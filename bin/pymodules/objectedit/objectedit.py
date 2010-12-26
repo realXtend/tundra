@@ -233,10 +233,9 @@ class ObjectEdit(Component):
             self.remove_highlight(ent)
             self.removeSoundRuler(ent)
             self.remove_selected(ent)
-        for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
-            if _ent.Id == ent.Id:
-                self.sels.remove(_ent)
-                self.worldstream.SendObjectDeselectPacket(ent.Id)
+        if ent in self.sels:
+            self.sels.remove(ent)
+            self.worldstream.SendObjectDeselectPacket(ent.Id)
 
     def deselect_all(self):
         if len(self.sels) > 0:
@@ -438,9 +437,7 @@ class ObjectEdit(Component):
 
             for hit in hits:
                 if not self.validId(hit.Id): continue
-                for entity in self.sels:
-                    if entity.Id == hit.Id:
-                        continue
+                if hit in self.sels: continue
                 try:
                     self.multiselect(hit)
                 except ValueError:
