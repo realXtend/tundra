@@ -599,9 +599,9 @@ class ObjectEdit(Component):
             for ent in self.sels:
                 #r.logInfo("deleting " + str(ent.Id))
                 ent, children = self.parentalCheck(ent)
-                for child_id in children:
-                    child = naali.getEntity(int(child_id))
-                    #~ self.worldstream.SendObjectDeRezPacket(child.Id, r.getTrashFolderId())
+                #for child_id in children:
+                #    child = naali.getEntity(int(child_id))
+                #    #~ self.worldstream.SendObjectDeRezPacket(child.Id, r.getTrashFolderId())
                 #~ if len(children) == 0:
                 self.worldstream.SendObjectDeRezPacket(ent.Id, r.getTrashFolderId())
                 #~ else:
