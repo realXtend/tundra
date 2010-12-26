@@ -416,10 +416,12 @@ class ObjectEdit(Component):
             self.manipulator.initManipulation(ent, results, self.sels)
             self.usingManipulator = True
         else:
-            self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
-            self.selection_box.Show()
-            self.canmove = False
-            self.deselect_all()
+            if ent is not None and self.manipulator.compareIds(ent.id): pass # don't start selection box when manipulator is hit
+            else:
+                self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
+                self.selection_box.Show()
+                self.canmove = False
+                self.deselect_all()
             
     def dragStarted(self, mouseinfo):
         width, height = renderer.GetWindowWidth(), renderer.GetWindowHeight()
