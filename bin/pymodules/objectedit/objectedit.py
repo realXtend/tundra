@@ -413,10 +413,10 @@ class ObjectEdit(Component):
 
                 elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
-            self.manipulator.initManipulation(ent, results, self.sels)
-            self.usingManipulator = True
         else:
-            if ent is not None and self.manipulator.compareIds(ent.id): pass # don't start selection box when manipulator is hit
+            if ent is not None and self.manipulator.compareIds(ent.Id): # don't start selection box when manipulator is hit
+                self.manipulator.initManipulation(ent, results, self.sels)
+                self.usingManipulator = True
             else:
                 self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
                 self.selection_box.Show()
