@@ -407,14 +407,10 @@ class ObjectEdit(Component):
         if ent is not None and self.validId(ent.Id):
             if not self.manipulator.compareIds(ent.Id) and editable(ent): #ent.Id != self.selection_box.Id and 
                 r.eventhandled = self.EVENTHANDLED
-                found = False
-                for entity in self.sels:
-                    if entity.Id == ent.Id:
-                        found = True
                
                 if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
                     if self.validId(ent.Id):
-                        if not found:
+                        if not ent in self.sels:
                             self.select(ent)
 
                 elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
@@ -500,13 +496,9 @@ class ObjectEdit(Component):
                 id = results[0]
                 ent = naali.getEntity(id)
                 
-            found = False
             if ent is not None:                
-                for entity in self.sels:
-                    if entity.Id == ent.Id:
-                        found = True
                 if self.validId(ent.Id):
-                    if not found:
+                    if not ent in self.sels:
                         self.multiselect(ent)
                     else:
                         self.deselect(ent)
