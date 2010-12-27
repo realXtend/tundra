@@ -246,7 +246,7 @@ class ObjectEditWindow:
         self.updatingSelection = True
         self.update_guivals(ent)
         self.updatingSelection = False
-        self.controller.soundRuler(ent)
+        self.controller.sound_ruler(ent)
         
     def deselected(self):
         self.meshline.update_text("")
