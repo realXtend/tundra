@@ -341,6 +341,30 @@ function ClientInitialize()
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
         me.Action("Zoom").Triggered.connect(ClientHandleKeyboardZoom);
     }
+    else
+    {
+        // Make hovering name tag for other clients
+        clientName = me.GetComponentRaw("EC_Name");
+        if (clientName != null)
+        {
+            // Description holds the actual login name
+            if (clientName.description != "")
+            {
+                var hoveringWidget = me.GetOrCreateComponentRaw("EC_HoveringWidget", 2, false);
+                if (hoveringWidget != null)
+                {
+                    hoveringWidget.SetNetworkSyncEnabled(false);
+                    hoveringWidget.SetTemporary(true);
+                    hoveringWidget.InitializeBillboards();
+                    hoveringWidget.SetButtonsDisabled(true);
+                    hoveringWidget.SetText(clientName.description);
+                    hoveringWidget.SetFontSize(100);
+                    hoveringWidget.SetTextHeight(200);
+                    hoveringWidget.Show();
+                }
+            }
+        }
+    }
 
     // Hook to tick update to update visual effects (both own and others' avatars)
     frame.Updated.connect(ClientUpdate);
@@ -378,6 +402,7 @@ function ClientCreateInputMapper()
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = true;
     inputmapper.modifiersEnabled = false;
+    inputmapper.keyrepeatTrigger = false; // Disable repeat keyevent sending over network, not needed and will flood network
     inputmapper.executionType = 2; // Execute actions on server
     inputmapper.RegisterMapping("W", "Move(forward)", 1);
     inputmapper.RegisterMapping("S", "Move(back)", 1);
