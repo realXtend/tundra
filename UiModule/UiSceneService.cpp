@@ -103,10 +103,12 @@ namespace UiServices
 
 		QSettings settings("Naali UIExternal2", "UiExternal Settings");
 		QString pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
-		if (pos != "inside" && uiExternal){
+		if (pos != "inside" && uiExternal)
+        {
 			widget->setWidget(0);
 			qdock = uiExternal->AddExternalPanel(wid,widget->windowTitle());
-		} else
+		}
+        else
 			owner_->GetInworldSceneController()->AddProxyWidget(widget);
 		//Save the pair
 		proxy_dock_list[widget->windowTitle()]=proxyDock(widget,dynamic_cast<QDockWidget*>(qdock));
@@ -136,13 +138,12 @@ namespace UiServices
 			panels_menus_list_[widget->windowTitle()]=menusPair(menu, icon);
 
 		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;	
-		if(qdock->widget() && uiExternal)
-			if (moveable_widgets_->contains(widget->windowTitle()) && uiExternal)
-				uiExternal->AddExternalMenuPanel(qdock,entry,menu, true);
-			else
-				uiExternal->AddExternalMenuPanel(qdock,entry,menu, false); 
-
-        owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
+		if(qdock->widget())
+        {
+            if (uiExternal)
+                uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
+            owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
+        }
     }
 
     void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
@@ -400,19 +401,25 @@ namespace UiServices
 			panels << "OpenSim Naali Scene Tool";
 			panels << "Environment Editor";
 
-			if(new_name=="WorldBuilding"){
-				foreach(QString s, panels){
+			if (new_name == "WorldBuilding")
+            {
+				foreach(QString s, panels)
+                {
+                   if (!proxy_dock_list.contains(s))
+                    continue;
+
 					//Get info from the list
 					proxyDock pair = proxy_dock_list.value(s);
-					QDockWidget* qdock=pair.second;
-					UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
-					QWidget* widget;
+					QDockWidget* qdock = pair.second;
+                    
+					UiProxyWidget* proxy = dynamic_cast<UiProxyWidget*>(pair.first);
+					QWidget* widget = qdock->widget();
 
 					//We have to put it inside
-					if(qdock->widget()){
+					if(widget)
+                    {
 						//It is outside
 						qdock->hide();
-						widget=qdock->widget();
 						widget->adjustSize();
 						//Remove Panel and Menu from External
 						uiExternal->RemoveExternalPanel(widget);
@@ -420,8 +427,10 @@ namespace UiServices
 						//Put Panel inside Proxy, add to scene and add internal menu entry with icon if available
 						widget->setParent(0);
 						proxy->setWidget(widget);
-						if (owner_->GetInworldSceneController()->AddProxyWidget(proxy)){
-							if (panels_menus_list_.contains(widget->windowTitle())){
+						if (owner_->GetInworldSceneController()->AddProxyWidget(proxy))
+                        {
+							if (panels_menus_list_.contains(widget->windowTitle()))
+                            {
 								menusPair par = panels_menus_list_.value(widget->windowTitle());
 								owner_->GetInworldSceneController()->AddWidgetToMenu(widget, proxy->windowTitle(), par.first, par.second);
 							}
@@ -430,15 +439,20 @@ namespace UiServices
 						}
 					}
 				}
-			}else if(new_name=="Inworld" && old_name=="WorldBuilding")
+			}
+            else if(new_name=="Inworld" && old_name=="WorldBuilding")
 			{
 				//begin_mod
-				foreach(QString s, panels){
+				foreach(QString s, panels)
+                {
 					QSettings settings("Naali UIExternal2", "UiExternal Settings");
 					QString pos = settings.value(s, QString("vacio")).toString();
-					if (/*pos != "inside" &&*/ uiExternal){
+					if (/*pos != "inside" &&*/ uiExternal)
+                    {
+                        if (!proxy_dock_list.contains(s))
+                            continue;
 						proxyDock pair = proxy_dock_list.value(s);
-						QDockWidget* qdock=pair.second;
+						QDockWidget* qdock = pair.second;
 						UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
 						QWidget* widget;
 

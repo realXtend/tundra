@@ -216,8 +216,8 @@ namespace WorldBuilding
         QMap<QString, TransferPair > tranfer_widgets_;
 //$ BEGIN_MOD $
 		//Actions to disable when worldbuildscene is loaded. Are the menu entries to show widgets outside..
-		QAction *action;
-		QAction *action2;
+		QAction *create_objects_action_;
+		QAction *show_build_widgets_action_;
 
 		//! Pointer to edit toolbar.
 		QToolBar* editToolbar_;

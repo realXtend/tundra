@@ -17,9 +17,7 @@
 #include "UiServiceInterface.h"
 #include "NaaliApplication.h"
 #include "SceneManager.h"
-//$ BEGIN_MOD $
 #include "UiExternalServiceInterface.h"
-//$ END_MOD $
 #include "BuildToolbar.h"
 #include <QPixmap>
 #include <QDebug>
@@ -47,7 +45,9 @@ namespace WorldBuilding
         editToolbar_(0),
         propertyWidget_(0),
 		assignWidget_(0),
-		inside_(false)
+		inside_(false),
+        create_objects_action_(0),
+        show_build_widgets_action_(0)
 //$ END_MOD $
     {
         setParent(parent);
@@ -67,16 +67,16 @@ namespace WorldBuilding
         bool object_edit_menu_actions = true; /// @todo read from settings etc.
 		if (ui && object_edit_menu_actions){
 			//Create Action, insert into menu Create->Avatar
-			action = new QAction("Create Object",this);
-			if (ui->AddExternalMenuAction(action, "Create Object", tr("Edit"))){
+			create_objects_action_ = new QAction("Create Object",this);
+			if (ui->AddExternalMenuAction(create_objects_action_, "Create Object", tr("Edit"))){
 				//We change scene
-				connect(action, SIGNAL(triggered()), SLOT(ChangeAndCreateObject()));
+				connect(create_objects_action_, SIGNAL(triggered()), SLOT(ChangeAndCreateObject()));
 			}
 			//Create also an action to switch to Scene in Menu->Panels
-			action2 = new QAction("Show Build Widgets",this);
-			if (ui->AddExternalMenuAction(action2, "Show Build Widgets", tr("Edit"))){
+			show_build_widgets_action_ = new QAction("Show Build Widgets",this);
+			if (ui->AddExternalMenuAction(show_build_widgets_action_, "Show Build Widgets", tr("Edit"))){
 				//We change scene
-				connect(action2, SIGNAL(triggered()), SLOT(ShowBuildPanels()));
+				connect(show_build_widgets_action_, SIGNAL(triggered()), SLOT(ShowBuildPanels()));
 				//connect(ui, SIGNAL(SceneChanged(const QString&, const QString &)),
                 //SLOT(SceneChangedNotification(const QString&, const QString&)));
 			}
@@ -252,11 +252,14 @@ namespace WorldBuilding
         }
         else if (name_compare == "library")
         {
-            tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
-            widget->setWidget(0);
-            object_manip_ui.tab_widget->addTab(tranfer_widgets_[name].first, name);
-            tranfer_widgets_[name].first->show();
-            scene_widget = false;
+            if (widget->widget() != 0)
+            {
+                tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
+                widget->setWidget(0);
+                object_manip_ui.tab_widget->addTab(tranfer_widgets_[name].first, name);
+                tranfer_widgets_[name].first->show();
+                scene_widget = false;
+            }
         }
 
         if (scene_widget)
@@ -608,10 +611,8 @@ namespace WorldBuilding
             python_handler_->EmitEditingActivated(true);
             tranfer_widgets_.clear();
             object_manip_ui.tab_widget->clear();
-			//$ BEGIN_MOD $
-			action->setDisabled(true);
-			action2->setDisabled(true);
-			//$ END_MOD $
+			create_objects_action_->setDisabled(true);
+			show_build_widgets_action_->setDisabled(true);
         }
         else if (old_name == scene_name_)
         {
@@ -619,16 +620,12 @@ namespace WorldBuilding
             python_handler_->EmitEditingActivated(false);
             toolbar_->RemoveAllButtons();
             HandleTransfersBack();
-			//$ BEGIN_MOD $
-			action->setDisabled(false);
-			action2->setDisabled(false);
-			//$ END_MOD $
+			create_objects_action_->setDisabled(false);
+			show_build_widgets_action_->setDisabled(false);
         }
-//$ BEGIN_MOD $
 		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
 		if(uiExternal && new_name=="Inworld")
 			ActiveEditMode(uiExternal->IsEditModeEnable());
-//$ END_MOD $
     }
 
     void BuildSceneManager::CreateCamera()
@@ -804,8 +801,8 @@ namespace WorldBuilding
         {
             if (create_buttons)
             {
-			      editToolbar_= ui->GetExternalToolbar("EditToolBar"); // HACK: Entering to the build mode causes crash if toolbar doesn't exist!
-                  editToolbar_->hide();
+			      //editToolbar_= ui->GetExternalToolbar("EditToolBar");
+         //         editToolbar_->hide();
        //         if (editToolbar_)
        //         {
 			        //QAction* move=new QAction(QIcon("./media/icons/move.png"),"Move",editToolbar_);
@@ -838,9 +835,9 @@ namespace WorldBuilding
        //         if (worldBuildToolbar)
        //         {
 			    //    worldBuildToolbar->setIconSize(QSize(76, 32));
-			    //    //QAction* worldbuild=new QAction(QIcon("./media/icons/uibutton_BUILD_normal.png"),"WorldBuildScene",worldBuildToolbar);
-			    //    //worldBuildToolbar->addAction(worldbuild);
-			    //    //connect(worldbuild, SIGNAL(triggered()), this, SLOT(ToggleBuildScene()));
+			    //    QAction* worldbuild=new QAction(QIcon("./media/icons/uibutton_BUILD_normal.png"),"WorldBuildScene",worldBuildToolbar);
+			    //    worldBuildToolbar->addAction(worldbuild);
+			    //    connect(worldbuild, SIGNAL(triggered()), this, SLOT(ToggleBuildScene()));
        //         }
             }
 
@@ -849,7 +846,6 @@ namespace WorldBuilding
 			//Create the Properties Widget
 			propertyWidget_ = property_editor_handler_->CreatePropertyWindow();
 			ui->AddWidgetToScene(propertyWidget_,true,true);
-			//ui->AddWidgetToMenu(propertyWidget_,"Properties","Panels");
             ui->AddWidgetToMenu(propertyWidget_,"Object Properties","Edit");
 			
 			//Create the Assign Widget
