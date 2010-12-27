@@ -29,7 +29,6 @@ import naali
 
 class SceneDataManager:
 
-
     def __init__(self, scenefile):
         self.sceneFile = scenefile
         self.folderPath = os.path.dirname(scenefile)
@@ -58,10 +57,10 @@ class SceneDataManager:
             self.materials.append(os.path.basename(self.materialFile))
             self.hasCopyFiles = True
 
-	def getExternalMaterialFiles(self):
-		elems = self.xmlDoc.getElementsByTagName('externals')
-		for f in elems[0].getElementsByTagName('file'):
-			self.materials.append(f.getAttribute('name'))
+    def getExternalMaterialFiles(self):
+        elems = self.xmlDoc.getElementsByTagName('externals')
+        for f in elems[0].getElementsByTagName('file'):
+            self.materials.append(f.getAttribute('name'))
 
     def hasMaterialFile(self, scenefile):
         mfile = scenefile[:-6] + ".material"

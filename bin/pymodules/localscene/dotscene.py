@@ -85,7 +85,10 @@ class DotScene:
                 
                 # scale it
                 scale = findNodes(node, 'scale')[0].attributes
-                newNode.scale = Vector(float(scale['x'].nodeValue), float(scale['y'].nodeValue), float(scale['z'].nodeValue))
+                if(self.blendScene):
+                    newNode.scale = Vector(float(scale['x'].nodeValue), float(scale['z'].nodeValue), float(scale['y'].nodeValue))
+                else:
+                    newNode.scale = Vector(float(scale['x'].nodeValue), float(scale['y'].nodeValue), float(scale['z'].nodeValue))
                 
                 # is it a light?
                 #try:

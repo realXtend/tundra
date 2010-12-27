@@ -39,10 +39,10 @@ class ToolBarWindow():
         if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
 
-		#$ BEGIN_MOD $
-		#uism.AddWidgetToMenu(self.proxywidget, "Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
+        #$ BEGIN_MOD $
+        #uism.AddWidgetToMenu(self.proxywidget, "Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
         uism.AddWidgetToMenu(self.proxywidget, "Scene", "Panels", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
-		#$ END_MOD $
+        #$ END_MOD $
 
         self.inputQueue = queue
         self.endApplication = endApplication
@@ -78,6 +78,9 @@ class ToolBarWindow():
                     return
                 if(title=="__unload__"):
                     self.controller.unloadScene()
+                    return
+                if(title=="__continue_load__"):
+                    self.controller.continueLoad(msg)
                     return
                 self.displayMessage(title, msg)
             except Queue.Empty:
@@ -230,6 +233,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
             #self.filename=QFileDialog.getOpenFileName(self.widget, "Select scene file", "*.scene")
             if(self.filename!=""):
                 self.controller.loadScene(self.filename)
+                #self.controller.startLoadScene(self.filename)
             else:
                 pass
         else:

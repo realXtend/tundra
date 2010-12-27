@@ -162,7 +162,11 @@ class NaaliSceneManagerFacade:
 def load_dotscene(fname):
     sm = NaaliSceneManagerFacade()
     ds = dotscene.DotScene(fname, sm)
-    ds.dotscenemanager.rotateScene90DegreesAlongAxis('x')
+    if ds.blendScene:
+        ds.dotscenemanager.rotateScene90DegreesAlongAxis('-x')
+        ds.dotscenemanager.rotateScene90DegreesAlongAxis('-x')
+    else:
+        ds.dotscenemanager.rotateScene90DegreesAlongAxis('x')
     return ds, ds.dotscenemanager
 
 def unload_dotscene(ds):
