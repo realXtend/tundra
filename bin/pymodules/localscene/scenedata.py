@@ -44,12 +44,15 @@ class SceneDataManager:
         self.olTextures = []
         self.olMaterials = []
         self.hasCopyFiles = False
+        self.sceneDotMaterial = False
         
         materialFound = False
+        
         if(self.hasMaterialFile(scenefile)):
             materialFound = True
         if(self.hasSceneMaterialFile(scenefile)):
             materialFound = True
+            self.sceneDotMaterial = True
         if(materialFound):
             self.readTextures()
             self.readMeshes()
@@ -133,7 +136,7 @@ class SceneDataManager:
                 alreadyAdded.append(meshfile)
             
     def readTextures(self):
-        #print self.materialFile
+        print self.materialFile
         alreadyAdded = []
         f = open(self.materialFile)
         for line in f.readlines():
@@ -141,9 +144,9 @@ class SceneDataManager:
             if(sline.startswith('texture')):
                 split = sline.split(' ')
                 if(split.__len__()==2):
-                    #print split[1]
+                    print split[1]
                     if(alreadyAdded.__contains__(split[1])==False):
-                        #print split[1]
+                        print "adding"
                         self.textures.append(split[1])
                         alreadyAdded.append(split[1])
                         

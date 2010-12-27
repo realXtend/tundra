@@ -51,6 +51,14 @@ class MeshHandler:
         pass
         
     def fixWithMeshMagick(self):
+        self.state = "started cleaning"
+        self.cleanupEmptyFaceLists()
+        self.state = "remake meshes"
+        self.remakeMeshes()
+        self.state = "-XZY conversion with meshmagick"
+        self.runMeshMagick()
+        self.writeConversionCheck()
+        self.state = "end"
         pass
         
     def checkIfConverted(self):
@@ -116,7 +124,7 @@ class MeshHandler:
     def remakeMeshes(self):
         for mesh in self.meshXmls:
             command = 'OgreXmlConverter ' + '\"' + mesh + '\"'
-            print command
+            #print command
             #(dummy, stdout_and_stderr) = os.popen4('OgreXmlConverter ' + mesh)
             (dummy, stdout_and_stderr) = os.popen4(command)
             output = stdout_and_stderr.read()
@@ -227,4 +235,22 @@ class MeshHandler:
                     out.append(node)
         return out
 
+    def runMeshMagick(self):
+        for xml in self.meshXmls:  
+            mesh = xml[:-4]
+            #MeshMagick transform -axes=-x/z/y SomeMesh.mesh -- NewMesh.mesh
+            command = 'MeshMagick transform -axes=-x/z/y ' + '\"' + mesh + '\"'
+            (dummy, stdout_and_stderr) = os.popen4(command)
+            output = stdout_and_stderr.read()
+            if (output.find("Mesh saved as")!=-1):
+                #print "remade ", mesh
+                self.state = "remade -xzy for " + mesh
+            else:
+                #print "remake failed for ", mesh
+                self.state = "remake -xzy failed for " + mesh
+                print output
+            pass
+        pass
+
+        return
         

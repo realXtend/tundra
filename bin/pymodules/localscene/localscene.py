@@ -192,7 +192,7 @@ class LocalScene(Component):
             return
         if(self.uploader==None):
             self.uploader=SUploader(uploadcap_url, self)
-        self.uploader.uploadScene(filename, self.dotScene, self.regionName, self.publishName)
+        self.uploader.uploadScene(filename, self.dotScene, self.scenedata, self.regionName, self.publishName)
         print "unloading dot scene"
         self.queue.put(('__unload__', '__unload__scene__'))
         self.queue.put(('scene upload', 'upload done'))

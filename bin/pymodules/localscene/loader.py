@@ -74,7 +74,7 @@ class OgreNode:
             p.Orientation = o * rotate90z* rotate90z
             # print p.Orientation
         else: 
-            # o.normalize()
+            o.normalize()
             p.Orientation = o
                 
                 

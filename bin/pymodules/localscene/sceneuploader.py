@@ -44,6 +44,7 @@ class SceneUploader:
         self.file = None
         self.headers = {}
         self.progressBar = controller.window.progressBar
+        self.sceneData = None
         
         # poster init
         register_openers()
@@ -56,9 +57,10 @@ class SceneUploader:
         self.appDataUploadFolder=None
         
         
-    def uploadScene(self, filepath, dotScene, regionName = None, publishName = None):
+    def uploadScene(self, filepath, dotScene, sceneData, regionName = None, publishName = None):
         f = None
         self.file = filepath + ".zip"
+        self.sceneData = sceneData
         print "creating zip file"
         self.progressBar.setValue(1)
         self.progressBar.setFormat("progress: creating zip %p%")
@@ -195,12 +197,18 @@ class SceneUploader:
         
         # if exists copy <scene_name>.material file to upload package
         sceneMaterialFilePath=ds.fileName[:-6] + ".material"
-        if(self.fileExists(sceneMaterialFilePath)==True):
-            materialname = self.nameFromFilepath(sceneMaterialFilePath)
-            dstSceneMaterialFile = self.appDataUploadFolder + os.sep + materialname
-            shutil.copyfile(sceneMaterialFilePath, dstSceneMaterialFile);
-            # copy images in scene material file
-            self.copyTextures(sceneMaterialFilePath, TEXTURE_FOLDER)
+        materialname = self.nameFromFilepath(sceneMaterialFilePath)
+        dstSceneMaterialFile = self.appDataUploadFolder + os.sep + materialname
+        if self.sceneData.sceneDotMaterial == False:
+            if(self.fileExists(sceneMaterialFilePath)==True):
+                shutil.copyfile(sceneMaterialFilePath, dstSceneMaterialFile);
+                # copy images in scene material file
+                self.copyTextures(sceneMaterialFilePath, TEXTURE_FOLDER)
+        else:
+            # copy Scene.material as <scene_name>.material file
+            shutil.copyfile(self.sceneData.materialFile, dstSceneMaterialFile)
+            self.copyTextureList(self.sceneData.textures, self.sceneData.materialFile)
+            pass
         
         saver = SceneSaver()
         saver.save(dstSceneFile, ds.dotscenemanager.nodes)
@@ -259,13 +267,10 @@ class SceneUploader:
                 else:
                     print "Collision file specified, but not found"
 
-    def copyTextures(self, matfile, folder):
-        list = self.getTexturesFromMaterialFile(matfile)
-        #print list
+    def copyTextureList(self, list, matfile):
         for name in list:
             #pathToFile = folder.replace('/', os.sep) + os.sep + name
             dstFile = self.appDataUploadFolder + os.sep + name
-            
             dirpath = os.path.dirname(matfile)
             scenePath = dirpath + os.sep + name
             if(self.fileExists(scenePath)):
@@ -280,7 +285,12 @@ class SceneUploader:
             else:
                 r.logInfo("Failed to find texture file specified in material file:")
                 r.logInfo(pathToFile)
-    
+        pass
+                    
+    def copyTextures(self, matfile, folder):
+        list = self.getTexturesFromMaterialFile(matfile)
+        self.copyTextureList(list, matfile)
+        
     def getTexturesFromMaterialFile(self, matfile):
         txtList = []
         f = open(matfile, 'r')
