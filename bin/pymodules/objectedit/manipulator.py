@@ -97,34 +97,34 @@ class Manipulator:
             return self.manipulator.placeable.Position
         return None
     
-    def createManipulator(self):
+    def create_manipulator(self):
         if self.manipulator is None and self.usesManipulator:
             ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
             gizmo = ent.GetOrCreateComponentRaw("EC_Gizmo")
             ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
             ruler.SetVisible(False)
-            #r.logInfo("hide ruler createManipulator")
+            #r.logInfo("hide ruler create_manipulator")
             ruler.SetType(self.MANIPULATOR_RULER_TYPE)
             ruler.UpdateRuler()
             return ent 
 
-    def stopManipulating(self):
+    def stop_manipulating(self):
         self.grabbed_axis = None
         self.grabbed = False
         remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
         try:
             self.manipulator.ruler.EndDrag()
         except:
-            # TODO fix stopManipulating usage so it isn't called when manipulators aren't initialised properly yet
+            # TODO fix stop_manipulating usage so it isn't called when manipulators aren't initialised properly yet
             pass
     
-    def initVisuals(self):
-        #r.logInfo("initVisuals in manipulator " + str(self.NAME))
+    def init_visuals(self):
+        #r.logInfo("init_visuals in manipulator " + str(self.NAME))
         if self.manipulator is None:
-            self.manipulator = self.createManipulator()
-            self.hideManipulator()
+            self.manipulator = self.create_manipulator()
+            self.hide_manipulator()
         
-    def showManipulator(self, ents):
+    def show_manipulator(self, ents):
         #print "Showing arrows!"
         if self.usesManipulator and len(ents)>0:
             self.moveTo(ents)
@@ -136,7 +136,7 @@ class Manipulator:
             else:
                 ruler.SetType(self.MANIPULATOR_RULER_TYPE)
                 ruler.SetVisible(True)
-                #r.logInfo("showing ruler showManipulator")
+                #r.logInfo("showing ruler show_manipulator")
                 ruler.UpdateRuler()
             if self.controller.useLocalTransform:
                 # first according object, then manipulator orientation - otherwise they go wrong order
@@ -158,7 +158,7 @@ class Manipulator:
         
         return median
         
-    def hideManipulator(self):
+    def hide_manipulator(self):
         #r.logInfo("hiding manipulator")
         if self.usesManipulator:
             try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
@@ -167,7 +167,7 @@ class Manipulator:
                     self.manipulator.placeable.Scale = QVector3D(0.0, 0.0, 0.0) #ugly hack
                     self.manipulator.placeable.Position = QVector3D(0.0, 0.0, 0.0)#another ugly hack
                     self.manipulator.ruler.SetVisible(False)
-                    #r.logInfo("hiding ruler hideManipulator")
+                    #r.logInfo("hiding ruler hide_manipulator")
                     self.manipulator.ruler.UpdateRuler()
                 
                 self.grabbed_axis = None
@@ -175,7 +175,7 @@ class Manipulator:
                 remove_custom_cursors()
                 
             except RuntimeError, e:
-                r.logDebug("hideManipulator failed")
+                r.logDebug("hide_manipulator failed")
     
     def initManipulation(self, ent, results, ents):
         if self.usesManipulator:
@@ -271,7 +271,7 @@ class Manipulator:
             else:            
                 for ent in ents:
                     self._manipulate(ent, amountx, amounty, changevec)
-                    self.controller.soundRuler(ent)
+                    self.controller.sound_ruler(ent)
 
                 if not self.manipulator is None:
                     if len(ents) > 0 and self.NAME!="FreeMoveManipulator":

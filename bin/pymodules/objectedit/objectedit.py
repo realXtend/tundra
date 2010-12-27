@@ -63,9 +63,9 @@ class ObjectEdit(Component):
         self.sels = []  
         Component.__init__(self)
         self.window = window.ObjectEditWindow(self)
-        self.resetValues()
+        self.reset_values()
         self.worldstream = r.getServerConnection()
-        self.usingManipulator = False
+        self.using_manipulator = False
         self.useLocalTransform = False
         self.cpp_python_handler = None
         self.left_button_down = False
@@ -73,9 +73,9 @@ class ObjectEdit(Component):
 
         self.shortcuts = {
             (Qt.Key_Z, Qt.ControlModifier) : self.undo,
-            (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
-            (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
-            (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
+            (Qt.Key_Delete, Qt.NoModifier) : self.delete_object,
+            (Qt.Key_L, Qt.AltModifier) : self.link_objects,
+            (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlink_objects,
         }
 
         # Connect to key pressed signal from input context
@@ -89,7 +89,7 @@ class ObjectEdit(Component):
         self.edit_inputcontext.connect('MouseLeftReleased(MouseEvent*)', self.on_mouseleftreleased)
         self.edit_inputcontext.connect('MouseMove(MouseEvent*)', self.on_mousemove)
         
-        self.resetManipulators()
+        self.reset_manipulators()
         
         self.selection_rect = QRect()
         #rectprops = r.createUiWidgetProperty(2)
@@ -119,9 +119,9 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('RotateValuesToNetwork(int, int, int)', self.changerot_cpp)
             self.cpp_python_handler.connect('ScaleValuesToNetwork(double, double, double)', self.changescale_cpp)
             self.cpp_python_handler.connect('PosValuesToNetwork(double, double, double)', self.changepos_cpp)
-            self.cpp_python_handler.connect('CreateObject()', self.createObject)
+            self.cpp_python_handler.connect('CreateObject()', self.create_object)
             self.cpp_python_handler.connect('DuplicateObject()', self.duplicate)
-            self.cpp_python_handler.connect('DeleteObject()', self.deleteObject)
+            self.cpp_python_handler.connect('DeleteObject()', self.delete_object)
             # Pass widgets
             self.cpp_python_handler.PassWidget("Mesh", self.window.mesh_widget)
             self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
@@ -136,7 +136,7 @@ class ObjectEdit(Component):
         trigger = (k.keyCode, k.modifiers)
         if self.windowActive:
             # update manipulator for constant size
-            self.manipulator.showManipulator(self.sels)
+            self.manipulator.show_manipulator(self.sels)
             # check to see if a shortcut we understand was pressed, if so, trigger it
             if trigger in self.shortcuts:
                 self.keypressed = True
@@ -144,9 +144,9 @@ class ObjectEdit(Component):
 
     def on_mousescroll(self, m):
         if self.windowActive:
-            self.manipulator.showManipulator(self.sels)
+            self.manipulator.show_manipulator(self.sels)
         
-    def resetValues(self):
+    def reset_values(self):
         self.left_button_down = False
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         self.prev_mouse_abs_x = 0
@@ -160,7 +160,7 @@ class ObjectEdit(Component):
         #self.selection_box = None
         self.selection_rect_startpos = None
     
-    def resetManipulators(self):
+    def reset_manipulators(self):
         self.manipulatorsInit = False
         self.manipulators = {}
         self.manipulators[self.MANIPULATE_MOVE] =  manipulator.MoveManipulator(self)
@@ -170,19 +170,19 @@ class ObjectEdit(Component):
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
  
     def baseselect(self, ent):
-        ent, children = self.parentalCheck(ent)
+        ent, children = self.parental_check(ent)
         
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.Id)
         self.highlight(ent)
         self.ec_selected(ent)
-        self.soundRuler(ent)
+        self.sound_ruler(ent)
         self.window.selected(ent, False, self.has_multiple_selected_entities())
-        self.changeManipulator(self.MANIPULATE_FREEMOVE)
+        self.change_manipulator(self.MANIPULATE_FREEMOVE)
         
         return ent, children
         
-    def parentalCheck(self, ent):
+    def parental_check(self, ent):
         children = []
         
         while 1:
@@ -225,12 +225,12 @@ class ObjectEdit(Component):
         for child_id in children:
             child = naali.getEntity(int(child_id))
             self.highlight(child)
-            self.soundRuler(child)
+            self.sound_ruler(child)
             
     def deselect(self, ent, valid=True):
         if valid: #the ent is still there, not already deleted by someone else
             self.remove_highlight(ent)
-            self.removeSoundRuler(ent)
+            self.remove_sound_ruler(ent)
             self.remove_selected(ent)
         if ent in self.sels:
             self.sels.remove(ent)
@@ -240,7 +240,7 @@ class ObjectEdit(Component):
         if len(self.sels) > 0:
             for ent in self.sels:
                 self.remove_highlight(ent)
-                self.removeSoundRuler(ent)
+                self.remove_sound_ruler(ent)
                 self.remove_selected(ent)
                 try:
                     self.worldstream.SendObjectDeselectPacket(ent.Id)
@@ -248,7 +248,7 @@ class ObjectEdit(Component):
                     r.logInfo("objectedit.deselect_all: entity doesn't exist anymore")
             self.sels = []
            
-            self.hideManipulator()
+            self.hide_manipulator()
 
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0
@@ -297,7 +297,7 @@ class ObjectEdit(Component):
         else:
             ent.RemoveComponentRaw(h)
 
-    def soundRuler(self, ent):
+    def sound_ruler(self, ent):
         if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
             try:
                 sr = ent.GetOrCreateComponentRaw('EC_SoundRuler')
@@ -311,30 +311,30 @@ class ObjectEdit(Component):
             sr.Show()
             sr.UpdateSoundRuler()
 
-    def removeSoundRuler(self, ent):
+    def remove_sound_ruler(self, ent):
         try:
             if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
                 try:
                     sr = ent.soundruler
                 except AttributeError:
-                    r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.Id)
+                    r.logInfo("objectedit.remove_sound_ruler called for an object without one: %d" % ent.Id)
                 else:
                     ent.RemoveComponentRaw(sr)
         except AttributeError:
-            r.logInfo("objectedit.removeSoundRuler: entity already removed. Prim doesn't exist anymore")
+            r.logInfo("objectedit.remove_sound_ruler: entity already removed. Prim doesn't exist anymore")
 
-    def changeManipulator(self, id):
+    def change_manipulator(self, id):
         newmanipu = self.manipulators[id]
         if newmanipu.NAME != self.manipulator.NAME:
             #r.logInfo("was something completely different")
-            self.manipulator.hideManipulator()
+            self.manipulator.hide_manipulator()
             self.manipulator = newmanipu
-        self.manipulator.showManipulator(self.sels)
+        self.manipulator.show_manipulator(self.sels)
     
-    def hideManipulator(self):
-        self.manipulator.hideManipulator()
+    def hide_manipulator(self):
+        self.manipulator.hide_manipulator()
         
-    def getSelectedObjectIds(self):
+    def get_selected_object_ids(self):
         ids = []
         for ent in self.sels:
             qprim = ent.prim
@@ -347,13 +347,13 @@ class ObjectEdit(Component):
             ids.append(ent.Id)
         return ids
     
-    def linkObjects(self):
-        ids = self.getSelectedObjectIds()
+    def link_objects(self):
+        ids = self.get_selected_object_ids()
         self.worldstream.SendObjectLinkPacket(ids)
         self.deselect_all()
         
-    def unlinkObjects(self):
-        ids = self.getSelectedObjectIds()
+    def unlink_objects(self):
+        ids = self.get_selected_object_ids()
         self.worldstream.SendObjectDelinkPacket(ids)
         self.deselect_all()
 
@@ -377,7 +377,7 @@ class ObjectEdit(Component):
             self.on_multiselect(mouseinfo)
             return
             
-        self.dragStarted(mouseinfo) #need to call this to enable working dragging
+        self.drag_started(mouseinfo) #need to call this to enable working dragging
         self.left_button_down = True
 
         results = []
@@ -390,15 +390,15 @@ class ObjectEdit(Component):
         if not self.manipulatorsInit:
             self.manipulatorsInit = True
             for manipulator in self.manipulators.values():
-                manipulator.initVisuals()
+                manipulator.init_visuals()
 
 
-        if ent is not None and self.validId(ent.Id):
+        if ent is not None and self.valid_id(ent.Id):
             if editable(ent):
                 r.eventhandled = self.EVENTHANDLED
                
                 if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
-                    if self.validId(ent.Id):
+                    if self.valid_id(ent.Id):
                         if not ent in self.sels:
                             self.select(ent)
 
@@ -407,14 +407,14 @@ class ObjectEdit(Component):
         else:
             if ent is not None and self.manipulator.compareIds(ent.Id): # don't start selection box when manipulator is hit
                 self.manipulator.initManipulation(ent, results, self.sels)
-                self.usingManipulator = True
+                self.using_manipulator = True
             else:
                 self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
                 self.selection_box.Show()
                 self.canmove = False
                 self.deselect_all()
             
-    def dragStarted(self, mouseinfo):
+    def drag_started(self, mouseinfo):
         width, height = renderer.GetWindowWidth(), renderer.GetWindowHeight()
         normalized_width = 1 / width
         normalized_height = 1 / height
@@ -429,7 +429,7 @@ class ObjectEdit(Component):
             hits = renderer.FrustumQuery(self.selection_rect) #the wish
 
             for hit in hits:
-                if not self.validId(hit.Id): continue
+                if not self.valid_id(hit.Id): continue
                 if hit in self.sels: continue
                 try:
                     self.multiselect(hit)
@@ -443,7 +443,7 @@ class ObjectEdit(Component):
             if self.sel_activated and self.dragging:
                 for ent in self.sels:
                     #~ print "LeftMouseReleased, networkUpdate call"
-                    parent, children = self.parentalCheck(ent)
+                    parent, children = self.parental_check(ent)
                     r.networkUpdate(ent.Id)
                     for child in children:
                         child_id = int(child)
@@ -454,12 +454,12 @@ class ObjectEdit(Component):
         if self.dragging:
             self.dragging = False
             
-        self.manipulator.stopManipulating()
-        self.manipulator.showManipulator(self.sels)
-        self.usingManipulator = False
+        self.manipulator.stop_manipulating()
+        self.manipulator.show_manipulator(self.sels)
+        self.using_manipulator = False
         
     
-    def selectionRectDimensions(self, mouseinfo):
+    def selection_rect_dimensions(self, mouseinfo):
         rectx = self.selection_rect_startpos[0]
         recty = self.selection_rect_startpos[1]
         
@@ -486,14 +486,14 @@ class ObjectEdit(Component):
                 ent = naali.getEntity(id)
                 
             if ent is not None:                
-                if self.validId(ent.Id):
+                if self.valid_id(ent.Id):
                     if not ent in self.sels:
                         self.multiselect(ent)
                     else:
                         self.deselect(ent)
                     self.canmove = True
             
-    def validId(self, id):
+    def valid_id(self, id):
         if id != 0 and id > 50: #terrain seems to be 4 (on w.r.o:9000) and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
             if id != naali.getUserAvatar().Id: #XXX add other avatar id's check
                 if not self.manipulator.compareIds(id):
@@ -538,7 +538,7 @@ class ObjectEdit(Component):
             
             if self.left_button_down:
                 if self.selection_rect_startpos is not None:
-                    rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
+                    rectx, recty, rectwidth, rectheight = self.selection_rect_dimensions(mouseinfo)
                     self.selection_rect.setRect(rectx, recty, rectwidth, rectheight)
                     self.selection_box.SetBoundingBox(self.selection_rect)
                 else:
@@ -583,7 +583,7 @@ class ObjectEdit(Component):
         for ent in self.sels:
             self.worldstream.SendObjectDuplicatePacket(ent.Id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
         
-    def createObject(self):
+    def create_object(self):
         avatar = naali.getUserAvatar()
         pos = avatar.placeable.Position
 
@@ -594,11 +594,11 @@ class ObjectEdit(Component):
 
         self.worldstream.SendObjectAddPacket(start_x, start_y, start_z)
 
-    def deleteObject(self):
+    def delete_object(self):
         if self.active is not None:
             for ent in self.sels:
                 #r.logInfo("deleting " + str(ent.Id))
-                ent, children = self.parentalCheck(ent)
+                ent, children = self.parental_check(ent)
                 #for child_id in children:
                 #    child = naali.getEntity(int(child_id))
                 #    #~ self.worldstream.SendObjectDeRezPacket(child.Id, r.getTrashFolderId())
@@ -607,7 +607,7 @@ class ObjectEdit(Component):
                 #~ else:
                     #~ r.logInfo("trying to delete a parent, need to fix this!")
             
-            self.manipulator.hideManipulator()
+            self.manipulator.hide_manipulator()
             #self.hideSelector()        
             self.deselect_all()
             self.sels = []
@@ -667,7 +667,7 @@ class ObjectEdit(Component):
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v[i])
         ent = self.active
-        if ent is not None and not self.usingManipulator:
+        if ent is not None and not self.using_manipulator:
             ort = mu.euler_to_quat(v)
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
@@ -712,9 +712,9 @@ class ObjectEdit(Component):
         self.cpp_python_handler.disconnect('RotateValuesToNetwork(int, int, int)', self.changerot_cpp)
         self.cpp_python_handler.disconnect('ScaleValuesToNetwork(double, double, double)', self.changescale_cpp)
         self.cpp_python_handler.disconnect('PosValuesToNetwork(double, double, double)', self.changepos_cpp)
-        self.cpp_python_handler.disconnect('CreateObject()', self.createObject)
+        self.cpp_python_handler.disconnect('CreateObject()', self.create_object)
         self.cpp_python_handler.disconnect('DuplicateObject()', self.duplicate)
-        self.cpp_python_handler.disconnect('DeleteObject()', self.deleteObject)
+        self.cpp_python_handler.disconnect('DeleteObject()', self.delete_object)
         # Clean widgets
         self.cpp_python_handler.CleanPyWidgets()
         r.logInfo(".. done")
@@ -724,7 +724,7 @@ class ObjectEdit(Component):
         if self.windowActive:
             self.sels = []
             try:
-                self.manipulator.hideManipulator()
+                self.manipulator.hide_manipulator()
             except RuntimeError, e:
                 r.logDebug("on_hide: scene not found")
             else:
@@ -742,7 +742,7 @@ class ObjectEdit(Component):
                 self.deselect_all()
                 for ent in self.sels:
                     self.remove_highlight(ent)
-                    self.removeSoundRuler(ent)
+                    self.remove_sound_ruler(ent)
 
         # Store the state before build scene activated us
         if activate == True and self.windowActiveStoredState == None:
@@ -750,7 +750,7 @@ class ObjectEdit(Component):
             self.windowActive = True
         
     def on_manupulation_mode_change(self, mode):
-        self.changeManipulator(mode)
+        self.change_manipulator(mode)
             
     def update(self, time):
         #print "here", time
@@ -783,8 +783,8 @@ class ObjectEdit(Component):
         self.deselect_all()
         self.sels = []
         self.selection_box = None
-        self.resetValues()
-        self.resetManipulators()
+        self.reset_values()
+        self.reset_manipulators()
 
     def on_worldstreamready(self, id):
         r.logInfo("Worldstream ready")
