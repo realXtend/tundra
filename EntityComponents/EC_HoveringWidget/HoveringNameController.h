@@ -23,6 +23,9 @@ public slots:
     void SetPixmap(QPixmap* icon);
     QPixmap* GetPixmap();
 
+    void SetTextHeight(int height);
+    void SetFontSize(int pt_size);
+
 private:
     float text_padding_;
     QPixmap* pixmap_;

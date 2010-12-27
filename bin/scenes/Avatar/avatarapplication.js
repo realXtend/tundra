@@ -68,8 +68,8 @@ function ServerHandleUserConnected(connectionID, user)
     r.ref = "local://simpleavatar.js";
     script.scriptRef = r;
 
-    var placeable = avatarEntity.placeable;
     // Set random starting position for avatar
+    var placeable = avatarEntity.placeable;
     var transform = placeable.transform;
     transform.pos.x = (Math.random() - 0.5) * avatar_area_size + avatar_area_x;
     transform.pos.y = (Math.random() - 0.5) * avatar_area_size + avatar_area_y;
@@ -78,7 +78,7 @@ function ServerHandleUserConnected(connectionID, user)
 
     scene.EmitEntityCreatedRaw(avatarEntity);
     
-    print(">> Created avatar for " + user.GetProperty("username"));
+    print("[Avatar Application] Created avatar for " + user.GetProperty("username"));
 }
 
 function ServerHandleUserDisconnected(connectionID, user)
@@ -87,5 +87,5 @@ function ServerHandleUserDisconnected(connectionID, user)
     var entityID = scene.GetEntityByNameRaw(avatarEntityName).Id;
     scene.RemoveEntityRaw(entityID);
 
-    print("Kthxbye, " + user.GetProperty("username"));
+    print("[Avatar Application] User " + user.GetProperty("username") + " disconnected, destroyed avatar entity.");
 }
