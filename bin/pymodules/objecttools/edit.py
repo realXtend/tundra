@@ -96,11 +96,9 @@ class ObjectEdit(Component):
         
         r.c = self #this is for using objectedit from command.py
         
-        # Get world building modules python handler
+        # Get world building modules python handler, is not present in tundra
         self.cpp_python_handler = r.getQWorldBuildingHandler()
-        if self.cpp_python_handler == None:
-            r.logDebug("Could not aqquire world building service to object edit")
-        else:
+        if self.cpp_python_handler != None:
             # Connect signals
             self.cpp_python_handler.connect('ActivateEditing(bool)', self.on_activate_editing)
             self.cpp_python_handler.connect('ManipulationMode(int)', self.on_manupulation_mode_change)
