@@ -6,36 +6,10 @@ from xml.dom import minidom, Node
 import sys
 import os
 import time
-#from dotscene import findNodes
 import multiprocessing
-
 from multiprocessing import Process, Queue
-
 import subprocess
 
-# qthreading
-# import PythonQt
-
-# class BlenderExportHandler(PythonQt.QtCore.QRunnable):
-    # def __init__(self, filename, controller):
-        # self.fileName = filename
-        # self.controller = controller
-    # def run(self):
-        # print "starting Qt thread for handling blender export"
-        # meshHandler = MeshHandler(self.fileName)
-        # if meshHandler.checkOgreXmlConverter():
-            # if meshHandler.checkIfConverted()==False:
-                # print "clean up empty facelists"
-                # meshHandler.cleanupEmptyFaceLists()
-                # meshHandler.changeXYZs()
-                # meshHandler.remakeMeshes()
-                # # meshHandler.rewriteScales()
-                # meshHandler.writeConversionCheck()
-        # self.controller.queue.put(('__continue_load__', filename))
-        # #print "Hello world from thread", QThread.currentThread()
-
-class BlenderExportprocessHandler():
-    pass
         
 # do 
 # - empty faces cleanup from .mesh.xml files
@@ -254,40 +228,3 @@ class MeshHandler:
         return out
 
         
-
-def f(q, q2):
-    while(1):
-        val=q2.get()
-        if(val=='quit'):
-            break
-        q.put('received something')
-    q.put([42, None, 'hello'])
-        
-        
-def startProcess(fileName):
-    # f = open('fileName', 'w')
-    # f.write(fileName)
-    # f.flush()
-    # f.close()
-    # runfile= os.getcwd() + "/pymodules/localscene/meshhandler.py"
-    # theproc = subprocess.Popen(['python', runfile])
-
-    q = Queue()
-    q2 = Queue()
-    p = Process(target=f, args=(q,q2,))
-    p.start()
-    print 'process started'
-    for i in range(5):
-        #parent_conn.stdin.write('%d\n' % i)
-        q2.put('%d\n' % i)
-        #output = process.stdout.readline()
-        #output = child_conn.recv()
-        output = q.get()
-        print output
-        time.sleep(1)
-
-    q2.put('quit')
-    print(q.get())    # prints "[42, None, 'hello']"
-    p.join()
-    
-
