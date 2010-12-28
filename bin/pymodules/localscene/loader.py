@@ -38,7 +38,7 @@ class OgreNode:
 
     def attachObject(self, ob):
         self.object = ob
-        print self, "attached object", ob
+        #print self, "attached object", ob
         if naali is not None: 
             self.create_naali_meshentity()
 
@@ -46,15 +46,15 @@ class OgreNode:
         self.naali_ent = naali.createMeshEntity(self.object.mesh, 100002) #XXX handle name too. what about id?
 
         e = self.naali_ent
-        print "Created naali entity:", e, e.Id
+        # print "Created naali entity:", e, e.Id
             
         """apply pos, rot & scale. 
         dotscene.py uses qt types now directly"""
         p = e.placeable
         mp = self.position
-        print "----------------------"
-        print self.entityMeshFile
-        print self.position
+        # print "----------------------"
+        # print self.entityMeshFile
+        # print self.position
         p.Position = self.position
             
         o = self.orientation

@@ -155,11 +155,11 @@ class SceneUploader:
         zf = zipfile.ZipFile(self.file, "w")
         uploadPathLen = len(self.appDataUploadFolder)
         for dirname, dirnames, filenames in os.walk(self.appDataUploadFolder):
-            print "--"
-            print dirname
-            print dirnames
-            print filenames
-            print "--"
+            # print "--"
+            # print dirname
+            # print dirnames
+            # print filenames
+            # print "--"
             zipfolder = dirname[uploadPathLen:]
             zipfolder = os.path.normpath(zipfolder)
             for filename in filenames:
@@ -472,15 +472,15 @@ class SceneSaver:
                 eAttrs = oNode.entityNode.attributes
                 self.setElementAttributes(entity, eAttrs)
 
-                print oNode.entityNode.toxml()
-                print oNode.entityNode.hasChildNodes()
+                # print oNode.entityNode.toxml()
+                # print oNode.entityNode.hasChildNodes()
                 self.copySubStructure(newdoc, oNode.entityNode, entity)                
                         
                 if(entity.attributes.has_key("static")==False):
                     entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
                 
-                print "-------------------------"
-                print entity.toxml()
+                # print "-------------------------"
+                # print entity.toxml()
                 
                 nodeNode.appendChild(entity)
                 nodesNode.appendChild(nodeNode)
@@ -526,6 +526,6 @@ class SceneSaver:
             else:
                 pass
         else:
-            print "%s has no child elements ---------------" % element1.nodeName
-        pass
+            #print "%s has no child elements ---------------" % element1.nodeName
+            pass
         

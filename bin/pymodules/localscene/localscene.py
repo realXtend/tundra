@@ -146,6 +146,7 @@ class LocalScene(Component):
         if message.startswith("end"):
             self.queue.put(('__continue_load__', self.filename))
             #self.continueLoad(self.filename)
+        self.queue.put(('__progress_cycle__', message))
             
     def continueLoad(self, msg):
         print msg

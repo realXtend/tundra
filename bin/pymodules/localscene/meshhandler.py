@@ -35,7 +35,7 @@ class MeshHandler:
         
     def doFixes(self):
         self.fixWithoutMeshMagick()
-        #self.fixWithMeshMagick():        
+        #self.fixWithMeshMagick()
 
     def fixWithoutMeshMagick(self):
         self.state = "started cleaning"

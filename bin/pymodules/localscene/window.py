@@ -82,6 +82,9 @@ class ToolBarWindow():
                 if(title=="__continue_load__"):
                     self.controller.continueLoad(msg)
                     return
+                if(title=="__progress_cycle__"):
+                    self.progressMsg(msg)
+                    return
                 self.displayMessage(title, msg)
             except Queue.Empty:
                 pass
@@ -504,6 +507,31 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
                     self.currentSceneSelectionRegions.append(region)
         pass
 
+    def progressCycle(self, message):
+        val = self.progressBar.value
+        if(val>=7):
+            self.progressBar.setValue(0)
+        else:
+            val+=1
+            self.progressBar.setValue(val)            
+            if(len(message)>10):
+                self.progressBar.setFormat("converting")
+            else:
+                if message=="end":
+                    self.progressReset()
+                else:
+                    self.progressBar.setFormat(message)
+                
+        pass
+        
+    def progressReset(self):
+        self.progressBar.reset()
+        self.progressBar.setValue(0)
+        self.progressBar.setFormat("Upload progress: inactive %p%")
+        pass
 
-
-
+    def progressMsg(self, msg):
+        if msg=="end":
+            self.progressReset()
+        else:
+            self.progressCycle(msg)
