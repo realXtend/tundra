@@ -153,7 +153,8 @@ namespace UiServices
 			panels_menus_list_[widget->windowTitle()]=menusPair(menu, icon);
 
 	    QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second; 
-	    uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
+        if (uiExternal)
+	        uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
         
         owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
     }
