@@ -69,6 +69,9 @@ public:
     void SetPlaceable(ComponentPtr placeable);
 public slots:
 
+    //! automatically find the placeable and set it
+    void AutoSetPlaceable();
+
     //! sets as active camera in the viewport
     void SetActive();
     
