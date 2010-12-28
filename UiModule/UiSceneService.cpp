@@ -128,7 +128,10 @@ namespace UiServices
 		if(qdock->widget() && uiExternal)
 			uiExternal->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels", moveable_widgets_->contains(widget->windowTitle()));
 
-		owner_->GetInworldSceneController()->AddWidgetToMenu(widget, widget->windowTitle(), "", "");
+        if (qdock->widget())
+            owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, widget->windowTitle(), "", "");
+        else
+		    owner_->GetInworldSceneController()->AddWidgetToMenu(widget, widget->windowTitle(), "", "");
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon)
@@ -138,12 +141,13 @@ namespace UiServices
 			panels_menus_list_[widget->windowTitle()]=menusPair(menu, icon);
 
 		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;	
-		if(qdock->widget())
-        {
-            if (uiExternal)
-                uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
-            owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
-        }
+        if (uiExternal)
+            uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
+
+        if (qdock->widget())
+           owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
+        else
+            owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
     }
 
     void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
@@ -155,8 +159,10 @@ namespace UiServices
 	    QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second; 
         if (uiExternal)
 	        uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
-        
-        owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
+        if (qdock->widget())
+            owner_->GetInworldSceneController()->AddWidgetToMenu(qdock, entry, menu, icon);
+        else
+            owner_->GetInworldSceneController()->AddWidgetToMenu(widget->widget(), entry, menu, icon);
     }
 
     void UiSceneService::RemoveWidgetFromMenu(QWidget *widget)
