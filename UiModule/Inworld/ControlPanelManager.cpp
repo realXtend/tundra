@@ -85,12 +85,8 @@ namespace CoreUi
     void ControlPanelManager::CreateBasicControls()
     {
         QList<UiServices::ControlButtonType> buttons;
-		//$ BEGIN_MOD $
-		//$ MOD_DESCRIPTION We want to disable Quit and Ether options $
-
-		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
-		//buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
-		//$ END_MOD $
+        /// @todo: Read from ini
+		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;
         previous_button = 0;
