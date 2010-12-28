@@ -86,7 +86,7 @@ namespace CoreUi
     {
         QList<UiServices::ControlButtonType> buttons;
         /// @todo: Read from ini
-		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
+		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;
         previous_button = 0;
@@ -217,11 +217,8 @@ namespace CoreUi
         return backdrop_widget_->GetContentWidth();
     }
 
-	//$ BEGIN_MOD $
-	    void ControlPanelManager::CreateOptionalControls()
+    void ControlPanelManager::CreateOptionalControls()
     {
-#ifndef PLAYER_VIEWER
-
 		QList<UiServices::ControlButtonType> buttons;
         buttons  << UiServices::Build << UiServices::Ether;
 
@@ -245,8 +242,6 @@ namespace CoreUi
             previous_button = button;
         }
         UpdateBackdrop();
-#endif
     }
-	//$ END_MOD $
 
 }

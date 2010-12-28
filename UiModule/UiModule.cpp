@@ -161,12 +161,12 @@ namespace UiServices
         else
             LogWarning("Could not get world logic service.");
 
-		//$ BEGIN_MOD $
-		//We create and add the settings panel - Not in this version..
-		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
-		if (!uiExternal)
+        bool add_optional_buttons = true;
+#ifdef PLAYER_VIEWER
+        add_optional_buttons = false;
+#endif
+		if (add_optional_buttons)
 			inworld_scene_controller_->GetControlPanelManager()->CreateOptionalControls();
-		//$ END_MOD $
 
 		ui_scene_service_->CreateSettingsPanel();
     }
