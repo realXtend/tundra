@@ -156,7 +156,7 @@ class ObjectEdit(Component):
         print "baseselect", ent
         
         self.sel_activated = False
-        self.worldstream.SendObjectSelectPacket(ent.Id)
+        #self.worldstream.SendObjectSelectPacket(ent.Id)
         #self.updateSelectionBox(ent)
         self.highlight(ent)
         self.soundRuler(ent)
@@ -182,17 +182,17 @@ class ObjectEdit(Component):
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.Id == ent.Id:
                 self.sels.remove(_ent)
-                self.worldstream.SendObjectDeselectPacket(ent.Id)
+                #self.worldstream.SendObjectDeselectPacket(ent.Id)
 
     def deselect_all(self):
         if len(self.sels) > 0:
             for ent in self.sels:
                 self.remove_highlight(ent)
                 self.removeSoundRuler(ent)
-                try:
-                    self.worldstream.SendObjectDeselectPacket(ent.Id)
-                except ValueError:
-                    r.logInfo("objectedit.deselect_all: entity doesn't exist anymore")
+                #try:
+                #    self.worldstream.SendObjectDeselectPacket(ent.Id)
+                #except ValueError:
+                #    r.logInfo("objectedit.deselect_all: entity doesn't exist anymore")
             self.sels = []
            
             self.hideManipulator()
@@ -203,6 +203,7 @@ class ObjectEdit(Component):
             #self.window.deselected()
             
     def highlight(self, ent):
+        print "creating highlight for", ent
         try:
             ent.highlight
         except AttributeError:
@@ -288,16 +289,16 @@ class ObjectEdit(Component):
     
     def linkObjects(self):
         ids = self.getSelectedObjectIds()
-        self.worldstream.SendObjectLinkPacket(ids)
+        #self.worldstream.SendObjectLinkPacket(ids)
         self.deselect_all()
         
     def unlinkObjects(self):
         ids = self.getSelectedObjectIds()
-        self.worldstream.SendObjectDelinkPacket(ids)
+        #self.worldstream.SendObjectDelinkPacket(ids)
         self.deselect_all()
 
     def on_mouseleftpressed(self, mouseinfo):
-        #print "on_mouseleftpressed", mouseinfo.x, mouseinfo.y
+        print "on_mouseleftpressed", mouseinfo.x, mouseinfo.y
         if mouseinfo.IsItemUnderMouse():
             return
         if mouseinfo.HasShiftModifier() and not mouseinfo.HasCtrlModifier() and not mouseinfo.HasAltModifier():
@@ -477,7 +478,7 @@ class ObjectEdit(Component):
     def undo(self):
         ent = self.active
         if ent is not None:
-            self.worldstream.SendObjectUndoPacket(ent.prim.FullId)
+            #self.worldstream.SendObjectUndoPacket(ent.prim.FullId)
             #self.window.update_guivals(ent)
             self.modified = False
             self.deselect_all()
@@ -498,7 +499,8 @@ class ObjectEdit(Component):
         #ent = self.active
         #if ent is not None:
         for ent in self.sels:
-            self.worldstream.SendObjectDuplicatePacket(ent.Id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
+            pass
+            #self.worldstream.SendObjectDuplicatePacket(ent.Id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
         
     def createObject(self):
         avatar = naali.getUserAvatar()
@@ -509,12 +511,11 @@ class ObjectEdit(Component):
         start_y = pos.y() + .7
         start_z = pos.z()
 
-        self.worldstream.SendObjectAddPacket(start_x, start_y, start_z)
+        #self.worldstream.SendObjectAddPacket(start_x, start_y, start_z)
 
     def deleteObject(self):
         if self.active is not None:
             self.manipulator.hideManipulator()
-            #self.hideSelector()        
             self.deselect_all()
             self.sels = []
             
@@ -538,11 +539,11 @@ class ObjectEdit(Component):
                 qpos.setZ(v)
 
             ent.placeable.Position = qpos
-            ent.network.Position = qpos
+            #ent.network.Position = qpos
             self.manipulator.moveTo(self.sels)
 
-            if not self.dragging:
-                r.networkUpdate(ent.Id)
+            #if not self.dragging:
+            #    r.networkUpdate(ent.Id)
             self.modified = True
             
     def changescale(self, i, v):
@@ -564,8 +565,8 @@ class ObjectEdit(Component):
                 
                 ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
                 
-                if not self.dragging:
-                    r.networkUpdate(ent.Id)
+                #if not self.dragging:
+                #    r.networkUpdate(ent.Id)
                 self.modified = True
                 
     def changerot(self, i, v):
@@ -576,9 +577,9 @@ class ObjectEdit(Component):
         if ent is not None and not self.usingManipulator:
             ort = mu.euler_to_quat(v)
             ent.placeable.Orientation = ort
-            ent.network.Orientation = ort
-            if not self.dragging:
-                r.networkUpdate(ent.Id)
+            #ent.network.Orientation = ort
+            #if not self.dragging:
+            #    r.networkUpdate(ent.Id)
                 
             self.modified = True
 
