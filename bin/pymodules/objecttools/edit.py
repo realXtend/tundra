@@ -140,7 +140,6 @@ class ObjectEdit(Component):
         self.windowActive = False
         self.windowActiveStoredState = None
         self.canmove = False
-        #self.selection_box = None
         self.selection_rect_startpos = None
     
     def resetManipulators(self):
@@ -153,13 +152,8 @@ class ObjectEdit(Component):
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
  
     def baseselect(self, ent):
-        print "baseselect", ent
-        
         self.sel_activated = False
-        #self.worldstream.SendObjectSelectPacket(ent.Id)
-        #self.updateSelectionBox(ent)
         self.highlight(ent)
-        self.soundRuler(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
         return ent
@@ -168,7 +162,6 @@ class ObjectEdit(Component):
         self.deselect_all()
         ent = self.baseselect(ent)
         self.sels.append(ent)
-        #self.window.selected(ent, False)
         self.canmove = True
 
     def multiselect(self, ent):
@@ -178,17 +171,14 @@ class ObjectEdit(Component):
     def deselect(self, ent, valid=True):
         if valid: #the ent is still there, not already deleted by someone else
             self.remove_highlight(ent)
-            self.removeSoundRuler(ent)
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.Id == ent.Id:
                 self.sels.remove(_ent)
-                #self.worldstream.SendObjectDeselectPacket(ent.Id)
 
     def deselect_all(self):
         if len(self.sels) > 0:
             for ent in self.sels:
                 self.remove_highlight(ent)
-                self.removeSoundRuler(ent)
                 #try:
                 #    self.worldstream.SendObjectDeselectPacket(ent.Id)
                 #except ValueError:
@@ -203,7 +193,6 @@ class ObjectEdit(Component):
             #self.window.deselected()
             
     def highlight(self, ent):
-        print "creating highlight for", ent
         try:
             ent.highlight
         except AttributeError:
@@ -226,34 +215,6 @@ class ObjectEdit(Component):
                 r.logInfo("objectedit.remove_highlight called, but entity already removed")
         else:
             ent.RemoveComponentRaw(h)
-
-    def soundRuler(self, ent):
-        return # early bail, need to check later
-        if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
-            try:
-                sr = ent.GetOrCreateComponentRaw('EC_SoundRuler')
-            except:
-                # what to do? no soundruler O.o
-                return
-
-            sr = ent.soundruler
-            sr.SetVolume(ent.prim.SoundVolume)
-            sr.SetRadius(ent.prim.SoundRadius)
-            sr.Show()
-            sr.UpdateSoundRuler()
-
-    def removeSoundRuler(self, ent):
-        return # nothing, we don't use it yet in tundra
-        try:
-            if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
-                try:
-                    sr = ent.soundruler
-                except AttributeError:
-                    r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.Id)
-                else:
-                    ent.RemoveComponentRaw(sr)
-        except AttributeError:
-            r.logInfo("objectedit.removeSoundRuler: entity already removed. Prim doesn't exist anymore")
 
     def cycleManipulator(self):
         if self.manipulator == self.manipulators[self.MANIPULATE_FREEMOVE]:
@@ -300,7 +261,6 @@ class ObjectEdit(Component):
         self.deselect_all()
 
     def on_mouseleftpressed(self, mouseinfo):
-        print "on_mouseleftpressed", mouseinfo.x, mouseinfo.y
         if mouseinfo.IsItemUnderMouse():
             return
         if mouseinfo.HasShiftModifier() and not mouseinfo.HasCtrlModifier() and not mouseinfo.HasAltModifier():
@@ -326,7 +286,7 @@ class ObjectEdit(Component):
         self.usingManipulator = True
 
         if ent is not None:
-            if not self.manipulator.compareIds(ent.Id) and editable(ent): #ent.Id != self.selection_box.Id and 
+            if not self.manipulator.compareIds(ent.Id) and editable(ent):
                 r.eventhandled = self.EVENTHANDLED
                 found = False
                 for entity in self.sels:
@@ -334,9 +294,8 @@ class ObjectEdit(Component):
                         found = True
                
                 if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
-                    if self.validId(ent.Id):
-                        if not found:
-                            self.select(ent)
+                    if not found:
+                        self.select(ent)
 
                 elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
@@ -407,16 +366,12 @@ class ObjectEdit(Component):
             for entity in self.sels:
                 if entity.Id == ent.Id:
                     found = True
-            if self.validId(ent.Id):
-                if not found:
-                    self.multiselect(ent)
-                else:
-                    self.deselect(ent)
-                self.canmove = True
+            if not found:
+                self.multiselect(ent)
+            else:
+                self.deselect(ent)
+            self.canmove = True
             
-    def validId(self, id):
-        return True # useless in Tundra, as everything goes from 1 up. Just return True for now
-
     def on_mousemove(self, mouseinfo):
         """Handle mouse move events. When no button is pressed, just check
         for hilites necessity in manipulators. When a button is pressed, handle
@@ -641,7 +596,6 @@ class ObjectEdit(Component):
                 self.deselect_all()
                 for ent in self.sels:
                     self.remove_highlight(ent)
-                    self.removeSoundRuler(ent)
 
         # Store the state before build scene activated us
         if activate == True and self.windowActiveStoredState == None:

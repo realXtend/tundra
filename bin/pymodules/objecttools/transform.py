@@ -103,7 +103,6 @@ class Manipulator:
             gizmo = ent.GetOrCreateComponentRaw("EC_Gizmo")
             ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
             ruler.SetVisible(False)
-            #r.logInfo("hide ruler createManipulator")
             ruler.SetType(self.MANIPULATOR_RULER_TYPE)
             ruler.UpdateRuler()
             return ent 
@@ -119,7 +118,6 @@ class Manipulator:
             pass
     
     def initVisuals(self):
-        #r.logInfo("initVisuals in manipulator " + str(self.NAME))
         if self.manipulator is None:
             self.manipulator = self.createManipulator()
             self.hideManipulator()
