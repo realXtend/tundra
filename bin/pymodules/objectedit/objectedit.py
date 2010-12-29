@@ -243,7 +243,8 @@ class ObjectEdit(Component):
                 self.remove_sound_ruler(ent)
                 self.remove_selected(ent)
                 try:
-                    self.worldstream.SendObjectDeselectPacket(ent.Id)
+                    if self.worldstream.IsConnected():
+                        self.worldstream.SendObjectDeselectPacket(ent.Id)
                 except ValueError:
                     r.logInfo("objectedit.deselect_all: entity doesn't exist anymore")
             self.sels = []
