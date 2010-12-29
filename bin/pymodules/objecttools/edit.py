@@ -25,8 +25,10 @@ else:
     #window = reload(window)
     transform= reload(transform)
 
-def editable(ent): #removed this from PyEntity
-    return ent.HasComponent('EC_OpenSimPrim')
+# note: difference from develop: in tundra there is no EC_OpenSimPrim, so we assume
+# everything that is placeable is editable
+def editable(ent):
+    return ent.HasComponent('EC_Placeable')
     
 class ObjectEdit(Component):
     EVENTHANDLED = False
