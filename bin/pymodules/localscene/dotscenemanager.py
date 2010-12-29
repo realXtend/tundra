@@ -179,16 +179,16 @@ class DotSceneManager:
     
     def setCenterPointAndCenterVectors(self):
         # center point
-        if(self.nodes.__len__()>1):
+        if(len(self.nodes)>1):
             sumVec = Vec(0,0,0)
             for k, oNode in self.nodes.iteritems():
                 sumVec = self.vectorAdd(sumVec, oNode.position)
             sumX = sumVec.x()
             sumY = sumVec.y()
             sumZ = sumVec.z()
-            centerX = sumX/float(self.nodes.__len__())
-            centerY = sumY/float(self.nodes.__len__())
-            centerZ = sumZ/float(self.nodes.__len__())
+            centerX = sumX/float(len(self.nodes))
+            centerY = sumY/float(len(self.nodes))
+            centerZ = sumZ/float(len(self.nodes))
             relativeCenter = Vec(centerX, centerY, centerZ)
             self.centerPoint = Vec(centerX+self.xshift, centerY + self.yshift, centerZ + self.zshift)
             # print "center point: ", self.centerPoint.x(), self.centerPoint.y(), self.centerPoint.z()
@@ -208,7 +208,7 @@ class DotSceneManager:
                 # print diffVec
                 oNode.position = diffVec
                 self.nodeCenterVectors[oNode]=diffVec
-        elif(self.nodes.__len__()==1):
+        elif(len(self.nodes)==1):
             oNode=self.nodes[self.nodes.keys()[0]]
             self.centerPoint=oNode.position
             
@@ -248,7 +248,7 @@ class DotSceneManager:
         q.normalize()
         # print "rotations:"
         
-        if(self.nodes.__len__()>1): # only do rotations for locations if node amount > 1        
+        if(len(self.nodes)>1): # only do rotations for locations if node amount > 1        
             for oNode, CVec in self.nodeCenterVectors.iteritems():
                 CRot=q.rotatedVector(CVec)
                 calibVec = self.calibrateVec(CRot, CVec)
@@ -267,7 +267,7 @@ class DotSceneManager:
                 # print "new node pos:", newNodePos
                 oNode.position=newNodePos
                 self.setOgreNodePosition(oNode, self.xshift, self.yshift, self.zshift)
-        elif(self.nodes.__len__()==1):
+        elif(len(self.nodes)==1):
             oNode=self.nodes[self.nodes.keys()[0]]
             self.setOgreNodePosition(oNode, self.xshift, self.yshift, self.zshift)
 

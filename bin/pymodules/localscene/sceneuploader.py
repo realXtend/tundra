@@ -123,7 +123,7 @@ class SceneUploader:
     def parseCapsUrl(self, cap_url):
         r.logInfo(cap_url)
         url_split = cap_url.split(':')
-        if(url_split.__len__<3):
+        if(len(url_split)<3):
             r.logInfo("mallformed cap url for scene upload")
             return False
         surl = url_split[1]
@@ -372,7 +372,8 @@ class SceneUploader:
             #print oNode.entityMeshFile
             print k
             pathToFile = relativepath + os.sep + oNode.entityMeshFile
-            if(allreadyread.__contains__(pathToFile)==False):
+            #if(allreadyread.__contains__(pathToFile)==False):
+            if(not pathToFile in allreadyread):
                 print pathToFile
                 allreadyread.append(pathToFile)
                 tar.add(pathToFile)

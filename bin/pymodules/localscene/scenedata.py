@@ -114,15 +114,18 @@ class SceneDataManager:
             
     def removeFiles(self):
         for m in self.meshes:
-            if(self.olMeshes.__contains__(m)==False):
+            #if(self.olMeshes.__contains__(m)==False):
+            if(not m in self.olMeshes):
                 rmPath = MESH_MODEL_FOLDER + os.sep + m
                 os.remove(rmPath)
         for t in self.textures:
-            if(self.olTextures.__contains__(t)==False):
+            #if(self.olTextures.__contains__(t)==False):
+            if(not t in self.olTextures):
                 rmPath = TEXTURE_FOLDER + os.sep + t
                 os.remove(rmPath)
         for material in self.materials:
-            if(self.olMaterials.__contains__(material)==False):
+            #if(self.olMaterials.__contains__(material)==False):
+            if(not material in self.olMaterials):
                 rmPath = MATERIAL_FOLDER + os.sep + material
                 os.remove(rmPath)
                 
@@ -131,7 +134,8 @@ class SceneDataManager:
         elems = self.xmlDoc.getElementsByTagName('entity')
         for e in elems:
             meshfile = e.getAttribute('meshFile')
-            if(alreadyAdded.__contains__(meshfile)==False):
+            #if(alreadyAdded.__contains__(meshfile)==False):
+            if(not meshfile in alreadyAdded):
                 self.meshes.append(meshfile)
                 alreadyAdded.append(meshfile)
             
@@ -143,9 +147,9 @@ class SceneDataManager:
             sline = line.strip()
             if(sline.startswith('texture')):
                 split = sline.split(' ')
-                if(split.__len__()==2):
-                    #print split[1]
-                    if(alreadyAdded.__contains__(split[1])==False):
+                if(len(split)==2):
+                    #if(alreadyAdded.__contains__(split[1])==False):
+                    if(not split[1] in alreadyAdded):
                         #print "adding"
                         self.textures.append(split[1])
                         alreadyAdded.append(split[1])
