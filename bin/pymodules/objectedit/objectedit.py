@@ -700,8 +700,9 @@ class ObjectEdit(Component):
     def on_exit(self):
         r.logInfo("Object Edit exiting..")
         # remove selection box component and entity
-        self.selection_box_entity.RemoveComponentRaw(self.selection_box)
-        naali.removeEntity(self.selection_box_entity)
+        if self.selection_box_entity is not None and self.selection_box_entity:
+            self.selection_box_entity.RemoveComponentRaw(self.selection_box)
+            naali.removeEntity(self.selection_box_entity)
         # Connect to key pressed signal from input context
         self.edit_inputcontext.disconnectAll()
         self.deselect_all()
