@@ -45,7 +45,6 @@ class ObjectEdit(Component):
     def __init__(self):
         self.sels = []  
         Component.__init__(self)
-        #self.window = window.ObjectEditWindow(self)
         self.resetValues()
         self.worldstream = r.getServerConnection()
         self.usingManipulator = False
@@ -82,12 +81,6 @@ class ObjectEdit(Component):
         loader = QUiLoader()
         selectionfile = QFile(self.SELECTIONRECT)
         self.selection_rect = loader.load(selectionfile)
-        #rectprops = r.createUiWidgetProperty(2)
-        #~ print type(rectprops), dir(rectprops)
-        #print rectprops.WidgetType
-        #uiprops.widget_name_ = "Selection Rect"
-        
-        #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         proxy = r.createUiProxyWidget(self.selection_rect)
         uism = naali.ui
         uism.AddWidgetToScene(proxy)
@@ -111,11 +104,6 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('CreateObject()', self.createObject)
             self.cpp_python_handler.connect('DuplicateObject()', self.duplicate)
             self.cpp_python_handler.connect('DeleteObject()', self.deleteObject)
-            # Pass widgets
-            #self.cpp_python_handler.PassWidget("Mesh", self.window.mesh_widget)
-            #self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
-            #self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
-            #self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
             # Check if build mode is active, required on python restarts
             self.on_activate_editing(self.cpp_python_handler.IsBuildingActive())
             
