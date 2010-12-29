@@ -228,6 +228,7 @@ class ObjectEdit(Component):
             ent.RemoveComponentRaw(h)
 
     def soundRuler(self, ent):
+        return # early bail, need to check later
         if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
             try:
                 sr = ent.GetOrCreateComponentRaw('EC_SoundRuler')
@@ -242,6 +243,7 @@ class ObjectEdit(Component):
             sr.UpdateSoundRuler()
 
     def removeSoundRuler(self, ent):
+        return # nothing, we don't use it yet in tundra
         try:
             if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
                 try:
