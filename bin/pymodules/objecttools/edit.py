@@ -153,7 +153,7 @@ class ObjectEdit(Component):
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
  
     def baseselect(self, ent):
-        ent, children = self.parentalCheck(ent)
+        print "baseselect", ent
         
         self.sel_activated = False
         self.worldstream.SendObjectSelectPacket(ent.Id)
@@ -162,54 +162,19 @@ class ObjectEdit(Component):
         self.soundRuler(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
-        return ent, children
-        
-    def parentalCheck(self, ent):
-        children = []
-        
-        while 1:
-            try:
-                qprim = ent.prim
-            except AttributeError:
-                # we come here when parent has no EC_opensimprim component
-                break
-
-            if qprim.ParentId != 0:
-                #~ r.logInfo("Entity had a parent, lets pick that instead!")
-                # get the parent entity, and if it is editable set it to ent.
-                # on next loop we get prim from it and from that we get children.
-                temp_ent = naali.getEntity(qprim.ParentId)
-                if not editable(temp_ent):
-                    # not a prim, so not selecting all children
-                    break
-                else:
-                    ent = temp_ent
-            else:
-                #~ r.logInfo("Entity had no parent, maybe it has children?")
-                # either we get children or not :) But this is the 'parent' in either case
-                children = qprim.GetChildren()
-                break
-        return ent, children
+        return ent
         
     def select(self, ent):        
         self.deselect_all()
-        ent, children = self.baseselect(ent)
+        ent = self.baseselect(ent)
         self.sels.append(ent)
         #self.window.selected(ent, False)
         self.canmove = True
-        self.highlightChildren(children)
 
     def multiselect(self, ent):
         self.sels.append(ent)
-        ent, children = self.baseselect(ent)
-        self.highlightChildren(children)
+        ent = self.baseselect(ent)
     
-    def highlightChildren(self, children):
-        for child_id in children:
-            child = naali.getEntity(int(child_id))
-            self.highlight(child)
-            self.soundRuler(child)
-            
     def deselect(self, ent, valid=True):
         if valid: #the ent is still there, not already deleted by someone else
             self.remove_highlight(ent)
@@ -390,15 +355,6 @@ class ObjectEdit(Component):
     def on_mouseleftreleased(self, mouseinfo):
         self.left_button_down = False
         if self.active: #XXX something here?
-            if self.sel_activated and self.dragging:
-                for ent in self.sels:
-                    #~ print "LeftMouseReleased, networkUpdate call"
-                    parent, children = self.parentalCheck(ent)
-                    r.networkUpdate(ent.Id)
-                    for child in children:
-                        child_id = int(child)
-                        r.networkUpdate(child_id)
-            
             self.sel_activated = True
         
         if self.dragging:
@@ -557,17 +513,6 @@ class ObjectEdit(Component):
 
     def deleteObject(self):
         if self.active is not None:
-            for ent in self.sels:
-                #r.logInfo("deleting " + str(ent.Id))
-                ent, children = self.parentalCheck(ent)
-                for child_id in children:
-                    child = naali.getEntity(int(child_id))
-                    #~ self.worldstream.SendObjectDeRezPacket(child.Id, r.getTrashFolderId())
-                #~ if len(children) == 0:
-                self.worldstream.SendObjectDeRezPacket(ent.Id, r.getTrashFolderId())
-                #~ else:
-                    #~ r.logInfo("trying to delete a parent, need to fix this!")
-            
             self.manipulator.hideManipulator()
             #self.hideSelector()        
             self.deselect_all()
