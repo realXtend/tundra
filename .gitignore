@@ -65,6 +65,8 @@ bin/viewerd.exe
 bin/dbus/
 bin/gabble/
 bin/gstreamer/
+bin/festival.exe
+bin/festival/
 bin/fullmemoryleaklog.txt
 bin/pymodules/DLLs/
 bin/pymodules/python26_Lib.zip
