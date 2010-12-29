@@ -80,6 +80,8 @@ void  EC_Ruler::Show()
         return;
     }
     
+    rulerObject->setVisible(true);
+    
     if ( gridObject )
         gridObject->setVisible(true);
     
@@ -95,6 +97,8 @@ void  EC_Ruler::Hide()
         LogError("EC_Ruler not initialized properly.");
         return;
     }
+    
+    rulerObject->setVisible(false);
     
     if ( gridObject )
         gridObject->setVisible(false);
