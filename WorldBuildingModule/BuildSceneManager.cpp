@@ -221,7 +221,7 @@ namespace WorldBuilding
 
     void BuildSceneManager::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
     {
-		if (!widget)
+		if (!widget || !widget->widget())
             return;
         if (!scene_->isActive())
             return;
