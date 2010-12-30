@@ -47,8 +47,7 @@ namespace WorldBuilding
 		assignWidget_(0),
 		inside_(false),
         create_objects_action_(0),
-        show_build_widgets_action_(0),
-	edit_content_created_(false)
+        show_build_widgets_action_(0)
 //$ END_MOD $
     {
         setParent(parent);
@@ -383,7 +382,6 @@ namespace WorldBuilding
                 object_manip_ui.main_layout->insertWidget(inject_pos, title);
 //$ BEGIN_MOD $		
 				if(uiExternal){
-				        CreateEditContent();
 					panel_widgets_ << title;
 					asset_ui_.main_layout->insertWidget(asset_ui_.main_layout->count(), title);
 				}
@@ -798,8 +796,6 @@ namespace WorldBuilding
 	{
 		Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
 		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-		if (edit_content_created_)
-		  return;
         bool create_buttons = true; // todo read from ini
 		if(uiExternal && ui)
         {
@@ -874,7 +870,6 @@ namespace WorldBuilding
 			ui->AddPanelToEditMode(assignWidget_);
 
 			connect(uiExternal,SIGNAL(EditModeChanged(bool)),this,SLOT(ActiveEditMode(bool)));
-			edit_content_created_ = true;
 		}
 	}
 	void BuildSceneManager::ActiveEditMode(bool active)

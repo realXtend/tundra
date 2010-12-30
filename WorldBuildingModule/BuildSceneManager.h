@@ -230,7 +230,6 @@ namespace WorldBuilding
 		bool inside_;
 
 		QList<QWidget*> panel_widgets_;
-		bool edit_content_created_;
 //$ END_MOD $
     };
 }
