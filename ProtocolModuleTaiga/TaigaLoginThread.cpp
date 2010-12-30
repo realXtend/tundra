@@ -104,11 +104,11 @@ namespace TaigaProtocol
 
             // Gather version information.
             const std::string &group = Foundation::Framework::ConfigurationGroup();
-            const char *major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major").c_str();
-            const char *minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor").c_str();
+            std::string major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
+            std::string minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor");
 
             call.AddMember("start", QString("last").toStdString());
-            call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());
+            call.AddMember("version", QString("realXtend Naali %1.%2").arg(major.c_str(), minor.c_str()).toStdString());
             call.AddMember("channel", QString(APPLICATION_NAME).toStdString());
             call.AddMember("platform", GetPlatform());
             call.AddMember("mac", mac_hash);
