@@ -1,8 +1,8 @@
 import time
+import os
 import threading
 import subprocess
 import sys
-import os
 import time
 import Queue
 import meshhandler
@@ -12,7 +12,7 @@ class Debug:
     """ Class for debugging what happens inside process threads """
     def __init__(self, fname):
         self.fname = fname
-        self.debug_on = False # set True to print debugs
+        self.debug_on = True # set True to print debugs
     def writeDebug(self, s):
         if self.debug_on==True:
             f = open(self.fname, "a")
@@ -146,6 +146,10 @@ class LoadProcessHandle:
     def startProcess(self, args, controller):
         print "startProcess"
         #self.file = file
+        cwd=os.getcwd()
+        pypath = cwd + "\\pymodules\\python26_Lib.zip;"
+        os.putenv('PYTHONPATH', pypath)
+        
         self.p = subprocess.Popen(["python", self.file, args], #env=self.envVars
             shell=False, 
             stdin=subprocess.PIPE, 

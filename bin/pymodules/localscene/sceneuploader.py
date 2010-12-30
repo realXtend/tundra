@@ -336,8 +336,6 @@ class SceneUploader:
             line = f.readline()
             if (line==None):
                 break
-            #dir(line).__contains__('endswith')
-            #print "line ", line
             if(line.endswith('.jpg\r\n') or line.endswith('.dds\r\n') or line.endswith('.png\r\n') or line.endswith('.tga\r\n')):
                 txtList.append( line.split(' ')[-1][:-2])
             if(line.endswith('.jpg\n') or line.endswith('.dds\n') or line.endswith('.png\n') or line.endswith('.tga\n')):
@@ -372,7 +370,6 @@ class SceneUploader:
             #print oNode.entityMeshFile
             print k
             pathToFile = relativepath + os.sep + oNode.entityMeshFile
-            #if(allreadyread.__contains__(pathToFile)==False):
             if(not pathToFile in allreadyread):
                 print pathToFile
                 allreadyread.append(pathToFile)
