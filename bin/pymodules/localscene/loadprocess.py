@@ -12,7 +12,7 @@ class Debug:
     """ Class for debugging what happens inside process threads """
     def __init__(self, fname):
         self.fname = fname
-        self.debug_on = True # set True to print debugs
+        self.debug_on = False # set True to print debugs
     def writeDebug(self, s):
         if self.debug_on==True:
             f = open(self.fname, "a")
