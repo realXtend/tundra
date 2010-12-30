@@ -191,9 +191,9 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     WCHAR* szAppName = L"realXtend";
 // $ BEGIN_MOD $
 #ifdef PLAYER_VIEWER
-    WCHAR* szVersion = L"Naali_v0.3.4-Player-0.1";
+    WCHAR* szVersion = L"Naali_v0.4.0-RC2-Player-0.1";
 #else
-    WCHAR* szVersion = L"Naali_v0.4.0-RC1";
+    WCHAR* szVersion = L"Naali_v0.4.0-RC2";
 #endif
 // $ END_MOD $
 	DWORD dwBufferSize = MAX_PATH;

@@ -1,4 +1,4 @@
-!define VERSION "0.3.4.1-UiExternal-0.1"
+!define VERSION "0.4.0-RC2"
 
 Name "Naali ${VERSION}"
 
@@ -8,7 +8,7 @@ Page instfiles
 InstallDir "$PROGRAMFILES\Naali ${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "Naali-0.3.4.1-UiExternal-0.1.exe"
+OutFile "Naali-0.4.0-RC2.exe"
 
 XPStyle on
 
