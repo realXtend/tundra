@@ -1082,9 +1082,9 @@ namespace OgreRenderer
     }
     
     //qt wrapper / upcoming replacement for the one above
-    QVariantList Renderer::FrustumQuery(QRect &viewrect)
+    QList<Scene::Entity*> Renderer::FrustumQuery(QRect &viewrect)
     {
-        QVariantList l;
+        QList<Scene::Entity*>l;
         float w= (float)renderWindow->OgreRenderWindow()->getWidth();
         float h= (float)renderWindow->OgreRenderWindow()->getHeight();
         float left = (float)(viewrect.left()) / w, right = (float)(viewrect.right()) / w;
@@ -1116,7 +1116,7 @@ namespace OgreRenderer
                 continue;
             }
             if(entity)
-                l << entity->GetId();//std::cout << "Hit MovableObject:" << m << std::endl;
+                l << entity;//->GetId();//std::cout << "Hit MovableObject:" << m << std::endl;
         }
 
         scenemanager_->destroyQuery(query);
