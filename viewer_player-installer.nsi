@@ -1,4 +1,4 @@
-!define VERSION "0.3.2-UiExternal-0.2"
+!define VERSION "0.4.0-RC1"
 
 Name "Naali Player ${VERSION}"
 
