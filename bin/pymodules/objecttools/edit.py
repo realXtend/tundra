@@ -149,6 +149,7 @@ class ObjectEdit(Component):
     def baseselect(self, ent):
         self.sel_activated = False
         self.highlight(ent)
+        self.ec_selected(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
         
         return ent
@@ -166,14 +167,15 @@ class ObjectEdit(Component):
     def deselect(self, ent, valid=True):
         if valid: #the ent is still there, not already deleted by someone else
             self.remove_highlight(ent)
-        for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
-            if _ent.Id == ent.Id:
-                self.sels.remove(_ent)
+            self.remove_selected(ent)
+        if ent in self.sels:
+            self.sels.remove(ent)
 
     def deselect_all(self):
         if len(self.sels) > 0:
             for ent in self.sels:
                 self.remove_highlight(ent)
+                self.remove_selected(ent)
                 #try:
                 #    self.worldstream.SendObjectDeselectPacket(ent.Id)
                 #except ValueError:
@@ -199,6 +201,25 @@ class ObjectEdit(Component):
             h.Show()
         else:
             r.logInfo("objectedit.highlight called for an already hilited entity: %d" % ent.Id)
+    
+    # todo rename to something more sane, or check if this can be merged with def select() elsewhere
+    def ec_selected(self, ent):
+        try:
+            s = ent.selected
+        except AttributeError:
+            s = ent.GetOrCreateComponentRaw("EC_Selected")
+            
+    def remove_selected(self, ent):
+        try:
+            s = ent.selected
+        except:
+            try:
+                r.logInfo("objectedit.remove_selected called for a non-selected entity: %d" % ent.Id)
+            except ValueError:
+                r.logInfo("objectedit.remove_selected called, but entity already removed")
+        else:
+            ent.RemoveComponentRaw(s)
+    
             
     def remove_highlight(self, ent):
         try:
