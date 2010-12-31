@@ -287,7 +287,7 @@ class ObjectEdit(Component):
 
 
         if ent is not None:
-            if not editable(ent):
+            if editable(ent):
                 r.eventhandled = self.EVENTHANDLED
                
                 if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
