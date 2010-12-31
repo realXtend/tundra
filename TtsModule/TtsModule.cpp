@@ -45,16 +45,10 @@ namespace Tts
 
 	void TtsModule::Load()
 	{
-		if (QDir("tmp").exists())
-			boost::filesystem::remove_all("tmp");
-
-		QDir().mkdir("tmp");
 	}
 
 	void TtsModule::UnLoad()
 	{
-		if (QDir("tmp").exists())
-			boost::filesystem::remove_all("tmp");
 	}
 
 	void TtsModule::Initialize()
