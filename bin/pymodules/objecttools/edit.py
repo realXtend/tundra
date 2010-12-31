@@ -4,7 +4,7 @@ from circuits import Component
 import mathutils as mu
 
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtCore import QFile, Qt
+from PythonQt.QtCore import QFile, Qt, QRect
 from PythonQt.QtGui import QVector3D
 from PythonQt.QtGui import QQuaternion as QQuaternion
 
@@ -40,8 +40,6 @@ class ObjectEdit(Component):
     MANIPULATE_SCALE = 2
     MANIPULATE_ROTATE = 3
     
-    SELECTIONRECT = "pymodules/objectedit/selection.ui"
-
     def __init__(self):
         self.sels = []  
         Component.__init__(self)
@@ -78,18 +76,15 @@ class ObjectEdit(Component):
         
         self.resetManipulators()
         
-        loader = QUiLoader()
-        selectionfile = QFile(self.SELECTIONRECT)
-        self.selection_rect = loader.load(selectionfile)
-        proxy = r.createUiProxyWidget(self.selection_rect)
-        uism = naali.ui
-        uism.AddWidgetToScene(proxy)
-        proxy.setWindowFlags(0) #changing it to Qt::Widget
         
-        self.selection_rect.setGeometry(0,0,0,0)
+        self.selection_rect = QRect()
         self.selection_rect_startpos = None
         
         r.c = self #this is for using objectedit from command.py
+
+        self.selection_box_entity = None
+        self.selection_box = None
+        self.selection_box_inited = False
         
         # Get world building modules python handler, is not present in tundra
         self.cpp_python_handler = r.getQWorldBuildingHandler()
@@ -260,9 +255,17 @@ class ObjectEdit(Component):
         #self.worldstream.SendObjectDelinkPacket(ids)
         self.deselect_all()
 
+    def init_selection_box(self):
+        self.selection_box_entity = naali.createEntity()
+        self.selection_box = self.selection_box_entity.GetOrCreateComponentRaw('EC_SelectionBox')
+        self.selection_box.Hide()
+        self.selection_box_inited = True
+
     def on_mouseleftpressed(self, mouseinfo):
         if mouseinfo.IsItemUnderMouse():
             return
+        if not self.selection_box_inited:
+            self.init_selection_box()
         if mouseinfo.HasShiftModifier() and not mouseinfo.HasCtrlModifier() and not mouseinfo.HasAltModifier():
             self.on_multiselect(mouseinfo)
             return
@@ -282,28 +285,27 @@ class ObjectEdit(Component):
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
 
-        self.manipulator.initManipulation(ent, results, self.sels)
-        self.usingManipulator = True
 
         if ent is not None:
-            if not self.manipulator.compareIds(ent.Id) and editable(ent):
+            if not editable(ent):
                 r.eventhandled = self.EVENTHANDLED
-                found = False
-                for entity in self.sels:
-                    if entity.Id == ent.Id:
-                        found = True
                
                 if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
-                    if not found:
+                    if not ent in self.sels:
                         self.select(ent)
 
                 elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
                     
         else:
-            self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
-            self.canmove = False
-            self.deselect_all()
+            if ent is not None and self.manipulator.compareIds(ent.Id): # don't start selection box when manipulator is hit
+                self.manipulator.initManipulation(ent, results, self.sels)
+                self.usingManipulator = True
+            else:
+                self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
+                self.selection_box.Show()
+                self.canmove = False
+                self.deselect_all()
             
     def dragStarted(self, mouseinfo):
         width, height = renderer.GetWindowWidth(), renderer.GetWindowHeight()
@@ -321,20 +323,25 @@ class ObjectEdit(Component):
         
         if self.dragging:
             self.dragging = False
+
+        if self.selection_rect_startpos is not None:
+            hits = renderer.FrustumQuery(self.selection_rect)
+            
+            for hit in hits:
+                if hit in self.sels: continue
+                if not editable(hit): continue
+                try:
+                    self.multiselect(hit)
+                except ValueError:
+                    pass
+
+            self.selection_rect_startpos = None
+            self.selection_rect.setRect(0,0,0,0)
+            self.selection_box.Hide()
             
         self.manipulator.stopManipulating()
         self.manipulator.showManipulator(self.sels)
         self.usingManipulator = False
-        
-        if self.selection_rect_startpos is not None:
-            self.selection_rect.hide()
-
-            rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
-            if rectwidth != 0 and rectheight != 0:
-                r.logInfo("The selection rect was at: (" +str(rectx) + ", " +str(recty) + ") and size was: (" +str(rectwidth) +", "+str(rectheight)+")") 
-                self.selection_rect.setGeometry(0,0,0,0)
-            
-            self.selection_rect_startpos = None
     
     def selectionRectDimensions(self, mouseinfo):
         rectx = self.selection_rect_startpos[0]
@@ -405,12 +412,9 @@ class ObjectEdit(Component):
         if self.left_button_down:
             if self.selection_rect_startpos is not None:
                 rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
-                self.selection_rect.setGeometry(rectx, recty, rectwidth, rectheight)
-                self.selection_rect.show() #XXX change?
-                
-                rect = self.selection_rect.rect #0,0 - x, y
-                rect.translate(mouseinfo.x, mouseinfo.y)
-                hits = renderer.FrustumQuery(rect) #the wish
+                self.selection_rect.setRect(rectx, recty, rectwidth, rectheight)
+                self.selection_box.SetBoundingBox(self.selection_rect)
+                # TODO: test if hit update here makes sense
 
             else:
                 ent = self.active
@@ -421,8 +425,6 @@ class ObjectEdit(Component):
                     
                     self.prev_mouse_abs_x = mouse_abs_x
                     self.prev_mouse_abs_y = mouse_abs_y
-                    
-                    #self.window.update_guivals(ent)
    
     def on_inboundnetwork(self, evid, name):
         #print "editgui got an inbound network event:", id, name
@@ -559,6 +561,10 @@ class ObjectEdit(Component):
     
     def on_exit(self):
         r.logInfo("Object Edit exiting..")
+        # remove selection box component and entity
+        if self.selection_box_entity is not None and self.selection_box is not None:
+            self.selection_box_entity.RemoveComponentRaw(self.selection_box)
+            naali.removeEntity(self.selection_box_entity)
         # Connect to key pressed signal from input context
         self.edit_inputcontext.disconnectAll()
         self.deselect_all()
