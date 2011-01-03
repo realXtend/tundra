@@ -50,7 +50,10 @@ function ServerHandleUserConnected(connectionID, user) {
     var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController"]);
     avatarEntity.SetTemporary(true); // We never want to save the avatar entities to disk.
     avatarEntity.SetName(avatarEntityName);
-    avatarEntity.SetDescription(user.GetProperty("username"));
+    
+    if (user != null) {
+	avatarEntity.SetDescription(user.GetProperty("username"));
+    }
 
     var script = avatarEntity.script;
     script.type = "js";
@@ -69,7 +72,9 @@ function ServerHandleUserConnected(connectionID, user) {
 
     scene.EmitEntityCreatedRaw(avatarEntity);
     
-    print("[Avatar Application] Created avatar for " + user.GetProperty("username"));
+    if (user != null) {
+	print("[Avatar Application] Created avatar for " + user.GetProperty("username"));
+    }
 }
 
 function ServerHandleUserDisconnected(connectionID, user) {
@@ -77,5 +82,7 @@ function ServerHandleUserDisconnected(connectionID, user) {
     var entityID = scene.GetEntityByNameRaw(avatarEntityName).Id;
     scene.RemoveEntityRaw(entityID);
 
-    print("[Avatar Application] User " + user.GetProperty("username") + " disconnected, destroyed avatar entity.");
+    if (user != null) {
+	print("[Avatar Application] User " + user.GetProperty("username") + " disconnected, destroyed avatar entity.");
+    }
 }
