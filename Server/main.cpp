@@ -86,13 +86,6 @@ void setup (Foundation::Framework &fw)
 {
     // Exclude the login screen from loading
     fw.GetModuleManager()->ExcludeModule("LoginScreenModule");
-
-    // Exclude window & rendering related stuff, if a fully headless server is desired
-    //fw.GetModuleManager()->ExcludeModule("ConsoleModule");
-    //fw.GetModuleManager()->ExcludeModule("QtInputModule");
-    //fw.GetModuleManager()->ExcludeModule("OgreRenderingModule");
-    //fw.GetModuleManager()->ExcludeModule("OpenALAudioModule");
-    //fw.GetModuleManager()->ExcludeModule("UiServiceModule");
 }
 
 int run (int argc, char **argv)
@@ -108,6 +101,13 @@ int run (int argc, char **argv)
 #endif
     {
         Foundation::Framework fw(argc, argv);
+        // If there is no startserver command, start one in default port
+        if (!fw.ProgramOptions().count("startserver"))
+        {
+            boost::program_options::variables_map& variablemap = fw.ProgramOptions();
+            variablemap.insert(std::pair<std::string, boost::program_options::variable_value>("startserver", boost::program_options::variable_value(0, true)));
+        }
+        
         if (fw.Initialized())
         {
             setup (fw);

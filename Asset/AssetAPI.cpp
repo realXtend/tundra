@@ -162,7 +162,7 @@ AssetAPI::AssetRefType AssetAPI::ParseAssetRefType(QString assetRef)
         return AssetRefExternalUrl;
     if (assetRef.contains(":/") || assetRef.contains(":\\"))
         return AssetRefLocalPath; // Windows-style local path \bug This is not exact.
-    if (assetRef.startsWith("/"))
+    if (assetRef.startsWith("/") || assetRef.startsWith("./"))
         return AssetRefLocalPath; // Unix-style local path.
     if (assetRef.contains(":"))
         return AssetRefNamedStorage;
