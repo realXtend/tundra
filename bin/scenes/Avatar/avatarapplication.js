@@ -9,24 +9,20 @@ var avatar_area_z = 20;
 
 var isserver = server.IsRunning();
 
-if (isserver == false)
-{
+if (isserver == false) {
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
     inputmapper.SetTemporary(true);
     inputmapper.contextPriority = 102;
     inputmapper.RegisterMapping("Ctrl+Tab", "ToggleCamera", 1);
 
     me.Action("ToggleCamera").Triggered.connect(ClientHandleToggleCamera);
-}
-else
-{
+} else {
     server.UserAboutToConnect.connect(ServerHandleUserAboutToConnect);
     server.UserConnected.connect(ServerHandleUserConnected);
     server.UserDisconnected.connect(ServerHandleUserDisconnected);
 }
 
-function ClientHandleToggleCamera()
-{
+function ClientHandleToggleCamera() {
     // For camera switching to work, must have both the freelookcamera & avatarcamera in the scene
     var freelookcameraentity = scene.GetEntityByNameRaw("FreeLookCamera");
     var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
@@ -35,31 +31,29 @@ function ClientHandleToggleCamera()
     var freelookcamera = freelookcameraentity.ogrecamera;
     var avatarcamera = avatarcameraentity.ogrecamera;
 
-    if (avatarcamera.IsActive())
-    {
+    if (avatarcamera.IsActive()) {
         freelookcameraentity.placeable.transform = avatarcameraentity.placeable.transform;
         freelookcamera.SetActive();
-    }
-    else
-    {
+    } else {
         avatarcamera.SetActive();
     }
 }
 
-function ServerHandleUserAboutToConnect(connectionID, user)
-{
+function ServerHandleUserAboutToConnect(connectionID, user) {
     // Uncomment to test access control
     //if (user.GetProperty("password") != "xxx")
     //    user.DenyConnection();
 }
 
-function ServerHandleUserConnected(connectionID, user)
-{
+function ServerHandleUserConnected(connectionID, user) {
     var avatarEntityName = "Avatar" + connectionID;
     var avatarEntity = scene.CreateEntityRaw(scene.NextFreeId(), ["EC_Script", "EC_Placeable", "EC_AnimationController"]);
     avatarEntity.SetTemporary(true); // We never want to save the avatar entities to disk.
     avatarEntity.SetName(avatarEntityName);
-    avatarEntity.SetDescription(user.GetProperty("username"));
+    
+    if (user != null) {
+	avatarEntity.SetDescription(user.GetProperty("username"));
+    }
 
     var script = avatarEntity.script;
     script.type = "js";
@@ -78,14 +72,17 @@ function ServerHandleUserConnected(connectionID, user)
 
     scene.EmitEntityCreatedRaw(avatarEntity);
     
-    print("[Avatar Application] Created avatar for " + user.GetProperty("username"));
+    if (user != null) {
+	print("[Avatar Application] Created avatar for " + user.GetProperty("username"));
+    }
 }
 
-function ServerHandleUserDisconnected(connectionID, user)
-{
+function ServerHandleUserDisconnected(connectionID, user) {
     var avatarEntityName = "Avatar" + connectionID;
     var entityID = scene.GetEntityByNameRaw(avatarEntityName).Id;
     scene.RemoveEntityRaw(entityID);
 
-    print("[Avatar Application] User " + user.GetProperty("username") + " disconnected, destroyed avatar entity.");
+    if (user != null) {
+	print("[Avatar Application] User " + user.GetProperty("username") + " disconnected, destroyed avatar entity.");
+    }
 }
