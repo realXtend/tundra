@@ -255,7 +255,11 @@ void EC_HoveringText::ShowMessage(const QString &text)
         return;
     if (renderer_.expired())
         return;
-
+    
+    // Moved earlier to prevent gray opaque box artifact if text is empty. Original place was just before Redraw().
+    if (text.isNull() || text.isEmpty())
+        return;
+    
     Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
     assert(scene);
     if (!scene)
@@ -292,9 +296,6 @@ void EC_HoveringText::ShowMessage(const QString &text)
 
         sceneNode->attachObject(billboardSet_);
     }
-
-    if (text.isNull() || text.isEmpty())
-        return;
 
     //textAttr.Set(text);
     Redraw();
