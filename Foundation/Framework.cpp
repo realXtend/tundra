@@ -76,6 +76,7 @@ namespace Foundation
         asset(0)
     {
         ParseProgramOptions();
+        
         if (commandLineVariables.count("help")) 
         {
             std::cout << "Supported command line arguments: " << std::endl;
@@ -281,6 +282,7 @@ namespace Foundation
             ("auth_server", po::value<std::string>(), "realXtend authentication server address and port")
             ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
             ("login", "automatically login to server using provided credentials")
+            ("startserver", po::value<int>(0), "Start server automatically in specified port")
             ("run", po::value<std::string>(), "Run script on startup")
             ("file", po::value<std::string>(), "Load scene on startup")
             ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup");

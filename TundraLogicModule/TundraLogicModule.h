@@ -122,6 +122,11 @@ private:
     
     //! Type name of the module.
     static std::string type_name_static_;
+    
+    //! Whether to autostart the server
+    bool autostartserver_;
+    //! Autostart server port
+    short autostartserver_port_;
 };
 
 }

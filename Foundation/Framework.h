@@ -80,7 +80,7 @@ namespace Foundation
         void ParseProgramOptions();
 
         //! Returns the command line options specified as command-line options when starting up Naali.
-        const boost::program_options::variables_map &ProgramOptions() const { return commandLineVariables; }
+        boost::program_options::variables_map &ProgramOptions() { return commandLineVariables; }
 
         //! Do post-initialization steps. No need to call if using Framework::Go().
         /*! This function can be used if you wish to use the framework without main loop.
