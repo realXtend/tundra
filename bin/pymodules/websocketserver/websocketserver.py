@@ -128,7 +128,7 @@ def handle_clients(ws):
             id = params.get('id')
             av = scene.GetEntityByNameRaw("Avatar%s" % id)
 
-            av.Exec(myid, action, args)
+            av.Exec(1, action, args)
                 
         elif function == 'reboot':
             break
