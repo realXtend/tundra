@@ -56,7 +56,10 @@ namespace MumbleVoip
     private:
         void CreateSession();
         void CloseSession();
+        void CheckChannelQueue();
         QString GetUsername();
+        QString GetAvatarUuid();
+        void AddECVoiceChannel(EC_VoiceChannel* channel);
 
         Foundation::Framework* framework_;
         QString description_;
@@ -69,6 +72,7 @@ namespace MumbleVoip
         QList<EC_VoiceChannel*> ec_voice_channels_;
         QMap<EC_VoiceChannel*, QString> channel_names_;
         QSignalMapper* signal_mapper_;
+        QList<EC_VoiceChannel*> channel_queue_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);
