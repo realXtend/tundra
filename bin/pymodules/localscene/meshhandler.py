@@ -45,7 +45,7 @@ class MeshHandler:
         self.state = "remake meshes"
         self.remakeMeshes()
         self.state = "meshes generated"
-        # self.rewriteScales()
+        self.rewriteScales()
         self.writeConversionCheck()
         self.state = "end"
         pass
@@ -251,6 +251,4 @@ class MeshHandler:
                 print output
             pass
         pass
-
-        return
         
