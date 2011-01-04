@@ -61,7 +61,10 @@ namespace MumbleVoip
     private:
         void CreateSession();
         void CloseSession();
+        void CheckChannelQueue();
         QString GetUsername();
+        QString GetAvatarUuid();
+        void AddECVoiceChannel(EC_VoiceChannel* channel);
 
         Foundation::Framework* framework_;
         QString description_;
@@ -76,6 +79,7 @@ namespace MumbleVoip
         QSignalMapper* signal_mapper_;
         ProtocolUtilities::WorldStreamPtr world_stream_;
         boost::shared_ptr<TundraLogic::TundraLogicModule> tundra_logic_;
+        QList<EC_VoiceChannel*> channel_queue_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);

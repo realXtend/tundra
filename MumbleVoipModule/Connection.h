@@ -196,6 +196,8 @@ namespace MumbleLib
 
         State state_;
         QString reason_;
+        QString user_name_;
+        QString user_comment_;
         MumbleClient::MumbleClient* client_;
         QString join_request_; // queued request to join a channel @todo IMPLEMENT BETTER
         QList<MumbleVoip::PCMAudioFrame*> encode_queue_;

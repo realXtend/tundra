@@ -128,6 +128,9 @@ namespace MumbleLib
             reason_ = QString(e.what());
             return;
         }
+        user_name_ = info.user_name;
+        user_comment_ = info.avatar_id;
+
         lock_state_.lockForWrite();
         state_ = STATE_AUTHENTICATING;
         lock_state_.unlock();
@@ -470,6 +473,8 @@ namespace MumbleLib
             join_request_ = "";
             Join(channel);
         }
+        if (user_comment_.length() > 0)
+            client_->SetComment(user_comment_.toStdString());
 
         lock_state_.lockForWrite();
         state_ = STATE_OPEN;
@@ -627,6 +632,9 @@ namespace MumbleLib
             MumbleVoip::MumbleVoipModule::LogWarning(message.toStdString());
             return;
         }
+        if (QString(mumble_user.name.c_str()) == user_name_)
+            return;
+
         User* user = new User(mumble_user, channel);
         user->SetPlaybackBufferMaxLengthMs(playback_buffer_length_ms_);
         user->moveToThread(this->thread()); //! @todo Do we need this?

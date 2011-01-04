@@ -99,15 +99,12 @@ namespace MumbleVoip
         QList<MumbleLib::User*> other_channel_users_;
         MumbleLib::Connection* connection_; // // In future session could have multiple connections
         double speaker_voice_activity_;
-        MumbleLib::User* self_user_;
         QString current_mumble_channel_;
         QMap<int, SoundChannelPtr> audio_playback_channels_;
         std::string recording_device_;
         Settings* settings_;
         bool local_echo_mode_; // if true then acudio is only played locally
         QString server_address_;
-//        QList<EC_VoiceChannel*> voice_channels_;
-//        EC_VoiceChannel* active_voice_channel_;
         QString active_channel_;
         QMap<QString, ServerInfo> channels_;
 

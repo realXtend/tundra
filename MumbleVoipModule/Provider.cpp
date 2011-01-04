@@ -59,6 +59,7 @@ namespace MumbleVoip
     {
         if (session_)
             session_->Update(frametime);
+        CheckChannelQueue();
     }
     
     bool Provider::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
@@ -90,6 +91,18 @@ namespace MumbleVoip
         }
 
         return false;
+    }
+
+    void Provider::CheckChannelQueue()
+    {
+        if (channel_queue_.isEmpty())
+            return;
+        if (GetUsername().length() == 0)
+            return;
+
+        EC_VoiceChannel* channel = channel_queue_.takeFirst();
+        if (channel)
+            AddECVoiceChannel(channel);
     }
 
     Communications::InWorldVoice::SessionInterface* Provider::Session()
@@ -200,18 +213,32 @@ namespace MumbleVoip
             return;
 
         if (ec_voice_channels_.contains(channel))
+            return;
+
+        QString user_name = GetUsername();
+        if (user_name.length() == 0)
         {
+            channel_queue_.append(channel);
             return;
         }
+        else
+            AddECVoiceChannel(channel);
+    }
 
+    void Provider::AddECVoiceChannel(EC_VoiceChannel* channel)
+    {
         ec_voice_channels_.append(channel);
         channel_names_[channel] = channel->getchannelname();
+
         if (!session_ || session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
             CreateSession();
        
         connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)),Qt::UniqueConnection);
         connect(channel, SIGNAL(OnChanged()), signal_mapper_, SLOT(map()));
         signal_mapper_->setMapping(channel,QString::number(reinterpret_cast<unsigned int>(channel)));
+
+        if (session_->GetChannels().contains(channel->getchannelname()))
+            channel->setenabled(false); // We do not want to create multiple channels with a same name
 
         ServerInfo server_info;
         server_info.server = channel->getserveraddress();
@@ -220,9 +247,7 @@ namespace MumbleVoip
         server_info.channel_id = channel->getchannelid();
         server_info.channel_name = channel->getchannelname();
         server_info.user_name = GetUsername();
-        
-        if (session_->GetChannels().contains(channel->getchannelname()))
-            channel->setenabled(false); // We do not want to create multiple channels with a same name
+        server_info.avatar_id = GetAvatarUuid();
 
         if (channel->getenabled())
             session_->AddChannel(channel->getchannelname(), server_info);
@@ -277,16 +302,8 @@ namespace MumbleVoip
                 server_info.channel_id = channel->getchannelid();
                 server_info.channel_name = channel->getchannelname();
                 server_info.user_name = GetUsername();
-                /*
-                if (!channel->getusername().isEmpty())
-                {
-                    server_info.user_name = channel->getusername();
-                }
-                else
-                {
-                    server_info.user_name = "anonymous";
-                }
-                */
+                server_info.avatar_id = GetAvatarUuid();
+
                 channel_names_[channel] = channel->getchannelname();
                 session_->AddChannel(channel->getchannelname(), server_info);
             }
@@ -309,6 +326,39 @@ namespace MumbleVoip
         else
             return "";
         
+        if (!world_logic)
+            return "";
+       
+        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+        if (!user_avatar)
+            return "";
+
+        boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
+        if (!presence)
+            return "";
+
+        QString user_name = presence->GetFullName();
+        user_name.replace(' ', '_');
+        return user_name;
+    }
+
+    QString Provider::GetAvatarUuid()
+    {
+        using namespace Foundation;
+        boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+        
+        if (!world_logic)
+            return "";
+       
+        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+        if (!user_avatar)
+            return "";
+
+        boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
+        if (!presence)
+            return "";
+
+        return presence->agentId.ToQString();
     }
     
     void Provider::PostInitialize()
