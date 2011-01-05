@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include <QSignalMapper>
 #include "WorldLogicInterface.h"
 #include "EC_OpenSimPresence.h"
 #include "Provider.h"
@@ -28,11 +27,8 @@ namespace MumbleVoip
         session_(0),
         server_info_provider_(0),
         settings_(settings),
-        microphone_adjustment_widget_(0),
-        signal_mapper_(new QSignalMapper(this))
+        microphone_adjustment_widget_(0)
     {
-        connect(signal_mapper_, SIGNAL(mapped(const QString &)),this, SLOT(ECVoiceChannelChanged(const QString &)));
-
         server_info_provider_ = new ServerInfoProvider(framework);
         connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
 
@@ -223,8 +219,7 @@ namespace MumbleVoip
             CreateSession();
        
         connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)),Qt::UniqueConnection);
-        connect(channel, SIGNAL(OnChanged()), signal_mapper_, SLOT(map()));
-        signal_mapper_->setMapping(channel,QString::number(reinterpret_cast<unsigned int>(channel)));
+        connect(channel, SIGNAL(OnChanged()), this, SLOT(ECVoiceChannelChanged()));
 
         if (session_->GetChannels().contains(channel->getchannelname()))
             channel->setenabled(false); // We do not want to create multiple channels with a same name
@@ -270,36 +265,37 @@ namespace MumbleVoip
         connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)), SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     }
 
-    void Provider::ECVoiceChannelChanged(const QString &pointer)
+    void Provider::ECVoiceChannelChanged()
     {
         if (!session_)        
             return;
 
+        EC_VoiceChannel* channel = qobject_cast<EC_VoiceChannel*>(sender());
+        if (!channel)
+            return;
+
         /// @todo If user have edited the active channel -> close, reopen
+        if (!ec_voice_channels_.contains(channel))
+            return;
 
-        foreach(EC_VoiceChannel* channel, ec_voice_channels_)
+        if (channel->getenabled() && !session_->GetChannels().contains(channel->getchannelname()))
         {
-            if (QString::number(reinterpret_cast<unsigned int>(channel)) != pointer)
-                continue;
+            ServerInfo server_info;
+            server_info.server = channel->getserveraddress();
+            server_info.version = channel->getversion();
+            server_info.password = channel->getserverpassword();
+            server_info.channel_id = channel->getchannelid();
+            server_info.channel_name = channel->getchannelname();
+            server_info.user_name = GetUsername();
+            server_info.avatar_id = GetAvatarUuid();
 
-            if (channel->getenabled() && !session_->GetChannels().contains(channel->getchannelname()))
-            {
-                ServerInfo server_info;
-                server_info.server = channel->getserveraddress();
-                server_info.version = channel->getversion();
-                server_info.password = channel->getserverpassword();
-                server_info.channel_id = channel->getchannelid();
-                server_info.channel_name = channel->getchannelname();
-                server_info.user_name = GetUsername();
-                server_info.avatar_id = GetAvatarUuid();
+            channel_names_[channel] = channel->getchannelname();
+            session_->AddChannel(channel->getchannelname(), server_info);
+        }
 
-                channel_names_[channel] = channel->getchannelname();
-                session_->AddChannel(channel->getchannelname(), server_info);
-            }
-            if (!channel->getenabled())
-            {
-                session_->RemoveChannel(channel->getchannelname());
-            }
+        if (!channel->getenabled())
+        {
+            session_->RemoveChannel(channel->getchannelname());
         }
     }
 
