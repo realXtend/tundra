@@ -7,9 +7,9 @@
 #include "LLSDUtilities.h"
 #include "XmlRpcEpi.h"
 
-#include "Poco/MD5Engine.h"
-#include "Poco/SHA1Engine.h"
-#include "Poco/Base64Encoder.h"
+#include <Poco/MD5Engine.h>
+#include <Poco/SHA1Engine.h>
+#include <Poco/Base64Encoder.h>
 
 #include <QByteArray>
 #include <QUrl>
@@ -257,7 +257,7 @@ namespace Avatar
             {
                 sessionhash = call.GetReply<std::string>("sessionHash");
                 avatar_url = call.GetReply<std::string>("avatarStorageUrl");
-                return true;
+                //return true; return at the end of this func
             }
             else
             {
