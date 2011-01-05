@@ -14,7 +14,7 @@
 #include "EC_OgreCompositor.h"
 #include "EC_RttTarget.h"
 #include "EC_BillboardWidget.h"
-
+#include "EC_SelectionBox.h"
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "NetworkEvents.h"
@@ -63,6 +63,7 @@ namespace OgreRenderer
         DECLARE_MODULE_EC(EC_BillboardWidget);
         DECLARE_MODULE_EC(EC_OgreCompositor);
         DECLARE_MODULE_EC(EC_RttTarget);
+        DECLARE_MODULE_EC(EC_SelectionBox);
 
         // Create asset type factories for each asset OgreRenderingModule provides to the system.
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture")));

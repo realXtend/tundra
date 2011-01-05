@@ -74,7 +74,7 @@ namespace OgreRenderer
         bool IsEntityVisible(uint ent_id);
 
         //! Do a frustum query to the world from viewport coordinates.
-        virtual QVariantList FrustumQuery(QRect &viewrect);
+        virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect);
 
         //! Do raycast into the world from viewport coordinates.
         /*! The coordinates are a position in the render window, not scaled to [0,1].
@@ -345,6 +345,9 @@ namespace OgreRenderer
 
         // Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
+        
+        // swap float values
+        static void swap(float &x, float &y);
     };
 }
 
