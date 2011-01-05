@@ -1094,7 +1094,7 @@ void EC_Mesh::ApplyMaterial()
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
         if (!materialList[i].ref.isEmpty())
-            SetMaterial(i, materialList[i].ref);
+            SetMaterial(i, framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref));
 }
 
 bool EC_Mesh::HasMaterialsChanged() const
