@@ -216,11 +216,11 @@ namespace Scene
          */
         QList<Entity *> LoadSceneXML(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change);
 
-		//! Get scene as XML
-		/*! \param gettemporary flag if you want to get temporary stuff too
-			\return the scene in XML as a "string"
-		*/
-		QByteArray GetSceneXML(bool gettemporart=false);
+        //! Get scene as XML
+        /*! \param gettemporary flag if you want to get temporary stuff too
+            \return the scene in XML as a "string"
+        */
+        QByteArray GetSceneXML(bool gettemporart = false) const;
 
         //! Save the scene to XML
         /*! \param filename File name
