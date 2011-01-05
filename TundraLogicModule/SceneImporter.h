@@ -146,11 +146,32 @@ private:
         \param scale Current scale
         \param change What changetype to use in scene operations
         \param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
+        \param prefix 
         \param replace Whether to replace contents of entities by name. If false, all entities will be created as new
      */
     void ProcessNodeForCreation(QList<Scene::Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
 
+    //! Process node and its child nodes for creation of scene description.
+    /*! \param desc 
+        \param node_elem Node element
+        \param pos Current position
+        \param rot Current rotation
+        \param scale Current scale
+        \param prefix 
+        \param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
+    */
+//    void ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+//        const QString &prefix, bool flipyz);
+
+    ///
+    /** @param path 
+        @param meshFiles 
+        @param skeletons 
+        @param materialFiles 
+        @param usedMaterials 
+        @param desc 
+    */
     void CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,
         const QStringList &materialFiles, const QSet<QString> &usedMaterials, SceneDesc &desc) const;
 
@@ -158,7 +179,7 @@ private:
     /** @param filename
         @param ref
     */
-    void RewriteAssetRef(const QString &sceneFileName, QString &ref) const;
+//    void RewriteAssetRef(const QString &sceneFileName, QString &ref) const;
 
     //! Materials read from meshes, in case of no subentity elements
     QMap<QString, QStringList> mesh_default_materials_;

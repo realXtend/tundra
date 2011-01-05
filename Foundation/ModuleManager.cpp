@@ -420,7 +420,8 @@ bool ModuleManager::LoadModuleByName(const std::string &lib, const std::string &
         if (filename == lib)
         {
 //                LoadModule(orig_path.string(), files);
-            LoadModule(orig_path.string(), moduleNames);
+//            LoadModule(orig_path.string(), moduleNames);
+            LoadModule(path.string(), moduleNames);
             break;
         }
     }

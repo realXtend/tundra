@@ -573,7 +573,11 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     QSet<QString> usedMaterials;
     QStringList materialFiles(QStringList() << materialFileName);
 
+//    Transform f;
+//    Quaternion rot(DEGTORAD * f.rotation.x, DEGTORAD * f.rotation.y, DEGTORAD * f.rotation.z);
+
     QDomElement node_elem = nodes_elem.firstChildElement("node");
+//    ProcessNodeForDesc(sceneDesc, node_elem, f.position, rot, f.scale, path + "/"/*prefix*/, true/*flipyz*/);
     while (!node_elem.isNull())
     {
         // Process entity node, if any
@@ -923,7 +927,7 @@ QStringList SceneImporter::GetMaterialFiles(const std::string &dir) const
     QStringList files;
 
     fs::recursive_directory_iterator iter(dir), end_iter;
-    for(; iter != end_iter; ++iter )
+    for(; iter != end_iter; ++iter)
         if (fs::is_regular_file(iter->status()))
         {
             QString ext(iter->path().extension().c_str());
@@ -1202,6 +1206,214 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
     }
 }
 
+/*
+void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+    const QString &prefix, bool flipyz)
+{
+    AttributeChange::Type change = AttributeChange::Disconnected;
+    while (!node_elem.isNull())
+    {
+        QDomElement pos_elem = node_elem.firstChildElement("position");
+        QDomElement rot_elem = node_elem.firstChildElement("rotation");
+        QDomElement quat_elem = node_elem.firstChildElement("quaternion");
+        QDomElement scale_elem = node_elem.firstChildElement("scale");
+        float posx, posy, posz, rotx = 0.0f, roty = 0.0f, rotz = 0.0f, rotw = 1.0f, scalex, scaley, scalez;
+
+        posx = ParseString<float>(pos_elem.attribute("x").toStdString(), 0.0f);
+        posy = ParseString<float>(pos_elem.attribute("y").toStdString(), 0.0f);
+        posz = ParseString<float>(pos_elem.attribute("z").toStdString(), 0.0f);
+
+        if (!rot_elem.isNull())
+        {
+            rotx = ParseString<float>(rot_elem.attribute("qx").toStdString(), 0.0f);
+            roty = ParseString<float>(rot_elem.attribute("qy").toStdString(), 0.0f);
+            rotz = ParseString<float>(rot_elem.attribute("qz").toStdString(), 0.0f);
+            rotw = ParseString<float>(rot_elem.attribute("qw").toStdString(), 1.0f);
+        }
+        if (!quat_elem.isNull())
+        {
+            rotx = ParseString<float>(quat_elem.attribute("x").toStdString(), 0.0f);
+            roty = ParseString<float>(quat_elem.attribute("y").toStdString(), 0.0f);
+            rotz = ParseString<float>(quat_elem.attribute("z").toStdString(), 0.0f);
+            rotw = ParseString<float>(quat_elem.attribute("w").toStdString(), 1.0f);
+        }
+
+        scalex = ParseString<float>(scale_elem.attribute("x").toStdString(), 1.0f);
+        scaley = ParseString<float>(scale_elem.attribute("y").toStdString(), 1.0f);
+        scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
+
+        Vector3df newpos(posx, posy, posz);
+        Quaternion newrot(rotx, roty, rotz, rotw);
+        Vector3df newscale(fabsf(scalex), fabsf(scaley), fabsf(scalez));
+
+        // Transform by the parent transform
+        newrot = rot * newrot;
+        newscale = scale * newscale;
+        newpos = rot * (scale * newpos);
+        newpos += pos;
+
+        // Process entity node, if any
+        QDomElement entity_elem = node_elem.firstChildElement("entity");
+        if (!entity_elem.isNull())
+        {
+            EntityDesc ed;
+            ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
+            ComponentDesc placeableDesc = { EC_Placeable::TypeNameStatic() };
+            ComponentDesc nameDesc = { EC_Name::TypeNameStatic() };
+
+            // Enforce uniqueness for node names, which may not be guaranteed by artists
+            std::string base_node_name = node_elem.attribute("name").toStdString();
+            if (base_node_name.empty())
+                base_node_name = "object";
+            std::string node_name = base_node_name;
+            int append_num = 1;
+            while (node_names_.find(node_name) != node_names_.end())
+            {
+                node_name = base_node_name + "_" + ToString<int>(append_num);
+                ++append_num;
+            }
+            node_names_.insert(node_name);
+            
+            // Get mesh name from map
+            std::string orig_mesh_name = entity_elem.attribute("meshFile").toStdString();
+            QString mesh_name = QString::fromStdString(mesh_names_[orig_mesh_name]);
+            
+            bool cast_shadows = ::ParseBool(entity_elem.attribute("castShadows").toStdString());
+
+            mesh_name = prefix + mesh_name;
+
+            QString node_name_qstr = QString::fromStdString(node_name);
+
+            ed.name = node_name_qstr;
+            // Try to find existing entity by name
+            //if (replace)
+                //entity = scene_->GetEntity(node_name_qstr);
+            //if (!entity)
+            //{
+            //    entity = scene_->CreateEntity(scene_->GetNextFreeId());
+            //    new_entity = true;
+            //}
+            //else
+            //{
+            //    LogInfo("Updating existing entity " + node_name);
+            //}
+
+            ComponentManagerPtr mgr = scene_->GetFramework()->GetComponentManager();
+
+            ComponentPtr meshComp = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
+            ComponentPtr nameComp = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
+            ComponentPtr placeableComp = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
+
+            EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(meshComp.get());
+            EC_Name* namePtr = checked_static_cast<EC_Name*>(nameComp.get());
+            EC_Placeable* placeablePtr = checked_static_cast<EC_Placeable*>(placeableComp.get());
+            if ((meshPtr) && (namePtr) && (placeablePtr))
+            {
+                namePtr->name.Set(node_name_qstr, change);
+                
+                QVector<QString> materials;
+                QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
+                if (!subentities_elem.isNull())
+                {
+                    QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
+                    while (!subentity_elem.isNull())
+                    {
+                        QString material_name = subentity_elem.attribute("materialName") + ".material";
+                        material_name.replace('/', '_');
+                        
+                        int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
+                        
+                        material_name = prefix + material_name;
+                        if (index >= materials.size())
+                            materials.resize(index + 1);
+                        materials[index] = material_name;
+
+                        subentity_elem = subentity_elem.nextSiblingElement("subentity");
+                    }
+                }
+                else
+                {
+                    // If no subentity element, use the inspected material names we stored earlier
+                    const QStringList& default_materials = mesh_default_materials_[orig_mesh_name.c_str()];
+                    materials.resize(default_materials.size());
+                    for(uint i = 0; i < default_materials.size(); ++i)
+                        materials[i] =  prefix + default_materials[i] + ".material";
+                }
+                
+                Transform entity_transform;
+                
+                if (!flipyz)
+                {
+                    //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                    Vector3df rot_euler;
+                    Quaternion adjustedrot = Quaternion(0, 0, PI) * newrot;
+                    adjustedrot.toEuler(rot_euler);
+                    entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
+                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                    entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
+                }
+                else
+                {
+                    //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                    Vector3df rot_euler;
+                    Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
+                    adjustedrot.toEuler(rot_euler);
+                    entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
+                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                    entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                }
+                
+                meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
+                
+                placeablePtr->transform.Set(entity_transform, change);
+                meshPtr->meshRef.Set(AssetReference(mesh_name), change);
+
+                AssetReferenceList materialRefs;
+                foreach(QString material, materials)
+                    materialRefs.Append(AssetReference(material));
+
+                meshPtr->meshMaterial.Set(materialRefs, change);
+                meshPtr->castShadows.Set(cast_shadows, change);
+
+                placeablePtr->ComponentChanged(change);
+                meshPtr->ComponentChanged(change);
+                namePtr->ComponentChanged(change);
+
+                // Create attribute descriptions for each component
+                foreach(IAttribute *a, namePtr->GetAttributes())
+                {
+                    AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                    nameDesc.attributes.append(attrDesc);
+                }
+                foreach(IAttribute *a, meshPtr->GetAttributes())
+                {
+                    AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                    meshDesc.attributes.append(attrDesc);
+                }
+                foreach(IAttribute *a, placeablePtr->GetAttributes())
+                {
+                    AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+                    placeableDesc.attributes.append(attrDesc);
+                }
+
+                ed.components << nameDesc << meshDesc << placeableDesc;
+                desc.entities << ed;
+            }
+            else
+                LogError("Could not create mesh, placeable, name components");
+        }
+
+        // Process child nodes
+        QDomElement childnode_elem = node_elem.firstChildElement("node");
+        if (!childnode_elem.isNull())
+            ProcessNodeForDesc(desc, childnode_elem, newpos, newrot, newscale, prefix, flipyz);
+
+        // Process siblings
+        node_elem = node_elem.nextSiblingElement("node");
+    }
+}
+*/
+
 void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,
     const QStringList &materialFiles, const QSet<QString> &usedMaterials, SceneDesc &desc) const
 {
@@ -1272,6 +1484,7 @@ void SceneImporter::CreateAssetDescs(const QString &path, const QStringList &mes
     }
 }
 
+/*
 void SceneImporter::RewriteAssetRef(const QString &sceneFileName, QString &ref) const
 {
     QString basePath(boost::filesystem::path(sceneFileName.toStdString()).branch_path().string().c_str());
@@ -1280,6 +1493,7 @@ void SceneImporter::RewriteAssetRef(const QString &sceneFileName, QString &ref) 
     if (res == AssetAPI::FileQueryLocalFileFound)
         ref = outFilePath;
 }
+*/
 
 }
 

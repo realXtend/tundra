@@ -376,20 +376,45 @@ namespace Scene
             RemoveAllEntities(true, change);
 
         return CreateContentFromXml(scene_doc, replaceOnConflict, change);
-    }
+	}
+
+	QByteArray SceneManager::GetSceneXML(bool gettemporary)
+	{
+		QDomDocument scene_doc("Scene");
+		QDomElement scene_elem = scene_doc.createElement("scene");
+
+		for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter) {
+			if (iter->second) { 
+				if (gettemporary == true) {
+					/* copied from GetEntityXML so that we get local components also
+					ugly hack! */
+					Scene::EntityPtr entity = iter->second;
+					QDomElement entity_elem = scene_doc.createElement("entity");
+					       
+					QString id_str;
+					id_str.setNum((int)entity->GetId());
+					entity_elem.setAttribute("id", id_str);
+            
+					const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+					for(uint i = 0; i < components.size(); ++i) {
+						if (components[i]->IsSerializable()) {
+							components[i]->SerializeTo(scene_doc, entity_elem);
+						}
+					}
+					scene_elem.appendChild(entity_elem);
+
+				} else if (!iter->second->IsTemporary()) {
+					iter->second->SerializeToXML(scene_doc, scene_elem);
+				}
+			}
+		}
+		scene_doc.appendChild(scene_elem);
+		return scene_doc.toByteArray();	
+	}
     
     bool SceneManager::SaveSceneXML(const std::string& filename)
     {
-        QDomDocument scene_doc("Scene");
-        QDomElement scene_elem = scene_doc.createElement("scene");
-
-        for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-            if ((iter->second) && (!iter->second->IsTemporary()))
-                iter->second->SerializeToXML(scene_doc, scene_elem);
-
-        scene_doc.appendChild(scene_elem);
-        
-        QByteArray bytes = scene_doc.toByteArray();
+		QByteArray bytes = GetSceneXML();
         QFile scenefile(filename.c_str());
         if (scenefile.open(QFile::WriteOnly))
         {
