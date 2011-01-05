@@ -82,10 +82,11 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                         {
                             std::string tex_name = QString(line.substr(8).c_str()).trimmed().toStdString();
                             ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
-                            references_.push_back(AssetReference(assetAPI->LookupAssetRefToStorage(tex_name.c_str())));
+                            QString absolute_tex_name = assetAPI->LookupAssetRefToStorage(tex_name.c_str());
+                            references_.push_back(AssetReference(absolute_tex_name));
 //                            original_textures_.push_back(tex_name);
                             // Sanitate the asset ID
-                            line = SanitateAssetIdForOgre(line);
+                            line = "texture " + SanitateAssetIdForOgre(absolute_tex_name.toStdString());
                         }
                     }
 
