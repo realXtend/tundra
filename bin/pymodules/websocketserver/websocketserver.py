@@ -18,8 +18,8 @@ clients = set()
 
 class NaaliWebsocketServer(circuits.BaseComponent):
     instance = None
-
     def __init__(self):
+
         circuits.BaseComponent.__init__(self)
         self.sock = eventlet.listen(('0.0.0.0', 9999))
         self.server = async_eventlet_wsgiserver.server(self.sock, handle_clients)
@@ -34,11 +34,11 @@ class NaaliWebsocketServer(circuits.BaseComponent):
     def on_sceneadded(self, name):
         '''Connects to various signal when scene is added'''
         self.scene = naali.getScene(name)
-        self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
+        #self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
 
-        self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)",onNewEntity)
+        #self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)",onNewEntity)
 
-        self.scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
+        #self.scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
 
     @circuits.handler("update")
     def update(self, t):
@@ -121,6 +121,10 @@ def handle_clients(ws):
             NaaliWebsocketServer.instance.newclient(myid)
 
             ws.send(json.dumps(['setId', {'id': myid}]))
+            
+            xml = scene.GetSceneXML(True)
+
+            ws.send(json.dumps(['loadScene', {'xml': str(xml)}]))
 
         elif function == 'Action':
             action = params.get('action')
@@ -128,7 +132,7 @@ def handle_clients(ws):
             id = params.get('id')
             av = scene.GetEntityByNameRaw("Avatar%s" % id)
 
-            av.Exec(myid, action, args)
+            av.Exec(1, action, args)
                 
         elif function == 'reboot':
             break

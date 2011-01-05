@@ -29,7 +29,9 @@ std::string TundraLogicModule::type_name_static_ = "TundraLogic";
 
 static const unsigned short cDefaultPort = 2345;
 
-TundraLogicModule::TundraLogicModule() : IModule(type_name_static_)
+TundraLogicModule::TundraLogicModule() : IModule(type_name_static_),
+    autostartserver_(false),
+    autostartserver_port_(cDefaultPort)
 {
 }
 
@@ -94,6 +96,16 @@ void TundraLogicModule::PostInitialize()
     {
         throw Exception("Fatal: could not get KristalliProtocolModule");
     }
+    
+    // Check whether server should be autostarted
+    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
+    if (programOptions.count("startserver"))
+    {
+        autostartserver_ = true;
+        autostartserver_port_ = programOptions["startserver"].as<int>();
+        if (!autostartserver_port_)
+            autostartserver_port_ = cDefaultPort;
+    }
 }
 
 void TundraLogicModule::Uninitialize()
@@ -112,14 +124,10 @@ void TundraLogicModule::Update(f64 frametime)
         static bool check_default_server_start = true;
         if (check_default_server_start)
         {
-            //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule or UIModule,
-            /// assume we are running a "dedicated" server, and start the server automatically on default port
-            ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
-            ModuleWeakPtr uiModule = framework_->GetModuleManager()->GetModule("UI");
-            if ((!loginModule.lock()) && (!uiModule.lock()))
+            if (autostartserver_)
             {
                 LogInfo("Started server by default");
-                server_->Start(cDefaultPort);
+                server_->Start(autostartserver_port_);
             }
 
             // Load startup scene here (if we have one)

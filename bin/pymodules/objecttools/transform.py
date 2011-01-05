@@ -103,7 +103,6 @@ class Manipulator:
             gizmo = ent.GetOrCreateComponentRaw("EC_Gizmo")
             ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
             ruler.SetVisible(False)
-            #r.logInfo("hide ruler createManipulator")
             ruler.SetType(self.MANIPULATOR_RULER_TYPE)
             ruler.UpdateRuler()
             return ent 
@@ -119,7 +118,6 @@ class Manipulator:
             pass
     
     def initVisuals(self):
-        #r.logInfo("initVisuals in manipulator " + str(self.NAME))
         if self.manipulator is None:
             self.manipulator = self.createManipulator()
             self.hideManipulator()
@@ -383,7 +381,7 @@ class MoveManipulator(Manipulator):
                     changevec.setZ(0)
                     changevec.setX(0)
                 ent.placeable.Position += changevec
-                ent.network.Position += changevec
+#                ent.network.Position += changevec
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
@@ -425,7 +423,7 @@ class FreeMoveManipulator(Manipulator):
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
     def _manipulate(self, ent, amountx, amounty, changevec):
         ent.placeable.Position += changevec
-        ent.network.Position += changevec
+        #ent.network.Position += changevec
         
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
@@ -487,7 +485,7 @@ class RotationManipulator(Manipulator):
                 ort = mu.euler_to_quat(euler)
 
             ent.placeable.Orientation = ort
-            ent.network.Orientation = ort
+            #ent.network.Orientation = ort
     
     """ Rotate locations around center point """
     def _manipulate2(self, ents, amountx, amounty, changevec, centervecs, centerpoint):
@@ -555,7 +553,7 @@ class RotationManipulator(Manipulator):
             newPos = self.vectorAdd(centerpoint, newVec)
             if hasattr(ent, "placeable"):
                 ent.placeable.Position = newPos
-                ent.network.Position = newPos
+                #ent.network.Position = newPos
             else:
                 print "entity missing placeable"
                 # print type(ent)
@@ -584,5 +582,5 @@ class RotationManipulator(Manipulator):
                 euler[2] += math.radians(angle)
             ort = mu.euler_to_quat(euler)
             ent.placeable.Orientation = ort
-            ent.network.Orientation = ort
+            #ent.network.Orientation = ort
         pass

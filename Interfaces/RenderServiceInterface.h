@@ -82,7 +82,7 @@ namespace Foundation
             Python and Javascript can get the result directly from here.
             \param viewrect The query rectangle in 2d window coords.
         */
-        virtual QVariantList FrustumQuery(QRect &viewrect) = 0;
+        virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect) = 0;
 
         /// Returns the backbuffer image that contains the UI layer of the application screen.
         /// Used to perform alpha-keying based input.

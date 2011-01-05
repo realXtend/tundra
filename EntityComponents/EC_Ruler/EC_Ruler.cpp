@@ -2,9 +2,9 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_Ruler.cpp
- *  @brief  EC_Ruler enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_Placeable and EC_Mesh (if mesh) or
- *          EC_OgreCustomObject (if prim) components available in advance.
+ *  @brief  EC_Ruler provides visualisation for transformations.
+ *  @note   The entity must have EC_Placeable component available in advance.
+ *
  */
 
 #include "StableHeaders.h"
@@ -80,6 +80,8 @@ void  EC_Ruler::Show()
         return;
     }
     
+    rulerObject->setVisible(true);
+    
     if ( gridObject )
         gridObject->setVisible(true);
     
@@ -95,6 +97,8 @@ void  EC_Ruler::Hide()
         LogError("EC_Ruler not initialized properly.");
         return;
     }
+    
+    rulerObject->setVisible(false);
     
     if ( gridObject )
         gridObject->setVisible(false);

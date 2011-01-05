@@ -149,6 +149,9 @@
 #ifdef EC_Gizmo_ENABLED
 #include "EC_Gizmo.h"
 #endif
+#ifdef EC_Selected_ENABLED
+#include "EC_Selected.h"
+#endif
 
 #ifdef EC_PlanarMirror_ENABLED
 #include "EC_PlanarMirror.h"
@@ -258,6 +261,9 @@ void RexLogicModule::Load()
 
 #ifdef EC_PlanarMirror_ENABLED
     DECLARE_MODULE_EC(EC_PlanarMirror);
+#endif
+#ifdef EC_Selected_ENABLED
+    DECLARE_MODULE_EC(EC_Selected);
 #endif
 }
 
