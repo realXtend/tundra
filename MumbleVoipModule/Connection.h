@@ -162,8 +162,7 @@ namespace MumbleLib
         //! Remove user from user list if it exist
         void MarkUserLeft(const MumbleClient::User& user);
 
-
-        int GetPlaybackBufferMaxLengthMs() { return encoding_quality_; }
+        int GetPlaybackBufferMaxLengthMs() { return playback_buffer_length_ms_; }
         
         //! Set the playback buffer max length for all user object.
         void SetPlaybackBufferMaxLengthMs(int length); // {playback_buffer_length_ms_ = length; }
