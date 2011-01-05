@@ -24,6 +24,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 #include <QDomDocument>
 #include <QFile>
 #include <QDir>
+#include <QTextStream>
 
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
@@ -355,8 +356,7 @@ namespace Scene
     QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change)
     {
         QList<Entity *> ret;
-        QDomDocument scene_doc("Scene");
-        
+
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
         {
@@ -364,7 +364,11 @@ namespace Scene
             return ret;
         }
 
-        if (!scene_doc.setContent(&file))
+        // Set codec to ISO 8859-1 a.k.a. Latin 1
+        QTextStream stream(&file);
+        stream.setCodec("ISO 8859-1");
+        QDomDocument scene_doc("Scene");
+        if (!scene_doc.setContent(stream.readAll()))
         {
             LogError("Parsing scene XML from "+ filename + " failed when loading scene xml.");
             file.close();
@@ -376,45 +380,45 @@ namespace Scene
             RemoveAllEntities(true, change);
 
         return CreateContentFromXml(scene_doc, replaceOnConflict, change);
-	}
+    }
 
-	QByteArray SceneManager::GetSceneXML(bool gettemporary)
-	{
-		QDomDocument scene_doc("Scene");
-		QDomElement scene_elem = scene_doc.createElement("scene");
+    QByteArray SceneManager::GetSceneXML(bool gettemporary) const
+    {
+        QDomDocument scene_doc("Scene");
+        QDomElement scene_elem = scene_doc.createElement("scene");
 
-		for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter) {
-			if (iter->second) { 
-				if (gettemporary == true) {
-					/* copied from GetEntityXML so that we get local components also
-					ugly hack! */
-					Scene::EntityPtr entity = iter->second;
-					QDomElement entity_elem = scene_doc.createElement("entity");
-					       
-					QString id_str;
-					id_str.setNum((int)entity->GetId());
-					entity_elem.setAttribute("id", id_str);
-            
-					const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-					for(uint i = 0; i < components.size(); ++i) {
-						if (components[i]->IsSerializable()) {
-							components[i]->SerializeTo(scene_doc, entity_elem);
-						}
-					}
-					scene_elem.appendChild(entity_elem);
+        for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter) {
+            if (iter->second)
+            {
+                if (gettemporary == true) {
+                    /* copied from GetEntityXML so that we get local components also
+                    ugly hack! */
+                    Scene::EntityPtr entity = iter->second;
+                    QDomElement entity_elem = scene_doc.createElement("entity");
 
-				} else if (!iter->second->IsTemporary()) {
-					iter->second->SerializeToXML(scene_doc, scene_elem);
-				}
-			}
-		}
-		scene_doc.appendChild(scene_elem);
-		return scene_doc.toByteArray();	
-	}
+                    QString id_str;
+                    id_str.setNum((int)entity->GetId());
+                    entity_elem.setAttribute("id", id_str);
+
+                    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                    for(uint i = 0; i < components.size(); ++i)
+                        if (components[i]->IsSerializable())
+                            components[i]->SerializeTo(scene_doc, entity_elem);
+
+                    scene_elem.appendChild(entity_elem);
+                }
+                else if (!iter->second->IsTemporary())
+                    iter->second->SerializeToXML(scene_doc, scene_elem);
+            }
+        }
+
+        scene_doc.appendChild(scene_elem);
+        return scene_doc.toByteArray();
+    }
     
     bool SceneManager::SaveSceneXML(const std::string& filename)
     {
-		QByteArray bytes = GetSceneXML();
+        QByteArray bytes = GetSceneXML();
         QFile scenefile(filename.c_str());
         if (scenefile.open(QFile::WriteOnly))
         {
@@ -439,9 +443,10 @@ namespace Scene
             return ret;
         }
 
+        ///\todo Use Latin 1?
         QByteArray bytes = file.readAll();
         file.close();
-        
+
         if (!bytes.size())
         {
             LogError("File " + filename + " contained 0 bytes when loading scene binary.");
@@ -794,8 +799,11 @@ namespace Scene
             return sceneDesc;
         }
 
+        // Set codec to ISO 8859-1 a.k.a. Latin 1
+        QTextStream stream(&file);
+        stream.setCodec("ISO 8859-1");
         QDomDocument scene_doc("Scene");
-        if (!scene_doc.setContent(&file))
+        if (!scene_doc.setContent(stream.readAll()))
         {
             LogError("Parsing scene XML from "+ filename.toStdString() + " failed when loading scene xml.");
             file.close();
@@ -904,6 +912,7 @@ namespace Scene
         sceneDesc.type = SceneDesc::Naali;
         sceneDesc.filename = filename;
 
+        ///\todo Use Latin 1 encoding?
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
         {
