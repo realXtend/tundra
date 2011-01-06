@@ -93,6 +93,24 @@ uint IComponent::TypeNameHash() const
     return GetHash(TypeName());
 }
 
+QVariant IComponent::GetAttributeQVariant(const QString &name) const
+{
+    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
+        if ((*iter)->GetNameString() == name.toStdString())
+            return (*iter)->ToQVariant();
+
+    return QVariant();
+}
+
+QStringList IComponent::GetAttributeNames()
+{
+	QStringList attribute_list;
+	for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter) {
+		attribute_list.push_back(QString::fromStdString((*iter)->GetNameString()));
+	}
+	return attribute_list;
+}
+
 IAttribute* IComponent::GetAttribute(const QString &name) const
 {
     for(unsigned int i = 0; i < attributes_.size(); ++i)

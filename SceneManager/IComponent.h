@@ -167,7 +167,17 @@ public slots:
     /*! If the information is not available (component is not yet in a scene, will guess "true
      */
     bool ViewEnabled() const;
-    
+
+	/// Returns an attribute of this component as a Qvaririant
+	/// @param name of attribute
+	/// @return values of the attribute
+	QVariant GetAttributeQVariant(const QString &name) const;
+
+
+	/// Returns list of attribute names of the component
+	/// @return list of attribute names
+	QStringList GetAttributeNames();
+
 public:
 
     /// Returns the list of all Attributes in this component for reflection purposes.
