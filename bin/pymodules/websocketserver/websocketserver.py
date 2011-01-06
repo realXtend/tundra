@@ -34,11 +34,11 @@ class NaaliWebsocketServer(circuits.BaseComponent):
     def on_sceneadded(self, name):
         '''Connects to various signal when scene is added'''
         self.scene = naali.getScene(name)
-        #self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
+        self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
 
-        #self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)",onNewEntity)
+        self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)",onNewEntity)
 
-        #self.scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
+        self.scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
 
     @circuits.handler("update")
     def update(self, t):
@@ -63,7 +63,13 @@ def onAttributeChanged(component, attribute, changeType):
         return
 
     ent_id = component.GetParentEntity().Id
-    attribute = attribute
+
+    print '...'
+    print '---->', attribute
+    for attr in component.GetAttributeNames():
+        print component.GetAttributeQVariant(attr)
+
+    print '.------.'
 
     sendAll(['setAttr', {'id': ent_id, 'component': component_name}])
 
@@ -79,7 +85,7 @@ def onComponentAdded(entity, component, changeType):
     if component_name == "EC_RigidBody":
         return
 
-
+    # fixme sync data also?
     sendAll(['addComponent', {'id': entity.Id, 'component': component_name}])
     print entity.Id, component
 

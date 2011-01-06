@@ -92,6 +92,7 @@
 
 #include "Vector3dfDecorator.h"
 #include "QuaternionDecorator.h"
+#include "TransformDecorator.h"
 
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
@@ -1885,6 +1886,8 @@ namespace PythonScript
             PythonQt::self()->registerCPPClass("Vector3df");
             PythonQt::self()->addDecorators(new QuaternionDecorator());
             PythonQt::self()->registerCPPClass("Quaternion");
+			PythonQt::self()->addDecorators(new TransformDecorator());
+            PythonQt::self()->registerCPPClass("Transform");
 
             // For some reason: plain registerClass doosn't work for these classes.
             // Possible reason is that they are just interfaces
