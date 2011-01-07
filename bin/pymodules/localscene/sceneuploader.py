@@ -450,12 +450,8 @@ class SceneSaver:
                 scale = newdoc.createElement('scale')
                 scale.setAttribute("x", str(oNode.naali_ent.placeable.Scale.x()))
                 
-                if filename.endswith(".blend.scene"):
-                    scale.setAttribute("y", str(oNode.naali_ent.placeable.Scale.z()))
-                    scale.setAttribute("z", str(oNode.naali_ent.placeable.Scale.y()))
-                else:
-                    scale.setAttribute("y", str(oNode.naali_ent.placeable.Scale.y()))
-                    scale.setAttribute("z", str(oNode.naali_ent.placeable.Scale.z()))
+                scale.setAttribute("y", str(oNode.naali_ent.placeable.Scale.z()))
+                scale.setAttribute("z", str(oNode.naali_ent.placeable.Scale.y()))
                 nodeNode.appendChild(scale)
                 
                 entity = newdoc.createElement('entity')
