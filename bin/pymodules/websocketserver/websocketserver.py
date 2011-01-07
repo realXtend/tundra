@@ -55,23 +55,27 @@ def sendAll(data):
         client.send(json.dumps(data))        
 
 def onAttributeChanged(component, attribute, changeType):
+    #FIXME Only syncs hard coded ec_placeable
+    #Maybe get attribute or something
     #FIXME Find a better way to get component name
     component_name = str(component).split()[0]
 
-    #We don't need no stinkin' rigid body
-    if component_name == "EC_RigidBody":
+    #Let's only sync EC_Placeable
+    if component_name != "EC_Placeable":
         return
 
     ent_id = component.GetParentEntity().Id
 
-    print '...'
-    print '---->', attribute
-    for attr in component.GetAttributeNames():
-        print component.GetAttributeQVariant(attr)
+    data = component.GetAttributeQVariant('Transform')
+    transform = list()
 
-    print '.------.'
+    transform.extend([data.position().x(), data.position().y(), data.position().z()])
+    transform.extend([data.rotation().x(), data.rotation().y(), data.rotation().z()])
+    transform.extend([data.scale().x(), data.scale().y(), data.scale().z()])
 
-    sendAll(['setAttr', {'id': ent_id, 'component': component_name}])
+    sendAll(['setAttr', {'id': ent_id, 
+                         'component': component_name,
+                         'Transform': transform}])
 
 def onNewEntity(entity, changeType):
     sendAll(['addEntity', {'id': entity.Id}])
