@@ -85,12 +85,26 @@ def onComponentAdded(entity, component, changeType):
     #FIXME Find a better way to get component name
     component_name = str(component).split()[0]
 
-    #We don't need no stinkin' rigid body
-    if component_name == "EC_RigidBody":
+    # Just sync EC_Placeable and EC_Mesh since they are currently the
+    # only ones that are used in the client
+    if component_name not in ["EC_Placeable", "EC_Mesh"]:
         return
 
-    # fixme sync data also?
-    sendAll(['addComponent', {'id': entity.Id, 'component': component_name}])
+    if component_name == "EC_Mesh":
+
+        sendAll(['addComponent', {'id': entity.Id, 'component': component_name, 'url': 'ankka.dae'}])
+    else:
+        data = component.GetAttributeQVariant('Transform')
+        transform = list()
+
+        transform.extend([data.position().x(), data.position().y(), data.position().z()])
+        transform.extend([data.rotation().x(), data.rotation().y(), data.rotation().z()])
+        transform.extend([data.scale().x(), data.scale().y(), data.scale().z()])
+
+        sendAll(['setAttr', {'id': entity.Id, 
+                             'component': component_name,
+                             'Transform': transform}])
+
     print entity.Id, component
 
 @websocket.WebSocketWSGI
