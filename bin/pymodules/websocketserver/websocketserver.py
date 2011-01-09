@@ -10,11 +10,12 @@ from PythonQt.QtGui import QVector3D as Vec3
 from PythonQt.QtGui import QQuaternion as Quat
 
 import naali
-import mathutils
 
 import async_eventlet_wsgiserver
 
 clients = set()
+connections = dict()
+
 
 class NaaliWebsocketServer(circuits.BaseComponent):
     instance = None
@@ -27,9 +28,16 @@ class NaaliWebsocketServer(circuits.BaseComponent):
 
         NaaliWebsocketServer.instance = self
     
-    def newclient(self, clientid):
-        naali._naali.server.UserConnected(clientid, 0)
-        
+    def newclient(self, connectionid):
+        id = self.scene.NextFreeId()
+        naali._naali.server.UserConnected(connectionid, 0)
+
+        # Return the id of the connection
+        return id
+
+    def removeclient(self, connectionid):
+        naali._naali.server.UserDisconnected(connectionid, 0)
+
     @circuits.handler("on_sceneadded")
     def on_sceneadded(self, name):
         '''Connects to various signal when scene is added'''
@@ -110,8 +118,11 @@ def onComponentAdded(entity, component, changeType):
 @websocket.WebSocketWSGI
 def handle_clients(ws):
     print 'START', ws
-    myid = random.randrange(1,10000)
     clients.add(ws)
+    
+    # Don't do this! Figure out a way to fake a kNet connection or
+    # something.
+    connectionid = random.randint(1000, 10000)
     
     scene = NaaliWebsocketServer.instance.scene
 
@@ -130,7 +141,7 @@ def handle_clients(ws):
         print msg
 
         if msg is None:
-            # if there is no message the client will quit. 
+            # if there is no message the client will Quit
             break
 
         try:
@@ -142,8 +153,8 @@ def handle_clients(ws):
         if function == 'CONNECTED':
             ws.send(json.dumps(['initGraffa', {}]))
 
-            NaaliWebsocketServer.instance.newclient(myid)
-
+            myid = NaaliWebsocketServer.instance.newclient(connectionid)
+            connections[myid] = connectionid
             ws.send(json.dumps(['setId', {'id': myid}]))
             
             xml = scene.GetSceneXML(True)
@@ -154,12 +165,15 @@ def handle_clients(ws):
             action = params.get('action')
             args = params.get('params')
             id = params.get('id')
-            av = scene.GetEntityByNameRaw("Avatar%s" % id)
+            av = scene.GetEntityByNameRaw("Avatar%s" % connections[id])
 
             av.Exec(1, action, args)
                 
         elif function == 'reboot':
             break
 
+    # Remove connection
+    NaaliWebsocketServer.instance.removeclient(connectionid)
+            
     clients.remove(ws)
     print 'END', ws
