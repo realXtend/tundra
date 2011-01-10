@@ -16,7 +16,6 @@ import async_eventlet_wsgiserver
 clients = set()
 connections = dict()
 
-
 class NaaliWebsocketServer(circuits.BaseComponent):
     instance = None
     def __init__(self):
@@ -42,11 +41,14 @@ class NaaliWebsocketServer(circuits.BaseComponent):
     def on_sceneadded(self, name):
         '''Connects to various signal when scene is added'''
         self.scene = naali.getScene(name)
+
         self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
 
-        self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)",onNewEntity)
+        self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)", onNewEntity)
 
         self.scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
+
+        self.scene.connect("EntityRemoved(Scene::Entity*, AttributeChange::Type)", onEntityRemoved)
 
     @circuits.handler("update")
     def update(self, t):
@@ -73,7 +75,13 @@ def onAttributeChanged(component, attribute, changeType):
     if component_name != "EC_Placeable":
         return
 
-    ent_id = component.GetParentEntity().Id
+    entity = component.GetParentEntity()
+    
+    # Don't sync local stuff
+    if entity.IsLocal():
+        return
+
+    ent_id = entity.Id
 
     data = component.GetAttributeQVariant('Transform')
     transform = list()
@@ -115,6 +123,10 @@ def onComponentAdded(entity, component, changeType):
                              'Transform': transform}])
 
     print entity.Id, component
+
+def onEntityRemoved(entity, changeType):
+    print "Removing", entity
+    sendAll(['removeEntity', {'id': entity.Id}])
 
 @websocket.WebSocketWSGI
 def handle_clients(ws):
