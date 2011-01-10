@@ -1100,16 +1100,11 @@ void EC_Mesh::ApplyMaterial()
             continue;
         if (materialAssets.size() < i)
             continue;
-        // Only apply materials that are completely loaded with textures and all!
+        // Only apply materials that are completely loaded with all of its dependencies
         AssetRefListenerPtr material_listener = materialAssets.at(i);
         if (material_listener.get())
-        {
             if (material_listener->IsLoaded())
-            {
-                if (!materialList[i].ref.isEmpty())
-                    SetMaterial(i, framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref));
-            }
-        }
+                SetMaterial(i, framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref));
     }
 }
 
