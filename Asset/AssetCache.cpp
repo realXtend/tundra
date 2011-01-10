@@ -62,7 +62,7 @@ QString AssetCache::StoreAsset(const u8 *data, size_t numBytes, QString assetNam
     bool success = SaveAssetFromMemoryToFile(data, numBytes, filename.toStdString().c_str());
     if (success)
     {
-        LogDebug("Saved asset \"" + assetName.toStdString() + "\" to cache into file \"" + filename.toStdString() + "\"");
+        //LogDebug("Saved asset \"" + assetName.toStdString() + "\" to cache into file \"" + filename.toStdString() + "\"");
         return filename;
     }
     else
