@@ -36,7 +36,7 @@ class KeyCommander(Component):
         
     # handle KeyPressed event from naali.inputcontext
     def on_keypressed(self, key):
-        keyb = (key.keyCode, key.modifiers)
+        keyb = (key.keyCodeInt(), key.modifiers)
         if keyb in self.inputmap:
             return self.inputmap[keyb]()
         else:

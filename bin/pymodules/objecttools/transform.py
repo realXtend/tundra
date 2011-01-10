@@ -73,7 +73,6 @@ class Manipulator:
         self.grabbed_axis = None
         self.grabbed = False
         self.usesManipulator = self.USES_MANIPULATOR    
-        self.manipulator = None
         self.highlightedSubMesh = None
         self.axisSubmesh = None
 
@@ -89,7 +88,6 @@ class Manipulator:
     def moveTo(self, ents):
         if self.manipulator:
             pos = self.getPivotPos(ents)
-            #print "Showing at: ", pos
             self.manipulator.placeable.Position = pos
             
     def getManipulatorPosition(self):
@@ -99,13 +97,20 @@ class Manipulator:
     
     def createManipulator(self):
         if self.manipulator is None and self.usesManipulator:
-            ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
+            # create a temporary entity, we dont want to sync this at least for now
+            # as there is no deletion code when you leave the server!
+            ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240)
+            ent.SetTemporary(True)
+            ent.SetName(self.NAME)
+            # create gizmo and ruler
             gizmo = ent.GetOrCreateComponentRaw("EC_Gizmo")
+            gizmo.SetTemporary(True)
             ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
+            ruler.SetTemporary(True)
             ruler.SetVisible(False)
             ruler.SetType(self.MANIPULATOR_RULER_TYPE)
             ruler.UpdateRuler()
-            return ent 
+            return ent
 
     def stopManipulating(self):
         self.grabbed_axis = None
@@ -123,26 +128,23 @@ class Manipulator:
             self.hideManipulator()
         
     def showManipulator(self, ents):
-        #print "Showing arrows!"
         if self.usesManipulator and len(ents)>0:
             self.moveTo(ents)
-            self.manipulator.placeable.Scale = self.MANIPULATORSCALE
+            self.setManipulatorScale(ents)
             try:
                 ruler = self.manipulator.ruler
             except:
-                print "no ruler yet O.o"
-            else:
-                ruler.SetType(self.MANIPULATOR_RULER_TYPE)
-                ruler.SetVisible(True)
-                #r.logInfo("showing ruler showManipulator")
-                ruler.UpdateRuler()
+                ruler = self.manipulator.GetOrCreateComponentRaw("EC_Ruler")
+            ruler.SetType(self.MANIPULATOR_RULER_TYPE)
+            ruler.SetVisible(True)
+            #r.logInfo("showing ruler showManipulator")
+            ruler.UpdateRuler()
             if False: # self.controller.useLocalTransform:
                 # first according object, then manipulator orientation - otherwise they go wrong order
                 self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
             else:
                 self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
-
-        self.setManipulatorScale(ents)
+            
             
     def getPivotPos(self, ents):        
         '''Median position used as pivot point'''
