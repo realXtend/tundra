@@ -69,6 +69,7 @@ console = _naali.Console()
 input = _naali.GetInput()
 audio = _naali.Audio()
 ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
+uicore = _naali.Ui()
 framework = _naali
 
 # Returns EntityAction pointer by the name

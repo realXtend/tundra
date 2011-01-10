@@ -47,11 +47,14 @@ class ObjectEdit(Component):
         self.worldstream = r.getServerConnection()
         self.usingManipulator = False
         self.useLocalTransform = False
-        self.cpp_python_handler = None
+        #self.cpp_python_handler = None
         self.left_button_down = False
         self.keypressed = False
-
+        self.editing = False
+                
+        self.editingKeyTrigger = (Qt.Key_M, Qt.ShiftModifier)
         self.shortcuts = {
+            self.editingKeyTrigger : self.toggleEditingKeyTrigger,
             (Qt.Key_R, Qt.NoModifier) : self.rotateObject,
             (Qt.Key_S, Qt.NoModifier) : self.scaleObject,
             (Qt.Key_G, Qt.NoModifier) : self.translateObject,
@@ -76,7 +79,6 @@ class ObjectEdit(Component):
         
         self.resetManipulators()
         
-        
         self.selection_rect = QRect()
         self.selection_rect_startpos = None
         
@@ -86,6 +88,16 @@ class ObjectEdit(Component):
         self.selection_box = None
         self.selection_box_inited = False
         
+        self.menuToggleAction = None
+        mainWindow = naali.uicore.MainWindow()
+        print mainWindow
+        if mainWindow:
+            menuBar = mainWindow.menuBar()
+            self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
+            self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+        self.toggleEditing(False)
+        
+        """
         # Get world building modules python handler, is not present in tundra
         self.cpp_python_handler = r.getQWorldBuildingHandler()
         if self.cpp_python_handler != None:
@@ -101,19 +113,38 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('DeleteObject()', self.deleteObject)
             # Check if build mode is active, required on python restarts
             self.on_activate_editing(self.cpp_python_handler.IsBuildingActive())
-            
+        """
+        
+    def toggleEditingKeyTrigger(self):
+        self.toggleEditing(not self.editing)
+        
+    def toggleEditing(self, editing):
+        self.editing = editing
+        if not self.editing:
+            self.deselect_all()
+            self.hideManipulator()
+            self.resetValues()
+        if self.menuToggleAction != None:
+            if self.editing:
+                self.menuToggleAction.setText("Disable Manipulation")
+            else:
+                self.menuToggleAction.setText("Enable Manipulation")   
+    
     def rotateObject(self):
-        pass
+        self.changeManipulator(self.MANIPULATE_ROTATE)
 
     def scaleObject(self):
-        pass
+        self.changeManipulator(self.MANIPULATE_SCALE)
 
     def translateObject(self):
-        pass
+        self.changeManipulator(self.MANIPULATE_MOVE)
 
     def on_keypressed(self, k):
         #print "on_keypressed",k,k.keyCode,k.modifiers
-        trigger = (k.keyCode, k.modifiers)
+        trigger = (k.keyCodeInt(), k.modifiers)
+        # if not in editing mode ignore other key combinations than to enable editing
+        if not self.editing and trigger != self.editingKeyTrigger:
+            return
         # update manip for constant size
         self.manipulator.showManipulator(self.sels)
         # check to see if a shortcut we understand was pressed, if so, trigger it
@@ -122,6 +153,8 @@ class ObjectEdit(Component):
             self.shortcuts[trigger]()
 
     def on_mousescroll(self, m):
+        if not self.editing:
+            return
         self.manipulator.showManipulator(self.sels)
         
     def resetValues(self):
@@ -146,12 +179,17 @@ class ObjectEdit(Component):
         self.manipulators[self.MANIPULATE_ROTATE] =  transform.RotationManipulator()
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
  
+    def getCurrentManipType(self):
+        for (type, manip) in self.manipulators.iteritems():
+            if manip == self.manipulator:
+                return type
+        return self.MANIPULATE_FREEMOVE
+        
     def baseselect(self, ent):
         self.sel_activated = False
         self.highlight(ent)
         self.ec_selected(ent)
-        self.changeManipulator(self.MANIPULATE_FREEMOVE)
-        
+        self.changeManipulator(self.getCurrentManipType())
         return ent
         
     def select(self, ent):        
@@ -181,9 +219,7 @@ class ObjectEdit(Component):
                 #except ValueError:
                 #    r.logInfo("objectedit.deselect_all: entity doesn't exist anymore")
             self.sels = []
-           
             self.hideManipulator()
-
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0
             self.canmove = False
@@ -251,7 +287,8 @@ class ObjectEdit(Component):
         self.manipulator.showManipulator(self.sels)
     
     def hideManipulator(self):
-        self.manipulator.hideManipulator()
+        if self.manipulator:
+            self.manipulator.hideManipulator()
 
     def getSelectedObjectIds(self):
         ids = []
@@ -277,12 +314,18 @@ class ObjectEdit(Component):
         self.deselect_all()
 
     def init_selection_box(self):
+        # create a temporary selection box, we dont want to sync this for now
+        # as there is no deletion code when you leave the server!
         self.selection_box_entity = naali.createEntity()
+        self.selection_box_entity.SetTemporary(True)
+        self.selection_box_entity.SetName("Python Selection Box")
         self.selection_box = self.selection_box_entity.GetOrCreateComponentRaw('EC_SelectionBox')
         self.selection_box.Hide()
         self.selection_box_inited = True
 
     def on_mouseleftpressed(self, mouseinfo):
+        if not self.editing:
+            return       
         if mouseinfo.IsItemUnderMouse():
             return
         if not self.selection_box_inited:
@@ -306,27 +349,25 @@ class ObjectEdit(Component):
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
 
-
         if ent is not None:
             if editable(ent):
                 r.eventhandled = self.EVENTHANDLED
-               
-                if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
-                    if not ent in self.sels:
-                        self.select(ent)
-
-                elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
-                    self.canmove = True
-                    
+                if self.manipulator.compareIds(ent.Id): # don't start selection box when manipulator is hit
+                    self.manipulator.initManipulation(ent, results, self.sels)
+                    self.usingManipulator = True
+                else:
+                    if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
+                        if not ent in self.sels:
+                            self.select(ent)
+                    elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
+                        self.canmove = True
         else:
-            if ent is not None and self.manipulator.compareIds(ent.Id): # don't start selection box when manipulator is hit
-                self.manipulator.initManipulation(ent, results, self.sels)
-                self.usingManipulator = True
-            else:
-                self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
-                self.selection_box.Show()
-                self.canmove = False
-                self.deselect_all()
+            self.hideManipulator()
+            # Start box select if nothing was hit? :P cant follow the logic here...
+            self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
+            self.selection_box.Show()
+            self.canmove = False
+            self.deselect_all()
             
     def dragStarted(self, mouseinfo):
         width, height = renderer.GetWindowWidth(), renderer.GetWindowHeight()
@@ -338,6 +379,8 @@ class ObjectEdit(Component):
         self.prev_mouse_abs_y = mouse_abs_y
 
     def on_mouseleftreleased(self, mouseinfo):
+        if not self.editing:
+            return
         self.left_button_down = False
         if self.active: #XXX something here?
             self.sel_activated = True
@@ -382,6 +425,8 @@ class ObjectEdit(Component):
         return rectx, recty, rectwidth, rectheight
 
     def on_multiselect(self, mouseinfo):
+        if not self.editing:
+            return
         results = []
         results = r.rayCast(mouseinfo.x, mouseinfo.y)
         ent = None
@@ -401,6 +446,8 @@ class ObjectEdit(Component):
             self.canmove = True
             
     def on_mousemove(self, mouseinfo):
+        if not self.editing:
+            return
         """Handle mouse move events. When no button is pressed, just check
         for hilites necessity in manipulators. When a button is pressed, handle
         drag logic."""
@@ -419,6 +466,8 @@ class ObjectEdit(Component):
                 self.manipulator.resethighlight()
 
     def on_mousedrag(self, mouseinfo):
+        if not self.editing:
+            return
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
         width, height = renderer.GetWindowWidth(), renderer.GetWindowHeight()
@@ -589,6 +638,8 @@ class ObjectEdit(Component):
         # Connect to key pressed signal from input context
         self.edit_inputcontext.disconnectAll()
         self.deselect_all()
+        
+        """
         # Disconnect cpp python handler
         self.cpp_python_handler.disconnect('ActivateEditing(bool)', self.on_activate_editing)
         self.cpp_python_handler.disconnect('ManipulationMode(int)', self.on_manupulation_mode_change)
@@ -601,6 +652,8 @@ class ObjectEdit(Component):
         self.cpp_python_handler.disconnect('DeleteObject()', self.deleteObject)
         # Clean widgets
         self.cpp_python_handler.CleanPyWidgets()
+        """
+        
         r.logInfo(".. done")
 
     def on_hide(self, shown):
@@ -612,6 +665,7 @@ class ObjectEdit(Component):
             r.logDebug("on_hide: scene not found")
         else:
             self.deselect_all()
+        self.toggleEditing(False)
  
     def on_activate_editing(self, activate):
         r.logDebug("on_active_editing")
