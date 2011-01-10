@@ -1068,17 +1068,19 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     }
 
     Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
-
     bool assetUsed = false;
 
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
-        if (materialList[i].ref == ogreMaterial->Name() ||
-            framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref) == ogreMaterial->Name()) ///<///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
+    {
+        ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
+        if (materialList[i].ref != ogreMaterial->Name() ||
+            framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref) == ogreMaterial->Name())
         {
             SetMaterial(i, ogreMaterial->Name());
             assetUsed = true;
         }
+    }
 
     if (!assetUsed)
     {
@@ -1093,8 +1095,22 @@ void EC_Mesh::ApplyMaterial()
 {
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
-        if (!materialList[i].ref.isEmpty())
-            SetMaterial(i, framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref));
+    {
+        if (materialList[i].ref.isEmpty())
+            continue;
+        if (materialAssets.size() < i)
+            continue;
+        // Only apply materials that are completely loaded with textures and all!
+        AssetRefListenerPtr material_listener = materialAssets.at(i);
+        if (material_listener.get())
+        {
+            if (material_listener->IsLoaded())
+            {
+                if (!materialList[i].ref.isEmpty())
+                    SetMaterial(i, framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref));
+            }
+        }
+    }
 }
 
 bool EC_Mesh::HasMaterialsChanged() const
