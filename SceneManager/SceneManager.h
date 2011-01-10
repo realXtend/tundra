@@ -218,9 +218,10 @@ namespace Scene
 
         //! Get scene as XML
         /*! \param gettemporary flag if you want to get temporary stuff too
+			\param getlocal flag if you want to get local entities also
             \return the scene in XML as a "string"
         */
-        QByteArray GetSceneXML(bool gettemporart = false) const;
+        QByteArray GetSceneXML(bool gettemporary = false, bool getlocal = false) const;
 
         //! Save the scene to XML
         /*! \param filename File name
