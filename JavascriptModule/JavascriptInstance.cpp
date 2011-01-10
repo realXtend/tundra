@@ -20,6 +20,11 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 
 #include <QFile>
+#include <sstream>
+
+//#ifndef QT_NO_SCRIPTTOOLS
+//#include <QScriptEngineDebugger>
+//#endif
 
 #include "MemoryLeakCheck.h"
 
@@ -170,7 +175,18 @@ void JavascriptInstance::Run()
     included_files_.clear();
     QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
     if (engine_->hasUncaughtException())
-        LogError(result.toString().toStdString());
+    {
+        LogError("In run/evaluate: " + result.toString().toStdString());
+        QStringList trace = engine_->uncaughtExceptionBacktrace();
+        QStringList::const_iterator it;
+        for (it = trace.constBegin(); it != trace.constEnd(); ++it)
+            LogError((*it).toLocal8Bit().constData());
+
+        std::stringstream ss;
+        int linenum = engine_->uncaughtExceptionLineNumber();
+        ss << linenum;
+        LogError(ss.str());
+    }
 
     evaluated = true;
 }
@@ -286,7 +302,10 @@ void JavascriptInstance::CreateEngine()
         DeleteEngine();
     engine_ = new QScriptEngine;
     connect(engine_, SIGNAL(signalHandlerException(const QScriptValue &)), SLOT(OnSignalHandlerException(const QScriptValue &)));
-
+//#ifndef QT_NO_SCRIPTTOOLS
+//    QScriptEngineDebugger debugger;
+//    debugger.attachTo(engine_);
+//#endif
     ExposeQtMetaTypes(engine_);
     ExposeNaaliCoreTypes(engine_);
     ExposeCoreApiMetaTypes(engine_);
@@ -317,5 +336,15 @@ void JavascriptInstance::DeleteEngine()
 void JavascriptInstance::OnSignalHandlerException(const QScriptValue& exception)
 {
     LogError(exception.toString().toStdString());
+
+    QStringList trace = engine_->uncaughtExceptionBacktrace();
+    QStringList::const_iterator it;
+    for (it = trace.constBegin(); it != trace.constEnd(); ++it)
+        LogError((*it).toStdString());
+
+    std::stringstream ss;
+    int linenum = engine_->uncaughtExceptionLineNumber();
+    ss << linenum;
+    LogError(ss.str());
 }
 
