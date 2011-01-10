@@ -65,6 +65,7 @@ def sendAll(data):
 def onAttributeChanged(component, attribute, changeType):
     #FIXME Only syncs hard coded ec_placeable
     #Maybe get attribute or something
+    
     #FIXME Find a better way to get component name
     component_name = str(component).split()[0]
 
@@ -109,7 +110,7 @@ def onComponentAdded(entity, component, changeType):
         transform.extend([data.rotation().x(), data.rotation().y(), data.rotation().z()])
         transform.extend([data.scale().x(), data.scale().y(), data.scale().z()])
 
-        sendAll(['setAttr', {'id': entity.Id, 
+        sendAll(['addComponent', {'id': entity.Id, 
                              'component': component_name,
                              'Transform': transform}])
 
@@ -157,6 +158,7 @@ def handle_clients(ws):
             connections[myid] = connectionid
             ws.send(json.dumps(['setId', {'id': myid}]))
             
+            #FIXME don't sync locals
             xml = scene.GetSceneXML(True)
 
             ws.send(json.dumps(['loadScene', {'xml': str(xml)}]))
