@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
     <entry>InventoryModule</entry>
+    <dependency>UiModule</dependency>
+    <dependency>AssetModule</dependency>
     <dependency>PythonScriptModule</dependency>
 </config>
