@@ -111,11 +111,11 @@ namespace Avatar
             /// \bug Aren't we supposed to be able to post the ControllableEntity multiple times for the same entity to set the currently
             /// active controlled entity? This code will stack up the actions here? Or should we have different messages in the style of
             /// EVENT_MAKE_ENTITY_A_CONTROLLABLE_ENTITY and EVENT_SET_AS_CURRENT_CONTROLLABLE_ENTITY? -jj.
+            input_events_ = ControllableActions::AssignCommonActions(controllable);
             controllable->AddAction(RA::FlyMode);
             controllable->SetType(CT_AVATAR);
             input_events_[InputEvents::TOGGLE_FLYMODE] = RA::FlyMode;
             input_events_[InputEvents::TOGGLE_FLYMODE_REL] = RA::FlyMode + 1;
-            input_events_ = ControllableActions::AssignCommonActions(controllable);
         }
 
         return false;
