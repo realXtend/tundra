@@ -12,11 +12,6 @@ AssetPtr AssetRefListener::Asset()
     return asset.lock();
 }
 
-bool AssetRefListener::IsLoaded()
-{
-    return loaded_;
-}
-
 void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef)
 {
     Attribute<AssetReference> *attr = dynamic_cast<Attribute<AssetReference> *>(assetRef);
@@ -37,14 +32,13 @@ void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef
         return; ///\todo Log out warning.
 
     connect(transfer.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(EmitDownloaded(IAssetTransfer*)), Qt::UniqueConnection);
-    connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), this, SLOT(EmitDecoded(AssetPtr)), Qt::UniqueConnection);
-    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(EmitLoaded(AssetPtr)), Qt::UniqueConnection);
+//    connect(transfer.get(), SIGNAL(Decoded(AssetPtr)), this, SLOT(EmitDecoded(AssetPtr)), Qt::UniqueConnection);
+//    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(EmitLoaded(AssetPtr)), Qt::UniqueConnection);
 
     AssetPtr assetData = asset.lock();
     if (assetData)
         disconnect(assetData.get(), SIGNAL(Loaded(AssetPtr)), this, SIGNAL(Loaded(AssetPtr)));
     asset = AssetPtr();
-    loaded_ = false;
 }
 
 void AssetRefListener::EmitDownloaded(IAssetTransfer *transfer)
@@ -70,6 +64,5 @@ void AssetRefListener::EmitDecoded(AssetPtr asset)
 
 void AssetRefListener::EmitLoaded(AssetPtr asset)
 {
-    loaded_ = true;
     emit Loaded(asset);
 }

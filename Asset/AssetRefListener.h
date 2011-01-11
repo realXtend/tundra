@@ -20,10 +20,7 @@ public:
     /// Issues a new asset request to the given assetRef URL.
     /// @param assetApi Pass a pointer to the system Asset API into this function (This utility object doesn't keep reference to framework).
     void HandleAssetRefChange(AssetAPI *assetApi, QString assetRef);
-
-    /// Returns if the asset we are listening has been loaded
-    bool IsLoaded();
-
+    
     /// Returns the asset currently stored in this asset reference.
     AssetPtr Asset();
 

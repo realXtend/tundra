@@ -1072,15 +1072,12 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 
     AssetReferenceList materialList = meshMaterial.Get();
     for(int i = 0; i < materialList.Size(); ++i)
-    {
-        ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
-        if (materialList[i].ref != ogreMaterial->Name() ||
-            framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref) == ogreMaterial->Name())
+        if (materialList[i].ref == ogreMaterial->Name() ||
+            framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref) == ogreMaterial->Name()) ///<///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
         {
             SetMaterial(i, ogreMaterial->Name());
             assetUsed = true;
         }
-    }
 
     if (!assetUsed)
     {
@@ -1094,17 +1091,17 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 void EC_Mesh::ApplyMaterial()
 {
     AssetReferenceList materialList = meshMaterial.Get();
+    AssetAPI *assetAPI = framework_->Asset();
     for(int i = 0; i < materialList.Size(); ++i)
     {
-        if (materialList[i].ref.isEmpty())
-            continue;
-        if (materialAssets.size() < i)
-            continue;
-        // Only apply materials that are completely loaded with all of its dependencies
-        AssetRefListenerPtr material_listener = materialAssets.at(i);
-        if (material_listener.get())
-            if (material_listener->IsLoaded())
-                SetMaterial(i, framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref));
+        if (!materialList[i].ref.isEmpty())
+        {
+            // Only apply the material if it is loaded and has no dependencies
+            QString assetFullName = assetAPI->LookupAssetRefToStorage(materialList[i].ref);
+            AssetPtr asset = assetAPI->GetAsset(assetFullName);
+            if ((asset) && (assetAPI->NumPendingDependencies(asset) == 0))
+                SetMaterial(i, assetFullName);
+        }
     }
 }
 
