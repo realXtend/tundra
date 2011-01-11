@@ -58,7 +58,7 @@ class ObjectEdit(Component):
             (Qt.Key_R, Qt.NoModifier) : self.rotateObject,
             (Qt.Key_S, Qt.NoModifier) : self.scaleObject,
             (Qt.Key_G, Qt.NoModifier) : self.translateObject,
-            (Qt.Key_Tab, Qt.ControlModifier) : self.cycleManipulator,
+            (Qt.Key_Tab, Qt.NoModifier) : self.cycleManipulator,
             (Qt.Key_Z, Qt.ControlModifier) : self.undo,
             (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
             (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
@@ -155,7 +155,8 @@ class ObjectEdit(Component):
     def on_mousescroll(self, m):
         if not self.editing:
             return
-        self.manipulator.showManipulator(self.sels)
+        #self.manipulator.showManipulator(self.sels) # what is this supposed to do?
+        self.cycleManipulator()
         
     def resetValues(self):
         self.left_button_down = False
@@ -316,8 +317,7 @@ class ObjectEdit(Component):
     def init_selection_box(self):
         # create a temporary selection box, we dont want to sync this for now
         # as there is no deletion code when you leave the server!
-        self.selection_box_entity = naali.createEntity()
-        self.selection_box_entity.SetTemporary(True)
+        self.selection_box_entity = naali.createEntity(comptypes = ["EC_SelectionBox", "EC_Name"], localonly = True, temporary = True)
         self.selection_box_entity.SetName("Python Selection Box")
         self.selection_box = self.selection_box_entity.GetOrCreateComponentRaw('EC_SelectionBox')
         self.selection_box.Hide()
@@ -632,9 +632,10 @@ class ObjectEdit(Component):
     def on_exit(self):
         r.logInfo("Object Edit exiting..")
         # remove selection box component and entity
-        if self.selection_box_entity is not None and self.selection_box is not None:
-            self.selection_box_entity.RemoveComponentRaw(self.selection_box)
-            naali.removeEntity(self.selection_box_entity)
+        # - no need its a temporary item
+        #if self.selection_box_entity is not None and self.selection_box is not None:
+        #    self.selection_box_entity.RemoveComponentRaw(self.selection_box)
+        #    naali.removeEntity(self.selection_box_entity)
         # Connect to key pressed signal from input context
         self.edit_inputcontext.disconnectAll()
         self.deselect_all()

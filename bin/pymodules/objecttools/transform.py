@@ -97,19 +97,13 @@ class Manipulator:
     
     def createManipulator(self):
         if self.manipulator is None and self.usesManipulator:
-            # create a temporary entity, we dont want to sync this at least for now
+            # create a local temporary entity, we dont want to sync this at least for now
             # as there is no deletion code when you leave the server!
-            ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240)
-            ent.SetTemporary(True)
+            ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240, ["EC_Gizmo", "EC_Ruler"], localonly = True, temporary = True)
             ent.SetName(self.NAME)
-            # create gizmo and ruler
-            gizmo = ent.GetOrCreateComponentRaw("EC_Gizmo")
-            gizmo.SetTemporary(True)
-            ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
-            ruler.SetTemporary(True)
-            ruler.SetVisible(False)
-            ruler.SetType(self.MANIPULATOR_RULER_TYPE)
-            ruler.UpdateRuler()
+            ent.ruler.SetVisible(False)
+            ent.ruler.SetType(self.MANIPULATOR_RULER_TYPE)
+            ent.ruler.UpdateRuler()
             return ent
 
     def stopManipulating(self):
@@ -169,13 +163,16 @@ class Manipulator:
                     self.manipulator.ruler.SetVisible(False)
                     #r.logInfo("hiding ruler hideManipulator")
                     self.manipulator.ruler.UpdateRuler()
-                
                 self.grabbed_axis = None
                 self.grabbed = False
                 remove_custom_cursors()
-                
             except RuntimeError, e:
                 r.logDebug("hideManipulator failed")
+            except AttributeError, e:
+                # this will happend on_exit() -> hideManipulator
+                # the manipulator entitys components has been destroyed
+                pass
+                
     
     def initManipulation(self, ent, results, ents):
         if self.usesManipulator:
@@ -450,7 +447,7 @@ class RotationManipulator(Manipulator):
     def _manipulate(self, ent, amountx, amounty, changevec):
         if self.grabbed and self.grabbed_axis is not None:
             local = False #self.controller.useLocalTransform
-            mov = changevec.length() * 30
+            mov = changevec.length() * 15
             ort = ent.placeable.Orientation
 
             if amountx < 0 and amounty < 0:

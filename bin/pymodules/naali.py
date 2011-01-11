@@ -6,6 +6,9 @@ import rexviewer as r #the old module is still used , while porting away from it
 import sys #for stdout redirecting
 #from _naali import *
 
+# for PythonQt.private.AttributeChange
+import PythonQt
+
 #\todo: do we have version num info somewhere?
 #version = XXX
 
@@ -32,13 +35,27 @@ def getScene(name):
 def getDefaultScene():
     return _naali.DefaultScene()
     
-def createEntity(comptypes = []):
+def createEntity(comptypes = [], localonly = False, sync = True, temporary = False):
     s = getDefaultScene()
-    ent = s.CreateEntityRaw(0, comptypes) #0 apparently means it assigns NextFreeId
+    # create entity
+    if localonly:
+        ent = s.CreateEntityLocalRaw(comptypes)
+    else:
+        ent = s.CreateEntityRaw(0, comptypes, PythonQt.private.AttributeChange.Replicate, sync)
+    # set temporary
+    if temporary:
+        ent.SetTemporary(True)
+    # create components
+    for comptype in comptypes:
+        comp = ent.GetOrCreateComponentRaw(comptype)
+        if temporary:
+            comp.SetTemporary(True)
+    s.EmitEntityCreatedRaw(ent)
     return ent
 
-def createMeshEntity(meshname, raycastprio=1):
-    ent = createEntity(["EC_Placeable", "EC_Mesh"])
+def createMeshEntity(meshname, raycastprio=1, additional_comps = [], localonly = False, sync = True, temporary = False):
+    components = ["EC_Placeable", "EC_Mesh", "EC_Name"] + additional_comps
+    ent = createEntity(components, localonly, sync, temporary)
     ent.placeable.SelectPriority = raycastprio
     ent.mesh.SetPlaceable(ent.placeable)
     ent.mesh.SetMesh(meshname)
@@ -47,6 +64,11 @@ def createMeshEntity(meshname, raycastprio=1):
 #XXX check how to do with SceneManager
 def removeEntity(entity):
     r.removeEntity(entity.Id)
+    
+# using the scene manager, note above
+def deleteEntity(entity):
+    s = getDefaultScene()
+    s.DeleteEntityById(entity.Id)
 
 def createInputContext(name, priority = 100):
     return _pythonscriptmodule.CreateInputContext(name, priority)
