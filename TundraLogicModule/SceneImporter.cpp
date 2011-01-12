@@ -495,6 +495,83 @@ SceneDesc SceneImporter::GetSceneDescForMesh(const QString &filename) const
     return sceneDesc;
 }
 
+SceneDesc SceneImporter::GetSceneDescForMesh(const QUrl &meshUrl) const
+{
+    SceneDesc sceneDesc;
+
+    if (!meshUrl.toString().endsWith(".mesh", Qt::CaseInsensitive))
+    {
+        LogError("Unsupported file type for scene description creation: " + meshUrl.toString().toStdString());
+        return sceneDesc;
+    }
+
+    sceneDesc.type = SceneDesc::OgreMesh;
+    sceneDesc.filename = meshUrl.toString();
+
+    // Construct entity name from the mesh file name.
+    QString meshEntityName = meshUrl.toString();
+    meshEntityName = meshEntityName.split("/").last();
+    meshEntityName = meshEntityName.split(".mesh").first();
+
+    EntityDesc entityDesc = { "", meshEntityName };
+    ComponentDesc meshDesc = { EC_Mesh::TypeNameStatic() };
+    ComponentDesc placeableDesc = { EC_Placeable::TypeNameStatic() };
+    ComponentDesc nameDesc = { EC_Name::TypeNameStatic() };
+
+    // Create asset description
+    AssetDesc ad;
+    ad.source = meshUrl.toString();
+    ad.dataInMemory = false;
+    ad.typeName = "mesh";
+    ad.destinationName = "";
+    sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
+    
+    // Create attribute descriptions
+    ComponentManagerPtr mgr = scene_->GetFramework()->GetComponentManager();
+
+    // Mesh
+    ComponentPtr meshPtr = mgr->CreateComponent(EC_Mesh::TypeNameStatic());
+    EC_Mesh *mesh = checked_static_cast<EC_Mesh *>(meshPtr.get());
+    if (mesh)
+    {
+        mesh->meshRef.Set(AssetReference(meshUrl.toString()), AttributeChange::Disconnected);
+        foreach(IAttribute *a, mesh->GetAttributes())
+        {
+            AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+            meshDesc.attributes.append(attrDesc);
+        }
+    }
+
+    // Placeable
+    ComponentPtr placeable = mgr->CreateComponent(EC_Placeable::TypeNameStatic());
+    if (placeable)
+    {
+        foreach(IAttribute *a, placeable->GetAttributes())
+        {
+            AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+            placeableDesc.attributes.append(attrDesc);
+        }
+    }
+
+    // Name
+    ComponentPtr namePtr = mgr->CreateComponent(EC_Name::TypeNameStatic());
+    EC_Name *name = checked_static_cast<EC_Name *>(namePtr.get());
+    if (name)
+    {
+        name->name.Set(meshEntityName, AttributeChange::Disconnected);
+        foreach(IAttribute *a, name->GetAttributes())
+        {
+            AttributeDesc attrDesc = { a->TypeName().c_str(), a->GetNameString().c_str(), a->ToString().c_str() };
+            nameDesc.attributes.append(attrDesc);
+        }
+    }
+
+    entityDesc.components << meshDesc << placeableDesc << nameDesc;
+    sceneDesc.entities << entityDesc;
+
+    return sceneDesc;
+}
+
 SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 {
     SceneDesc sceneDesc;
@@ -932,10 +1009,7 @@ QStringList SceneImporter::GetMaterialFiles(const std::string &dir) const
         {
             QString ext(iter->path().extension().c_str());
             if (ext.contains(".material", Qt::CaseInsensitive))
-            {
-                LogDebug("Material file: " + iter->path().string());
                 files.push_back(iter->path().string().c_str());
-            }
         }
 
     return files;

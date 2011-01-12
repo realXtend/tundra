@@ -19,6 +19,8 @@ class QTreeWidget;
 class QPushButton;
 class QComboBox;
 class QTreeWidgetItem;
+class QProgressBar;
+class QLabel;
 
 class IAssetUploadTransfer;
 
@@ -89,6 +91,27 @@ private:
     QPushButton *cancelButton; ///< Cancel/close button.
     QComboBox *storageComboBox; ///< Asset storage combo box.
     Vector3df position; ///< Centralization position for instantiated context (if used).
+    
+    // Uploading
+    QLabel *uploadStatus_;
+    QProgressBar *uploadProgress_;
+    int progressStep_;
+    int failedUploads_;
+    int successfullUploads_;
+    int totalUploads_;
+
+    QString currentStorage_;
+    QString currentStorageBaseUrl_;
+
+    // Parent widget
+    QWidget *parentEntities_;
+    QWidget *parentAssets_;
+
+    // Selected entities and assets
+    SceneDesc newDesc_;
+
+    // Bool for completion
+    bool contentAdded_;
 
 private slots:
     /// Checks all entity check boxes.
@@ -105,6 +128,24 @@ private slots:
 
     /// Start content creation and asset uploading.
     void AddContent();
+
+    /// Create new scene desctiption with ui checkbox selections
+    bool CreateNewDesctiption();
+
+    /// Start uploading
+    bool UploadAssets();
+
+    /// Add entities to scene (autocalled when all transfers finish)
+    void AddEntities();
+
+    /// Centers this window to the app main window
+    void CenterToMainWindow();
+
+    /// Set entity related widgets visibility.
+    void SetEntitiesVisible(bool visible);
+
+    /// Set assets related widgets visibility.
+    void SetAssetsVisible(bool visible);
 
     /// Closes the window.
     void Close();
@@ -127,6 +168,11 @@ private slots:
     /** @param transfer Failed transfer.
     */
     void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
+
+    void CheckUploadTotals();
+
+signals:
+    void Completed(bool contentAdded, const QString &uploadBaseUrl);
 };
 
 #endif

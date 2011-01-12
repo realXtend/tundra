@@ -108,7 +108,8 @@ struct SceneDesc
         Naali, ///< Naali XML or binary scene
         OgreScene, ///< OGRE .scene
         OgreMesh, ///< OGRE .mesh
-        OpenAsset ///< OpenAsset
+        OpenAsset, ///< OpenAsset
+        AssetUpload ///< Scene description only has assets, no entities
     };
 
     typedef QPair<QString, QString> AssetMapKey; ///< source-subname pair used to idenfity assets.
