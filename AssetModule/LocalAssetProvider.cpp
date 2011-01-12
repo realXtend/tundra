@@ -258,7 +258,6 @@ void LocalAssetProvider::CompletePendingFileUploads()
         }
         else
         {
-            transfer->EmitTransferCompleted();
             framework->Asset()->AssetUploadTransferCompleted(transfer.get());
         }
     }
