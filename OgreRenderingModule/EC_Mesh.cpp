@@ -701,6 +701,15 @@ Ogre::Entity* EC_Mesh::GetAttachmentEntity(uint index) const
     return attachment_entities_[index];
 }
 
+const uint EC_Mesh::GetNumSubMeshes() const
+{
+    uint count = 0;
+    if (HasMesh())
+        if (entity_->getMesh().get())
+            count = entity_->getMesh()->getNumSubMeshes();
+    return count;
+}
+
 const std::string& EC_Mesh::GetMeshName() const
 {
     static std::string empty_name;
@@ -710,7 +719,6 @@ const std::string& EC_Mesh::GetMeshName() const
     else
         return entity_->getMesh()->getName();
 }
-
 
 const std::string& EC_Mesh::GetSkeletonName() const
 {
