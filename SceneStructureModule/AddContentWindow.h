@@ -62,6 +62,9 @@ public:
     */
     void AddPosition(const Vector3df &pos) { position = pos; }
 
+protected:
+    void showEvent(QShowEvent *e);
+
 private:
     Q_DISABLE_COPY(AddContentWindow)
 
@@ -172,6 +175,8 @@ private slots:
     /** @param transfer Failed transfer.
     */
     void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
+
+    void UpdateUploadStatus(bool succesfull, const QString &assetRef);
 
     void CheckUploadTotals();
 
