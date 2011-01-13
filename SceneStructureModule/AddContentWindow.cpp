@@ -17,6 +17,7 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <QMessageBox>
+#include <QFont>
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -150,6 +151,13 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     setWindowTitle(tr("Add Content"));
     resize(600,500);
 
+    QString widgetStyle = "QProgressBar { border: 1px solid grey; border-radius: 0px; text-align: center; background-color: rgb(244, 244, 244); }" 
+        "QProgressBar::chunk { background-color: qlineargradient(spread:pad, x1:0.028, y1:1, x2:0.972, y2:1, stop:0 rgba(194, 194, 194, 255), stop:1 rgba(115, 115, 115, 255)); }";
+    setStyleSheet(widgetStyle);
+
+    QFont titleFont("Arial", 16);
+    titleFont.setBold(true);
+
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);
     setLayout(layout);
@@ -160,7 +168,8 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     entitiesLayout->setContentsMargins(0, 0, 0, 0);
     parentEntities_->setLayout(entitiesLayout);
 
-    QLabel *entityLabel = new QLabel(tr("The following entities will be created:"));
+    QLabel *entityLabel = new QLabel(tr("Entity Creation"));
+    entityLabel->setFont(titleFont);
 
     entityTreeWidget = new QTreeWidget;
     entityTreeWidget->setColumnCount(3);
@@ -173,11 +182,19 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     QSpacerItem *entityButtonSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
     QSpacerItem *middleSpacer = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Fixed);
 
+    QVBoxLayout *entitiesProgressLayout = new QVBoxLayout();
+    entitiesStatus_ = new QLabel();
+    entitiesProgress_ = new QProgressBar();
+    entitiesProgress_->setFixedHeight(20);
+
     entitiesLayout->addWidget(entityLabel);
     entitiesLayout->addWidget(entityTreeWidget);
+    entitiesProgressLayout->addWidget(entitiesStatus_);
+    entitiesProgressLayout->addWidget(entitiesProgress_);
     entityButtonsLayout->addWidget(selectAllEntitiesButton);
     entityButtonsLayout->addWidget(deselectAllEntitiesButton);
     entityButtonsLayout->addSpacerItem(entityButtonSpacer);
+    entitiesLayout->insertLayout(-1, entitiesProgressLayout);
     entitiesLayout->insertLayout(-1, entityButtonsLayout);
     entitiesLayout->insertSpacerItem(-1, middleSpacer);
     layout->addWidget(parentEntities_);
@@ -188,7 +205,8 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     assetsLayout->setContentsMargins(0, 0, 0, 0);
     parentAssets_->setLayout(assetsLayout);
 
-    QLabel *assetLabel = new QLabel(tr("The following assets will be uploaded:"));
+    QLabel *assetLabel = new QLabel(tr("Asset Uploads"));
+    assetLabel->setFont(titleFont);
 
     assetTreeWidget = new QTreeWidget;
     assetTreeWidget->setColumnCount(5);
@@ -206,7 +224,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     QVBoxLayout *uploadLayout = new QVBoxLayout();
     uploadStatus_ = new QLabel();
     uploadProgress_ = new QProgressBar();
-    uploadProgress_->setValue(0);
+    uploadProgress_->setFixedHeight(20);
 
     // Get available asset storages. Set default storage selected as default.
     //storageComboBox->addItem(tr("Don't adjust"), "DoNotAdjust");
@@ -241,6 +259,8 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 
     uploadStatus_->hide();
     uploadProgress_->hide();
+    entitiesStatus_->hide();
+    entitiesProgress_->hide();
 
     // General controls
     addContentButton = new QPushButton(tr("Add content"));
@@ -512,14 +532,28 @@ void AddContentWindow::DeselectAllAssets()
 
 void AddContentWindow::AddContent()
 {
+    uploadStatus_->setText("");
+    uploadProgress_->setValue(0);
+    entitiesStatus_->setText("Waiting for asset uploads to finish...");
+    entitiesProgress_->setValue(0);
+
     if (CreateNewDesctiption())
     {
         // If no uploads are queued then AddEntities will be called automatically
         if (UploadAssets())
-        {
-            // So user wont click twice while doing upload/add entities
+        {        
+            if (totalUploads_ > 0)
+            {
+                uploadStatus_->show();
+                uploadProgress_->show();
+            }
+            if (!newDesc_.entities.empty())
+            {
+                entitiesStatus_->show();
+                entitiesProgress_->show();
+            }
+
             addContentButton->setEnabled(false);
-            // So user cant change storage while doing things
             storageComboBox->setEnabled(false);
         }
         else
@@ -673,12 +707,10 @@ bool AddContentWindow::UploadAssets()
                 LogError(std::string(e.what()));
             }
         }
-	if (totalUploads_)
-	    progressStep_ = 100 / totalUploads_;
-	else
-	    progressStep_ = 0;
-        uploadStatus_->show();
-        uploadProgress_->show();
+        if (totalUploads_ > 0)
+            progressStep_ = 100 / totalUploads_;
+        else
+            progressStep_ = 100;
     }
     else
         AddEntities(); // if no uploads, then add entities now!
@@ -752,18 +784,23 @@ void AddContentWindow::AddEntities()
 
         if (!entities.empty())
         {
-            uploadStatus_->setText(QString("Added %1 entities to scene successfully").arg(entities.count()));
+            entitiesStatus_->setText(QString("Added %1 entities to scene successfully").arg(entities.count()));
             if (position != Vector3df())
                 SceneStructureModule::CentralizeEntitiesTo(position, entities);
         }
         else
         {
+            entitiesStatus_->setText("No entities were created, even if the intent was to create " + QString::number(newDesc_.entities.count()));
             QMessageBox::warning(this, "Entity Creation", "No entities were created, even if input had entities!");
             return;
         }
+
+        entitiesProgress_->setValue(100);
     }
+    else
+        entitiesStatus_->setText("No entities were selected for add");
     
-    contentAdded_ = true;
+    contentAdded_ = true; // this will be emitted on Close() for those who are interested
     cancelButton->setText(tr("Close"));
     addContentButton->setEnabled(true);
     storageComboBox->setEnabled(true);
@@ -882,7 +919,7 @@ void AddContentWindow::CheckUploadTotals()
     int totalNow = successfullUploads_ + failedUploads_;
     if (totalNow == totalUploads_)
     {
-        uploadStatus_->setText("All uploads completed");
+        uploadStatus_->setText(QString("%1/%2 uploads completed succesfully").arg(QString::number(successfullUploads_), QString::number(totalUploads_)));
         AddEntities();
     }
 }
