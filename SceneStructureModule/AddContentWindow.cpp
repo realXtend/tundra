@@ -640,7 +640,7 @@ bool AddContentWindow::UploadAssets()
     {
         LogDebug("Starting uploading of " + ToString(newDesc_.assets.size()) + " asset" + "(s).");
 
-        totalUploads_ = 0.00001; // don't divide by zero
+        totalUploads_ = 0;
         progressStep_ = 0;
         failedUploads_ = 0;
         successfullUploads_ = 0;
@@ -673,7 +673,10 @@ bool AddContentWindow::UploadAssets()
                 LogError(std::string(e.what()));
             }
         }
-        progressStep_ = 100 / totalUploads_;
+	if (totalUploads_)
+	    progressStep_ = 100 / totalUploads_;
+	else
+	    progressStep_ = 0;
         uploadStatus_->show();
         uploadProgress_->show();
     }
