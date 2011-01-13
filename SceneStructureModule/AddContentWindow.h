@@ -100,6 +100,10 @@ private:
     int successfullUploads_;
     int totalUploads_;
 
+    // Entities add
+    QLabel *entitiesStatus_;
+    QProgressBar *entitiesProgress_;
+
     QString currentStorage_;
     QString currentStorageBaseUrl_;
 
