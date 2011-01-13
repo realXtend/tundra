@@ -62,6 +62,8 @@ namespace MumbleVoip
         virtual QStringList GetChannels();
 
         virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const;
+        virtual QStringList GetParticipantsNames() const;
+        virtual void MuteParticipantByName(QString, bool) const;
 
         virtual void Update(f64 frametime);
         virtual QList<QString> Statistics();
