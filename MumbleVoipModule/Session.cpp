@@ -215,6 +215,32 @@ namespace MumbleVoip
         return list;
     }
 
+    QStringList Session::GetParticipantsNames() const
+    {
+        QStringList names;
+        QList<Communications::InWorldVoice::ParticipantInterface*> list;
+        for(ParticipantList::const_iterator i = participants_.begin(); i != participants_.end(); ++i)
+        {
+            Participant* p = *i;
+            names << p->Name();
+        }
+        return names;
+    }
+
+    void Session::MuteParticipantByName(QString name, bool mute) const
+    {
+        QList<Communications::InWorldVoice::ParticipantInterface*> list;
+        for(ParticipantList::const_iterator i = participants_.begin(); i != participants_.end(); ++i)
+        {
+            Participant* p = *i;
+            if (p->Name() == name)
+            {
+                p->Mute(mute);
+            }
+        }
+    }
+
+
     void Session::Update(f64 frametime)
     {
         PlaybackReceivedAudio();
