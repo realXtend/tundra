@@ -435,7 +435,8 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
         if ((a.typeName == "material" && a.data.isEmpty()) || res == AssetAPI::FileQueryLocalFileMissing)
         {
             // File not found, mark the item red and disable it.
-            aItem->setBackgroundColor(cColumnAssetSourceName, Qt::red);
+            aItem->setBackgroundColor(cColumnAssetSourceName, QColor(255,0,0,200));
+            aItem->setTextColor(cColumnAssetSourceName, Qt::white);
             aItem->setCheckState(cColumnAssetUpload, Qt::Unchecked);
             aItem->setText(cColumnAssetDestName, "");
             aItem->setDisabled(true);

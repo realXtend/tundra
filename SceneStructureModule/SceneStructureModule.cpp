@@ -547,10 +547,29 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                         ad.destinationName = matName;
                         ad.data = materialFile.readAll();
                         ad.dataInMemory = true;
-                        sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
 
-                        // Close source file
+                        sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
                         materialFile.close();
+
+                        // Add texture assets to scene description
+                        TundraLogic::SceneImporter importer(scene);
+                        QSet<QString> textures = importer.ProcessMaterialForTextures(ad.data);
+                        if (!textures.empty())
+                        {
+                            QString dropFolder = materialRef;
+                            dropFolder = dropFolder.replace("\\", "/");
+                            dropFolder = dropFolder.left(dropFolder.lastIndexOf("/")+1);
+
+                            foreach(QString textureName, textures)
+                            {
+                                AssetDesc ad;
+                                ad.typeName = "texture";
+                                ad.source = dropFolder + textureName;
+                                ad.destinationName = textureName;
+                                ad.dataInMemory = false;
+                                sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
+                            }
+                        }
 
                         // Show add content window
                         AddContentWindow *addMaterials = new AddContentWindow(framework_, scene);
