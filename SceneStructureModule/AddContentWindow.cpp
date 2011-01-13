@@ -640,7 +640,7 @@ bool AddContentWindow::UploadAssets()
     {
         LogDebug("Starting uploading of " + ToString(newDesc_.assets.size()) + " asset" + "(s).");
 
-        totalUploads_ = 0;
+        totalUploads_ = 0.00001; // don't divide by zero
         progressStep_ = 0;
         failedUploads_ = 0;
         successfullUploads_ = 0;
