@@ -18,6 +18,8 @@
 #include <QProgressBar>
 #include <QMessageBox>
 #include <QFont>
+#include <QColor>
+#include <QDebug>
 
 #include "Framework.h"
 #include "AssetAPI.h"
@@ -148,11 +150,13 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
-    setWindowTitle(tr("Add Content"));
-    resize(600,500);
+    setWindowTitle(" "); //setWindowTitle(tr("Add Content")); imo the add content name is kind of not needed
+    QPixmap nullIcon(16,16); // do a null icon to hide the default ugly one
+    nullIcon.fill(Qt::transparent);
+    setWindowIcon(nullIcon);
 
     QString widgetStyle = "QProgressBar { border: 1px solid grey; border-radius: 0px; text-align: center; background-color: rgb(244, 244, 244); }" 
-        "QProgressBar::chunk { background-color: qlineargradient(spread:pad, x1:0.028, y1:1, x2:0.972, y2:1, stop:0 rgba(194, 194, 194, 255), stop:1 rgba(115, 115, 115, 255)); }";
+        "QProgressBar::chunk { background-color: qlineargradient(spread:pad, x1:0.028, y1:1, x2:0.972, y2:1, stop:0 rgba(194, 194, 194, 100), stop:1 rgba(115, 115, 115, 100)); }";
     setStyleSheet(widgetStyle);
 
     QFont titleFont("Arial", 16);
@@ -170,11 +174,14 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 
     QLabel *entityLabel = new QLabel(tr("Entity Creation"));
     entityLabel->setFont(titleFont);
+    entityLabel->setStyleSheet("color: rgb(63, 63, 63);");
 
     entityTreeWidget = new QTreeWidget;
     entityTreeWidget->setColumnCount(3);
     entityTreeWidget->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
     entityTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
+    entityTreeWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    entityTreeWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     QPushButton *selectAllEntitiesButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllEntitiesButton = new QPushButton(tr("Deselect All"));
@@ -188,13 +195,14 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     entitiesProgress_->setFixedHeight(20);
 
     entitiesLayout->addWidget(entityLabel);
+    entitiesLayout->addLayout(entitiesProgressLayout);
     entitiesLayout->addWidget(entityTreeWidget);
     entitiesProgressLayout->addWidget(entitiesStatus_);
     entitiesProgressLayout->addWidget(entitiesProgress_);
     entityButtonsLayout->addWidget(selectAllEntitiesButton);
     entityButtonsLayout->addWidget(deselectAllEntitiesButton);
     entityButtonsLayout->addSpacerItem(entityButtonSpacer);
-    entitiesLayout->insertLayout(-1, entitiesProgressLayout);
+    //entitiesLayout->insertLayout(-1, entitiesProgressLayout);
     entitiesLayout->insertLayout(-1, entityButtonsLayout);
     entitiesLayout->insertSpacerItem(-1, middleSpacer);
     layout->addWidget(parentEntities_);
@@ -207,12 +215,15 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 
     QLabel *assetLabel = new QLabel(tr("Asset Uploads"));
     assetLabel->setFont(titleFont);
+    assetLabel->setStyleSheet("color: rgb(63, 63, 63);");
 
     assetTreeWidget = new QTreeWidget;
     assetTreeWidget->setColumnCount(5);
     QStringList labels;
     labels << tr("Upload") << tr("Type") << tr("Source name") << tr("Source subname") << tr("Destination name");
     assetTreeWidget->setHeaderLabels(labels);
+    assetTreeWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    assetTreeWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     QPushButton *selectAllAssetsButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllAssetsButton = new QPushButton(tr("Deselect All"));
@@ -247,8 +258,9 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     uploadLayout->addWidget(uploadProgress_);
 
     assetsLayout->addWidget(assetLabel);
-    assetsLayout->addWidget(assetTreeWidget);
     assetsLayout->addLayout(uploadLayout);
+    assetsLayout->addWidget(assetTreeWidget);
+    //assetsLayout->addLayout(uploadLayout);
     assetButtonsLayout->addWidget(selectAllAssetsButton);
     assetButtonsLayout->addWidget(deselectAllAssetsButton);
     assetButtonsLayout->addSpacerItem(assetButtonSpacer);
@@ -287,8 +299,6 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     failedUploads_ = 0;
     successfullUploads_ = 0;
     totalUploads_ = 0;
-
-    CenterToMainWindow();
 }
 
 AddContentWindow::~AddContentWindow()
@@ -315,12 +325,18 @@ AddContentWindow::~AddContentWindow()
     }
 }
 
+void AddContentWindow::showEvent(QShowEvent *e)
+{
+    CenterToMainWindow();
+    QWidget::showEvent(e);
+}
+
 void AddContentWindow::AddDescription(const SceneDesc &desc)
 {
     sceneDesc = desc;
-
     AddEntities(desc.entities);
     AddAssets(desc.assets);
+    resize(1,1);
 }
 
 /*
@@ -385,6 +401,11 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     }
 
     entityTreeWidget->setSortingEnabled(true);
+
+    // Set a minimum height for our treeview
+    int fullHeight = entityTreeWidget->header()->height();
+    fullHeight += (entityTreeWidget->sizeHintForRow(0)+5) * entityTreeWidget->model()->rowCount();
+    entityTreeWidget->setMinimumHeight(fullHeight + 10);
 }
 
 void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
@@ -436,6 +457,17 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
     // Enable sorting, resize header sections to contents.
     assetTreeWidget->setSortingEnabled(true);
     assetTreeWidget->header()->resizeSections(QHeaderView::ResizeToContents);
+
+    // Set a minimum height for our treeview
+    int fullHeight = assetTreeWidget->header()->height();
+    fullHeight += (assetTreeWidget->sizeHintForRow(0)+5) * assetTreeWidget->model()->rowCount();
+    assetTreeWidget->setMinimumHeight(fullHeight);
+
+    // Set the windows minumum width from assets tree view
+    int minWidth = 10;
+    for (int i=0; i<assetTreeWidget->columnCount(); i++)
+        minWidth += assetTreeWidget->columnWidth(i);
+    setMinimumWidth(minWidth);
 
     // Sort asset items initially so that erroneous are first
     assetTreeWidget->sortItems(cColumnAssetUpload, Qt::AscendingOrder);
@@ -785,6 +817,7 @@ void AddContentWindow::AddEntities()
         if (!entities.empty())
         {
             entitiesStatus_->setText(QString("Added %1 entities to scene successfully").arg(entities.count()));
+            entitiesStatus_->setText(QString("%1/%2 entities created succesfully").arg(QString::number(entities.count()), QString::number(newDesc_.entities.count())));
             if (position != Vector3df())
                 SceneStructureModule::CentralizeEntitiesTo(position, entities);
         }
@@ -903,6 +936,7 @@ void AddContentWindow::HandleUploadCompleted(IAssetUploadTransfer *transfer)
     successfullUploads_++;
     uploadStatus_->setText("Uploaded " + transfer->AssetRef());
     uploadProgress_->setValue(uploadProgress_->value() + progressStep_);
+    UpdateUploadStatus(true, transfer->AssetRef());
     CheckUploadTotals();
 }
 
@@ -911,7 +945,36 @@ void AddContentWindow::HandleUploadFailed(IAssetUploadTransfer *transfer)
     failedUploads_++;
     uploadStatus_->setText("Upload failed for " + transfer->AssetRef());
     uploadProgress_->setValue(uploadProgress_->value() + progressStep_);
+    UpdateUploadStatus(false, transfer->AssetRef());
     CheckUploadTotals();
+}
+
+void AddContentWindow::UpdateUploadStatus(bool succesfull, const QString &assetRef)
+{
+    QColor statusColor;
+    if (succesfull)
+        statusColor = QColor(0, 255, 0, 75);
+    else
+        statusColor = QColor(255, 0, 0, 75);
+
+    QTreeWidgetItemIterator it(assetTreeWidget);
+    while(*it)
+    {
+        AssetWidgetItem *aitem = dynamic_cast<AssetWidgetItem *>(*it);
+        assert(aitem);
+        if (aitem && !aitem->isDisabled())
+        {
+            if (aitem->text(cColumnAssetDestName) == assetRef)
+            {
+                aitem->setBackgroundColor(cColumnAssetTypeName, statusColor);
+                aitem->setBackgroundColor(cColumnAssetSourceName, statusColor);
+                aitem->setBackgroundColor(cColumnAssetSubname, statusColor);
+                aitem->setBackgroundColor(cColumnAssetDestName, statusColor);
+                break;
+            }
+        }
+        ++it;
+    }
 }
 
 void AddContentWindow::CheckUploadTotals()
