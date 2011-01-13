@@ -218,6 +218,9 @@ namespace OgreRenderer
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 #include "EnableMemoryLeakCheck.h"
 
+	// This has side effects that make Ogre not crash in headless mode
+	new Ogre::DefaultHardwareBufferManager();
+
         // Setup Ogre logger (use LL_NORMAL for more prints of init)
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
         log_listener_ = OgreLogListenerPtr(new LogListener);
