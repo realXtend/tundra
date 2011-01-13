@@ -582,6 +582,9 @@ void EC_AnimationController::OnComponentRemoved(IComponent* component, Attribute
 
 void EC_AnimationController::PlayAnim(const QString &name, const QString &fadein, const QString &exclusive)
 {
+    if (!ViewEnabled())
+	return;
+
     if (!name.length())
     {
         LogWarning("Empty animation name for PlayAnim");
@@ -608,6 +611,9 @@ void EC_AnimationController::PlayAnim(const QString &name, const QString &fadein
 
 void EC_AnimationController::PlayLoopedAnim(const QString &name, const QString &fadein, const QString &exclusive)
 {
+    if (!ViewEnabled())
+	return;
+
     if (!name.length())
     {
         LogWarning("Empty animation name for PlayLoopedAnim");
@@ -634,6 +640,9 @@ void EC_AnimationController::PlayLoopedAnim(const QString &name, const QString &
 
 void EC_AnimationController::PlayReverseAnim(const QString &name, const QString &fadein, const QString &exclusive)
 {
+    if (!ViewEnabled())
+	return;
+
     if (!name.length())
     {
         LogWarning("Empty animation name for PlayReverseAnim");
