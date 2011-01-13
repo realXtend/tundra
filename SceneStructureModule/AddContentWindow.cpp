@@ -19,7 +19,6 @@
 #include <QMessageBox>
 #include <QFont>
 #include <QColor>
-#include <QDebug>
 
 #include "Framework.h"
 #include "AssetAPI.h"
