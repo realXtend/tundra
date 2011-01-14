@@ -9,6 +9,7 @@
 #include <QEvent>
 #include <QResizeEvent>
 #include <QGraphicsItem>
+#include <QDebug>
 
 #include <utility>
 
@@ -240,3 +241,30 @@ void NaaliGraphicsView::dragMoveEvent (QDragMoveEvent * e)
     // Applications can register to this signal to perform custom 3D scene drag-n-drop handling.
     emit DragMoveEvent(e);
 }
+
+#ifdef Q_WS_MAC
+void NaaliGraphicsView::mousePressEvent(QMouseEvent *event)
+{
+    QGraphicsView::mousePressEvent(event);
+}
+
+void NaaliGraphicsView::mouseReleaseEvent(QMouseEvent *event)
+{
+    QGraphicsView::mouseReleaseEvent(event);
+}
+
+void NaaliGraphicsView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    QGraphicsView::mouseDoubleClickEvent(event);
+}
+
+void NaaliGraphicsView::mouseMoveEvent(QMouseEvent *event)
+{
+    QGraphicsView::mouseMoveEvent(event);
+}
+
+void NaaliGraphicsView::wheelEvent(QWheelEvent *event)
+{
+    QGraphicsView::wheelEvent(event);
+}
+#endif

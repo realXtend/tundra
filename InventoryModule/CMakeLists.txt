@@ -38,7 +38,7 @@ use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
 
-use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities AssetModule)
+use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga HttpUtilities AssetModule)
 
 if (NOT UISERVICE_TEST)
     use_modules (UiModule)
@@ -55,7 +55,7 @@ link_ogre()
 link_package (QT4)
 link_package (PYTHON_QT)
 
-link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities)
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga HttpUtilities)
 
 if (NOT UISERVICE_TEST)
     link_modules (UiModule)

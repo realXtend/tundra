@@ -77,13 +77,8 @@ macro (configure_qt4)
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR}
-            ${QT_PHONON_INCLUDE_DIR})
-
-	if (APPLE) # they forgot qtdbus from mac qt 4.6.0
-	    # nothing
-        else ()
-            LIST(APPEND QT4_INCLUDE_DIRS ${QT_QTDBUS_INCLUDE_DIR})
-        endif()
+            ${QT_PHONON_INCLUDE_DIR}
+            ${QT_QTDBUS_INCLUDE_DIR})
 		
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
@@ -97,13 +92,8 @@ macro (configure_qt4)
             ${QT_QTXML_LIBRARY}
             ${QT_QTSCRIPT_LIBRARY}
             ${QT_QTWEBKIT_LIBRARY}
-            ${QT_PHONON_LIBRARY})
-
-	if (APPLE)
-	    # nothing
-        else ()
-            LIST(APPEND QT4_LIBRARIES ${QT_QTDBUS_LIBRARY})
-        endif()
+            ${QT_PHONON_LIBRARY}
+            ${QT_QTDBUS_LIBRARY})
 		
     endif ()
     
@@ -236,7 +226,7 @@ endmacro (configure_hydrax)
 macro (configure_xmlrpc)
     sagase_configure_package (XMLRPC 
         NAMES xmlrpc xmlrpcepi xmlrpc-epi
-        COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid 
+        COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid iconv
         PREFIXES ${ENV_NAALI_DEP_PATH}
         ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
         ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
@@ -379,8 +369,8 @@ endmacro (configure_ogg)
 
 macro (configure_vorbis)
     sagase_configure_package(VORBIS
-        NAMES vorbisfile vorbis libvorbis
-        COMPONENTS vorbis libvorbis libvorbisfile
+        NAMES vorbisfile vorbis libvorbis libvorbisfile
+        COMPONENTS vorbis libvorbis vorbisfile libvorbisfile
         PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
 
         # Force include dir on MSVC

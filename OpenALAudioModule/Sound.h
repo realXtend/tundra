@@ -2,8 +2,13 @@
 #ifndef incl_OpenALAudio_Sound_h
 #define incl_OpenALAudio_Sound_h
 
+#ifndef Q_WS_MAC
 #include <AL/al.h>
 #include <AL/alc.h>
+#else
+#include <al.h>
+#include <alc.h>
+#endif
 
 #include "ISoundService.h"
 

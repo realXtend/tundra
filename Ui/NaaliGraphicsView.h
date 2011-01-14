@@ -7,6 +7,7 @@
 #include <QDropEvent>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
+#include <QWheelEvent>
 
 #include "NaaliUiFwd.h"
 #include "UiApi.h"
@@ -65,6 +66,14 @@ private:
 
 private slots:
     void HandleSceneChanged(const QList<QRectF> &rectangles);
+#ifdef Q_WS_MAC
+public:
+    void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent *event);
+#endif
 };
 
 #endif

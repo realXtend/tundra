@@ -6,8 +6,13 @@
 #include "Sound.h"
 #include "SoundChannel.h"
 
+#ifndef Q_WS_MAC
 #include <AL/al.h>
 #include <AL/alc.h>
+#else
+#include <al.h>
+#include <alc.h>
+#endif
 
 #ifndef WIN32_WINNT            // Specifies that the minimum required platform is Windows Vista.
 #define _WIN32_WINNT 0x0600     // Change this to the appropriate value to target other versions of Windows.

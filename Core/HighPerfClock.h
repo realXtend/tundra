@@ -19,7 +19,7 @@ inline tick_t GetCurrentClockTime()
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
     return *(tick_t*)&now;
-#elif defined(_POSIX_MONOTONIC_CLOCK)
+#elif defined(_POSIX_MONOTONIC_CLOCK) && !defined(Q_WS_MAC)
     struct timespec clock_now;
     clock_gettime(CLOCK_MONOTONIC, &clock_now);
     return (tick_t) clock_now.tv_sec*1000000000ULL + (tick_t) clock_now.tv_nsec;

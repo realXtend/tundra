@@ -48,6 +48,7 @@ macro (final_target)
             add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different \"$(TargetPath)\" ${TARGET_DIR})
         else ()
             # set target directory
+            set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -flat_namespace")
             set (LIBRARY_OUTPUT_PATH ${TARGET_DIR})
             set (EXECUTABLE_OUTPUT_PATH ${TARGET_DIR})
         endif ()

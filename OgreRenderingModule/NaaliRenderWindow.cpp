@@ -28,10 +28,19 @@ overlayContainer(0)
 void NaaliRenderWindow::CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen)
 {
     Ogre::NameValuePairList params;
+    
+    Ogre::String winhandle;
+    
+    QWidget* nativewin = targetWindow;
+    
+    while(nativewin->parentWidget())
+        nativewin = nativewin->parentWidget();
 
 #ifdef WIN32
     params["externalWindowHandle"] = Ogre::StringConverter::toString((unsigned int)targetWindow->winId());
-#elif Q_WS_MAC
+#endif
+
+#ifdef Q_WS_MAC
 // qt docs say it's a HIViewRef on carbon,
 // carbon docs say HIViewGetWindow gets a WindowRef out of it
 
