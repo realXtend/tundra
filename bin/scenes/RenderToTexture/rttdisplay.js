@@ -24,7 +24,9 @@ function init() {
 
 function update(frametime) {
     var vis = renderer.IsEntityVisible(me.Id);
-    rtt.SetAutoUpdated(vis);
+    if(rtt != null) {
+        rtt.SetAutoUpdated(vis);
+    }
 }
 
 frame.DelayedExecute(0.1).Triggered.connect(this, init); //XXX dirty hack
