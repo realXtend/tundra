@@ -25,6 +25,16 @@
 
 #include "DebugOperatorNew.h"
 
+
+void PopupComboBox::showPopup()
+{
+    QComboBox::showPopup();
+    QWidget* selectionWidget = qobject_cast<QWidget*>(children().last());
+    int x = selectionWidget->pos().x();
+    int y = selectionWidget->pos().y() - selectionWidget->height() - height();
+    selectionWidget->setGeometry(x, y, selectionWidget->width(), selectionWidget->height());
+}
+
 namespace CommUI
 {
     VoiceToolWidget::VoiceToolWidget(Foundation::Framework* framework) : 
@@ -219,7 +229,7 @@ namespace CommUI
 
         if (!channel_selection_)
         {
-            channel_selection_ = new QComboBox();
+            channel_selection_ = new PopupComboBox();
             channel_selection_->setSizeAdjustPolicy( QComboBox::AdjustToContents );
             this->layout()->addWidget(channel_selection_);
         }
