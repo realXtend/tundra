@@ -104,6 +104,10 @@ public slots:
 
     /// Returns the pressed key with the modifier bits in it.
     int KeyWithModifier() const { return (int)keyCode | (int)modifiers; }
+
+    /// Temp func: Python keyCode is broken, this is a temp getter to make inputcontext keyevent work again in python.
+    int keyCodeInt() const { return (int)keyCode; }
+
 public:
     // Meta-information wrappers for dynamic languages.
     Q_PROPERTY(QKeySequence sequence READ Sequence)

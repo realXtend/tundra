@@ -17,6 +17,8 @@ public:
     /// Constructs an asset reference pointing to the given asset.
     /// @param reference The URL of the asset to point to, e.g. "local://myasset.mesh", or "http://www.website.com/texture.png".
     AssetReference(const QString &reference) : ref(reference) {}
+    AssetReference(const std::string &reference) : ref(QString::fromStdString(reference)) {}
+    AssetReference(const char *reference) : ref(reference) {}
 
     bool operator ==(const AssetReference &rhs) const { return this->ref == rhs.ref; }
 

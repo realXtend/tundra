@@ -48,7 +48,7 @@ if lsb_release -c | egrep -q "lucid|maverick"; then
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
          libtelepathy-qt4-dev python-gst0.10-dev freeglut3-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev \
-	 liboil0.3-dev mercurial unzip xsltproc
+	 liboil0.3-dev mercurial unzip xsltproc libqtscript4-qtbindings
 fi
 
 function build-regular {
@@ -176,15 +176,6 @@ if lsb_release -c | grep -q lucid; then
     : # nothing
 else
     build-regular http://nice.freedesktop.org/releases/ libnice 0.0.10
-    build-regular http://gstreamer.freedesktop.org/src/gstreamer/ gstreamer 0.10.25
-    build-regular http://gstreamer.freedesktop.org/src/gst-plugins-base/ gst-plugins-base 0.10.25
-    build-regular http://gstreamer.freedesktop.org/src/gst-python/ gst-python 0.10.17
-    build-regular http://farsight.freedesktop.org/releases/farsight2/ farsight2 0.0.17
-    build-regular http://farsight.freedesktop.org/releases/obsolete/gst-plugins-farsight/ gst-plugins-farsight 0.12.11
-    build-regular http://telepathy.freedesktop.org/releases/telepathy-glib/ telepathy-glib 0.9.1
-    build-regular http://telepathy.freedesktop.org/releases/telepathy-farsight/ telepathy-farsight 0.0.13
-    build-regular http://telepathy.freedesktop.org/releases/telepathy-qt4/ telepathy-qt4 0.2.1
-    build-regular http://downloads.sourceforge.net/project/poco/sources/poco-1.3.6/ poco 1.3.6p1
 fi
 
 

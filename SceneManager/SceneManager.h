@@ -75,8 +75,12 @@ namespace Scene
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
         uint NextFreeIdLocal() { return (uint)GetNextFreeIdLocal(); }
+        
         Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true) 
             { return CreateEntity((entity_id_t)id, components, change, defaultNetworkSync).get(); }
+        Scene::Entity* CreateEntityLocalRaw(const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::LocalOnly, bool defaultNetworkSync = false)
+            { return CreateEntity(NextFreeIdLocal(), components, change, defaultNetworkSync).get(); }
+
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
         QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
@@ -218,9 +222,10 @@ namespace Scene
 
         //! Get scene as XML
         /*! \param gettemporary flag if you want to get temporary stuff too
+			\param getlocal flag if you want to get local entities also
             \return the scene in XML as a "string"
         */
-        QByteArray GetSceneXML(bool gettemporart = false) const;
+        QByteArray GetSceneXML(bool gettemporary = false, bool getlocal = false) const;
 
         //! Save the scene to XML
         /*! \param filename File name

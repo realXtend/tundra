@@ -20,7 +20,7 @@ public:
     /// Issues a new asset request to the given assetRef URL.
     /// @param assetApi Pass a pointer to the system Asset API into this function (This utility object doesn't keep reference to framework).
     void HandleAssetRefChange(AssetAPI *assetApi, QString assetRef);
-
+    
     /// Returns the asset currently stored in this asset reference.
     AssetPtr Asset();
 
@@ -43,6 +43,7 @@ private slots:
 
 private:
     AssetWeakPtr asset;
+    bool loaded_;
 };
 
 #endif

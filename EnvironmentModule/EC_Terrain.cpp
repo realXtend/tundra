@@ -148,6 +148,7 @@ void EC_Terrain::UpdateSignals()
         this, SLOT(AttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 
     Scene::Entity *parent = GetParentEntity();
+    CreateRootNode();
     if (parent)
     {    
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection);
@@ -469,6 +470,11 @@ namespace
 
 Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const 
 {
+    if (!rootNode)
+    {
+	LogError("GetPointOnMap called before rootNode initialized, returning zeros");
+	return Vector3df(0, 0, 0);
+    }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
@@ -480,6 +486,11 @@ Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const
 
 Vector3df EC_Terrain::GetPointOnMapLocal(const Vector3df &point) const
 {
+    if (!rootNode)
+    {
+	LogError("GetPointOnMapLocal called before rootNode initialized, returning zeros");
+	return Vector3df(0, 0, 0);
+    }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
@@ -535,6 +546,11 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
 
 Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const Vector3df& direction) const
 {
+    if (!rootNode)
+    {
+	LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
+	return Vector3df(0, 0, 0);
+    }
     Vector3df worldPos(x,y,z);
     Vector3df local = GetPointOnMapLocal(worldPos);
     // Get terrain normal.
@@ -735,6 +751,9 @@ bool EC_Terrain::SaveToFile(QString filename)
 
         fwrite(&patches[i].heightData[0], sizeof(float), cPatchSize*cPatchSize, handle); ///< \todo Check read error.
     }
+    fflush(handle);
+    if (ferror(handle))
+	LogError("Write error in SaveToFile");
     fclose(handle);
 
     return true;
@@ -1295,7 +1314,7 @@ void EC_Terrain::UpdateRootNodeTransform()
 void EC_Terrain::AttachTerrainRootNode()
 {
     if (!rootNode)
-        return;
+        CreateRootNode();
 
     OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)

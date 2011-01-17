@@ -11,7 +11,7 @@
 
 #include "IModule.h"
 #include "Vector3D.h"
-
+#include "AssetReference.h"
 #include <QPointer>
 
 class QDragEnterEvent;
@@ -21,6 +21,15 @@ class QDropEvent;
 class SceneStructureWindow;
 class AssetsWindow;
 struct SceneDesc;
+
+class EC_Mesh;
+
+struct SceneMaterialDropData
+{
+    EC_Mesh *mesh;
+    AssetReferenceList materials;
+    QList<uint> affectedIndexes;
+};
 
 /// Provides Scene Structure and Assets windows and raycast drag-and-drop import
 /// of .mesh, .scene, .txml and .tbin files to the main window.
@@ -65,10 +74,25 @@ public slots:
     */
     static void CentralizeEntitiesTo(const Vector3df &pos, const QList<Scene::Entity *> &entities);
 
-    /// Returns true of the file extension of @c filename is supported file type for importing.
-    /** @param filename File name.
+    /// Returns true of the file extension of @c fileRef is supported file type for importing.
+    /** @param fileRef File name or url.
     */
-    static bool IsSupportedFileType(const QString &filename);
+    static bool IsSupportedFileType(const QString &fileRef);
+
+    /// Returns true of the file extension of @c fileRef is supported material file for importing.
+    /** @param fileRef File name or url.
+    */
+    static bool IsMaterialFile(const QString &fileRef);
+
+    /// Returns true if the @c fileRef is a http:// or https:// scema url. 
+    /** @param fileRef File name or url.
+    */
+    static bool IsUrl(const QString &fileRef);
+
+    /// Cleans the @c fileRef
+    /** @param fileRef File name or url.
+    */
+    static void CleanReference(QString &fileRef);
 
     /// Shows Scene Structure window.
     void ShowSceneStructureWindow();
@@ -80,6 +104,8 @@ private:
     SceneStructureWindow *sceneWindow; ///< Scene Structure window.
     QPointer<AssetsWindow> assetsWindow;///< Assets window.
     boost::shared_ptr<InputContext> inputContext; ///< Input context.
+
+    SceneMaterialDropData materialDropData;
 
 private slots:
     /// Handles KeyPressed() signal from input context.
@@ -104,6 +130,18 @@ private slots:
         @param e Event.
     */
     void HandleDropEvent(QDropEvent *e);
+
+    /// Handles material drop event.
+    /** If event's MIME data contains a single URL which is a material the drop is redirected to this function.
+        @param e Event.
+        @param materialRef Dropped material file or url.
+    */
+    void HandleMaterialDropEvent(QDropEvent *e, const QString &materialRef);
+
+    /// Finishes a material drop
+    /** @param contentAdd If drop content should be appliead or not
+    */
+    void FinishMaterialDrop(bool apply, const QString &materialBaseUrl);
 };
 
 #endif

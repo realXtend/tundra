@@ -10,6 +10,7 @@
 #include "SceneDesc.h"
 
 #include <QPair>
+#include <QUrl>
 
 #include <map>
 
@@ -94,6 +95,12 @@ public:
     /** @param filename File name.
     */
     SceneDesc GetSceneDescForMesh(const QString &filename) const;
+
+    /// Inspects OGRE .mesh url and returns a scene description structure of the contents of the url.
+    /// Note: this will not dowload the binary data but only add a entity with the url mesh ref in it.
+    /** @param meshUrl Url to mesh file.
+    */
+    SceneDesc GetSceneDescForMesh(const QUrl &meshUrl) const;
 
     /// Inspects OGRE .scene file and returns a scene description structure of the contents of the file.
     /** @param filename File name.

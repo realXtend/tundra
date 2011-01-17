@@ -198,8 +198,9 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     {
         if (!i.value())
         {
-            bool active = true;
             Scene::EntityPtr entity = i.key().lock();
+            /* disabled the check 'cause couldn't get the targets active, and the (possible) extran signaling doesn't do harm? --antont 
+            bool active = true;
             // inactive rigid bodies don't generate collisions, so before emitting EntityLeave -event, make sure the body is active.
             if (entity)
             {
@@ -207,7 +208,8 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
                 if (rigidbody)
                     active = rigidbody->IsActive();
             }
-            if (active)
+            if (active)*/
+            if (true)
             {
                 i = entities_.erase(i);
                 

@@ -701,6 +701,15 @@ Ogre::Entity* EC_Mesh::GetAttachmentEntity(uint index) const
     return attachment_entities_[index];
 }
 
+const uint EC_Mesh::GetNumSubMeshes() const
+{
+    uint count = 0;
+    if (HasMesh())
+        if (entity_->getMesh().get())
+            count = entity_->getMesh()->getNumSubMeshes();
+    return count;
+}
+
 const std::string& EC_Mesh::GetMeshName() const
 {
     static std::string empty_name;
@@ -710,7 +719,6 @@ const std::string& EC_Mesh::GetMeshName() const
     else
         return entity_->getMesh()->getName();
 }
-
 
 const std::string& EC_Mesh::GetSkeletonName() const
 {
@@ -1068,7 +1076,6 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
     }
 
     Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
-
     bool assetUsed = false;
 
     AssetReferenceList materialList = meshMaterial.Get();
@@ -1092,9 +1099,18 @@ void EC_Mesh::OnMaterialAssetLoaded(AssetPtr asset)
 void EC_Mesh::ApplyMaterial()
 {
     AssetReferenceList materialList = meshMaterial.Get();
+    AssetAPI *assetAPI = framework_->Asset();
     for(int i = 0; i < materialList.Size(); ++i)
+    {
         if (!materialList[i].ref.isEmpty())
-            SetMaterial(i, framework_->Asset()->LookupAssetRefToStorage(materialList[i].ref));
+        {
+            // Only apply the material if it is loaded and has no dependencies
+            QString assetFullName = assetAPI->LookupAssetRefToStorage(materialList[i].ref);
+            AssetPtr asset = assetAPI->GetAsset(assetFullName);
+            if ((asset) && (assetAPI->NumPendingDependencies(asset) == 0))
+                SetMaterial(i, assetFullName);
+        }
+    }
 }
 
 bool EC_Mesh::HasMaterialsChanged() const
