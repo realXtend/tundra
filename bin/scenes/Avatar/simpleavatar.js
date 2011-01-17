@@ -521,7 +521,7 @@ function ClientHandleMouseScroll(relativeScroll)
     var camera = scene.GetEntityByNameRaw("AvatarCamera");
     if (camera.ogrecamera.IsActive() == false)
         return;
-    if (relativeScroll < 0 && avatar_camera_distance < 100)
+    if (relativeScroll < 0 && avatar_camera_distance < 100) {
         avatar_camera_distance = avatar_camera_distance + 1;
     } else if (relativeScroll > 0 && avatar_camera_distance > 2) {
         avatar_camera_distance = avatar_camera_distance - 1;
