@@ -21,6 +21,7 @@ var own_avatar = false;
 var flying = false;
 var falling = false;
 var fish_created = false;
+var tripod = false;
 
 // Animation detection
 var standAnimName = "Stand";
@@ -339,7 +340,12 @@ function ClientInitialize() {
         
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
         me.Action("Zoom").Triggered.connect(ClientHandleKeyboardZoom);
-    } else {
+        me.Action("ToggleTripod").Triggered.connect(ClientHandleToggleTripod);
+        me.Action("MouseLookX").Triggered.connect(ClientHandleTripodLookX);
+        me.Action("MouseLookY").Triggered.connect(ClientHandleTripodLookY);
+    }
+    else
+    {
         // Make hovering name tag for other clients
         clientName = me.GetComponentRaw("EC_Name");
         if (clientName != null) {
@@ -364,7 +370,59 @@ function ClientInitialize() {
     frame.Updated.connect(ClientUpdate);
 }
 
-function ClientUpdate(frametime) {
+function ClientHandleToggleTripod()
+{
+    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    if (cameraentity == null)
+        return;
+
+    var camera = cameraentity.ogrecamera;
+    if (camera.IsActive() == false)
+    {
+        tripod = false;
+        return;
+    }
+
+    if (tripod == false)
+        tripod = true;
+    else
+        tripod = false;
+}
+
+function ClientHandleTripodLookX(param)
+{
+    if (tripod)
+    {
+        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        if (cameraentity == null)
+            return;
+        var cameraplaceable = cameraentity.placeable;
+        var cameratransform = cameraplaceable.transform;
+
+        var move = parseInt(param);
+        cameratransform.rot.z -= mouse_rotate_sensitivity * move;
+        cameraplaceable.transform = cameratransform;
+    }
+}
+
+function ClientHandleTripodLookY(param)
+{
+    if (tripod)
+    {
+        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        if (cameraentity == null)
+            return;
+        var cameraplaceable = cameraentity.placeable;
+        var cameratransform = cameraplaceable.transform;
+
+        var move = parseInt(param);
+        cameratransform.rot.x -= mouse_rotate_sensitivity * move;
+        cameraplaceable.transform = cameratransform;
+    }
+}
+
+function ClientUpdate(frametime)
+{
     // Tie enabled state of inputmapper to the enabled state of avatar camera
     if (own_avatar) {
         var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
@@ -426,6 +484,7 @@ function ClientCreateInputMapper() {
     inputmapper.takeMouseEventsOverQt = true;
     inputmapper.modifiersEnabled = false;
     inputmapper.executionType = 1; // Execute actions locally
+    inputmapper.RegisterMapping("T", "ToggleTripod", 1);
     inputmapper.RegisterMapping("+", "Zoom(in)", 1);
     inputmapper.RegisterMapping("-", "Zoom(out)", 1);
 }
@@ -457,7 +516,11 @@ function ClientHandleKeyboardZoom(direction) {
     }
 }
 
-function ClientHandleMouseScroll(relativeScroll) {
+function ClientHandleMouseScroll(relativeScroll)
+{
+    var camera = scene.GetEntityByNameRaw("AvatarCamera");
+    if (camera.ogrecamera.IsActive() == false)
+        return;
     if (relativeScroll < 0 && avatar_camera_distance < 100) {
         avatar_camera_distance = avatar_camera_distance + 1;
     } else if (relativeScroll > 0 && avatar_camera_distance > 2) {
@@ -466,28 +529,29 @@ function ClientHandleMouseScroll(relativeScroll) {
 }
 
 function ClientUpdateAvatarCamera() {
-    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    if (cameraentity == null) {
-        return;
+    if (!tripod)
+    {
+        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+        if (cameraentity == null)
+            return;
+        var cameraplaceable = cameraentity.placeable;
+        var avatarplaceable = me.placeable;
+
+        var cameratransform = cameraplaceable.transform;
+        var avatartransform = avatarplaceable.transform;
+        var offsetVec = new Vector3df();
+        offsetVec.x = -avatar_camera_distance;
+        offsetVec.z = avatar_camera_height;
+        offsetVec = avatarplaceable.GetRelativeVector(offsetVec);
+        cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
+        cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
+        cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
+        // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
+        cameratransform.rot.x = 90;
+        cameratransform.rot.z = avatartransform.rot.z - 90;
+
+        cameraplaceable.transform = cameratransform;
     }
-
-    var cameraplaceable = cameraentity.placeable;
-    var avatarplaceable = me.placeable;
-
-    var cameratransform = cameraplaceable.transform;
-    var avatartransform = avatarplaceable.transform;
-    var offsetVec = new Vector3df();
-    offsetVec.x = -avatar_camera_distance;
-    offsetVec.z = avatar_camera_height;
-    offsetVec = avatarplaceable.GetRelativeVector(offsetVec);
-    cameratransform.pos.x = avatartransform.pos.x + offsetVec.x;
-    cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
-    cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
-    // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
-    cameratransform.rot.x = 90;
-    cameratransform.rot.z = avatartransform.rot.z - 90;
-
-    cameraplaceable.transform = cameratransform;
 }
 
 function CommonFindAnimations() {
