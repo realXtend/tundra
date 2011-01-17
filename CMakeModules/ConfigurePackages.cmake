@@ -60,7 +60,7 @@ endmacro (configure_poco)
 macro (configure_qt4)
     sagase_configure_package (QT4 
         NAMES Qt4 4.6.1
-        COMPONENTS QtCore QtGui QtWebkit QtScript QtXml QtNetwork QtUiTools
+        COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
     # FindQt4.cmake
@@ -76,6 +76,7 @@ macro (configure_qt4)
             ${QT_QTNETWORK_INCLUDE_DIR}
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
+            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR}
             ${QT_PHONON_INCLUDE_DIR})
 
@@ -96,6 +97,7 @@ macro (configure_qt4)
             ${QT_QTNETWORK_LIBRARY}
             ${QT_QTXML_LIBRARY}
             ${QT_QTSCRIPT_LIBRARY}
+            ${QT_QTSCRIPTTOOLS_LIBRARY}
             ${QT_QTWEBKIT_LIBRARY}
             ${QT_PHONON_LIBRARY})
 

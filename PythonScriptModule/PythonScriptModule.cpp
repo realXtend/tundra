@@ -1868,8 +1868,14 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
+            // Ui() - naali.uicore
+            PythonQt::self()->registerClass(&NaaliUi::staticMetaObject);
+            PythonQt::self()->registerClass(&NaaliMainWindow::staticMetaObject);
+            PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);
+            // UiService() - naali.ui
             PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
-//            PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
+            //PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
+
             PythonQt::self()->registerClass(&AudioAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Input::staticMetaObject);
 

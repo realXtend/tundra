@@ -15,6 +15,8 @@
 #include "UiProxyWidget.h"
 #include "EC_VoiceChannel.h"
 #include "SceneManager.h"
+#include "TundraLogicModule.h"
+#include "Client.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -274,6 +276,8 @@ namespace MumbleVoip
                 server_info.password = channel->getserverpassword();
                 server_info.channel_id = channel->getchannelid();
                 server_info.channel_name = channel->getchannelname();
+                server_info.user_name = GetUsername();
+                /*
                 if (!channel->getusername().isEmpty())
                 {
                     server_info.user_name = channel->getusername();
@@ -282,7 +286,7 @@ namespace MumbleVoip
                 {
                     server_info.user_name = "anonymous";
                 }
-
+                */
                 channel_names_[channel] = channel->getchannelname();
                 session_->AddChannel(channel->getchannelname(), server_info);
             }
@@ -295,10 +299,25 @@ namespace MumbleVoip
 
     QString Provider::GetUsername()
     {
+        if (!tundra_logic_->IsServer())
+        {
+            return tundra_logic_->GetClient()->GetLoginProperty("username");;
+        }
+     
         if (world_stream_)
             return world_stream_->GetInfo().agentID.ToQString();
         else
             return "";
+        
+    }
+    
+    void Provider::PostInitialize()
+    {
+        tundra_logic_ = framework_->GetModuleManager()->GetModule<TundraLogic::TundraLogicModule>().lock();
+        if (!tundra_logic_)
+        {
+           throw Exception("Fatal: could not get TundraLogicModule");
+        } 
     }
 
 } // MumbleVoip
