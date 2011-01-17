@@ -23,6 +23,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneImporter")
 
 #include <QDomDocument>
 #include <QFile>
+#include <QDir>
 
 namespace fs = boost::filesystem;
 
@@ -303,7 +304,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
                     QDomElement file_elem = item_elem.firstChildElement("file");
                     if (!file_elem.isNull())
                     {
-                        matfilename = in_asset_dir + file_elem.attribute("name").toStdString();
+                        matfilename = in_asset_dir + QString(QDir::separator()).toStdString() + file_elem.attribute("name").toStdString();
                         break;
                     }
                 }
