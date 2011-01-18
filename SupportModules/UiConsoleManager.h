@@ -61,7 +61,7 @@ namespace Console
     private slots:
         //! Resize the console to fit scene
         void AdjustToSceneRect(const QRectF &);
-        void ToggleConsoleWidget();
+        void ToggleExternalConsoleWidget();
 
     private:
         //! is console visible or hidden?

@@ -12,6 +12,7 @@
 #include "ConsoleModule.h"
 
 #include "UiServiceInterface.h"
+#include "UiExternalServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
 #include "Framework.h"
@@ -37,24 +38,29 @@ namespace Console
     {
         // Init internals
         console_ui_->setupUi(console_widget_);
-        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-        if (ui)
+        UiServicePtr ui_service = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
+        if (!ui_service)
+            return;
+        Foundation::UiExternalServiceInterface *ui_external_ui_service = framework_->GetService<Foundation::UiExternalServiceInterface>();
+        if (!ui_external_ui_service)
         {
-   //         proxy_widget_ = ui->AddWidgetToScene(console_widget_,true,true);
-   //         proxy_widget_->setMinimumHeight(0);
-   //         proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
-   //         proxy_widget_->setOpacity(opacity_);
-   //         proxy_widget_->setZValue(100);
-	//      proxy_widget_->hide();
-//            ui->RegisterUniversalWidget("Console", proxy_widget_);
-			//ui->TransferWidgetOut("ConsoleWidget",false);
-			ui->AddWidgetToMenu(console_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
+            proxy_widget_ = ui_service->AddWidgetToScene(console_widget_,true,true);
+            proxy_widget_->setMinimumHeight(0);
+            proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
+            proxy_widget_->setOpacity(opacity_);
+            proxy_widget_->setZValue(100);
+            proxy_widget_->hide();
+            ui_service->RegisterUniversalWidget("Console", proxy_widget_);
+			ui_service->TransferWidgetOut("ConsoleWidget",false);
+
+            // Init animation
+            animation_.setTargetObject(proxy_widget_);
+            animation_.setPropertyName("geometry");
+            animation_.setDuration(300);
+			
         }
 
-        //// Init animation
-        //animation_.setTargetObject(proxy_widget_);
-        //animation_.setPropertyName("geometry");
-        //animation_.setDuration(300);
+        ui_service->AddWidgetToMenu(console_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
 
         // Handle line edit input
         connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
@@ -107,10 +113,15 @@ namespace Console
     void UiConsoleManager::KeyPressed(KeyEvent *key_event)
     {
         if (key_event->keyCode == Qt::Key_F1)
-            ToggleConsoleWidget();
+        {
+            if (proxy_widget_)
+                ToggleConsole();
+            else
+                ToggleExternalConsoleWidget();
+        }
     }
 
-    void UiConsoleManager::ToggleConsoleWidget()
+    void UiConsoleManager::ToggleExternalConsoleWidget()
     {
         if (console_widget_->isVisible())
             console_widget_->hide();
