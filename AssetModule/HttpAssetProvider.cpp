@@ -11,14 +11,24 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QNetworkDiskCache>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("HttpAssetProvider")
 
 HttpAssetProvider::HttpAssetProvider(Foundation::Framework *framework_)
 :framework(framework_)
 {
+    // Http access manager
     networkAccessManager = new QNetworkAccessManager(this);
     connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
+
+    // Http disk cache
+    QString diskCachePath = QString::fromStdString(framework->GetPlatform()->GetApplicationDataDirectory()) + "/assetcache";
+    QNetworkDiskCache *diskCache = new QNetworkDiskCache(this);
+    diskCache->setCacheDirectory(diskCachePath);
+    qint64 cacheSize = diskCache->maximumCacheSize(); // default is 50mb
+    diskCache->setMaximumCacheSize(cacheSize * 10 * 4); // go up to 2000mb
+    networkAccessManager->setCache(diskCache);
 }
 
 HttpAssetProvider::~HttpAssetProvider()
@@ -117,12 +127,14 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         if (reply->error() == QNetworkReply::NoError)
         {
             transfer->rawAssetData.insert(transfer->rawAssetData.end(), data.data(), data.data() + data.size());
+            // Say to AssetAPI that we dont want this asset into the normal asset cache
+            // as Qt internally already uses the QNetworkDiskCache we have defined for it
+            transfer->SetCachingBehavior(false, ""); 
             framework->Asset()->AssetTransferCompleted(transfer.get());
         }
         else
         {
             QString error = "Http GET for address \"" + reply->url().toString() + "\" returned an error: \"" + reply->errorString() + "\"";
-//            LogError(error.toStdString());
             framework->Asset()->AssetTransferFailed(transfer.get(), error);
         }
         transfers.erase(iter);
