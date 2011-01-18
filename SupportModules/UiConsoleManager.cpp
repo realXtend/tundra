@@ -40,25 +40,21 @@ namespace Console
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (ui)
         {
-//$ BEGIN_MOD $
-            proxy_widget_ = ui->AddWidgetToScene(console_widget_,true,true);
-//$ END_MOD $
-            proxy_widget_->setMinimumHeight(0);
-            proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
-            proxy_widget_->setOpacity(opacity_);
-            proxy_widget_->setZValue(100);
-			proxy_widget_->hide();
-            ui->RegisterUniversalWidget("Console", proxy_widget_);
-//$ BEGIN_MOD $
+   //         proxy_widget_ = ui->AddWidgetToScene(console_widget_,true,true);
+   //         proxy_widget_->setMinimumHeight(0);
+   //         proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
+   //         proxy_widget_->setOpacity(opacity_);
+   //         proxy_widget_->setZValue(100);
+	//      proxy_widget_->hide();
+//            ui->RegisterUniversalWidget("Console", proxy_widget_);
 			//ui->TransferWidgetOut("ConsoleWidget",false);
 			ui->AddWidgetToMenu(console_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
-//$ END_MOD $  
         }
 
         //// Init animation
-        animation_.setTargetObject(proxy_widget_);
-        animation_.setPropertyName("geometry");
-        animation_.setDuration(300);
+        //animation_.setTargetObject(proxy_widget_);
+        //animation_.setPropertyName("geometry");
+        //animation_.setDuration(300);
 
         // Handle line edit input
         connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
@@ -111,7 +107,15 @@ namespace Console
     void UiConsoleManager::KeyPressed(KeyEvent *key_event)
     {
         if (key_event->keyCode == Qt::Key_F1)
-            ToggleConsole();
+            ToggleConsoleWidget();
+    }
+
+    void UiConsoleManager::ToggleConsoleWidget()
+    {
+        if (console_widget_->isVisible())
+            console_widget_->hide();
+        else
+            console_widget_->show();
     }
 
     void UiConsoleManager::ToggleConsole()
