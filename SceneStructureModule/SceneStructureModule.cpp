@@ -15,6 +15,9 @@
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 
+#include "IAsset.h"
+#include "IAssetTransfer.h"
+
 #include "SceneManager.h"
 #include "Console.h"
 #include "UiServiceInterface.h"
@@ -101,52 +104,49 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
 
         if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
         {
-            //boost::filesystem::path path(filename.toStdString());
-            //std::string dirname = path.branch_path().string();
-
+            //\todo Implement ogre.scene url drops at some point?
             TundraLogic::SceneImporter importer(scene);
-//            sceneDesc = importer.GetSceneDescForScene(filename);
             sceneDescs.append(importer.GetSceneDescForScene(filename));
-/*
-            ret = importer.Import(filename.toStdString(), dirname, "./data/assets",
-                Transform(worldPos, Vector3df(), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
-            if (ret.empty())
-                LogError("Import failed");
-            else
-                LogInfo("Import successful. " + ToString(ret.size()) + " entities created.");
-*/
         }
         else if (filename.endsWith(cOgreMeshFileExtension, Qt::CaseInsensitive))
         {
-//            boost::filesystem::path path(filename.toStdString());
-//            std::string dirname = path.branch_path().string();
-
             TundraLogic::SceneImporter importer(scene);
             if (IsUrl(filename))
                 sceneDescs.append(importer.GetSceneDescForMesh(QUrl(filename)));
             else
                 sceneDescs.append(importer.GetSceneDescForMesh(filename));
-//            sceneDesc = importer.GetSceneDescForMesh(filename);
-/*
-            Scene::EntityPtr entity = importer.ImportMesh(filename.toStdString(), dirname, "./data/assets",
-                Transform(worldPos, Vector3df(), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
-            if (entity)
-                ret << entity.get();
-
-            return ret;
-*/
         }
         else if (filename.toLower().indexOf(cTundraXmlFileExtension) != -1 && filename.toLower().indexOf(cOgreMeshFileExtension) == -1)
         {
-//        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, false, AttributeChange::Replicate);
-//            sceneDesc = scene->GetSceneDescFromXml(filename);
-            sceneDescs.append(scene->GetSceneDescFromXml(filename));
+            if (IsUrl(filename))
+            {
+                AssetTransferPtr transfer = framework_->Asset()->RequestAsset(filename);
+                if (transfer.get())
+                {
+                    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleSceneDescLoaded(AssetPtr)));
+                    connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(HandleSceneDescFailed(IAssetTransfer*, QString)));
+                    break; // Only allow one .txml drop at a time
+                }
+            }
+            else
+                sceneDescs.append(scene->GetSceneDescFromXml(filename));
         }
         else if (filename.toLower().indexOf(cTundraBinFileExtension) != -1)
         {
-//        ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
-//            sceneDesc = scene->GetSceneDescFromBinary(filename);
-            sceneDescs.append(scene->GetSceneDescFromXml(filename));
+            if (IsUrl(filename))
+            {
+                AssetTransferPtr transfer = framework_->Asset()->RequestAsset(filename);
+                if (transfer.get())
+                {
+                    connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(HandleSceneDescLoaded(AssetPtr)));
+                    connect(transfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(HandleSceneDescFailed(IAssetTransfer*, QString)));
+                    break; // Only allow one .tbin drop at a time
+                }
+            }
+            else
+            {
+                sceneDescs.append(scene->GetSceneDescFromBinary(filename));
+            }
         }
         else
         {
@@ -178,14 +178,15 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
     if (!sceneDescs.isEmpty())
     {
         AddContentWindow *addContent = new AddContentWindow(framework_, scene);
-//        addContent->AddDescription(sceneDesc);
         addContent->AddDescription(sceneDescs[0]);
         if (worldPos != Vector3df())
             addContent->AddPosition(worldPos);
         addContent->show();
     }
 
-    return ret;
+    // \todo: this is always empty list of entities, remove (?!) as we actually dont know the entity count yet.
+    // it is known only after the add content window selectios and processing has been done
+    return ret; 
 }
 
 void SceneStructureModule::CentralizeEntitiesTo(const Vector3df &pos, const QList<Scene::Entity *> &entities)
@@ -618,6 +619,62 @@ void SceneStructureModule::FinishMaterialDrop(bool apply, const QString &materia
     materialDropData.mesh = 0;
     materialDropData.materials = AssetReferenceList();
     materialDropData.affectedIndexes.clear();
+}
+
+void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
+{
+    QApplication::restoreOverrideCursor();
+
+    const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+    {
+        LogError("Could not retrieve default world scene.");
+        return;
+    }
+
+    std::vector<u8> data;
+    asset->SerializeTo(data);
+    if (data.empty())
+    {
+        LogError("Failed to serialize txml.");
+        return;
+    }
+
+    QByteArray data_qt((const char *)&data[0], data.size());
+    if (data_qt.isEmpty())
+    {
+        LogError("Failed to convert txml data to QByteArray.");
+        return;
+    }
+
+    // Init description
+    SceneDesc sceneDesc;
+    sceneDesc.type = SceneDesc::Naali;
+    sceneDesc.filename = asset->Name();
+
+    // Get data
+    if (sceneDesc.filename.toLower().endsWith(cTundraXmlFileExtension))
+        sceneDesc = scene->GetSceneDescFromXml(data_qt, sceneDesc); 
+    else if(sceneDesc.filename.toLower().endsWith(cTundraBinFileExtension))
+        sceneDesc = scene->GetSceneDescFromBinary(data_qt, sceneDesc);
+    else
+    {
+        LogError("Somehow other that " + cTundraXmlFileExtension.toStdString() + " or " + cTundraBinFileExtension.toStdString() + 
+            " file got drag and dropped to the scene? Cannot proceed with add content dialog.");
+        return;
+    }
+
+    // Show add content window
+    AddContentWindow *addContent = new AddContentWindow(framework_, scene);
+    addContent->AddDescription(sceneDesc);
+    addContent->show();
+}
+
+void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QString reason)
+{
+    QApplication::restoreOverrideCursor();
+    QString error = QString("Failed to download %1 with reason %2").arg(transfer->source.ref, reason);
+    LogError(error.toStdString());
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

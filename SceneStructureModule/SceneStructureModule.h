@@ -11,7 +11,9 @@
 
 #include "IModule.h"
 #include "Vector3D.h"
+#include "AssetAPI.h"
 #include "AssetReference.h"
+
 #include <QPointer>
 
 class QDragEnterEvent;
@@ -142,6 +144,10 @@ private slots:
     /** @param contentAdd If drop content should be appliead or not
     */
     void FinishMaterialDrop(bool apply, const QString &materialBaseUrl);
+
+    void HandleSceneDescLoaded(AssetPtr asset);
+
+    void HandleSceneDescFailed(IAssetTransfer *transfer, QString reason);
 };
 
 #endif
