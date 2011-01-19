@@ -715,7 +715,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     transfer->asset = CreateNewAsset(transfer->assetType, transfer->source.ref);
     if (!transfer->asset)
     {
-        LogError("AssetAPI: Failed to create new asset of type \"" + transfer->assetType.toStdString() + "\" and name \"" + transfer->source.ref.toStdString() + "\"");
+        QString error("AssetAPI: Failed to create new asset of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\"");
+        LogError(error.toStdString());
+        transfer->EmitAssetFailed(error);
         return;
     }
 
@@ -733,7 +735,9 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
     if (!success)
     {
-        LogError("AssetAPI: Failed to load asset of type \"" + transfer->assetType.toStdString() + "\" and name \"" + transfer->source.ref.toStdString() + "\" from asset data.");
+        QString error("AssetAPI: Failed to load asset of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\" from asset data.");
+        LogError(error.toStdString());
+        transfer->EmitAssetFailed(error);
         return;
     }
 
@@ -1044,6 +1048,12 @@ QString GetResourceTypeFromResourceFileName(const char *name)
 
     if (file.endsWith(".ui"))
         return "QtUiFile";
+
+    // \todo Dont hadcode these if the extension some day change!
+    // cTundraBinFileExtension and cTundraXmlFileExtension are defined 
+    // in SceneStructureModules .h files, move to core?
+    if (file.endsWith(".xml") || file.endsWith(".txml") || file.endsWith(".tbin")) 
+        return "Binary";
 
     // Unknown type.
     return "";
