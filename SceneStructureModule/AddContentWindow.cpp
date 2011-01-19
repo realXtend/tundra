@@ -179,8 +179,9 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     entityTreeWidget->setColumnCount(3);
     entityTreeWidget->setHeaderLabels(QStringList(QStringList() << tr("Create") << tr("ID") << tr("Name")));
     entityTreeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
-    entityTreeWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //entityTreeWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     entityTreeWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
 
     QPushButton *selectAllEntitiesButton = new QPushButton(tr("Select All"));
     QPushButton *deselectAllEntitiesButton = new QPushButton(tr("Deselect All"));
@@ -221,7 +222,7 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     QStringList labels;
     labels << tr("Upload") << tr("Type") << tr("Source name") << tr("Source subname") << tr("Destination name");
     assetTreeWidget->setHeaderLabels(labels);
-    assetTreeWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //assetTreeWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     assetTreeWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     QPushButton *selectAllAssetsButton = new QPushButton(tr("Select All"));
@@ -404,7 +405,16 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     // Set a minimum height for our treeview
     int fullHeight = entityTreeWidget->header()->height();
     fullHeight += (entityTreeWidget->sizeHintForRow(0)+5) * entityTreeWidget->model()->rowCount();
-    entityTreeWidget->setMinimumHeight(fullHeight + 10);
+    int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
+    if(fullHeight<(halfDeskHeight-50))
+    {
+        entityTreeWidget->setMinimumHeight(fullHeight);
+    }
+    else
+    {
+        entityTreeWidget->setMinimumHeight(halfDeskHeight - 100);
+    }
+    //entityTreeWidget->setMinimumHeight(fullHeight + 10);
 }
 
 void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
@@ -461,13 +471,25 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
     // Set a minimum height for our treeview
     int fullHeight = assetTreeWidget->header()->height();
     fullHeight += (assetTreeWidget->sizeHintForRow(0)+5) * assetTreeWidget->model()->rowCount();
-    assetTreeWidget->setMinimumHeight(fullHeight);
+    //assetTreeWidget->setMinimumHeight(fullHeight);
+    
+    LogInfo("desktop/2: " + QString::number(QApplication::desktop()->screenGeometry().height()/2).toStdString());
+    int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
+    if(fullHeight<(halfDeskHeight-50))
+    {
+        assetTreeWidget->setMinimumHeight(fullHeight);
+    }
+    else
+    {
+        assetTreeWidget->setMinimumHeight(halfDeskHeight - 100);
+    }    
 
     // Set the windows minumum width from assets tree view
     int minWidth = 10;
     for (int i=0; i<assetTreeWidget->columnCount(); i++)
         minWidth += assetTreeWidget->columnWidth(i);
     setMinimumWidth(minWidth);
+
 
     // Sort asset items initially so that erroneous are first
     assetTreeWidget->sortItems(cColumnAssetUpload, Qt::AscendingOrder);
@@ -847,7 +869,14 @@ void AddContentWindow::CenterToMainWindow()
         QRect mainRect = framework->Ui()->MainWindow()->rect();
         QPoint mainPos = framework->Ui()->MainWindow()->pos();
         QPoint mainCenter = mainPos + mainRect.center();
-        move(mainCenter.x() - width()/2, mainCenter.y() - height()/2);
+        if((mainCenter.y() - height()/2)>=0)
+        {
+            move(mainCenter.x() - width()/2, mainCenter.y() - height()/2);
+        }
+        else
+        {
+            move(mainCenter.x() - width()/2, 0);
+        }
     }
 }
 
