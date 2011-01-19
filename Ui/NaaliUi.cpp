@@ -71,8 +71,11 @@ graphicsScene(0)
     mainWindow->setAutoFillBackground(false);
 //    mainWindow->setUpdatesEnabled(false);
 
-    // Apply the Naali main window icon. \todo use .ico file type
-    QIcon icon("./data/ui/images/naali_icon.png");
+    // Apply the Naali main window icon. 
+    // Note: this will only affect to a icon at main window left top corner.
+    //       The application thubnail icon must be set by adding icon resource
+    //       to viewer project
+    QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
     mainWindow->setWindowIcon(icon);
 
     graphicsView = new NaaliGraphicsView(mainWindow);
