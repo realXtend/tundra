@@ -104,7 +104,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
 
         if (filename.endsWith(cOgreSceneFileExtension, Qt::CaseInsensitive))
         {
-            //\todo Implement ogre.scene url drops at some point?
+            ///\todo Implement ogre.scene url drops at some point?
             TundraLogic::SceneImporter importer(scene);
             sceneDescs.append(importer.GetSceneDescForScene(filename));
         }
@@ -184,8 +184,9 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
         addContent->show();
     }
 
-    // \todo: this is always empty list of entities, remove (?!) as we actually dont know the entity count yet.
-    // it is known only after the add content window selectios and processing has been done
+    /** \todo this is always empty list of entities, remove (?!) as we actually dont know the entity count yet.
+     *  it is known only after the add content window selectios and processing has been done 
+     */
     return ret; 
 }
 
