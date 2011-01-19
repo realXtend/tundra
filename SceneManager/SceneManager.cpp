@@ -786,7 +786,6 @@ namespace Scene
     SceneDesc SceneManager::GetSceneDescFromXml(const QString &filename) const
     {
         SceneDesc sceneDesc;
-
         if (!filename.endsWith(".txml", Qt::CaseInsensitive))
         {
             if (filename.endsWith(".tbin", Qt::CaseInsensitive))
@@ -806,18 +805,23 @@ namespace Scene
             return sceneDesc;
         }
 
+        QByteArray data = file.readAll();
+        file.close();
+
+        return GetSceneDescFromXml(data, sceneDesc);
+    }
+
+    SceneDesc SceneManager::GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const
+    {
         // Set codec to ISO 8859-1 a.k.a. Latin 1
-        QTextStream stream(&file);
+        QTextStream stream(&data);
         stream.setCodec("ISO 8859-1");
         QDomDocument scene_doc("Scene");
         if (!scene_doc.setContent(stream.readAll()))
         {
-            LogError("Parsing scene XML from "+ filename.toStdString() + " failed when loading scene xml.");
-            file.close();
+            LogError("Parsing scene XML from " + sceneDesc.filename.toStdString() + " failed when loading scene xml.");
             return sceneDesc;
         }
-
-        file.close();
 
         // Check for existence of the scene element before we begin
         QDomElement scene_elem = scene_doc.firstChildElement("scene");
@@ -930,9 +934,15 @@ namespace Scene
         QByteArray bytes = file.readAll();
         file.close();
 
+        return GetSceneDescFromBinary(bytes, sceneDesc);
+    }
+
+    SceneDesc SceneManager::GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const
+    {
+        QByteArray bytes = data;
         if (!bytes.size())
         {
-            LogError("File " + filename.toStdString() + " contained 0 bytes when trying to create scene description.");
+            LogError("File " + sceneDesc.filename.toStdString() + " contained 0 bytes when trying to create scene description.");
             return sceneDesc;
         }
 

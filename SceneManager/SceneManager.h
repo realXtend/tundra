@@ -383,10 +383,21 @@ namespace Scene
         */
         SceneDesc GetSceneDescFromXml(const QString &filename) const;
 
+        /// Inspects xml data and returns a scene description structure from the contents of XML data.
+        /** @param data Data to be processed.
+         *  @param sceneDesc Initialised SceneDesc with filename and enum type prepared.
+         */
+        SceneDesc GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const;
+
         /// Inspects file and returns a scene description structure from the contents of binary file.
         /** @param filename File name.
         */
         SceneDesc GetSceneDescFromBinary(const QString &filename) const;
+
+        /// Inspects binary data and returns a scene description structure from the contents of binary data.
+        /** @param data Data to be processed.
+        */
+        SceneDesc GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const;
 
     signals:
         //! Signal when an attribute of a component has changed
