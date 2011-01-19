@@ -317,48 +317,15 @@ namespace MumbleVoip
     QString Provider::GetUsername()
     {
         if (!tundra_logic_->IsServer())
-        {
             return tundra_logic_->GetClient()->GetLoginProperty("username");;
-        }
-     
-        if (world_stream_)
-            return world_stream_->GetInfo().agentID.ToQString();
-        else
-            return "";
-        
-        if (!world_logic)
-            return "";
-       
-        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
-        if (!user_avatar)
-            return "";
 
-        boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
-        if (!presence)
-            return "";
-
-        QString user_name = presence->GetFullName();
-        user_name.replace(' ', '_');
-        return user_name;
+        return "";
     }
 
     QString Provider::GetAvatarUuid()
     {
-        using namespace Foundation;
-        boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
-        
-        if (!world_logic)
-            return "";
-       
-        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
-        if (!user_avatar)
-            return "";
-
-        boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
-        if (!presence)
-            return "";
-
-        return presence->agentId.ToQString();
+        /// @todo: Get user's avatar entity uuid
+        return "";
     }
     
     void Provider::PostInitialize()
