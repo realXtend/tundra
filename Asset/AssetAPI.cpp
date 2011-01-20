@@ -593,13 +593,19 @@ QString AssetAPI::GenerateTemporaryNonexistingAssetFilename(QString filenameSuff
 {
     static unsigned long uniqueRunningFilenameCounter = 1;
 
-    QString filename;
-    // We loop until we manage to generate a single filename that does not exist, incrementing a running counter at each iteration.
-    for(int i = 0; i < 10000; ++i) // The intent is to loop 'infinitely' until a name is found, but do an artificial limit to avoid voodoo bugs.
+    // Create this file path into the cache dir to avoid
+    // windows non-admin users having no write permission to the run folder
+    QDir cacheDir(assetCache->GetCacheDirectory());
+    if (cacheDir.exists())
     {
-        filename = "temporary_" + SanitateAssetRefForCache(filenameSuffix.trimmed()) + QString::number(uniqueRunningFilenameCounter++);
-        if (!QFile::exists(filename))
-            return filename;
+        QString filename;
+        // We loop until we manage to generate a single filename that does not exist, incrementing a running counter at each iteration.
+        for(int i = 0; i < 10000; ++i) // The intent is to loop 'infinitely' until a name is found, but do an artificial limit to avoid voodoo bugs.
+        {
+            filename = cacheDir.absoluteFilePath("temporary_" + QString::number(uniqueRunningFilenameCounter++) + "_" + SanitateAssetRefForCache(filenameSuffix.trimmed()));
+            if (!QFile::exists(filename))
+                return filename;
+        }
     }
     assert(false);
     throw Exception("GenerateTemporaryNonexistingAssetFilename failed!");

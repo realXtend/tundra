@@ -67,7 +67,7 @@ bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serial
     try
     {
         Ogre::SkeletonSerializer serializer;
-        QString tempFilename = assetAPI->GenerateTemporaryNonexistingAssetFilename(Name() + ".mesh");
+        QString tempFilename = assetAPI->GenerateTemporaryNonexistingAssetFilename(Name());
         // Ogre has a limitation of not supporting serialization to a file in memory, so serialize directly to a temporary file,
         // load it up and delete the temporary file.
         serializer.exportSkeleton(ogreSkeleton.get(), tempFilename.toStdString());
