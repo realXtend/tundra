@@ -83,7 +83,9 @@ function handleDrop(event) {
 }
 
 function createCanvas(slides) {
-    var entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource']);
+    var entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name']);
+
+    entity.name.name = "Slideshow";
 
     mesh_ref = entity.mesh.meshRef;
     mesh_ref.ref = 'local://screen.mesh';
@@ -93,6 +95,7 @@ function createCanvas(slides) {
     canvassource.show2d = false;
     canvassource.source = slides[0];
 
-    
+    scene.EmitEntityCreatedRaw(entity);
+
 
 }
