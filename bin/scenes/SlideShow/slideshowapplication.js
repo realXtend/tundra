@@ -17,6 +17,11 @@ ui.GraphicsView().DragMoveEvent.connect(handleMove);
 ui.GraphicsView().DropEvent.connect(handleDrop);
 print ('foo')
 
+var entity;
+var canvassource;
+var slides;
+var slide_index = 0;
+
 function checkSuffix(url) {
     // FIXME
     if (("" + url).split('.txt').length == 2) {
@@ -66,36 +71,60 @@ function handleDrop(event) {
 	    var file = new QFile(filename);
 	    file.open(QIODevice.ReadOnly);
 	    var streamer = new QTextStream(file);
-	    var content = [];
+	    slides = [];
 	    while (true) {
 		var line = streamer.readLine();
 		if (!line) {
 		    break;
 		}
-		content.push(line)
+		slides.push(line)
 	    }
-    	    print(content);
-	    createCanvas(content);
-
-	    
+    	    print(slides);
+	    createCanvas(slides);
 	}
     }
 }
 
 function createCanvas(slides) {
-    var entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name']);
+    entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name']);
 
+    // set name
     entity.name.name = "Slideshow";
+    entity.name.description = "Simple slideshow app";
 
-    mesh_ref = entity.mesh.meshRef;
+    // set mesh
+    var mesh_ref = entity.mesh.meshRef;
     mesh_ref.ref = 'local://screen.mesh';
     entity.mesh.meshRef = mesh_ref;
     
+    // set source to first slide
     canvassource = entity.GetComponentRaw('EC_3DCanvasSource')
     canvassource.show2d = false;
     canvassource.source = slides[0];
+    canvassource.submesh = 1;
 
+    // start canvas
+    var canvas = entity.GetComponentRaw('EC_3DCanvas');
+    frame.DelayedExecute(0.1).Triggered.connect(this, function () {
+	canvas.Start();
+    });
+
+    // Now we are done
     scene.EmitEntityCreatedRaw(entity);
+    
+    entity.Action("MousePress").Triggered.connect(nextSlide);
 
 
 }
+
+
+function nextSlide() {
+    print("Changing slide!");
+    slide_index += 1;
+    if (slide_index >= slides.length) {
+	slide_index = 0;
+    }
+
+    canvassource.source = slides[slide_index];
+}
+
