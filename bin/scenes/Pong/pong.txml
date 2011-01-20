@@ -17,7 +17,7 @@
   <component type="EC_Placeable" sync="1">
    <attribute value="0 0 0" name="Position"/>
    <attribute value="1 1 1" name="Scale"/>
-   <attribute value="0,0,0,0,0,0,0.5,0.5,0.5" name="Transform"/>
+   <attribute value="0,0,0.01,0,0,0,0.5,0.5,0.5" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -150,7 +150,7 @@
   <component type="EC_RigidBody" sync="1">
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
-   <attribute value="1 1 1" name="Size"/>
+   <attribute value="1 1 0.00999999978" name="Size"/>
    <attribute value="" name="Collision mesh ref"/>
    <attribute value="0.5" name="Friction"/>
    <attribute value="0" name="Restitution"/>
