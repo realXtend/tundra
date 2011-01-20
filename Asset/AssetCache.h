@@ -40,7 +40,7 @@ public:
     /// Saves the given asset to cache.
     void StoreAsset(AssetPtr asset);
 
-    QString GetCacheDirectory() const;
+    QString GetCacheDirectory() const { return cacheDirectory; }
 
 private:
     QString cacheDirectory;

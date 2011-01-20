@@ -122,7 +122,7 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
     try
     {
         Ogre::MeshSerializer serializer;
-        QString tempFilename = assetAPI->GenerateTemporaryNonexistingAssetFilename(Name() + ".mesh");
+        QString tempFilename = assetAPI->GenerateTemporaryNonexistingAssetFilename(Name());
         // Ogre has a limitation of not supporting serialization to a file in memory, so serialize directly to a temporary file,
         // load it up and delete the temporary file.
         serializer.exportMesh(ogreMesh.get(), tempFilename.toStdString());
