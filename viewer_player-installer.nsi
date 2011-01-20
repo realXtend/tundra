@@ -14,6 +14,8 @@ XPStyle on
 
 RequestExecutionLevel admin
 
+SetCompressor /FINAL /SOLID lzma
+
 Section ""
   SetOutPath $INSTDIR
   File /r buildplayer\*.*
