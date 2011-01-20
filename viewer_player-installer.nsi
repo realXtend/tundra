@@ -38,6 +38,10 @@ Section ""
   Delete "$INSTDIR\vcredist_x86.exe"
   Delete "$INSTDIR\oalinst.exe"
   Delete "$INSTDIR\dxwebsetup.exe"
+
+  # write permissions .\tmp folder to normal users: 
+  # this enabled some tts voices of Festival.exe
+  AccessControl::GrantOnFile "$INSTDIR\tmp" "(BU)" "GenericRead + GenericWrite"
 SectionEnd
 
 Section "Start Menu Shortcuts"
