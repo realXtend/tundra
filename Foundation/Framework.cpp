@@ -128,9 +128,9 @@ namespace Foundation
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
 
 #ifdef PLAYER_VIEWER
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0-RC3-Player-0.1"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0 Player-0.1"));
 #else
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0-RC3"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0"));
 #endif
 // $ END_MOD $
             CreateLoggingSystem(); // depends on config and platform
