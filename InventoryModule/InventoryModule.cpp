@@ -488,7 +488,7 @@ void InventoryModule::CreateInventoryWindow()
 
     UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_, true, true);
 	//$ BEGIN_MOD $	
-	ui->AddWidgetToMenu(inventoryWindow_, "Inventory", "Personal");
+	ui->AddWidgetToMenu(inventoryWindow_, "Inventory", "", "./data/ui/images/menus/edbutton_ESMNG_normal.png");
     //ui->AddWidgetToMenu(inventoryWindow_);
 	//$ END_MOD $
     ui->RegisterUniversalWidget("Inventory", inv_proxy);
