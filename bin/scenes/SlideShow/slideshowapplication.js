@@ -3,7 +3,6 @@
 
   TODO
    * Get filesuffix better
-   * Accept only one file at the time 
    * Open asset from url!
 
 */
@@ -124,10 +123,26 @@ function createCanvas(filename, slides) {
     dyn.CreateAttribute("int", "Current");
     dyn.SetAttribute("Current", 0);
 
+    dyn.OnAttributeChanged.connect(onSlideChanged);
+    
+    //FIXME not needed in final product :) Just here to make it show
+    //right away...
+    
+    var transform = entity.placeable.transform
+    var pos = new Vector3df();
+    pos.y = 20;
+    transform.pos = pos;
+    var rot = new Vector3df();
+    rot.y = 180;
+    rot.x = 180;
+    transform.rot = rot;
+    entity.placeable.transform = transform;
+
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
     
     entity.Action("MousePress").Triggered.connect(nextSlide);
+
 
 }
 
@@ -155,38 +170,46 @@ function changeSlide(dir) {
 	slide_index = slides.length - 1;
     }
 
-    canvassource.source = dyn.GetAttribute(slide_index);
     dyn.SetAttribute("Current", slide_index);
 }
 
-MyPixMap = {};
+function onSlideChanged(attribute,type) {
+    var dyn = entity.GetComponentRaw("EC_DynamicComponent", "Slidelist");
+    var index = dyn.GetAttribute('Current');
+    canvassource.source = dyn.GetAttribute(index);
+}
 
-MyPixMap.prototype = new QWidget();
+function MyLabel(parent) {
+    QLabel.call(this, "", parent, 0);
+}
 
+MyLabel.prototype = new QLabel();
 
+MyLabel.prototype.mousePressEvent = function (event) {
+    event.accept();
+    print('AAAAARGH');
+}
 
-
-function makeSlideWidget() {
+function makeSlideWidget(slides) {
     var gfxscene = new QGraphicsScene();
     var view = new QGraphicsView(gfxscene);
-    var slidethumbs = [];
 
-    for (s = 0; s < 5; s++) {
-	slidethumbs.push((new QPixmap("C:\\Users\\playsign\\sand_d.jpg")).scaledToWidth(100));
-	slidethumbs.push((new QPixmap("C:\\Users\\playsign\\terrapin_texture.png")).scaledToWidth(100));
-    }
-
-    uiservice.AddWidgetToScene(view);
-
-    for (s = 0; s < slidethumbs.length; s++) {
-	var item = gfxscene.addPixmap(slidethumbs[s]);
-	item.mousePressEvent = function(event) { print("goo"); };
-	item.setPos(0,110 * s);
-    }
-    
     view.resize(110, 400);
+
+    var slidethumbs = [];
+    
+
+    for (s = 0; s < slides.length; s++) {
+	var label = new MyLabel(gfxscene);
+	var pic = new QPixmap("C:\\Users\\playsign\\sand_d.jpg");
+	label.setPixmap(pic.scaledToWidth(100));
+	gfxscene.addWidget(label)
+	label.move(0, 110 * s);
+
+    }    
+    uiservice.AddWidgetToScene(view);
     view.show();
 
 }
 
-makeSlideWidget();
+makeSlideWidget([1,2,3,4]);
