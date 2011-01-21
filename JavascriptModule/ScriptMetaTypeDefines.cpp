@@ -107,18 +107,18 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     object = engine->scriptValueFromQMetaObject<QTimer>();
     engine->globalObject().setProperty("QTimer", object);
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
-/*
-    ImportExtension(engine, "qt.core");
-    ImportExtension(engine, "qt.gui");
-    ImportExtension(engine, "qt.network");
-    ImportExtension(engine, "qt.uitools");
-    ImportExtension(engine, "qt.xml");
-    ImportExtension(engine, "qt.xmlpatterns");
+
+    engine->importExtension("qt.core");
+    engine->importExtension("qt.gui");
+/*  engine->importExtension("qt.network");
+    engine->importExtension("qt.uitools");
+    engine->importExtension("qt.xml");
+    engine->importExtension("qt.xmlpatterns");
 */
 //  Our deps contain these plugins as well, but we don't use them (for now at least).
-//    ImportExtension(engine, "qt.opengl");
-//    ImportExtension(engine, "qt.phonon");
-//    ImportExtension(engine, "qt.webkit"); // The webkit plugin of QtScriptGenerator fails to load.
+//    engine->importExtension("qt.opengl");
+//    engine->importExtension("qt.phonon");
+//    engine->importExtension("qt.webkit"); // The webkit plugin of QtScriptGenerator fails to load.
 
 }
 

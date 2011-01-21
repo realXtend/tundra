@@ -1,5 +1,5 @@
-engine.ImportExtension("qt.core");
-engine.ImportExtension("qt.gui");
+//engine.ImportExtension("qt.core");
+//engine.ImportExtension("qt.gui");
 
 var label = new QLabel();
 label.indent = 10;
