@@ -156,7 +156,7 @@ namespace UiServices
 		if (!panels_menus_list_.contains(widget->windowTitle()))
 			panels_menus_list_[widget->windowTitle()]=menusPair(menu, icon);
 
-	    QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second; 
+	    QDockWidget* qdock = proxy_dock_list[widget->windowTitle()].second; 
         if (uiExternal)
 	        uiExternal->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
         if (qdock->widget())

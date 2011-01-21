@@ -42,9 +42,9 @@ namespace Console
         if (!ui_service)
             return;
         Foundation::UiExternalServiceInterface *ui_external_ui_service = framework_->GetService<Foundation::UiExternalServiceInterface>();
+        proxy_widget_ = ui_service->AddWidgetToScene(console_widget_,true,true);
         if (!ui_external_ui_service)
         {
-            proxy_widget_ = ui_service->AddWidgetToScene(console_widget_,true,true);
             proxy_widget_->setMinimumHeight(0);
             proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
             proxy_widget_->setOpacity(opacity_);
@@ -57,10 +57,9 @@ namespace Console
             animation_.setTargetObject(proxy_widget_);
             animation_.setPropertyName("geometry");
             animation_.setDuration(300);
-			
         }
 
-        ui_service->AddWidgetToMenu(console_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
+        ui_service->AddWidgetToMenu(proxy_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
 
         // Handle line edit input
         connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
@@ -114,22 +113,25 @@ namespace Console
     {
         if (key_event->keyCode == Qt::Key_F1)
         {
-            if (proxy_widget_)
-                ToggleConsole();
-            else
+            Foundation::UiExternalServiceInterface *ui_external_ui_service = framework_->GetService<Foundation::UiExternalServiceInterface>();
+            if (ui_external_ui_service)
                 ToggleExternalConsoleWidget();
+            else
+                ToggleDropdownConsole();
         }
     }
 
     void UiConsoleManager::ToggleExternalConsoleWidget()
     {
-        if (console_widget_->isVisible())
-            console_widget_->hide();
-        else
-            console_widget_->show();
+        QWidget* dock_widget = console_widget_->parentWidget();
+        if (dock_widget)
+            if (dock_widget->isVisible())
+                dock_widget->hide();
+            else
+                dock_widget->show();
     }
 
-    void UiConsoleManager::ToggleConsole()
+    void UiConsoleManager::ToggleDropdownConsole()
     {
         if (!ui_view_)
             return;

@@ -38,7 +38,7 @@ namespace Console
 
     public slots:
         //! Toggle console show/hide
-        void ToggleConsole();
+        void ToggleDropdownConsole();
 
         //! Queues the print requests
         void QueuePrintRequest(const QString &text);
