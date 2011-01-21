@@ -15,8 +15,8 @@ ball.placeable.transform = t;
 var r = ball.rigidbody;
 //r.linearVelocity = new Vector3df(1.0, 0, 0);
 r.SetLinearVelocity(new Vector3df(1.0, 0, 0));
-print(r.GetLinearVelocity().x);
 
+var MAXSPEED = 10.0;
 var motion_x = 1.0;
 var motion_y = 0.0;
 var move_force = 0.1;
@@ -42,13 +42,33 @@ function update(dt) {
   var placeable = ball.placeable;
   var rigidbody = ball.rigidbody;
 
-  if ((motion_x != 0) || (motion_y != 0)) {
-    var mag = 1.0 / Math.sqrt(motion_x * motion_x + motion_y * motion_y);
-    var impulseVec = new Vector3df();
-    impulseVec.x = mag * move_force * motion_x;
-    impulseVec.y = -mag * move_force * motion_y;
-    impulseVec = placeable.GetRelativeVector(impulseVec);
-    rigidbody.ApplyImpulse(impulseVec);
+  var velvec = rigidbody.GetLinearVelocity();
+  print(velvec.x);
+  var curspeed = Math.abs(velvec.x); //Math.sqrt(rigidbody.GetLinearVelocity().x
+  var curdir = new Vector3df(); //null; //velvec.Normalize()
+  if (velvec.x < 0) {
+    //curdir = new Vector3df(-1.0, 0, 0);
+    curdir.x = 1.0; //= new Vector3df(1.0, 0, 0);
+  }
+  else if (velvec.x == 0) {
+    curdir.x = 1.0;
+  }
+  else {
+    //curdir = new Vector3df(1.0, 0, 0);
+    curdir.x = -1.0; //= new Vector3df(1.0, 0, 0);
+  }
+
+  //print(curspeed);
+  if (curspeed < MAXSPEED) {
+    if ((motion_x != 0) || (motion_y != 0)) {
+      var mag = 1.0; // / Math.sqrt(motion_x * motion_y); // + curdir.x * curdir.y);
+      var impulseVec = new Vector3df();
+      print(mag + " - " + curdir.x);
+      impulseVec.x = mag * move_force * motion_x; //curdir.x;
+      impulseVec.y = -mag * move_force * motion_y; //curdir.y;
+      impulseVec = placeable.GetRelativeVector(impulseVec);
+      rigidbody.ApplyImpulse(impulseVec);
+    }
   }
 }
 
