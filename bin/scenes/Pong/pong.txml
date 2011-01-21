@@ -48,7 +48,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Name" sync="1">
-   <attribute value="pad_b" name="name"/>
+   <attribute value="bat_b" name="name"/>
    <attribute value="" name="description"/>
    <attribute value="false" name="user-defined"/>
   </component>
@@ -162,7 +162,7 @@
    <attribute value="false" name="Cast shadows"/>
   </component>
   <component type="EC_Name" sync="1">
-   <attribute value="pad_a" name="name"/>
+   <attribute value="bat_a" name="name"/>
    <attribute value="" name="description"/>
    <attribute value="false" name="user-defined"/>
   </component>
