@@ -17,25 +17,25 @@
   <component type="EC_Placeable" sync="1">
    <attribute value="0 0 0" name="Position"/>
    <attribute value="1 1 1" name="Scale"/>
-   <attribute value="0,0,0.01,0,0,0,0.5,0.5,0.5" name="Transform"/>
+   <attribute value="18.8282,4.83841e-08,0.01,-9.92576e-13,-7.9402e-06,1.31129e-19,0.5,0.5,0.5" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
   <component type="EC_RigidBody" sync="1">
-   <attribute value="0" name="Mass"/>
+   <attribute value="1" name="Mass"/>
    <attribute value="0" name="Shape type"/>
-   <attribute value="1 1 1" name="Size"/>
+   <attribute value="2 2 2" name="Size"/>
    <attribute value="" name="Collision mesh ref"/>
    <attribute value="0.5" name="Friction"/>
    <attribute value="0" name="Restitution"/>
    <attribute value="0" name="Linear damping"/>
    <attribute value="0" name="Angular damping"/>
    <attribute value="1 1 0" name="Linear factor"/>
-   <attribute value="1 1 0" name="Angular factor"/>
+   <attribute value="0 0 0" name="Angular factor"/>
    <attribute value="false" name="Phantom"/>
    <attribute value="true" name="Draw Debug"/>
-   <attribute value="0 0 0" name="Linear velocity"/>
-   <attribute value="0 0 0" name="Angular velocity"/>
+   <attribute value="-0.0969772339 8.4780245e-09 0" name="Linear velocity"/>
+   <attribute value="-7.2137565e-13 -2.21877144e-06 0" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="2">
@@ -59,6 +59,22 @@
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="2 2 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
  </entity>
  <entity id="3">
   <component type="EC_Mesh" sync="1">
@@ -80,6 +96,22 @@
    <attribute value="0,15,0,0,0,-90,0.483394,1,20.3553" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="2 2 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="4">
@@ -103,6 +135,22 @@
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="2 2 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
+  </component>
  </entity>
  <entity id="5">
   <component type="EC_Mesh" sync="1">
@@ -124,6 +172,22 @@
    <attribute value="-20,0,0,0,0,-180,0.483394,1,3.91758" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RigidBody" sync="1">
+   <attribute value="0" name="Mass"/>
+   <attribute value="0" name="Shape type"/>
+   <attribute value="2 2 2" name="Size"/>
+   <attribute value="" name="Collision mesh ref"/>
+   <attribute value="0.5" name="Friction"/>
+   <attribute value="0" name="Restitution"/>
+   <attribute value="0" name="Linear damping"/>
+   <attribute value="0" name="Angular damping"/>
+   <attribute value="1 1 1" name="Linear factor"/>
+   <attribute value="1 1 1" name="Angular factor"/>
+   <attribute value="false" name="Phantom"/>
+   <attribute value="true" name="Draw Debug"/>
+   <attribute value="0 0 0" name="Linear velocity"/>
+   <attribute value="0 0 0" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="6">
@@ -150,7 +214,7 @@
   <component type="EC_RigidBody" sync="1">
    <attribute value="0" name="Mass"/>
    <attribute value="0" name="Shape type"/>
-   <attribute value="1 1 0.00999999978" name="Size"/>
+   <attribute value="2 2 0.00999999978" name="Size"/>
    <attribute value="" name="Collision mesh ref"/>
    <attribute value="0.5" name="Friction"/>
    <attribute value="0" name="Restitution"/>
