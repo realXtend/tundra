@@ -80,17 +80,17 @@ function handleDrop(event) {
 		slides.push(line)
 	    }
     	    print(slides);
-	    createCanvas(slides);
+	    createCanvas(filename, slides);
 	}
     }
 }
 
-function createCanvas(slides) {
-    entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name']);
+function createCanvas(filename, slides) {
+    entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name', 'EC_DynamicComponent']);
 
     // set name
-    entity.name.name = "Slideshow";
-    entity.name.description = "Simple slideshow app";
+    entity.name.name = "Slideshow: " + filename;
+    entity.name.description = "Simple slideshow app from " + filename;
 
     // set mesh
     var mesh_ref = entity.mesh.meshRef;
@@ -109,22 +109,84 @@ function createCanvas(slides) {
 	canvas.Start();
     });
 
+    // Make dynamic component of the slide stuff
+
+    var dyn = entity.dynamiccomponent;
+
+    dyn.Name ="Slidelist";
+
+    for (s = 0; s < slides.length; s++) {
+	var slidename = s;
+	var attr = dyn.CreateAttribute("string", slidename);
+	dyn.SetAttribute(slidename, slides[s] + "");
+	
+    }
+    dyn.CreateAttribute("int", "Current");
+    dyn.SetAttribute("Current", 0);
+
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
     
     entity.Action("MousePress").Triggered.connect(nextSlide);
 
+}
 
+function nextSlide() {
+    print("Next slide!");
+    changeSlide(1);
+}
+
+function prevSlide() {
+    print("Previous slide!");
+    changeSlide(-1);
 }
 
 
-function nextSlide() {
+function changeSlide(dir) {
     print("Changing slide!");
-    slide_index += 1;
+    var dyn = entity.GetComponentRaw("EC_DynamicComponent", "Slidelist");
+    var slide_index = dyn.GetAttribute("Current") + dir;
+
     if (slide_index >= slides.length) {
 	slide_index = 0;
     }
+    
+    if (slide_index < 0) {
+	slide_index = slides.length - 1;
+    }
 
-    canvassource.source = slides[slide_index];
+    canvassource.source = dyn.GetAttribute(slide_index);
+    dyn.SetAttribute("Current", slide_index);
 }
 
+MyPixMap = {};
+
+MyPixMap.prototype = new QWidget();
+
+
+
+
+function makeSlideWidget() {
+    var gfxscene = new QGraphicsScene();
+    var view = new QGraphicsView(gfxscene);
+    var slidethumbs = [];
+
+    for (s = 0; s < 5; s++) {
+	slidethumbs.push((new QPixmap("C:\\Users\\playsign\\sand_d.jpg")).scaledToWidth(100));
+	slidethumbs.push((new QPixmap("C:\\Users\\playsign\\terrapin_texture.png")).scaledToWidth(100));
+    }
+
+    uiservice.AddWidgetToScene(view);
+
+    for (s = 0; s < slidethumbs.length; s++) {
+	var item = gfxscene.addPixmap(slidethumbs[s]);
+	item.mousePressEvent = function(event) { print("goo"); };
+	item.setPos(0,110 * s);
+    }
+    
+    view.resize(110, 400);
+    view.show();
+
+}
+
+makeSlideWidget();
