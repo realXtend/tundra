@@ -3,8 +3,8 @@ print("yo! here we go..");
 var ball = scene.GetEntityByNameRaw("ball");
 print(ball.Id);
 
-var pad_a = scene.GetEntityByNameRaw("pad_a");
-var pad_b = scene.GetEntityByNameRaw("pad_b"); //$('pad_b') - how about?
+var bat_a = scene.GetEntityByNameRaw("bat_a");
+var bat_b = scene.GetEntityByNameRaw("bat_b"); //$('bat_b') - how about?
 
 var t = ball.placeable.transform;
 zerovec = new Vector3df();
@@ -28,9 +28,9 @@ function handlecoll(other, pos, nor, dist, imp, newcoll) {
   //print(pos.x() + " : " + pos.y());
   print(other.Id);
   //most ultimately lame HACK!
-  if(other.Id == pad_b.Id)
+  if(other.Id == bat_b.Id)
     motion_x = -1.0;
-  if(other.Id == pad_a.Id)
+  if(other.Id == bat_a.Id)
     motion_x = 1.0;
 
   t.rot = zerovec;
