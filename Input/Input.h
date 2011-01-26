@@ -11,6 +11,7 @@
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
+#include "GestureEvent.h"
 #include "InputContext.h"
 #include "InputApi.h"
 
@@ -112,6 +113,8 @@ public slots:
     ///    for more information. Do not pass in a combination of the bit fields in the enum, just a single value.
     bool IsMouseButtonReleased(int mouseButton) const;
 
+    bool IsGesturesEnabled() const { return gesturesEnabled; }
+
     /// Returns the mouse coordinates in local client coordinate frame denoting where the given mouse button was last pressed
     /// down. Note that this does not tell whether the mouse button is currently held down or not.
     QPoint MousePressedPos(int mouseButton) const;
@@ -123,6 +126,9 @@ public slots:
 
     /// This is the same as OnKeyEvent, but for mouse events.
     void TriggerMouseEvent(MouseEvent &mouse);
+
+    /// This emits gesture events to the input contexes
+    void TriggerGestureEvent(GestureEvent &gesture);
 
     /// Returns the highest-priority input context that gets all events first to handle (even before going to Qt widgets).
     /// You may register your own keyboard and mouse handlers in this context and block events from going to the main window
@@ -185,6 +191,8 @@ private:
     /// If false, we use mouse in relative movement mode, meaning we hide the cursor and force it to stay in the middle of the application screen.
     /// In relative mode, only mouse relative coordinate updates are posted as events.
     bool mouseCursorVisible;
+
+    bool gesturesEnabled;
 
 /*  ///\todo This is currently disabled, since it would be problematic in drag-n-drop between scene and UI.
     /// Specifies which part of the system has mouse capture focus.

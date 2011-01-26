@@ -16,6 +16,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 #include <QGraphicsItem>
 #include <QGraphicsView>
 #include <QKeyEvent>
+#include <QGestureEvent>
 #include <QApplication>
 #include <QSettings>
 
@@ -27,6 +28,7 @@ Input::Input(Foundation::Framework *framework_)
 :lastMouseX(0),
 lastMouseY(0),
 mouseCursorVisible(true),
+gesturesEnabled(false),
 //sceneMouseCapture(NoMouseCapture),
 mouseFPSModeEnterX(0),
 mouseFPSModeEnterY(0),
@@ -85,6 +87,11 @@ framework(framework_)
     mainView = framework_->Ui()->GraphicsView();
     assert(mainView);
     assert(mainView->viewport());
+
+    // Accept gestures
+    mainView->grabGesture(Qt::PanGesture);
+    mainView->grabGesture(Qt::PinchGesture);
+    mainView->grabGesture(Qt::TapAndHoldGesture);
 
     // For key press events.
     mainView->installEventFilter(this);
@@ -409,6 +416,47 @@ void Input::TriggerMouseEvent(MouseEvent &mouse)
             break;
         default:
             assert(false);
+            break;
+        }
+    }
+}
+
+void Input::TriggerGestureEvent(GestureEvent &gesture)
+{
+    assert(gesture.handled == false);
+
+    // First, we pass the event to the global top level input context, which operates above Qt widget input.
+    topLevelInputContext.TriggerGestureEvent(gesture);
+    if (gesture.handled)
+        return;
+
+    // Pass the event to all input contexts in the priority order.
+    for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
+    {
+        if (gesture.handled)
+            break;
+        boost::shared_ptr<InputContext> context = iter->lock();
+        if (context.get())
+            context->TriggerGestureEvent(gesture);
+    }
+
+    if (!gesture.handled)
+    {
+        switch(gesture.eventType)
+        {
+        case GestureEvent::GestureStarted:
+            eventManager->SendEvent(inputCategory, QtInputEvents::GestureStarted, &gesture);
+            break;
+        case GestureEvent::GestureUpdated:
+            eventManager->SendEvent(inputCategory, QtInputEvents::GestureUpdated, &gesture);
+            break;
+        case GestureEvent::GestureFinished:
+            eventManager->SendEvent(inputCategory, QtInputEvents::GestureFinished, &gesture);
+            break;
+        case GestureEvent::GestureCanceled:
+            eventManager->SendEvent(inputCategory, QtInputEvents::GestureCanceled, &gesture);
+            break;
+        default:
             break;
         }
     }
@@ -771,6 +819,27 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 
         // Always suppress the wheel events from going to the QGraphicsView, or otherwise the wheel will start to
         // scroll the main QGraphicsView UI windows vertically.
+        return true;
+    }
+
+    case QEvent::Gesture:
+    {
+        if (obj != qobject_cast<QObject*>(mainView))
+            return false;
+        if (!gesturesEnabled)
+            gesturesEnabled = true;
+
+        QGestureEvent *e = static_cast<QGestureEvent *>(event);
+        QList<QGesture*> gestures = e->gestures();
+        foreach(QGesture *gesture, gestures)
+        {
+            GestureEvent gestureEvent;
+            gestureEvent.gesture = gesture;
+            gestureEvent.gestureType = gesture->gestureType();
+            gestureEvent.eventType = (GestureEvent::EventType)gesture->state();
+            TriggerGestureEvent(gestureEvent);
+            e->accept(gesture);
+        }
         return true;
     }
 

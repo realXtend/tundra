@@ -8,6 +8,7 @@
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
+#include "GestureEvent.h"
 
 #include "KeyEventSignal.h"
 #include "InputApi.h"
@@ -46,6 +47,8 @@ signals:
     void OnKeyEvent(KeyEvent *key);
     /// Emitted for each mouse event (move, scroll, button press/release).
     void OnMouseEvent(MouseEvent *mouse);
+    /// Emitted for every gesture event (start, update, stop, cancel)
+    void OnGestureEvent(GestureEvent *gesture);
 
     /// This signal is emitted when any key is pressed in this context.
     void KeyPressed(KeyEvent *key);
@@ -72,6 +75,10 @@ signals:
     void MouseMiddleReleased(MouseEvent *mouse);
     void MouseRightReleased(MouseEvent *mouse);
 
+    void GestureStarted(GestureEvent *gesture);
+    void GestureUpdated(GestureEvent *gesture);
+    void GestureFinished(GestureEvent *gesture);
+
 public slots:
     /// Creates a new signal object that will be triggered when the given
     /// key sequence occurs in this context. To actually receive the events,
@@ -96,6 +103,9 @@ public slots:
 
     /// Same as TriggerKeyEvent, but for mouse events.
     void TriggerMouseEvent(MouseEvent &mouse);
+
+    // Trigger gesture event signals
+    void TriggerGestureEvent(GestureEvent &gesture);
 
     /// Returns the user-defined name of this InputContext. The name is
     /// read-only, and associated with the context at creation time.
