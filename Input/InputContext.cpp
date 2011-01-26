@@ -130,6 +130,25 @@ void InputContext::TriggerMouseEvent(MouseEvent &mouse)
     }
 }
 
+void InputContext::TriggerGestureEvent(GestureEvent &gesture)
+{
+    emit OnGestureEvent(&gesture);
+
+    switch(gesture.eventType)
+    {
+    case GestureEvent::GestureStarted:
+        emit GestureStarted(&gesture);
+        break;
+    case GestureEvent::GestureUpdated:
+        emit GestureUpdated(&gesture);
+        break;
+    case GestureEvent::GestureFinished:
+    case GestureEvent::GestureCanceled:
+        emit GestureFinished(&gesture);
+        break;
+    }    
+}
+
 int InputContext::KeyPressedCount(Qt::Key keyCode) const
 {
     HeldKeysMap::const_iterator iter = heldKeysBuffered.find(keyCode);
