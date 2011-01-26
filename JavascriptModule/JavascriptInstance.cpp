@@ -289,7 +289,7 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
             exposed = engine_->globalObject().property(blacktype);
             if (exposed.isValid())
             {
-                engine_->globalObject().setProperty(blacktype, QScriptValue::QScriptValue()); //passing an invalid val removes the property, http://doc.qt.nokia.com/4.6/qscriptvalue.html#setProperty
+                engine_->globalObject().setProperty(blacktype, QScriptValue()); //passing an invalid val removes the property, http://doc.qt.nokia.com/4.6/qscriptvalue.html#setProperty
                 //LogInfo("JavascriptInstance::ImportExtension: removed a type from the untrusted context: " + blacktype.toStdString());
             }
         }
