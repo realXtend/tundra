@@ -113,6 +113,12 @@ public slots:
     ///    for more information. Do not pass in a combination of the bit fields in the enum, just a single value.
     bool IsMouseButtonReleased(int mouseButton) const;
 
+/* 
+    ///\todo Actually ask if touch input hardware is available. Now is set to True once the first gesture
+    /// comes to our event filter. Find a way to inspect hardware in the constructor, best would be to find out touch device via qt if at all possible 
+*/
+    /// Return if input is handling gestures from a touch input device. If true InputContex is emitting the gesture specific signals.
+    /// Do not trust this at the moment, see todo comment. Just connect to the gesture signals and wait if they are being emitted.
     bool IsGesturesEnabled() const { return gesturesEnabled; }
 
     /// Returns the mouse coordinates in local client coordinate frame denoting where the given mouse button was last pressed
@@ -192,6 +198,9 @@ private:
     /// In relative mode, only mouse relative coordinate updates are posted as events.
     bool mouseCursorVisible;
 
+    /// If true, the InputContex instances will emit gesture related events. Do not trust this bool at this point, it will only be set to true
+    /// once we receive the first QEvent::Gesture type event. This needs to be fixed so that we ask the OS if it has a touch input device.
+    /// If you find a way to do this, please fix and remove todo from IsGesturesEnabled() comments too.
     bool gesturesEnabled;
 
 /*  ///\todo This is currently disabled, since it would be problematic in drag-n-drop between scene and UI.

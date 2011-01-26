@@ -43,12 +43,14 @@ public:
     void UpdateFrame();
 
 signals:
+    ///\todo remove On and make KeyEventReceived
     /// Emitted for each key code, for each event type.
     void OnKeyEvent(KeyEvent *key);
+    ///\todo remove On and make MouseEventReceived
     /// Emitted for each mouse event (move, scroll, button press/release).
     void OnMouseEvent(MouseEvent *mouse);
-    /// Emitted for every gesture event (start, update, stop, cancel)
-    void OnGestureEvent(GestureEvent *gesture);
+    /// Emitted for every gesture event (started, updated, finished and canceled)
+    void GestureEventReceived(GestureEvent *gesture);
 
     /// This signal is emitted when any key is pressed in this context.
     void KeyPressed(KeyEvent *key);

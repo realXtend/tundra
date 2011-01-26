@@ -132,7 +132,7 @@ void InputContext::TriggerMouseEvent(MouseEvent &mouse)
 
 void InputContext::TriggerGestureEvent(GestureEvent &gesture)
 {
-    emit OnGestureEvent(&gesture);
+    emit GestureEventReceived(&gesture);
 
     switch(gesture.eventType)
     {
