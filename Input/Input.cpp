@@ -64,6 +64,11 @@ framework(framework_)
     eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseDoubleClicked, "MouseDoubleClicked");
     eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseMove, "MouseMove");
 
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureStarted, "GestureStarted");
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureUpdated, "GestureUpdated");
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureFinished, "GestureFinished");
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureCanceled, "GestureCanceled");
+
     // Next, set up the global widget event filters that we will use to read our scene input from.
     // Note: Since we set up this object as an event filter to multiple widgets, we will receive
     //       the same events several times, so care has to be taken to ignore those duplicate events.
