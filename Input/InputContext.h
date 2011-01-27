@@ -77,6 +77,8 @@ signals:
     void MouseMiddleReleased(MouseEvent *mouse);
     void MouseRightReleased(MouseEvent *mouse);
 
+    /// Gesture events. Note that you need to accept a the started in order to receive updates.
+    /// Call gesture->Accept() to get updates and a finished signal for it.
     void GestureStarted(GestureEvent *gesture);
     void GestureUpdated(GestureEvent *gesture);
     void GestureFinished(GestureEvent *gesture);
