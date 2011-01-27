@@ -43,6 +43,7 @@ Q_SCRIPT_DECLARE_QMETAOBJECT(QTimer, QObject*);
 //! Naali input defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
+Q_DECLARE_METATYPE(GestureEvent*)
 Q_DECLARE_METATYPE(InputContext*)
 
 //! Naali Ui defines
@@ -153,14 +154,15 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     // Input metatypes.
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
+    qScriptRegisterQObjectMetaType<GestureEvent*>(engine);
     qScriptRegisterQObjectMetaType<InputContext*>(engine);
-    //qRegisterMetaType<InputContextPtr>("InputContextPtr");
     qRegisterMetaType<InputContextPtr>("InputContextPtr");
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<InputContext>,
                             qScriptValueToBoostSharedPtr<InputContext>);
     qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
     qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
+    qRegisterMetaType<GestureEvent::EventType>("GestureEvent::EventType");
 
     // Scene metatypes.
     qScriptRegisterQObjectMetaType<Scene::SceneManager*>(engine);
