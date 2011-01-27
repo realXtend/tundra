@@ -41,7 +41,8 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
 if lsb_release -c | egrep -q "lucid|maverick"; then
-	sudo apt-get -y install scons python-dev libogg-dev libvorbis-dev \
+        which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
+	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libogre-dev libboost-all-dev libpoco-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
