@@ -216,13 +216,13 @@ namespace OgreRenderer
         logfilepath += "/Ogre.log";
 #include "DisableMemoryLeakCheck.h"
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
-#include "EnableMemoryLeakCheck.h"
 
 	if (framework_->IsHeadless())
 	{
 	    // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
 	    new Ogre::DefaultHardwareBufferManager();
 	}
+#include "EnableMemoryLeakCheck.h"
 
         // Setup Ogre logger (use LL_NORMAL for more prints of init)
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
@@ -713,7 +713,15 @@ namespace OgreRenderer
             renderWindow->OgreOverlay()->show();
 #endif
 
-        root_->renderOneFrame();
+        try
+        {
+            root_->renderOneFrame();
+        } catch(const std::exception &e)
+        {
+            std::cout << "Ogre::Root::renderOneFrame threw an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
+            RootLogCritical(std::string("Ogre::Root::renderOneFrame threw an exception: ") + (e.what() ? e.what() : "(null)"));
+        }
+
         view->MarkViewUndirty();
     }
 
