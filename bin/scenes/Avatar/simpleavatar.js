@@ -31,6 +31,7 @@ var hoverAnimName = "Hover";
 var sitAnimName = "SitOnGround";
 var waveAnimName = "Wave";
 var animsDetected = false;
+var listenGesture = false;
 
 // Create avatar on server, and camera & inputmapper on client
 if (isserver) {
@@ -370,6 +371,15 @@ function ClientInitialize() {
     frame.Updated.connect(ClientUpdate);
 }
 
+function IsCameraActive()
+{
+    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    if (cameraentity == null)
+        return false;
+    var camera = cameraentity.ogrecamera;
+    return camera.IsActive();
+}
+
 function ClientHandleToggleTripod()
 {
     var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
@@ -476,6 +486,11 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("Right", "StopRotate(right))", 3);
     inputmapper.RegisterMapping("Space", "Stop(up)", 3);
     inputmapper.RegisterMapping("C", "Stop(down)", 3);
+
+    // Connect gestures
+    inputContext = inputmapper.GetInputContext();
+    inputContext.GestureStarted.connect(GestureStarted);
+    inputContext.GestureUpdated.connect(GestureUpdated);
     
     // Local camera matter for mouse scroll
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
@@ -508,6 +523,67 @@ function ClientCreateAvatarCamera() {
     ClientUpdateAvatarCamera();
 }
 
+function GestureStarted(gestureEvent)
+{
+    if (!IsCameraActive())
+        return;
+    if (gestureEvent.GestureType() == Qt.PanGesture)
+    {
+        listenGesture = true;
+        var x = new Number(gestureEvent.Gesture().offset.toPoint().x());
+        me.Exec(2, "MouseLookX", x.toString());
+        gestureEvent.Accept();
+    }
+    else if (gestureEvent.GestureType() == Qt.PinchGesture)
+        gestureEvent.Accept();
+}
+
+function GestureUpdated(gestureEvent)
+{
+    if (!IsCameraActive())
+        return;
+   
+    if (gestureEvent.GestureType() == Qt.PanGesture && listenGesture == true)
+    {
+        // Rotate avatar with X pan gesture
+        delta = gestureEvent.Gesture().delta.toPoint();
+        var x = new Number(delta.x());
+        me.Exec(2, "MouseLookX", x.toString());
+        
+        // Start walking or stop if total Y len of pan gesture is 100
+        var walking = false;
+        if (me.animationcontroller.animationState == walkAnimName)
+            walking = true;
+        var totalOffset = gestureEvent.Gesture().offset.toPoint();
+        if (totalOffset.y() < -100) 
+        {
+            if (walking) {
+                me.Exec(2, "Stop", "forward");
+                me.Exec(2, "Stop", "back");
+            } else
+                me.Exec(2, "Move", "forward");
+            listenGesture = false;
+        }
+        else if (totalOffset.y() > 100) 
+        {
+            if (walking) {
+                me.Exec(2, "Stop", "forward");
+                me.Exec(2, "Stop", "back");
+            } else
+                me.Exec(2, "Move", "back");
+            listenGesture = false;
+        }
+        gestureEvent.Accept();
+    }
+    else if (gestureEvent.GestureType() == Qt.PinchGesture)
+    {
+        var scaleChange = gestureEvent.Gesture().scaleFactor - gestureEvent.Gesture().lastScaleFactor;
+        if (scaleChange > 0.1 || scaleChange < -0.1)
+            ClientHandleMouseScroll(scaleChange * 100);
+        gestureEvent.Accept();
+    }
+}
+
 function ClientHandleKeyboardZoom(direction) {
     if (direction == "in") {
         ClientHandleMouseScroll(10);
@@ -518,13 +594,29 @@ function ClientHandleKeyboardZoom(direction) {
 
 function ClientHandleMouseScroll(relativeScroll)
 {
-    var camera = scene.GetEntityByNameRaw("AvatarCamera");
-    if (camera.ogrecamera.IsActive() == false)
+    if (!IsCameraActive())
         return;
-    if (relativeScroll < 0 && avatar_camera_distance < 100) {
-        avatar_camera_distance = avatar_camera_distance + 1;
-    } else if (relativeScroll > 0 && avatar_camera_distance > 2) {
-        avatar_camera_distance = avatar_camera_distance - 1;
+    var moveAmount = 0;
+    if (relativeScroll < 0 && avatar_camera_distance < 500) {
+        if (relativeScroll < -50)
+            moveAmount = 2;
+        else
+            moveAmount = 1;
+    } else if (relativeScroll > 0 && avatar_camera_distance > 1) {
+        if (relativeScroll > 50)
+            moveAmount = -2
+        else
+            moveAmount = -1;
+    }
+    if (moveAmount != 0)
+    {
+        // Add movement
+        avatar_camera_distance = avatar_camera_distance + moveAmount;
+        // Clamp distance  to be between 1 and 500
+        if (avatar_camera_distance < 1)
+            avatar_camera_distance = 1;
+        else if (avatar_camera_distance > 500)
+            avatar_camera_distance = 500;
     }
 }
 
