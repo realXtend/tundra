@@ -26,6 +26,8 @@
 #include <QtScript>
 #include <QDomDocument>
 
+#include <boost/program_options.hpp>
+
 Q_DECLARE_METATYPE(UserConnection*);
 
 // The following functions help register a custom QObject-derived class to a QScriptEngine.
@@ -116,6 +118,14 @@ void Server::Stop()
 bool Server::IsRunning() const
 {
     return owner_->IsServer();
+}
+
+bool Server::IsAboutToStart() const
+{
+    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
+    if (programOptions.count("startserver"))
+        return true;
+    return false;
 }
 
 UserConnectionList Server::GetAuthenticatedUsers() const

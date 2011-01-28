@@ -35,7 +35,10 @@ namespace Asset
 
         QDir dir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "data/assets").toStdString().c_str());
         local->AddStorageDirectory(dir.absolutePath().toStdString(), "System", true);
-
+        // Set asset dir as also as AssetAPI property
+        framework_->Asset()->setProperty("assetdir", QVariant(GuaranteeTrailingSlash(dir.absolutePath())));
+        framework_->Asset()->setProperty("inbuiltassetdir", QVariant(GuaranteeTrailingSlash(dir.absolutePath())));
+        
         dir = QDir((GuaranteeTrailingSlash(GetFramework()->GetPlatform()->GetInstallDirectory().c_str()) + "jsmodules").toStdString().c_str());
         local->AddStorageDirectory(dir.absolutePath().toStdString(), "Javascript", true);
 
@@ -74,6 +77,9 @@ namespace Asset
                 {
                     framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname, "Scene", true);
                     framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage("Scene"));
+                    
+                    // Set asset dir as also as AssetAPI property
+                    framework_->Asset()->setProperty("assetdir", QVariant(GuaranteeTrailingSlash(QString::fromStdString(dirname))));
                 }
             }
         }
@@ -90,6 +96,9 @@ namespace Asset
                 {
                     framework_->Asset()->GetAssetProvider<LocalAssetProvider>()->AddStorageDirectory(dirname, "Scene", true);
                     framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage("Scene"));
+                    
+                    // Set asset dir as also as AssetAPI property
+                    framework_->Asset()->setProperty("assetdir", QVariant(GuaranteeTrailingSlash(QString::fromStdString(dirname))));
                 }
             }
         }

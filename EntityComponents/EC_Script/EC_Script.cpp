@@ -87,7 +87,12 @@ EC_Script::EC_Script(IModule *module):
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute == &scriptRef)
-        scriptAsset->HandleAssetRefChange(attribute);
+    {
+        if (!scriptRef.Get().ref.isEmpty())
+            scriptAsset->HandleAssetRefChange(attribute);
+        else // If the script ref is empty we need to unload script instance.
+            SetScriptInstance(0);
+    }
 }
 
 void EC_Script::ScriptAssetLoaded(AssetPtr asset_)
