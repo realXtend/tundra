@@ -62,8 +62,11 @@ if (!me.HasComponent("EC_OgreCamera"))
     
     // Connect gestures
     inputContext = inputmapper.GetInputContext();
-    inputContext.GestureStarted.connect(GestureStarted);
-    inputContext.GestureUpdated.connect(GestureUpdated);
+    if (inputContext.GestureStarted && inputContext.GestureUpdated)
+    {
+	inputContext.GestureStarted.connect(GestureStarted);
+	inputContext.GestureUpdated.connect(GestureUpdated);
+    }
 }
 
 function IsCameraActive()
