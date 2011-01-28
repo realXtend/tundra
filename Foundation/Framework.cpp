@@ -273,6 +273,8 @@ namespace Foundation
     {
         namespace po = boost::program_options;
 
+        ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
+        /// best is to have them parse their own options).
         commandLineDescriptions.add_options()
             ("headless", "run in headless mode without any windows or rendering")
             ("help", "produce help message")
@@ -283,6 +285,7 @@ namespace Foundation
             ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
             ("login", "automatically login to server using provided credentials")
             ("startserver", po::value<int>(0), "Start server automatically in specified port")
+            ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable")
             ("run", po::value<std::string>(), "Run script on startup")
             ("file", po::value<std::string>(), "Load scene on startup")
             ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup");
