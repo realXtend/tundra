@@ -101,6 +101,8 @@ else
     cd knet
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
     mv x CMakeLists.txt
+    sed '442s/assert.*//' src/Socket.cpp > x
+    mv x src/Socket.cpp
     cmake .
     make -j $nprocs
     cp lib/libkNet.so $prefix/lib/
