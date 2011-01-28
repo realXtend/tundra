@@ -110,6 +110,7 @@
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
+#include "GestureEvent.h"
 
 //#include <QDebug>
 
@@ -1885,6 +1886,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
+            PythonQt::self()->registerClass(&GestureEvent::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Ruler::staticMetaObject);
             

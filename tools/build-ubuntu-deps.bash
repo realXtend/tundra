@@ -41,13 +41,14 @@ export CXX="ccache g++"
 export CCACHE_DIR=$deps/ccache
 
 if lsb_release -c | egrep -q "lucid|maverick"; then
+        which aptitude > /dev/null 2>&1 || sudo apt-get install aptitude
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libogre-dev libboost-all-dev libpoco-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
          libtelepathy-qt4-dev python-gst0.10-dev freeglut3-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev \
+	 libxmlrpc-epi-dev bison flex libxml2-dev cmake libalut-dev \
 	 liboil0.3-dev mercurial unzip xsltproc libqtscript4-qtbindings
 fi
 
@@ -121,6 +122,8 @@ else
     test -f $zip || wget -O $zip http://ovh.dl.sourceforge.net/project/caelum/caelum/0.5/$pkgbase.zip
     unzip $zip
     cd $pkgbase
+    sed "s/depflags.has_key/False and depflags.has_key/g" < SConstruct > SConstruct.edit
+    mv SConstruct.edit SConstruct
     scons extra_ccflags="-fPIC -DPIC"
     mkdir -p $prefix/etc/OGRE
     cp plugins.cfg $prefix/etc/OGRE/

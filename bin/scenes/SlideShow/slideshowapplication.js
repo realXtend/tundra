@@ -85,7 +85,7 @@ function handleDrop(event) {
 }
 
 function createCanvas(filename, slides) {
-    entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name', 'EC_DynamicComponent']);
+    entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name', 'EC_DynamicComponent', 'EC_Script']);
 
     // set name
     entity.name.name = "Slideshow: " + filename;
@@ -102,29 +102,30 @@ function createCanvas(filename, slides) {
     canvassource.source = slides[0];
     canvassource.submesh = 1;
 
-    // start canvas
-    var canvas = entity.GetComponentRaw('EC_3DCanvas');
-    frame.DelayedExecute(0.1).Triggered.connect(this, function () {
-	canvas.Start();
-    });
+    // ec_script
+    var script = entity.script;
+    script.type = "js";
+    script.runOnLoad = true;
+    var r = script.scriptRef;
+    r.ref = "local://slideshow.js";
+    script.scriptRef = r;
+
 
     // Make dynamic component of the slide stuff
 
     var dyn = entity.dynamiccomponent;
 
-    dyn.Name ="Slidelist";
+    dyn.Name = "Slidelist";
 
     for (s = 0; s < slides.length; s++) {
 	var slidename = s;
 	var attr = dyn.CreateAttribute("string", slidename);
 	dyn.SetAttribute(slidename, slides[s] + "");
-	
     }
+
     dyn.CreateAttribute("int", "Current");
     dyn.SetAttribute("Current", 0);
 
-    dyn.OnAttributeChanged.connect(onSlideChanged);
-    
     //FIXME not needed in final product :) Just here to make it show
     //right away...
     
@@ -141,53 +142,12 @@ function createCanvas(filename, slides) {
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
     
-    entity.Action("MousePress").Triggered.connect(nextSlide);
 
+    //FIXME move this and makeslide widget to slideshow.js when
+    // appropriate
+    // Create UI
+    makeSlideWidget(slides);
 
-}
-
-function nextSlide() {
-    print("Next slide!");
-    changeSlide(1);
-}
-
-function prevSlide() {
-    print("Previous slide!");
-    changeSlide(-1);
-}
-
-
-function changeSlide(dir) {
-    print("Changing slide!");
-    var dyn = entity.GetComponentRaw("EC_DynamicComponent", "Slidelist");
-    var slide_index = dyn.GetAttribute("Current") + dir;
-
-    if (slide_index >= slides.length) {
-	slide_index = 0;
-    }
-    
-    if (slide_index < 0) {
-	slide_index = slides.length - 1;
-    }
-
-    dyn.SetAttribute("Current", slide_index);
-}
-
-function onSlideChanged(attribute,type) {
-    var dyn = entity.GetComponentRaw("EC_DynamicComponent", "Slidelist");
-    var index = dyn.GetAttribute('Current');
-    canvassource.source = dyn.GetAttribute(index);
-}
-
-function MyLabel(parent) {
-    QLabel.call(this, "", parent, 0);
-}
-
-MyLabel.prototype = new QLabel();
-
-MyLabel.prototype.mousePressEvent = function (event) {
-    event.accept();
-    print('AAAAARGH');
 }
 
 function makeSlideWidget(slides) {
@@ -196,15 +156,13 @@ function makeSlideWidget(slides) {
 
     view.resize(110, 400);
 
-    var slidethumbs = [];
-    
-
     for (s = 0; s < slides.length; s++) {
-	var label = new MyLabel(gfxscene);
+	var label = new MyLabel(gfxscene, s);
 	var pic = new QPixmap("C:\\Users\\playsign\\sand_d.jpg");
 	label.setPixmap(pic.scaledToWidth(100));
-	gfxscene.addWidget(label)
 	label.move(0, 110 * s);
+	gfxscene.addWidget(label)
+
 
     }    
     uiservice.AddWidgetToScene(view);
@@ -212,4 +170,16 @@ function makeSlideWidget(slides) {
 
 }
 
-makeSlideWidget([1,2,3,4]);
+function MyLabel(parent, slide) {
+    this.slide = slide;
+    QLabel.call(this, "", parent, 0);
+}
+
+MyLabel.prototype = new QLabel();
+
+MyLabel.prototype.mousePressEvent = function (event) {
+    event.accept();
+    print('AAAAARGH! ' + this.slide);
+    var dyn = entity.dynamiccomponent;
+    dyn.SetAttribute("Current", this.slide + "");
+}
