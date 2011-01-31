@@ -90,6 +90,9 @@ signals:
 public slots:
     //! Get whether server is running
     bool IsRunning() const;
+
+    //! Get whether server is about to start.
+    bool IsAboutToStart() const;
     
     //! Get connected users' connection ID's
     QVariantList GetConnectionIDs() const;

@@ -95,6 +95,21 @@ QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
     return QScriptValue();
 }
 
+// Helper function. Added because new'ing a QPixmap in script seems to lead into growing memory use
+QScriptValue setPixmapToLabel(QScriptContext *ctx, QScriptEngine *eng)
+{
+    if(ctx->argumentCount() == 2)
+    {
+        QObject *object = qscriptvalue_cast<QObject*>(ctx->argument(0));
+        QString filename = qscriptvalue_cast<QString>(ctx->argument(1));
+        
+        QLabel *label = dynamic_cast<QLabel *>(object);
+        if (label && QFile::exists(filename))
+            label->setPixmap(QPixmap(filename));
+    }
+    return QScriptValue();
+}
+
 void ExposeQtMetaTypes(QScriptEngine *engine)
 {
     assert(engine);
@@ -108,6 +123,8 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     object = engine->scriptValueFromQMetaObject<QTimer>();
     engine->globalObject().setProperty("QTimer", object);
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
+    engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));
+    
 
     engine->importExtension("qt.core");
     engine->importExtension("qt.gui");
