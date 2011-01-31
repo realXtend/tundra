@@ -19,6 +19,9 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "MemoryLeakCheck.h"
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("ScriptConsole")
+
 void Command::Invoke(const QStringList &params)
 {
     emit Invoked(params);
@@ -33,8 +36,14 @@ Command *ScriptConsole::RegisterCommand(const QString &name, const QString &desc
 {
     Command *command = 0;
     Console::ConsoleCommandServiceInterface *consoleCommand = framework_->GetService<Console::ConsoleCommandServiceInterface>();
-    if (consoleCommand && !commands_.contains(name))
+    if (consoleCommand)
     {
+        if(commands_.contains(name))
+        {
+            LogWarning("Command " + name.toStdString() + " is already registered.");
+            return commands_[name];
+        }
+
         command = new Command(name);
         commands_.insert(name, command);
 

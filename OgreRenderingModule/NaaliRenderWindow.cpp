@@ -141,44 +141,6 @@ std::string NaaliRenderWindow::OverlayTextureName() const
     return rttTextureName;
 }
 
-#if 0
-
-void NaaliRenderWindow::RenderFrame()
-{
-    PROFILE(NaaliRenderWindow_RenderFrame);
-/*
-    if (applyFPSLimit && targetFpsLimit > 0.f)
-    {
-        Core::tick_t timeNow = Core::GetCurrentClockTime();
-
-        double msecsSpentInFrame = (double)(timeNow - lastPresentTime) / timerFrequency * 1000.0;
-        const double msecsPerFrame = 1000.0 / targetFpsLimit;
-        if (msecsSpentInFrame < msecsPerFrame)
-        {
-            PROFILE(FPSLimitSleep);
-            while(msecsSpentInFrame >= 0 && msecsSpentInFrame < msecsPerFrame)
-            {
-                if (msecsSpentInFrame + 1 < msecsPerFrame)
-                    Sleep(1);
-
-                msecsSpentInFrame = (double)(Core::GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
-            }
-
-            // Busy-wait the rest of the time slice to avoid jittering and to produce smoother updates.
-            while(msecsSpentInFrame >= 0 && msecsSpentInFrame < msecsPerFrame)
-                msecsSpentInFrame = (double)(Core::GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
-        }
-
-        lastPresentTime = Core::GetCurrentClockTime();
-
-        timeSleptLastFrame = (float)((timeNow - lastPresentTime) * 1000.0 / timerFrequency);
-    }
-    else
-        timeSleptLastFrame = 0.f;
-*/
-}
-#endif
-
 void NaaliRenderWindow::UpdateOverlayImage(const QImage &src)
 {
     PROFILE(NaaliRenderWindow_UpdateOverlayImage);

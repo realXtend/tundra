@@ -7,6 +7,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "RenderServiceInterface.h"
+#include "HighPerfClock.h"
 #include "ForwardDefines.h"
 
 #include <QObject>
@@ -233,8 +234,17 @@ namespace OgreRenderer
 
         NaaliRenderWindow *GetRenderWindow() const { return renderWindow; }
 
+        /// Specifies a new fps limit to use for the main loop. Pass in a value of 0 to remove fps limiting altogether.
+        void SetTargetFPSLimit(float fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.f) targetFpsLimit = 0.f; }
+
+        /// Returns the current fps limit.
+        float TargetFPSLimit() const { return targetFpsLimit; }
+
     private:
         
+        //! Sleeps the main thread to throttle the main loop execution speed.
+        void DoFrameTimeLimiting();
+
         //! Initialises the events related info for this module
         void InitializeEvents();
 
@@ -343,11 +353,15 @@ namespace OgreRenderer
 
         Scene::EntityPtr texture_rendering_cam_entity_;
 
-        // Pixel buffer used with screen captures
+        /// Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
         
-        // swap float values
-        static void swap(float &x, float &y);
+        /// Stores the wall clock time that specifies when the last frame was displayed.
+        tick_t lastPresentTime;
+        /// Caches the system clock frequency.
+        tick_t timerFrequency;
+        /// Specifies the target fps to run the system at. By default 60. Setting this to zero means no limit.
+        float targetFpsLimit;
     };
 }
 

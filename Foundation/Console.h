@@ -83,8 +83,7 @@ public slots:
     /// Use this from scripting languages.
     /** @param name Name of the command.
         @param desc Description of the command.
-        @return Pointer to the command. Connect the Invoked() signal to your script slot/func.,
-        or null if the command already existed.
+        @return Pointer to the command. Connect the Invoked() signal to your script slot/func.
         @note Never store the returned pointer.
     */
     Command *RegisterCommand(const QString &name, const QString &desc);

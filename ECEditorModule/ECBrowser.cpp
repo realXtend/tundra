@@ -55,14 +55,6 @@ ECBrowser::ECBrowser(Foundation::Framework *framework, QWidget *parent):
     connect(delete_shortcut, SIGNAL(activated()), SLOT(OnDeleteAction()), Qt::UniqueConnection);
     connect(copy_shortcut, SIGNAL(activated()), SLOT(CopyComponent()), Qt::UniqueConnection);
     connect(paste_shortcut, SIGNAL(activated()), SLOT(PasteComponent()), Qt::UniqueConnection);
-
-    // Transorm editing.
-    QShortcut *trans_shortcut = new QShortcut(QKeySequence(Qt::Key_T), this);
-    QShortcut *rotate_shortcut = new QShortcut(QKeySequence(Qt::Key_R), this);
-    QShortcut *scale_shortcut = new QShortcut(QKeySequence(Qt::Key_S), this);
-    connect(trans_shortcut, SIGNAL(activated()), SLOT(Translate()), Qt::UniqueConnection);
-    connect(rotate_shortcut, SIGNAL(activated()), SLOT(Rotate()), Qt::UniqueConnection);
-    connect(scale_shortcut, SIGNAL(activated()), SLOT(Scale()), Qt::UniqueConnection);
 }
 
 ECBrowser::~ECBrowser()
@@ -692,7 +684,7 @@ void ECBrowser::CreateAttribute()
     for(uint i = 0; i < components.size(); i++)
     {
         ComponentPtr component = components[i].lock();
-        if (component)
+        if (!component)
             continue;
         EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(component.get());
         if (dc)
