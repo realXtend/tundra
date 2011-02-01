@@ -276,19 +276,21 @@ namespace Foundation
         ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
         /// best is to have them parse their own options).
         commandLineDescriptions.add_options()
-            ("headless", "run in headless mode without any windows or rendering")
-            ("help", "produce help message")
+            ("headless", "Run in headless mode without any windows or rendering") // Framework & OgreRenderingModule
+            ("help", "Produce help message") // Framework
+            ("startserver", po::value<int>(0), "Start server automatically in specified port") // TundraLogicModule
+            ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable") // OgreRenderingModule
+            ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
+            ("file", po::value<std::string>(), "Load scene on startup") // TundraLogicModule & AssetModule
+            ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
+            // The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
             ("user", po::value<std::string>(), "OpenSim login name")
             ("passwd", po::value<std::string>(), "OpenSim login password")
-            ("server", po::value<std::string>(), "world server and port")
-            ("auth_server", po::value<std::string>(), "realXtend authentication server address and port")
-            ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
-            ("login", "automatically login to server using provided credentials")
-            ("startserver", po::value<int>(0), "Start server automatically in specified port")
-            ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable")
-            ("run", po::value<std::string>(), "Run script on startup")
-            ("file", po::value<std::string>(), "Load scene on startup")
-            ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup");
+            ("server", po::value<std::string>(), "World server and port")
+            ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
+            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name")
+            ("login", "Automatically login to server using provided credentials");
+
         try
         {
             po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
