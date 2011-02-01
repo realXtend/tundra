@@ -69,8 +69,8 @@ void Client::Login(const QString& address, unsigned short port)
     }
     
     reconnect_ = false;
-    
-    owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, kNet::SocketOverTCP);
+    kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
+    owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, transportLayer);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
 }
