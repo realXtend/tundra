@@ -185,7 +185,7 @@ const std::string &KristalliProtocolModule::NameStatic()
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
 {
-    if (Connected() && serverConnection && serverConnection->GetEndPoint().ToString() != serverIp)
+    if (Connected() && serverConnection && serverConnection->RemoteEndPoint().IPToString() != serverIp)
         Disconnect();
     
     serverIp = ip;
@@ -236,7 +236,8 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
 {
     StopServer();
     
-    server = network.StartServer(port, transport, this);
+    const bool allowAddressReuse = true;
+    server = network.StartServer(port, transport, this, allowAddressReuse);
     if (!server)
     {
         LogError("Failed to start server on port " + ToString((int)port));
@@ -269,7 +270,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     connection->connection = source;
     connections.push_back(connection);
     
-    LogInfo("User connected from " + source->GetEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
+    LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     Events::KristalliUserConnected msg(connection);
     framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
