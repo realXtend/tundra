@@ -461,6 +461,7 @@ function ClientCreateInputMapper() {
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", 2, false);
     inputmapper.contextPriority = 101;
     inputmapper.takeMouseEventsOverQt = true;
+    inputmapper.takeKeyboardEventsOverQt = true;
     inputmapper.modifiersEnabled = false;
     inputmapper.keyrepeatTrigger = false; // Disable repeat keyevent sending over network, not needed and will flood network
     inputmapper.executionType = 2; // Execute actions on server
