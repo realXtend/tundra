@@ -279,6 +279,7 @@ namespace Foundation
             ("headless", "Run in headless mode without any windows or rendering") // Framework & OgreRenderingModule
             ("help", "Produce help message") // Framework
             ("startserver", po::value<int>(0), "Start server automatically in specified port") // TundraLogicModule
+            ("protocol", po::value<std::string>(), "Spesifies which transport layer to use. Used when starting a server and when client connects. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
             ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable") // OgreRenderingModule
             ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
             ("file", po::value<std::string>(), "Load scene on startup") // TundraLogicModule & AssetModule

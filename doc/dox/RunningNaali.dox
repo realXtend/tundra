@@ -32,6 +32,7 @@ The startup behavior of Naali can be configured with the following command-line 
 <tr><td>--file <i>sceneFile.txml</i></td><td>Specifies a Tundra scene file to load into the viewer or server immediately after Naali has started up. You can either specify a .txml file or a .tbin file to load up. The directory this scene file resides is recursively added as a local asset storage folder. You can use the local:// URL protocol specifier to refer to assets inside this folder.</td></tr>
 <tr><td>--storage <i>storageDirectory</i></td><td>Adds the given directory recursively as a local asset storage folder. You can use the local:// URL protocol specifier to refer to assets inside this folder.</td></tr>
 <tr><td>--fpslimit <i>x</i></td><td>Limits the maximum FPS the main loop is run at to the given value. This is useful not only for rendering, but also for the headless mode server, to limit it from consuming 100% of the CPU. The FPS limiter is on by default (both client and server) and set to 60 fps. To disable the FPS limiter, run Tundra with '--fpslimit 0'.</td></tr>
+<tr><td>--protocol <i>protocol</i></td><td>Spesifies which transport layer to use. Used when starting a server and when client connects. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.</td></tr>
 </table>  
 
 */
