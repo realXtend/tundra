@@ -56,7 +56,8 @@ void Client::Login(const QString& address, unsigned short port, const QString& u
 {
     SetLoginProperty("username", username);
     SetLoginProperty("password", password);
-    
+    SetLoginProperty("address", address);
+    SetLoginProperty("port", QString::number(port));
     Login(address, port);
 }
 
