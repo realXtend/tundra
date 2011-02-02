@@ -1,72 +1,104 @@
-engine.ImportExtension("qt.core");
-engine.ImportExtension("qt.gui");
-
-var menu = ui.MainWindow().menuBar();
-menu.clear();
-
-var fileMenu = menu.addMenu("&File");                     
-//fileMenu.addAction("New scene").triggered.connect(NewScene);
-fileMenu.addAction("Quit").triggered.connect(Quit);
-
-var viewMenu = menu.addMenu("&View");
-if (framework.GetModuleQObj("SceneStructure"))
+if (!framework.IsHeadless())
 {
-  viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
-  viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
-}
+    engine.ImportExtension("qt.core");
+    engine.ImportExtension("qt.gui");
 
-if (framework.GetModuleQObj("Console"))
-{
-  viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);  
-}
+    var menu = ui.MainWindow().menuBar();
+    menu.clear();
 
-//var eceditorAction = viewMenu.addAction("EC Editor");
+    var fileMenu = menu.addMenu("&File");                     
+    //fileMenu.addAction("New scene").triggered.connect(NewScene);
+    // Reconnect menu items for client only
+    if (!server.IsAboutToStart())
+    {
+        var disconnectAction = fileMenu.addAction("Disconnect");
+        disconnectAction.triggered.connect(Disconnect);
+        client.Connected.connect(Connected);
+        client.Disconnected.connect(Disconnected);
+        Disconnected();
+    }
+    fileMenu.addAction("Quit").triggered.connect(Quit);
 
-if (framework.GetModuleQObj("DebugStats"))
-  viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
+    var viewMenu = menu.addMenu("&View");
+    if (framework.GetModuleQObj("SceneStructure"))
+    {
+        viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
+        viewMenu.addAction("Scene").triggered.connect(OpenSceneWindow);
+    }
 
-if (framework.GetModuleQObj("Environment"))
-  viewMenu.addAction("Terrain Editor").triggered.connect(OpenTerrainEditor);
+    if (framework.GetModuleQObj("Console"))
+    {
+        viewMenu.addAction("Console").triggered.connect(OpenConsoleWindow);  
+    }
 
-if (framework.GetModuleQObj("PythonScript"))
-  viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
+    //var eceditorAction = viewMenu.addAction("EC Editor");
 
-function NewScene()
-{
-  scene.RemoveAllEntities();
-}
+    if (framework.GetModuleQObj("DebugStats"))
+        viewMenu.addAction("Profiler").triggered.connect(OpenProfilerWindow);
 
-function Quit()
-{
-  framework.Exit();
-}
+    if (framework.GetModuleQObj("Environment"))
+        viewMenu.addAction("Terrain Editor").triggered.connect(OpenTerrainEditor);
 
-function OpenSceneWindow()
-{
-  framework.GetModuleQObj("SceneStructure").ShowSceneStructureWindow();
-}
+    if (framework.GetModuleQObj("PythonScript"))
+        viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
 
-function OpenAssetsWindow()
-{
-  framework.GetModuleQObj("SceneStructure").ShowAssetsWindow();
-}
+    function NewScene()
+    {
+        scene.RemoveAllEntities();
+    }
 
-function OpenProfilerWindow()
-{
-  console.ExecuteCommand("prof");
-}
+    function Reconnect()
+    {
+        client.Reconnect();
+    }
 
-function OpenTerrainEditor()
-{
-  console.ExecuteCommand("TerrainTextureEditor");
-}
+    function Disconnect()
+    {
+        client.Logout();
+    }
 
-function OpenPythonConsole()
-{
-  console.ExecuteCommand("pythonconsole");
-}
+    function Connected()
+    {
+        disconnectAction.setEnabled(true);
+    }
 
-function OpenConsoleWindow()
-{
-  framework.GetModuleQObj("Console").ToggleConsole();
+    function Disconnected()
+    {
+        disconnectAction.setEnabled(false);
+    }
+
+    function Quit()
+    {
+        framework.Exit();
+    }
+
+    function OpenSceneWindow()
+    {
+        framework.GetModuleQObj("SceneStructure").ShowSceneStructureWindow();
+    }
+
+    function OpenAssetsWindow()
+    {
+        framework.GetModuleQObj("SceneStructure").ShowAssetsWindow();
+    }
+
+    function OpenProfilerWindow()
+    {
+        console.ExecuteCommand("prof");
+    }
+
+    function OpenTerrainEditor()
+    {
+        console.ExecuteCommand("TerrainTextureEditor");
+    }
+
+    function OpenPythonConsole()
+    {
+        console.ExecuteCommand("pythonconsole");
+    }
+
+    function OpenConsoleWindow()
+    {
+        framework.GetModuleQObj("Console").ToggleConsole();
+    }
 }

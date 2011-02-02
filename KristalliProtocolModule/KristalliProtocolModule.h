@@ -79,6 +79,9 @@ namespace KristalliProtocol
         UserConnection* GetUserConnection(kNet::MessageConnection* source);
         /// Gets user by connection ID. Returns null if no such connection
         UserConnection* GetUserConnection(u8 id);
+
+        /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
+        kNet::SocketTransportLayer defaultTransport;
         
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
@@ -103,7 +106,7 @@ namespace KristalliProtocol
         unsigned short serverPort;
         /// Store the transport type. Used for reconnecting
         kNet::SocketTransportLayer serverTransport;
-
+        
         kNet::Network network;
         Ptr(kNet::MessageConnection) serverConnection;
         kNet::NetworkServer *server;
