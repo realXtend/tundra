@@ -52,16 +52,22 @@ void Client::Update(f64 frametime)
         CheckLogin();
 }
 
-void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password)
+void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password, const QString &protocol)
 {
     SetLoginProperty("username", username);
     SetLoginProperty("password", password);
     SetLoginProperty("address", address);
+    SetLoginProperty("protocol", protocol);
     SetLoginProperty("port", QString::number(port));
-    Login(address, port);
+    kNet::SocketTransportLayer transportLayer = kNet::InvalidTransportLayer;
+    if (protocol.toLower() == "tcp")
+        transportLayer = kNet::SocketOverTCP;
+    else if (protocol.toLower() == "udp")
+        transportLayer = kNet::SocketOverUDP;
+    Login(address, port, transportLayer);
 }
 
-void Client::Login(const QString& address, unsigned short port)
+void Client::Login(const QString& address, unsigned short port, kNet::SocketTransportLayer protocol)
 {
     if (owner_->IsServer())
     {
@@ -70,8 +76,9 @@ void Client::Login(const QString& address, unsigned short port)
     }
     
     reconnect_ = false;
-    kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
-    owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, transportLayer);
+    if (protocol == kNet::InvalidTransportLayer)
+        protocol = owner_->GetKristalliModule()->defaultTransport;
+    owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
 }
