@@ -8,6 +8,7 @@
 #ifndef incl_LoginModule_LoginWidget_h
 #define incl_LoginModule_LoginWidget_h
 
+#include "Foundation.h"
 #include "ui_LoginWidget.h"
 
 #include <QTimer>
@@ -21,10 +22,12 @@ public:
     /** Constructor.
      *  @param loginInfo
      */
-    explicit LoginWidget(const QMap<QString,QString> &login_data);
+    explicit LoginWidget(Foundation::Framework *framework);
 
 public slots:
     QMap<QString, QString> GetLoginInfo() const;
+    void SetLoginInfo(QMap<QString, QString> info);
+
 //    void StatusUpdate(bool connecting, const QString &message);
     void SetStatus(const QString &message);
 
@@ -39,6 +42,12 @@ signals:
     void ExitClicked();
 
 private slots:
+    ///
+    void ReadConfig();
+
+    ///
+    void WriteConfig();
+
     ///
     void ParseInputAndConnect();
 
@@ -60,6 +69,9 @@ private:
 
     ///
     int progress_direction_;
+
+    ///
+    Foundation::Framework *framework_;
 };
 
 #endif
