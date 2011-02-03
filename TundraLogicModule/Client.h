@@ -18,6 +18,7 @@ namespace kNet
 {
 class MessageConnection;
 typedef unsigned long message_id_t;
+enum SocketTransportLayer;
 }
 
 namespace KristalliProtocol
@@ -83,10 +84,10 @@ public slots:
 
     /// Connect and login. Username and password will be encoded to xml key-value data
     /// \note This function will be deleted in the future.
-    void Login(const QString& address, unsigned short port, const QString& username, const QString& password);
+    void Login(const QString& address, unsigned short port, const QString& username, const QString& password, const QString &protocol = QString());
 
     /// Connect and login using the login properties that were previously set with calls to SetLoginProperty.
-    void Login(const QString& address, unsigned short port);
+    void Login(const QString& address, unsigned short port, kNet::SocketTransportLayer protocol = (kNet::SocketTransportLayer)0);
     
     /// Disconnects the client from the current server, and also deletes all contents from the client scene.
     /// \param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client.
