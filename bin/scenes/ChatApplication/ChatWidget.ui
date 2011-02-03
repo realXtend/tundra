@@ -28,7 +28,10 @@ QFrame#ChatFrame { background-color: rgba(136, 136, 136, 200); border-radius: 10
 QPushButton#buttonToggleLog { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(61, 61, 61, 255), stop:0.602273 rgba(34, 34, 34, 255), stop:1 rgba(82, 82, 82, 255));border: 1px solid rgb(125, 125, 125);color: rgb(239, 239, 239);border-radius:6px;padding-left: 5px;padding-right: 5px;padding-top: 3px;padding-bottom: 3px; }
 QPushButton#buttonToggleLog::hover { background-color: qlineargradient(spread:pad, x1:0, y1:0.205, x2:0, y2:0.739, stop:0 rgba(61, 61, 61, 255), stop:0.602273 rgba(34, 34, 34, 255), stop:1 rgba(82, 82, 82, 255)); }
 QPushButton#buttonToggleLog::pressed { color: rgb(255, 255, 255); }
-QLineEdit#lineEdit { border-radius: 6px; padding-left: 5px; }</string>
+QLineEdit#lineEdit { border-radius: 6px; padding-left: 5px; }
+QPushButton#buttonUserList { background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(61, 61, 61, 255), stop:0.602273 rgba(34, 34, 34, 255), stop:1 rgba(82, 82, 82, 255));border: 1px solid rgb(125, 125, 125);color: rgb(239, 239, 239);border-radius:6px;padding-left: 5px;padding-right: 5px;padding-top: 3px;padding-bottom: 3px; }
+QPushButton#buttonUserList::hover { background-color: qlineargradient(spread:pad, x1:0, y1:0.205, x2:0, y2:0.739, stop:0 rgba(61, 61, 61, 255), stop:0.602273 rgba(34, 34, 34, 255), stop:1 rgba(82, 82, 82, 255)); }
+QPushButton#buttonUserList::pressed { color: rgb(255, 255, 255); }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -92,6 +95,19 @@ QLineEdit#lineEdit { border-radius: 6px; padding-left: 5px; }</string>
           </property>
           <property name="flat">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="buttonUserList">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>21</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>User List</string>
           </property>
          </widget>
         </item>
