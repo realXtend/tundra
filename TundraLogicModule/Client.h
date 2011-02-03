@@ -7,6 +7,7 @@
 #include "TundraLogicModuleApi.h"
 #include "ForwardDefines.h"
 
+#include "kNet/Socket.h"
 #include <QObject>
 
 struct MsgLogin;
@@ -18,7 +19,6 @@ namespace kNet
 {
 class MessageConnection;
 typedef unsigned long message_id_t;
-enum SocketTransportLayer;
 }
 
 namespace KristalliProtocol
@@ -87,7 +87,7 @@ public slots:
     void Login(const QString& address, unsigned short port, const QString& username, const QString& password, const QString &protocol = QString());
 
     /// Connect and login using the login properties that were previously set with calls to SetLoginProperty.
-    void Login(const QString& address, unsigned short port, kNet::SocketTransportLayer protocol = (kNet::SocketTransportLayer)0);
+    void Login(const QString& address, unsigned short port, kNet::SocketTransportLayer protocol = kNet::InvalidTransportLayer);
     
     /// Disconnects the client from the current server, and also deletes all contents from the client scene.
     /// \param fail Pass in true if the logout was due to connection/login failure. False, if the connection was aborted deliberately by the client.
