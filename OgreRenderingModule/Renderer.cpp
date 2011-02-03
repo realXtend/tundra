@@ -253,7 +253,15 @@ namespace OgreRenderer
                 targetFpsLimit = 0.f;
         }
         else
-            targetFpsLimit = 60.f; // Default FPS limit is 60.
+#if QT_VERSION <= 0x040700
+            // Default FPS limit is 60.
+            targetFpsLimit = 60.f;
+#else
+            // Dues to main window hanging up on Qt 4.7.x when fps limitter is used, that makes using the app impossible. 
+            // Default FPS limit is 0 for Qt 4.7.1 untill the bug can be examined.
+            // \todo Fix Qt 4.7.x hanging up the main window on focus and move events, so that FPS limitter can be set back to 60 by default.
+            targetFpsLimit = 0.f; 
+#endif
 
         // Create Ogre root with logfile
         logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
