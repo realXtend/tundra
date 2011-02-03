@@ -10,6 +10,8 @@
 #include "LoginWidget.h"
 #include "MemoryLeakCheck.h"
 
+#include <QPixmap>
+
 LoginWidget::LoginWidget(Foundation::Framework *framework) :
     framework_(framework),
     progress_timer_(new QTimer(this))
@@ -39,6 +41,9 @@ LoginWidget::LoginWidget(Foundation::Framework *framework) :
     connect(lineEdit_Username, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
     connect(lineEdit_Password, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
     connect(progress_timer_, SIGNAL(timeout()), SLOT(UpdateProgressBar()));
+
+    // Add the default realxtend logo
+    label_ClientLogo->setPixmap(QPixmap("./data/ui/images/realxtend_logo.png"));
 
     ReadConfig();
 }
