@@ -89,7 +89,14 @@ namespace CoreUi
         /// Remove when Qt 4.7 supposedly fixes this.
         if ((category.isEmpty() || category == "Root") && root_menu_->ChildCount() >= 5)
         {
-            category_map_["World Tools"]->AddChildNode(child_node);
+            if (category_map_.contains("Edit"))
+            {
+                category_map_["Edit"]->AddChildNode(child_node);
+            }
+            else
+            {
+                //LogError("Aborted adding a child node to menu, as Qt < 4.7 root menu hack was in place, and the fallback category 'Edit' was not found");
+            }
         }
         else if (category.isEmpty())
         {
