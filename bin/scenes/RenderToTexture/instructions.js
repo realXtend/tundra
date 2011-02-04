@@ -1,9 +1,11 @@
-//engine.ImportExtension("qt.core");
-//engine.ImportExtension("qt.gui");
+engine.ImportExtension("qt.core");
+engine.ImportExtension("qt.gui");
 
 var label = new QLabel();
 label.indent = 10;
-label.text = "This scene demonstrates render-to-texture support. You can use it to create external\nrenders of any scene camera.\n\nSee the associated rttdisplay.js for details.";
+label.text = "This scene demonstrates render-to-texture support.\n"
+             + "You can use it to create external renders of any scene camera.\n\n"
+             + "See the associated rttdisplay.js for details.";
 label.resize(660,100);
 label.setStyleSheet("QLabel {background-color: transparent; font-size: 16px; }");
 
