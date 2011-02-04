@@ -71,6 +71,9 @@ public slots:
     /// Emits IAsset::Loaded signal.
     void EmitLoaded();
 
+    // Raw data getter for scripts
+    QByteArray GetRawData(const QString serializationParameters = "") { std::vector<u8> data; if (SerializeTo(data, serializationParameters)) return QByteArray::fromRawData((const char*)&data[0], data.size()); else return QByteArray();}
+
 signals:
     /// This signal is emitted when the contents of this asset is unloaded. It might be due to an explicit call by client code
     /// to IAsset::Unload, or it could be just prior to removing this asset from the system (perhaps in dtor at shutdown).

@@ -11,6 +11,8 @@
 #include "AssetFwd.h"
 #include "AssetReference.h"
 
+#include <QByteArray>
+
 class IAssetTransfer : public QObject, public boost::enable_shared_from_this<IAssetTransfer>
 {
     Q_OBJECT
@@ -68,6 +70,10 @@ public:
     QString DiskSource() const { return diskSource; }
 
     bool CachingAllowed() const { return cachingAllowed; }
+
+public slots:
+    // Raw data getter for scripts
+    QByteArray GetRawData() { return QByteArray::fromRawData((const char*)&rawAssetData[0], rawAssetData.size()); }
 
 signals:
     /// Emitted when the raw byte download of this asset finishes.
