@@ -54,6 +54,7 @@ public:
     /// Stores the raw asset bytes for this asset.
     std::vector<u8> rawAssetData;
 
+public slots:
     /// Returns the current transfer progress in the range [0, 1].
     // float Progress() const;
 
@@ -71,7 +72,6 @@ public:
 
     bool CachingAllowed() const { return cachingAllowed; }
 
-public slots:
     // Raw data getter for scripts
     QByteArray GetRawData() { return QByteArray::fromRawData((const char*)&rawAssetData[0], rawAssetData.size()); }
 
