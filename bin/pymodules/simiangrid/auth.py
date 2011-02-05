@@ -29,7 +29,7 @@ def simiangrid_auth(url, username, md5hex):
     r = json.loads(rdata)
 
     #http://code.google.com/p/openmetaverse/wiki/AuthorizeIdentity
-    success = r.get('Success') 
+    success = r.get('Success', False) 
     #NOTE: docs say reply should have Success:false upon failure.
     #however in my test run it doesn't just the Message of missing/invalid creds
     #this code works for that too. 
