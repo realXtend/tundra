@@ -9,16 +9,17 @@ try:
     import naali
 except ImportError:
     naali = None #so that can test standalone too, without Naali
+else:
+    import circuits
+    class SimiangridAuthentication(circuits.BaseComponent):
+        pass #put disconnecting to on_exit here to not leave old versions while reloading
 
 url = "http://localhost/Grid/"
-user = "Test User"
-pwd = "tester"
-md5hex = hashlib.md5(pwd).hexdigest()
 
 c = curl.Curl()
-def simiangrid_auth(url, user, md5hex):
+def simiangrid_auth(url, username, md5hex):
     params = {'RequestMethod': 'AuthorizeIdentity', 
-             'Identifier': user, 
+             'Identifier': username, 
              'Type': 'md5hash', 
              'Credential': md5hex}
 
@@ -35,9 +36,18 @@ def simiangrid_auth(url, user, md5hex):
 
     return success
 
-def on_connect(conn_id, userinfo):
-    success = simiangrid_auth(url, user, md5hex)
-    print "Authentication success:", success
+def on_connect(conn_id, userconn):
+    print userconn.GetLoginData()
+    username = userconn.GetProperty("username")
+    username = username.replace('_', ' ') #XXX HACK: tundra login doesn't allow spaces, whereas simiangrid frontend demands them
+    pwd = userconn.GetProperty("password")
+
+    md5hex = hashlib.md5(pwd).hexdigest()
+    success = simiangrid_auth(url, username, md5hex)
+    print "Authentication success:", success, "for", conn_id, userconn
+
+    if not success:
+        userconn.DenyConnection()
 
 if naali is not None:
     s = naali.server
@@ -53,4 +63,3 @@ else:
     { "Success":true, "UserID":"fe5f5ac3-7b28-4276-ae50-133db72040f0" }
     Authentication success: True
     """
-
