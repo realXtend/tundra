@@ -1,6 +1,6 @@
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
-    
+
 function nextSlide() {
     print("Next slide!");
     changeSlide(1);
@@ -16,7 +16,7 @@ function changeSlide(dir) {
     print("Changing slide!");
     var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
     var slide_index = dyn.GetAttribute("Current") + dir;
-    
+
     if (dyn.GetAttribute(slide_index + "") == undefined) {
 	slide_index = 0;
     } else if (dyn.GetAttribute(slide_index + "") == undefined) {
@@ -39,7 +39,7 @@ function onSlideChanged(attribute, type) {
     var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
     var index = dyn.GetAttribute('Current');
 
-    canvassource = me.GetComponentRaw('EC_3DCanvasSource')
+    var canvassource = me.GetComponentRaw('EC_3DCanvasSource');
     canvassource.source = dyn.GetAttribute(index);
 }
 
