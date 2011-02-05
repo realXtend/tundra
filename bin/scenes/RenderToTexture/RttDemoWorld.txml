@@ -12,7 +12,7 @@
   <component type="EC_Placeable" sync="1">
    <attribute value="0 0 0" name="Position"/>
    <attribute value="1 1 1" name="Scale"/>
-   <attribute value="196.82,89.9587,81.1205,-145.517,4.16393,-175.136,10,10,10" name="Transform"/>
+   <attribute value="196.82,89.9587,81.1205,-8.38782,73.7104,65.2963,10,10,10" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -35,7 +35,7 @@
    <attribute value="false" name="Phantom"/>
    <attribute value="true" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
-   <attribute value="513.056458 -413.53302 484.401703" name="Angular velocity"/>
+   <attribute value="513.056274 -413.532928 484.401703" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="2">
@@ -62,7 +62,7 @@
   <component type="EC_Placeable" sync="1">
    <attribute value="0 0 0" name="Position"/>
    <attribute value="1 1 1" name="Scale"/>
-   <attribute value="-38.46,43.57,56.14,-17.7015,42.6053,-112.72,10,10,10" name="Transform"/>
+   <attribute value="-38.46,43.57,56.14,-52.4053,-59.0413,-62.5661,10,10,10" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -85,7 +85,7 @@
    <attribute value="false" name="Phantom"/>
    <attribute value="true" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
-   <attribute value="1662.37024 -585.13739 -480.316132" name="Angular velocity"/>
+   <attribute value="1662.36987 -585.137329 -480.316101" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="4">
@@ -100,7 +100,7 @@
   <component type="EC_Placeable" sync="1">
    <attribute value="0 0 0" name="Position"/>
    <attribute value="1 1 1" name="Scale"/>
-   <attribute value="12.58,160.52,53.99,102.081,36.7207,-72.0919,10,10,10" name="Transform"/>
+   <attribute value="12.58,160.52,53.99,173.508,63.6658,-31.5088,10,10,10" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
@@ -123,7 +123,7 @@
    <attribute value="false" name="Phantom"/>
    <attribute value="true" name="Draw Debug"/>
    <attribute value="0 0 0" name="Linear velocity"/>
-   <attribute value="-1930.979 898.471924 746.306519" name="Angular velocity"/>
+   <attribute value="-1930.979 898.471741 746.306396" name="Angular velocity"/>
   </component>
  </entity>
  <entity id="5">
@@ -139,6 +139,11 @@
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
+  <component type="EC_RttTarget" sync="1">
+   <attribute value="box_red_cam_tex" name="Target texture"/>
+   <attribute value="800" name="Texture size x"/>
+   <attribute value="600" name="Texture size y"/>
+  </component>
  </entity>
  <entity id="6">
   <component type="EC_Name" sync="1">
@@ -153,6 +158,11 @@
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
+  <component type="EC_RttTarget" sync="1">
+   <attribute value="box_blue_cam_tex" name="Target texture"/>
+   <attribute value="800" name="Texture size x"/>
+   <attribute value="600" name="Texture size y"/>
+  </component>
  </entity>
  <entity id="7">
   <component type="EC_Name" sync="1">
@@ -166,6 +176,11 @@
    <attribute value="6.06757,76.3246,87.0293,61.6024,-1.85023,-236.886,10,10,10" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_RttTarget" sync="1">
+   <attribute value="box_green_cam_tex" name="Target texture"/>
+   <attribute value="800" name="Texture size x"/>
+   <attribute value="600" name="Texture size y"/>
   </component>
  </entity>
  <entity id="8">
@@ -302,6 +317,20 @@
    <attribute value="button_freecam" name="name"/>
    <attribute value="" name="description"/>
    <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+ <entity id="14">
+  <component type="EC_Name" sync="1">
+   <attribute value="startview" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="-148.384,-20.0261,121.065,79.1999,0,-46.5,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
   </component>
  </entity>
 </scene>
