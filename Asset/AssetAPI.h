@@ -230,6 +230,13 @@ public slots:
     static QString RecursiveFindFile(QString basePath, QString filename);
 
     /// Removes the given asset from the system and frees up all resources related to it. Any assets depending on this asset will break.
+    /// @param assetRef A valid assetRef that is in the asset system. If this asset ref does not exist, this call will do nothing.
+    /// @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
+    ///         but for example for local assets, this is the asset itself.
+    /// @note Calling ForgetAsset on an asset will unload it from the system. Do not dereference the asset after calling this function.
+    void ForgetAsset(QString assetRef, bool removeDiskSource);
+
+    /// Removes the given asset from the system and frees up all resources related to it. Any assets depending on this asset will break.
     /// @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
     ///         but for example for local assets, this is the asset itself.
     /// @note Calling ForgetAsset on an asset will unload it from the system. Do not dereference the asset after calling this function.

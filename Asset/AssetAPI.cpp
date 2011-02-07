@@ -274,6 +274,13 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
     }
 }
 
+void AssetAPI::ForgetAsset(QString assetRef, bool removeDiskSource)
+{
+    AssetPtr asset = GetAsset(assetRef);
+    if (asset.get())
+        ForgetAsset(asset, removeDiskSource);
+}
+
 void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 {
     if (!asset)

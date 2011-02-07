@@ -72,8 +72,11 @@ public slots:
 
     bool CachingAllowed() const { return cachingAllowed; }
 
-    // Raw data getter for scripts
+    // Script getters for public attributes
     QByteArray GetRawData() { return QByteArray::fromRawData((const char*)&rawAssetData[0], rawAssetData.size()); }
+    QString GetSourceUrl() { return source.ref; }
+    QString GetAssetType() { return assetType; }
+    AssetPtr GetAsset() { return asset; }
 
 signals:
     /// Emitted when the raw byte download of this asset finishes.
