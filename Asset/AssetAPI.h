@@ -275,8 +275,11 @@ signals:
     /// may not yet have been loaded.
     void AssetCreated(AssetPtr asset);
 
-    /// Emitted before an asset is going to be forgotten or deleted from the source.
+    /// Emitted before an asset is going to be forgotten.
     void AssetAboutToBeRemoved(AssetPtr asset);
+
+    /// Emitted before an assets disk source will be removed.
+    void DiskSourceAboutToBeRemoved(AssetPtr asset);
 
     /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
  //   void AssetDiskSourceChanged(AssetPtr asset);
