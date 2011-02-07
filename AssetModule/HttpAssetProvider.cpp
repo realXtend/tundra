@@ -197,15 +197,16 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         break;
     }
 }
-        
-void HttpAssetProvider::AddStorageAddress(const std::string &address, const std::string &storageName)
+
+AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QString &name)
 {
     HttpAssetStoragePtr storage = HttpAssetStoragePtr(new HttpAssetStorage());
-    storage->baseAddress = GuaranteeTrailingSlash(QString(address.c_str()).trimmed());
-    storage->storageName = storageName.c_str();
+    storage->baseAddress = GuaranteeTrailingSlash(location.trimmed());
+    storage->storageName = name;
     storage->provider = this->shared_from_this();
 
     storages.push_back(storage);
+    return storage;
 }
 
 std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
