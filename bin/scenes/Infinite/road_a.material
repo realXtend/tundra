@@ -1,0 +1,11 @@
+material road_a
+{
+    technique
+    {
+		pass
+		{
+			diffuse 0.753 0.753 0.753 1
+			ambient 0.753 0.753 0.753 1
+		}
+	}
+}
