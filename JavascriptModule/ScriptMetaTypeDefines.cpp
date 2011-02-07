@@ -11,6 +11,8 @@
 
 #include "Entity.h"
 #include "IAssetTransfer.h"
+#include "IAssetUploadTransfer.h"
+#include "IAssetStorage.h"
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 #include "UiProxyWidget.h"
@@ -50,6 +52,10 @@ Q_DECLARE_METATYPE(InputContext*)
 Q_DECLARE_METATYPE(AssetPtr);
 Q_DECLARE_METATYPE(AssetTransferPtr);
 Q_DECLARE_METATYPE(IAssetTransfer*);
+Q_DECLARE_METATYPE(AssetUploadTransferPtr);
+Q_DECLARE_METATYPE(IAssetUploadTransfer*);
+Q_DECLARE_METATYPE(AssetStoragePtr);
+Q_DECLARE_METATYPE(IAssetStorage*);
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
@@ -214,12 +220,21 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<IAssetTransfer*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetTransfer>, qScriptValueToBoostSharedPtr<IAssetTransfer>);
 
+    qRegisterMetaType<AssetUploadTransferPtr>("AssetUploadTransferPtr");
+    qScriptRegisterQObjectMetaType<IAssetUploadTransfer*>(engine);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetUploadTransfer>, qScriptValueToBoostSharedPtr<IAssetUploadTransfer>);
+
+    qRegisterMetaType<AssetStoragePtr>("AssetStoragePtr");
+    qScriptRegisterQObjectMetaType<IAssetStorage*>(engine);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
+
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<NaaliMainWindow*>(engine);
     qScriptRegisterQObjectMetaType<NaaliGraphicsView*>(engine);
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
-    //Add support to create proxy widgets in javascript side.
+
+    // Add support to create proxy widgets in javascript side.
     QScriptValue object = engine->scriptValueFromQMetaObject<UiProxyWidget>();
     engine->globalObject().setProperty("UiProxyWidget", object);
     
