@@ -483,7 +483,7 @@ void EC_OgreEnvironment::CreateSunlight()
     sunlight_ = sceneManager->createLight(renderer->GetUniqueObjectName("EC_OgreEnviroment_Sunlight"));
     sunlight_->setType(Ogre::Light::LT_DIRECTIONAL);
     ///\todo Read parameters from config file?
-    sunlight_->setDiffuseColour(0.93f, 1, 0.13f);
+    sunlight_->setDiffuseColour(1, 1, 1);
     sunlight_->setDirection(-1, -1, -1);
     sunlight_->setCastShadows(true);
     SetAmbientLightColor(Color(0.5, 0.5, 0.5, 1));
