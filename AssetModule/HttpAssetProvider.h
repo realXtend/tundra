@@ -47,9 +47,13 @@ public:
 
     /// Issues a http DELETE request for the given asset.
     virtual void DeleteAssetFromStorage(QString assetRef);
-
+    
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
+
+    /// Forget asset from the disk cache
+    void ForgetAsset(AssetPtr asset);
+    void ForgetAsset(QString assetRef);
 
 private:
     Foundation::Framework *framework;

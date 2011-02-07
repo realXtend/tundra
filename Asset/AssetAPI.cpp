@@ -250,7 +250,10 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 
     // If we are supposed to remove the cached (or original for local assets) version of the asset, do so.
     if (removeDiskSource && !asset->DiskSource().isEmpty())
+    {
+        emit DiskSourceAboutToBeRemoved(asset);
         QFile::remove(asset->DiskSource());
+    }
 
     // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
     // some object left a dangling strong ref to an asset).
@@ -265,7 +268,6 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->removePath(asset->DiskSource());
     assets.erase(iter);
-
 }
 
 void AssetAPI::DeleteAssetFromStorage(QString assetRef)
