@@ -8,8 +8,13 @@
 
 class HttpAssetStorage : public IAssetStorage
 {
-public:
+Q_OBJECT
 
+public:
+    QString baseAddress;
+    QString storageName;
+
+public slots:
     virtual std::vector<IAsset*> GetAllAssets() const { return std::vector<IAsset*>(); }
 
     /// Specifies whether data can be uploaded to this asset storage.
@@ -23,10 +28,6 @@ public:
 
     /// Returns the address of this storage.
     virtual QString BaseURL() const { return baseAddress; }
-
-    QString baseAddress;
-
-    QString storageName;
 };
 
 #endif
