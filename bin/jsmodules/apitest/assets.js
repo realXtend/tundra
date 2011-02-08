@@ -6,7 +6,7 @@ frame.Updated.connect(Update);
 
 // Define your 'uploadStorageUrl' here for the upload test to run.
 // For example http://myserver.com/assets. The server needs to accept GET and POST requests.
-var uploadStorageUrl = ""; 
+var uploadStorageUrl = "";
 var uploadStorageName = "Asset Test Storage";
 var uploadTestFile = "./resources.cfg";
 
@@ -15,14 +15,14 @@ function Update(frametime)
     if (run)
     {
         run = !run;
-        
+
         // Download tests
         // Please do add more download requests to the test if you want.
         RequestAsset("http://www.google.com/index.html", "Binary");
         RequestAsset("http://dl.dropbox.com/u/3589544/building/meshes/cube.mesh");
         RequestAsset("http://dl.dropbox.com/u/3589544/building/scenes/tundra/test1.txml");
         print("");
-        
+
         // Upload tests
         if (uploadStorageUrl != "")
         {
@@ -47,8 +47,8 @@ function Update(frametime)
 
 function AddAssetStorage(url, name)
 {
-    assetstorageptr = asset.AddAssetStorage(url, name);
-    assetstorage = assetstorageptr.get();
+    var assetstorageptr = asset.AddAssetStorage(url, name);
+    var assetstorage = assetstorageptr.get();
     if (assetstorage != null)
     {
         print("Added asset storage");
@@ -65,7 +65,7 @@ function AddAssetStorage(url, name)
 
 function ForgetAsset(assetRef)
 {
-    // Make AssetAPI forget this asset if already loaded in 
+    // Make AssetAPI forget this asset if already loaded in
     // to the system and remove the disk cache entry.
     asset.ForgetAsset(assetRef, true);
 }
@@ -75,17 +75,17 @@ function ForgetAsset(assetRef)
 function RequestAsset(ref, type)
 {
     ForgetAsset(ref);
-    
+
     print("Requesting:", ref);
-    transferptr = asset.RequestAsset(ref, type);
-    transfer = transferptr.get();
+    var transferptr = asset.RequestAsset(ref, type);
+    var transfer = transferptr.get();
     transfer.Downloaded.connect(DownloadReady);
     transfer.Loaded.connect(AssetReady);
 }
 
-function DownloadReady(/* IAssetTransfer* */ transfer) 
+function DownloadReady(/* IAssetTransfer* */ transfer)
 {
-    data = transfer.GetRawData();
+    var data = transfer.GetRawData();
     print("Download ready");
     print("  >> Source    :", transfer.GetSourceUrl());
     print("  >> Type      :", transfer.GetAssetType());
@@ -94,8 +94,8 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
 
 function AssetReady(/* IAssetPtr* */ assetptr)
 {
-    asset = assetptr.get();
-    data = asset.GetRawData();
+    var asset = assetptr.get();
+    var data = asset.GetRawData();
     print("Asset ready");
     print("  >> Class ptr :", asset);
     print("  >> Type      :", asset.Type());
@@ -108,8 +108,8 @@ function AssetReady(/* IAssetPtr* */ assetptr)
 function UploadAsset(fileName, storageName, uploadName)
 {
     print("Uploading:", fileName, "with destination name", uploadName);
-    uploadtransferptr = asset.UploadAssetFromFile(fileName, storageName, uploadName);
-    uploadtransfer = uploadtransferptr.get();
+    var uploadtransferptr = asset.UploadAssetFromFile(fileName, storageName, uploadName);
+    var uploadtransfer = uploadtransferptr.get();
     if (uploadtransfer != null)
     {
         uploadtransfer.Completed.connect(UploadCompleted);
