@@ -40,7 +40,7 @@ if (isserver) {
     ClientInitialize();
 }
 
-function ServerInitialize() {   
+function ServerInitialize() {
     var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
     var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
 
@@ -56,7 +56,7 @@ function ServerInitialize() {
     rigidbody.mass = avatar_mass;
     rigidbody.shapeType = 3; // Capsule
     rigidbody.size = sizeVec;
-    
+
     var zeroVec = new Vector3df();
     rigidbody.angularFactor = zeroVec; // Set zero angular factor so that body stays upright
 
@@ -74,7 +74,7 @@ function ServerInitialize() {
     me.Action("StopRotate").Triggered.connect(ServerHandleStopRotate);
     me.Action("MouseLookX").Triggered.connect(ServerHandleMouseLookX);
     me.Action("Gesture").Triggered.connect(ServerHandleGesture);
-    
+
     rigidbody.PhysicsCollision.connect(ServerHandleCollision);
 }
 
@@ -82,7 +82,7 @@ function ServerUpdate(frametime) {
     if (!animsDetected) {
         CommonFindAnimations();
     }
-        
+
     if (rotate != 0) {
         var rotateVec = new Vector3df();
         rotateVec.z = -rotate_speed * rotate * frametime;
@@ -122,7 +122,7 @@ function ServerUpdatePhysics(frametime) {
             dampingVec.x = -damping_force * dampingVec.x;
             dampingVec.y = -damping_force * dampingVec.y;
             dampingVec.z = 0;
-            // Jump and wait for us to 
+            // Jump and wait for us to
             // come down before allowing new jump
             if (motion_z == 1 && !falling) {
                 dampingVec.z = 75;
@@ -134,23 +134,23 @@ function ServerUpdatePhysics(frametime) {
     } else {
         // Manually move the avatar placeable when flying
         // this has the downside of no collisions.
-        // Feel free to reimplement properly with mass enabled.       
+        // Feel free to reimplement properly with mass enabled.
         var av_placeable = me.placeable;
         var av_transform = av_placeable.transform;
-        
+
         // Make a vector where we have moved
         var moveVec = new Vector3df();
         moveVec.x = motion_x * fly_speed_factor;
         moveVec.y = -motion_y * fly_speed_factor;
         moveVec.z = motion_z * fly_speed_factor;
-        
+
         // Apply that with av looking direction to the current position
         var offsetVec = av_placeable.GetRelativeVector(moveVec);
         av_transform.pos.x = av_transform.pos.x + offsetVec.x;
         av_transform.pos.y = av_transform.pos.y + offsetVec.y;
         av_transform.pos.z = av_transform.pos.z + offsetVec.z;
-        
-        // This may look confusing. Its kind of a hack to tilt the avatar 
+
+        // This may look confusing. Its kind of a hack to tilt the avatar
         // when flying to the sides when you turn with A and D.
         // At the same time we need to lift up the Z of the av accorting to the angle of tilt
         if (motion_x != 0) {
@@ -225,12 +225,13 @@ function ServerHandleStop(param) {
     if ((param == "down") && (motion_z == -1)) {
         motion_z = 0;
     }
-        
+
     ServerSetAnimationState();
 }
 
 function ServerHandleToggleFly() {
-    var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
+    var rigidbody = me.rigidbody;
+
     flying = !flying;
     if (flying) {
         rigidbody.mass = 0;
@@ -242,12 +243,11 @@ function ServerHandleToggleFly() {
             av_transform.rot.x = 0;
             av_placeable.transform = av_transform;
         }
-        
+
         // Set mass back for collisions
         rigidbody.mass = avatar_mass;
         // Push avatar a bit to the fly direction
         // so the motion does not just stop to a wall
-        var rigidbody = me.rigidbody;
         var moveVec = new Vector3df();
         moveVec.x = motion_x * 120;
         moveVec.y = -motion_y * 120;
@@ -291,7 +291,7 @@ function ServerHandleGesture(gestureName) {
     if (animName == "") {
         return;
     }
-        
+
     // Update the variable to sync to client if changed
     var animcontroller = me.animationcontroller;
     if (animcontroller != null) {
@@ -309,14 +309,14 @@ function ServerSetAnimationState() {
     } else if (motion_z == -1 && !falling) {
         animName = sitAnimName;
     }
-        
+
     // Flying: Fly if moving in x-axis, otherwise hover
     if (flying || falling) {
         animName = flyAnimName;
         if (motion_x == 0)
             animName = hoverAnimName;
     }
-    
+
     if (animName == "") {
         return;
     }
@@ -338,7 +338,7 @@ function ClientInitialize() {
         own_avatar = true;
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
-        
+
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
         me.Action("Zoom").Triggered.connect(ClientHandleKeyboardZoom);
         me.Action("ToggleTripod").Triggered.connect(ClientHandleToggleTripod);
@@ -348,7 +348,7 @@ function ClientInitialize() {
     else
     {
         // Make hovering name tag for other clients
-        clientName = me.GetComponentRaw("EC_Name");
+        var clientName = me.GetComponentRaw("EC_Name");
         if (clientName != null) {
             // Description holds the actual login name
             if (clientName.description != "") {
@@ -450,7 +450,7 @@ function ClientUpdate(frametime)
         CommonFindAnimations();
     }
     CommonUpdateAnimation(frametime);
-    
+
     // Uncomment this to attach a fish to the avatar's head
     //if (!fish_created)
     //    CreateFish();
@@ -489,10 +489,10 @@ function ClientCreateInputMapper() {
     inputmapper.RegisterMapping("C", "Stop(down)", 3);
 
     // Connect gestures
-    inputContext = inputmapper.GetInputContext();
+    var inputContext = inputmapper.GetInputContext();
     inputContext.GestureStarted.connect(GestureStarted);
     inputContext.GestureUpdated.connect(GestureUpdated);
-    
+
     // Local camera matter for mouse scroll
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
     inputmapper.SetNetworkSyncEnabled(false);
@@ -543,20 +543,20 @@ function GestureUpdated(gestureEvent)
 {
     if (!IsCameraActive())
         return;
-   
+
     if (gestureEvent.GestureType() == Qt.PanGesture && listenGesture == true)
     {
         // Rotate avatar with X pan gesture
         delta = gestureEvent.Gesture().delta.toPoint();
         var x = new Number(delta.x());
         me.Exec(2, "MouseLookX", x.toString());
-        
+
         // Start walking or stop if total Y len of pan gesture is 100
         var walking = false;
         if (me.animationcontroller.animationState == walkAnimName)
             walking = true;
         var totalOffset = gestureEvent.Gesture().offset.toPoint();
-        if (totalOffset.y() < -100) 
+        if (totalOffset.y() < -100)
         {
             if (walking) {
                 me.Exec(2, "Stop", "forward");
@@ -565,7 +565,7 @@ function GestureUpdated(gestureEvent)
                 me.Exec(2, "Move", "forward");
             listenGesture = false;
         }
-        else if (totalOffset.y() > 100) 
+        else if (totalOffset.y() > 100)
         {
             if (walking) {
                 me.Exec(2, "Stop", "forward");
@@ -658,27 +658,27 @@ function CommonFindAnimations() {
             if (availableAnimations.indexOf(animName) == -1) {
                 // Disable this animation by setting it to a empty string
                 print("Could not find animation for:", animName, " - disabling animation");
-                searchAnims[i] = ""; 
+                searchAnims[i] = "";
             }
         }
-        
-        // Assign the possible empty strings for 
+
+        // Assign the possible empty strings for
         // not found anims back to the variables
         standAnimName = searchAnims[0];
         walkAnimName = searchAnims[1];
         flyAnimName = searchAnims[2];
         hoverAnimName = searchAnims[3];
         sitAnimName = searchAnims[4];
-        
+
         animsDetected = true;
     }
 }
 
-function CommonUpdateAnimation(frametime) {   
+function CommonUpdateAnimation(frametime) {
     if (!animsDetected) {
         return;
     }
-        
+
     var animcontroller = me.animationcontroller;
     var rigidbody = me.rigidbody;
     if ((animcontroller == null) || (rigidbody == null)) {
@@ -686,7 +686,7 @@ function CommonUpdateAnimation(frametime) {
     }
 
     var animName = animcontroller.animationState;
-            
+
     // Enable animation, skip with headless server
     if (animName != "" && !framework.IsHeadless()) {
         // Do custom speeds for certain anims
@@ -710,7 +710,7 @@ function CommonUpdateAnimation(frametime) {
 	    }
         }
     }
-    
+
     // If walk animation is playing, adjust its speed according to the avatar rigidbody velocity
     if (animName != ""  && animcontroller.IsAnimationActive(walkAnimName)) {
         // Note: on client the rigidbody does not exist, so the velocity is only a replicated attribute
