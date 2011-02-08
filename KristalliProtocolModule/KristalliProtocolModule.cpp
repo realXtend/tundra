@@ -9,8 +9,13 @@
 #include "Profiler.h"
 #include "EventManager.h"
 #include "CoreStringUtils.h"
+#include "ConsoleServiceInterface.h"
+#include "ConsoleCommandServiceInterface.h"
 
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 #include "kNet.h"
+#include "kNet/qt/NetworkDialog.h"
 
 #include <algorithm>
 
@@ -126,11 +131,23 @@ void KristalliProtocolModule::Initialize()
 
 void KristalliProtocolModule::PostInitialize()
 {
+    RegisterConsoleCommand(Console::CreateCommand(
+            "kNet", "Shows the kNet statistics window.", 
+            Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
 }
 
 void KristalliProtocolModule::Uninitialize()
 {
     Disconnect();
+}
+
+Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
+{
+    NetworkDialog *networkDialog = new NetworkDialog(0, &network);
+    networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+    networkDialog->show();
+
+    return Console::ResultSuccess();
 }
 
 void KristalliProtocolModule::Update(f64 frametime)
