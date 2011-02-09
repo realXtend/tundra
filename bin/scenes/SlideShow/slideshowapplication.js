@@ -97,7 +97,7 @@ function createCanvas(filename, slides, event) {
     var mesh_ref = entity.mesh.meshRef;
     mesh_ref.ref = 'local://screen.mesh';
     entity.mesh.meshRef = mesh_ref;
-    
+
     // set source to first slide
     canvassource = entity.GetComponentRaw('EC_3DCanvasSource')
     canvassource.show2d = false;
@@ -152,7 +152,6 @@ function createCanvas(filename, slides, event) {
 
     entity.placeable.transform = transform;
 
-
     // ec_script
     var script = entity.script;
     script.type = "js";
@@ -168,6 +167,36 @@ function createCanvas(filename, slides, event) {
     // appropriate
     // Create UI
     //makeSlideWidget(slides);
+
+    // add buttons
+    makeButton('prev', -6, 0);
+    makeButton('next', 6, 180);
+
+}
+
+function makeButton(name, coord, angle) {
+    var button = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Mesh', 'EC_Placeable', 'EC_Name']);
+    button.name.name = 'Button ' + name +' (' + entity.name.name + ')';
+
+    var button_mesh_ref = button.mesh.meshRef;
+    button_mesh_ref.ref = 'local://kolmionappi.mesh';
+    button.mesh.meshRef = button_mesh_ref;
+
+    var transform = button.placeable.transform;
+    var pos = new Vector3df();
+    pos.y = 20;
+    pos.x = coord;
+	
+    transform.pos = pos;//worldPos;
+    var rot = new Vector3df();
+    rot.y = angle;
+    rot.x = 180;
+    transform.rot = rot;
+
+    button.placeable.transform = transform;
+
+    scene.EmitEntityCreatedRaw(button);
+
 
 }
 
