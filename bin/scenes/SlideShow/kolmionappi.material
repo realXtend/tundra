@@ -1,0 +1,28 @@
+material knappi1
+{
+	receive_shadows on
+	technique
+	{
+		pass
+		{
+			ambient 0.500000 0.500000 0.500000 1.000000
+			diffuse 0.151106 0.151106 0.151106 1.000000
+			specular 0.500000 0.500000 0.500000 1.000000 12.750000
+			emissive 0.000000 0.000000 0.000000 1.000000
+		}
+	}
+}
+material knappi2
+{
+	receive_shadows on
+	technique
+	{
+		pass
+		{
+			ambient 0.500000 0.500000 0.500000 1.000000
+			diffuse 0.335120 0.335120 0.335120 1.000000
+			specular 0.500000 0.500000 0.500000 1.000000 12.750000
+			emissive 0.000000 0.000000 0.000000 1.000000
+		}
+	}
+}
