@@ -1,3 +1,18 @@
+"""
+converts xml saved by 'opensim scene backup tool', in naali when used
+with opensim/lludp, to tundra txml (pure naali EC attr style).
+
+potentially useful for taiga->tundra migration, when the creators have
+the original .mesh & .material files, but the scene is only in
+opensim. 
+
+USAGE: requires python 2.7 (which has elementtree 1.3 with good xpath support).
+run with python, change SOURCEFILE below to your backup xml. e.g:
+c:\python27\python.exe my.xml > my.scene
+
+directly to txml would be more involved 'cause would need to deal with material & texture UUID refs etc.
+"""
+
 from xml.etree.ElementTree import ElementTree
 
 SOURCEFILE = "cecil.bastardxml"
