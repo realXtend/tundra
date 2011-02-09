@@ -43,11 +43,17 @@ function onSlideChanged(attribute, type) {
     canvassource.source = dyn.GetAttribute(index);
 }
 
+
 // start canvas
-var canvas = me.GetComponentRaw('EC_3DCanvas');
-frame.DelayedExecute(1).Triggered.connect(this, function () {
-    canvas.Start();
-});
+
+// By Ugly the Hack. 3D canvas component might not be rady when we get
+// here so we wait for some time before we start it. Should prolably
+// to connect some signal or something.
+frame.DelayedExecute(10).Triggered.connect(this, function () {
+	var canvas = me.GetComponentRaw('EC_3DCanvas');
+	print(canvas);
+	canvas.Start();
+    });
 
 me.Action("MousePress").Triggered.connect(nextSlide);
 

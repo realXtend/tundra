@@ -66,25 +66,27 @@ function handleDrop(event) {
 	if (checkSuffix(urls[u])) {
 	    //FIXME!!!!!!1!
 	    print(urls[u]+"");
-	    var filename = ("" + urls[u]).split('///')[1];
+	    var filename = ("" + urls[u]).split('//')[1];
+	    print(filename)
 	    var file = new QFile(filename);
 	    file.open(QIODevice.ReadOnly);
 	    var streamer = new QTextStream(file);
 	    slides = [];
 	    while (true) {
 		var line = streamer.readLine();
+		print(line)
 		if (!line) {
 		    break;
 		}
 		slides.push(line)
 	    }
     	    print(slides);
-	    createCanvas(filename, slides);
+	    createCanvas(filename, slides, event);
 	}
     }
 }
 
-function createCanvas(filename, slides) {
+function createCanvas(filename, slides, event) {
     entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name', 'EC_DynamicComponent', 'EC_Script']);
 
     // set name
@@ -101,15 +103,6 @@ function createCanvas(filename, slides) {
     canvassource.show2d = false;
     canvassource.source = slides[0];
     canvassource.submesh = 1;
-
-    // ec_script
-    var script = entity.script;
-    script.type = "js";
-    script.runOnLoad = true;
-    var r = script.scriptRef;
-    r.ref = "local://slideshow.js";
-    script.scriptRef = r;
-
 
     // Make dynamic component of the slide stuff
 
@@ -128,25 +121,53 @@ function createCanvas(filename, slides) {
 
     //FIXME not needed in final product :) Just here to make it show
     //right away...
-    
+
+    // var res = renderer.Raycast(event.pos().x(), event.pos().y());
+
+    // if (!res.entity) {
+    // 	// no hit
+    // 	//var scene = framework.GetDefaultWorldScene();
+    // 	var entities = scene.GetEntitiesWithComponentRaw('EC_OgreCamera');
+    // 	for (cam in entities) {
+    // 	    var placeable = entities[cam].GetComponentRaw('EC_Placeable');;
+    // 	    if (placeable) {
+    // 		var q = placeable.GetOrientation();
+    // 		var v = q * -Vector3df(0, 0, -1);
+    // 		var woldpos = placeable.getPosition() + v * 20;
+    // 		break;
+    // 	    }
+    // 	}
+    // } else {
+    // 	worldPos = res.pos();
+    // }
+
     var transform = entity.placeable.transform
     var pos = new Vector3df();
     pos.y = 20;
-    transform.pos = pos;
+    transform.pos = pos;//worldPos;
     var rot = new Vector3df();
     rot.y = 180;
     rot.x = 180;
     transform.rot = rot;
+
     entity.placeable.transform = transform;
+
+
+    // ec_script
+    var script = entity.script;
+    script.type = "js";
+    script.runOnLoad = true;
+    var r = script.scriptRef;
+    r.ref = "local://slideshow.js";
+    script.scriptRef = r;
 
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
-    
 
     //FIXME move this and makeslide widget to slideshow.js when
     // appropriate
     // Create UI
-    makeSlideWidget(slides);
+    //makeSlideWidget(slides);
 
 }
 
