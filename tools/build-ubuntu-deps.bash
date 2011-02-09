@@ -92,7 +92,7 @@ else
 fi
 
 what=knet
-if test -f $tags/$what-done; then 
+if false && test -f $tags/$what-done; then 
    echo $what is done
 else
     cd $build
