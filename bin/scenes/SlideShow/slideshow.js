@@ -49,13 +49,19 @@ function onSlideChanged(attribute, type) {
 // By Ugly the Hack. 3D canvas component might not be rady when we get
 // here so we wait for some time before we start it. Should prolably
 // to connect some signal or something.
-frame.DelayedExecute(10).Triggered.connect(this, function () {
+frame.DelayedExecute(1).Triggered.connect(this, function () {
 	var canvas = me.GetComponentRaw('EC_3DCanvas');
 	print(canvas);
 	canvas.Start();
     });
 
-me.Action("MousePress").Triggered.connect(nextSlide);
+//me.Action("MousePress").Triggered.connect(nextSlide);
 
 var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
 dyn.OnAttributeChanged.connect(onSlideChanged);
+
+var prev = scene.GetEntityByNameRaw('Button prev (' + me.name.name + ')');
+prev.Action("MousePress").Triggered.connect(prevSlide);
+
+var next = scene.GetEntityByNameRaw('Button next (' + me.name.name + ')');
+next.Action("MousePress").Triggered.connect(nextSlide);
