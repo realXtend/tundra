@@ -41,7 +41,7 @@ public slots:
 
 #ifdef _MSC_VER
     /// Sets a break point on within this function (in debug mode only.). Windows/Visual Studio only
-    void BreakFunction();
+    void Break();
 #endif
 
 private:
