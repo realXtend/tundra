@@ -28,7 +28,7 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
-#include "Console.h"
+#include "ConsoleAPI.h"
 #include "Input.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
