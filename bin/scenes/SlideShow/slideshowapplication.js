@@ -86,6 +86,55 @@ function handleDrop(event) {
     }
 }
 
+function vprint(v) {
+    print(v.x + ", " + v.y + ", " + v.z);
+}
+
+function crossp(v1, v2) {
+    var result = new Vector3df();
+
+    result.x = v1.y * v2.z - v1.z * v2.y;
+    result.y = v1.z * v2.x - v1.x * v2.z;
+    result.z = v1.x * v2.y - v1.y * v2.x;
+
+    return result;
+}
+
+function vadd(v1, v2) {
+    var result = new Vector3df();
+
+    result.x = v1.x + v2.x;
+    result.y = v1.y + v2.y;
+    result.z = v1.z + v2.z;
+
+    return result;
+}
+
+function smul(v1, s) {
+    var result = new Vector3df();
+    
+    result.x = v1.x * s;
+    result.y = v1.y * s;
+    result.z = v1.z * s;
+
+    return result;
+}
+
+function conjg(quat, v) {
+    var qvec = new Vector3df();
+    qvec.x = quat.x;
+    qvec.y = quat.y;
+    qvec.z = quat.z;
+
+    var uv = crossp(qvec, v);
+    var uuv = crossp(qvec, uv);
+    uv = smul(uv, 2.0 * quat.w);
+    uuv = smul(uuv, 2.0);
+
+    return vadd(vadd(v, uv), uuv);
+}
+
+
 function createCanvas(filename, slides, event) {
     entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name', 'EC_DynamicComponent', 'EC_Script']);
 
@@ -119,37 +168,44 @@ function createCanvas(filename, slides, event) {
     dyn.CreateAttribute("int", "Current");
     dyn.SetAttribute("Current", 0);
 
-    //FIXME not needed in final product :) Just here to make it show
-    //right away...
+    var worldpos;
 
-    // var res = renderer.Raycast(event.pos().x(), event.pos().y());
+    var res = renderer.Raycast(event.pos().x(), event.pos().y());
 
-    // if (!res.entity) {
-    // 	// no hit
-    // 	//var scene = framework.GetDefaultWorldScene();
-    // 	var entities = scene.GetEntitiesWithComponentRaw('EC_OgreCamera');
-    // 	for (cam in entities) {
-    // 	    var placeable = entities[cam].GetComponentRaw('EC_Placeable');;
-    // 	    if (placeable) {
-    // 		var q = placeable.GetOrientation();
-    // 		var v = q * -Vector3df(0, 0, -1);
-    // 		var woldpos = placeable.getPosition() + v * 20;
-    // 		break;
-    // 	    }
-    // 	}
-    // } else {
-    // 	worldPos = res.pos();
-    // }
+    // Calculationg the correct position for dropped slideshow
+    if (!res.entity) {
+    	// no hit
+    	var ids = scene.GetEntityIdsWithComponent('EC_OgreCamera');
+    	for (i = 0; i < ids.length; i++) {
+	    var camentity = scene.GetEntityRaw(ids[i]);
+    	    var placeable = camentity.GetComponentRaw('EC_Placeable');
+    	    if (placeable) {
+    		var q = placeable.Orientation;
 
-    var transform = entity.placeable.transform
-    var pos = new Vector3df();
-    pos.y = 20;
-    transform.pos = pos;//worldPos;
-    var rot = new Vector3df();
-    rot.y = 180;
-    rot.x = 180;
-    transform.rot = rot;
+		// create unitvector for negative Z-axis
+		var unz = new Vector3df();
+		unz.z = -1;
 
+		// calculate conjugate
+		var v = conjg(q, unz);
+		worldpos = vadd(placeable.Position, smul(v, 20));
+    		break;
+    	    }
+    	}
+    } else {
+    	worldpos = res.pos();
+    }
+
+    // set postition and rotation    
+    var transform = entity.placeable.transform;
+
+    transform.pos.x = worldpos.x;
+    transform.pos.y = worldpos.y;
+    transform.pos.z = worldpos.z;
+    transform.rot.x = placeable.transform.rot.x - 90;
+    transform.rot.y = placeable.transform.rot.y;
+    transform.rot.z = placeable.transform.rot.z - 180;
+    
     entity.placeable.transform = transform;
 
     // ec_script
@@ -160,8 +216,6 @@ function createCanvas(filename, slides, event) {
     r.ref = "local://slideshow.js";
     script.scriptRef = r;
 
-    // Now we are done
-    scene.EmitEntityCreatedRaw(entity);
 
     //FIXME move this and makeslide widget to slideshow.js when
     // appropriate
@@ -169,12 +223,30 @@ function createCanvas(filename, slides, event) {
     //makeSlideWidget(slides);
 
     // add buttons
-    makeButton('prev', -6, 0);
-    makeButton('next', 6, 180);
+
+    tempvec = new Vector3df();
+    rotvec = new Vector3df();
+
+    tempvec.x = -6;
+
+    rotvec.x = 180;
+    rotvec.y = 0
+
+    makeButton('prev', vadd(entity.placeable.Position, tempvec), rotvec);
+
+    tempvec.x = 6;
+    
+    rotvec.x = 187;
+    rotvec.y = 180
+       
+    makeButton('next', vadd(entity.placeable.Position, tempvec), rotvec);
+
+    // Now we are done
+    scene.EmitEntityCreatedRaw(entity);
 
 }
 
-function makeButton(name, coord, angle) {
+function makeButton(name, position, rotation) {
     var button = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Mesh', 'EC_Placeable', 'EC_Name']);
     button.name.name = 'Button ' + name +' (' + entity.name.name + ')';
 
@@ -183,15 +255,9 @@ function makeButton(name, coord, angle) {
     button.mesh.meshRef = button_mesh_ref;
 
     var transform = button.placeable.transform;
-    var pos = new Vector3df();
-    pos.y = 20;
-    pos.x = coord;
-	
-    transform.pos = pos;//worldPos;
-    var rot = new Vector3df();
-    rot.y = angle;
-    rot.x = 180;
-    transform.rot = rot;
+    transform.pos = position;
+
+    transform.rot = rotation;
 
     button.placeable.transform = transform;
 
