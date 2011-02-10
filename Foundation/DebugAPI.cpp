@@ -30,14 +30,14 @@ void DebugAPI::LogError(const QString &msg)
 bool DebugAPI::IsDebugBuild() const
 {
 #ifdef _DEBUG
-    return true
+    return true;
 #else
     return false;
 #endif
 }
 
 #ifdef _MSC_VER
-void DebugAPI::BreakFunction()
+void DebugAPI::Break()
 {
     _CrtDbgBreak();
 }
