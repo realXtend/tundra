@@ -369,7 +369,7 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
         {
             Events::TundraLoginEventData* event_data = checked_static_cast<Events::TundraLoginEventData*>(data);
             if (client_)
-                client_->Login(QString::fromStdString(event_data->address_), event_data->port_ ? event_data->port_ : cDefaultPort, QString::fromStdString(event_data->username_), QString::fromStdString(event_data->password_));
+                client_->Login(QString::fromStdString(event_data->address_), event_data->port_ ? event_data->port_ : cDefaultPort, QString::fromStdString(event_data->username_), QString::fromStdString(event_data->password_), QString::fromStdString(event_data->protocol_));
         }
     }
     

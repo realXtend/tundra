@@ -63,6 +63,12 @@ public:
     /// If the asset provider supports this feature, it will delete the asset from the source.
     virtual void DeleteAssetFromStorage(QString assetRef) {}
 
+    /// Add a storage for this provider, returns the created storage
+    /// @param location Location of the new storage
+    /// @param name of the new storage
+    /// @return AssetStoragePtr The created provider
+    virtual AssetStoragePtr AddStorage(const QString &location, const QString &name) { return AssetStoragePtr(); }
+
     /// Returns the list of all asset storages registered into this asset provider.
     virtual std::vector<AssetStoragePtr> GetStorages() const = 0;
 

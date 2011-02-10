@@ -64,16 +64,6 @@ public:
     /// Returns the known asset storage instances in the system.
     std::vector<AssetStoragePtr> GetAssetStorages() const;
 
-    /// Uploads an asset from the given data pointer in memory to an asset storage.
-    /** @param data A pointer to raw source data in memory.
-        @param numBytes The amount of data in the data array.
-        @param destination The asset storage to upload the asset to.
-        @param assetName The name to give to the asset in the storage.
-        @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
-
-        @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
-    AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
-
     /// Returns all the currently ongoing or waiting asset transfers.
     std::vector<AssetTransferPtr> PendingTransfers();
 
@@ -147,7 +137,7 @@ public slots:
         @param assetRef The asset reference name to query a provider for.
         @param assetType An optionally specified asset type. Some providers can only handle certain asset types. This parameter can be 
                         used to more completely specify the type. */
-    AssetProviderPtr GetProviderForAssetRef(QString assetRef, QString assetType = "");
+    AssetProviderPtr GetProviderForAssetRef(QString location, QString assetType = "");
 
     /// Creates a new empty unloaded asset of the given type and name.
     /** This function uses the Asset type factories to create an instance of the proper asset class.
@@ -187,6 +177,16 @@ public slots:
 
     /// Returns the asset storage of the given name.
     AssetStoragePtr GetAssetStorage(const QString &name) const;
+
+    /// \todo Add authentication possiblity for storages with AUTHORIZATION header, and for upload commands to get user/pass as input.
+    /// Creates a new storage for the the provider that is assosiated with 'url' param if one is found. 
+    /// The 'url' param server must accept GET and POST and optionally DELETE request for this path for it to work properly as a http storage.
+    /// @note This will create duplicates for same url if the name is different. It's just kind of giving the storage a new alias.
+    /// @param url Url of the http asset storage
+    /// @param name Name of the asset storage, can be used to identify storage in upload functions.
+    /// @param setAsDefault Optional parameter if this storage should be set a default. Default value is true.
+    /// @return AssetStoragePtr of created or found asset storage.
+    AssetStoragePtr AddAssetStorage(const QString &url, const QString &name, bool setAsDefault = true);
 
     /// Returns the AssetStorage that should be used by default when assets are requested by their local name only, e.g. when an assetRef only contains
     /// a string "texture.png" and nothing else.
@@ -230,6 +230,13 @@ public slots:
     static QString RecursiveFindFile(QString basePath, QString filename);
 
     /// Removes the given asset from the system and frees up all resources related to it. Any assets depending on this asset will break.
+    /// @param assetRef A valid assetRef that is in the asset system. If this asset ref does not exist, this call will do nothing.
+    /// @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
+    ///         but for example for local assets, this is the asset itself.
+    /// @note Calling ForgetAsset on an asset will unload it from the system. Do not dereference the asset after calling this function.
+    void ForgetAsset(QString assetRef, bool removeDiskSource);
+
+    /// Removes the given asset from the system and frees up all resources related to it. Any assets depending on this asset will break.
     /// @param removeDiskSource If true, the disk source of the asset is also deleted. In most cases, this is the locally cached version of the remote file,
     ///         but for example for local assets, this is the asset itself.
     /// @note Calling ForgetAsset on an asset will unload it from the system. Do not dereference the asset after calling this function.
@@ -242,12 +249,40 @@ public slots:
 
     /// Uploads an asset to an asset storage.
     /** @param filename The source file to load the asset from.
+        @param storageName The asset storage to upload the asset to.
+        @param assetName Optional name to give to the asset in the storage. If this is not given assetName = original filename.
+        @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
+        
+        @note This is a script friendly override. This function will never throw Exceptions (CoreException.h) if passed data is invalid, but will return null AssetUploadTransferPtr. */
+    AssetUploadTransferPtr UploadAssetFromFile(const QString &filename, const QString &storageName, const QString &assetName = "");
+
+    /// Uploads an asset to an asset storage.
+    /** @param filename The source file to load the asset from.
         @param destination The asset storage to upload the asset to.
         @param assetName The name to give to the asset in the storage.
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
-        @note This function will never return 0, but throws an Exception if the data that was passed in was bad. */
+        @note This function will never return 0, but insted will throw Exception (CoreException.h) if passed data is invalid. */
     AssetUploadTransferPtr UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName);
+
+    /// Uploads an asset from the given data in memory to an asset storage.
+    /** @param data A QByteArray that has the uploaded data.
+        @param destination The asset storage to upload the asset to.
+        @param assetName The name to give to the asset in the storage.
+        @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
+
+        @note This is a script friendly override. This function will never throw Exceptions (CoreException.h) if passed data is invalid, but will return null AssetUploadTransferPtr. */
+    AssetUploadTransferPtr UploadAssetFromFileInMemory(const QByteArray &data, const QString &storageName, const QString &assetName);
+
+    /// Uploads an asset from the given data pointer in memory to an asset storage.
+    /** @param data A pointer to raw source data in memory.
+        @param numBytes The amount of data in the data array.
+        @param destination The asset storage to upload the asset to.
+        @param assetName The name to give to the asset in the storage.
+        @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
+
+        @note This function will never return 0, but insted will throw Exception (CoreException.h) if passed data is invalid. */
+    AssetUploadTransferPtr UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName);
 
     /// Unloads all known assets, and removes them from the list of internal assets known to the Asset API.
     /** Use this to clear the client's memory from all assets.
@@ -275,8 +310,11 @@ signals:
     /// may not yet have been loaded.
     void AssetCreated(AssetPtr asset);
 
-    /// Emitted before an asset is going to be forgotten or deleted from the source.
+    /// Emitted before an asset is going to be forgotten.
     void AssetAboutToBeRemoved(AssetPtr asset);
+
+    /// Emitted before an assets disk source will be removed.
+    void DiskSourceAboutToBeRemoved(AssetPtr asset);
 
     /// Emitted when the contents of an asset disk source has changed. ///\todo Implement.
  //   void AssetDiskSourceChanged(AssetPtr asset);

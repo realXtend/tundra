@@ -1,0 +1,24 @@
+material m_sassafras_leaves
+{
+    receive_shadows on
+    technique
+    {
+        pass
+        {
+            iteration once
+            alpha_rejection greater_equal 128
+            vertex_program_ref rex/DiffAlphamaskVP
+            {
+            }
+            fragment_program_ref rex/DiffAlphamaskFP
+            {
+            }
+            texture_unit baseMap
+            {
+                texture local://sassafras_branch.png
+                tex_address_mode wrap
+                filtering trilinear
+            }
+        }
+    }
+}

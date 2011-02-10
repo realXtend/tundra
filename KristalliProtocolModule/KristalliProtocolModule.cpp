@@ -9,8 +9,13 @@
 #include "Profiler.h"
 #include "EventManager.h"
 #include "CoreStringUtils.h"
+#include "ConsoleServiceInterface.h"
+#include "ConsoleCommandServiceInterface.h"
 
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 #include "kNet.h"
+#include "kNet/qt/NetworkDialog.h"
 
 #include <algorithm>
 
@@ -114,18 +119,35 @@ void KristalliProtocolModule::PreInitialize()
 void KristalliProtocolModule::Initialize()
 {
     EventManagerPtr event_manager = framework_->GetEventManager();
-
     networkEventCategory = event_manager->RegisterEventCategory("Kristalli");
     event_manager->RegisterEvent(networkEventCategory, Events::NETMESSAGE_IN, "NetMessageIn");
+
+    defaultTransport = kNet::SocketOverTCP;
+    const boost::program_options::variables_map &options = framework_->ProgramOptions();
+    if (options.count("protocol") > 0)
+        if (QString(options["protocol"].as<std::string>().c_str()).trimmed().toLower() == "udp")
+            defaultTransport = kNet::SocketOverUDP;
 }
 
 void KristalliProtocolModule::PostInitialize()
 {
+    RegisterConsoleCommand(Console::CreateCommand(
+            "kNet", "Shows the kNet statistics window.", 
+            Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
 }
 
 void KristalliProtocolModule::Uninitialize()
 {
     Disconnect();
+}
+
+Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
+{
+    NetworkDialog *networkDialog = new NetworkDialog(0, &network);
+    networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+    networkDialog->show();
+
+    return Console::ResultSuccess();
 }
 
 void KristalliProtocolModule::Update(f64 frametime)

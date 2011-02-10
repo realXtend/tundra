@@ -12,6 +12,24 @@ import PythonQt
 #\todo: do we have version num info somewhere?
 #version = XXX
 
+"""
+Core API
+"""
+frame = _naali.GetFrame()
+console = _naali.Console()
+input = _naali.GetInput()
+audio = _naali.Audio()
+ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
+uicore = _naali.Ui()
+debug = _naali.Debug()
+
+"""Aka. Tundra
+The API object is there also in client mode, used to check if is running as server or not""" 
+server = _naali.server 
+
+client = _naali.client #now for web login ui
+framework = _naali #idea was that 'framework' is not in core api, but is used anyhow? (someone added this)
+
 class Logger:
     def __init__(self):
         self.buf = ""
@@ -85,15 +103,6 @@ try:
     communicationsservice = _pythonscriptmodule.GetCommunicationsService()
 except AttributeError:
     pass
-
-frame = _naali.GetFrame()
-console = _naali.Console()
-input = _naali.GetInput()
-audio = _naali.Audio()
-ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
-uicore = _naali.Ui()
-framework = _naali
-debug = _naali.Debug()
 
 # Returns EntityAction pointer by the name
 def action(self, name):

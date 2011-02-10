@@ -7,6 +7,7 @@
 #include "IAssetUploadTransfer.h"
 
 #include "AssetAPI.h"
+#include "IAsset.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -29,6 +30,8 @@ HttpAssetProvider::HttpAssetProvider(Foundation::Framework *framework_)
     qint64 cacheSize = diskCache->maximumCacheSize(); // default is 50mb
     diskCache->setMaximumCacheSize(cacheSize * 10 * 4); // go up to 2000mb
     networkAccessManager->setCache(diskCache);
+
+    connect(framework_->Asset(), SIGNAL(DiskSourceAboutToBeRemoved(AssetPtr)), SLOT(ForgetAsset(AssetPtr)));
 }
 
 HttpAssetProvider::~HttpAssetProvider()
@@ -96,11 +99,29 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
         LogError("HttpAssetProvider::DeleteAssetFromStorage: Cannot delete asset from invalid URL \"" + assetRef.toStdString() + "\"!");
         return;
     }
+    QUrl assetUrl(assetRef);
     QNetworkRequest request;
     request.setUrl(QUrl(assetRef));
     request.setRawHeader("User-Agent", "realXtend Naali");
 
     networkAccessManager->deleteResource(request);
+}
+
+void HttpAssetProvider::ForgetAsset(AssetPtr asset)
+{
+    ForgetAsset(asset->Name());
+}
+
+void HttpAssetProvider::ForgetAsset(QString assetRef)
+{
+    QAbstractNetworkCache *internalCache = networkAccessManager->cache();
+    if (!internalCache)
+        return;
+    QUrl url(assetRef);
+    QString urlString = url.toString();
+    if (url.isValid() && (urlString.startsWith("http://") || urlString.startsWith("https://"))) /// \todo better checks
+        if (!internalCache->remove(url))
+            LogError("Could not remove \"" + urlString.toStdString() + "\" from QNetworkDiskCache");
 }
 
 void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
@@ -121,15 +142,14 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         }
         HttpAssetTransferPtr transfer = iter->second;
         assert(transfer);
-
         transfer->rawAssetData.clear();
 
         if (reply->error() == QNetworkReply::NoError)
         {
+            if (!transfer->CachingAllowed())
+                ForgetAsset(transfer->source.ref);
+            transfer->SetCachingBehavior(false, ""); // Don't duplicate store to normal asset cache
             transfer->rawAssetData.insert(transfer->rawAssetData.end(), data.data(), data.data() + data.size());
-            // Say to AssetAPI that we dont want this asset into the normal asset cache
-            // as Qt internally already uses the QNetworkDiskCache we have defined for it
-            transfer->SetCachingBehavior(false, ""); 
             framework->Asset()->AssetTransferCompleted(transfer.get());
         }
         else
@@ -177,21 +197,39 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         break;
     }
 }
-        
-void HttpAssetProvider::AddStorageAddress(const std::string &address, const std::string &storageName)
+
+AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QString &name)
 {
+    QString locationCleaned = GuaranteeTrailingSlash(location.trimmed());
+
+    // Check if same location and name combination already exists
+    for(size_t i=0; i<storages.size(); ++i)
+    {
+        HttpAssetStoragePtr checkStorage = storages[i];
+        if (!checkStorage.get())
+            continue;
+        if (checkStorage->baseAddress == locationCleaned && checkStorage->storageName == name)
+            return checkStorage;
+    }
+
+    // Add new if not found
     HttpAssetStoragePtr storage = HttpAssetStoragePtr(new HttpAssetStorage());
-    storage->baseAddress = GuaranteeTrailingSlash(QString(address.c_str()).trimmed());
-    storage->storageName = storageName.c_str();
+    storage->baseAddress = locationCleaned;
+    storage->storageName = name;
     storage->provider = this->shared_from_this();
 
     storages.push_back(storage);
+    return storage;
 }
 
 std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
 {
     std::vector<AssetStoragePtr> s;
     for(size_t i = 0; i < storages.size(); ++i)
+    {
+        if (!storages[i].get())
+            continue;
         s.push_back(storages[i]);
+    }
     return s;
 }

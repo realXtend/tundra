@@ -60,10 +60,15 @@
 #include "NaaliMainWindow.h"
 #include "DebugAPI.h"
 
+//Kristalli UserConnection
+//for JS this is actually registered in TundraLogicModule, which depends on QtScript directly.
+//we could probably use the service mechanism for modules to register these optionally
+#include "UserConnection.h"
+
 //#include "Avatar/AvatarHandler.h"
 //#include "Avatar/AvatarControllable.h"
 
-#include "RexLogicModule.h" //much of the api is here
+#include "RexLogicModule.h" //much of the api used to be here -- now the dep is almost refactored out (actually in develop branch only, should be merged here!)
 #include "Camera/CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
@@ -1881,6 +1886,9 @@ namespace PythonScript
 
             PythonQt::self()->registerClass(&AudioAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Input::staticMetaObject);
+
+            //knet UserConnection
+            PythonQt::self()->registerClass(&UserConnection::staticMetaObject);
 
             //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&EC_OgreCamera::staticMetaObject);
