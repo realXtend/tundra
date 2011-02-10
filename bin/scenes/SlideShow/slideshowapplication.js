@@ -224,29 +224,25 @@ function createCanvas(filename, slides, event) {
 
     // add buttons
 
-    tempvec = new Vector3df();
     rotvec = new Vector3df();
 
-    tempvec.x = -6;
-
     rotvec.x = 180;
-    rotvec.y = 0
+    rotvec.y = 0;
 
-    makeButton('prev', vadd(entity.placeable.Position, tempvec), rotvec);
+    makeButton('prev', entity.placeable, -1, rotvec);
 
-    tempvec.x = 6;
-    
     rotvec.x = 187;
-    rotvec.y = 180
+    rotvec.y = 180;
        
-    makeButton('next', vadd(entity.placeable.Position, tempvec), rotvec);
+    makeButton('next', entity.placeable, 1, rotvec);
 
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
 
 }
 
-function makeButton(name, position, rotation) {
+function makeButton(name, placeable, dir, rotation) {
+
     var button = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Mesh', 'EC_Placeable', 'EC_Name']);
     button.name.name = 'Button ' + name +' (' + entity.name.name + ')';
 
@@ -254,10 +250,18 @@ function makeButton(name, position, rotation) {
     button_mesh_ref.ref = 'local://kolmionappi.mesh';
     button.mesh.meshRef = button_mesh_ref;
 
-    var transform = button.placeable.transform;
-    transform.pos = position;
+    // create unit vector for X-axis (negative or positive)
+    var unx = new Vector3df();
+    unx.x = dir;
+    
+    // calculate conjugate
+    var v = conjg(placeable.Orientation, unx);
+    worldpos = vadd(placeable.Position, smul(v, 6));
 
-    transform.rot = rotation;
+    var transform = button.placeable.transform;
+    transform.pos = worldpos;
+
+    transform.rot = vadd(placeable.transform.rot, rotation);
 
     button.placeable.transform = transform;
 
