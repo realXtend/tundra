@@ -253,8 +253,7 @@ public slots:
         @param assetName Optional name to give to the asset in the storage. If this is not given assetName = original filename.
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
         
-        @note This is a script friendly override.
-        @note This function will never return 0, but insted will throw Exception (CoreException.h) if passed data is invalid. */
+        @note This is a script friendly override. This function will never throw Exceptions (CoreException.h) if passed data is invalid, but will return null AssetUploadTransferPtr. */
     AssetUploadTransferPtr UploadAssetFromFile(const QString &filename, const QString &storageName, const QString &assetName = "");
 
     /// Uploads an asset to an asset storage.
@@ -272,8 +271,7 @@ public slots:
         @param assetName The name to give to the asset in the storage.
         @return The returned IAssetUploadTransfer pointer represents the ongoing asset upload process.
 
-        @note This is a script friendly override.
-        @note This function will never return 0, but insted will throw Exception (CoreException.h) if passed data is invalid. */
+        @note This is a script friendly override. This function will never throw Exceptions (CoreException.h) if passed data is invalid, but will return null AssetUploadTransferPtr. */
     AssetUploadTransferPtr UploadAssetFromFileInMemory(const QByteArray &data, const QString &storageName, const QString &assetName);
 
     /// Uploads an asset from the given data pointer in memory to an asset storage.

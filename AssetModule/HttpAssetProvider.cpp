@@ -200,8 +200,21 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
 
 AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QString &name)
 {
+    QString locationCleaned = GuaranteeTrailingSlash(location.trimmed());
+
+    // Check if same location and name combination already exists
+    for(size_t i=0; i<storages.size(); ++i)
+    {
+        HttpAssetStoragePtr checkStorage = storages[i];
+        if (!checkStorage.get())
+            continue;
+        if (checkStorage->baseAddress == locationCleaned && checkStorage->storageName == name)
+            return checkStorage;
+    }
+
+    // Add new if not found
     HttpAssetStoragePtr storage = HttpAssetStoragePtr(new HttpAssetStorage());
-    storage->baseAddress = GuaranteeTrailingSlash(location.trimmed());
+    storage->baseAddress = locationCleaned;
     storage->storageName = name;
     storage->provider = this->shared_from_this();
 
@@ -213,6 +226,10 @@ std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
 {
     std::vector<AssetStoragePtr> s;
     for(size_t i = 0; i < storages.size(); ++i)
+    {
+        if (!storages[i].get())
+            continue;
         s.push_back(storages[i]);
+    }
     return s;
 }

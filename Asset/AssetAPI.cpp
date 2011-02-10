@@ -91,6 +91,8 @@ AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &nam
             LogDebug("AddAssetStorage() Found existing storage with same url and name, returning the existing storage.");
             break;
         }
+        // Reset so the last valid provider wont be used! 
+        newStorage = AssetStoragePtr();
     }
 
     // If the url name combination was not found, ask the provider to create a new one
@@ -337,8 +339,8 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     QFile file(filename);
     if (!file.exists())
     {
-        std::string error = "AssetAPI::UploadAssetFromFile failed! File location not valid for " + filename.toStdString();
-        throw Exception(error.c_str());
+        LogError("AssetAPI::UploadAssetFromFile failed! File location not valid for " + filename.toStdString());
+        return AssetUploadTransferPtr();
     }
     QString newAssetName = assetName;
     if (newAssetName.isEmpty())
@@ -346,10 +348,25 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, co
     AssetStoragePtr storage = GetAssetStorage(storageName);
     if (!storage.get())
     {
-        std::string error = "AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName.toStdString() + "! Use AssetAPI::AddAssetStorage to add one with this name.";
-        throw Exception(error.c_str());
+        LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName.toStdString() + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        return AssetUploadTransferPtr();
     }
-    return UploadAssetFromFile(filename.toStdString().c_str(), storage, newAssetName.toStdString().c_str());
+
+    // Protect crashes when as this function is called from scripts!
+    AssetUploadTransferPtr transfer;
+    try
+    {
+        transfer = UploadAssetFromFile(filename.toStdString().c_str(), storage, newAssetName.toStdString().c_str());
+    }
+    catch(Exception &e)
+    {
+        LogError(std::string(e.what()));
+    }
+    catch(...)
+    {
+        LogError("AssetAPI::UploadAssetFromFile failed, unknown exception!");
+    }
+    return transfer;
 }
 
 AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
@@ -382,16 +399,31 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &d
 {
     if (data.isEmpty() || data.isNull())
     {
-        std::string error = "AssetAPI::UploadAssetFromFileInMemory failed! QByteArray data is empty and/or null for " + assetName.toStdString() + " asset upload request.";
-        throw Exception(error.c_str());
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed! QByteArray data is empty and/or null for " + assetName.toStdString() + " asset upload request.");
+        return AssetUploadTransferPtr();
     }
     AssetStoragePtr storage = GetAssetStorage(storageName);
     if (!storage.get())
     {
-        std::string error = "AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName.toStdString() + "! Use AssetAPI::AddAssetStorage to add one with this name.";
-        throw Exception(error.c_str());
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName.toStdString() + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        return AssetUploadTransferPtr();
     }
-    return UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName.toStdString().c_str());
+
+    // Protect crashes when as this function is called from scripts!
+    AssetUploadTransferPtr transfer;
+    try
+    {
+        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName.toStdString().c_str());
+    }
+    catch(Exception &e)
+    {
+        LogError(std::string(e.what()));
+    }
+    catch(...)
+    {
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed, unknown exception!");
+    }
+    return transfer;
 }
 
 AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
