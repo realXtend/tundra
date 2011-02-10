@@ -22,7 +22,7 @@
 #include "UiServiceInterface.h"
 #include "Audio.h"
 #include "Frame.h"
-#include "Console.h"
+#include "ConsoleAPI.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "NaaliCoreTypeDefines.h"
 

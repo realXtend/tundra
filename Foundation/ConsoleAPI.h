@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   Console.h
+ *  @file   ConsoleAPI.h
  *  @brief  Exposes debug console functionality to scripting languages.
  *
  *          Allows printing text to console, executing console commands programmatically
@@ -32,7 +32,7 @@ class Command: public QObject
 {
     Q_OBJECT
 
-    friend class ScriptConsole;
+    friend class ConsoleAPI;
 
 public:
     /// Returns name of the command.
@@ -69,7 +69,7 @@ private slots:
     @note Currently just simple wrapper class but the idea is to refactor
     the whole console system later on.
 */
-class ScriptConsole : public QObject
+class ConsoleAPI : public QObject
 {
     Q_OBJECT
 
@@ -77,7 +77,7 @@ class ScriptConsole : public QObject
 
 public:
     /// Destructor.
-    ~ScriptConsole();
+    ~ConsoleAPI();
 
 public slots:
     /// Use this from scripting languages.
@@ -108,12 +108,12 @@ public slots:
     void Print(const QString &message);
 
 private:
-    Q_DISABLE_COPY(ScriptConsole);
+    Q_DISABLE_COPY(ConsoleAPI);
 
     /// Constructs the console.
     /** @param fw Framework.
     */
-    explicit ScriptConsole(Foundation::Framework *fw);
+    explicit ConsoleAPI(Foundation::Framework *fw);
 
     /// Framework.
     Foundation::Framework *framework_;

@@ -14,6 +14,8 @@
 
 #include "Framework.h"
 
+#include <QtCore>
+
 #endif
 
 #endif // incl_Framework_StableHeaders_h
