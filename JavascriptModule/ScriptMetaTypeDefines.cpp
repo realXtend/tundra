@@ -14,7 +14,7 @@
 #include "MouseEvent.h"
 #include "UiProxyWidget.h"
 #include "Frame.h"
-#include "Console.h"
+#include "ConsoleAPI.h"
 #include "SceneManager.h"
 #include "Audio.h"
 #include "SoundChannel.h"
@@ -64,9 +64,10 @@ Q_DECLARE_METATYPE(AttributeChange::Type);
 //! Naali core API object defines.
 Q_DECLARE_METATYPE(Foundation::Framework*);
 Q_DECLARE_METATYPE(Frame*);
-Q_DECLARE_METATYPE(ScriptConsole*);
+Q_DECLARE_METATYPE(ConsoleAPI*);
 Q_DECLARE_METATYPE(Command*);
 Q_DECLARE_METATYPE(DelayedSignal*);
+Q_DECLARE_METATYPE(DebugAPI*);
 
 //! Naali Audio API object.
 Q_DECLARE_METATYPE(AudioAPI*);
@@ -196,7 +197,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Foundation::Framework*>(engine);
     
     // Console metatypes.
-    qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
+    qScriptRegisterQObjectMetaType<ConsoleAPI*>(engine);
     qScriptRegisterQObjectMetaType<Command*>(engine);
 
     // Frame metatypes.

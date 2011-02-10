@@ -93,6 +93,7 @@ audio = _naali.Audio()
 ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
 uicore = _naali.Ui()
 framework = _naali
+debug = _naali.Debug()
 
 # Returns EntityAction pointer by the name
 def action(self, name):
