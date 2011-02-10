@@ -10,7 +10,10 @@
 #include "LoginWidget.h"
 #include "MemoryLeakCheck.h"
 
-LoginWidget::LoginWidget(const QMap<QString,QString> &login_data) :
+#include <QPixmap>
+
+LoginWidget::LoginWidget(Foundation::Framework *framework) :
+    framework_(framework),
     progress_timer_(new QTimer(this))
 {
     /*
@@ -37,13 +40,12 @@ LoginWidget::LoginWidget(const QMap<QString,QString> &login_data) :
     connect(lineEdit_StartLocation, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
     connect(lineEdit_Username, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
     connect(lineEdit_Password, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
-
-    lineEdit_Username->setText(login_data["account"]);
-    lineEdit_Password->setText(login_data["password"]);
-    lineEdit_WorldAddress->setText(login_data["loginurl"]);
-    lineEdit_StartLocation->setText(login_data["startlocation"]);
-
     connect(progress_timer_, SIGNAL(timeout()), SLOT(UpdateProgressBar()));
+
+    // Add the default realxtend logo
+    label_ClientLogo->setPixmap(QPixmap("./data/ui/images/realxtend_logo.png"));
+
+    ReadConfig();
 }
 
 QMap<QString, QString> LoginWidget::GetLoginInfo() const
@@ -62,7 +64,52 @@ QMap<QString, QString> LoginWidget::GetLoginInfo() const
         // For now, use a single-part username to distinguish Tundra login
         info["avatartype"] = "tundra";
 
+    info["protocol"] = "tcp";
+    if (radioButton_ProtocolUDP->isChecked())
+        info["protocol"] = "udp";
+
     return info;
+}
+
+void LoginWidget::SetLoginInfo(QMap<QString, QString> info)
+{
+    lineEdit_Username->setText(info["account"]);
+    //lineEdit_Password->setText(info["password"]);
+    lineEdit_WorldAddress->setText(info["loginurl"]);
+    lineEdit_StartLocation->setText(info["startlocation"]);
+    if (info["protocol"].toLower() == "tcp")
+        radioButton_ProtocolTCP->setChecked(true);
+    else if (info["protocol"].toLower() == "udp")
+        radioButton_ProtocolUDP->setChecked(true);
+}
+
+void LoginWidget::ReadConfig()
+{
+    QMap<QString, QString> info;
+    QString config_file = QString::fromStdString(framework_->GetPlatform()->GetApplicationDataDirectory()) + "/configuration/TundraLogin.ini";
+    QSettings login_config(config_file, QSettings::IniFormat, this);
+    info["account"] = login_config.value("account", QString()).toString();
+    //info["password"] = login_config.value("account", QString()).toString(); 
+    info["loginurl"] = login_config.value("loginurl", QString()).toString();
+    info["startlocation"] = login_config.value("startlocation", QString()).toString();
+    info["avatartype"] = login_config.value("avatartype", QString()).toString();
+    info["protocol"] = login_config.value("protocol", QString()).toString();
+    SetLoginInfo(info);
+}
+
+void LoginWidget::WriteConfig()
+{
+    QMap<QString, QString> login_info = GetLoginInfo();
+    QString config_file = QString::fromStdString(framework_->GetPlatform()->GetApplicationDataDirectory()) + "/configuration/TundraLogin.ini";
+    QSettings login_config(config_file, QSettings::IniFormat, this);
+    foreach(QString key, login_info.keys())
+    {
+        // lets not store password
+        if (key == "password")
+            continue;
+        QString value = login_info[key];
+        login_config.setValue(key, value);
+    }
 }
 
 void LoginWidget::ParseInputAndConnect()
@@ -84,6 +131,10 @@ void LoginWidget::ParseInputAndConnect()
     map["Username"] = lineEdit_Username->text().trimmed();
     map["Password"] = lineEdit_Password->text().trimmed();
     map["StartLocation"] = lineEdit_StartLocation->text().trimmed();
+
+    map["Protocol"] = "tcp";
+    if (radioButton_ProtocolUDP->isChecked())
+        map["Protocol"] = "udp";
 
     if (lineEdit_Username->text().contains('@'))
     {
@@ -124,7 +175,7 @@ void LoginWidget::SetStatus(const QString &message)
 void LoginWidget::Connected()
 {
     SetStatus("Connected");
-    StopProgressBar();
+    WriteConfig();
 }
 
 void LoginWidget::StartProgressBar()

@@ -110,10 +110,11 @@ namespace Console
             }
             case Console::Events::EVENT_CONSOLE_PRINT_LINE:
             {
-                if (!ui_console_manager_)
-                    return false; // Headless
-                ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
-                ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
+		ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
+		if (!ui_console_manager_)
+		    std::cout << console_data->message << std::endl;
+		else
+		    ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
                 break;
             }
             default:

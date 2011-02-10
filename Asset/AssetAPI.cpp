@@ -66,8 +66,43 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
         foreach(AssetStoragePtr storage, provider->GetStorages())
             if (storage->Name() == name)
                 return storage;
-
     return AssetStoragePtr();
+}
+
+AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &name, bool setAsDefault)
+{
+    AssetStoragePtr newStorage;
+    IAssetProvider *provider = GetProviderForAssetRef(url, "Binary").get();
+    if (!provider)
+    {
+        LogError("AddAssetStorage() Could not find a provider for the new storage location " + url.toStdString());
+        return newStorage; 
+    }
+
+    // Inspect if a storage already exists for this url and name combination
+    std::vector<AssetStoragePtr> currentStorages = provider->GetStorages();
+    for(int i=0; i<currentStorages.size(); ++i)
+    {
+        newStorage = currentStorages.at(i);
+        if (!newStorage.get())
+            continue;
+        if (newStorage->BaseURL() == url && newStorage->Name() == name)
+        {
+            LogDebug("AddAssetStorage() Found existing storage with same url and name, returning the existing storage.");
+            break;
+        }
+        // Reset so the last valid provider wont be used! 
+        newStorage = AssetStoragePtr();
+    }
+
+    // If the url name combination was not found, ask the provider to create a new one
+    if (!newStorage.get())
+        newStorage = provider->AddStorage(url, name);
+    if (newStorage.get() && setAsDefault)
+        SetDefaultAssetStorage(newStorage);
+    if (!newStorage.get())
+        LogError("AddAssetStorage() Could not create new storage for " + url.toStdString());
+    return newStorage;
 }
 
 AssetStoragePtr AssetAPI::GetDefaultAssetStorage() const
@@ -241,6 +276,13 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
     }
 }
 
+void AssetAPI::ForgetAsset(QString assetRef, bool removeDiskSource)
+{
+    AssetPtr asset = GetAsset(assetRef);
+    if (asset.get())
+        ForgetAsset(asset, removeDiskSource);
+}
+
 void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 {
     if (!asset)
@@ -250,7 +292,10 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 
     // If we are supposed to remove the cached (or original for local assets) version of the asset, do so.
     if (removeDiskSource && !asset->DiskSource().isEmpty())
+    {
+        emit DiskSourceAboutToBeRemoved(asset);
         QFile::remove(asset->DiskSource());
+    }
 
     // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
     // some object left a dangling strong ref to an asset).
@@ -265,7 +310,6 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->removePath(asset->DiskSource());
     assets.erase(iter);
-
 }
 
 void AssetAPI::DeleteAssetFromStorage(QString assetRef)
@@ -288,6 +332,41 @@ void AssetAPI::DeleteAssetFromStorage(QString assetRef)
     }
 
     provider->DeleteAssetFromStorage(assetRef);
+}
+
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, const QString &storageName, const QString &assetName)
+{
+    QFile file(filename);
+    if (!file.exists())
+    {
+        LogError("AssetAPI::UploadAssetFromFile failed! File location not valid for " + filename.toStdString());
+        return AssetUploadTransferPtr();
+    }
+    QString newAssetName = assetName;
+    if (newAssetName.isEmpty())
+        newAssetName = file.fileName().split("/").last();
+    AssetStoragePtr storage = GetAssetStorage(storageName);
+    if (!storage.get())
+    {
+        LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName.toStdString() + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        return AssetUploadTransferPtr();
+    }
+
+    // Protect crashes when as this function is called from scripts!
+    AssetUploadTransferPtr transfer;
+    try
+    {
+        transfer = UploadAssetFromFile(filename.toStdString().c_str(), storage, newAssetName.toStdString().c_str());
+    }
+    catch(Exception &e)
+    {
+        LogError(std::string(e.what()));
+    }
+    catch(...)
+    {
+        LogError("AssetAPI::UploadAssetFromFile failed, unknown exception!");
+    }
+    return transfer;
 }
 
 AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
@@ -314,6 +393,37 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, Asset
         return AssetUploadTransferPtr(); ///\todo Log out error.
 
     return UploadAssetFromFileInMemory(&data[0], data.size(), destination, assetName);
+}
+
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &data, const QString &storageName, const QString &assetName)
+{
+    if (data.isEmpty() || data.isNull())
+    {
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed! QByteArray data is empty and/or null for " + assetName.toStdString() + " asset upload request.");
+        return AssetUploadTransferPtr();
+    }
+    AssetStoragePtr storage = GetAssetStorage(storageName);
+    if (!storage.get())
+    {
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName.toStdString() + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        return AssetUploadTransferPtr();
+    }
+
+    // Protect crashes when as this function is called from scripts!
+    AssetUploadTransferPtr transfer;
+    try
+    {
+        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName.toStdString().c_str());
+    }
+    catch(Exception &e)
+    {
+        LogError(std::string(e.what()));
+    }
+    catch(...)
+    {
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed, unknown exception!");
+    }
+    return transfer;
 }
 
 AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)

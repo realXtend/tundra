@@ -80,7 +80,8 @@ bool Server::Start(unsigned short port)
 {
     if (!owner_->IsServer())
     {
-        if (!owner_->GetKristalliModule()->StartServer(port, SocketOverTCP))
+        kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
+        if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
         {
             TundraLogicModule::LogError("Failed to start server in port " + ToString<int>(port));
             return false;

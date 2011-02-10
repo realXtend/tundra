@@ -42,6 +42,7 @@ class ObjectEdit(Component):
     
     def __init__(self):
         self.sels = []  
+        self.selmasses = {}
         Component.__init__(self)
         self.resetValues()
         self.worldstream = r.getServerConnection()
@@ -159,6 +160,10 @@ class ObjectEdit(Component):
         self.cycleManipulator()
         
     def resetValues(self):
+        for ent in self.selmasses.iterkeys():
+           mass = self.selmasses[ent]
+           ent.rigidbody.mass = mass
+        self.selmasses.clear()
         self.left_button_down = False
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         self.prev_mouse_abs_x = 0
@@ -197,10 +202,16 @@ class ObjectEdit(Component):
         self.deselect_all()
         ent = self.baseselect(ent)
         self.sels.append(ent)
+        if not ent in self.selmasses or ent.rigidbody.mass != 0:
+            self.selmasses[ent] = ent.rigidbody.mass
+            ent.rigidbody.mass = 0
         self.canmove = True
 
     def multiselect(self, ent):
         self.sels.append(ent)
+        if not ent in self.selmasses or ent.rigidbody.mass != 0:
+            self.selmasses[ent] = ent.rigidbody.mass
+            ent.rigidbody.mass = 0
         ent = self.baseselect(ent)
     
     def deselect(self, ent, valid=True):

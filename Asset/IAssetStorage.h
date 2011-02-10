@@ -12,9 +12,12 @@ class IAssetStorage : public QObject
 {
     Q_OBJECT
 public:
-
     virtual ~IAssetStorage() {}
 
+    /// Points to the asset provider that is used to communicate with this storage.
+    AssetProviderWeakPtr provider;
+
+public slots:
     /// Returns all assets saved in this asset storage.
     virtual std::vector<IAsset*> GetAllAssets() const { return std::vector<IAsset*>(); }
 
@@ -34,9 +37,6 @@ public:
 
     /// Returns the address of this storage.
     virtual QString BaseURL() const { return ""; }
-   
-    /// Points to the asset provider that is used to communicate with this storage.
-    AssetProviderWeakPtr provider;
 
     /// Returns a human-readable description of this asset storage.
     virtual QString ToString() const { return Name() + " (" + BaseURL() + ")"; }

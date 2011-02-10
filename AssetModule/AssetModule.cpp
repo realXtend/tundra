@@ -123,10 +123,7 @@ namespace Asset
 
         if (!framework_->Asset()->GetAssetProvider<HttpAssetProvider>())
             return Console::ResultFailure();
-
-        framework_->Asset()->GetAssetProvider<HttpAssetProvider>()->AddStorageAddress(params[0].c_str(), params[1].c_str());
-        framework_->Asset()->SetDefaultAssetStorage(framework_->Asset()->GetAssetStorage(params[1].c_str()));
-       
+        framework_->Asset()->AddAssetStorage(params[0].c_str(), params[1].c_str(), true);       
         return Console::ResultSuccess();
     }
 }
