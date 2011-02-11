@@ -27,6 +27,11 @@ void DebugAPI::LogError(const QString &msg)
     RootLogError(msg.toStdString());
 }
 
+void DebugAPI::LogDebug(const QString &msg)
+{
+    RootLogDebug(msg.toStdString());
+}
+
 bool DebugAPI::IsDebugBuild() const
 {
 #ifdef _DEBUG
@@ -36,12 +41,14 @@ bool DebugAPI::IsDebugBuild() const
 #endif
 }
 
-#ifdef _MSC_VER
 void DebugAPI::Break()
 {
+#ifdef _MSC_VER
     _CrtDbgBreak();
-}
+#else
+    RootLogInfo("DebugAPI::Break() works only on Windows with Visual Studio.");
 #endif
+}
 
 DebugAPI::DebugAPI(Foundation::Framework *fw) : QObject(fw)
 {

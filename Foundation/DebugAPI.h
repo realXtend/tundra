@@ -21,28 +21,31 @@ class DebugAPI : public QObject
     Q_OBJECT
 
 public slots:
-    /// Prints log message to std::cout, log file and console using the information level.
+    /// Prints log message to std::cout, log file and console using the information logging level.
     /** @param msg Log message.
     */
     void Log(const QString &msg);
 
-    /// Prints log message to std::cout, log file and console using the warning level.
+    /// Prints log message to std::cout, log file and console using the warning logging level.
     /** @param msg Log message.
     */
     void LogWarning(const QString &msg);
 
-    /// Prints log message to std::cout, log file and console using the error level.
+    /// Prints log message to std::cout, log file and console using the error logging level.
     /** @param msg Log message.
     */
     void LogError(const QString &msg);
 
+    /// Prints log message to std::cout, log file and console using the debug logging level.
+    /** @param msg Log message.
+    */
+    void LogDebug(const QString &msg);
+
     /// @return True if current build is the debug build, false otherwise.
     bool IsDebugBuild() const;
 
-#ifdef _MSC_VER
     /// Sets a break point on within this function (in debug mode only.). Windows/Visual Studio only
     void Break();
-#endif
 
 private:
     Q_DISABLE_COPY(DebugAPI)
