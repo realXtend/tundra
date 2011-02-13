@@ -91,14 +91,15 @@ else
     touch $tags/$what-done
 fi
 
-what=knet
+what=knet_old
 if test -f $tags/$what-done; then 
    echo $what is done
 else
     cd $build
-    rm -rf knet
-    hg clone http://bitbucket.org/clb/knet
-    cd knet
+    rm -rf knet_old
+    hg clone http://bitbucket.org/clb/knet knet_old
+    cd knet_old
+    hg up 61
     sed -e "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" -e "s/kNet STATIC/kNet SHARED/" < CMakeLists.txt > x
     mv x CMakeLists.txt
     cmake .
