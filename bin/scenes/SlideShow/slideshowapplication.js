@@ -3,7 +3,6 @@
 
   TODO
    * Get filesuffix better
-   * Open asset from url!
 
 */
 
@@ -14,6 +13,12 @@ engine.ImportExtension("qt.gui");
 ui.GraphicsView().DragEnterEvent.connect(handleEnter);
 ui.GraphicsView().DragMoveEvent.connect(handleMove);
 ui.GraphicsView().DropEvent.connect(handleDrop);
+
+// Url for the server
+var serverurl = "http://localhost:8000/";
+// Storage name
+var storagename = "Productivity Converter storage";
+
 print ('foo')
 
 var entity;
@@ -23,9 +28,9 @@ var slide_index = 0;
 
 function checkSuffix(url) {
     // FIXME
-    if (("" + url).split('.txt').length == 2) {
+    url = ("" + url).replace('.ppt', '.pptx')
+    if (url.split('.ppt').length == 2) {
 	print("I accept!");
-
 	return true;
     }
     print("No sir, I don't like it");
@@ -67,25 +72,74 @@ function handleDrop(event) {
 	    //FIXME!!!!!!1!
 	    print(urls[u]+"");
 	    var filename = ("" + urls[u]).split('//')[1];
-	    print(filename)
-	    var file = new QFile(filename);
-	    file.open(QIODevice.ReadOnly);
-	    var streamer = new QTextStream(file);
-	    slides = [];
-	    while (true) {
-		var line = streamer.readLine();
-		print(line)
-		if (!line) {
-		    break;
-		}
-		slides.push(line)
-	    }
-    	    print(slides);
-	    createCanvas(filename, slides, event);
+	    print(filename);
+	    upload(serverurl, storagename, filename);
+	    break;
 	}
     }
 }
 
+function upload(uploadStorageUrl, uploadStorageName, filename) {
+    if (AddAssetStorage(uploadStorageUrl, uploadStorageName)) {
+	    UploadAsset(filename, uploadStorageName, filename, "binary");
+    } else {
+	print("HORRERNOUS ERROR! CANNOT HANDLE ERRORNOUS HORROR!!!1!");
+    }
+    
+}
+
+function AddAssetStorage(url, name) {
+    var assetstorageptr = asset.AddAssetStorage(url, name);
+    var assetstorage = assetstorageptr.get();
+    if (assetstorage != null) {
+        print("Added asset storage");
+        print(">>  Name :", assetstorage.Name());
+        print(">>  URL  :", assetstorage.BaseURL(), "\n");
+        return true;
+    } else {
+        print("Failed to add asset storage:", name, "-", url, "\n");
+        return false;
+    }
+}
+
+function UploadAsset(fileName, storageName, uploadName) {
+    print("Uploading:", fileName, "with destination name", uploadName);
+    var uploadtransferptr = asset.UploadAssetFromFile(fileName, storageName, uploadName);
+    var uploadtransfer = uploadtransferptr.get();
+    if (uploadtransfer != null) {
+        uploadtransfer.Completed.connect(UploadCompleted);
+        uploadtransfer.Failed.connect(UploadFailed);
+    } else {
+        print(" >> Failed to upload, AssetAPI returned a null AssetUploadTransferPtr");
+    }
+}
+
+function getSlides(ref) {
+    //TODO
+
+}
+
+
+
+function UploadCompleted(/* IAssetUploadTransfer* */ transfer) {
+    print("Upload completed");
+    print("  >> New asset ref    :", transfer.AssetRef());
+    print("  >> Destination name :", transfer.GetDesticationName(), "\n");
+    
+    getSlides(transfer.AssetRef())
+	
+    //print(slides);
+    //createCanvas(filename, slides, event);
+    // if you want to handle multiple drops do the magic here
+}
+
+function UploadFailed(/* IAssetUploadTransfer* */ transfer) {
+    print("Upload failed");
+    print("  >> File name   :", transfer.GetSourceFilename());
+    print("  >> Destination :", transfer.GetDesticationName(), "\n");
+}
+
+    
 function vprint(v) {
     print(v.x + ", " + v.y + ", " + v.z);
 }
@@ -282,7 +336,6 @@ function makeSlideWidget(slides) {
 	label.setPixmap(pic.scaledToWidth(100));
 	label.move(0, 110 * s);
 	gfxscene.addWidget(label)
-
 
     }    
     uiservice.AddWidgetToScene(view);
