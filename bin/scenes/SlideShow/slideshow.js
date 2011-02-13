@@ -51,10 +51,10 @@ function onSlideChanged(attribute, type) {
 // to connect some signal or something.
 frame.DelayedExecute(1).Triggered.connect(this, function () {
 	var canvas = me.GetComponentRaw('EC_3DCanvas');
-	print(canvas);
 	canvas.Start();
     });
 
+// Maybe create the thumbnal view here
 //me.Action("MousePress").Triggered.connect(nextSlide);
 
 var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
