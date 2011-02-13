@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $ 
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -11,28 +12,14 @@ namespace CoreUi
         QGraphicsProxyWidget(0, Qt::Widget),
         internal_widget_(new QWidget()),
         avatar_widget_(0),
-        inventory_widget_(0),
-        first_show_avatar_(true),
-        first_show_inv_(true)
+        first_show_avatar_(true)
     {
         setupUi(internal_widget_);
         setWidget(internal_widget_);
 
         connect(avatarToggle, SIGNAL(clicked()), SLOT(AvatarToggle()));
-        connect(inventoryToggle, SIGNAL(clicked()), SLOT(InventoryToggle()));
 
         CheckStyle(false, "avatarToggle");
-        CheckStyle(false, "inventoryToggle");
-    }
-
-    void PersonalWidget::SetAvatarWidget(UiProxyWidget *avatar_widget)
-    {
-    }
-
-    void PersonalWidget::SetInventoryWidget(UiProxyWidget *inventory_widget)
-    {
-        inventory_widget_ = inventory_widget;
-        connect(inventory_widget_, SIGNAL(Visible(bool)), SLOT(InventoryVisibilityChanged(bool)));
     }
 
     void PersonalWidget::AvatarToggle()
@@ -59,34 +46,10 @@ namespace CoreUi
         */
     }
 
-    void PersonalWidget::InventoryToggle()
-    {
-        if (!inventory_widget_)
-            return;
-
-        if (first_show_inv_)
-        {
-            qreal padding = 10;
-            QPointF inventory_pos(scene()->sceneRect().width() - inventory_widget_->size().width() - padding,
-                                  scenePos().y() - inventory_widget_->size().height() - padding);
-            inventory_widget_->setPos(inventory_pos);
-            first_show_inv_ = false;
-        }
-
-        if (inventory_widget_->isVisible())
-            inventory_widget_->AnimatedHide();
-        else
-            inventory_widget_->show();
-    }
 
     void PersonalWidget::AvatarVisibilityChanged(bool visible)
     {
         CheckStyle(visible, "avatarToggle");
-    }
-
-    void PersonalWidget::InventoryVisibilityChanged(bool visible)
-    {
-        CheckStyle(visible, "inventoryToggle");
     }
 
     void PersonalWidget::CheckStyle(bool pressed_down, QString type)
@@ -106,16 +69,6 @@ namespace CoreUi
                 image_normal += "uibutton_AVAED_click.png";
             image_hover += "uibutton_AVAED_hover.png"; 
             image_pressed += "uibutton_AVAED_click.png";
-        }
-        else if (type == "inventoryToggle")
-        {
-            button = inventoryToggle;
-            if (!pressed_down)
-                image_normal += "uibutton_INV_normal.png";
-            else
-                image_normal += "uibutton_INV_click.png";
-            image_hover += "uibutton_INV_hover.png"; 
-            image_pressed += "uibutton_INV_click.png";
         }
         else
             return;

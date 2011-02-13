@@ -125,9 +125,8 @@ void WorldStream::ForceServerDisconnect()
         return;
     }
 
-    protocolModule_->DisconnectFromServer();
-
     connected_ = false;
+    protocolModule_->DisconnectFromServer();
     protocolModule_.reset();
 }
 
@@ -1857,8 +1856,10 @@ NetOutMessage *WorldStream::StartMessageBuilding(const NetMsgID &message_id)
         LogError("Getting network interface did not succeed.");
         return 0;
     }
-
-    return protocolModule_->StartMessageBuilding(message_id);
+    if (protocolModule_->IsConnected())
+        return protocolModule_->StartMessageBuilding(message_id);
+    else
+        return 0;
 }
 
 void WorldStream::FinishMessageBuilding(NetOutMessage *msg)

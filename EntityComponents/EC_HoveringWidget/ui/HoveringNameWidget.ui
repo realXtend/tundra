@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>547</width>
+    <width>94</width>
     <height>60</height>
    </rect>
   </property>
@@ -109,7 +109,7 @@ QLabel {
         </property>
         <property name="minimumSize">
          <size>
-          <width>100</width>
+          <width>60</width>
           <height>60</height>
          </size>
         </property>
@@ -127,6 +127,12 @@ QLabel {
          </property>
          <item>
           <widget class="QLabel" name="pixmapLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>0</width>
@@ -162,7 +168,7 @@ QLabel {
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>matti.kuonanoja@world.evotici.com</string>
+            <string/>
            </property>
            <property name="scaledContents">
             <bool>true</bool>

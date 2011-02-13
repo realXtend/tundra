@@ -29,7 +29,6 @@ import naali
 
 class SceneDataManager:
 
-
     def __init__(self, scenefile):
         self.sceneFile = scenefile
         self.folderPath = os.path.dirname(scenefile)
@@ -45,25 +44,38 @@ class SceneDataManager:
         self.olTextures = []
         self.olMaterials = []
         self.hasCopyFiles = False
+        self.sceneDotMaterial = False
+        
+        materialFound = False
         
         if(self.hasMaterialFile(scenefile)):
-            self.readMeshes()
+            materialFound = True
+        if(self.hasSceneMaterialFile(scenefile)):
+            materialFound = True
+            self.sceneDotMaterial = True
+        if(materialFound):
             self.readTextures()
+            self.readMeshes()
             # assume 1 material file
             self.materials.append(os.path.basename(self.materialFile))
             self.hasCopyFiles = True
 
-	def getExternalMaterialFiles(self):
-		elems = self.xmlDoc.getElementsByTagName('externals')
-		for f in elems[0].getElementsByTagName('file'):
-			self.materials.append(f.getAttribute('name'))
-		
-					
+    def getExternalMaterialFiles(self):
+        elems = self.xmlDoc.getElementsByTagName('externals')
+        for f in elems[0].getElementsByTagName('file'):
+            self.materials.append(f.getAttribute('name'))
 
     def hasMaterialFile(self, scenefile):
         mfile = scenefile[:-6] + ".material"
         return os.access(mfile, os.F_OK)
         
+    def hasSceneMaterialFile(self, scenefile):
+        p = os.path.dirname(scenefile)
+        scenematerial = p + os.path.sep + "Scene.material"
+        if( os.access(scenematerial, os.F_OK)):
+            self.materialFile = scenematerial
+            return True
+        return False
         
     def copyFilesToDirs(self):
         for m in self.meshes:
@@ -102,15 +114,15 @@ class SceneDataManager:
             
     def removeFiles(self):
         for m in self.meshes:
-            if(self.olMeshes.__contains__(m)==False):
+            if(not m in self.olMeshes):
                 rmPath = MESH_MODEL_FOLDER + os.sep + m
                 os.remove(rmPath)
         for t in self.textures:
-            if(self.olTextures.__contains__(t)==False):
+            if(not t in self.olTextures):
                 rmPath = TEXTURE_FOLDER + os.sep + t
                 os.remove(rmPath)
         for material in self.materials:
-            if(self.olMaterials.__contains__(material)==False):
+            if(not material in self.olMaterials):
                 rmPath = MATERIAL_FOLDER + os.sep + material
                 os.remove(rmPath)
                 
@@ -119,7 +131,7 @@ class SceneDataManager:
         elems = self.xmlDoc.getElementsByTagName('entity')
         for e in elems:
             meshfile = e.getAttribute('meshFile')
-            if(alreadyAdded.__contains__(meshfile)==False):
+            if(not meshfile in alreadyAdded):
                 self.meshes.append(meshfile)
                 alreadyAdded.append(meshfile)
             
@@ -131,10 +143,9 @@ class SceneDataManager:
             sline = line.strip()
             if(sline.startswith('texture')):
                 split = sline.split(' ')
-                if(split.__len__()==2):
-                    #print split[1]
-                    if(alreadyAdded.__contains__(split[1])==False):
-                        #print split[1]
+                if(len(split)==2):
+                    if(not split[1] in alreadyAdded):
+                        #print "adding"
                         self.textures.append(split[1])
                         alreadyAdded.append(split[1])
                         

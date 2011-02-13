@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -12,6 +13,9 @@
 
 #include "EventManager.h"
 #include "UiServiceInterface.h"
+//$ BEGIN_MOD $
+#include "UiExternalServiceInterface.h"
+//$ END_MOD $
 
 namespace Avatar
 {
@@ -74,6 +78,15 @@ namespace Avatar
         connect(ui_service, SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)), SLOT(HandleTransferRequest(const QString&, QGraphicsProxyWidget*)));
 
         connect(ui_helper_, SIGNAL(ExitRequest()), SLOT(ExitScene()));
+
+		//$ BEGIN_MOD $ 
+		//Insert action in MenuExternal if available to switch to AvatarEditor
+		//Create Action, insert into menu Create->Avatar
+		QAction *action = new QAction("Avatar Editor",this);
+		if (ui_service->AddExternalMenuAction(action, "Avatar Editor", tr("Personal")))
+			connect(action, SIGNAL(triggered()), SLOT(ToggleScene()));
+				//LogWarning("Could not connect with Avatar scene !!");    
+		//$ END_MOD $ 
     }
 
     void AvatarSceneManager::ToggleScene()

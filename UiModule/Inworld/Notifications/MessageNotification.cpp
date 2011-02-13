@@ -4,7 +4,6 @@
 #include "DebugOperatorNew.h"
 
 #include "MessageNotification.h"
-
 #include <QPlainTextEdit>
 
 #include "MemoryLeakCheck.h"

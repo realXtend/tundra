@@ -133,8 +133,13 @@ namespace Foundation
 
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.4.1"));
 
+#ifdef PLAYER_VIEWER
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0 Player-0.1"));
+#else
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0"));
+#endif
+// $ END_MOD $
             CreateLoggingSystem(); // depends on config and platform
 
             // create managers
@@ -154,7 +159,7 @@ namespace Foundation
 
             ui = new NaaliUi(this);
             asset = new AssetAPI(this);
-            connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+			connect(ui->CentralWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
             input = new Input(this);
 

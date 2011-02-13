@@ -194,13 +194,6 @@ namespace RexLogic
         //! login from py - temp while loginui misses dllexport
         void StartLoginOpensim(const QString &firstAndLast, const QString &password, const QString &serverAddressWithPort);
 
-        //! XXX have linking probs to AvatarController so trying this wrapper
-        //! \todo figure workarounds for these functions so that dependency to RexLogicModule
-        //! is not needed anymore.
-        void SetAvatarYaw(float newyaw);
-        void SetAvatarRotation(const Quaternion &newrot);
-        void SetCameraYawPitch(float newyaw, float newpitch);
-
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
         //! Only functions if #define EC_HoveringText_ENABLED is present. Otherwise performs no function.
         void SetAllTextOverlaysVisible(bool visible);

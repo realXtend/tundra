@@ -238,7 +238,10 @@ namespace OpenSimProtocol
 
     ProtocolUtilities::NetOutMessage *ProtocolModuleOpenSim::StartMessageBuilding(ProtocolUtilities::NetMsgID msgId)
     {
-        return networkManager_->StartNewMessage(msgId);
+        if (networkManager_)
+            return networkManager_->StartNewMessage(msgId);
+        else
+            return 0;
     }
 
     void ProtocolModuleOpenSim::FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg)

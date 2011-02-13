@@ -158,7 +158,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
     while(!addAttributes.empty())
     {
         DeserializeData attributeData = addAttributes.back();
-        IAttribute *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str());
+        IAttribute *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str(), change);
         if (attribute)
             attribute->FromString(attributeData.value_, change);
         addAttributes.pop_back();

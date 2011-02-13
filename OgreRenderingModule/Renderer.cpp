@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -170,8 +171,8 @@ namespace OgreRenderer
                 OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
             }
 
-        if (framework_->Ui() && framework_->Ui()->MainWindow())
-            framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();
+        if (framework_->Ui() && framework_->Ui()->CentralWindow())
+            framework_->Ui()->CentralWindow()->SaveWindowSettingsToFile();
 
         framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
 
@@ -1075,40 +1076,54 @@ namespace OgreRenderer
         return &result;
     }
 
-  /* was the first non-qt version
-    RaycastResult Renderer::FrustumQuery(int left, int top, int right, int bottom)
+    void Renderer::swap(float &x, float &y)
     {
-        RaycastResult result;
-        result.entity_ = 0; 
-        if (!initialized_)
-            return result;
-     } */
-
+        float tmp;
+        tmp = x;
+        x = y;
+        y = tmp;
+    }
+    
     //qt wrapper / upcoming replacement for the one above
-    QVariantList Renderer::FrustumQuery(QRect &viewrect)
+    QList<Scene::Entity*> Renderer::FrustumQuery(QRect &viewrect)
     {
-/*
+        QList<Scene::Entity*>l;
+        float w= (float)renderWindow->OgreRenderWindow()->getWidth();
+        float h= (float)renderWindow->OgreRenderWindow()->getHeight();
+        float left = (float)(viewrect.left()) / w, right = (float)(viewrect.right()) / w;
+        float top = (float)(viewrect.top()) / h, bottom = (float)(viewrect.bottom()) / h;
+        
+        if(left > right) swap(left, right);
+        if(top > bottom) swap(top, bottom);
+        // don't do selection box is too small
+        if((right - left) * (bottom-top) < 0.0001) return l;
+        
         Ogre::PlaneBoundedVolumeList volumes;
-        Ogre::PlaneBoundedVolume p;
-        Ogre::Plane plane;
-        p.planes.push_back(plane);
+        Ogre::PlaneBoundedVolume p = camera_->getCameraToViewportBoxVolume(left, top, right, bottom, true);
         volumes.push_back(p);
+
         Ogre::PlaneBoundedVolumeListSceneQuery *query = scenemanager_->createPlaneBoundedVolumeQuery(volumes);
         assert(query);
 
         Ogre::SceneQueryResult results = query->execute();
         for(Ogre::SceneQueryResultMovableList::iterator iter = results.movables.begin(); iter != results.movables.end(); ++iter)
         {
-            MovableObject *m = *iter;
-            std::cout << "Hit MovableObject:" << m << std::endl;
+            Ogre::MovableObject *m = *iter;
+            Scene::Entity *entity = 0;
+            try
+            {
+                entity = Ogre::any_cast<Scene::Entity*>(m->getUserAny());
+            }
+            catch (Ogre::InvalidParametersException &/*e*/)
+            {
+                continue;
+            }
+            if(entity)
+                l << entity;//->GetId();//std::cout << "Hit MovableObject:" << m << std::endl;
         }
 
         scenemanager_->destroyQuery(query);
-*/
-        QVariantList l;
-        l << 1;
-        l << 2;
-        l << 3;
+
         return l;
     }
 

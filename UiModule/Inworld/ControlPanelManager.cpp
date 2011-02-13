@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $ 
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -17,6 +18,9 @@
 #include "Inworld/ControlPanel/TeleportWidget.h"
 #include "Inworld/ControlPanel/CacheSettingsWidget.h"
 #include "Inworld/ControlPanel/ChangeThemeWidget.h"
+
+#include "UiServiceInterface.h"
+#include "Inworld/InworldSceneController.h"
 
 #include <QAction>
 
@@ -40,7 +44,7 @@ namespace CoreUi
         // Settings widget
         settings_widget_ = new SettingsWidget(layout_manager_->GetScene(), this);
         ControlButtonAction *settings_action = new ControlButtonAction(GetButtonForType(UiServices::Settings), settings_widget_, this);
-        
+
         SetHandler(UiServices::Settings, settings_action);
         connect(settings_action, SIGNAL(toggled(bool)), SLOT(ToggleSettingsVisibility(bool)));
         connect(settings_widget_, SIGNAL(Hidden()), SLOT(CheckSettingsButtonStyle()));
@@ -81,10 +85,11 @@ namespace CoreUi
     void ControlPanelManager::CreateBasicControls()
     {
         QList<UiServices::ControlButtonType> buttons;
-        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
+        /// @todo: Read from ini
+		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;
-        ControlPanelButton *previous_button = 0;
+        previous_button = 0;
         foreach(UiServices::ControlButtonType button_type, buttons)
         {
             // Create the button and anchor in scene
@@ -120,30 +125,30 @@ namespace CoreUi
         {
             case UiServices::Settings:
             {
-                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
+                /*ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
                 ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Teleport]);
                 if (action_notifications)
                     action_notifications->RequestHide();
                 if (action_teleport)
-                    action_teleport->RequestHide();
+                    action_teleport->RequestHide();*/
                 break;
             }
             case UiServices::Teleport:
             {
                 ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
-                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
+                //ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
                 if (action_notifications)
                     action_notifications->RequestHide();
-                if (action_settings)
-                    action_settings->RequestHide();
+                //if (action_settings)
+                //   action_settings->RequestHide();
                 break;
             }
             case UiServices::Notifications:
             {
-                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
+                //ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
                 ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Teleport]);
-                if (action_settings)
-                    action_settings->RequestHide();
+                //if (action_settings)
+                //    action_settings->RequestHide();
                 if (action_teleport)
                     action_teleport->RequestHide();
                 break;
@@ -158,10 +163,15 @@ namespace CoreUi
 
     void ControlPanelManager::ToggleSettingsVisibility(bool visible)
     {
-        if (visible)
-            settings_widget_->show();
-        else
-            settings_widget_->AnimatedHide();
+		//Show it with Ui
+		UiServiceInterface *ui = (dynamic_cast<UiServices::InworldSceneController *>(parent()))->framework_->GetService<UiServiceInterface>();
+		if (ui)      
+			if (settings_widget_->GetInternalWidget()->isVisible())
+				ui->HideWidget(settings_widget_->GetInternalWidget());
+			else
+				ui->ShowWidget(settings_widget_->GetInternalWidget());//settings_widget_->AnimatedHide();				
+				
+
     }
 
     void ControlPanelManager::ToggleTeleportVisibility(bool visible)
@@ -205,6 +215,33 @@ namespace CoreUi
     qreal ControlPanelManager::GetContentWidth() const
     { 
         return backdrop_widget_->GetContentWidth();
+    }
+
+    void ControlPanelManager::CreateOptionalControls()
+    {
+		QList<UiServices::ControlButtonType> buttons;
+        buttons  << UiServices::Build << UiServices::Ether;
+
+        ControlPanelButton *button = 0;
+        //ControlPanelButton *previous_button = 0;
+        foreach(UiServices::ControlButtonType button_type, buttons)
+        {
+            // Create the button and anchor in scene
+            button = new ControlPanelButton(button_type); 
+            if (previous_button)
+                layout_manager_->AnchorWidgetsHorizontally(previous_button, button);
+            else
+                layout_manager_->AddCornerAnchor(button, Qt::TopRightCorner, Qt::TopRightCorner);
+
+            // Add to internal lists
+            control_buttons_.append(button);
+            if (button_type == UiServices::Notifications || button_type == UiServices::Settings || button_type == UiServices::Teleport)
+                backdrop_area_buttons_map_[button_type] = button;
+
+            connect(button, SIGNAL(ControlButtonClicked(UiServices::ControlButtonType)), SLOT(ControlButtonClicked(UiServices::ControlButtonType)));
+            previous_button = button;
+        }
+        UpdateBackdrop();
     }
 
 }

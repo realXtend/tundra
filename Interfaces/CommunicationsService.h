@@ -177,8 +177,7 @@ namespace Communications
         signals:
             /// When text message is received from in-world chat. The origin of the message 
             /// can be self or other participant
-            void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message);
-
+			void TextMessageReceived(const Communications::InWorldChat::TextMessageInterface &message,const QString& from_uuid);
             /// When user closes world connections
             void Closed();
             //void ParticipantJoined(ParticipantInterface* participant);

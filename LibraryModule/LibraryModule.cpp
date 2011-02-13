@@ -78,6 +78,8 @@ namespace Library
         frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
         resource_event_category_ = framework_->GetEventManager()->QueryEventCategory("Resource");
 
+        framework_->RegisterDynamicObject("library", this);
+
         RegisterConsoleCommand(Console::CreateCommand("Library",
             "Shows web library.",
             Console::Bind(this, &LibraryModule::ShowWindow)));
@@ -88,7 +90,10 @@ namespace Library
             library_widget_ = new LibraryWidget(ui_view);
 
             UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();                
-            UiProxyWidget *lib_proxy = ui->AddWidgetToScene(library_widget_);
+            UiProxyWidget *lib_proxy = ui->AddWidgetToScene(library_widget_, true, true);
+			//$ BEGIN_MOD $
+			ui->AddWidgetToMenu(lib_proxy, tr("Content Library"), tr("Scene"), "./data/ui/images/menus/edbutton_OBJED_normal.png");	
+			//$ END_MOD $
             ui->RegisterUniversalWidget("Library", lib_proxy);
 
             connect(ui_view, SIGNAL(DropEvent(QDropEvent *)), SLOT(DropEvent(QDropEvent *) ));
@@ -326,6 +331,7 @@ namespace Library
         // Parse all the urls from dropm mime data
         QString urlString = QUrl(drop_event->mimeData()->urls().at(0)).toString();
         QStringList urlList = urlString.split(";");
+        //LogDebug("Drag&drop handler got URL data " + urlString.toStdString());
 
         // Do a raycast to drop position, 
         RaycastResult* cast_result = RayCast(drop_event);
@@ -409,7 +415,8 @@ namespace Library
                         newmaterialdata.asset_id = url.toString().toStdString();
                         materials[submesh] = newmaterialdata;
 
-                        prim->Materials = materials;        
+                        prim->Materials = materials;
+                        emit TextureUrlWasAssigned(submesh); //so that scripts can e.g. make it so that the material is preserved, but only the texture used is changed
                         prim->SendRexPrimDataUpdate();
                     }
                 }

@@ -1,4 +1,4 @@
-!define VERSION "0.3.4.1"
+!define VERSION "0.4.0"
 
 Name "Naali ${VERSION}"
 
@@ -8,12 +8,14 @@ Page instfiles
 InstallDir "$PROGRAMFILES\Naali ${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "Naali-0.3.4.1.exe"
+OutFile "Naali-0.4.0.exe"
 
 XPStyle on
 
 RequestExecutionLevel admin
 
+SetCompressor /FINAL /SOLID lzma
+     
 Section ""
   SetOutPath $INSTDIR
   File /r build\*.*
@@ -41,6 +43,10 @@ Section ""
   Delete "$INSTDIR\vcredist_x86.exe"
   Delete "$INSTDIR\oalinst.exe"
   Delete "$INSTDIR\dxwebsetup.exe"
+  
+  # write permissions .\tmp folder to normal users: 
+  # this enabled some tts voices of Festival.exe
+  AccessControl::GrantOnFile "$INSTDIR\tmp" "(BU)" "GenericRead + GenericWrite"
 SectionEnd
 
 Section "Start Menu Shortcuts"

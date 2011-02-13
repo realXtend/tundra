@@ -1,0 +1,4 @@
+<config>
+	<entry>UiExternalModule</entry>
+	<dependency>UiModule</dependency>
+</config>

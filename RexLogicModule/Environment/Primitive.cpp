@@ -99,6 +99,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
         CheckPendingRexFreeData(entityid);
+        CheckPendingEcData(entityid);
         *created = true;
         return entity;
     }
@@ -550,6 +551,8 @@ bool Primitive::HandleECGM_ECData(ProtocolUtilities::NetworkEventInboundData* da
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(primuuid);
     if (entity)
         HandleECData(entity->GetId(), &fulldata[0], fulldata.size());
+    else
+        pending_ecdata_[primuuid].push_back(fulldata);
 
     return false;
 }
@@ -586,7 +589,7 @@ void Primitive::HandleECData(entity_id_t entityid, const uint8_t* primdata, cons
     QDomDocument temp_doc;
     if (temp_doc.setContent(QByteArray::fromRawData(data.c_str(), data.size())))
     {
-        DeserializeECsFromFreeData(entity, temp_doc);
+        DeserializeECsFromFreeData(entity, temp_doc, false);
         Scene::Events::SceneEventData event_data(entity->GetId());
         EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_ECS_RECEIVED, &event_data);
@@ -640,6 +643,23 @@ void Primitive::CheckPendingRexFreeData(entity_id_t entityid)
     {
         HandleRexFreeData(entityid, i->second);
         pending_rexfreedata_.erase(i);
+    }
+}
+
+void Primitive::CheckPendingEcData(entity_id_t entityid)
+{
+    Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
+    if (!entity) return;
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+
+    RexEcData::iterator i = pending_ecdata_.find(prim->FullId);
+    if (i != pending_ecdata_.end())
+    {
+        for(int k=0; k< i->second.size(); k++)
+        {
+            HandleECData(entityid, &i->second[k][0], i->second[k].size());
+        }
+        pending_ecdata_.erase(i);
     }
 }
 
@@ -846,6 +866,8 @@ void Primitive::SendECData(entity_id_t entity_id, IComponent * component)
     WriteNullTerminatedStringToBytes(freedata, &buffer[0], idx);
 
     buffer.resize(idx);
+
+    //qDebug() << "BINARY MESSAGE MACRO DEFINED";
 
     conn->SendGenericMessageBinary("ECSync", strings, buffer);
 #else
@@ -2173,6 +2195,7 @@ void Primitive::HandleLogout()
     prim_resource_request_tags_.clear();
     pending_rexprimdata_.clear();
     pending_rexfreedata_.clear();
+    pending_ecdata_.clear();
     local_dirty_entities_.clear();
 }
 
@@ -2368,7 +2391,7 @@ void Primitive::SerializeECsToNetwork()
     local_dirty_entities_.clear();
 }
 
-void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc)
+void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc, bool deleteNonExitingOnes)
 {
     StringVector type_names;
     StringVector names;
@@ -2401,22 +2424,26 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
     
     // If the entity has extra serializable EC's, we must remove them if they are no longer in the freedata.
     // However, at present time majority of EC's are not serializable, are handled internally, and must not be removed
-    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
-    for (uint i = 0; i < all_components.size(); ++i)
+    // However, when using the new ec sync, only one ec is included per message. this means that then removes are called explicitly with ec_remove message
+    if(deleteNonExitingOnes)
     {
-        if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
+        Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
+        for (uint i = 0; i < all_components.size(); ++i)
         {
-            bool found = false;
-            for (uint j = 0; j < type_names.size(); ++j)
+            if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
             {
-                if (type_names[j] == all_components[i]->TypeName().toStdString() && names[j] == all_components[i]->Name().toStdString())
+                bool found = false;
+                for (uint j = 0; j < type_names.size(); ++j)
                 {
-                    found = true;
-                    break;
+                    if (type_names[j] == all_components[i]->TypeName().toStdString() && names[j] == all_components[i]->Name().toStdString())
+                    {
+                        found = true;
+                        break;
+                    }
                 }
+                if (!found)
+                    entity->RemoveComponent(all_components[i], AttributeChange::LocalOnly);
             }
-            if (!found)
-                entity->RemoveComponent(all_components[i], AttributeChange::LocalOnly);
         }
     }
     

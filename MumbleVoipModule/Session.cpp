@@ -233,23 +233,28 @@ namespace MumbleVoip
         disconnect(user, SIGNAL(ChangedChannel(MumbleLib::User*)),this, SLOT(CheckChannel(MumbleLib::User*)));    
         connect(user, SIGNAL(ChangedChannel(MumbleLib::User*)), SLOT(CheckChannel(MumbleLib::User*)));
 
-        if (user->Name() == OwnAvatarId())
-        {
-            self_user_ = user;
-            return; 
-        }
-
-        if (user->Channel()->FullName() != current_mumble_channel_)
+        if (user->GetChannel()->FullName() != current_mumble_channel_)
         {
             other_channel_users_.append(user);
             return; 
         }
 
-        QString uuid = user->Name();
-        QString name = GetAvatarFullName(uuid);
-        if (name.size() == 0)
-            name = QString("%0 (no avatar)").arg(user->Name());
-        Participant* p = new Participant(name, user);
+        bool avatar_found = false;
+        QString uuid = user->Comment();
+        QString avatar_name = GetAvatarFullName(uuid);
+
+        if (avatar_name.size() > 0)
+            avatar_found = true;
+
+        if (avatar_found)
+            avatar_name = user->Name();
+        else
+            avatar_name = QString("%0 (no avatar)").arg(user->Name());
+        avatar_name.replace('_', ' ');        
+
+        Participant* p = new Participant(avatar_name, user);
+        if (avatar_found)
+            p->SetAvatarUUID(uuid);
         participants_.append(p);
         connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
         connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()) );
@@ -263,7 +268,7 @@ namespace MumbleVoip
         if (user->IsLeft())
             return;
 
-        if (user->Channel()->FullName() == current_mumble_channel_)
+        if (user->GetChannel()->FullName() == current_mumble_channel_)
         {
             foreach(MumbleLib::User* u, other_channel_users_)
             {
@@ -298,22 +303,20 @@ namespace MumbleVoip
                 emit ParticipantLeft(p);
                 continue;
             }
-            QString own_avatar_id_ = OwnAvatarId();
-            if (p->AvatarUUID() == own_avatar_id_)
+            if (p->AvatarUUID().length() == 0)
             {
-                // for some reason we have own avatar as participant here!
-                participants_.removeOne(p);
-                other_channel_users_.append(p->UserPtr());
-                emit ParticipantLeft(p);
-                continue;
-            }
-            if (p->AvatarUUID() == p->Name().left(p->AvatarUUID().size()) || p->AvatarUUID().length() == 0)
-            {
-                // For some reason do not have real name for this participant here!
-                QString full_name = GetAvatarFullName(p->AvatarUUID());
-                if (full_name.length() > 0)
-                    p->SetName( full_name );
-                continue;
+                QString uuid = p->UserPtr()->Comment();
+                if (uuid.length() > 0)
+                {
+                    QString avatar_name = GetAvatarFullName(uuid);
+                    if (avatar_name.size() > 0)
+                    {
+                        p->SetAvatarUUID(uuid);
+                        QString avatar_name = p->UserPtr()->Name();
+                        avatar_name.replace('_', ' ');        
+                        p->SetName(avatar_name);
+                    }
+                }
             }
         }
     }
@@ -421,15 +424,16 @@ namespace MumbleVoip
             {
                 Scene::Entity &entity = *iter->second;
                 EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
-                if (presence_component)
-                    if (presence_component->agentId.ToQString() == uuid)
-                    {
-                        QString name = ""; 
-                        name = presence_component->GetFullName();
-                        if (name.length() == 0)
-                            name = presence_component->getfirstName();
-                        return name;
-                    }
+                if (!presence_component)
+                    continue;
+                if (presence_component->agentId.ToQString() == uuid)
+                {
+                    QString name = ""; 
+                    name = presence_component->GetFullName();
+                    if (name.length() == 0)
+                        name = presence_component->getfirstName();
+                    return name;
+                }
             }
         }
         return "";

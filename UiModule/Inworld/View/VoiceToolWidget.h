@@ -15,11 +15,11 @@
 #include "ui_VoiceToolWidget.h"
 #include "IToolWidget.h"
 #include <QPushButton>
+#include <QComboBox>
 #include "Input.h"
 #include "VoiceController.h"
 
 class UiProxyWidget;
-class QComboBox;
 
 namespace Foundation
 {
@@ -34,6 +34,13 @@ namespace Communications
         class ParticipantInterface;
     }
 }
+
+/// Shows pop-up selection widget instead of dropdow.
+class PopupComboBox : public QComboBox
+{
+public:
+    virtual void showPopup();
+};
 
 namespace CommUI
 {
@@ -76,7 +83,7 @@ namespace CommUI
         VoiceControllerWidget* voice_controller_widget_;
         UiProxyWidget* voice_controller_proxy_widget_;
         InputContextPtr input_context_;
-        QComboBox* channel_selection_;
+        PopupComboBox* channel_selection_;
         VoiceTransmissionModeWidget* transmission_mode_widget_;
 
         VoiceController* voice_controller_;

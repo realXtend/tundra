@@ -30,6 +30,9 @@ register(rotate.COMPNAME, rotate.RotationHandler)
 import webmoduleloader
 register("pythonmodule", webmoduleloader.WebPythonmoduleLoader)
 
+import materialtemplatehandler
+register(materialtemplatehandler.COMPNAME, materialtemplatehandler.MaterialTemplateHandler)
+
 class ComponenthandlerRegistry(circuits.BaseComponent):
     def __init__(self):
         circuits.BaseComponent.__init__(self)

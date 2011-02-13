@@ -36,12 +36,12 @@ namespace CoreUi
          *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
          *  @param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
          */
-        void AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon = defaultItemIcon);
+        void AddMenuItem(QWidget *widget, const QString &name, const QString &category, const QString &icon = defaultItemIcon);
 
         /** Removes menu item.
          *  @param widget Controlled widget.
          */
-        void RemoveMenuItem(QGraphicsProxyWidget *controlled_widget);
+        void RemoveMenuItem(QWidget *controlled_widget);
 
     private slots:
         void AddMenuGroup(const QString &name, const QString &icon = defaultGroupIcon, qreal hgap = 5.0, qreal vgap = 5.0);
@@ -60,7 +60,7 @@ namespace CoreUi
         AnchorLayoutManager *layout_manager_;
 
         //! Track maps
-        QMap<QUuid, QGraphicsProxyWidget*> controller_map_;
+        QMap<QUuid, QWidget*> controller_map_;
         QMap<QString, GroupNode*> category_map_;
 
         //! These are for click animations starts/reverts when you navigate trough the menu

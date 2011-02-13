@@ -35,8 +35,8 @@ UiProxyWidget::UiProxyWidget(QWidget *widget, Qt::WindowFlags flags):
     setObjectName(name);
 
     // Embed widget to this proxy widget.
-    setWidget(widget);
-    widget->installEventFilter(this);
+	setWidget(widget);
+	widget->installEventFilter(this);
 
     // Init effects and animations
     if (windowFlags() != Qt::Widget)

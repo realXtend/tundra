@@ -114,11 +114,11 @@ class XmlSceneRegionResponceParser(XmlBaseParser):
                     region = sceneRegion.getElementsByTagName('Region')[0]
                     sceneUuid = sceneRegion.getElementsByTagName('SceneUuid')[0]
                     sceneNameValue = None
-                    if(sceneName.childNodes.__len__()!=0):
+                    if(len(sceneName.childNodes)!=0):
                         sceneNameValue = sceneName.childNodes[0].nodeValue
                     else:
                         sceneNameValue = ""
-                    if(sceneUuid.childNodes.__len__()!=0):
+                    if(len(sceneUuid.childNodes)!=0):
                         sceneUuidValue = sceneUuid.childNodes[0].nodeValue
                     else:
                         sceneUuidValue = ""

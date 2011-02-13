@@ -28,7 +28,7 @@ class ToolBarWindow():
 
         # uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
         # uiprops.SetMenuGroup(2) #2 is server tools group
-        # uiprops.widget_name_ = "Local Scene"
+        # uiprops.widget_name_ = "Ogre Scene Tool"
 
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         #self.proxywidget = r.createUiProxyWidget(ui, uiprops)
@@ -39,7 +39,10 @@ class ToolBarWindow():
         if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
 
-        uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
+        #$ BEGIN_MOD $
+        #uism.AddWidgetToMenu(self.proxywidget, "Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
+        uism.AddWidgetToMenu(self.proxywidget, "Ogre Scene Tool", "Scene", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
+        #$ END_MOD $
 
         self.inputQueue = queue
         self.endApplication = endApplication
@@ -75,6 +78,12 @@ class ToolBarWindow():
                     return
                 if(title=="__unload__"):
                     self.controller.unloadScene()
+                    return
+                if(title=="__continue_load__"):
+                    self.controller.continueLoad(msg)
+                    return
+                if(title=="__progress_cycle__"):
+                    self.progressMsg(msg)
                     return
                 self.displayMessage(title, msg)
             except Queue.Empty:
@@ -124,6 +133,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.checkBoxLockScale = self.gui.findChild("QCheckBox", "checkBoxLockScale")
         self.checkBoxToCenter = self.gui.findChild("QCheckBox", "checkBoxToCenter")
         self.checkBoxRotationPoint = self.gui.findChild("QCheckBox", "checkBoxRotationPoint")
+        self.checkBoxToCenter = self.gui.findChild("QCheckBox", "checkBoxToCenter")
 
         # server end scene editing
         self.btnLoadServerSceneList = self.gui.findChild("QPushButton", "pushButtonLoadServerSceneList")
@@ -170,6 +180,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.chkBoxFlipZY.connect("toggled(bool)", self.checkBoxZYToggled)
         self.checkBoxHighlight.connect("toggled(bool)", self.checkBoxHighlightToggled)
         self.checkBoxLockScale.connect("toggled(bool)", self.checkBoxLockScaleToggled)
+        self.checkBoxToCenter.connect("toggled(bool)", self.checkBoxToCenterToggled)
 
         self.btnLoadServerSceneList.connect("clicked(bool)", self.btnLoadServerSceneListClicked)
         self.btnLoadServerScene.connect("clicked(bool)", self.btnLoadServerSceneClicked)
@@ -225,6 +236,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
             #self.filename=QFileDialog.getOpenFileName(self.widget, "Select scene file", "*.scene")
             if(self.filename!=""):
                 self.controller.loadScene(self.filename)
+                #self.controller.startLoadScene(self.filename)
             else:
                 pass
         else:
@@ -344,6 +356,10 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
 
     def checkBoxLockScaleToggled(self, enabled):
         self.sizeLock = enabled
+        
+    def checkBoxToCenterToggled(self, enabled):
+        self.controller.dsManager.test()
+        pass
 
 # Server side scene handlers
 
@@ -491,6 +507,31 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
                     self.currentSceneSelectionRegions.append(region)
         pass
 
+    def progressCycle(self, message):
+        val = self.progressBar.value
+        if(val>=7):
+            self.progressBar.setValue(0)
+        else:
+            val+=1
+            self.progressBar.setValue(val)            
+            if(len(message)>10):
+                self.progressBar.setFormat("converting")
+            else:
+                if message=="end":
+                    self.progressReset()
+                else:
+                    self.progressBar.setFormat(message)
+                
+        pass
+        
+    def progressReset(self):
+        self.progressBar.reset()
+        self.progressBar.setValue(0)
+        self.progressBar.setFormat("Upload progress: inactive %p%")
+        pass
 
-
-
+    def progressMsg(self, msg):
+        if msg=="end":
+            self.progressReset()
+        else:
+            self.progressCycle(msg)

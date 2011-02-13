@@ -99,6 +99,7 @@ AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
 AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
 AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
 AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
+AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 
 # The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
@@ -142,12 +143,19 @@ add_subdirectory(DebugStatsModule)      # Enables a developer window for debuggi
 add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
 add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
 add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
+<<<<<<< HEAD
 add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
 add_subdirectory(CAVEStereoModule)     # Implements CAVE and Stereoscopy functionality
 add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
 if (OPENASSETIMPORT)
     add_subdirectory(OpenAssetImport)        # Allows import of various mesh file formats
 endif()
+=======
+#add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
+add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
+add_subdirectory(CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
+add_subdirectory (UiExternalModule)
+>>>>>>> origin/develop
 
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule
@@ -156,12 +164,15 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by
 #add_subdirectory(LegacyAvatarModule)
 
 if (MSVC)
-#   add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+   add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+   add_subdirectory (TtsModule)
+   add_subdirectory (NotificationTTS)
 endif()
 
 #add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
 if (NOT UISERVICE_TEST)
     add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
     add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined). Depends on OgreRenderingModule and InventoryModule.
+    add_subdirectory(LibraryModule)         # Implements drag & drop url meshes, materials and textures from webview to scene. Part of WorldBuildingModule
     add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
 endif()

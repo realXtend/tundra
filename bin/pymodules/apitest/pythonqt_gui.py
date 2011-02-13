@@ -64,5 +64,6 @@ class TestGui(Component):
         #qtmod.DeleteCanvas(self.canvas)
 
         uism = naali.ui
-        uism.RemoveProxyWidgetFromScene(self.proxywidget)
+        uism.RemoveWidgetFromScene(self.proxywidget)
+        uism.RemoveWidgetFromMenu(self.proxywidget)
         r.logInfo("TestGui proxywidget removed from scene.")

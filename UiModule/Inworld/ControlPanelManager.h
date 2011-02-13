@@ -46,6 +46,10 @@ namespace CoreUi
         TeleportWidget *GetTeleportWidget() const { return teleport_widget_; }
         LanguageWidget *GetLanguageWidget() const { return language_widget_; }
         CacheSettingsWidget *GetCacheSettingsWidget() const { return cache_settings_widget_; }
+		//$ BEGIN_MOD $
+		void CreateOptionalControls();
+		void ToggleSettingsVisibility(bool visible);
+		//$ END_MOD $
 
     private slots:
         void CreateBasicControls();
@@ -54,7 +58,7 @@ namespace CoreUi
         void ControlButtonClicked(UiServices::ControlButtonType type);
 
         // Internal handling of settings widget
-        void ToggleSettingsVisibility(bool visible);
+        //void ToggleSettingsVisibility(bool visible);
         void ToggleTeleportVisibility(bool visible);
         void CheckSettingsButtonStyle();
         void CheckTeleportButtonStyle();
@@ -74,6 +78,10 @@ namespace CoreUi
         TeleportWidget* teleport_widget_;
         ChangeThemeWidget* changetheme_widget_;
         CacheSettingsWidget *cache_settings_widget_;
+
+		//$ BEGIN_MOD $
+		ControlPanelButton *previous_button;
+		//$ END_MOD $
     };
 }
 

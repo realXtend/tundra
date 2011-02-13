@@ -25,6 +25,16 @@
 
 #include "DebugOperatorNew.h"
 
+
+void PopupComboBox::showPopup()
+{
+    QComboBox::showPopup();
+    QWidget* selectionWidget = qobject_cast<QWidget*>(children().last());
+    int x = selectionWidget->pos().x();
+    int y = selectionWidget->pos().y() - selectionWidget->height() - height();
+    selectionWidget->setGeometry(x, y, selectionWidget->width(), selectionWidget->height());
+}
+
 namespace CommUI
 {
     VoiceToolWidget::VoiceToolWidget(Foundation::Framework* framework) : 
@@ -92,16 +102,20 @@ namespace CommUI
 
         if (in_world_voice_session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
         {
-            voice_users_info_widget_->hide();
-            voice_state_widget_->hide();
+            if (voice_users_info_widget_)
+                voice_users_info_widget_->hide();
+            if (voice_state_widget_)
+                voice_state_widget_->hide();
             if (voice_controller_proxy_widget_)
                 voice_controller_proxy_widget_->hide();
             return;
         }
         else
         {
-            voice_users_info_widget_->show();
-            voice_state_widget_->show();
+            if (voice_users_info_widget_)
+                voice_users_info_widget_->show();
+            if (voice_state_widget_)
+                voice_state_widget_->show();
         }
 
         if (in_world_voice_session_->IsAudioSendingEnabled())
@@ -215,7 +229,7 @@ namespace CommUI
 
         if (!channel_selection_)
         {
-            channel_selection_ = new QComboBox();
+            channel_selection_ = new PopupComboBox();
             channel_selection_->setSizeAdjustPolicy( QComboBox::AdjustToContents );
             this->layout()->addWidget(channel_selection_);
         }

@@ -54,7 +54,7 @@ QWidget#leftBorder { border: 0px; background-color:transparent; background-image
      </property>
      <property name="minimumSize">
       <size>
-       <width>10</width>
+       <width>0</width>
        <height>32</height>
       </size>
      </property>

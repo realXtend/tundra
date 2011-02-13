@@ -24,6 +24,9 @@ from window import LocalSceneWindow as LCwindow
 from sceneuploader import SceneUploader as SUploader
 from sceneuploader import SceneSaver as SSaver
 from scenedata import SceneDataManager
+#from meshhandler import MeshHandler
+import meshhandler
+import loadprocess
 
 from xml.dom.minidom import getDOMImplementation
 
@@ -50,6 +53,7 @@ class LocalScene(Component):
 
         self.isrunning = 1
 
+        self.loadThread = None
         self.uploadThread = None
         self.sceneActionThread = None
 
@@ -75,14 +79,24 @@ class LocalScene(Component):
         self.sceneActions = None # sceneactions.SceneActions()
         globals()["glocalscene"] = self
         self.bLocalSceneLoaded = False
-
+        
+        self.loadProcessHandle = None
         #self.libMod = r.getLibraryModule()
-
         #self.libMod.connect("UploadSceneFile(QString, QVect)", self.onUploadSceneFile)
         pass
 
-    def loadScene(self, filename):
+    def startLoadScene(self, filename):
+        print "startLoadScene(self, filename):"
+        self.filename = filename
+        self.loadThread = threading.Thread(target=self.loadScene)
+        self.loadThread.start()
+        
+    def loadScene(self, filename=""):
         # if material file exists copy needed files to needed locations
+        print "loadScene"
+        if(filename==""):
+            filename = self.filename
+        self.filename = filename
         print "--"
         print self.bLocalSceneLoaded
         if(self.bLocalSceneLoaded==False):
@@ -91,11 +105,28 @@ class LocalScene(Component):
             if(self.scenedata.hasCopyFiles):
                 #self.scenedata.copyFilesToDirs()
                 self.scenedata.addResourceDirToRenderer()
-                pass
 
             time.sleep(1)
             if(filename!=None):
                 if(filename!=""):
+                    # exporthandler = meshhandler.BlenderExportHandler(filename, self)
+                    # print "starting exporthandler"
+                    # PythonQt.QtCore.QThreadPool.globalInstance().start(exporthandler)
+                                     
+                    #if True: # blend scene handling
+                    if filename.endswith(".blend.scene"):
+                        meshHandler = meshhandler.MeshHandler(filename)
+                        if meshHandler.checkOgreXmlConverter():
+                            if meshHandler.checkIfConverted()==False:
+                                if meshHandler.checkPythonExe()==False:                            
+                                    meshHandler.doFixes()
+                                else:
+                                    print "-----------------------------"
+                                    # run as separate process
+                                    self.loadProcessHandle = loadprocess.LoadProcessHandle()
+                                    self.loadProcessHandle.startProcess(filename, self)
+                                    return
+                                                        
                     self.dotScene, self.dsManager = loader.load_dotscene(filename)
                     self.dsManager.localScene=self
                     self.dsManager.startcenterX = self.dsManager.xshift
@@ -103,14 +134,34 @@ class LocalScene(Component):
                     self.dsManager.startcenterZ = self.dsManager.zshift
                     
                     self.dsManager.setHighlight(self.highlight)
-                    #self.dsManager.setFlipZY(self.flipZY, self.xshift, self.yshift, self.zshift, self.xscale, self.yscale, self.zscale)
                     self.dsManager.setFlipZY(self.flipZY)
-                    
+                                        
         else:
             self.queue.put(('local scene', 'you already have scene loaded'))
             pass
 
+    def handle(self, message):
+        """ messages from load process """
+        print message
+        if message.startswith("end"):
+            self.queue.put(('__continue_load__', self.filename))
+            #self.continueLoad(self.filename)
+        self.queue.put(('__progress_cycle__', message))
+            
+    def continueLoad(self, msg):
+        print msg
+        self.dotScene, self.dsManager = loader.load_dotscene(msg)
+        self.dsManager.localScene=self
+        self.dsManager.startcenterX = self.dsManager.xshift
+        self.dsManager.startcenterY = self.dsManager.yshift
+        self.dsManager.startcenterZ = self.dsManager.zshift
+        
+        self.dsManager.setHighlight(self.highlight)
+        #self.dsManager.setFlipZY(self.flipZY, self.xshift, self.yshift, self.zshift, self.xscale, self.yscale, self.zscale)
+        self.dsManager.setFlipZY(self.flipZY)
 
+        pass
+            
     def saveScene(self, filename):
         # set new mesh positions & scales to file, positions, scales are stored in DotSceneManager.nodes[].naali_ent.placeable.Position & Scale
         saver = SSaver()
@@ -142,7 +193,7 @@ class LocalScene(Component):
             return
         if(self.uploader==None):
             self.uploader=SUploader(uploadcap_url, self)
-        self.uploader.uploadScene(filename, self.dotScene, self.regionName, self.publishName)
+        self.uploader.uploadScene(filename, self.dotScene, self.scenedata, self.regionName, self.publishName)
         print "unloading dot scene"
         self.queue.put(('__unload__', '__unload__scene__'))
         self.queue.put(('scene upload', 'upload done'))
@@ -212,7 +263,7 @@ class LocalScene(Component):
         pass
 
     def update(self, time):
-        # print "here", time
+        #print "here", time
         pass
 
     def on_logout(self, id):

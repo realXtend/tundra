@@ -311,7 +311,6 @@ void InWorldChatModule::HandleChatFromSimulatorMessage(ProtocolUtilities::NetInM
     std::string message = msg.ReadString();
     if (message.size() < 1)
         return;
-
     if (logging_)
     {
         if (!logFile_)

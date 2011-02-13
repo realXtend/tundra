@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -77,7 +78,9 @@ namespace WorldBuilding
         UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
-            backup_proxy_ = ui->AddWidgetToScene(backup_widget_);
+			//$ BEGIN_MOD $
+            backup_proxy_ = ui->AddWidgetToScene(backup_widget_, true, true);
+			//$ END_MOD $
             backup_widget_->hide();
         }
         else

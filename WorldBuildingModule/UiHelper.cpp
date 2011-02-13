@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -19,6 +20,9 @@ namespace WorldBuilding
             QObject(parent),
             framework_(framework),
             variant_manager(0),
+//$ BEGIN_MOD $
+			string_manager(0),
+//$ END_MOD $
             browser(0),
             manip_ui_(0),
             ignore_manip_changes_(false)
@@ -69,10 +73,9 @@ namespace WorldBuilding
 
             // Managers and Factories
             QtVariantEditorFactory *variant_factory = new QtVariantEditorFactory(controller);
-            variant_manager = new QtVariantPropertyManager(controller);
-
+			variant_manager = new QtVariantPropertyManager(controller);
             CustomLineEditFactory *line_edit_factory = new CustomLineEditFactory(controller);
-            string_manager = new QtStringPropertyManager(controller);
+			string_manager = new QtStringPropertyManager(controller);
 
             // Init browser
             browser = new QtTreePropertyBrowser(parent);
@@ -92,9 +95,45 @@ namespace WorldBuilding
 
             return browser;
         }
+//$ BEGIN_MOD $
+		QtTreePropertyBrowser *UiHelper::CreatePropertyWindow(QObject *controller)
+		{
+			QtVariantEditorFactory *variantFactory= new QtVariantEditorFactory(controller);
+			variant_manager = new QtVariantPropertyManager(controller);
+			CustomLineEditFactory *lineEditFactory = new CustomLineEditFactory(controller);
+			string_manager = new QtStringPropertyManager(controller);
+
+			widget = new QtTreePropertyBrowser();
+			widget->setWindowTitle("Properties");
+			widget->setFactoryForManager(variant_manager, variantFactory);
+            widget->setFactoryForManager(string_manager, lineEditFactory);
+
+            widget->setPropertiesWithoutValueMarked(true);
+            widget->setRootIsDecorated(true);
+            widget->setResizeMode(QtTreePropertyBrowser::Fixed);
+            widget->setSplitterPosition(190);
+            widget->setMinimumHeight(300);
+
+			return widget;
+		}
+
+		void UiHelper::UpdatePropertyWindow(EC_OpenSimPrim *prim)
+		{
+			widget->clear();
+			UpdateSubGroups(widget->addProperty(CreateInformationGroup(variant_manager, prim)));
+            UpdateSubGroups(widget->addProperty(CreateRexPrimDataGroup(variant_manager, prim)));
+            UpdateSubGroups(widget->addProperty(CreateShapeGroup(variant_manager, prim)));
+		}
 
         // Private slots
+		void UiHelper::UpdateSubGroups(QtBrowserItem *main_group)
+		{
 
+            foreach (QtBrowserItem *sub_group, main_group->children())
+                if (sub_group->property()->subProperties().count() > 0)
+                    widget->setExpanded(sub_group, false);
+		}
+//$ END_MOD $
         void UiHelper::CollapseSubGroups(QtBrowserItem *main_group)
         {
             foreach (QtBrowserItem *sub_group, main_group->children())

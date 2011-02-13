@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -58,8 +59,10 @@ namespace WorldBuilding
         UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
+			//$ BEGIN_MOD $
             ui->AddWidgetToScene(scene_widget_);
-            ui->AddWidgetToMenu(scene_widget_, "OpenSim Scene Tool", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png");
+            ui->AddWidgetToMenu(scene_widget_, "Naali Scene Tool", "Scene", "./data/ui/images/menus/edbutton_LSCENE_normal.png");
+			//$ END_MOD$
             ui->RegisterUniversalWidget("OpenSim Scene", scene_widget_);
         }
         else

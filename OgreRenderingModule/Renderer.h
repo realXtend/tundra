@@ -69,7 +69,7 @@ namespace OgreRenderer
         virtual void Render();
 
         //! Do a frustum query to the world from viewport coordinates.
-        virtual QVariantList FrustumQuery(QRect &viewrect);
+        virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect);
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
@@ -367,6 +367,9 @@ namespace OgreRenderer
 
         // Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
+        
+        // swap float values
+        static void swap(float &x, float &y);
     };
 }
 

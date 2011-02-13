@@ -85,7 +85,7 @@ namespace RexLogic
         void RegisterToComponentChangeSignals(Scene::ScenePtr scene);
         
         // Deserialize EC's sent by server
-        void DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc);
+        void DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc, bool deleteNonExitingOnes = true);
         
     public slots:
         //! Trigger EC sync because of component attributes changing
@@ -122,6 +122,9 @@ namespace RexLogic
         //! checks if stored pending rexfreedata exists for prim and handles it
         //! @param entityid Entity id.
         void CheckPendingRexFreeData(entity_id_t entityid);
+
+        //! checks if stored pending ecdata exists for prim and handle it
+        void CheckPendingEcData(entity_id_t entityid);
         
         //! parse TextureEntry data from ObjectUpdate
         /*! @param prim Primitive component to receive texture data
@@ -230,6 +233,10 @@ namespace RexLogic
         //! pending rexfreedatas
         typedef std::map<RexUUID, std::string > RexFreeDataMap;
         RexFreeDataMap pending_rexfreedata_;
+
+        //! pending ec datas
+        typedef std::map<RexUUID, std::vector<std::vector<u8> > > RexEcData;
+        RexEcData pending_ecdata_;
         
         typedef std::set<entity_id_t> EntityIdSet;
         //! entities with local EC changes

@@ -17,7 +17,8 @@
 #include "EC_OgreCompositor.h"
 #include "EC_RttTarget.h"
 #include "EC_BillboardWidget.h"
-
+#include "EC_RttTarget.h"
+#include "EC_SelectionBox.h"
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "NetworkEvents.h"

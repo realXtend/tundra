@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -91,9 +92,20 @@ namespace OgreRenderer
         Renderer *renderer = framework_->GetService<Renderer>();
         if (!renderer)
             return;
+
+		//$ BEGIN_MOD $
+		UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        if (!ui)
+            return;
+		//$ END_MOD $
+
+
         if(e->HasCtrlModifier() && e->KeyCode() == Qt::Key_F)
         {
-            renderer->SetFullScreen(!renderer->IsFullScreen());
+            //renderer->SetFullScreen(!renderer->IsFullScreen());
+			//$ BEGIN_MOD $
+			//ui->ToggleFullScreen();
+			//$ END_MOD $
             QCheckBox* cbox = settings_widget_->findChild<QCheckBox*>("fullscreen_toggle");
             if(cbox)
                 cbox->setChecked(!cbox->isChecked());

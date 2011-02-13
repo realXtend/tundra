@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_UiModule_InworldSceneController_h
@@ -33,6 +34,9 @@ namespace UiServices
         //! Destructor.
         ~InworldSceneController();
 
+		//! Framework pointer.
+        Foundation::Framework *framework_;
+
     public slots:
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         /*! Convenience function if you dont want to bother and define your UiWidgetProperties.
@@ -65,16 +69,6 @@ namespace UiServices
          */
         void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
-        //! This is an overloaded function.
-        /*! \param widget Widget.
-         *  \param name Name of the menu entry.
-         *  \param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
-         *  \param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
-         *
-         *  \note Doesn't add the widget to the scene.
-         */
-        void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon);
-
         //! Remove a proxy widget from scene if it exist there
         /*! Used for removing your widget from scene. The show/hide toggle button will also be removed from the main panel.
          *  Note: Does not delete the proxy widget, after this is done its safe to delete your QWidget (this will delete the proxy also)
@@ -89,7 +83,7 @@ namespace UiServices
         /** Removes widget from menu.
          *  @param widget The controlled widget.
          */
-        void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget);
+        void RemoveWidgetFromMenu(QWidget *widget);
 
         //! Brings the proxy widget to front in the scene, set focus to it and shows it.
         void BringProxyToFront(QGraphicsProxyWidget *widget) const;
@@ -172,8 +166,10 @@ namespace UiServices
         //! QMap of docked UiProxyWidgets and their original size
         QMap<QGraphicsProxyWidget *, QSizeF> old_proxy_size;
 
+		//$ BEGIN_MOD $
         //! Framework pointer.
-        Foundation::Framework *framework_;
+        //Foundation::Framework *framework_;
+		//$ END_MOD $
 
         //Store last scene rectangle 
         QRectF last_scene_rect;

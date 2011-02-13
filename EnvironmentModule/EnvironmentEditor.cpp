@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -250,14 +251,15 @@ namespace Environment
             return;
 
         QVBoxLayout *layout = new QVBoxLayout(this);
-        layout->addWidget(editor_widget_);
+        layout->addWidget(editor_widget_); 
         layout->setContentsMargins(0, 0, 0, 0);
         setLayout(layout);
 
         setWindowTitle(tr("Environment Editor"));
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
-        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
+
+        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("Scene"), "./data/ui/images/menus/edbutton_ENVED_normal");
         ui->RegisterUniversalWidget("Environment", editor_proxy);
 
         // Tab window signals

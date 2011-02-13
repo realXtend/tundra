@@ -89,7 +89,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding ProxyWidget failed.")
 
-        uism.AddWidgetToMenu(self.proxywidget, "Estate Management", "Server Tools", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
+        uism.AddWidgetToMenu(self.proxywidget, "Estate Manager", "Scene", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
 
         self.btnLoadEstate = self.gui.findChild("QPushButton", "btnLoadEstate")
         self.listWEI = self.gui.findChild("QListWidget","listWidgetEstateInfo")

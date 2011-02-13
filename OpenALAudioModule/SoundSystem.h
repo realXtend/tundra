@@ -9,6 +9,20 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+#ifndef WIN32_WINNT            // Specifies that the minimum required platform is Windows Vista.
+#define _WIN32_WINNT 0x0600     // Change this to the appropriate value to target other versions of Windows.
+#endif
+
+#ifdef WIN32
+#include <windows.h>
+#include <mmdeviceapi.h>
+#include <endpointvolume.h>
+#include <string.h>
+#include <initguid.h> // must precede #include <functiondiscoverykeys.h>
+#include <functiondiscoverykeys.h>  // PKEY_Device_FriendlyName
+#include <QString>
+#endif
+
 namespace Foundation
 {
     class Framework;
@@ -285,6 +299,10 @@ namespace OpenALAudio
         std::map<ISoundService::SoundType, float> sound_master_gain_;
 
         boost::mutex mutex;
+
+        void AdjustMicrophoneLevel();
+        float microphone_level;
+        bool microphone_adjusted;
     };
 
     typedef boost::shared_ptr<SoundSystem> SoundSystemPtr;

@@ -20,7 +20,13 @@ HoveringNameController::~HoveringNameController()
 
 void HoveringNameController::SetText(const QString &text)
 {
+    text_ = text;
     textLabel->setText(text);
+}
+
+QString HoveringNameController::GetText() const
+{
+    return text_;
 }
 
 void HoveringNameController::SetPixmap(QPixmap* pixmap)

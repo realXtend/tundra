@@ -69,11 +69,14 @@ graphicsScene(0)
     
     mainWindow = new NaaliMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
-//    mainWindow->setUpdatesEnabled(false);
+    mainWindow->setUpdatesEnabled(false);
 
-    // Apply the Naali main window icon. \todo use .ico file type
-    QIcon icon("./data/ui/images/naali_icon.png");
-    mainWindow->setWindowIcon(icon);
+    // Apply the Naali main window icon. 
+    // Note: this will only affect to a icon at main window left top corner.
+    //       The application thubnail icon must be set by adding icon resource
+    //       to viewer project
+    QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
+	mainWindow->parentWidget()->setWindowIcon(icon);
 
     graphicsView = new NaaliGraphicsView(mainWindow);
 
@@ -83,6 +86,7 @@ graphicsScene(0)
     mainWindow->layout()->setMargin(0);
     layout->setContentsMargins(0,0,0,0);
     mainWindow->layout()->addWidget(graphicsView);
+
 
     QWidget *viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
@@ -119,7 +123,8 @@ graphicsScene(0)
     graphicsView->Resize(mainWindow->width(), mainWindow->height());
 
     graphicsView->show();
-    mainWindow->show();
+	//Show fullscreen if neccesary??
+	mainWindow->parentWidget()->show();
     viewportWidget->show();
 
     /// Do a full repaint of the view now that we've shown it.
@@ -130,9 +135,14 @@ NaaliUi::~NaaliUi()
 {
 }
 
-NaaliMainWindow *NaaliUi::MainWindow() const
+QWidget *NaaliUi::MainWindow() const
 {
-    return mainWindow;
+    return mainWindow->parentWidget();
+}
+
+NaaliMainWindow *NaaliUi::CentralWindow() const
+{
+	return mainWindow;
 }
 
 NaaliGraphicsView *NaaliUi::GraphicsView() const

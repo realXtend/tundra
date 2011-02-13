@@ -20,6 +20,12 @@ namespace Communications
         class SessionInterface;
         class TextMessageInterface;
     }
+	
+	namespace TtsChat
+	{
+		class TtsChatWidget;
+		class TtsChatConfig;
+	}
 }
 
 namespace CommUI
@@ -30,6 +36,11 @@ namespace CommUI
 namespace Foundation
 {
     class Framework;
+}
+
+namespace Tts
+{
+    class TtsServiceInterface;
 }
 
 namespace CoreUi
@@ -66,11 +77,14 @@ namespace CoreUi
         void ToggleImWidget();
 
         void ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message);
+
         void SendMessageRequested();
         void InitializeInWorldVoice();
         void InitializeInWorldChat();
         void UninitializeInWorldVoice();
-        void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message);
+
+        void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message, const QString& uuid);
+		void SpeakIncomingMessage(const Communications::InWorldChat::TextMessageInterface &message, const QString& from_uuid);
 
     private:
         Foundation::Framework* framework_;
@@ -92,6 +106,13 @@ namespace CoreUi
         bool resizing_horizontal_;
 
         InputContextPtr input_context_;
+
+		Tts::TtsServiceInterface* tts_service_;
+        QString own_tts_voice_;
+        QString default_avatar_tts_voice_;
+        bool tts_own_messages_;
+        bool tts_other_messages_;
+
 
     signals:
         void SendMessageToServer(const QString &message);

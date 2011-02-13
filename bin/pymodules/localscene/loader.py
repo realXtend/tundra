@@ -1,5 +1,6 @@
 import dotscene
 import math
+import mathutils
 try:
     import naali
 except ImportError:
@@ -29,13 +30,15 @@ class OgreNode:
         self.entityCollisionFile = None
         self.entityCollisionPrim = None
         self.entityStatic = None
+        self.entityIsPhantom = ""
+        self.blendSceneNode = False
         
     def createChildSceneNode(self):
         return OgreNode()
 
     def attachObject(self, ob):
         self.object = ob
-        print self, "attached object", ob
+        #print self, "attached object", ob
         if naali is not None: 
             self.create_naali_meshentity()
 
@@ -43,12 +46,15 @@ class OgreNode:
         self.naali_ent = naali.createMeshEntity(self.object.mesh, 100002) #XXX handle name too. what about id?
 
         e = self.naali_ent
-        print "Created naali entity:", e, e.Id
+        # print "Created naali entity:", e, e.Id
             
         """apply pos, rot & scale. 
         dotscene.py uses qt types now directly"""
         p = e.placeable
         mp = self.position
+        # print "----------------------"
+        # print self.entityMeshFile
+        # print self.position
         p.Position = self.position
             
         o = self.orientation
@@ -61,9 +67,31 @@ class OgreNode:
         # at the moment it looks like, its needed to rotate each node 180 degrees along z axis to get it right
         #p.Orientation = o * Quat(1,0,0,1) * Quat(1,0,0,1)
         #p.Orientation = o * Quat(math.sqrt(0.5),0,0,math.sqrt(0.5)) * Quat(math.sqrt(0.5),0,0,math.sqrt(0.5))
-        rotate90z = Quat(1,0,0,1)
-        rotate90z.normalize() # ekvivalent of sqrt Quat above, (this fixes collisions)
-        p.Orientation = o * rotate90z* rotate90z
+        
+        if self.blendSceneNode==False:
+            rotate90z = Quat(1,0,0,1)
+            rotate90z.normalize() # ekvivalent of sqrt Quat above, (this fixes collisions)
+            p.Orientation = o * rotate90z* rotate90z
+            # print p.Orientation
+        else: 
+            o.normalize()
+            p.Orientation = o
+                
+                
+                
+        # tried this according to the server example below, also i beleave this is the same thing
+        # jesterKing tried, problem is that it might work one time, but next time you open 
+        # the viewer and open the same scene file everything is wrong:
+        
+        # o *= Quat(1,0,0,1)
+        # o *= Quat(0,1,0,1)
+        
+        # o *= Quat(1,1,0,0)
+        # o *= Quat(1,0,1,0)
+        
+        # o *= Quat(1,1,0,0)
+        # o.normalize()
+        # p.Orientation = o 
         
         p.Scale = self.scale
 
@@ -128,12 +156,17 @@ class NaaliSceneManagerFacade:
     #def createLight(self, name):
     #    pass
 
-    #def createCamera(
+    def createCamera(self, name):
+        pass
 
 def load_dotscene(fname):
     sm = NaaliSceneManagerFacade()
     ds = dotscene.DotScene(fname, sm)
-    ds.dotscenemanager.rotateScene90DegreesAlongAxis('x')
+    if ds.blendScene:
+        ds.dotscenemanager.rotateScene90DegreesAlongAxis('-x')
+        ds.dotscenemanager.rotateScene90DegreesAlongAxis('-x')
+    else:
+        ds.dotscenemanager.rotateScene90DegreesAlongAxis('x')
     return ds, ds.dotscenemanager
 
 def unload_dotscene(ds):

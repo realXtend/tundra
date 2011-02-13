@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -485,8 +486,14 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
 {
     assert(name.empty() == false);
 
-    std::string path(name);
-    path.append(Poco::SharedLibrary::suffix());
+        std::string path(name);
+//$ BEGIN_MOD $
+//$ MOD_DESCRIPTION add player_viewer configurations suffix ("p") $
+#if PLAYER_VIEWER
+		path.append("p");
+#endif
+//$ END_MOD $
+        path.append(Poco::SharedLibrary::suffix());
 
     Module::SharedLibraryPtr library;
 
