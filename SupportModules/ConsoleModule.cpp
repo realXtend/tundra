@@ -60,7 +60,7 @@ namespace Console
 
     void ConsoleModule::ToggleConsole()
     {
-        ui_console_manager_->ToggleConsole();
+        //ui_console_manager_->ToggleConsole();
     }
 
     void ConsoleModule::HandleKeyEvent(KeyEvent *keyEvent)
