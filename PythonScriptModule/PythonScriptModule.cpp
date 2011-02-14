@@ -831,7 +831,7 @@ namespace PythonScript
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-        NaaliMainWindow *mainWnd = framework_->Ui()->MainWindow();
+        NaaliMainWindow *mainWnd = framework_->Ui()->CentralWindow();
         PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(mainWnd, PythonQt::self()->getMainModule(), Qt::Tool);
         return pythonqtconsole;
     }
