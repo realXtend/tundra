@@ -202,7 +202,8 @@ function ForgetAsset(assetRef) {
 function getSlides(ref) {
     var parts = ref.split('/');
     var filename = parts[parts.length - 1];
-    var path = filename.replace('.ppt', '');
+    var path = filename.replace('.pptx', '');
+    path = path.replace('.ppt', '');
     RequestAsset(serverurl + path + '/index.txt', "Binary");
 
     // set name
