@@ -27,6 +27,7 @@ void HoveringNameController::SetText(const QString &text)
 QString HoveringNameController::GetText() const
 {
     return text_;
+}
 
 void HoveringNameController::SetTextHeight(int height)
 {
