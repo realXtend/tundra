@@ -18,7 +18,7 @@ namespace UiExternalServices
 		cameraAction_(0),
 		editAction_(0),
 		scene_event_category_(0),
-		currentScene(0),
+		currentScene(""),
 		framework_(framework)
 	{
         bool create_actions = false; // todo read from ini
