@@ -25,13 +25,13 @@ function changeSlide(dir) {
     }
 
     print('new slide index is ' + slide_index);
-    dyn.SetAttribute("Current", slide_index);
+    dyn.SetAttribute("Current", slide_index + "");
 }
 
 function changeSlideTo(slide_index) {
     print("Changing slide!");
     var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
-    dyn.SetAttribute("Current", slide_index);
+    dyn.SetAttribute("Current", slide_index + "");
 }
 
 
@@ -41,7 +41,7 @@ function onSlideChanged(attribute, type) {
     var index = dyn.GetAttribute('Current');
     
     var canvassource = me.GetComponentRaw('EC_3DCanvasSource');
-    var slide = dyn.GetAttribute(index);
+    var slide = dyn.GetAttribute(index + "");
     print('new url is ' + slide);
     canvassource.source = slide;
 }
