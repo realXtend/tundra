@@ -30,9 +30,11 @@ print ('foo');
 
 var entity;
 var canvassource;
-var slides = []
+var slides = [];
+var prev;
+var next;
 var slide_index = 0;
-
+var max_slides;
 
 function checkSuffix(url) {
     // FIXME find a better way to get the suffix
@@ -131,7 +133,6 @@ function RequestAsset(ref, type)
     var transferptr = asset.RequestAsset(ref, type);
     var transfer = transferptr.get();
     transfer.Downloaded.connect(DownloadReady);
-    transfer.Loaded.connect(AssetReady);
 }
 
 function DownloadReady(/* IAssetTransfer* */ transfer)
@@ -155,7 +156,6 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
      	slides.push(baseurl + '/' + slidename + '-' + i + '.png');
     }
 
-	
 
     // set source to first slide
     canvassource = entity.GetComponentRaw('EC_3DCanvasSource')
@@ -185,7 +185,6 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     var r = script.scriptRef;
     r.ref = "local://slideshow.js";
     script.scriptRef = r;
-
 	
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
@@ -193,20 +192,7 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
 
 }
 
-function AssetReady(/* IAssetPtr* */ assetptr)
-{
-    var asset = assetptr.get();
-    var data = asset.GetRawData();
-    print("Asset ready");
-    print("  >> Class ptr :", asset);
-    print("  >> Type      :", asset.Type());
-    print("  >> Name      :", asset.Name());
-    print("  >> Data len  :", data.size());
-
-}
-
-function ForgetAsset(assetRef)
-{
+function ForgetAsset(assetRef) {
     // Make AssetAPI forget this asset if already loaded in
     // to the system and remove the disk cache entry.
     asset.ForgetAsset(assetRef, true);
@@ -222,7 +208,10 @@ function getSlides(ref) {
     // set name
     entity.name.name = "Slideshow: " + filename;
     entity.name.description = "Simple slideshow app from " + filename;
-
+    prev.name.name = 'Button prev (' + entity.name.name + ')';
+    scene.EmitEntityCreatedRaw(prev);
+    next.name.name = 'Button next (' + entity.name.name + ')';
+    scene.EmitEntityCreatedRaw(next);
 }
 
 
@@ -348,22 +337,22 @@ function createCanvas(event) {
 
     rotvec = new Vector3df();
 
+    rotvec.x = 187;
+    rotvec.y = 180;
+
+    prev = makeButton('prev', entity.placeable, 1, rotvec);
+
     rotvec.x = 180;
     rotvec.y = 0;
 
-    makeButton('prev', entity.placeable, -1, rotvec);
-
-    rotvec.x = 187;
-    rotvec.y = 180;
        
-    makeButton('next', entity.placeable, 1, rotvec);
+    next = makeButton('next', entity.placeable, -1, rotvec);
 
 }
 
 function makeButton(name, placeable, dir, rotation) {
 
     var button = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Mesh', 'EC_Placeable', 'EC_Name']);
-    button.name.name = 'Button ' + name +' (' + entity.name.name + ')';
 
     var button_mesh_ref = button.mesh.meshRef;
     button_mesh_ref.ref = 'local://kolmionappi.mesh';
@@ -384,8 +373,7 @@ function makeButton(name, placeable, dir, rotation) {
 
     button.placeable.transform = transform;
 
-    scene.EmitEntityCreatedRaw(button);
-
+    return button;
 
 }
 
