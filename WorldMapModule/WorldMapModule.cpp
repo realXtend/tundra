@@ -15,9 +15,12 @@
 #include "EventManager.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
+/* ///todo XXX what should we do with this here? 
+if there's some LLUDP asset provider some day, it may give this style map tiles,
+but probably better just use http or even just a webview instead of this whole module
 #include "TextureServiceInterface.h"
 #include "TextureInterface.h"
-#include "AssetEvents.h"
+#include "AssetEvents.h"*/
 #include "WorldLogicInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "UiSettingsServiceInterface.h"
@@ -156,6 +159,7 @@ namespace WorldMap
         return false;
     }
 
+    /* XXX old asset api
     bool WorldMapModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
 
@@ -183,7 +187,7 @@ namespace WorldMap
         }
 
         return false;
-    }
+    }*/
 
     bool WorldMapModule::HandleOSNE_MapBlock (ProtocolUtilities::NetworkEventInboundData *data)
     {
@@ -210,6 +214,7 @@ namespace WorldMap
             block.mapImageID = msg.ReadUUID();
             mapBlocks.append(block);
 
+            /* XXX old asset api
             boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = framework_->GetServiceManager()->GetService<Foundation::TextureServiceInterface>(Service::ST_Texture).lock();            
             if (texture_service)
             {
@@ -217,7 +222,7 @@ namespace WorldMap
                 request_tag_t tag = texture_service->RequestTexture(block.mapImageID.ToString());
                 if (tag)
                     map_asset_requests_.push_back(tag);                
-            }
+            }*/
         }
 
         worldmap_widget_->SetMapBlocks(mapBlocks);
@@ -245,6 +250,7 @@ namespace WorldMap
         return false;
     }
 
+    //this is useful even when there is no map underneath
     void WorldMapModule::UpdateAvatarPositions()
     {
         if (!worldmap_widget_)
@@ -292,7 +298,7 @@ namespace WorldMap
                 
     }
 
-    QImage WorldMapModule::ConvertToQImage(Foundation::TextureInterface &tex)
+    /*QImage WorldMapModule::ConvertToQImage(Foundation::TextureInterface &tex)
     {
         uint img_width        = tex.GetWidth(); 
         uint img_height       = tex.GetHeight(); 
@@ -340,7 +346,7 @@ namespace WorldMap
         }
 
         return image;
-    }
+    }*/
 
     const std::string WorldMapModule::moduleName = std::string("WorldMapModule");
 
