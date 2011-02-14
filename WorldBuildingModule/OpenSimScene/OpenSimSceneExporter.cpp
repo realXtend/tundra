@@ -10,8 +10,8 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
-#include "TextureServiceInterface.h"
-#include "TextureResource.h"
+//#include "TextureServiceInterface.h"
+//#include "TextureResource.h"
 
 #include "OgreImage.h"
 
@@ -253,7 +253,8 @@ namespace WorldBuilding
                 int not_found_mat = 0;
                 int replaced_material_texture_refs = 0;
 
-                Foundation::TextureServiceInterface *texture_service = framework_->GetService<Foundation::TextureServiceInterface>();
+	        /* XXX -NOT PORTED TO NEW ASSET API */
+                /*Foundation::TextureServiceInterface *texture_service = framework_->GetService<Foundation::TextureServiceInterface>();
                 if (texture_service)
                 {
                     foreach (QString mat_ref, material_ref_set->keys())
@@ -357,7 +358,7 @@ namespace WorldBuilding
                     }
                     LogHeadline(">> Replaced texture references:" , QString::number(replaced_material_texture_refs));
                 }
-                else
+                else*/
                     WorldBuildingModule::LogError(">> Texture service not accessible, aborting processing");
                 store_location.cdUp();
             }
@@ -703,7 +704,8 @@ namespace WorldBuilding
 
     QString SceneExporter::TryStoreTexture(const QString &original_ref, const QDir &store_location, const QString &base_url)
     {
-        QString new_ref = "DYNAMIC_TEXTURE_CREATION_FAILED"; // a bit of a hack, yeah
+        /* XXX -NOT PORTED TO NEW ASSET API */
+        /*QString new_ref = "DYNAMIC_TEXTURE_CREATION_FAILED"; // a bit of a hack, yeah
         Foundation::TextureServiceInterface *texture_service = framework_->GetService<Foundation::TextureServiceInterface>();
         if (!texture_service)
             return new_ref;
@@ -788,10 +790,10 @@ namespace WorldBuilding
                     WorldBuildingModule::LogDebug(">> Could not resolve texture format: " + QString::number(ogre_format).toStdString() + ", skipping texture");
             }
         }
-        else
+        else*/
             return ""; // empty means was not in cache aka "not found"
 
-        return new_ref;
+        //return new_ref;
     }
 
     void SceneExporter::CleanLocalDir(QDir dir)
