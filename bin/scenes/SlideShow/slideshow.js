@@ -21,7 +21,7 @@ function changeSlide(dir) {
 	slide_index = 0;
     } else if (dyn.GetAttribute(slide_index + "") == undefined) {
 	//FIXME
-	slide_index = 0;
+	slide_index = max_index;
     }
 
     dyn.SetAttribute("Current", slide_index);
