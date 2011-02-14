@@ -22,7 +22,7 @@ ui.GraphicsView().DragMoveEvent.connect(handleMove);
 ui.GraphicsView().DropEvent.connect(handleDrop);
 
 // Url for the server
-var serverurl = "http://localhost:8000/";
+var serverurl = "http://192.168.1.114:8000/";
 // Storage name
 var storagename = "Productivity Converter storage";
 
@@ -143,7 +143,7 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     print("  >> Type      :", transfer.GetAssetType());
     print("  >> Data len  :", data.size());
     print("  >> index     :", parseInt(data.toString()));
-    maxSlides = parseInt(data.toString());
+    noSlides = parseInt(data.toString());
     
     var baseurl = transfer.GetSourceUrl().replace('/index.txt', '');
     print(baseurl)
@@ -152,10 +152,9 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     var slidename = parts[parts.length - 1]
 	print(slidename)
     
-    for (i = 0; i < maxSlides; i++) {
+    for (i = 0; i < noSlides; i++) {
      	slides.push(baseurl + '/' + slidename + '-' + i + '.png');
     }
-
 
     // set source to first slide
     canvassource = entity.GetComponentRaw('EC_3DCanvasSource')
@@ -178,6 +177,10 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     dyn.CreateAttribute("int", "Current");
     dyn.SetAttribute("Current", 0);
 
+    dyn.CreateAttribute("int", "MaxIndex");
+    dyn.SetAttribute("MaxIndex", noSlides - 1);
+
+
     // ec_script
     var script = entity.script;
     script.type = "js";
@@ -188,8 +191,6 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
 	
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
-
-
 }
 
 function ForgetAsset(assetRef) {
@@ -197,7 +198,6 @@ function ForgetAsset(assetRef) {
     // to the system and remove the disk cache entry.
     asset.ForgetAsset(assetRef, true);
 }
-
 
 function getSlides(ref) {
     var parts = ref.split('/');
