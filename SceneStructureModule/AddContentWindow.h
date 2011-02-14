@@ -11,6 +11,7 @@
 #include <QWidget>
 
 #include "ForwardDefines.h"
+#include "AssetFwd.h"
 #include "SceneDesc.h"
 #include "Vector3D.h"
 
@@ -18,6 +19,8 @@ class QTreeWidget;
 class QPushButton;
 class QComboBox;
 class QTreeWidgetItem;
+class QProgressBar;
+class QLabel;
 
 class IAssetUploadTransfer;
 
@@ -36,21 +39,52 @@ public:
     */
     explicit AddContentWindow(Foundation::Framework *fw, const Scene::ScenePtr &dest, QWidget *parent = 0);
 
-    ///
+    /// Destructor.
     ~AddContentWindow();
 
-    /// Add scene descrition to be shown the tree widgets.
+    /// Adds scene descrition to be shown in the window.
     /** @param desc Scene description.
     */
     void AddDescription(const SceneDesc &desc);
 
-    /// 
-    /** @param pos
+    /// Adds multiple scene descritions to be shown in the window.
+    /** @param desc Scene description.
+    */
+//    void AddDescriptions(const QList<SceneDesc> &descs);
+
+    /// Adds files to be shown in the window.
+    /** @param fileNames List of files.
+    */
+    void AddFiles(const QStringList &fileNames);
+
+    /// Add offset position which will be applied to the created entities.
+    /** @param pos Position.
     */
     void AddPosition(const Vector3df &pos) { position = pos; }
 
+protected:
+    void showEvent(QShowEvent *e);
+
 private:
     Q_DISABLE_COPY(AddContentWindow)
+
+    /// Creates entity items to the entity tree widget.
+    /** @param entityDescs List of entity descriptions.
+    */
+    void AddEntities(const QList<EntityDesc> &entityDescs);
+
+    /// Creates asset items to the asset tree widget.
+    /** @param assetDescs List of assets descriptions.
+    */
+    void AddAssets(const SceneDesc::AssetMap &assetDescs);
+
+    /// Rewrites values of AssetReference or AssetReferenceList attributes.
+    /** @param sceneDesc Scene description.
+        @param dest Destination asset storage.
+        @param useDefaultStorage Do we want to use the default asset storage.
+    */
+    void RewriteAssetReferences(SceneDesc &sceneDesc, const AssetStoragePtr &dest, bool useDefaultStorage);
+
     QTreeWidget *entityTreeWidget; ///< Tree widget showing entities.
     QTreeWidget *assetTreeWidget; ///< Tree widget showing asset references.
     Foundation::Framework *framework; ///< Framework.
@@ -60,6 +94,31 @@ private:
     QPushButton *cancelButton; ///< Cancel/close button.
     QComboBox *storageComboBox; ///< Asset storage combo box.
     Vector3df position; ///< Centralization position for instantiated context (if used).
+    
+    // Uploading
+    QLabel *uploadStatus_;
+    QProgressBar *uploadProgress_;
+    int progressStep_;
+    int failedUploads_;
+    int successfullUploads_;
+    int totalUploads_;
+
+    // Entities add
+    QLabel *entitiesStatus_;
+    QProgressBar *entitiesProgress_;
+
+    QString currentStorage_;
+    QString currentStorageBaseUrl_;
+
+    // Parent widget
+    QWidget *parentEntities_;
+    QWidget *parentAssets_;
+
+    // Selected entities and assets
+    SceneDesc newDesc_;
+
+    // Bool for completion
+    bool contentAdded_;
 
 private slots:
     /// Checks all entity check boxes.
@@ -76,6 +135,24 @@ private slots:
 
     /// Start content creation and asset uploading.
     void AddContent();
+
+    /// Create new scene desctiption with ui checkbox selections
+    bool CreateNewDesctiption();
+
+    /// Start uploading
+    bool UploadAssets();
+
+    /// Add entities to scene (autocalled when all transfers finish)
+    void AddEntities();
+
+    /// Centers this window to the app main window
+    void CenterToMainWindow();
+
+    /// Set entity related widgets visibility.
+    void SetEntitiesVisible(bool visible);
+
+    /// Set assets related widgets visibility.
+    void SetAssetsVisible(bool visible);
 
     /// Closes the window.
     void Close();
@@ -98,6 +175,13 @@ private slots:
     /** @param transfer Failed transfer.
     */
     void HandleUploadFailed(IAssetUploadTransfer *trasnfer);
+
+    void UpdateUploadStatus(bool succesfull, const QString &assetRef);
+
+    void CheckUploadTotals();
+
+signals:
+    void Completed(bool contentAdded, const QString &uploadBaseUrl);
 };
 
 #endif

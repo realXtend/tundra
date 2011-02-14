@@ -6,9 +6,11 @@
 #include "IModule.h"
 #include "Framework.h"
 #include "Entity.h"
+#include "Audio.h"
+#include "AssetAPI.h"
 #include "EC_Placeable.h"
+#include "EC_SoundListener.h"
 #include "SceneManager.h"
-#include "ISoundService.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
@@ -22,10 +24,15 @@ EC_Sound::EC_Sound(IModule *module):
     soundOuterRadius(this, "Sound radius outer", 20.0f),
     loopSound(this, "Loop sound", false),
     soundGain(this, "Sound gain", 1.0f),
-    sound_id_(0)
+    spatial(this, "Spatial", true)
 {
     static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain.SetMetadata(&metaData);
+    static AttributeMetadata soundRefMetadata;
+    AttributeMetadata::ButtonInfoList soundRefButtons;
+    soundRefButtons.push_back(AttributeMetadata::ButtonInfo(soundRef.GetName(), "V", "View"));
+    soundRefMetadata.buttons = soundRefButtons;
+    soundRef.SetMetadata(&soundRefMetadata);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
@@ -38,12 +45,8 @@ EC_Sound::~EC_Sound()
 
 void EC_Sound::AttributeUpdated(IAttribute *attribute)
 {
-    if(attribute->GetNameString() == soundRef.GetNameString())
-    {
-        ISoundService *soundService = framework_->GetService<ISoundService>();
-        if (soundService && soundService->GetSoundName(sound_id_) != soundRef.Get().ref)
-            StopSound();
-    }
+    if (attribute == &soundRef)
+        framework_->Asset()->RequestAsset(soundRef.Get().ref);
 
     UpdateSoundSettings();
 }
@@ -61,74 +64,109 @@ void EC_Sound::RegisterActions()
 
 void EC_Sound::PositionChange(const QVector3D &pos)
 {
-    EC_Placeable *placeable = qobject_cast<EC_Placeable*>(sender());
-    ISoundService *soundService = framework_->Audio();
-    if(soundService && placeable && sound_id_)
-    {
-        Vector3df position(pos.x(), pos.y(), pos.z());
-        soundService->SetPosition(sound_id_, position);
-    }
+    if (soundChannel)
+        soundChannel->SetPosition(Vector3df(pos.x(), pos.y(), pos.z()));
+}
+
+void EC_Sound::View(const QString &attributeName)
+{
+    //! @todo Add implementation.
 }
 
 void EC_Sound::PlaySound()
 {
-
     ComponentChanged(AttributeChange::LocalOnly);
 
-    ISoundService *soundService = framework_->Audio();
-    if(!soundService)
+    // If previous sound is still playing stop it before we apply a new sound.
+    if (soundChannel)
     {
-        LogWarning("Failed to get sound service from the framework.");
+        soundChannel->Stop();
+        soundChannel.reset();
+    }
+
+    AssetPtr audioAsset = GetFramework()->Asset()->GetAsset(soundRef.Get().ref);
+    if (!audioAsset)
+    {
+        ///\todo Make a request.
         return;
     }
 
-    // If previous sound is still playing stop it before we apply a new sound.
-    if(sound_id_)
-        StopSound();
-
+    bool soundListenerExists = true;
     EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
-    if(placeable)
+
+    // If we are going to play back positional audio, check that there is a sound listener enabled that can listen to it.
+    // Otherwise, if no SoundListener exists, play back the audio as nonpositional.
+    if (placeable && spatial.Get())
+        soundListenerExists = (GetActiveSoundListener() != Scene::EntityPtr());
+
+    if (placeable && spatial.Get() && soundListenerExists)
     {
-        sound_id_ = soundService->PlaySound3D(soundRef.Get().ref, ISoundService::Triggered, false, placeable->GetPosition());
-        soundService->SetGain(sound_id_, soundGain.Get());
-        soundService->SetLooped(sound_id_, loopSound.Get());
-        soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
+        soundChannel = GetFramework()->Audio()->PlaySound3D(placeable->GetPosition(), audioAsset, SoundChannel::Triggered);
+        if (soundChannel)
+            soundChannel->SetRange(soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
-    else // If entity isn't holding placeable component treat sound as ambient sound.
+    else // Play back sound as a nonpositional sound, if no EC_Placeable was found or if spatial was not set.
     {
-        sound_id_ = soundService->PlaySound(soundRef.Get().ref, ISoundService::Ambient);
-        soundService->SetGain(sound_id_, soundGain.Get());
+        soundChannel = GetFramework()->Audio()->PlaySound(audioAsset, SoundChannel::Ambient);
+    }
+
+    if (soundChannel)
+    {
+        soundChannel->SetGain(soundGain.Get());
+        soundChannel->SetLooped(loopSound.Get());
     }
 }
 
 void EC_Sound::StopSound()
 {
-    ISoundService *soundService = framework_->GetService<ISoundService>();
-    if (soundService)
-        soundService->StopSound(sound_id_);
-
-    sound_id_ = 0;
+    if (soundChannel)
+        soundChannel->Stop();
+    soundChannel.reset();
 }
 
 void EC_Sound::UpdateSoundSettings()
 {
-    ISoundService *soundService = framework_->Audio();
-    if(!soundService || !sound_id_)
+    if (soundChannel)
     {
-        //LogWarning("Cannot update the sound settings cause sound service is not intialized or a sound wasn't on active state.");
-        return;
+        soundChannel->SetGain(soundGain.Get());
+        soundChannel->SetLooped(loopSound.Get());
+        soundChannel->SetRange(soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
+    }
+}
+
+Scene::EntityPtr EC_Sound::GetActiveSoundListener()
+{
+#ifdef _DEBUG
+    int numActiveListeners = 0; // For debugging, count how many listeners are active.
+#endif
+    
+    Scene::EntityList listeners = parent_entity_->GetScene()->GetEntitiesWithComponent("EC_SoundListener");
+    foreach(Scene::EntityPtr listener, listeners)
+    {
+        EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
+        if (ec->active.Get())
+        {
+#ifndef _DEBUG
+            assert(ec->GetParentEntity());
+            return ec->GetParentEntity()->shared_from_this();
+#else
+            ++numActiveListeners;
+#endif
+        }
     }
 
-    soundService->SetGain(sound_id_, soundGain.Get());
-    soundService->SetLooped(sound_id_, loopSound.Get());
-    soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
+#ifdef _DEBUG
+    if (numActiveListeners != 1)
+        LogWarning("Warning: When playing back positional 3D audio, " + QString::number(numActiveListeners).toStdString() + " active sound listeners were found!");
+#endif
+    return Scene::EntityPtr();
 }
 
 void EC_Sound::UpdateSignals()
 {
     if (!GetParentEntity())
     {
-        LogError("Couldn't update singals cause component dont have parent entity setted.");
+        LogError("Couldn't update singals cause component dont have parent entity set.");
         return;
     }
     Scene::SceneManager *scene = GetParentEntity()->GetScene();

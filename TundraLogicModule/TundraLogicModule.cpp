@@ -4,25 +4,23 @@
 #include "DebugOperatorNew.h"
 
 #include "TundraLogicModule.h"
+#include "Client.h"
+#include "Server.h"
+#include "TundraEvents.h"
+#include "SceneImporter.h"
+#include "SyncManager.h"
+
+#include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "SyncManager.h"
-#include "Client.h"
-#include "Server.h"
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
-#include "TundraEvents.h"
-#include "SceneImporter.h"
-#include "AssetServiceInterface.h"
 #include "LocalAssetProvider.h"
 #include "AssetAPI.h"
 
 #include "MemoryLeakCheck.h"
-
-using namespace RexTypes;
 
 namespace TundraLogic
 {
@@ -31,7 +29,9 @@ std::string TundraLogicModule::type_name_static_ = "TundraLogic";
 
 static const unsigned short cDefaultPort = 2345;
 
-TundraLogicModule::TundraLogicModule() : IModule(type_name_static_)
+TundraLogicModule::TundraLogicModule() : IModule(type_name_static_),
+    autostartserver_(false),
+    autostartserver_port_(cDefaultPort)
 {
 }
 
@@ -81,18 +81,30 @@ void TundraLogicModule::PostInitialize()
         Console::Bind(this, &TundraLogicModule::ConsoleLoadScene)));
     
     RegisterConsoleCommand(Console::CreateCommand("importscene",
-        "Loads scene from a dotscene file. Optionally clears the existing scene. Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
+        "Loads scene from a dotscene file. Optionally clears the existing scene."
+        "Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
         Console::Bind(this, &TundraLogicModule::ConsoleImportScene)));
     
     RegisterConsoleCommand(Console::CreateCommand("importmesh",
-        "Imports a single mesh as a new entity. Position can be specified optionally. Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
+        "Imports a single mesh as a new entity. Position can be specified optionally."
+        "Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
         Console::Bind(this, &TundraLogicModule::ConsoleImportMesh)));
         
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
-    if (!kristalliModule_.get())
+    if (!kristalliModule_)
     {
         throw Exception("Fatal: could not get KristalliProtocolModule");
+    }
+    
+    // Check whether server should be autostarted
+    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
+    if (programOptions.count("startserver"))
+    {
+        autostartserver_ = true;
+        autostartserver_port_ = programOptions["startserver"].as<int>();
+        if (!autostartserver_port_)
+            autostartserver_port_ = cDefaultPort;
     }
 }
 
@@ -112,13 +124,10 @@ void TundraLogicModule::Update(f64 frametime)
         static bool check_default_server_start = true;
         if (check_default_server_start)
         {
-            //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule or UIModule, assume we are running a "dedicated" server, and start the server automatically on default port
-            ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
-            ModuleWeakPtr uiModule = framework_->GetModuleManager()->GetModule("UI");
-            if ((!loginModule.lock().get()) && (!uiModule.lock().get()))
+            if (autostartserver_)
             {
                 LogInfo("Started server by default");
-                server_->Start(cDefaultPort);
+                server_->Start(autostartserver_port_);
             }
 
             // Load startup scene here (if we have one)
@@ -212,7 +221,7 @@ Console::CommandResult TundraLogicModule::ConsoleConnect(const StringVector& par
     }
     catch (...) {}
     
-    client_->Login(params[0], port, username, password);
+    client_->Login(QString::fromStdString(params[0]), port, QString::fromStdString(username), QString::fromStdString(password));
     
     return Console::ResultSuccess();
 }
@@ -360,7 +369,7 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
         {
             Events::TundraLoginEventData* event_data = checked_static_cast<Events::TundraLoginEventData*>(data);
             if (client_)
-                client_->Login(event_data->address_, event_data->port_ ? event_data->port_ : cDefaultPort, event_data->username_, event_data->password_);
+                client_->Login(QString::fromStdString(event_data->address_), event_data->port_ ? event_data->port_ : cDefaultPort, QString::fromStdString(event_data->username_), QString::fromStdString(event_data->password_), QString::fromStdString(event_data->protocol_));
         }
     }
     

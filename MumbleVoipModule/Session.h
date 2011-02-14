@@ -4,7 +4,7 @@
 #define incl_MumbleVoipModule_Session_h
 
 #include "CommunicationsService.h"
-#include "ISoundService.h"
+#include "Audio.h"
 #include <QMap>
 
 namespace Foundation
@@ -62,6 +62,8 @@ namespace MumbleVoip
         virtual QStringList GetChannels();
 
         virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const;
+        virtual QStringList GetParticipantsNames() const;
+        virtual void MuteParticipantByName(QString, bool) const;
 
         virtual void Update(f64 frametime);
         virtual QList<QString> Statistics();
@@ -80,7 +82,6 @@ namespace MumbleVoip
         void SendRecordedAudio();
         void PlaybackReceivedAudio();
         void PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame);
-        boost::shared_ptr<ISoundService> SoundService();
         void ApplyMicrophoneLevel(PCMAudioFrame* frame);
         //virtual void AddChannel(EC_VoiceChannel* channel);
         //virtual void RemoveChannel(EC_VoiceChannel* channel);
@@ -99,7 +100,7 @@ namespace MumbleVoip
         MumbleLib::Connection* connection_; // // In future session could have multiple connections
         double speaker_voice_activity_;
         QString current_mumble_channel_;
-        QMap<int, sound_id_t> audio_playback_channels_;
+        QMap<int, SoundChannelPtr> audio_playback_channels_;
         std::string recording_device_;
         Settings* settings_;
         bool local_echo_mode_; // if true then acudio is only played locally

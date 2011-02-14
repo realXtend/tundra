@@ -10,39 +10,45 @@ from PythonQt.QtGui import QVector3D as Vec3
 from PythonQt.QtGui import QQuaternion as Quat
 
 import naali
-import mathutils
 
 import async_eventlet_wsgiserver
 
-SPAWNPOS = 131.806, 48.9571, 28.7691 #at the end of pier in w.r.o:9000
+clients = set()
+connections = dict()
 
 class NaaliWebsocketServer(circuits.BaseComponent):
     instance = None
-
     def __init__(self):
+
         circuits.BaseComponent.__init__(self)
         self.sock = eventlet.listen(('0.0.0.0', 9999))
         self.server = async_eventlet_wsgiserver.server(self.sock, handle_clients)
         print "websocket server started."
 
         NaaliWebsocketServer.instance = self
-        self.clientavs = {}
+    
+    def newclient(self, connectionid):
+        id = self.scene.NextFreeId()
+        naali.server.UserConnected(connectionid, 0)
 
-    def newclient(self, clientid, position, orientation):
-        ent = naali.createMeshEntity("Jack.mesh")
+        # Return the id of the connection
+        return id
 
-        ent.placeable.Position = Vec3(position[0], position[1], position[2])
+    def removeclient(self, connectionid):
+        naali.server.UserDisconnected(connectionid, 0)
 
-        ent.placeable.Orientation = Quat(mathutils.euler_to_quat(orientation))
+    @circuits.handler("on_sceneadded")
+    def on_sceneadded(self, name):
+        '''Connects to various signal when scene is added'''
+        self.scene = naali.getScene(name)
 
-        print "New entity for web socket presence at", ent.placeable.Position
+        self.scene.connect("AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)", onAttributeChanged)
 
-        self.clientavs[clientid] = ent
+        self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)", onNewEntity)
 
-    def updateclient(self, clientid, position, orientation):
-        ent = self.clientavs[clientid]
-        ent.placeable.Position = Vec3(position[0], position[1], position[2])
-        ent.placeable.Orientation = Quat(mathutils.euler_to_quat(orientation))
+        self.scene.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", onComponentAdded)
+
+        self.scene.connect("EntityRemoved(Scene::Entity*, AttributeChange::Type)", onEntityRemoved)
 
     @circuits.handler("update")
     def update(self, t):
@@ -54,20 +60,85 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         # Need to figure something out what to do and how
         pass
 
-clients = set()
-       
 def sendAll(data):
     for client in clients:
         client.send(json.dumps(data))        
 
+def onAttributeChanged(component, attribute, changeType):
+    #FIXME Only syncs hard coded ec_placeable
+    #Maybe get attribute or something
+    
+    #FIXME Find a better way to get component name
+    component_name = str(component).split()[0]
+
+    #Let's only sync EC_Placeable
+    if component_name != "EC_Placeable":
+        return
+
+    entity = component.GetParentEntity()
+    
+    # Don't sync local stuff
+    if entity.IsLocal():
+        return
+
+    ent_id = entity.Id
+
+    data = component.GetAttributeQVariant('Transform')
+    transform = list()
+
+    transform.extend([data.position().x(), data.position().y(), data.position().z()])
+    transform.extend([data.rotation().x(), data.rotation().y(), data.rotation().z()])
+    transform.extend([data.scale().x(), data.scale().y(), data.scale().z()])
+
+    sendAll(['setAttr', {'id': ent_id, 
+                         'component': component_name,
+                         'Transform': transform}])
+
+def onNewEntity(entity, changeType):
+    sendAll(['addEntity', {'id': entity.Id}])
+    print entity
+
+def onComponentAdded(entity, component, changeType):
+    #FIXME Find a better way to get component name
+    component_name = str(component).split()[0]
+
+    # Just sync EC_Placeable and EC_Mesh since they are currently the
+    # only ones that are used in the client
+    if component_name not in ["EC_Placeable", "EC_Mesh"]:
+        return
+
+    if component_name == "EC_Mesh":
+
+        sendAll(['addComponent', {'id': entity.Id, 'component': component_name, 'url': 'ankka.dae'}])
+    else:
+        data = component.GetAttributeQVariant('Transform')
+        transform = list()
+
+        transform.extend([data.position().x(), data.position().y(), data.position().z()])
+        transform.extend([data.rotation().x(), data.rotation().y(), data.rotation().z()])
+        transform.extend([data.scale().x(), data.scale().y(), data.scale().z()])
+
+        sendAll(['addComponent', {'id': entity.Id, 
+                             'component': component_name,
+                             'Transform': transform}])
+
+    print entity.Id, component
+
+def onEntityRemoved(entity, changeType):
+    print "Removing", entity
+    sendAll(['removeEntity', {'id': entity.Id}])
+
 @websocket.WebSocketWSGI
 def handle_clients(ws):
     print 'START', ws
-    myid = random.randrange(1,10000)
     clients.add(ws)
     
-    scene = naali.getScene("World")
+    # Don't do this! Figure out a way to fake a kNet connection or
+    # something.
+    connectionid = random.randint(1000, 10000)
     
+    scene = NaaliWebsocketServer.instance.scene
+
     while True:
         # "main loop" for the server. When your done with the
         # connection break from the loop. It is important to remove
@@ -83,7 +154,7 @@ def handle_clients(ws):
         print msg
 
         if msg is None:
-            # if there is no message the client will quit. 
+            # if there is no message the client will Quit
             break
 
         try:
@@ -95,94 +166,28 @@ def handle_clients(ws):
         if function == 'CONNECTED':
             ws.send(json.dumps(['initGraffa', {}]))
 
-            x, y, z = SPAWNPOS[0], SPAWNPOS[1], SPAWNPOS[2]
-            start_position = (x, y, z)
-            start_orientation = (1.57, 0, 0)
-            NaaliWebsocketServer.instance.newclient(myid, start_position, start_orientation)
-
+            myid = NaaliWebsocketServer.instance.newclient(connectionid)
+            connections[myid] = connectionid
             ws.send(json.dumps(['setId', {'id': myid}]))
-            sendAll(['addEntity', {'id': myid}])
-            sendAll(['addComponent', {'id': myid, 'component': 'EC_Mesh', 'url': 'http://localhost:8000/WebNaali/ankka.dae'}])
-            sendAll(['addComponent',{'id': myid, 'component': 'EC_Placeable',
-                                     'x': x,
-                                     'y': y,
-                                     'z': z,
-                                     'rotx': 1.57,
-                                     'roty': 0,
-                                     'rotz': 0}])
-
-            # ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent")
-
-            # for ent in ents:
-            #     id = ent.Id
-            #     position = ent.placeable.Position.x(), ent.placeable.Position.y(), ent.placeable.Position.z()
-            #     orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
-            #     sendAll(['addObject', {'id': id, 'position': position, 'orientation': orientation, 'xml': scene.GetEntityXml(ent).data()}])
-
-        elif function == 'Naps':
-            ws.send(json.dumps(['logMessage', {'message': 'Naps itelles!'}]))
             
-        elif function == 'setAttr':
+            #FIXME don't sync locals
+            xml = scene.GetSceneXML(True)
+
+            ws.send(json.dumps(['loadScene', {'xml': str(xml)}]))
+
+        elif function == 'Action':
+            action = params.get('action')
+            args = params.get('params')
             id = params.get('id')
-            component = params.get('component')
-            
-            if component == 'EC_Placeable':
-                # What to do here?
-                ent = NaaliWebsocketServer.instance.clientavs[myid]
-                position = ent.placeable.Position
-                orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
+            av = scene.GetEntityByNameRaw("Avatar%s" % connections[id])
 
-                x = params.get('x', position.x())
-                y = params.get('y', position.y())
-                z = params.get('z', position.z())
-                rotx = params.get('rotx', orientation[0])
-                roty = params.get('roty', orientation[1])
-                rotz = params.get('rotz', orientation[2])
-                11
-                NaaliWebsocketServer.instance.updateclient(myid, (x, y, z), (rotx, roty, rotz))
-
-            ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
-            for ent in ents:
+            av.Exec(1, action, args)
                 
-                x = ent.placeable.Position.x()
-                y = ent.placeable.Position.y()
-                z = ent.placeable.Position.z()
-
-                orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
-
-                id = ent.Id
-
-                sendAll(['addEntity', {'id': id}])
-                sendAll(['addComponent', {'id': id, 'component': 'EC_Mesh', 'url': 'http://localhost:8000/WebNaali/ankka.dae'}])
-                sendAll(['addComponent', {'id': id, 'component': 'EC_Placeable'}])
-
-                sendAll(['setAttr',
-                         {'id': id,
-                          'component': 'EC_Placeable',
-                          'x': x,
-                          'y': y,
-                          'z': z,
-                          'rotx': orientation[0],
-                          'roty': orientation[1],
-                          'rotz': orientation[2]}])
-
-        elif function == 'updateObject':
-            id = params['id']
-            data = params['data']
-
-
-            entity = scene.GetEntityRaw(id)
-            component = entity.GetComponentRaw('EC_DynamicComponent', 'door')
-            
-            component.SetAttribute('opened', data['opened'])
-                    
-        elif function == 'setSize':
-            y_max = params['height']
-            x_max = params['width']
-
         elif function == 'reboot':
             break
 
-
+    # Remove connection
+    NaaliWebsocketServer.instance.removeclient(connectionid)
+            
     clients.remove(ws)
     print 'END', ws

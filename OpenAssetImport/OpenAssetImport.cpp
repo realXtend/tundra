@@ -351,7 +351,7 @@ namespace AssImp
                 if (vmin.x <= vmax.x && vmin.y <= vmax.y && vmin.z <= vmax.z)
                 {
                     ogreMesh->_setBounds(Ogre::AxisAlignedBox(vmin, vmax));
-                    Ogre::Real maxvertex = std::max(abs(vmax.x), std::max(abs(vmin.x), std::max(abs(vmax.y), std::max(abs(vmin.y), std::max(vmax.z, vmin.z)))));
+                    Ogre::Real maxvertex = std::max(abs(vmax.x), std::max(abs(vmin.x), std::max(abs(vmax.y), std::max(abs(vmin.y), std::max(abs(vmax.z), abs(vmin.z))))));
                     ogreMesh->_setBoundingSphereRadius(maxvertex / 2.f);
                     ogreMesh->load();
                     outMeshNames.push_back(ogreMeshName);

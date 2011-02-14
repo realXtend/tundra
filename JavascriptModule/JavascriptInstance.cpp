@@ -12,11 +12,19 @@
 #include "ScriptMetaTypeDefines.h"
 #include "NaaliCoreTypeDefines.h"
 #include "EC_Script.h"
+#include "IModule.h"
+#include "AssetAPI.h"
+#include "IAssetProvider.h" //to check if the code was loaded from a local or remote storage
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 
 #include <QFile>
+#include <sstream>
+
+//#ifndef QT_NO_SCRIPTTOOLS
+//#include <QScriptEngineDebugger>
+//#endif
 
 #include "MemoryLeakCheck.h"
 
@@ -54,8 +62,22 @@ void JavascriptInstance::Load()
     // Can't specify both a file source and an Asset API source.
     assert(sourceFile.isEmpty() || scriptRef_.get() == 0);
 
+    //determine based on code origin whether it can be trusted with system access or not
+    if (scriptRef_.get()) 
+    {
+        AssetProviderPtr provider = scriptRef_.get()->GetAssetProvider();
+        if (provider->Name() == "Local")
+            trusted_ = true;
+        else
+            trusted_ = false;
+    }
+    
+
     if (sourceFile.length() > 0)
+    {
         program_ = LoadScript(sourceFile);
+        trusted_ = true; //this is a local file directly, right?
+    }
 
     // Do we even have a script to execute?
     if (program_.isEmpty() && (!scriptRef_.get() || scriptRef_->scriptContent.isEmpty()))
@@ -81,6 +103,16 @@ void JavascriptInstance::Load()
 QString JavascriptInstance::LoadScript(const QString &fileName)
 {
     QString filename = fileName.trimmed();
+
+    // First check if the include was supposed to go through the Asset API.
+    if (module_)
+    {
+        ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(module_->GetFramework()->Asset()->GetAsset(fileName));
+        if (asset)
+            return asset->scriptContent;
+    }
+
+    // Otherwise, treat fileName as a local file to load up.
 
     QFile scriptFile(filename);
     if (!scriptFile.open(QIODevice::ReadOnly))
@@ -143,7 +175,18 @@ void JavascriptInstance::Run()
     included_files_.clear();
     QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
     if (engine_->hasUncaughtException())
-        LogError(result.toString().toStdString());
+    {
+        LogError("In run/evaluate: " + result.toString().toStdString());
+        QStringList trace = engine_->uncaughtExceptionBacktrace();
+        QStringList::const_iterator it;
+        for (it = trace.constBegin(); it != trace.constEnd(); ++it)
+            LogError((*it).toLocal8Bit().constData());
+
+        std::stringstream ss;
+        int linenum = engine_->uncaughtExceptionLineNumber();
+        ss << linenum;
+        LogError(ss.str());
+    }
 
     evaluated = true;
 }
@@ -221,9 +264,36 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
         return;
     }
 
+    QStringList extension_whitelist; //the search is system wide, so whitelist is best to not leak to 3rd party libs
+    extension_whitelist << "qt.core" << "qt.gui" << "qt.xml" << "qt.xmlpatterns" << "qt.opengl"; //webkit not allowed directly so scripts can't open hidden browsers to do malicious stuff. uitools to be investigated
+
+    QStringList qt_blacklist; //the types in qt core&gui which are not safe. should probably be a whitelist too.
+    qt_blacklist << "QDir" << "QFile" << "QFileSystemWatcher" << "QFileInfo" << "QLibrary" << "QPluginLoader" << "QProcess"; //from qtcore. should double&triplecheck. or move to whitelisting, but it's tricky to code here
+    qt_blacklist << "QFileSystemModel" << "QDirModel" << "QFileDialog"; //qt.gui filesys stuff
+
+    if (!trusted_ && !extension_whitelist.contains(scriptExtensionName, Qt::CaseInsensitive))
+    {
+        LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance: " + scriptExtensionName.toStdString());
+        return;
+    }
+
     QScriptValue success = engine_->importExtension(scriptExtensionName);
     if (!success.isUndefined()) // Yes, importExtension returns undefinedValue if the import succeeds. http://doc.qt.nokia.com/4.7/qscriptengine.html#importExtension
         LogWarning(std::string("JavascriptInstance::ImportExtension: Failed to load ") + scriptExtensionName.toStdString() + " plugin for QtScript!");
+    
+    if (!trusted_)
+    {
+        QScriptValue exposed;
+        foreach (const QString &blacktype, qt_blacklist)
+        {
+            exposed = engine_->globalObject().property(blacktype);
+            if (exposed.isValid())
+            {
+                engine_->globalObject().setProperty(blacktype, QScriptValue()); //passing an invalid val removes the property, http://doc.qt.nokia.com/4.6/qscriptvalue.html#setProperty
+                //LogInfo("JavascriptInstance::ImportExtension: removed a type from the untrusted context: " + blacktype.toStdString());
+            }
+        }
+    }
 }
 
 void JavascriptInstance::CreateEngine()
@@ -232,7 +302,10 @@ void JavascriptInstance::CreateEngine()
         DeleteEngine();
     engine_ = new QScriptEngine;
     connect(engine_, SIGNAL(signalHandlerException(const QScriptValue &)), SLOT(OnSignalHandlerException(const QScriptValue &)));
-
+//#ifndef QT_NO_SCRIPTTOOLS
+//    QScriptEngineDebugger debugger;
+//    debugger.attachTo(engine_);
+//#endif
     ExposeQtMetaTypes(engine_);
     ExposeNaaliCoreTypes(engine_);
     ExposeCoreApiMetaTypes(engine_);
@@ -263,5 +336,15 @@ void JavascriptInstance::DeleteEngine()
 void JavascriptInstance::OnSignalHandlerException(const QScriptValue& exception)
 {
     LogError(exception.toString().toStdString());
+
+    QStringList trace = engine_->uncaughtExceptionBacktrace();
+    QStringList::const_iterator it;
+    for (it = trace.constBegin(); it != trace.constEnd(); ++it)
+        LogError((*it).toStdString());
+
+    std::stringstream ss;
+    int linenum = engine_->uncaughtExceptionLineNumber();
+    ss << linenum;
+    LogError(ss.str());
 }
 

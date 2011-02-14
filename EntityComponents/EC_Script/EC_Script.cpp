@@ -69,24 +69,36 @@ EC_Script::EC_Script(IModule *module):
     runOnLoad(this, "Run on load", false),
     scriptInstance_(0)
 {
+    static AttributeMetadata scriptRefData;
+    AttributeMetadata::ButtonInfoList scriptRefButtons;
+    scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("runScriptButton", "P", "Run"));
+    scriptRefButtons.push_back(AttributeMetadata::ButtonInfo("stopScriptButton", "S", "Unload"));
+    scriptRefData.buttons = scriptRefButtons;
+    scriptRef.SetMetadata(&scriptRefData);
+
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 
     scriptAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
-    connect(scriptAsset.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(ScriptAssetLoaded(IAssetTransfer*)));
+    connect(scriptAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(ScriptAssetLoaded(AssetPtr)));
 }
 
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute == &scriptRef)
-        scriptAsset->HandleAssetRefChange(attribute);
+    {
+        if (!scriptRef.Get().ref.isEmpty())
+            scriptAsset->HandleAssetRefChange(attribute);
+        else // If the script ref is empty we need to unload script instance.
+            SetScriptInstance(0);
+    }
 }
 
-void EC_Script::ScriptAssetLoaded(IAssetTransfer *transfer)
+void EC_Script::ScriptAssetLoaded(AssetPtr asset_)
 {
-    ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(transfer->asset);
-    if (!asset.get())
+    ScriptAssetPtr asset = boost::dynamic_pointer_cast<ScriptAsset>(asset_);
+    if (!asset)
     {
         LogError("EC_Script::ScriptAssetLoaded: Loaded asset of type other than ScriptAsset!");
         return;

@@ -3,9 +3,9 @@
 #include "Foundation.h"
 #include "ModuleManager.h"
 
-#include "HttpUtilities.h"
-
 #include "DebugOperatorNew.h"
+
+#include <QDir>
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
@@ -86,34 +86,34 @@ void setup (Foundation::Framework &fw)
 {
     // Exclude the login screen from loading
     fw.GetModuleManager()->ExcludeModule("LoginScreenModule");
-
-    // Exclude window & rendering related stuff, if a fully headless server is desired
-    //fw.GetModuleManager()->ExcludeModule("ConsoleModule");
-    //fw.GetModuleManager()->ExcludeModule("QtInputModule");
-    //fw.GetModuleManager()->ExcludeModule("OgreRenderingModule");
-    //fw.GetModuleManager()->ExcludeModule("OpenALAudioModule");
-    //fw.GetModuleManager()->ExcludeModule("UiServiceModule");
 }
 
 int run (int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
+    printf("Starting up server. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
+    for(int i = 0; i < argc; ++i)
+        printf("argv[%d]: %s\n", i, argv[i]);
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     try
 #endif
     {
-        HttpUtilities::InitializeHttp(); 
         Foundation::Framework fw(argc, argv);
+        // If there is no startserver command, start one in default port
+        if (!fw.ProgramOptions().count("startserver"))
+        {
+            boost::program_options::variables_map& variablemap = fw.ProgramOptions();
+            variablemap.insert(std::pair<std::string, boost::program_options::variable_value>("startserver", boost::program_options::variable_value(0, true)));
+        }
+        
         if (fw.Initialized())
         {
             setup (fw);
 
             fw.Go();
         }
-        
-        HttpUtilities::UninitializeHttp();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     catch (std::exception& e)
@@ -192,7 +192,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v0.3.0";
+    WCHAR* szVersion = L"Tundra_v1.0-preview-server";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;

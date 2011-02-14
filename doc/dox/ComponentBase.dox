@@ -13,7 +13,6 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_3DCanvas "3DCanvas"
 - \ref EC_3DCanvasSource "3DCanvasSource"
 - \ref EC_AnimationController "AnimationController"
-- \ref RexLogic::EC_AttachedSound "AttachedSound"
 - \ref EC_Avatar "Avatar"
 - \ref EC_AvatarAppearance "AvatarAppearance"
 - \ref EC_Billboard "Billboard"

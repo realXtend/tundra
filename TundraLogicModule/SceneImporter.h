@@ -3,32 +3,39 @@
 #ifndef incl_TundraLogicModule_SceneImporter_h
 #define incl_TundraLogicModule_SceneImporter_h
 
-#if defined (_WINDOWS)
-#if defined(TUNDRALOGIC_MODULE_EXPORTS)
-#define TUNDRALOGIC_MODULE_API __declspec(dllexport)
-#else
-#define TUNDRALOGIC_MODULE_API __declspec(dllimport)
-#endif
-#else
-#define TUNDRALOGIC_MODULE_API
-#endif
-
-#include "SceneManager.h"
+#include "TundraLogicModuleApi.h"
+#include "SceneFwd.h"
 #include "IAttribute.h"
 #include "Transform.h"
 #include "SceneDesc.h"
+
+#include <QPair>
+#include <QUrl>
 
 #include <map>
 
 class QDomElement;
 
-namespace Foundation
-{
-    class Framework;
-}
-
 namespace TundraLogic
 {
+
+/// Stores information about material script.
+struct MaterialInfo
+{
+    QString source; ///< Source file of the material script.
+    QString name; ///< Name of the material.
+    QString data; ///< Data (the actual material script).
+
+    /// Less than operator. Compares source and name.
+    bool operator <(const MaterialInfo &rhs) const
+    {
+        if (source < rhs.source) return true; else if (source > rhs.source) return false;
+        if (name < rhs.name) return true; else if (name > rhs.name) return false;
+        return false;
+    }
+};
+
+typedef std::set<MaterialInfo> MaterialInfoList; ///< Set of MaterialInfo structs.
 
 //! Importer tool for OGRE .scene and .mesh files
 class TUNDRALOGIC_MODULE_API SceneImporter
@@ -47,7 +54,8 @@ public:
         \param filename Filename of mesh
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
-        \param worldtransform Transform to use for the entity's placeable. You can use Transform's default ctor if you don't want to spesify custom Transform.
+        \param worldtransform Transform to use for the entity's placeable.
+            You can use Transform's default ctor if you don't want to spesify custom Transform.
         \param entity_prefab_xml Prefab data (entity & components in xml serialized format) to use for the entity
         \param prefix 
         \param change What changetype to use in scene operations
@@ -88,6 +96,12 @@ public:
     */
     SceneDesc GetSceneDescForMesh(const QString &filename) const;
 
+    /// Inspects OGRE .mesh url and returns a scene description structure of the contents of the url.
+    /// Note: this will not dowload the binary data but only add a entity with the url mesh ref in it.
+    /** @param meshUrl Url to mesh file.
+    */
+    SceneDesc GetSceneDescForMesh(const QUrl &meshUrl) const;
+
     /// Inspects OGRE .scene file and returns a scene description structure of the contents of the file.
     /** @param filename File name.
     */
@@ -100,12 +114,30 @@ public:
      */
     QSet<QString> ProcessMaterialFileForTextures(const QString& matfilename, const QSet<QString>& used_materials) const;
 
+    /// Process material script and searches for texture references.
+    /** @param material Material script.
+        @return Set of used texture references/names.
+    */
+    QSet<QString> ProcessMaterialForTextures(const QString &material) const;
+
     /// Loads single material script from material file and returns it as a string.
     /** @param filename File name.
         @param materialName Material name.
         @return Material script as a string, or an empty string if material was not found
     */
     QString LoadSingleMaterialFromFile(const QString &filename, const QString &materialName) const;
+
+    /// Loads all (uniquely named) material scripts found within a material script file.
+    /** @param filename File name.
+        @param materialNames Names of materials to be loaded.
+        @return List of material names - material script pairs as strings.
+    */
+    MaterialInfoList LoadAllMaterialsFromFile(const QString &filename) const;
+
+    /// Searches directory recursively and returns list of found material files.
+    /** @param dir Directory to be searched.
+    */
+    QStringList GetMaterialFiles(const std::string &dir) const;
 
 private:
     //! Process the asset references of a node, and its child nodes
@@ -121,10 +153,40 @@ private:
         \param scale Current scale
         \param change What changetype to use in scene operations
         \param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
+        \param prefix 
         \param replace Whether to replace contents of entities by name. If false, all entities will be created as new
      */
     void ProcessNodeForCreation(QList<Scene::Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
+
+    //! Process node and its child nodes for creation of scene description.
+    /*! \param desc 
+        \param node_elem Node element
+        \param pos Current position
+        \param rot Current rotation
+        \param scale Current scale
+        \param prefix 
+        \param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
+    */
+//    void ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+//        const QString &prefix, bool flipyz);
+
+    ///
+    /** @param path 
+        @param meshFiles 
+        @param skeletons 
+        @param materialFiles 
+        @param usedMaterials 
+        @param desc 
+    */
+    void CreateAssetDescs(const QString &path, const QStringList &meshFiles, const QStringList &skeletons,
+        const QStringList &materialFiles, const QSet<QString> &usedMaterials, SceneDesc &desc) const;
+
+    ///
+    /** @param filename
+        @param ref
+    */
+//    void RewriteAssetRef(const QString &sceneFileName, QString &ref) const;
 
     //! Materials read from meshes, in case of no subentity elements
     QMap<QString, QStringList> mesh_default_materials_;

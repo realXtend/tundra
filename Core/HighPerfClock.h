@@ -4,6 +4,9 @@
 #define incl_Core_HighPerfClock_h
 
 #include <QDateTime>
+#if defined(_WINDOWS)
+#include <Windows.h>
+#endif
 
 #if defined(_POSIX_C_SOURCE)
 #include <time.h>

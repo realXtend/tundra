@@ -11,6 +11,8 @@
 #include "IComponent.h"
 #include "Transform.h"
 #include "AssetReference.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditorBase")
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>
@@ -28,25 +30,29 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
 {
     ECAttributeEditorBase *attributeEditor = 0;
     if(type == "real")
-        attributeEditor = new ECAttributeEditor<float>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<float>(browser, component, name, type, editor);
     else if(type == "int")
-        attributeEditor = new ECAttributeEditor<int>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<int>(browser, component, name, type, editor);
     else if(type == "vector3df")
-        attributeEditor = new ECAttributeEditor<Vector3df>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<Vector3df>(browser, component, name, type, editor);
     else if(type == "color")
-        attributeEditor = new ECAttributeEditor<Color>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<Color>(browser, component, name, type, editor);
     else if(type == "string")
-        attributeEditor = new ECAttributeEditor<QString>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<QString>(browser, component, name, type, editor);
     else if(type == "bool")
-        attributeEditor = new ECAttributeEditor<bool>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<bool>(browser, component, name, type, editor);
     else if(type == "qvariant")
-        attributeEditor = new ECAttributeEditor<QVariant>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<QVariant>(browser, component, name, type, editor);
     else if(type == "qvariantlist")
-        attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<QVariantList>(browser, component, name, type, editor);
     else if(type == "assetreference")
-        attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<AssetReference>(browser, component, name, type, editor);
+    else if(type == "assetreferencelist")
+        attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
     else if(type == "transform")
-        attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, editor);
+        attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
+    else
+        LogError("Unknown attribute type " + type.toStdString() + " for ECAttributeEditorBase creation.");
 
     return attributeEditor;
 }
@@ -83,7 +89,7 @@ ECComponentEditor::~ECComponentEditor()
     SAFE_DELETE(groupPropertyManager_)
     while(!attributeEditors_.empty())
     {
-        SAFE_DELETE(attributeEditors_.begin()->second)
+        SAFE_DELETE(attributeEditors_.begin().value())
         attributeEditors_.erase(attributeEditors_.begin());
     }
 }
@@ -124,7 +130,7 @@ bool ECComponentEditor::ContainProperty(QtProperty *property) const
     AttributeEditorMap::const_iterator constIter = attributeEditors_.begin();
     while(constIter != attributeEditors_.end())
     {
-        if(constIter->second->ContainProperty(property))
+        if(constIter.value()->ContainsProperty(property))
             return true;
         constIter++;
     }
@@ -138,14 +144,14 @@ void ECComponentEditor::AddNewComponent(ComponentPtr component)
     if(component->TypeName() != typeName_)
         return;
 
-    components_.insert(component);
-    //! insert new component for each attribute editor.
+    components_.push_back(ComponentWeakPtr(component));
+    //! insert new component to each attribute editor.
     AttributeEditorMap::iterator iter = attributeEditors_.begin();
     while(iter != attributeEditors_.end())
     {
-        IAttribute *attribute = component->GetAttribute(iter->second->GetAttributeName());
+        IAttribute *attribute = component->GetAttribute(iter.value()->GetAttributeName());
         if(attribute)
-            iter->second->AddComponent(component);
+            iter.value()->AddComponent(component);
         iter++;
     }
     UpdateGroupPropertyText();
@@ -168,9 +174,9 @@ void ECComponentEditor::RemoveComponent(ComponentPtr component)
             AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
             while(attributeIter != attributeEditors_.end())
             {
-                IAttribute *attribute = comp_ptr->GetAttribute(attributeIter->second->GetAttributeName());
+                IAttribute *attribute = comp_ptr->GetAttribute(attributeIter.value()->GetAttributeName());
                 if(attribute)
-                    attributeIter->second->RemoveComponent(component);
+                    attributeIter.value()->RemoveComponent(component);
                 attributeIter++;
             }
             components_.erase(iter);
@@ -187,7 +193,7 @@ void ECComponentEditor::UpdateUi()
         iter != attributeEditors_.end();
         iter++)
     {
-        iter->second->UpdateEditorUI();
+        iter.value()->UpdateEditorUI();
     }
 }
 
@@ -201,4 +207,12 @@ void ECComponentEditor::OnEditorChanged(const QString &name)
         return;
     }
     groupProperty_->addSubProperty(editor->GetProperty());
+}
+
+QString ECComponentEditor::GetAttributeType(const QString &name) const
+{
+    AttributeEditorMap::const_iterator iter = attributeEditors_.find(name);
+    if (iter != attributeEditors_.end())
+        return (*iter)->GetAttributeType();
+    return QString();
 }

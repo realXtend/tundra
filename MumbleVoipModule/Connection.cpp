@@ -14,7 +14,7 @@
 #include <mumbleclient/PacketDataStream.h>
 #include <mumbleclient/channel.h>
 #include <mumbleclient/user.h>
-#include "ISoundService.h"
+#include "Audio.h"
 #include "Channel.h"
 #include "User.h"
 #include "PCMAudioFrame.h"

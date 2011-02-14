@@ -8,10 +8,6 @@
 #include "UiProxyWidget.h"
 #include "ModuleManager.h"
 #include "Inventory/InventoryEvents.h"
-#include "AssetEvents.h"
-#include "TextureInterface.h"
-#include "ResourceInterface.h"
-#include "TextureServiceInterface.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("TexturePreviewEditor")
@@ -109,6 +105,8 @@ void TexturePreviewEditor::Closed()
 
 void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)
     {
@@ -122,10 +120,13 @@ void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
             request_tag_ = texture_service->RequestTexture(asset_id.toStdString());
         }
     }
+*/
 }
 
 void TexturePreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
     if(request_tag_ == res->tag_)
     {
         Foundation::TextureInterface *tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
@@ -158,6 +159,7 @@ void TexturePreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *r
             }
         }
     }
+*/
 }
 
 void TexturePreviewEditor::TextureLabelClicked(QMouseEvent *ev)

@@ -7,7 +7,7 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
-#include "OgreParticleResource.h"
+#include "OgreParticleAsset.h"
 #include "OgreConversionUtils.h"
 #include "SceneManager.h"
 #include "AssetAPI.h"
@@ -25,9 +25,14 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     IComponent(module->GetFramework()),
     particleRef(this, "Particle ref" ),
     castShadows(this, "Cast shadows", false),
-    renderingDistance(this, "Rendering distance", 0.0f),
-    particleSystem_(0)
+    renderingDistance(this, "Rendering distance", 0.0f)
 {
+    static AttributeMetadata particleRefMetadata;
+    AttributeMetadata::ButtonInfoList particleRefButtons;
+    particleRefButtons.push_back(AttributeMetadata::ButtonInfo(particleRef.GetName(), "V", "View"));
+    particleRefMetadata.buttons = particleRefButtons;
+    particleRef.SetMetadata(&particleRefMetadata);
+
     renderer_ = GetFramework()->GetServiceManager()->GetService<Renderer>();
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeUpdated(IAttribute*)));
@@ -35,7 +40,12 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
 
 EC_ParticleSystem::~EC_ParticleSystem()
 {
-    DeleteParticleSystem();
+    DeleteParticleSystems();
+}
+
+void EC_ParticleSystem::View(const QString &attributeName)
+{
+    //! @todo add implementation.
 }
 
 void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
@@ -48,7 +58,6 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
 
     try
     {
-        DeleteParticleSystem();
         EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
         if (!placeable)
         {
@@ -57,12 +66,13 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
         }
 
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName.toStdString()));
-        if (particleSystem_)
+        Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName("EC_Particlesystem"), SanitateAssetIdForOgre(systemName.toStdString()));
+        if (system)
         {
-            placeable->GetSceneNode()->attachObject(particleSystem_);
-            particleSystem_->setCastShadows(castShadows.Get());
-            particleSystem_->setRenderingDistance(renderingDistance.Get());
+            placeable->GetSceneNode()->attachObject(system);
+            particleSystems_.push_back(system);
+            system->setCastShadows(castShadows.Get());
+            system->setRenderingDistance(renderingDistance.Get());
             return;
         }
     }
@@ -74,9 +84,9 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
     return;
 }
 
-void EC_ParticleSystem::DeleteParticleSystem()
+void EC_ParticleSystem::DeleteParticleSystems()
 {
-    if (renderer_.expired() || !particleSystem_)
+    if (renderer_.expired())
         return;
     RendererPtr renderer = renderer_.lock();
 
@@ -92,32 +102,35 @@ void EC_ParticleSystem::DeleteParticleSystem()
             Ogre::SceneNode *node = placeable->GetSceneNode();
             if (!node)
                 return;
-            node->detachObject(particleSystem_);
+            for (unsigned i = 0; i < particleSystems_.size(); ++i)
+                node->detachObject(particleSystems_[i]);
         }
-        scene_mgr->destroyParticleSystem(particleSystem_);
-        particleSystem_ = 0;
+        for (unsigned i = 0; i < particleSystems_.size(); ++i)
+            scene_mgr->destroyParticleSystem(particleSystems_[i]);
     }
-    catch (Ogre::Exception& e)
+    catch (Ogre::Exception& /*e*/)
     {
-        LogError("Could not delete particle system " + Name().toStdString() + ": " + std::string(e.what()));
+        LogError("Could not delete particle systems");
     }
-
+    
+    particleSystems_.clear();
+    
     return;
 }
 
 void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 {
-    if(attribute->GetNameString() == castShadows.GetNameString())
+    if(attribute == &castShadows)
     {
-        if (particleSystem_)
-            particleSystem_->setCastShadows(castShadows.Get());
+        for (unsigned i = 0; i < particleSystems_.size(); ++i)
+            particleSystems_[i]->setCastShadows(castShadows.Get());
     }
-    else if (attribute->GetNameString() == renderingDistance.GetNameString())
+    else if (attribute == &renderingDistance)
     {
-        if (particleSystem_)
-            particleSystem_->setRenderingDistance(renderingDistance.Get());
+        for (unsigned i = 0; i < particleSystems_.size(); ++i)
+            particleSystems_[i]->setRenderingDistance(renderingDistance.Get());
     }
-    else if (attribute->GetNameString() == particleRef.GetNameString())
+    else if (attribute == &particleRef)
     {
         if (!ViewEnabled())
             return;
@@ -126,16 +139,13 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
         if ( transfer.get() != 0)
         {
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
         }
         else
         {
-            DeleteParticleSystem();
+            DeleteParticleSystems();
         }
-        
     }
-    
-   
 }
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const
@@ -153,15 +163,19 @@ void EC_ParticleSystem::ParticleSystemAssetLoaded()
     if (!transfer)
         return;
 
-    OgreParticleResource *resource = dynamic_cast<OgreParticleResource *>(transfer->resourcePtr.get());
-    if (!resource)
+    OgreParticleAsset *asset = dynamic_cast<OgreParticleAsset*>(transfer->asset.get());
+    if (!asset)
     {
-        LogWarning("Failed to handle particle resource ready event because resource pointer was null.");
+        LogWarning("EC_ParticleSystem::ParticleSystemAssetLoaded: Asset transfer finished, but asset pointer was null!");
         return;
     }
 
-    if (resource->GetNumTemplates())
-        CreateParticleSystem(QString::fromStdString(resource->GetTemplateName(0)));
+    if (asset->GetNumTemplates() > 0)
+    {
+        DeleteParticleSystems();
+        for (int i = 0 ; i< asset->GetNumTemplates(); ++i)
+            CreateParticleSystem(asset->GetTemplateName(i));
+    }
 }
 
 void EC_ParticleSystem::EntitySet()
@@ -173,6 +187,12 @@ void EC_ParticleSystem::EntitySet()
         return;
     }
     
-    QObject::disconnect(this, SLOT(DeleteParticleSystem()));
-    QObject::connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(DeleteParticleSystem()));
+    QObject::connect(entity, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+}
+
+void EC_ParticleSystem::OnComponentRemoved(IComponent *component, AttributeChange::Type change)
+{
+    // If the component is the Placeable, delete particle systems now for safety
+    if (component->TypeName() == EC_Placeable::TypeNameStatic())
+        DeleteParticleSystems();
 }

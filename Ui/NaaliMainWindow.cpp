@@ -62,12 +62,14 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
     int windowY = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_top", -1);
     bool maximized = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_maximized", false);
     bool fullscreen = owner->GetDefaultConfig().DeclareSetting("MainWindow", "fullscreen", false);
-
+/* Don't use the version from the configuration, since the user may have several Naali versions installed simultaneously.
     std::string title = owner->GetDefaultConfig().GetSetting<std::string>("Foundation", "window_title");
     std::string version_major = owner->GetDefaultConfig().GetSetting<std::string>("Foundation", "version_major");
     std::string version_minor = owner->GetDefaultConfig().GetSetting<std::string>("Foundation", "version_minor");
 
     setWindowTitle(QString("%1 %2.%3").arg(title.c_str(), version_major.c_str(), version_minor.c_str()));
+*/
+    setWindowTitle("Tundra v1.0-preview");
 
     width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));

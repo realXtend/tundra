@@ -47,6 +47,7 @@ See the following pages for help on working on the Naali codebase.
 <li><a href="http://wiki.realxtend.org/index.php/Header_Usage_Best_Practices">Header usage best practices</a>.
 <li><a href="http://doc.qt.nokia.com/">Qt documentation</a>.
 <li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.
+<li>\ref NaaliArchitectureOverview "Architecture Overview."
 <li>\ref component_base "Entity-Component reference."
 <li>\ref NaaliScriptReference "Naali scripting reference."
 <li>\ref TundraDocumentfiles "Working with Tundra document files."
@@ -282,7 +283,7 @@ The Frame API is accessed through the class \ref Frame "Frame".
 The most visible part of Naali to end-users and world builders is the Naali scene structure. The Scene API is used to access this scene in program code. 
 The \ref component_base "Naali Entity Component Reference" page contains a reference documentation for all the components that make up a scene. 
 
-<h2>Subsystems</h2>
+\section NaaliSubsystems Subsystems
 In addition to providing the core API, Naali contains the following functional subsystems, implemented as sets of modules.
 
 <table style="margin: 20px;">

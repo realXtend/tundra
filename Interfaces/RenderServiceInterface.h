@@ -4,7 +4,6 @@
 #define incl_Interfaces_RenderServiceInterface_h
 
 #include "IService.h"
-#include "ResourceInterface.h"
 #include "LogListenerInterface.h"
 #include "CoreModuleApi.h"
 #include "Vector3D.h"
@@ -124,28 +123,6 @@ namespace Foundation
         //! Render current main window with focus on the avatar
         //! @todo make this focus non hard coded but as param
         virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation) = 0;
-
-        //! Gets a renderer-specific resource
-        /*! Does not automatically queue a download request
-            \param id Resource id
-            \param type Resource type
-            \return pointer to resource, or null if not found
-         */
-        virtual ResourcePtr GetResource(const std::string& id, const std::string& type) = 0;
-
-        //! Requests a renderer-specific resource to be downloaded from the asset system
-        /*! A RESOURCE_READY event will be sent when the resource is ready to use
-            \param id Resource id
-            \param type Resource type
-            \return Request tag, or 0 if request could not be queued
-         */
-        virtual request_tag_t RequestResource(const std::string& id, const std::string& type) = 0;
-
-        //! Removes a renderer-specific resource
-        /*! \param id Resource id
-            \param type Resource type
-         */
-        virtual void RemoveResource(const std::string& id, const std::string& type) = 0;
 
         virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
 

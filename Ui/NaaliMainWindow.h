@@ -12,7 +12,7 @@
 /** NaaliMainWindow is the main application window that is shown when the program starts. This window contains a fullscreen
 3D-rendered scene and modules can embed their own Qt widgets in this window.
 \todo In the future, this class should derive from QMainWindow to be able to use its functionality. */
-class UI_API NaaliMainWindow : public QWidget
+class UI_API NaaliMainWindow : public QMainWindow
 {
     Q_OBJECT;
 public:

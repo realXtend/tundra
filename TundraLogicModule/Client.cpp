@@ -10,10 +10,11 @@
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
 #include "SyncManager.h"
 #include "TundraMessages.h"
 #include "TundraEvents.h"
+#include "PhysicsModule.h"
+#include "SceneManager.h"
 
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"
@@ -22,7 +23,8 @@
 
 #include "MemoryLeakCheck.h"
 
-using namespace RexTypes;
+#include <QDomElement>
+
 using namespace kNet;
 
 namespace TundraLogic
@@ -50,7 +52,22 @@ void Client::Update(f64 frametime)
         CheckLogin();
 }
 
-void Client::Login(const std::string& address, unsigned short port, const std::string& username, const std::string& password)
+void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password, const QString &protocol)
+{
+    SetLoginProperty("username", username);
+    SetLoginProperty("password", password);
+    SetLoginProperty("address", address);
+    SetLoginProperty("protocol", protocol);
+    SetLoginProperty("port", QString::number(port));
+    kNet::SocketTransportLayer transportLayer = kNet::InvalidTransportLayer;
+    if (protocol.toLower() == "tcp")
+        transportLayer = kNet::SocketOverTCP;
+    else if (protocol.toLower() == "udp")
+        transportLayer = kNet::SocketOverUDP;
+    Login(address, port, transportLayer);
+}
+
+void Client::Login(const QString& address, unsigned short port, kNet::SocketTransportLayer protocol)
 {
     if (owner_->IsServer())
     {
@@ -58,11 +75,10 @@ void Client::Login(const std::string& address, unsigned short port, const std::s
         return;
     }
     
-    username_ = username;
-    password_ = password;
     reconnect_ = false;
-    
-    owner_->GetKristalliModule()->Connect(address.c_str(), port, kNet::SocketOverTCP);
+    if (protocol == kNet::InvalidTransportLayer)
+        protocol = owner_->GetKristalliModule()->defaultTransport;
+    owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
 }
@@ -88,11 +104,45 @@ void Client::Logout(bool fail)
     
     if (fail)
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_LOGIN_FAILED, 0);
+    else // An user deliberately disconnected from the world, and not due to a connection error.
+    {
+        // Clear all the login properties we used for this session, so that the next login session will start from an
+        // empty set of login properties (just-in-case).
+        properties.clear();
+    }
 }
 
 bool Client::IsConnected() const
 {
     return loginstate_ == LoggedIn;
+}
+
+void Client::SetLoginProperty(QString key, QString value)
+{
+    key = key.trimmed();
+    value = value.trimmed();
+    if (value.isEmpty())
+        properties.erase(key);
+    properties[key] = value;
+}
+
+QString Client::GetLoginProperty(QString key)
+{
+    return properties[key.trimmed()];
+}
+
+QString Client::LoginPropertiesAsXml()
+{
+    QDomDocument xml;
+    QDomElement rootElem = xml.createElement("login");
+    for(std::map<QString, QString>::iterator iter = properties.begin(); iter != properties.end(); ++iter)
+    {
+        QDomElement elem = xml.createElement(iter->first.toStdString().c_str());
+        elem.setAttribute("value", iter->second.toStdString().c_str());
+        rootElem.appendChild(elem);
+    }
+    xml.appendChild(rootElem);
+    return xml.toString();
 }
 
 void Client::CheckLogin()
@@ -106,8 +156,9 @@ void Client::CheckLogin()
         {
             loginstate_ = ConnectionEstablished;
             MsgLogin msg;
-            msg.userName = StringToBuffer(username_);
-            msg.password = StringToBuffer(password_);
+            emit AboutToConnect(); // This signal is used as a 'function call'. Any interested party can fill in
+            // new content to the login properties of the client object, which will then be sent out on the line below.
+            msg.loginData = StringToBuffer(LoginPropertiesAsXml().toStdString());
             connection->Send(msg);
         }
         break;
@@ -186,6 +237,10 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         if (!reconnect_)
         {
             Scene::ScenePtr scene = framework_->CreateScene("TundraClient", true);
+            // Create physics world in client (non-authoritative) mode
+            Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
+            physics->CreatePhysicsWorldForScene(scene, true);
+            
             framework_->SetDefaultWorldScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
             
@@ -193,7 +248,16 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             event_data.user_id_ = msg.userID;
             framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
             
-            emit Connected(msg.userID, QString::fromStdString(username_));
+            emit Connected();
+        }
+        else
+        {
+            // If we are reconnecting, empty the scene, as the server will send everything again anyway
+            // Note: when we move to unordered communication, we must guarantee that the server does not send
+            // any scene data before the login reply
+            Scene::ScenePtr scene = framework_->GetScene("TundraClient");
+            if (scene)
+                scene->RemoveAllEntities();
         }
         reconnect_ = true;
     }
@@ -205,12 +269,10 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
 
 void Client::HandleClientJoined(MessageConnection* source, const MsgClientJoined& msg)
 {
-    TundraLogicModule::LogInfo("User " + BufferToString(msg.userName) + " is inworld");
 }
 
 void Client::HandleClientLeft(MessageConnection* source, const MsgClientLeft& msg)
 {
-    TundraLogicModule::LogInfo("User " + BufferToString(msg.userName) + " left the world");
 }
 
 }

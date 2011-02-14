@@ -36,4 +36,21 @@ function CreateCamera(scene)
     script.scriptRef = r;
 
     scene.EmitEntityCreatedRaw(entity);
+
+	if (scene.GetEntityByNameRaw("ObjectCamera") != null)
+		return;
+
+	var objectcameraentity = scene.CreateEntityRaw(scene.NextFreeIdLocal(), ["EC_Script"]);
+	objectcameraentity.SetName("ObjectCamera");
+	objectcameraentity.SetTemporary(true);
+	
+	var objectcamerascript = objectcameraentity.GetComponentRaw("EC_Script");
+	objectcamerascript.type = "js";
+	objectcamerascript.runOnLoad = true;
+	var objectcameraRef = objectcamerascript.scriptRef;
+	objectcameraRef.ref = "local://objectcamera.js";
+	objectcamerascript.scriptRef = objectcameraRef;
+	
+	scene.EmitEntityCreatedRaw(objectcameraentity);
+
 }

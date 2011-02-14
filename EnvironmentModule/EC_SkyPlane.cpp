@@ -16,7 +16,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyPlane")
 namespace Environment
 {
     /// \todo Use Asset API for fetching sky resources.
-     EC_SkyPlane::EC_SkyPlane(IModule *module)
+    EC_SkyPlane::EC_SkyPlane(IModule *module)
         : IComponent(module->GetFramework()),
         materialRef(this, "Material ref", AssetReference("RexSkyPlane")), ///< \todo Add "orge://" when AssetAPI can handle it.
         textureRef(this, "Texture ref", AssetReference("clouds.jpg")), ///< \todo Add "orge://" when AssetAPI can handle it.
@@ -28,11 +28,22 @@ namespace Environment
         ySegmentsAttr(this, "Segments in y-axis",150),
         drawFirstAttr(this, "Draw first", true)
      {
-         QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
-         
-         renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
+        QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+                         SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
 
+        static AttributeMetadata materialRefMetadata;
+        AttributeMetadata::ButtonInfoList materialRefButtons;
+        materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.GetName(), "V", "View"));
+        materialRefMetadata.buttons = materialRefButtons;
+        materialRef.SetMetadata(&materialRefMetadata);
+
+        static AttributeMetadata texRefMetadata;
+        AttributeMetadata::ButtonInfoList texRefButtons;
+        texRefButtons.push_back(AttributeMetadata::ButtonInfo(textureRef.GetName(), "V", "View"));
+        texRefMetadata.buttons = texRefButtons;
+        textureRef.SetMetadata(&texRefMetadata);
+
+         renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
          // Disable old sky.
          //DisableSky();
          CreateSky();
@@ -91,7 +102,19 @@ namespace Environment
             return;
         }
     }
-       
+
+    void EC_SkyPlane::View(const QString &attributeName)
+    {
+        if (materialRef.GetName() == attributeName)
+        {
+            /// todo! add implementation
+        }
+        else if(textureRef.GetName() == attributeName)
+        {
+            /// todo! add implementation.
+        }
+    }
+
     void EC_SkyPlane::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
     {
         ChangeSkyPlane(attribute);

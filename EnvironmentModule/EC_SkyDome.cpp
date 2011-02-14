@@ -32,6 +32,18 @@ namespace Environment
         ySegmentsKeepAttr(this, "Y-segments keep", -1),
         drawFirstAttr(this, "Draw first", true)
     {
+        static AttributeMetadata materialRefMetadata;
+        AttributeMetadata::ButtonInfoList materialRefButtons;
+        materialRefButtons.push_back(AttributeMetadata::ButtonInfo(materialRef.GetName(), "V", "View"));
+        materialRefMetadata.buttons = materialRefButtons;
+        materialRef.SetMetadata(&materialRefMetadata);
+
+        static AttributeMetadata texRefMetadata;
+        AttributeMetadata::ButtonInfoList texRefButtons;
+        texRefButtons.push_back(AttributeMetadata::ButtonInfo(textureRef.GetName(), "V", "View"));
+        texRefMetadata.buttons = texRefButtons;
+        textureRef.SetMetadata(&texRefMetadata);
+
         connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
 
         renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
@@ -79,6 +91,18 @@ namespace Environment
         {
             LogError("Could not set SkyDome: " + std::string(e.what()));
             return;
+        }
+    }
+
+    void EC_SkyDome::View(const QString &attributeName)
+    {
+        if (materialRef.GetName() == attributeName)
+        {
+            /// @todo add implementation
+        }
+        else if(textureRef.GetName() == attributeName)
+        {
+            /// @todo add implementation.
         }
     }
 

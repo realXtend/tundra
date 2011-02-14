@@ -17,11 +17,15 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} ${UI_FILES
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
-use_modules (Core Foundation Interfaces RexCommon Input)
+use_modules (Core Foundation Interfaces Input)
+
+# To enable Taiga login using this module, comment out above and uncomment the following.
+# add_definitions(-DENABLE_TAIGA_LOGIN)
+# use_modules (Core Foundation Interfaces Input RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon Input)
+link_modules (Core Foundation Interfaces Input)
 link_ogre()
 
 SetupCompileFlagsWithPCH()

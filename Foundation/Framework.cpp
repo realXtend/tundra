@@ -12,19 +12,20 @@
 #include "ModuleManager.h"
 #include "ComponentManager.h"
 #include "ServiceManager.h"
-#include "ResourceInterface.h"
 #include "ThreadTaskManager.h"
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "NaaliApplication.h"
 #include "CoreException.h"
-#include "../Input/Input.h"
-#include "ISoundService.h"
+#include "Input.h"
 #include "Frame.h"
 #include "AssetAPI.h"
-#include "Console.h"
+#include "GenericAssetFactory.h"
+#include "Audio.h"
+#include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
+#include "DebugAPI.h"
 
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
@@ -45,19 +46,6 @@
 #include <QMetaMethod>
 
 #include "MemoryLeakCheck.h"
-
-namespace Resource
-{
-    namespace Events
-    {
-        void RegisterResourceEvents(const EventManagerPtr &event_manager)
-        {
-            event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Resource");
-            event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_READY, "ResourceReady");
-            event_manager->RegisterEvent(resource_event_category, Resource::Events::RESOURCE_CANCELED, "ResourceCanceled");
-        }
-    }
-}
 
 namespace Task
 {
@@ -83,12 +71,14 @@ namespace Foundation
         splitterchannel(0),
         naaliApplication(0),
         frame(new Frame(this)),
-        console(new ScriptConsole(this)),
+        console(new ConsoleAPI(this)),
         ui(0),
         input(0),
-        asset(0)
+        asset(0),
+        debug(new DebugAPI(this))
     {
         ParseProgramOptions();
+        
         if (commandLineVariables.count("help")) 
         {
             std::cout << "Supported command line arguments: " << std::endl;
@@ -150,7 +140,6 @@ namespace Foundation
             thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
             Scene::Events::RegisterSceneEvents(event_manager_);
-            Resource::Events::RegisterResourceEvents(event_manager_);
             Task::Events::RegisterTaskEvents(event_manager_);
 
             naaliApplication = new NaaliApplication(this, argc_, argv_);
@@ -158,8 +147,14 @@ namespace Foundation
             initialized_ = true;
 
             ui = new NaaliUi(this);
-            asset = new AssetAPI(this);
-			connect(ui->CentralWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+            connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+
+            asset = new AssetAPI();
+            const char cDefaultAssetCachePath[] = "/assetcache";
+            asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
+
+            audio = new AudioAPI(asset); // Audio API depends on the Asset API, so must be loaded after Asset API is.
+            asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
 
             input = new Input(this);
 
@@ -168,6 +163,8 @@ namespace Foundation
             RegisterDynamicObject("input", input);
             RegisterDynamicObject("console", console);
             RegisterDynamicObject("asset", asset);
+            RegisterDynamicObject("audio", audio);
+            RegisterDynamicObject("debug", debug);
         }
     }
 
@@ -284,17 +281,25 @@ namespace Foundation
     {
         namespace po = boost::program_options;
 
+        ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
+        /// best is to have them parse their own options).
         commandLineDescriptions.add_options()
-            ("headless", "run in headless mode without any windows or rendering")
-            ("help", "produce help message")
+            ("headless", "Run in headless mode without any windows or rendering") // Framework & OgreRenderingModule
+            ("help", "Produce help message") // Framework
+            ("startserver", po::value<int>(0), "Start server automatically in specified port") // TundraLogicModule
+            ("protocol", po::value<std::string>(), "Spesifies which transport layer to use. Used when starting a server and when client connects. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
+            ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable") // OgreRenderingModule
+            ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
+            ("file", po::value<std::string>(), "Load scene on startup") // TundraLogicModule & AssetModule
+            ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
+            // The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
             ("user", po::value<std::string>(), "OpenSim login name")
             ("passwd", po::value<std::string>(), "OpenSim login password")
-            ("server", po::value<std::string>(), "world server and port")
-            ("auth_server", po::value<std::string>(), "realXtend authentication server address and port")
-            ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
-            ("login", "automatically login to server using provided credentials")
-            ("run", po::value<std::string>(), "Run script on startup")
-            ("file", po::value<std::string>(), "Load scene on startup");
+            ("server", po::value<std::string>(), "World server and port")
+            ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
+            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name")
+            ("login", "Automatically login to server using provided credentials");
+
         try
         {
             po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
@@ -311,6 +316,7 @@ namespace Foundation
         PROFILE(FW_PostInitialize);
 
         event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
+        UNREFERENCED_PARAM(framework_events);
         srand(time(0));
 
         LoadModules();
@@ -348,10 +354,31 @@ namespace Foundation
                 event_manager_->ProcessDelayedEvents(frametime);
             }
 
+            // Process the asset API updates.
+            {
+                PROFILE(Asset_Update);
+                asset->Update(frametime);
+            }
+
+            // Process all keyboard input.
+            {
+                PROFILE(Input_Update);
+                input->Update(frametime);
+            }
+
+            // Process all audio playback.
+            {
+                PROFILE(Audio_Update);
+                audio->Update(frametime);
+            }
+
             // Process frame update now. Scripts handling the frame tick will be run at this point, and will have up-to-date 
             // information after for example network updates, that have been performed by the modules.
-            frame->Update(frametime);
-            
+            {
+                PROFILE(Frame_Update);
+                frame->Update(frametime);
+            }
+
             // if we have a renderer service, render now
             boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
             if (renderer.expired() == false)
@@ -359,8 +386,6 @@ namespace Foundation
                 PROFILE(FW_Render);
                 renderer.lock()->Render();
             }
-
-            input->Update(frametime);
         }
 
         RESETPROFILER
@@ -446,11 +471,13 @@ namespace Foundation
     void Framework::RemoveScene(const QString &name)
     {
         SceneMap::iterator scene = scenes_.find(name);
-        if (default_scene_ == scene->second)
-            default_scene_.reset();
         if (scene != scenes_.end())
+        {
+            if (default_scene_ == scene->second)
+                default_scene_.reset();
             scenes_.erase(scene);
-        emit SceneRemoved(name);
+            emit SceneRemoved(name);
+        }
     }
 
     Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
@@ -713,24 +740,30 @@ namespace Foundation
         return GetService<UiServiceInterface>(); 
     }
 
-    ScriptConsole *Framework::Console() const
+    ConsoleAPI *Framework::Console() const
     { 
         return console;
     }
 
-    ISoundService *Framework::Audio() const
+    AudioAPI *Framework::Audio() const
     {
-        boost::shared_ptr<ISoundService> sound_logic = GetServiceManager()->
-                GetService<ISoundService>(Service::ST_Sound).lock();
-        if (!sound_logic.get())
-//            throw Exception("Fatal: Sound service not present!");
-            RootLogWarning("Framework::Audio(): Sound service not present!");
-        return sound_logic.get();
+        return audio;
     }
 
     AssetAPI *Framework::Asset() const
     {
         return asset;
+    }
+
+    DebugAPI *Framework::Debug() const
+    {
+        return debug;
+    }
+
+    QObject *Framework::GetModuleQObj(const QString &name)
+    {
+        ModuleWeakPtr module = GetModuleManager()->GetModule(name.toStdString());
+        return dynamic_cast<QObject*>(module.lock().get());
     }
 
     bool Framework::RegisterDynamicObject(QString name, QObject *object)
@@ -782,7 +815,7 @@ namespace Foundation
         if(scene != default_scene_)
         {
             default_scene_ = scene;
-            emit DefaultWorldSceneChanged(scene);
+            emit DefaultWorldSceneChanged(default_scene_.get());
         }
     }
 

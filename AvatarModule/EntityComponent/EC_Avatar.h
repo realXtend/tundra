@@ -7,12 +7,8 @@
 #include "RexUUID.h"
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
+#include "AssetFwd.h"
 
-namespace Avatar
-{
-    class AvatarHandler;
-    typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
-};
 
 //! Avatar component.
 /**
@@ -45,6 +41,10 @@ Does not emit any actions.
 <b>Depends on the components Mesh, Placeable, AnimationController and AvatarAppearance</b>.
 </table>
 */
+
+class AvatarDescAsset;
+typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
+
 class AV_MODULE_API EC_Avatar : public IComponent
 {
     Q_OBJECT
@@ -57,10 +57,7 @@ public:
 
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }
-    
-    //! Handle Naali event. Used for avatar xml asset request
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
-    
+        
     //! Destructor
     virtual ~EC_Avatar();
     
@@ -68,23 +65,18 @@ private slots:
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
     
+    void OnAvatarAppearanceLoaded(AssetPtr asset);
 private:
     //! constructor
     /*! \param module avatar module
      */
     EC_Avatar(IModule* module);
-    
-    //! Handle asset ready event
-    bool HandleAssetReady(IEventData* data);
-    
+
+    //! Setup avatar from ready avatar description asset
+    void SetupAvatar(AvatarDescAssetPtr avatarAsset);
+
     //! Category for Asset events
     event_category_id_t asset_event_category_;
-    
-    //! Avatar appearance file request tag
-    request_tag_t appearance_tag_;
-    
-    //! Avatar handler, used to do the heavy lifting
-    Avatar::AvatarHandlerPtr avatar_handler_;
 };
 
 #endif

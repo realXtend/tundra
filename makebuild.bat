@@ -10,6 +10,7 @@ copy vcredist_x86.exe build
 copy oalinst.exe build
 copy dxwebsetup.exe build
 xcopy bin\*.* build /S /C /Y
+
 del build\performancelogger.txt
 del build\fullmemoryleaklog.txt
 del build\scenestats.txt
@@ -21,12 +22,16 @@ del build\*_d.dll
 del build\Poco*d.dll
 @rem del build\dbus-1d.dll
 del build\libcurld.dll
+del build\audiod.dll
 del build\OpenJPEGd.dll
 del build\xmlrpcepid.dll
+del build\QtSolutions_PropertyBrowser-2.5d.dll
+del build\QtPropertyBrowserd.dll
 del build\liboggd.dll
 del build\libvorbisd.dll
 del build\libvorbisfiled.dll
 del build\viewerd.exe
+del build\serverd.exe
 del build\modules\core\*d.dll
 del build\pymodules\*.pyc
 del build\pymodules\apitest\*.pyc

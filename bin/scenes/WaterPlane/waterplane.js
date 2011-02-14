@@ -1,19 +1,19 @@
 
 //Temporary Entity for Splash Particle
 function Entity (position)
-{	
+{
 	this.EntityId = scene.NextFreeId();
 	ParticleEntity = scene.CreateEntityRaw(this.EntityId, "", 2, false);
 	ParticleEntity.GetOrCreateComponentRaw("EC_ParticleSystem");
-	ParticleEntity.particlesystem.particleId = "file://splash.particle";	
+	ParticleEntity.particlesystem.particleId = "file://splash.particle";
 	ParticleEntity.GetOrCreateComponentRaw("EC_Placeable");
-	trans = ParticleEntity.placeable.transform;
+	var trans = ParticleEntity.placeable.transform;
 	trans.pos.x = position.x;
 	trans.pos.y = position.y;
 	trans.pos.z = position.z;
 	ParticleEntity.placeable.transform = trans;
 	scene.EmitEntityCreated(ParticleEntity, 2);
-	
+
 	frame.DelayedExecute(2.0).Triggered.connect(this, this.DeleteEntity);
 }
 
@@ -33,9 +33,9 @@ var CollisionSound = me.GetComponentRaw("EC_Sound", "Collision");
 var RigidBody = me.GetComponentRaw("EC_RigidBody");
 
 if(CollisionSound && RigidBody && Water)
-{	
+{
 	ConnectSignals();
-}	
+}
 else
 {
 	print("Missing needed Components, Check that you have RigidBody and Sound(Collision)");
@@ -44,18 +44,18 @@ else
 
 //Checking if needed components are added after EC_Script to Entity
  function CheckComponent(component, type)
-{	
+{
 	if (component.TypeName == "EC_Sound")
 	{
 		if (component.Name == "Collision")
 			CollisionSound = component;
 	}
-	
+
 	else if (component.TypeName == "RigidBody")
 		RigidBody = true;
-		
+
 	if (CollisionSound && RigidBody && Water)
-	{	
+	{
 		ConnectSignals();
 		me.ComponentAdded.disconnect(CheckComponent);
 	}
@@ -64,7 +64,7 @@ else
 function ConnectSignals()
 {
 		print("found needed Components");
-		position = me.placeable.transform.pos;
+		var position = me.placeable.transform.pos;
 		inWater = Water.waterplane.IsPointInsideWaterCube(position);
 		me.rigidbody.PhysicsCollision.connect(Collision);
 		me.placeable.OnAttributeChanged.connect(PositionChange);
@@ -77,19 +77,19 @@ function Collision (otherEntity, pos, normal, distance, impulse, newCollision)
 }
 
 function PositionChange (attribute, type)
-{ 
-	position = me.placeable.transform.pos;
+{
+	var position = me.placeable.transform.pos;
 	position.z -= 2.0;
-	
+
 	if (inWater != Water.waterplane.IsPointInsideWaterCube(position))
-	{ 
+	{
 		inWater = !inWater;
-		
+
 		if (inWater)
 		{
 			//me.rigidbody.mass = 20.0;
 			me.rigidbody.PhysicsCollision.disconnect(Collision);
-			splashEntity = new Entity(position);
+			var splashEntity = new Entity(position);
 			PlayAudio("file://Splash.ogg");
 		}
 		else

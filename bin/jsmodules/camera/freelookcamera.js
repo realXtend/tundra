@@ -1,8 +1,8 @@
 // A freelook camera script. Upon run, creates necessary components if they don't exist yet, and hooks to the InputMapper's
 // input context to process camera movement (WASD + mouse)
 
-var rotate_sensitivity = 0.3
-var move_sensitivity = 30.0
+var rotate_sensitivity = 0.3;
+var move_sensitivity = 30.0;
 var motion_z = 0;
 var motion_y = 0;
 var motion_x = 0;
@@ -14,10 +14,15 @@ if (!me.HasComponent("EC_OgreCamera"))
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
     var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
     var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
+    soundlistener.active = true;
 
     camera.AutoSetPlaceable();
-    camera.SetActive();
-    
+
+    // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the freelookcamera right now
+    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    if (!avatarcameraentity)
+        camera.SetActive();
+
     var transform = placeable.transform;
     transform.rot.x = 90;
     placeable.transform = transform;
@@ -48,17 +53,31 @@ if (!me.HasComponent("EC_OgreCamera"))
     inputmapper.RegisterMapping("Down", "Stop(back)", 3);
     inputmapper.RegisterMapping("Left", "Stop(left)", 3);
     inputmapper.RegisterMapping("Right", "Stop(right)", 3);
+
     // Connect actions
     me.Action("Move").Triggered.connect(HandleMove);
     me.Action("Stop").Triggered.connect(HandleStop);
     me.Action("MouseLookX").Triggered.connect(HandleMouseLookX);
     me.Action("MouseLookY").Triggered.connect(HandleMouseLookY);
+
+    // Connect gestures
+    var inputContext = inputmapper.GetInputContext();
+    if (inputContext.GestureStarted && inputContext.GestureUpdated)
+    {
+	inputContext.GestureStarted.connect(GestureStarted);
+	inputContext.GestureUpdated.connect(GestureUpdated);
+    }
+}
+
+function IsCameraActive()
+{
+    var camera = me.GetComponentRaw("EC_OgreCamera");
+    return camera.IsActive();
 }
 
 function Update(frametime)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false)
+    if (!IsCameraActive())
     {
         motion_x = 0;
         motion_y = 0;
@@ -121,8 +140,7 @@ function HandleStop(param)
 
 function HandleMouseLookX(param)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false)
+    if (!IsCameraActive())
         return;
 
     var move = parseInt(param);
@@ -134,8 +152,7 @@ function HandleMouseLookX(param)
 
 function HandleMouseLookY(param)
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false)
+    if (!IsCameraActive())
         return;
 
     var move = parseInt(param);
@@ -143,4 +160,40 @@ function HandleMouseLookY(param)
     var newtransform = placeable.transform;
     newtransform.rot.x -= rotate_sensitivity * move;
     placeable.transform = newtransform;
+}
+
+function GestureStarted(gestureEvent)
+{
+    if (!IsCameraActive())
+        return;
+
+    if (gestureEvent.GestureType() == Qt.TapAndHoldGesture)
+    {
+        if (motion_z == 0)
+            HandleMove("forward");
+        else
+            HandleStop("forward");
+        gestureEvent.Accept();
+    }
+    else if (gestureEvent.GestureType() == Qt.PanGesture)
+    {
+        var offset = gestureEvent.Gesture().offset.toPoint();
+        HandleMouseLookX(offset.x());
+        HandleMouseLookY(offset.y());
+        gestureEvent.Accept();
+    }
+}
+
+function GestureUpdated(gestureEvent)
+{
+    if (!IsCameraActive())
+        return;
+
+    if (gestureEvent.GestureType() == Qt.PanGesture)
+    {
+        var delta = gestureEvent.Gesture().delta.toPoint();
+        HandleMouseLookX(delta.x());
+        HandleMouseLookY(delta.y());
+        gestureEvent.Accept();
+    }
 }

@@ -8,17 +8,34 @@
 #ifndef incl_SceneManager_SceneDesc_h
 #define incl_SceneManager_SceneDesc_h
 
+#include <QMap>
+#include <QPair>
+
 /// Description of asset.
 struct AssetDesc
 {
-    QString source; ///< Source (file) name, not used for materials, parsed from material files.
+    QString source; ///< Specifies the source filename for the location of this asset.
+    QByteArray data; ///< Specifies in-memory content for the asset data.
+
+    /// If true, the data for this asset is loaded in memory, and specified by the member field 'data'. Otherwise,
+    /// the data is loaded from disk, specified by the filename 'source'.
+    bool dataInMemory;
+
     QString subname; ///< If the source filename is a container for multiple files, subname represents name withing the file.
     QString typeName; ///< Type name of the asset.
     QString destinationName; ///< Name for the asset in the destination asset storage.
-    QByteArray data; ///< Data for the asset, currently used for material files only.
 
-    /// Less than operator. Compares filename only.
-    bool operator <(const AssetDesc &rhs) const { return source < rhs.source; }
+#define LEX_CMP(a, b) if ((a) < (b)) return true; else if ((a) > (b)) return false;
+
+    /// Less than operator. Compares source and subname only.
+    bool operator <(const AssetDesc &rhs) const
+    {
+        LEX_CMP(source, rhs.source)
+        LEX_CMP(subname, rhs.subname)
+        return false;
+    }
+
+#undef LEX_CMP
 
     /// Equality operator. Returns true if filenames match, false otherwise.
     bool operator ==(const AssetDesc &rhs) const { return source == rhs.source; }
@@ -85,21 +102,25 @@ struct EntityDesc
 /// Description of scene.
 struct SceneDesc
 {
-    /// Origin file type
+    /// Origin file type. \todo Delete this enumeration; SceneDesc should be source agnostic.
     enum Type
     {
         Naali, ///< Naali XML or binary scene
         OgreScene, ///< OGRE .scene
         OgreMesh, ///< OGRE .mesh
-        OpenAsset ///< OpenAsset
+        OpenAsset, ///< OpenAsset
+        AssetUpload ///< Scene description only has assets, no entities
     };
+
+    typedef QPair<QString, QString> AssetMapKey; ///< source-subname pair used to idenfity assets.
+    typedef QMap<AssetMapKey, AssetDesc> AssetMap; ///< Map of assets.
 
     QString filename; ///< Name of the file from which the description was created.
     Type type; ///< Type
     QString name; ///< Name.
     bool viewEnabled; ///< Is scene view enabled (ie. rendering-related components actually create stuff)
     QList<EntityDesc> entities; ///< List of entities the scene has.
-    QList<AssetDesc> assets; ///< List of assets the scene refers to.
+    AssetMap assets; ///< Map of unique assets.
 
     /// Returns true if the scene description has no entities, false otherwise.
     bool IsEmpty() const { return entities.isEmpty(); }

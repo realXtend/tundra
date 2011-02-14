@@ -53,19 +53,25 @@
 #include "GenericMessageUtils.h"
 #include "LoginServiceInterface.h"
 #include "Frame.h"
-#include "Console.h"
-#include "ISoundService.h"
+#include "ConsoleAPI.h"
+#include "Audio.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
+#include "NaaliMainWindow.h"
+#include "DebugAPI.h"
+
+//Kristalli UserConnection
+//for JS this is actually registered in TundraLogicModule, which depends on QtScript directly.
+//we could probably use the service mechanism for modules to register these optionally
+#include "UserConnection.h"
 
 //#include "Avatar/AvatarHandler.h"
 //#include "Avatar/AvatarControllable.h"
 
-#include "RexLogicModule.h" //much of the api is here
+#include "RexLogicModule.h" //much of the api used to be here -- now the dep is almost refactored out (actually in develop branch only, should be merged here!)
 #include "Camera/CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
-#include "EntityComponent/EC_AttachedSound.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_Mesh.h"
@@ -92,6 +98,7 @@
 
 #include "Vector3dfDecorator.h"
 #include "QuaternionDecorator.h"
+#include "TransformDecorator.h"
 
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
@@ -109,6 +116,7 @@
 
 #include "KeyEvent.h"
 #include "MouseEvent.h"
+#include "GestureEvent.h"
 
 //#include <QDebug>
 
@@ -261,6 +269,8 @@ namespace PythonScript
             "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
             Console::Bind(this, &PythonScriptModule::ConsoleReset)));
 
+        framework_->Console()->RegisterCommand("pythonconsole", "Shows the Python console window.", this, SLOT(ShowConsole()));
+
         ProcessCommandLineOptions();
     }
 
@@ -285,7 +295,7 @@ namespace PythonScript
                 value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
 
                 const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName.c_str());
-                assert(scene.get());
+                assert(scene);
                 if (scene)
                 {
                     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
@@ -585,6 +595,25 @@ namespace PythonScript
         return 0;
     }
 
+    Scene::Entity* PythonScriptModule::GetActiveCamera() const
+    {
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        if (!scene)
+        {
+            LogError("Failed to find active camera, default world scene wasn't setted.");
+            return 0;
+        }
+
+        foreach(Scene::EntityPtr cam, scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic()))
+            if (cam->GetComponent<EC_OgreCamera>()->IsActive())
+            {
+                return cam.get();
+            }
+
+        LogError("No active camera were found.");
+        return 0;
+    }
+
     Foundation::WorldLogicInterface* PythonScriptModule::GetWorldLogic() const
     {
         Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
@@ -769,41 +798,48 @@ namespace PythonScript
         return affected_entitys_;
     }
 
-    void PythonScriptModule::LoadScript(const QString &filename)
+    void PythonScriptModule::LoadScript(ScriptAssetPtr scriptAsset)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
         if (!script)
             return;
 
-        if (script->type.Get() != "py")
-            return;
+        QString scriptType = script->type.Get().trimmed().toLower();
+        if (scriptType != "py" && scriptType.length() > 0)
+            return; // The user enforced a foreign script type using the EC_Script type field.
 
-        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get().ref, script->GetParentEntity());
-        script->SetScriptInstance(pyInstance);
-        if (script->runOnLoad.Get())
-            script->Run();
+        if (scriptAsset->Name().endsWith(".py") || scriptType == "py")
+        {
+            PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get().ref, script->GetParentEntity());
+            script->SetScriptInstance(pyInstance);
+            if (script->runOnLoad.Get())
+                script->Run();
+        }
     }
 
     void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, IComponent *component)
     {
         if (component->TypeName() == EC_Script::TypeNameStatic())
-        {
-            EC_Script *script = static_cast<EC_Script *>(component);
-            connect(script, SIGNAL(ScriptRefChanged(const QString &)), SLOT(LoadScript(const QString &)));
-        }
+            connect(component , SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), SLOT(LoadScript(ScriptAssetPtr)), Qt::UniqueConnection);
     }
 
     void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, IComponent *component)
     {
+        if (component->TypeName() == EC_Script::TypeNameStatic())
+            disconnect(component, SIGNAL(ScriptAssetChanged(ScriptAssetPtr)), this, SLOT(LoadScript(ScriptAssetPtr)));
     }
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule());
-		//$ BEGIN_MOD $
-
-		//$ END_MOD $
+        NaaliMainWindow *mainWnd = framework_->Ui()->MainWindow();
+        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(mainWnd, PythonQt::self()->getMainModule(), Qt::Tool);
         return pythonqtconsole;
+    }
+
+    void PythonScriptModule::ShowConsole()
+    {
+        PythonQtScriptingConsole *console = CreateConsole();
+        console->show();
     }
 }
 
@@ -1682,23 +1718,33 @@ namespace PythonScript
             mainModule.addObject("_naali", GetFramework());
             PythonQt::self()->registerClass(&Frame::staticMetaObject);
             PythonQt::self()->registerClass(&DelayedSignal::staticMetaObject);
-            PythonQt::self()->registerClass(&ScriptConsole::staticMetaObject);
+            PythonQt::self()->registerClass(&ConsoleAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Command::staticMetaObject);
+            PythonQt::self()->registerClass(&DebugAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
+            // Ui() - naali.uicore
+            PythonQt::self()->registerClass(&NaaliUi::staticMetaObject);
+            PythonQt::self()->registerClass(&NaaliMainWindow::staticMetaObject);
+            PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);
+            // UiService() - naali.ui
             PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
-//            PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
-            PythonQt::self()->registerClass(&ISoundService::staticMetaObject);
+            //PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
+
+            PythonQt::self()->registerClass(&AudioAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Input::staticMetaObject);
+
+            //knet UserConnection
+            PythonQt::self()->registerClass(&UserConnection::staticMetaObject);
 
             //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Mesh::staticMetaObject);
-            PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
+            PythonQt::self()->registerClass(&GestureEvent::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&EC_Ruler::staticMetaObject);
             
@@ -1706,6 +1752,8 @@ namespace PythonScript
             PythonQt::self()->registerCPPClass("Vector3df");
             PythonQt::self()->addDecorators(new QuaternionDecorator());
             PythonQt::self()->registerCPPClass("Quaternion");
+            PythonQt::self()->addDecorators(new TransformDecorator());
+            PythonQt::self()->registerCPPClass("Transform");
 
             // For some reason: plain registerClass doosn't work for these classes.
             // Possible reason is that they are just interfaces

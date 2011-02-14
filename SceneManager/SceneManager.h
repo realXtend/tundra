@@ -75,8 +75,12 @@ namespace Scene
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
         uint NextFreeIdLocal() { return (uint)GetNextFreeIdLocal(); }
+        
         Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true) 
             { return CreateEntity((entity_id_t)id, components, change, defaultNetworkSync).get(); }
+        Scene::Entity* CreateEntityLocalRaw(const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::LocalOnly, bool defaultNetworkSync = false)
+            { return CreateEntity(NextFreeIdLocal(), components, change, defaultNetworkSync).get(); }
+
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
         QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
@@ -96,52 +100,9 @@ namespace Scene
         //! Is scene view enabled (ie. rendering-related components actually create stuff)
         bool ViewEnabled() const { return viewenabled_; }
 
-    public:
-        //! destructor
-        ~SceneManager();
-
-        //! entity map
-        typedef std::map<entity_id_t, EntityPtr> EntityMap;
-
-        //! entity iterator, see begin() and end()
-        typedef EntityMap::iterator iterator;
-
-        //! const entity iterator. see begin() and end()
-        typedef EntityMap::const_iterator const_iterator;
-
-        //! Returns true if the two scenes have the same name
-        bool operator == (const SceneManager &other) const { return Name() == other.Name(); }
-
-        //! Returns true if the two scenes have different names
-        bool operator != (const SceneManager &other) const { return !(*this == other); }
-
-        //! Order by scene name
-        bool operator < (const SceneManager &other) const { return Name() < other.Name(); }
-
         //! Returns scene name
         const QString &Name() const { return name_; }
 
-        //! Creates new entity that contains the specified components
-        /*! Entities should never be created directly, but instead created with this function.
-
-            To create an empty entity omit components parameter.
-
-            \param id Id of the new entity. Use GetNextFreeId() or GetNextFreeIdLocal()
-            \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
-            \param change Notification/network replication mode
-            \param defaultNetworkSync Whether components will have network sync. Default true
-        */
-        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
-            AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
-
-        //! Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
-        /*! Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
-            and this change in itself will not be replicated
-            \param old_id Old id of the existing entity
-            \param new_id New id to set
-         */ 
-        void ChangeEntityId(entity_id_t old_id, entity_id_t new_id);
-        
         //! Returns entity with the specified id
         /*!
             \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::EntityWeakPtr,
@@ -186,21 +147,6 @@ namespace Scene
         /* As local entities will not be network synced, there should be no conflicts in assignment
          */
         entity_id_t GetNextFreeIdLocal();
-
-        //! Returns iterator to the beginning of the entities.
-        iterator begin() { return iterator(entities_.begin()); }
-
-        //! Returns iterator to the end of the entities.
-        iterator end() { return iterator(entities_.end()); }
-
-        //! Returns constant iterator to the beginning of the entities.
-        const_iterator begin() const { return const_iterator(entities_.begin()); }
-
-        //! Returns constant iterator to the end of the entities.
-        const_iterator end() const { return const_iterator(entities_.end()); }
-
-        //! Returns entity map for introspection purposes
-        const EntityMap &GetEntityMap() const { return entities_; }
 
         //! Return list of entities with a spesific component present.
         //! \param type_name Type name of the component
@@ -274,6 +220,13 @@ namespace Scene
          */
         QList<Entity *> LoadSceneXML(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change);
 
+        //! Get scene as XML
+        /*! \param gettemporary flag if you want to get temporary stuff too
+			\param getlocal flag if you want to get local entities also
+            \return the scene in XML as a "string"
+        */
+        QByteArray GetSceneXML(bool gettemporary = false, bool getlocal = false) const;
+
         //! Save the scene to XML
         /*! \param filename File name
             \return true if successful
@@ -319,6 +272,64 @@ namespace Scene
             \return List of created entities.
          */
         QList<Entity *> CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
+
+    public:
+        //! destructor
+        ~SceneManager();
+
+        //! entity map
+        typedef std::map<entity_id_t, EntityPtr> EntityMap;
+
+        //! entity iterator, see begin() and end()
+        typedef EntityMap::iterator iterator;
+
+        //! const entity iterator. see begin() and end()
+        typedef EntityMap::const_iterator const_iterator;
+
+        //! Returns true if the two scenes have the same name
+        bool operator == (const SceneManager &other) const { return Name() == other.Name(); }
+
+        //! Returns true if the two scenes have different names
+        bool operator != (const SceneManager &other) const { return !(*this == other); }
+
+        //! Order by scene name
+        bool operator < (const SceneManager &other) const { return Name() < other.Name(); }
+
+        //! Creates new entity that contains the specified components
+        /*! Entities should never be created directly, but instead created with this function.
+
+            To create an empty entity omit components parameter.
+
+            \param id Id of the new entity. Use GetNextFreeId() or GetNextFreeIdLocal()
+            \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+            \param change Notification/network replication mode
+            \param defaultNetworkSync Whether components will have network sync. Default true
+        */
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
+            AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
+
+        //! Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
+        /*! Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
+            and this change in itself will not be replicated
+            \param old_id Old id of the existing entity
+            \param new_id New id to set
+         */ 
+        void ChangeEntityId(entity_id_t old_id, entity_id_t new_id);       
+
+        //! Returns iterator to the beginning of the entities.
+        iterator begin() { return iterator(entities_.begin()); }
+
+        //! Returns iterator to the end of the entities.
+        iterator end() { return iterator(entities_.end()); }
+
+        //! Returns constant iterator to the beginning of the entities.
+        const_iterator begin() const { return const_iterator(entities_.begin()); }
+
+        //! Returns constant iterator to the end of the entities.
+        const_iterator end() const { return const_iterator(entities_.end()); }
+
+        //! Returns entity map for introspection purposes
+        const EntityMap &GetEntityMap() const { return entities_; }
 
         //! This is an overloaded function.
         /*! \param data Data buffer.
@@ -372,10 +383,21 @@ namespace Scene
         */
         SceneDesc GetSceneDescFromXml(const QString &filename) const;
 
+        /// Inspects xml data and returns a scene description structure from the contents of XML data.
+        /** @param data Data to be processed.
+         *  @param sceneDesc Initialised SceneDesc with filename and enum type prepared.
+         */
+        SceneDesc GetSceneDescFromXml(QByteArray &data, SceneDesc &sceneDesc) const;
+
         /// Inspects file and returns a scene description structure from the contents of binary file.
         /** @param filename File name.
         */
         SceneDesc GetSceneDescFromBinary(const QString &filename) const;
+
+        /// Inspects binary data and returns a scene description structure from the contents of binary data.
+        /** @param data Data to be processed.
+        */
+        SceneDesc GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const;
 
     signals:
         //! Signal when an attribute of a component has changed

@@ -251,7 +251,7 @@ namespace WorldMap
             return;
 
         Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();        
-        if (!current_scene.get())
+        if (!current_scene)
             return;
 
         using namespace Foundation;

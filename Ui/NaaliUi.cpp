@@ -76,7 +76,7 @@ graphicsScene(0)
     //       The application thubnail icon must be set by adding icon resource
     //       to viewer project
     QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
-	mainWindow->parentWidget()->setWindowIcon(icon);
+    mainWindow->setWindowIcon(icon);
 
     graphicsView = new NaaliGraphicsView(mainWindow);
 

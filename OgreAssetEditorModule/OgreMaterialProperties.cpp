@@ -8,7 +8,6 @@
 #include "StableHeaders.h"
 #include "CoreDefines.h"
 #include "OgreMaterialProperties.h"
-#include "OgreMaterialResource.h"
 #include "Renderer.h"
 #include "OgreConversionUtils.h"
 
@@ -20,9 +19,12 @@
 #include <QVector>
 #include <QTextStream>
 
-OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset) :
-    material_(0)
+OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetInterfacePtr asset)
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+//:material_(0)
 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+    /*
     // Hack: tell the materialresource that shadows are medium quality, so that it won't create extra shadow texture units
     material_ = new OgreRenderer::OgreMaterialResource(asset->GetId(), OgreRenderer::Shadows_Low, asset);
     if (material_)
@@ -30,11 +32,13 @@ OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::
             CreateProperties();
 
     setObjectName(name);
+*/
 }
 
 OgreMaterialProperties::~OgreMaterialProperties()
 {
-    SAFE_DELETE(material_);
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+//    SAFE_DELETE(material_);
 }
 
 bool OgreMaterialProperties::HasProperties()
@@ -60,6 +64,9 @@ PropertyMap OgreMaterialProperties::GetPropertyMap()
 
 bool OgreMaterialProperties::CreateProperties()
 {
+    return false;
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
     Ogre::MaterialPtr matPtr = material_->GetMaterial();
     if (matPtr.isNull())
         return false;
@@ -228,10 +235,14 @@ bool OgreMaterialProperties::CreateProperties()
     }
 
     return true;
+*/
 }
 
 Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
 {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+    return Ogre::MaterialPtr();
+#if 0
     // Make clone from the original and uset that for creating the new material.
     Ogre::MaterialPtr matPtr = material_->GetMaterial();
     Ogre::MaterialPtr matPtrClone = matPtr->clone(objectName().toStdString() + "Clone");
@@ -458,6 +469,7 @@ Ogre::MaterialPtr OgreMaterialProperties::ToOgreMaterial()
 
     matPtrClone.setNull();
     return matPtrClone;
+#endif
 }
 
 QString OgreMaterialProperties::ToString()

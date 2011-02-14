@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "ResourceInterface.h"
 #include "Declare_EC.h"
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
@@ -70,23 +69,27 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(float, renderingDistance);
 
 public slots:
-    //! Create a new particle system. System name will be same as component name.
+    //! Open the particle asset in asset viewer.
+    void View(const QString &attributeName);
+
+    //! Create a new particle system. Does not delete the old
     void CreateParticleSystem(const QString &systemName);
 
-    //! Delete particle system.
-    void DeleteParticleSystem();
+    //! Delete all current particle systems.
+    void DeleteParticleSystems();
 
 private slots:
     void AttributeUpdated(IAttribute *attribute);
     void ParticleSystemAssetLoaded();
     void EntitySet();
-
+    void OnComponentRemoved(IComponent *component, AttributeChange::Type change);
+    
 private:
     explicit EC_ParticleSystem(IModule *module);
     ComponentPtr FindPlaceable() const;
 
     OgreRenderer::RendererWeakPtr renderer_;
-    Ogre::ParticleSystem* particleSystem_;
+    std::vector<Ogre::ParticleSystem*> particleSystems_;
     Ogre::SceneNode* node_;
 };
 

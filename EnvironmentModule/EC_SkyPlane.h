@@ -103,7 +103,8 @@ allowing the sky to appear below camera level.
         Q_PROPERTY(bool drawFirstAttr READ getdrawFirstAttr WRITE setdrawFirstAttr);
 
     public slots: 
-         /// Called If some of the attributes has been changed.
+        void View(const QString &attributeName);
+        /// Called If some of the attributes has been changed.
         void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
         void DisableSky();
 

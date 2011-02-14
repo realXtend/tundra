@@ -1,13 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "AssetEvents.h"
-#include "AssetManager.h"
 #include "AssetModule.h"
-#include "RexAsset.h"
-#include "RexTypes.h"
+#include "CoreTypes.h"
 #include "LocalAssetProvider.h"
-#include "AssetServiceInterface.h"
 #include "Framework.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
@@ -24,27 +20,25 @@
 namespace Asset
 {
 
-LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework) :
-    framework_(framework)
+LocalAssetProvider::LocalAssetProvider(Foundation::Framework* framework_)
+:framework(framework_)
 {
-    EventManagerPtr event_manager = framework_->GetEventManager();
-    event_category_ = event_manager->QueryEventCategory("Asset");
 }
 
 LocalAssetProvider::~LocalAssetProvider()
 {
 }
 
-const std::string& LocalAssetProvider::Name()
+QString LocalAssetProvider::Name()
 {
-    static const std::string name("Local");
+    static const QString name("Local");
     
     return name;
 }
 
-bool LocalAssetProvider::IsValidRef(const std::string& asset_id, const std::string& asset_type)
+bool LocalAssetProvider::IsValidRef(QString asset_id, QString asset_type)
 {
-    QString ref = asset_id.c_str();
+    QString ref = asset_id.toStdString().c_str();
     ref = ref.trimmed();
     if (ref.length() == 0)
         return false;
@@ -53,80 +47,11 @@ bool LocalAssetProvider::IsValidRef(const std::string& asset_id, const std::stri
 
     if (!ref.contains("://")) // If the ref doesn't contain a protocol specifier (we do this simple check for it), try to directly find the given local file.
     {
-        QString path = GetPathForAsset(ref);
+        QString path = GetPathForAsset(ref, 0);
         return path.length() > 0;
     }
     else
         return false;
-}
-
-///\todo This function call is deprecated, and used in conjunction with the old code flow for asset requests. Use the AssetAPI and
-/// AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString assetType) instead.
-bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::string& asset_type, request_tag_t tag)
-{
-    // Complete any file uploads before processing any download requests. (a total hack, but this function will be removed in the future)
-    CompletePendingFileUploads();
-
-    if (!IsValidRef(asset_id, asset_type))
-        return false;
-    
-    ServiceManagerPtr service_manager = framework_->GetServiceManager();
-    boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-        service_manager->GetService<Foundation::AssetServiceInterface>(Service::ST_Asset).lock();
-    if (!asset_service)
-        return false;
-    
-    AssetModule::LogDebug("New local asset request for ref \"" + asset_id + "\"");
-        
-    // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
-    std::string filename = QString(asset_id.c_str()).trimmed().toStdString();
-    if (filename.find("file://") != std::string::npos)
-        filename = filename.substr(7);
-    else if (filename.find("local://") != std::string::npos)
-        filename = filename.substr(8);
-    size_t lastSlash = filename.find_last_of('/');
-    if (lastSlash != std::string::npos)
-        filename = filename.substr(0, lastSlash);
-    
-    std::string assetpath = GetPathForAsset(filename.c_str()).toStdString(); // Look up all known local file asset storages for this asset.
-    if (assetpath.empty())
-    {
-        AssetModule::LogInfo("Failed to load local asset \"" + filename + "\"");
-        return true;
-    }
-    
-    boost::filesystem::path file_path(assetpath + "/" + filename);
-    std::ifstream filestr(file_path.native_directory_string().c_str(), std::ios::in | std::ios::binary);
-    if (filestr.good())
-    {
-        filestr.seekg(0, std::ios::end);
-        uint length = filestr.tellg();
-        filestr.seekg(0, std::ios::beg);
-        
-        if (length > 0)
-        {
-            RexAsset* new_asset = new RexAsset(asset_id, asset_type);
-            Foundation::AssetInterfacePtr asset_ptr(new_asset);
-            
-            RexAsset::AssetDataVector& data = new_asset->GetDataInternal();
-            data.resize(length);
-            filestr.read((char *)&data[0], length);
-            filestr.close();
-            
-            // Store to memory cache only
-            asset_service->StoreAsset(asset_ptr, false);
-            // Send asset_ready event as delayed
-            Events::AssetReady* event_data = new Events::AssetReady(asset_ptr->GetId(), asset_ptr->GetType(), asset_ptr, tag);
-            framework_->GetEventManager()->SendDelayedEvent(event_category_, Events::ASSET_READY, EventDataPtr(event_data));
-            
-            return true;
-        }
-        else
-            filestr.close();
-    }
-    
-    AssetModule::LogInfo("Failed to load local asset \"" + filename + "\"");
-    return true;
 }
 
 AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString assetType)
@@ -140,41 +65,34 @@ AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString asse
     return transfer;
 }
 
-QString LocalAssetProvider::GetPathForAsset(const QString &assetname)
+QString LocalAssetProvider::GetPathForAsset(const QString &assetname, LocalAssetStoragePtr *storage)
 {
     // Check first all subdirs without recursion, because recursion is potentially slow
     for(size_t i = 0; i < storages.size(); ++i)
     {
         QString path = storages[i]->GetFullPathForAsset(assetname.toStdString().c_str(), false);
         if (path != "")
+        {
+            if (storage)
+                *storage = storages[i];
             return path;
+        }
     }
 
     for(size_t i = 0; i < storages.size(); ++i)
     {
         QString path = storages[i]->GetFullPathForAsset(assetname.toStdString().c_str(), true);
         if (path != "")
+        {
+            if (storage)
+                *storage = storages[i];
             return path;
+        }
     }
     
+    if (storage)
+        *storage = LocalAssetStoragePtr();
     return "";
-}
-
-bool LocalAssetProvider::InProgress(const std::string& asset_id)
-{
-    return false;
-}
-
-Foundation::AssetInterfacePtr LocalAssetProvider::GetIncompleteAsset(const std::string& asset_id, const std::string& asset_type, uint received)
-{
-    // Not supported
-    return Foundation::AssetInterfacePtr();
-}
-
-bool LocalAssetProvider::QueryAssetStatus(const std::string& asset_id, uint& size, uint& received, uint& received_continuous)
-{
-    // Not supported
-    return false;
 }
 
 void LocalAssetProvider::Update(f64 frametime)
@@ -188,6 +106,14 @@ void LocalAssetProvider::Update(f64 frametime)
     CompletePendingFileDownloads();
 }
 
+void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
+{
+    if (!assetRef.isEmpty())
+        QFile::remove(assetRef); ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
+
+    AssetModule::LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
+}
+
 void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
 {
     ///\todo Check first if the given directory exists as a storage, and don't add it as a duplicate if so.
@@ -199,7 +125,7 @@ void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const
     storage->provider = shared_from_this();
     storage->SetupWatcher(); // Start listening on file change notifications.
 //    connect(storage->changeWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(FileChanged(QString)));
-    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
+//    connect(storage->changeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(FileChanged(QString)));
 
     storages.push_back(storage);
 }
@@ -212,39 +138,20 @@ std::vector<AssetStoragePtr> LocalAssetProvider::GetStorages() const
     return stores;
 }
 
-IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
-{
-    LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(destination.get());
-    if (!storage)
-    {
-        AssetModule::LogError("LocalAssetProvider::UploadAssetFromFile: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
-        return 0;
-    }
-
-    AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
-    transfer->sourceFilename = filename;
-    transfer->destinationName = assetName;
-    transfer->destinationStorage = destination;
-
-    pendingUploads.push_back(transfer);
-
-    return transfer.get();
-}
-
-IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
+AssetUploadTransferPtr LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
 {
     assert(data);
     if (!data)
     {
         AssetModule::LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Null source data pointer passed to function!");
-        return 0;
+        return AssetUploadTransferPtr();
     }
 
     LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(destination.get());
     if (!storage)
     {
         AssetModule::LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
-        return 0;
+        return AssetUploadTransferPtr();
     }
 
     AssetUploadTransferPtr transfer = AssetUploadTransferPtr(new IAssetUploadTransfer());
@@ -255,58 +162,8 @@ IAssetUploadTransfer *LocalAssetProvider::UploadAssetFromFileInMemory(const u8 *
 
     pendingUploads.push_back(transfer);
 
-    return transfer.get();
+    return transfer;
 }
-
-namespace
-{
-bool CopyAsset(const char *sourceFile, const char *destFile)
-{
-    assert(sourceFile);
-    assert(destFile);
-
-    QFile asset_in(sourceFile);
-    if (!asset_in.open(QFile::ReadOnly))
-    {
-        AssetModule::LogError("Could not open input asset file \"" + std::string(sourceFile) + "\"");
-        return false;
-    }
-
-    QByteArray bytes = asset_in.readAll();
-    asset_in.close();
-    
-    QFile asset_out(destFile);
-    if (!asset_out.open(QFile::WriteOnly))
-    {
-        AssetModule::LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
-        return false;
-    }
-
-    asset_out.write(bytes);
-    asset_out.close();
-    
-    return true;
-}
-
-bool SaveAssetFromMemoryToFile(const u8 *data, size_t numBytes, const char *destFile)
-{
-    assert(data);
-    assert(destFile);
-
-    QFile asset_out(destFile);
-    if (!asset_out.open(QFile::WriteOnly))
-    {
-        AssetModule::LogError("Could not open output asset file \"" + std::string(destFile) + "\"");
-        return false;
-    }
-
-    asset_out.write((const char *)data, numBytes);
-    asset_out.close();
-    
-    return true;
-}
-
-} // ~unnamed namespace
 
 void LocalAssetProvider::CompletePendingFileDownloads()
 {
@@ -317,7 +174,7 @@ void LocalAssetProvider::CompletePendingFileDownloads()
 
         QString ref = transfer->source.ref;
 
-        AssetModule::LogDebug("New local asset request: " + ref.toStdString());
+//        AssetModule::LogDebug("New local asset request: " + ref.toStdString());
 
         // Strip file: trims asset provider id (f.ex. 'file://') and potential mesh name inside the file (everything after last slash)
         if (ref.startsWith("file://"))
@@ -329,10 +186,13 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         if (lastSlash != -1)
             ref = ref.left(lastSlash);
 
-        QString path = GetPathForAsset(ref);
+        LocalAssetStoragePtr storage;
+        QString path = GetPathForAsset(ref, &storage);
         if (path.isEmpty())
         {
-            AssetModule::LogWarning("Failed to find local asset with filename \"" + ref.toStdString() + "\"!");
+            QString reason = "Failed to find local asset with filename \"" + ref + "\"!";
+//            AssetModule::LogWarning(reason.toStdString());
+            framework->Asset()->AssetTransferFailed(transfer.get(), reason);
             continue;
         }
     
@@ -342,12 +202,21 @@ void LocalAssetProvider::CompletePendingFileDownloads()
         bool success = LoadFileToVector(absoluteFilename.toStdString().c_str(), transfer->rawAssetData);
         if (!success)
         {
-            AssetModule::LogError("Failed to read asset data from file \"" + absoluteFilename.toStdString() + "\"");
+            QString reason = "Failed to read asset data for asset \"" + ref + "\" from file \"" + absoluteFilename + "\"";
+//            AssetModule::LogError(reason.toStdString());
+            framework->Asset()->AssetTransferFailed(transfer.get(), reason);
             continue;
         }
         
-        AssetModule::LogInfo("Loaded asset " + absoluteFilename.toStdString());
-        transfer->EmitAssetDownloaded();
+        // Tell the Asset API that this asset should not be cached into the asset cache, and instead the original filename should be used
+        // as a disk source, rather than generating a cache file for it.
+        transfer->SetCachingBehavior(false, absoluteFilename.toStdString().c_str());
+
+        transfer->storage = storage;
+//        AssetModule::LogDebug("Downloaded asset \"" + ref.toStdString() + "\" from file " + absoluteFilename.toStdString());
+
+        // Signal the Asset API that this asset is now successfully downloaded.
+        framework->Asset()->AssetTransferCompleted(transfer.get());
     }
 }
 
@@ -358,7 +227,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
         AssetUploadTransferPtr transfer = pendingUploads.back();
         pendingUploads.pop_back();
 
-        LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage *>(transfer->destinationStorage.lock().get());
+        LocalAssetStoragePtr storage = boost::dynamic_pointer_cast<LocalAssetStorage>(transfer->destinationStorage.lock());
         if (!storage)
         {
             AssetModule::LogError("Invalid IAssetStorage specified for file upload in LocalAssetProvider!");
@@ -379,15 +248,18 @@ void LocalAssetProvider::CompletePendingFileUploads()
         if (fromFile.length() == 0)
             success = SaveAssetFromMemoryToFile(&transfer->assetData[0], transfer->assetData.size(), toFile.toStdString().c_str());
         else
-            success = CopyAsset(fromFile.toStdString().c_str(), toFile.toStdString().c_str());
+            success = CopyAssetFile(fromFile.toStdString().c_str(), toFile.toStdString().c_str());
 
         if (!success)
         {
             AssetModule::LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
             transfer->EmitTransferFailed();
+            /// \todo Jukka lisää failure-notifikaatio.
         }
         else
-            transfer->EmitTransferCompleted();
+        {
+            framework->Asset()->AssetUploadTransferCompleted(transfer.get());
+        }
     }
 }
 

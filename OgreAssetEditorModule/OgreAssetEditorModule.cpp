@@ -23,9 +23,6 @@
 #include "ModuleManager.h"
 #include "NetworkEvents.h"
 #include "Inventory/InventoryEvents.h"
-#include "ResourceInterface.h"
-#include "AssetInterface.h"
-#include <AssetEvents.h>
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
@@ -108,6 +105,8 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
     }
     
     
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+        /*
     if ( category_id == assetEventCategory_ )
     {
         if (event_id == Asset::Events::ASSET_OPEN)
@@ -183,6 +182,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
             }
         }
     }
+        */
 
     if (category_id == inventoryEventCategory_)
     {
@@ -223,7 +223,8 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
                         editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager_->Add(id, at, editor);
-                    editor->HandleAssetReady(downloaded->asset);
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+//                    editor->HandleAssetReady(downloaded->asset);
 
                     // Add widget to scene, show and bring to front
                     uiService_.lock()->AddWidgetToScene(editor);
@@ -252,7 +253,8 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
                             editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager_->Add(id, at, editor);
-                    editor->HandleAssetReady(downloaded->asset);
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+//                    editor->HandleAssetReady(downloaded->asset);
                 }
                 else
                 {
@@ -262,8 +264,11 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     {
                         uiService_.lock()->BringWidgetToFront(editor);
                         AudioPreviewEditor *audioWidget = qobject_cast<AudioPreviewEditor*>(editor);
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+/*
                         if(audioWidget)
                             audioWidget->HandleAssetReady(downloaded->asset);
+*/
                     }
                 }
 
@@ -272,6 +277,8 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
             }
             case RexTypes::RexAT_Mesh:
             {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+                /*
                 const QString &id = downloaded->inventoryId.ToString().c_str();
                 const QString &name = downloaded->name.c_str();
                 if(!editorManager_->Exists(id, at))
@@ -296,10 +303,13 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 }
 
                 downloaded->handled = true;
+                */
                 return true;
             }
             case RexTypes::RexAT_Texture:
             {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+                /*
                 const QString &id = downloaded->inventoryId.ToString().c_str();
                 const QString &name = downloaded->name.c_str();
                 if(!editorManager_->Exists(id, at))
@@ -318,6 +328,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 }
 
                 downloaded->handled = true;
+                */
                 return true;
             }
             default:
@@ -332,6 +343,8 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
     }
     else if (category_id == resourceEventCategory_)
     {
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
+        /*
         if (event_id == Resource::Events::RESOURCE_CANCELED)
             return false;
 
@@ -371,6 +384,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     editorWidget->HandleResouceReady(res);
             }
         }
+        */
     }
 
     return false;

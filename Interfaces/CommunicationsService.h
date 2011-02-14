@@ -272,6 +272,8 @@ namespace Communications
 
             //! \todo: Give weak_ptr instead
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const = 0;
+            virtual QStringList GetParticipantsNames() const = 0;
+            virtual void MuteParticipantByName(QString, bool) const = 0;
 
         signals:
             void StateChanged(Communications::InWorldVoice::SessionInterface::State state);

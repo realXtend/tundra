@@ -17,7 +17,11 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
+
+#ifdef ENABLE_TAIGA_LOGIN
 #include "../ProtocolUtilities/NetworkEvents.h"
+#endif
+
 #include "../TundraLogicModule/TundraEvents.h"
 
 #include "MemoryLeakCheck.h"
@@ -78,7 +82,7 @@ void LoginScreenModule::PostInitialize()
     UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (ui)
     {
-        window_ = new LoginWidget(QMap<QString, QString>());
+        window_ = new LoginWidget(framework_);
         connect(window_, SIGNAL(ExitClicked()), SLOT(Exit()));
 
         ui->AddWidgetToScene(window_, Qt::Widget);
@@ -127,6 +131,7 @@ bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t 
     {
         network_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
     }
+#ifdef ENABLE_TAIGA_LOGIN
     else if(category_id == network_category_)
     {
         using namespace ProtocolUtilities::Events;
@@ -151,6 +156,7 @@ bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t 
             break;
         }
     }
+#endif
     else if (category_id == tundra_category_)
     {
         switch(event_id)
@@ -159,7 +165,7 @@ bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t 
             connected_ = true;
             if (ui && window_)
             {
-                window_->SetStatus("Connected");
+                window_->Connected();
                 ui->HideWidget(window_);
             }
             break;
@@ -215,6 +221,7 @@ void LoginScreenModule::ProcessTundraLogin(const QMap<QString, QString> &data)
         logindata.port_ = port;
         logindata.username_ = data["Username"].toStdString();
         logindata.password_ = data["Password"].toStdString();
+        logindata.protocol_ = data["Protocol"].toStdString();
         LogInfo("Attempting Tundra connection to " + worldAddress + " as " + logindata.username_);
         framework_->GetEventManager()->SendEvent(tundra_category_, TundraLogic::Events::EVENT_TUNDRA_LOGIN, &logindata);
     }

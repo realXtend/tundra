@@ -4,8 +4,11 @@
 #define incl_Asset_IAssetUploadTransfer_h
 
 #include <QObject>
+#include <QByteArray>
+
 #include "CoreTypes.h"
 #include "AssetFwd.h"
+#include "IAssetStorage.h"
 #include <boost/weak_ptr.hpp>
 
 class IAssetUploadTransfer : public QObject
@@ -29,10 +32,25 @@ public:
 
     boost::weak_ptr<IAssetStorage> destinationStorage;
 
-    Foundation::AssetProviderWeakPtr destinationProvider;
+    AssetProviderWeakPtr destinationProvider;
 
     void EmitTransferCompleted();
     void EmitTransferFailed();
+
+public slots:
+    /// Returns the full assetRef address this asset will have when the upload is complete.
+    QString AssetRef()
+    { 
+        boost::shared_ptr<IAssetStorage> storage = destinationStorage.lock();
+        if (!storage)
+            return "";
+        return storage->GetFullAssetURL(destinationName);
+    }
+
+    QByteArray GetRawData() { return QByteArray::fromRawData((const char*)&assetData[0], assetData.size()); }
+
+    QString GetSourceFilename() { return sourceFilename; }
+    QString GetDesticationName() { return destinationName; }
 
 signals:
     void Completed(IAssetUploadTransfer *transfer);

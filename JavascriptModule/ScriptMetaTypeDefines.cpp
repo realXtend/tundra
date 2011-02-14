@@ -10,17 +10,22 @@
 #include "ScriptMetaTypeDefines.h"
 
 #include "Entity.h"
+#include "IAssetTransfer.h"
+#include "IAssetUploadTransfer.h"
+#include "IAssetStorage.h"
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 #include "UiProxyWidget.h"
 #include "Frame.h"
-#include "Console.h"
+#include "ConsoleAPI.h"
 #include "SceneManager.h"
-#include "ISoundService.h"
+#include "Audio.h"
+#include "SoundChannel.h"
 #include "InputContext.h"
 #include "RenderServiceInterface.h"
 #include "CommunicationsService.h"
-
+#include "NaaliMainWindow.h"
+#include "NaaliGraphicsView.h"
 #include "EntityAction.h"
 
 #include "LoggingFunctions.h"
@@ -36,15 +41,26 @@ Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QTimer, QObject*);
 
-
 ///\todo Remove these two and move to Input API once NaaliCore is merged.
 //! Naali input defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
+Q_DECLARE_METATYPE(GestureEvent*)
 Q_DECLARE_METATYPE(InputContext*)
+
+//! Asset API defines
+Q_DECLARE_METATYPE(AssetPtr);
+Q_DECLARE_METATYPE(AssetTransferPtr);
+Q_DECLARE_METATYPE(IAssetTransfer*);
+Q_DECLARE_METATYPE(AssetUploadTransferPtr);
+Q_DECLARE_METATYPE(IAssetUploadTransfer*);
+Q_DECLARE_METATYPE(AssetStoragePtr);
+Q_DECLARE_METATYPE(IAssetStorage*);
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
+Q_DECLARE_METATYPE(NaaliMainWindow*);
+Q_DECLARE_METATYPE(NaaliGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
@@ -59,15 +75,21 @@ Q_DECLARE_METATYPE(AttributeChange::Type);
 //! Naali core API object defines.
 Q_DECLARE_METATYPE(Foundation::Framework*);
 Q_DECLARE_METATYPE(Frame*);
-Q_DECLARE_METATYPE(ScriptConsole*);
+Q_DECLARE_METATYPE(ConsoleAPI*);
 Q_DECLARE_METATYPE(Command*);
 Q_DECLARE_METATYPE(DelayedSignal*);
+Q_DECLARE_METATYPE(DebugAPI*);
+
+//! Naali Audio API object.
+Q_DECLARE_METATYPE(AudioAPI*);
+Q_DECLARE_METATYPE(SoundChannel*);
 
 //! Naali renderer defines
 Q_DECLARE_METATYPE(RaycastResult*);
 
 //! Communications metatype
 Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
+Q_DECLARE_METATYPE(Communications::InWorldVoice::ParticipantInterface*);
 
 QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
 {
@@ -85,6 +107,21 @@ QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
     return QScriptValue();
 }
 
+// Helper function. Added because new'ing a QPixmap in script seems to lead into growing memory use
+QScriptValue setPixmapToLabel(QScriptContext *ctx, QScriptEngine *eng)
+{
+    if(ctx->argumentCount() == 2)
+    {
+        QObject *object = qscriptvalue_cast<QObject*>(ctx->argument(0));
+        QString filename = qscriptvalue_cast<QString>(ctx->argument(1));
+        
+        QLabel *label = dynamic_cast<QLabel *>(object);
+        if (label && QFile::exists(filename))
+            label->setPixmap(QPixmap(filename));
+    }
+    return QScriptValue();
+}
+
 void ExposeQtMetaTypes(QScriptEngine *engine)
 {
     assert(engine);
@@ -98,30 +135,61 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     object = engine->scriptValueFromQMetaObject<QTimer>();
     engine->globalObject().setProperty("QTimer", object);
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
-/*
-    ImportExtension(engine, "qt.core");
-    ImportExtension(engine, "qt.gui");
-    ImportExtension(engine, "qt.network");
-    ImportExtension(engine, "qt.uitools");
-    ImportExtension(engine, "qt.xml");
-    ImportExtension(engine, "qt.xmlpatterns");
+    engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));
+    
+
+    engine->importExtension("qt.core");
+    engine->importExtension("qt.gui");
+/*  engine->importExtension("qt.network");
+    engine->importExtension("qt.uitools");
+    engine->importExtension("qt.xml");
+    engine->importExtension("qt.xmlpatterns");
 */
 //  Our deps contain these plugins as well, but we don't use them (for now at least).
-//    ImportExtension(engine, "qt.opengl");
-//    ImportExtension(engine, "qt.phonon");
-//    ImportExtension(engine, "qt.webkit"); // The webkit plugin of QtScriptGenerator fails to load.
+//    engine->importExtension("qt.opengl");
+//    engine->importExtension("qt.phonon");
+//    engine->importExtension("qt.webkit"); // The webkit plugin of QtScriptGenerator fails to load.
 
 }
+
+template<typename T>
+static QScriptValue DereferenceBoostSharedPtr(QScriptContext *context, QScriptEngine *engine)
+{
+    boost::shared_ptr<T> ptr = context->thisObject().toVariant().value<boost::shared_ptr<T> >();
+    return engine->newQObject(ptr.get());
+}
+
+template<typename T>
+QScriptValue qScriptValueFromBoostSharedPtr(QScriptEngine *engine, const boost::shared_ptr<T> &ptr)
+{
+    QScriptValue v = engine->newVariant(QVariant::fromValue<boost::shared_ptr<T> >(ptr));
+    v.setProperty("get", engine->newFunction(DereferenceBoostSharedPtr<T>), QScriptValue::ReadOnly | QScriptValue::Undeletable);
+    return v;
+}
+
+template<typename T>
+void qScriptValueToBoostSharedPtr(const QScriptValue &value, boost::shared_ptr<T> &ptr)
+{   
+    ptr = value.toVariant().value<boost::shared_ptr<T> >();
+}
+
+Q_DECLARE_METATYPE(SoundChannelPtr);
+Q_DECLARE_METATYPE(InputContextPtr);
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
     // Input metatypes.
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
+    qScriptRegisterQObjectMetaType<GestureEvent*>(engine);
     qScriptRegisterQObjectMetaType<InputContext*>(engine);
+    qRegisterMetaType<InputContextPtr>("InputContextPtr");
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<InputContext>,
+                            qScriptValueToBoostSharedPtr<InputContext>);
     qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
     qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
+    qRegisterMetaType<GestureEvent::EventType>("GestureEvent::EventType");
 
     // Scene metatypes.
     qScriptRegisterQObjectMetaType<Scene::SceneManager*>(engine);
@@ -138,32 +206,56 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Foundation::Framework*>(engine);
     
     // Console metatypes.
-    qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
+    qScriptRegisterQObjectMetaType<ConsoleAPI*>(engine);
     qScriptRegisterQObjectMetaType<Command*>(engine);
 
     // Frame metatypes.
     qScriptRegisterQObjectMetaType<Frame*>(engine);
     qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
 
+    // Asset API
+    qRegisterMetaType<AssetPtr>("AssetPtr");
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAsset>, qScriptValueToBoostSharedPtr<IAsset>);
+
+    qRegisterMetaType<AssetTransferPtr>("AssetTransferPtr");
+    qScriptRegisterQObjectMetaType<IAssetTransfer*>(engine);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetTransfer>, qScriptValueToBoostSharedPtr<IAssetTransfer>);
+
+    qRegisterMetaType<AssetUploadTransferPtr>("AssetUploadTransferPtr");
+    qScriptRegisterQObjectMetaType<IAssetUploadTransfer*>(engine);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetUploadTransfer>, qScriptValueToBoostSharedPtr<IAssetUploadTransfer>);
+
+    qRegisterMetaType<AssetStoragePtr>("AssetStoragePtr");
+    qScriptRegisterQObjectMetaType<IAssetStorage*>(engine);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
+
     // Ui metatypes.
+    qScriptRegisterQObjectMetaType<NaaliMainWindow*>(engine);
+    qScriptRegisterQObjectMetaType<NaaliGraphicsView*>(engine);
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
-    //Add support to create proxy widgets in javascript side.
+
+    // Add support to create proxy widgets in javascript side.
     QScriptValue object = engine->scriptValueFromQMetaObject<UiProxyWidget>();
     engine->globalObject().setProperty("UiProxyWidget", object);
     
     // Sound metatypes.
     qRegisterMetaType<sound_id_t>("sound_id_t");
-    qRegisterMetaType<ISoundService::SoundState>("SoundState");
-    qRegisterMetaType<ISoundService::SoundState>("ISoundService::SoundState");
-    qRegisterMetaType<ISoundService::SoundType>("SoundType");
-    qRegisterMetaType<ISoundService::SoundType>("ISoundService::SoundType");
+    qRegisterMetaType<SoundChannel::SoundState>("SoundState");
+    qRegisterMetaType<SoundChannelPtr>("SoundChannelPtr");
+    qScriptRegisterQObjectMetaType<SoundChannel*>(engine);
+    qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<SoundChannel>, qScriptValueToBoostSharedPtr<SoundChannel>);
+    
+    qRegisterMetaType<SoundChannel::SoundState>("SoundChannel::SoundState");
+    qRegisterMetaType<SoundChannel::SoundType>("SoundType");
+    qRegisterMetaType<SoundChannel::SoundType>("SoundChannel::SoundType");
 
     // Renderer metatypes
     qScriptRegisterQObjectMetaType<RaycastResult*>(engine);
 
     // Communications metatypes
     qScriptRegisterQObjectMetaType<Communications::InWorldVoice::SessionInterface*>(engine);
+    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::ParticipantInterface*>(engine);
 }
 
 

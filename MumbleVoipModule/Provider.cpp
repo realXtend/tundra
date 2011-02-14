@@ -16,6 +16,8 @@
 #include "UiProxyWidget.h"
 #include "EC_VoiceChannel.h"
 #include "SceneManager.h"
+#include "TundraLogicModule.h"
+#include "Client.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -38,7 +40,7 @@ namespace MumbleVoip
         if (framework_ &&  framework_->GetServiceManager())
         {
             boost::shared_ptr<Communications::ServiceInterface> communication_service = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Service::ST_Communications).lock();
-            if (communication_service.get())
+            if (communication_service)
                 communication_service->Register(*this);
         }
 
@@ -224,6 +226,9 @@ namespace MumbleVoip
         if (session_->GetChannels().contains(channel->getchannelname()))
             channel->setenabled(false); // We do not want to create multiple channels with a same name
 
+        if (session_->GetChannels().contains(channel->getchannelname()))
+            channel->setenabled(false); // We do not want to create multiple channels with a same name
+
         ServerInfo server_info;
         server_info.server = channel->getserveraddress();
         server_info.version = channel->getversion();
@@ -278,24 +283,29 @@ namespace MumbleVoip
         if (!ec_voice_channels_.contains(channel))
             return;
 
-        if (channel->getenabled() && !session_->GetChannels().contains(channel->getchannelname()))
+        foreach(EC_VoiceChannel* channel, ec_voice_channels_)
         {
-            ServerInfo server_info;
-            server_info.server = channel->getserveraddress();
-            server_info.version = channel->getversion();
-            server_info.password = channel->getserverpassword();
-            server_info.channel_id = channel->getchannelid();
-            server_info.channel_name = channel->getchannelname();
-            server_info.user_name = GetUsername();
-            server_info.avatar_id = GetAvatarUuid();
+            if (QString::number(reinterpret_cast<unsigned int>(channel)) != pointer)
+                continue;
 
-            channel_names_[channel] = channel->getchannelname();
-            session_->AddChannel(channel->getchannelname(), server_info);
-        }
+            if (channel->getenabled() && !session_->GetChannels().contains(channel->getchannelname()))
+            {
+                ServerInfo server_info;
+                server_info.server = channel->getserveraddress();
+                server_info.version = channel->getversion();
+                server_info.password = channel->getserverpassword();
+                server_info.channel_id = channel->getchannelid();
+                server_info.channel_name = channel->getchannelname();
+                server_info.user_name = GetUsername();
+                server_info.avatar_id = GetAvatarUuid();
 
-        if (!channel->getenabled())
-        {
-            session_->RemoveChannel(channel->getchannelname());
+                channel_names_[channel] = channel->getchannelname();
+                session_->AddChannel(channel->getchannelname(), server_info);
+            }
+            if (!channel->getenabled())
+            {
+                session_->RemoveChannel(channel->getchannelname());
+            }
         }
     }
 
@@ -306,6 +316,11 @@ namespace MumbleVoip
         
         if (!world_logic)
             return "";
+
+		/// @todo: make work both for Tundra & others somehow, world logic interface perhaps?
+        if (!tundra_logic_->IsServer())
+            return tundra_logic_->GetClient()->GetLoginProperty("username");;
+
        
         Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
         if (!user_avatar)
@@ -318,10 +333,13 @@ namespace MumbleVoip
         QString user_name = presence->GetFullName();
         user_name.replace(' ', '_');
         return user_name;
+
+        return "";
     }
 
     QString Provider::GetAvatarUuid()
     {
+<<<<<<< HEAD
         using namespace Foundation;
         boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
         
@@ -337,6 +355,19 @@ namespace MumbleVoip
             return "";
 
         return presence->agentId.ToQString();
+=======
+        /// @todo: Get user's avatar entity uuid
+        return "";
+    }
+    
+    void Provider::PostInitialize()
+    {
+        tundra_logic_ = framework_->GetModuleManager()->GetModule<TundraLogic::TundraLogicModule>().lock();
+        if (!tundra_logic_)
+        {
+           throw Exception("Fatal: could not get TundraLogicModule");
+        } 
+>>>>>>> origin/tundra
     }
 
 } // MumbleVoip

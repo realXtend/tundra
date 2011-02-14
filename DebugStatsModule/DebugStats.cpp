@@ -26,12 +26,10 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "Renderer.h"
-#include "ResourceHandler.h"
-#include "OgreTextureResource.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
-#include "Console.h"
+#include "ConsoleAPI.h"
 #include "Input.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
@@ -438,7 +436,7 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
     foreach(Scene::EntityPtr entity, users)
     {
         boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity->GetComponent<EC_OpenSimPresence>();
-        assert(ec_presence.get());
+        assert(ec_presence);
         if (ec_presence->GetFullName().toStdString() == params[0])
         {
             user_presence = ec_presence;
@@ -456,6 +454,8 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
 
 Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params)
 {
+    /* /// \todo Regression. Reimplement using the Asset API. -jj.
+
     boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
@@ -513,7 +513,7 @@ Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params
         {
         }
     }
-    
+    */
     return Console::ResultSuccess();
 }
 

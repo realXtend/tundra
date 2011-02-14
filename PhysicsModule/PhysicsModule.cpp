@@ -174,7 +174,7 @@ void PhysicsModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene)
+Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene, bool isClient)
 {
     if (!scene)
         return 0;
@@ -187,7 +187,9 @@ Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr
     }
     
     Scene::SceneManager* ptr = scene.get();
-    boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld(this));
+    boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld(this, isClient));
+    new_world->SetGravity(Vector3df(0.0f,0.0f,-9.81f));
+    
     physicsWorlds_[ptr] = new_world;
     QObject::connect(ptr, SIGNAL(Removed(Scene::SceneManager*)), this, SLOT(OnSceneRemoved(Scene::SceneManager*)));
     

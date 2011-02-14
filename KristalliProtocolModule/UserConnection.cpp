@@ -11,11 +11,6 @@ int UserConnection::GetConnectionID() const
     return userID;
 }
 
-QString UserConnection::GetName() const
-{
-    return userName;
-}
-
 void UserConnection::Exec(QObject* entity, const QString &action, const QString &p1, const QString &p2, const QString &p3)
 {
     Scene::Entity* entityptr = dynamic_cast<Scene::Entity*>(entity);
@@ -37,6 +32,11 @@ void UserConnection::SetProperty(const QString& key, const QString& value)
     properties[key] = value;
 }
 
+QString UserConnection::GetLoginData() const
+{
+    return loginData;
+}
+
 QString UserConnection::GetProperty(const QString& key) const
 {
     static QString empty;
@@ -46,4 +46,9 @@ QString UserConnection::GetProperty(const QString& key) const
         return i->second;
     else
         return empty;
+}
+
+void UserConnection::DenyConnection()
+{
+    properties["authenticated"] = "false";
 }

@@ -16,6 +16,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 #include <QGraphicsItem>
 #include <QGraphicsView>
 #include <QKeyEvent>
+#include <QGestureEvent>
 #include <QApplication>
 #include <QSettings>
 
@@ -27,6 +28,7 @@ Input::Input(Foundation::Framework *framework_)
 :lastMouseX(0),
 lastMouseY(0),
 mouseCursorVisible(true),
+gesturesEnabled(false),
 //sceneMouseCapture(NoMouseCapture),
 mouseFPSModeEnterX(0),
 mouseFPSModeEnterY(0),
@@ -61,6 +63,11 @@ framework(framework_)
     eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseClicked, "MouseClicked");
     eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseDoubleClicked, "MouseDoubleClicked");
     eventManager->RegisterEvent(inputCategory, QtInputEvents::MouseMove, "MouseMove");
+
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureStarted, "GestureStarted");
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureUpdated, "GestureUpdated");
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureFinished, "GestureFinished");
+    eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureCanceled, "GestureCanceled");
 
     // Next, set up the global widget event filters that we will use to read our scene input from.
     // Note: Since we set up this object as an event filter to multiple widgets, we will receive
@@ -109,6 +116,12 @@ framework(framework_)
 
     lastMouseButtonReleaseTime = QTime::currentTime();
     doubleClickDetected = false;
+
+    // Accept gestures
+    QList<Qt::GestureType> gestures;
+    gestures << Qt::PanGesture << Qt::PinchGesture << Qt::TapAndHoldGesture;
+    foreach(Qt::GestureType type, gestures)
+        mainWindow->grabGesture(type);
 }
 
 Input::~Input()
@@ -208,9 +221,9 @@ void Input::DumpInputContexts()
     }
 }
 
-boost::shared_ptr<InputContext> Input::RegisterInputContext(const char *name, int priority)
+InputContextPtr Input::RegisterInputContext(const QString &name, int priority)
 {
-    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(name, priority);
+    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(name.toStdString().c_str(), priority);
 
     // Do a sorted insert: Iterate and skip through all the input contexts that have a higher
     // priority than the desired new priority.
@@ -305,7 +318,7 @@ void Input::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Ke
     for(; start != registeredInputContexts.end(); ++start)
     {
         boost::shared_ptr<InputContext> context = start->lock();
-        if (context.get())
+        if (context)
             context->TriggerKeyReleaseEvent(keyCode);
     }
 
@@ -417,6 +430,47 @@ void Input::TriggerMouseEvent(MouseEvent &mouse)
     }
 }
 
+void Input::TriggerGestureEvent(GestureEvent &gesture)
+{
+    assert(gesture.handled == false);
+
+    // First, we pass the event to the global top level input context, which operates above Qt widget input.
+    topLevelInputContext.TriggerGestureEvent(gesture);
+    if (gesture.handled)
+        return;
+
+    // Pass the event to all input contexts in the priority order.
+    for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
+    {
+        if (gesture.handled)
+            break;
+        boost::shared_ptr<InputContext> context = iter->lock();
+        if (context.get())
+            context->TriggerGestureEvent(gesture);
+    }
+
+    if (!gesture.handled)
+    {
+        switch(gesture.eventType)
+        {
+        case GestureEvent::GestureStarted:
+            eventManager->SendEvent(inputCategory, QtInputEvents::GestureStarted, &gesture);
+            break;
+        case GestureEvent::GestureUpdated:
+            eventManager->SendEvent(inputCategory, QtInputEvents::GestureUpdated, &gesture);
+            break;
+        case GestureEvent::GestureFinished:
+            eventManager->SendEvent(inputCategory, QtInputEvents::GestureFinished, &gesture);
+            break;
+        case GestureEvent::GestureCanceled:
+            eventManager->SendEvent(inputCategory, QtInputEvents::GestureCanceled, &gesture);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 /// Associates the given custom action with the given key.
 void Input::SetKeyBinding(const QString &actionName, QKeySequence key)
 {
@@ -509,7 +563,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         keyEvent.text = e->text();
         keyEvent.sequence = QKeySequence(e->key() | e->modifiers()); ///\todo Track multi-key sequences.
         keyEvent.eventType = KeyEvent::KeyPressed;
-//        keyEvent.otherHeldKeys = heldKeys; ///\todo
+        //keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
         current_modifiers_ = e->modifiers(); // local tracking for mouse events
@@ -532,7 +586,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
             KeyPressInformation info;
             info.keyPressCount = 1;
             info.keyState = KeyEvent::KeyPressed;
-//            info.firstPressTime = now; ///\todo
+            //info.firstPressTime = now; ///\todo
             heldKeys[keyEvent.keyCode] = info;
         }
 
@@ -573,7 +627,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         keyEvent.modifiers = e->modifiers();
         keyEvent.text = e->text();
         keyEvent.eventType = KeyEvent::KeyReleased;
-//        keyEvent.otherHeldKeys = heldKeys; ///\todo
+        //keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
         heldKeys.erase(existingKey);
@@ -596,7 +650,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
             return false;
 
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
-//        QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        //QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
 /*
         // Update the flag that tracks whether the inworld scene or QGraphicsScene is grabbing mouse movement.
         if (event->type() == QEvent::MouseButtonPress)
@@ -652,7 +706,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 
         mouseEvent.otherButtons = e->buttons();
 
-//        mouseEvent.heldKeys = heldKeys; ///\todo
+        //mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         // If the mouse press is going to the inworld scene, clear keyboard focus from the QGraphicsScene widget (if any had it) so key events also go to inworld scene.
@@ -660,7 +714,6 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
             mainView->scene()->clearFocus();
 
         TriggerMouseEvent(mouseEvent);
-
         return mouseEvent.handled;
     }
 
@@ -669,17 +722,16 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         // If a mouse button is held down, we get the mouse drag events from the viewport widget.
         // If a mouse button is not held down, the application main window will get the events.
         // Duplicate events are not received, so no need to worry about filtering them here.
-
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
 
         //QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
         // If there is a graphicsItem under the mouse, don't pass the move message to the inworld scene, unless the inworld scene has captured it.
-//        if (mouseCursorVisible)
-//            if ((itemUnderMouse && sceneMouseCapture != SceneMouseCapture) || sceneMouseCapture == QtMouseCapture)
-//                return false;
-
-//        if (mouseCursorVisible && itemUnderMouse)
-//            return false;
+        //if (mouseCursorVisible)
+        //    if ((itemUnderMouse && sceneMouseCapture != SceneMouseCapture) || sceneMouseCapture == QtMouseCapture)
+        //        return false;
+        //
+        //if (mouseCursorVisible && itemUnderMouse)
+        //    return false;
 
         MouseEvent mouseEvent;
         mouseEvent.eventType = MouseEvent::MouseMove;
@@ -719,7 +771,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         mouseEvent.globalX = e->globalX(); // Note that these may "jitter" when mouse is in relative movement mode.
         mouseEvent.globalY = e->globalY();
         mouseEvent.otherButtons = e->buttons();
-//        mouseEvent.heldKeys = heldKeys; ///\todo
+        //mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         // Save the absolute coordinates to be able to compute the proper relative movement values in the next
@@ -746,9 +798,9 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
             return false;
 
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
-//        QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
-//        if (itemUnderMouse)
-//            return false;
+        //QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        //if (itemUnderMouse)
+        //    return false;
 
         MouseEvent mouseEvent;
         mouseEvent.eventType = MouseEvent::MouseScroll;
@@ -767,13 +819,33 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
 
         mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
 
-//        mouseEvent.heldKeys = heldKeys; ///\todo
+        //mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         TriggerMouseEvent(mouseEvent);
 
         // Always suppress the wheel events from going to the QGraphicsView, or otherwise the wheel will start to
         // scroll the main QGraphicsView UI windows vertically.
+        return true;
+    }
+
+    case QEvent::Gesture:
+    {
+        if (!gesturesEnabled)
+            gesturesEnabled = true;
+
+        QGestureEvent *e = static_cast<QGestureEvent *>(event);
+        QList<QGesture*> gestures = e->gestures();
+        foreach(QGesture *gesture, gestures)
+        {
+            GestureEvent gestureEvent;
+            gestureEvent.gesture = gesture;
+            gestureEvent.gestureType = gesture->gestureType();
+            gestureEvent.eventType = (GestureEvent::EventType)gesture->state();
+            TriggerGestureEvent(gestureEvent);
+            e->setAccepted(gesture, gestureEvent.handled);
+        }
+        e->accept();
         return true;
     }
 
@@ -813,7 +885,7 @@ void Input::Update(float frametime)
         iter != registeredInputContexts.end(); ++iter)
     {
         boost::shared_ptr<InputContext> inputContext = (*iter).lock();
-        if (inputContext.get())
+        if (inputContext)
             inputContext->UpdateFrame();
     }
 }

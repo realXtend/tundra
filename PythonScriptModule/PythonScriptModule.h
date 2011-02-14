@@ -7,6 +7,7 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "PythonQtScriptingConsole.h"
+#include "ScriptAsset.h"
 
 #include <QObject>
 #include <QList>
@@ -68,6 +69,7 @@ namespace PythonScript
     public slots: //things for the py side to call.
         OgreRenderer::Renderer* GetRenderer() const;
         Foundation::WorldLogicInterface* GetWorldLogic() const;
+        Scene::Entity* GetActiveCamera() const;
         Scene::SceneManager* GetScene(const QString &name) const;
         void RunJavascriptString(const QString &codestr, const QVariantMap &context = QVariantMap());
         InputContext* GetInputContext() const { return input.get(); }
@@ -77,13 +79,17 @@ namespace PythonScript
         
         void RemoveQtDynamicProperty(QObject* qobj, char* propname);
         QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QString uuidstr, uint refresh_rate);
-        /** Prepares Python script instance used with EC_Script for execution.
-            The script is executed instantly only if the runOnLoad attribute of the script EC is true.
-            @param filename Filename of the script.
+
+        /// Prepares Python script instance used with EC_Script for execution.
+        /** The script is executed instantly only if the runOnLoad attribute of the script EC is true.
+            @param scriptAsset Script asset.
         */
-        void LoadScript(const QString &filename);
+        void LoadScript(ScriptAssetPtr scriptAsset);
 
         PythonQtScriptingConsole* CreateConsole();
+
+        /// Shows the Python script console.
+        void ShowConsole();
 
     public:
         PythonScriptModule();

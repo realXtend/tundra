@@ -13,7 +13,7 @@ namespace Asset
 
 class ASSET_MODULE_API LocalAssetStorage : public IAssetStorage
 {
-    Q_OBJECT
+Q_OBJECT
 
 public:
     LocalAssetStorage();
@@ -28,6 +28,15 @@ public:
     /// If true, all subdirectories of the storage directory are automatically looked in when loading an asset.
     bool recursive;
 
+    /// Starts listening on the local directory this asset storage points to.
+    void SetupWatcher();
+
+    /// Stops and deallocates the directory change listener.
+    void RemoveWatcher();
+
+public slots:
+    bool Writable() const { return true; }
+
     /// Returns the full local filesystem path name of the given asset in this storage, if it exists.
     /// Example: GetFullPathForAsset("my.mesh", true) might return "C:\Projects\Tundra\bin\data\assets".
     /// If the file does not exist, returns "".
@@ -38,20 +47,15 @@ public:
     /// \note LocalAssetStorage ignores all subdirectory specifications, so GetFullAssetURL("data/assets/my.mesh") would also return "local://my.mesh".
     QString GetFullAssetURL(const QString &localName);
 
-    /// Starts listening on the local directory this asset storage points to.
-    void SetupWatcher();
-
-    /// Stops and deallocates the directory change listener.
-    void RemoveWatcher();
-
-    QFileSystemWatcher *changeWatcher;
+//    QFileSystemWatcher *changeWatcher;
 
     QString Name() const { return name; }
 
     QString BaseURL() const { return "local://"; }
 
-private:
+    QString ToString() const { return Name() + " (" + directory + ")"; }
 
+private:
     void operator=(const LocalAssetStorage &);
     LocalAssetStorage(const LocalAssetStorage &);
 };

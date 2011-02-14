@@ -4,6 +4,7 @@
 #define incl_TundraLogicModule_Server_h
 
 #include "Core.h"
+#include "TundraLogicModuleApi.h"
 #include "ForwardDefines.h"
 
 #include "kNet.h"
@@ -31,7 +32,7 @@ namespace TundraLogic
 
 class TundraLogicModule;
 
-class Server : public QObject
+class TUNDRALOGIC_MODULE_API Server : public QObject
 {
     Q_OBJECT
     
@@ -69,6 +70,11 @@ public:
     void SetActionSender(UserConnection* user);
     
 signals:
+    //! A user is connecting. This is your chance to deny access.
+    /*! Call user->Disconnect() to deny access and kick the user out
+     */ 
+    void UserAboutToConnect(int connectionID, UserConnection* connection);
+     
     //! A user has connected (and authenticated)
     void UserConnected(int connectionID, UserConnection* connection);
     
@@ -84,6 +90,9 @@ signals:
 public slots:
     //! Get whether server is running
     bool IsRunning() const;
+
+    //! Get whether server is about to start.
+    bool IsAboutToStart() const;
     
     //! Get connected users' connection ID's
     QVariantList GetConnectionIDs() const;

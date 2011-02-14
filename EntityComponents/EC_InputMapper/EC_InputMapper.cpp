@@ -172,7 +172,6 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
 {
     if (!enabled.Get())
         return;
-    
     if (!GetParentEntity())
         return;
     
@@ -180,12 +179,10 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->GetInput()->IsMouseCursorVisible()))
     {
         if (e->relativeX != 0)
-        {
             GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));
-        }
         if (e->relativeY != 0)
-        {
             GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookY" , QString::number(e->relativeY));
-        }
     }
+    if (e->relativeZ != 0 && e->relativeZ != -1) // For some reason this is -1 without scroll
+        GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseScroll" , QString::number(e->relativeZ));
 }

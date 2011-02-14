@@ -258,13 +258,8 @@ QVariant EC_DynamicComponent::GetAttribute(int index) const
 
 QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
 {
-    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
-        if ((*iter)->GetNameString() == name.toStdString())
-            return (*iter)->ToQVariant();
-
-    return QVariant();
+	return IComponent::GetAttributeQVariant(name);
 }
-
 void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, AttributeChange::Type change)
 {
     if(index < attributes_.size() && index >= 0)

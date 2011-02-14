@@ -6,7 +6,6 @@
 
 #include "Renderer.h"
 #include "RendererEvents.h"
-#include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "EC_Placeable.h"
@@ -139,7 +138,6 @@ namespace OgreRenderer
         viewport_(0),
         object_id_(0),
         group_id_(0),
-        resource_handler_(ResourceHandlerPtr(new ResourceHandler(this, framework))),
         config_filename_(config),
         plugins_filename_(plugins),
         ray_query_(0),
@@ -152,9 +150,11 @@ namespace OgreRenderer
         view_distance_(500.0),
         shadowquality_(Shadows_High),
         texturequality_(Texture_Normal),
-        c_handler_(new CompositionHandler)
+        c_handler_(new CompositionHandler),
+        targetFpsLimit(60.f) // The default FPS to aim at is 60fps.
     {
         InitializeEvents();
+        timerFrequency = GetCurrentClockFreq();
     }
 
     Renderer::~Renderer()
@@ -180,7 +180,6 @@ namespace OgreRenderer
         foreach(GaussianListener* listener, gaussianListeners_)
             SAFE_DELETE(listener);
 
-        resource_handler_.reset();
         root_.reset();
         SAFE_DELETE(c_handler_);
         SAFE_DELETE(renderWindow);
@@ -188,11 +187,43 @@ namespace OgreRenderer
 
     void Renderer::RemoveLogListener()
     {
-        if (log_listener_.get())
+        if (log_listener_)
         {
             Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(log_listener_.get());
             log_listener_.reset();
         }
+    }
+
+    void Renderer::DoFrameTimeLimiting()
+    {
+        if (targetFpsLimit > 1.f)
+        {
+            tick_t timeNow = GetCurrentClockTime();
+
+            double msecsSpentInFrame = (double)(timeNow - lastPresentTime) * 1000.0 / timerFrequency;
+            const double msecsPerFrame = 1000.0 / targetFpsLimit;
+            if (msecsSpentInFrame < msecsPerFrame)
+            {
+                PROFILE(Renderer_DoFrameTimeLimiting);
+                while(msecsSpentInFrame >= 0.0 && msecsSpentInFrame < msecsPerFrame)
+                {
+                    if (msecsSpentInFrame + 1.0 < msecsPerFrame)
+                        boost::this_thread::sleep(boost::posix_time::milliseconds(1)); // Sleep in 1msec slices (which on most systems is far from guaranteed to be 1msec, but suits the purpose here)
+
+                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
+                }
+
+                // Busy-wait the rest of the time slice to avoid jittering and to produce smoother updates.
+                while(msecsSpentInFrame >= 0 && msecsSpentInFrame < msecsPerFrame)
+                    msecsSpentInFrame = (double)(GetCurrentClockTime() - lastPresentTime) / timerFrequency * 1000.0;
+            }
+
+            lastPresentTime = GetCurrentClockTime();
+
+//            timeSleptLastFrame = (double)((timeNow - lastPresentTime) * 1000.0 / timerFrequency);
+        }
+//        else
+//            timeSleptLastFrame = 0.0;
     }
 
     void Renderer::InitializeEvents()
@@ -215,11 +246,35 @@ namespace OgreRenderer
         // Some pretty printing
         OgreRenderingModule::LogDebug("INITIALIZING OGRE");
 
+        const boost::program_options::variables_map &options = framework_->ProgramOptions();
+        if (options.count("fpslimit") > 0)
+        {
+            targetFpsLimit = options["fpslimit"].as<float>();
+            if (targetFpsLimit < 1.f)
+                targetFpsLimit = 0.f;
+        }
+        else
+#if QT_VERSION < 0x040700
+            // Default FPS limit is 60.
+            targetFpsLimit = 60.f;
+#else
+            // Dues to main window hanging up on Qt 4.7.x when fps limitter is used, that makes using the app impossible. 
+            // Default FPS limit is 0 for Qt 4.7.1 untill the bug can be examined.
+            // \todo Fix Qt 4.7.x hanging up the main window on focus and move events, so that FPS limitter can be set back to 60 by default.
+            targetFpsLimit = 0.f; 
+#endif
+
         // Create Ogre root with logfile
         logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
         logfilepath += "/Ogre.log";
 #include "DisableMemoryLeakCheck.h"
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
+
+    if (framework_->IsHeadless())
+    {
+        // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
+        new Ogre::DefaultHardwareBufferManager();
+    }
 #include "EnableMemoryLeakCheck.h"
 
         // Setup Ogre logger (use LL_NORMAL for more prints of init)
@@ -319,18 +374,18 @@ namespace OgreRenderer
 
     void Renderer::PostInitialize()
     {
-        resource_handler_->PostInitialize();
     }
 
     void Renderer::SetFullScreen(bool value)
     {
-        if (!framework_->IsHeadless())
-        {
-            if(value)
-                framework_->Ui()->MainWindow()->showFullScreen();
-            else
-                framework_->Ui()->MainWindow()->showNormal();
-        }
+        // In headless mode, we can safely ignore Fullscreen mode requests.
+        if (framework_->IsHeadless())
+            return;
+
+        if(value)
+            framework_->Ui()->MainWindow()->showFullScreen();
+        else
+            framework_->Ui()->MainWindow()->showNormal();
     }
 
     void Renderer::SetShadowQuality(ShadowQuality newquality)
@@ -526,12 +581,17 @@ namespace OgreRenderer
     void Renderer::Render()
     {
         using namespace std;
-
-        if (framework_->IsHeadless())
-            return;
         
         if (!initialized_) 
             return;
+
+        if (framework_->IsHeadless())
+        {
+            // In headless mode, do frame time limiting here to avoid busy-spinning in the main loop and taking up 100% CPU. In headless mode this could
+            // also be safely done using Qt timers, which might be a slightly better approach.
+            DoFrameTimeLimiting(); 
+            return;
+        }
 
         PROFILE(Renderer_Render);
 
@@ -559,8 +619,6 @@ namespace OgreRenderer
 #ifdef USE_D3D9_SUBSURFACE_BLIT
         if (view->IsViewDirty() || resized_dirty_)
         {
-            applyFPSLimit = false;
-
             PROFILE(Renderer_Render_QtBlit);
 
             QRectF dirtyRectangle = view->DirtyRectangle();
@@ -647,6 +705,7 @@ namespace OgreRenderer
                         std::cout << "SubRect Lock Failed!" << std::endl;
 #endif
                         return;
+/*
                         HRESULT hr = surface->LockRect(&lock, 0, 0);
                         if (FAILED(hr))
                         {
@@ -655,6 +714,7 @@ namespace OgreRenderer
 #endif
                             return;
                         }
+*/
                     }
                     assert(lock.Pitch >= desc.Width*4);
                 }
@@ -710,7 +770,17 @@ namespace OgreRenderer
             renderWindow->OgreOverlay()->show();
 #endif
 
-        root_->renderOneFrame();
+        try
+        {
+            DoFrameTimeLimiting(); // Note: Performing limiting here is very prone to FPS jitter depending how much time renderOneFrame takes. The proper method
+                                   // would be to perform the limiting inside renderOneFrame, but Ogre does not support it.
+            root_->renderOneFrame();
+        } catch(const std::exception &e)
+        {
+            std::cout << "Ogre::Root::renderOneFrame threw an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
+            RootLogCritical(std::string("Ogre::Root::renderOneFrame threw an exception: ") + (e.what() ? e.what() : "(null)"));
+        }
+
         view->MarkViewUndirty();
     }
 
@@ -1075,14 +1145,6 @@ namespace OgreRenderer
 
         return &result;
     }
-
-    void Renderer::swap(float &x, float &y)
-    {
-        float tmp;
-        tmp = x;
-        x = y;
-        y = tmp;
-    }
     
     //qt wrapper / upcoming replacement for the one above
     QList<Scene::Entity*> Renderer::FrustumQuery(QRect &viewrect)
@@ -1093,8 +1155,8 @@ namespace OgreRenderer
         float left = (float)(viewrect.left()) / w, right = (float)(viewrect.right()) / w;
         float top = (float)(viewrect.top()) / h, bottom = (float)(viewrect.bottom()) / h;
         
-        if(left > right) swap(left, right);
-        if(top > bottom) swap(top, bottom);
+        if(left > right) std::swap<float>(left, right);
+        if(top > bottom) std::swap<float>(top, bottom);
         // don't do selection box is too small
         if((right - left) * (bottom-top) < 0.0001) return l;
         
@@ -1127,6 +1189,11 @@ namespace OgreRenderer
         return l;
     }
 
+    bool Renderer::IsEntityVisible(uint ent_id)
+    {
+        return (visible_entities_.find(ent_id) != visible_entities_.end());
+    }
+
     Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const
     {
         return renderWindow->OgreRenderWindow();
@@ -1135,21 +1202,6 @@ namespace OgreRenderer
     std::string Renderer::GetUniqueObjectName(const std::string &prefix)
     {
         return prefix + "_" + ToString<uint>(object_id_++);
-    }
-
-    ResourcePtr Renderer::GetResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->GetResource(id, type);
-    }
-
-    request_tag_t Renderer::RequestResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->RequestResource(id, type);
-    }
-
-    void Renderer::RemoveResource(const std::string& id, const std::string& type)
-    {
-        return resource_handler_->RemoveResource(id, type);
     }
 
     void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
@@ -1354,11 +1406,10 @@ namespace OgreRenderer
     {
         Ogre::SceneManager* sceneManager = scenemanager_;
         // Debug mode Ogre might assert due to illegal shadow camera AABB, with empty scene. Disable shadows in debug mode.
-        #ifdef _DEBUG
+#ifdef _DEBUG
             sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
             return;
-        #endif
-
+#else
         bool using_pssm = (shadowquality_ == Shadows_High);
         bool soft_shadow = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "soft_shadow", false);
         
@@ -1473,5 +1524,6 @@ namespace OgreRenderer
                 gaussianListeners_.push_back(gaussianListener);
             }
         }
+#endif
     }
 }

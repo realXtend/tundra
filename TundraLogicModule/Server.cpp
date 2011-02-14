@@ -11,7 +11,6 @@
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
-#include "RexNetworkUtils.h"
 #include "TundraMessages.h"
 #include "TundraEvents.h"
 #include "PhysicsModule.h"
@@ -25,6 +24,9 @@
 #include "MemoryLeakCheck.h"
 
 #include <QtScript>
+#include <QDomDocument>
+
+#include <boost/program_options.hpp>
 
 Q_DECLARE_METATYPE(UserConnection*);
 
@@ -49,13 +51,11 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
 #endif
     )
 {
-    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject,
-                                       qScriptValueToQObject, prototype);
+    return qScriptRegisterMetaType<Tp>(engine, qScriptValueFromQObject, qScriptValueToQObject, prototype);
 }
 
 
 using namespace kNet;
-using namespace RexTypes;
 
 namespace TundraLogic
 {
@@ -80,7 +80,8 @@ bool Server::Start(unsigned short port)
 {
     if (!owner_->IsServer())
     {
-        if (!owner_->GetKristalliModule()->StartServer(port, SocketOverTCP))
+        kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
+        if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
         {
             TundraLogicModule::LogError("Failed to start server in port " + ToString<int>(port));
             return false;
@@ -89,13 +90,9 @@ bool Server::Start(unsigned short port)
         framework_->SetDefaultWorldScene(scene);
         owner_->GetSyncManager()->RegisterToScene(scene);
         
-        // We are server, so create physics world for the scene
+        // Create an authoritative physics world
         Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
-        if (physics)
-        {
-            Physics::PhysicsWorld* world = physics->CreatePhysicsWorldForScene(scene);
-            world->SetGravity(Vector3df(0.0f,0.0f,-9.81f));
-        }
+        physics->CreatePhysicsWorldForScene(scene, false);
         
         //! \todo Hack - find better way and remove! Allow environment also on server by sending a fake connect event
         Events::TundraConnectedEventData event_data;
@@ -122,6 +119,14 @@ void Server::Stop()
 bool Server::IsRunning() const
 {
     return owner_->IsServer();
+}
+
+bool Server::IsAboutToStart() const
+{
+    const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
+    if (programOptions.count("startserver"))
+        return true;
+    return false;
 }
 
 UserConnectionList Server::GetAuthenticatedUsers() const
@@ -231,7 +236,6 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::messa
 
 void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
 {
-    // For now, automatically accept the connection if it's from a known user
     UserConnection* user = GetUserConnection(source);
     if (!user)
     {
@@ -239,14 +243,38 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         return;
     }
     
-    //! \todo authentication check here as necessary
+    QDomDocument xml;
+    QString loginData = QString::fromStdString(BufferToString(msg.loginData));
+    bool success = xml.setContent(loginData);
+    if (!success)
+        TundraLogicModule::LogWarning("Received malformed xml logindata from user " + ToString<int>(user->userID));
     
-    user->userName = QString::fromStdString(BufferToString(msg.userName));
-    user->properties["password"] = QString::fromStdString(BufferToString(msg.password));
+    // Fill the user's logindata, both in raw format and as keyvalue pairs
+    user->loginData = loginData;
+    QDomElement rootElem = xml.firstChildElement();
+    QDomElement keyvalueElem = rootElem.firstChildElement();
+    while (!keyvalueElem.isNull())
+    {
+        //TundraLogicModule::LogInfo("Logindata contains keyvalue pair " + keyvalueElem.tagName().toStdString() + " = " + keyvalueElem.attribute("value").toStdString());
+        user->SetProperty(keyvalueElem.tagName(), keyvalueElem.attribute("value"));
+        keyvalueElem = keyvalueElem.nextSiblingElement();
+    }
+    
     user->properties["authenticated"] = "true";
+    emit UserAboutToConnect(user->userID, user);
+    if (user->properties["authenticated"] != "true")
+    {
+        TundraLogicModule::LogInfo("User with connection ID " + ToString<int>(user->userID) + " was denied access");
+        MsgLoginReply reply;
+        reply.success = 0;
+        reply.userID = 0;
+        user->connection->Send(reply);
+        return;
+    }
     
-    TundraLogicModule::LogInfo("User " + user->userName.toStdString() + " logging in, connection ID " + ToString<int>(user->userID));
+    TundraLogicModule::LogInfo("User with connection ID " + ToString<int>(user->userID) + " logged in");
     
+    // Allow entityactions & EC sync from now on
     MsgLoginReply reply;
     reply.success = 1;
     reply.userID = user->userID;
@@ -256,7 +284,6 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     UserConnectionList users = GetAuthenticatedUsers();
     MsgClientJoined joined;
     joined.userID = user->userID;
-    joined.userName = msg.userName;
     for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
         (*iter)->connection->Send(joined);
     
@@ -267,7 +294,6 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         {
             MsgClientJoined joined;
             joined.userID = (*iter)->userID;
-            joined.userName = StringToBuffer((*iter)->userName.toStdString());
             user->connection->Send(joined);
         }
     }
@@ -283,7 +309,6 @@ void Server::HandleUserDisconnected(UserConnection* user)
     // Tell everyone of the client leaving
     MsgClientLeft left;
     left.userID = user->userID;
-    left.userName = StringToBuffer(user->userName.toStdString());
     UserConnectionList users = GetAuthenticatedUsers();
     for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {

@@ -296,7 +296,7 @@ namespace UiServices
                 ether_logic_->SetConnectionState(connection_state);
 
                 // Send welcome message to notification manager
-                if (current_world_stream_.get())
+                if (current_world_stream_)
                 {
                     QString sim = QString::fromStdString(current_world_stream_->GetSimName());
                     QString username = QString::fromStdString(current_world_stream_->GetUsername());

@@ -56,7 +56,7 @@ bool WorldStream::CreateUdpConnection()
     bool connected_successfully = false;
     protocolModule_ = GetCurrentProtocolModule();
 
-    if (!protocolModule_.get())
+    if (!protocolModule_)
     {
         LogError("Getting current Protocol Module did not succeed");
         return false;
@@ -119,7 +119,7 @@ void WorldStream::ForceServerDisconnect()
         return;
 
     protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!protocolModule_)
     {
         LogError("Could not force disconnect, can't get a handle to network interface");
         return;
@@ -1722,7 +1722,7 @@ QString WorldStream::GetCapability(const QString &name) const
 Connection::State WorldStream::GetConnectionState()
 {
     protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!protocolModule_)
         return Connection::STATE_ENUM_COUNT;
 
     return protocolModule_->GetConnectionState();
@@ -1731,7 +1731,7 @@ Connection::State WorldStream::GetConnectionState()
 void WorldStream::SetConnectionState(Connection::State newstate)
 {
     protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!protocolModule_)
         return;
 
     protocolModule_->SetConnectionState(newstate);
@@ -1740,7 +1740,7 @@ void WorldStream::SetConnectionState(Connection::State newstate)
 std::string WorldStream::GetConnectionErrorMessage()
 {
     protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!protocolModule_)
         return std::string("Could not acquire current protocol module");
 
     return protocolModule_->GetConnectionErrorMessage();
@@ -1756,7 +1756,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolType newType)
         netInterfaceTaiga_ = boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga>();
         netInterfaceOpenSim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>();
         boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim> sp = netInterfaceOpenSim_.lock();
-        if (!sp.get())
+        if (!sp)
             LogError("Getting ProtocolModuleOpenSim network interface did not succeed");
         break;
     }
@@ -1765,7 +1765,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolType newType)
         netInterfaceOpenSim_ = boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim>();
         netInterfaceTaiga_ = framework_->GetModuleManager()->GetModule<TaigaProtocol::ProtocolModuleTaiga>();
         boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga> sp = netInterfaceTaiga_.lock();
-        if (!sp.get())
+        if (!sp)
             LogError("Getting ProtocolModuleTaiga network interface did not succeed");
         break;
     }
@@ -1807,7 +1807,7 @@ boost::weak_ptr<ProtocolModuleInterface> WorldStream::GetCurrentProtocolModuleWe
 bool WorldStream::PrepareCurrentProtocolModule()
 {
     protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!protocolModule_)
     {
         LogWarning("Could not prepare current Protocol Modules for Registering Network Events");
         return false;
@@ -1820,7 +1820,7 @@ bool WorldStream::PrepareCurrentProtocolModule()
 void WorldStream::UnregisterCurrentProtocolModule()
 {
     protocolModule_ = GetCurrentProtocolModule();
-    if (protocolModule_.get())
+    if (protocolModule_)
         protocolModule_->UnregisterNetworkEvents();
     protocolModule_.reset();
 }
@@ -1851,7 +1851,7 @@ void WorldStream::SendMapBlockPacket()
 NetOutMessage *WorldStream::StartMessageBuilding(const NetMsgID &message_id)
 {
     protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!protocolModule_)
     {
         LogError("Getting network interface did not succeed.");
         return 0;
@@ -1865,7 +1865,7 @@ NetOutMessage *WorldStream::StartMessageBuilding(const NetMsgID &message_id)
 void WorldStream::FinishMessageBuilding(NetOutMessage *msg)
 {
     protocolModule_ = GetCurrentProtocolModule();
-    if (!protocolModule_.get())
+    if (!protocolModule_)
     {
         LogError("Getting network interface did not succeed.");
         return;

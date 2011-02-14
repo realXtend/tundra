@@ -52,7 +52,7 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     buttons_disabled_(false),
     buttons_visible_(false),
     detached_(false),
-    bb_name_size_view(0.25f, 0.07f), // Only the height is used
+    bb_name_size_view(0.25f, 0.2f/*0.07f*/), // Only the height is used
     bb_buttons_size_view(0.1f, 0.25f),
     bb_rel_posy(1.3f),
     cam_distance_(0.0f)
@@ -427,6 +427,18 @@ void EC_HoveringWidget::SetText(const QString &text)
     namewidget_->SetText(text);
     detachedwidget_->SetText(text);
 
+    Redraw();
+}
+
+void EC_HoveringWidget::SetTextHeight(int height)
+{
+    namewidget_->SetTextHeight(height);
+    Redraw();
+}
+
+void EC_HoveringWidget::SetFontSize(int pt_size)
+{
+    namewidget_->SetFontSize(pt_size);
     Redraw();
 }
 

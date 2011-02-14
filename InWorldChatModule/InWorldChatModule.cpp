@@ -168,13 +168,13 @@ void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool v
     if (!entity->HasComponent("EC_Billboard", "VoipIndicator"))
     {
         ComponentPtr component = framework_->GetComponentManager()->CreateComponent("EC_Billboard", "VoipIndicator");
-        assert(component.get());
+        assert(component);
         entity->AddComponent(component);
         entity->GetComponent<EC_Billboard>()->SetDimensions(10, 10);
     }
 
     boost::shared_ptr<EC_Billboard> billboard = entity->GetComponent<EC_Billboard>("VoipIndicator");
-    assert(billboard.get());
+    assert(billboard);
     if (visibility)
         billboard->Show("SpeakerIcon.png");
     else
@@ -211,7 +211,7 @@ Console::CommandResult InWorldChatModule::ConsoleChat(const StringVector &params
 void InWorldChatModule::ApplyDefaultChatBubble(Scene::Entity &entity, const QString &message)
 {
     ComponentPtr component = entity.GetOrCreateComponent(EC_ChatBubble::TypeNameStatic());
-    assert(component.get());
+    assert(component);
     EC_ChatBubble &chatBubble = *(checked_static_cast<EC_ChatBubble *>(component.get()));
     chatBubble.ShowMessage(message);
 }
@@ -225,7 +225,7 @@ void InWorldChatModule::ApplyBillboard(Scene::Entity &entity, const std::string 
     {
         entity.AddComponent(framework_->GetComponentManager()->CreateComponent("EC_Billboard"));
         ec_bb = entity.GetComponent<EC_Billboard>();
-        assert(ec_bb.get());
+        assert(ec_bb);
     }
 
     ec_bb->Show(texture, timeToShow);

@@ -12,6 +12,7 @@
 class QLabel;
 class QLineEdit;
 class QComboBox;
+class QCheckBox;
 class QPushButton;
 
 namespace Foundation
@@ -29,7 +30,7 @@ public:
     /*! \param fw Framework.
         \param ids IDs of entities to which the component will be added.
         \param parent Parent widget.
-         \param f Window flags.
+        \param f Window flags.
     */
     AddComponentDialog(Foundation::Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
@@ -44,14 +45,16 @@ public:
 
 public slots:
     //! Returns component typename
-    QString GetTypename() const;
+    QString GetTypeName() const;
 
     //! Returns component name
     QString GetName() const;
 
-    //! Returns true if synchronization is set to replicate and false if it's local only.
-    //! In case of invalid synch mode, true is returned.
+    //! Returns if synchronization check box is checked or not.
     bool GetSynchronization() const;
+
+    //! Returns if temporary check box is checked or not.
+    bool GetTemporary() const;
 
     //! Returns entity IDs of the entities to which the component is added to.
     QList<entity_id_t> GetEntityIds() const;
@@ -65,19 +68,14 @@ protected:
     void hideEvent(QHideEvent *event);
 
 private:
-    QLabel *component_count_label_;
-    QLabel *component_type_label_;
-    QLabel *component_name_label_;
-    QLabel *component_synch_label_;
     QLineEdit *name_line_edit_;
     QComboBox *type_combo_box_;
-    QComboBox *synch_combo_box_;
+    QCheckBox *sync_check_box_;
+    QCheckBox *temp_check_box_;
     QPushButton *ok_button_;
     QPushButton *cancel_button_;
-
-    //! Entities that new component is planned to be added.
     typedef QList<entity_id_t> EntityIdList;
-    EntityIdList entities_;
+    EntityIdList entities_; //!< Entities for which the new component is planned to be added.
     Foundation::Framework *framework_;
 };
 

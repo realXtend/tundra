@@ -3,6 +3,9 @@
  *
  *  @file   SceneStructureWindow.h
  *  @brief  Window with tree view showing every entity in a scene.
+ *
+ *          This class will only handle adding and removing of entities and components and updating
+ *          their names. The SceneTreeWidget implements most of the functionlity.
  */
 
 #ifndef incl_SceneStructureModule_SceneStructureWindow_h
@@ -28,8 +31,9 @@ class SceneStructureWindow : public QWidget
 public:
     /// Constructs the window.
     /** @param fw Framework.
+        @parent parent Parent widget.
     */
-    explicit SceneStructureWindow(Foundation::Framework *fw);
+    explicit SceneStructureWindow(Foundation::Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
     ~SceneStructureWindow();
@@ -75,20 +79,23 @@ private:
     */
     void CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr);
 
-    /// Framework.
-    Foundation::Framework *framework;
+    /// Decorates an entity item: changes its color and appends the text with extra information.
+    /** @param entity Entity Entity for which the item is created for.
+        @param item Entity item to be decorated.
+    */
+    void DecorateEntityItem(Scene::Entity *entity, QTreeWidgetItem *item) const;
 
-    /// Scene which we are showing the in tree widget currently.
-    Scene::SceneWeakPtr scene;
+    /// Decorates a component item: changes its color and appends the text with extra information.
+    /** @param comp comp Component for which the item is created for.
+        @param item Component item to be decorated.
+    */
+    void DecorateComponentItem(IComponent *comp, QTreeWidgetItem *item) const;
 
-    /// Scene tree widget.
-    SceneTreeWidget *treeWidget;
-
-    /// Do we show components also in the tree view.
-    bool showComponents;
-
-    /// Do we show asset references also in the tree view.
-    bool showAssets;
+    Foundation::Framework *framework; ///< Framework.
+    Scene::SceneWeakPtr scene; ///< Scene which we are showing the in tree widget currently.
+    SceneTreeWidget *treeWidget; ///< Scene tree widget.
+    bool showComponents; ///< Do we show components also in the tree view.
+    bool showAssets; ///< Do we show asset references also in the tree view.
 
 private slots:
     /// Adds the entity to the tree widget.
@@ -121,7 +128,6 @@ private slots:
 
     /// Removes asset reference from the tree widget.
     /** This is called only by EC_DynamicComponent when asset ref attribute is removed from it.
-        @param 
         @param attr AssetReference attribute.
     */
     void RemoveAssetReference(IAttribute *attr);
@@ -142,6 +148,20 @@ private slots:
         @param newName New component name.
     */
     void UpdateComponentName(const QString &oldName, const QString &newName);
+
+    /// Sort items in the tree widget. The outstanding sort order is used.
+    /** @param criteria Sorting criteria. Currently tr("ID") and tr("Name") are supported.
+    */
+    void Sort(const QString &criteria);
+
+    /// Searches for items containing @c text (case-insensitive) and toggles their visibility.
+    /** If match is found the item is set visible and expanded, otherwise it's hidden.
+        @param filter Text used as a filter.
+    */
+    void Search(const QString &filter);
+
+    /// Expands or collapses the whole tree view, depending on the previous action.
+    void ExpandOrCollapseAll();
 };
 
 #endif

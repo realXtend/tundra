@@ -7,6 +7,7 @@
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "RenderServiceInterface.h"
+#include "HighPerfClock.h"
 #include "ForwardDefines.h"
 
 #include <QObject>
@@ -68,8 +69,26 @@ namespace OgreRenderer
         //as a slot for webserver plugin to render when needed
         virtual void Render();
 
+        //! Returns true if the given entity id is in the list of visible entities for this frame.
+        /*! We could also expose the whole set of visible ents, and it may be useful later, 
+            but this is for fastest possible visibility check of a single entity (for RTT display control use) */
+        bool IsEntityVisible(uint ent_id);
+
         //! Do a frustum query to the world from viewport coordinates.
         virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect);
+
+        //for local dotscene loading to be able to load from the dir where the export is
+        void AddResourceDirectory(const QString &directory);
+
+        //! Do raycast into the world from viewport coordinates.
+        /*! The coordinates are a position in the render window, not scaled to [0,1].
+            \todo Returns raw pointer to entity. Returning smart pointer may take some thinking/design. Maybe just return entity id?
+
+            \param x Horizontal position for the origin of the ray
+            \param y Vertical position for the origin of the ray
+            \return Raycast result structure
+        */
+        virtual RaycastResult* Raycast(int x, int y);
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
@@ -83,15 +102,28 @@ namespace OgreRenderer
         //for local dotscene loading to be able to load from the dir where the export is
         void AddResourceDirectory(const QString &directory);
 
-        //! Do raycast into the world from viewport coordinates.
-        /*! The coordinates are a position in the render window, not scaled to [0,1].
-            \todo Returns raw pointer to entity. Returning smart pointer may take some thinking/design. Maybe just return entity id?
+        //--- GUI support slots ---
 
-            \param x Horizontal position for the origin of the ray
-            \param y Vertical position for the origin of the ray
-            \return Raycast result structure
-        */
-        virtual RaycastResult* Raycast(int x, int y);
+        //! Toggles fullscreen
+        void SetFullScreen(bool value);
+
+        //! Render current main window content to texture
+        virtual QPixmap RenderImage(bool use_main_camera = true);
+
+        //! Render current main window with focus on the avatar
+        //! @todo make this focus non hard coded but as param
+        virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation);
+
+        //! Prepapres the texture and entities used in texture rendering
+        void PrepareImageRendering(int width, int height);
+
+        //! Reset the texture
+        void ResetImageRendering();
+
+        QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
+
+        //! Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
+        void DoFullUIRedraw();
         
     public:
         //! Constructor
@@ -135,28 +167,6 @@ namespace OgreRenderer
         //! \param fileName File name.
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
-        //! Gets a renderer-specific resource
-        /*! Does not automatically queue a download request
-            \param id Resource id
-            \param type Resource type
-            \return pointer to resource, or null if not found
-         */
-        virtual Foundation::ResourcePtr GetResource(const std::string& id, const std::string& type);
-
-        //! Requests a renderer-specific resource to be downloaded from the asset system
-        /*! A RESOURCE_READY event will be sent when the resource is ready to use
-            \param id Resource id
-            \param type Resource type
-            \return Request tag, or 0 if request could not be queued
-         */
-        virtual request_tag_t RequestResource(const std::string& id, const std::string& type);
-
-        //! Removes a renderer-specific resource
-        /*! \param id Resource id
-            \param type Resource type
-         */
-        virtual void RemoveResource(const std::string& id, const std::string& type);
-
         //! Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
 
@@ -179,15 +189,12 @@ namespace OgreRenderer
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
         //! Returns current render window
-        Ogre::RenderWindow* GetCurrentRenderWindow() const;// { return renderwindow_; }
+        Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
         //! Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.
         /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
         std::string GetUniqueObjectName(const std::string &prefix);
-
-        //! Returns resource handler
-        ResourceHandlerPtr GetResourceHandler() const { return resource_handler_; }
 
         //! Removes log listener
         void RemoveLogListener();
@@ -230,30 +237,17 @@ namespace OgreRenderer
 
         NaaliRenderWindow *GetRenderWindow() const { return renderWindow; }
 
-    public slots:
-        //! Toggles fullscreen
-        void SetFullScreen(bool value);
+        /// Specifies a new fps limit to use for the main loop. Pass in a value of 0 to remove fps limiting altogether.
+        void SetTargetFPSLimit(float fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.f) targetFpsLimit = 0.f; }
 
-        //! Render current main window content to texture
-        virtual QPixmap RenderImage(bool use_main_camera = true);
-
-        //! Render current main window with focus on the avatar
-        //! @todo make this focus non hard coded but as param
-        virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation);
-
-        //! Prepapres the texture and entities used in texture rendering
-        void PrepareImageRendering(int width, int height);
-
-        //! Reset the texture
-        void ResetImageRendering();
-
-        QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
-
-        //! Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
-        void DoFullUIRedraw();
+        /// Returns the current fps limit.
+        float TargetFPSLimit() const { return targetFpsLimit; }
 
     private:
         
+        //! Sleeps the main thread to throttle the main loop execution speed.
+        void DoFrameTimeLimiting();
+
         //! Initialises the events related info for this module
         void InitializeEvents();
 
@@ -305,9 +299,6 @@ namespace OgreRenderer
 
         //! Ogre renderable listener
         RenderableListenerPtr renderable_listener_;
-
-        //! Resource handler
-        ResourceHandlerPtr resource_handler_;
 
         //! Renderer event category
         event_category_id_t renderercategory_id_;
@@ -365,11 +356,20 @@ namespace OgreRenderer
 
         Scene::EntityPtr texture_rendering_cam_entity_;
 
-        // Pixel buffer used with screen captures
+        /// Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
         
+<<<<<<< HEAD
         // swap float values
         static void swap(float &x, float &y);
+=======
+        /// Stores the wall clock time that specifies when the last frame was displayed.
+        tick_t lastPresentTime;
+        /// Caches the system clock frequency.
+        tick_t timerFrequency;
+        /// Specifies the target fps to run the system at. By default 60. Setting this to zero means no limit.
+        float targetFpsLimit;
+>>>>>>> origin/tundra
     };
 }
 

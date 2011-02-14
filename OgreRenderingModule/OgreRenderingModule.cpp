@@ -3,14 +3,11 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "ResourceHandler.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "EC_OgreLight.h"
 #include "EC_OgreSky.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "EC_OgreParticleSystem.h"
 #include "EC_AnimationController.h"
 #include "EC_OgreEnvironment.h"
 #include "EC_OgreCamera.h"
@@ -29,7 +26,12 @@
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "AssetAPI.h"
-#include "TextureAssetFactory.h"
+#include "GenericAssetFactory.h"
+#include "OgreMeshAsset.h"
+#include "OgreParticleAsset.h"
+#include "OgreSkeletonAsset.h"
+#include "OgreMaterialAsset.h"
+#include "TextureAsset.h"
 
 namespace OgreRenderer
 {
@@ -53,20 +55,27 @@ namespace OgreRenderer
     {
         DECLARE_MODULE_EC(EC_Placeable);
         DECLARE_MODULE_EC(EC_Mesh);
-        DECLARE_MODULE_EC(EC_OgreLight);
         DECLARE_MODULE_EC(EC_OgreSky);
         DECLARE_MODULE_EC(EC_OgreCustomObject);
         DECLARE_MODULE_EC(EC_OgreMovableTextOverlay);
-        DECLARE_MODULE_EC(EC_OgreParticleSystem);
         DECLARE_MODULE_EC(EC_AnimationController);
         DECLARE_MODULE_EC(EC_OgreEnvironment);
         DECLARE_MODULE_EC(EC_OgreCamera);
         DECLARE_MODULE_EC(EC_BillboardWidget);
         DECLARE_MODULE_EC(EC_OgreCompositor);
         DECLARE_MODULE_EC(EC_RttTarget);
+        DECLARE_MODULE_EC(EC_SelectionBox);
 
-        /// Create an asset type factory for Texture assets.
-        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new TextureAssetFactory()));
+        // Create asset type factories for each asset OgreRenderingModule provides to the system.
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("Texture")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<TextureAsset>("OgreTexture"))); // deprecated/old style.
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMeshAsset>("OgreMesh")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreParticleAsset>("OgreParticle")));
+        framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreSkeletonAsset>("OgreSkeleton")));
+
+        // Loading materials crashes Ogre in headless mode because we don't have Ogre Renderer running, so only register the Ogre material asset type if not in headless mode.
+        if (!framework_->IsHeadless())
+            framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial")));
     }
 
     // virtual
@@ -131,16 +140,6 @@ namespace OgreRenderer
         PROFILE(OgreRenderingModule_HandleEvent);
         if (!renderer_)
             return false;
-
-        if (category_id == asset_event_category_)
-        {
-            return renderer_->GetResourceHandler()->HandleAssetEvent(event_id, data);
-        }
-
-        if (category_id == resource_event_category_)
-        {
-            return renderer_->GetResourceHandler()->HandleResourceEvent(event_id, data);
-        }
 
         if (category_id == input_event_category_ && event_id == InputEvents::INWORLD_CLICK)
         {

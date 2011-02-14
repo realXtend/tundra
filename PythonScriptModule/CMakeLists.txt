@@ -8,7 +8,7 @@ set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h Vector3dfDecorator.h QuaternionDecorator.h)
+file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h Vector3dfDecorator.h TransformDecorator.h QuaternionDecorator.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -25,16 +25,16 @@ endif(PYTHON_FORCE_RELEASE_VERSION)
 use_package (PYTHON)
 use_package (PYTHON_QT)
 
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule KristalliProtocolModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_DynamicComponent EntityComponents/EC_Ruler EntityComponents/EC_Touchable
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas
-    EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui CommunicationsModule)
+    EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui CommunicationsModule Audio)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule KristalliProtocolModule
     EC_Touchable ProtocolUtilities EC_DynamicComponent EC_Ruler EC_OpenSimPresence EC_OpenSimPrim
-    EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui)
+    EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui Audio)
 
 link_package (PYTHON)
 link_package (PYTHON_QT)

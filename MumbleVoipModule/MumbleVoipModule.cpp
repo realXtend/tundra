@@ -75,7 +75,10 @@ namespace MumbleVoip
     void MumbleVoipModule::PostInitialize()
     {
         if (!use_native_mumble_client_)
+        {
             in_world_voice_provider_ = new Provider(framework_, &settings_);
+            in_world_voice_provider_->PostInitialize();
+        }
 
         InitializeConsoleCommands();
         

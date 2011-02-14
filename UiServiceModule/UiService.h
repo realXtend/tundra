@@ -12,6 +12,11 @@
 
 #include "UiServiceInterface.h"
 
+namespace Foundation
+{
+    class Framework;
+}
+
 class QGraphicsView;
 class QRectF;
 
@@ -25,7 +30,7 @@ public:
     /// Constuctor.
     /** @param view The main graphics view.
     */
-    explicit UiService(QGraphicsView *view);
+    explicit UiService(Foundation::Framework *framework, QGraphicsView *view);
 
     /// Destructor.
     ~UiService();
@@ -40,7 +45,9 @@ public slots:
     UiProxyWidget *AddWidgetToSceneRaw(QWidget *widget, int flags = (int)Qt::Dialog) { return AddWidgetToScene(widget, (Qt::WindowFlags)flags); }
 
     /// UiServiceInterface override.
-    bool AddWidgetToScene(UiProxyWidget *widget);
+    bool AddWidgetToScene(UiProxyWidget *proxy);
+
+    bool AddProxyWidgetToScene(UiProxyWidget *proxy);
 
     /// UiServiceInterface override.
     void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
@@ -102,6 +109,8 @@ public slots:
     /// Does nothing.
     void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) {}
     
+  
+
 private:
     /// Main graphics view.
     QGraphicsView *view_;
@@ -109,11 +118,20 @@ private:
     /// Main graphics scene.
     QGraphicsScene *scene_;
 
+    /// Used to access the Asset API for .ui file downloads.
+    Foundation::Framework *framework_;
+
     /// Internal list of proxy widgets in scene.
     QList<QGraphicsProxyWidget *> widgets_;
 
     /// List of full screen widgets (Qt::WindowState::FullScreen on when embedded to the screen) in scene.
     QList<QGraphicsProxyWidget *> fullScreenWidgets_;
+
+    /// Updates assets paths in Qt .ui-file so that all images etc. are found from our Asset-system. 
+    /// @param data is actually Qt ui-file. 
+    /// @return bytearray which data contains correct asset paths
+    QByteArray UpdateAssetPaths(const QByteArray& data);
+
 
 private slots:
     /// Remove proxywidget from internally maintained lists upon destruction.

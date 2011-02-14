@@ -12,6 +12,7 @@
 using namespace OgreRenderer;
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Ruler")
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Selected")
 
 #include "MemoryLeakCheck.h"
 
@@ -23,7 +24,7 @@ EC_SelectionBox::EC_SelectionBox(IModule* module) :
 {
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    selectionBox_ = scene_mgr->createManualObject(renderer->GetUniqueObjectName("SelectionBox_"));
+    selectionBox_ = scene_mgr->createManualObject(renderer->GetUniqueObjectName("EC_Selected"));
     selectionBox_->setRenderQueueGroup(Ogre::RENDER_QUEUE_OVERLAY);
     selectionBox_->setUseIdentityProjection(true);
     selectionBox_->setUseIdentityView(true);

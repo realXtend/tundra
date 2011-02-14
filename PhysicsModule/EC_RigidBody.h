@@ -10,6 +10,8 @@
 #include "Declare_EC.h"
 #include "AssetFwd.h"
 
+#include "PhysicsModuleApi.h"
+
 #include <QVector>
 
 class btRigidBody;
@@ -112,7 +114,7 @@ Does not emit any actions.
 <b>Depends on the component Placeable, and optionally on Mesh & Terrain to copy the collision shape from them</b>.
 </table>
 */
-class EC_RigidBody : public IComponent, public btMotionState
+class PHYSICS_MODULE_API EC_RigidBody : public IComponent, public btMotionState
 {
     friend class Physics::PhysicsWorld;
     
@@ -292,6 +294,9 @@ public slots:
 
     btRigidBody* GetRigidBody() const { return body_; }
     
+    //! Return whether have authority. On the client, returns false for non-local objects.
+    bool HasAuthority() const;
+    
 private slots:
     //! Called when the parent entity has been set.
     void UpdateSignals();
@@ -312,7 +317,7 @@ private slots:
     void OnTerrainRegenerated();
 
     //! Called when collision mesh has been downloaded.
-    void OnCollisionMeshAssetLoaded(IAssetTransfer *transfer);
+    void OnCollisionMeshAssetLoaded(AssetPtr asset);
 
 private:
     //! constructor

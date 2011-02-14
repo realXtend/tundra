@@ -31,6 +31,9 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
 
 EC_RttTarget::~EC_RttTarget()
 {
+    if (!ViewEnabled())
+        return;
+
   //XXX didn't have a ref to renderer here yet. is this really required?
   //if(renderer_.expired())
   //      return;
@@ -44,6 +47,9 @@ EC_RttTarget::~EC_RttTarget()
 
 void EC_RttTarget::PrepareRtt()
 {
+    if (!ViewEnabled())
+        return;
+
     //\todo XXX reconfig via AttributeUpdated when these change
     int x = size_x.Get();
     int y = size_y.Get();
@@ -96,6 +102,9 @@ void EC_RttTarget::PrepareRtt()
 
 void EC_RttTarget::SetAutoUpdated(bool val)
 {
+    if (!ViewEnabled())
+        return;
+
     Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
     if (render_texture)
     {

@@ -10,6 +10,11 @@
 #include "ServerInfo.h"
 #include "AttributeChangeType.h"
 
+namespace TundraLogic
+{
+    class TundraLogicModule;
+}
+
 class UiProxyWidget;
 class IEventData;
 class EC_VoiceChannel;
@@ -38,6 +43,7 @@ namespace MumbleVoip
     public:
         Provider(Foundation::Framework* framework, Settings* settings);
         virtual ~Provider();
+        void PostInitialize();
 
     public slots:
         virtual Communications::InWorldVoice::SessionInterface* Session();
@@ -65,6 +71,9 @@ namespace MumbleVoip
         QWidget* microphone_adjustment_widget_;
         QList<EC_VoiceChannel*> ec_voice_channels_;
         QMap<EC_VoiceChannel*, QString> channel_names_;
+        QSignalMapper* signal_mapper_;
+        ProtocolUtilities::WorldStreamPtr world_stream_;
+        boost::shared_ptr<TundraLogic::TundraLogicModule> tundra_logic_;
         QList<EC_VoiceChannel*> channel_queue_;
 
     private slots:

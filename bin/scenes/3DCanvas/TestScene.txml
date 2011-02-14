@@ -1,0 +1,115 @@
+<!DOCTYPE Scene>
+<scene>
+ <entity id="11">
+  <component type="EC_Name" sync="1">
+   <attribute value="Terrain" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Terrain" sync="1">
+   <attribute value="-127,-127,0,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="24" name="Grid Width"/>
+   <attribute value="24" name="Grid Height"/>
+   <attribute value="0.0500000007" name="Tex. U scale"/>
+   <attribute value="0.0500000007" name="Tex. V scale"/>
+   <attribute value="local://RexTerrainPCF.material" name="Material"/>
+   <attribute value="" name="Texture 0"/>
+   <attribute value="" name="Texture 1"/>
+   <attribute value="" name="Texture 2"/>
+   <attribute value="" name="Texture 3"/>
+   <attribute value="" name="Texture 4"/>
+   <attribute value="local://terrain.ntf" name="Heightmap"/>
+  </component>
+ </entity>
+ <entity id="6">
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="100,150,80,0,0,146,10,10,10" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+  <component type="EC_Mesh" sync="1">
+   <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
+   <attribute value="local://screen.mesh" name="Mesh ref"/>
+   <attribute value="" name="Skeleton ref"/>
+   <attribute value="local://screen_frames.material;local://screen.material" name="Mesh materials"/>
+   <attribute value="0" name="Draw distance"/>
+   <attribute value="false" name="Cast shadows"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Screen" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_3DCanvasSource" sync="1">
+   <attribute value="http://www.realxtend.org/doxygen/" name="Source"/>
+   <attribute value="1" name="Submesh"/>
+   <attribute value="true" name="Show 2D on click"/>
+   <attribute value="true" name="Sync 2D browsing"/>
+   <attribute value="0" name="Refresh per sec"/>
+   <attribute value="800" name="Page width"/>
+   <attribute value="600" name="Page height"/>
+  </component>
+ </entity>
+ <entity id="3">
+  <component type="EC_Name" sync="1">
+   <attribute value="Instructions" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_Script" sync="1">
+   <attribute value="" name="Type"/>
+   <attribute value="true" name="Run on load"/>
+   <attribute value="local://instructions.js" name="Script ref"/>
+  </component>
+ </entity>
+ <entity id="2">
+  <component type="EC_Name" sync="1">
+   <attribute value="WaterPlane" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+  <component type="EC_WaterPlane" sync="1">
+   <attribute value="5000" name="x-size"/>
+   <attribute value="5000" name="y-size"/>
+   <attribute value="20" name="Depth"/>
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 0 0 0" name="Rotation"/>
+   <attribute value="0.000199999995" name="U factor"/>
+   <attribute value="0.000199999995" name="V factor"/>
+   <attribute value="10" name="Segments in x"/>
+   <attribute value="10" name="Segments in y"/>
+   <attribute value="Ocean" name="Material"/>
+   <attribute value="" name="Material ref"/>
+   <attribute value="0.200000003 0.400000006 0.349999994 1" name="Fog color"/>
+   <attribute value="100" name="Fog start dist."/>
+   <attribute value="2000" name="Fog end dist."/>
+   <attribute value="3" name="Fog mode"/>
+  </component>
+  <component type="EC_Placeable" sync="1">
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="0,0,36,0,0,0,1,1,1" name="Transform"/>
+   <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
+  </component>
+ </entity>
+ <entity id="1">
+  <component type="EC_EnvironmentLight" sync="1">
+   <attribute value="0.641283333 0.641283333 0.641283333 1" name="Sun color"/>
+   <attribute value="0.341466963 0.341466963 0.341466963 3" name="Ambient color"/>
+   <attribute value="0.930000007 1 0.129999995 1" name="Sun diffuse color"/>
+   <attribute value="0.966118634 -0.190995097 -0.173596129" name="Sun direction vector"/>
+   <attribute value="true" name="Use fixed time"/>
+   <attribute value="0.200000003" name="Current time"/>
+   <attribute value="true" name="Sun cast shadows"/>
+   <attribute value="true" name="Use Caelum"/>
+  </component>
+  <component type="EC_Name" sync="1">
+   <attribute value="Environment" name="name"/>
+   <attribute value="" name="description"/>
+   <attribute value="false" name="user-defined"/>
+  </component>
+ </entity>
+</scene>

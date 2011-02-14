@@ -11,6 +11,7 @@
 #include "Transform.h"
 #include "AssetReference.h"
 #include "Declare_EC.h"
+#include "AssetRefListener.h"
 
 #include <QVariant>
 #include <QVector3D>
@@ -34,8 +35,8 @@ Registered by OgreRenderer::OgreRenderingModule.
 <div>Mesh asset reference (handles resource request automatically).</div>
 <li>AssetReference: skeletonRef
 <div>Skeleton asset reference (handles resource request automatically).</div>
-<li>QVariantList: meshMaterial
-<div>Mesh material ref is a string list that can contain x number of materials and each material is applied to.</div> 
+<li>AssetReferenceList: meshMaterial
+<div>Mesh material asset reference list, material requests are handled automaticly.</div> 
 <li>float: drawDistance
 <div>Distance where the mesh is shown from the camera.</div> 
 <li>bool: castShadows
@@ -118,6 +119,11 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"GetAttachmentScale": returns offset scale of attachment
 <li>"GetDrawDistance": returns draw distance
 <li>"GetAdjustmentSceneNode": Returns adjustment scene node (used for scaling/offset/orientation modifications)
+<li>"AttachMeshToBone": attaches mesh to bone on another EC_Mesh. Local only.
+     \param targetMesh Pointer to target EC_Mesh component
+     \param boneName Bone name
+     \return true if successful
+<li>"DetachMeshFromBone": detaches mesh from bone
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -139,7 +145,6 @@ class OGRE_MODULE_API EC_Mesh : public IComponent
 
 public:
     //! Transformation attribute is used to do some position, rotation and scale adjustments.
-    //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
@@ -151,10 +156,9 @@ public:
     Q_PROPERTY(AssetReference skeletonRef READ getskeletonRef WRITE setskeletonRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, skeletonRef);
 
-    //! Mesh material id list that can contain x number of materials, material requests are handled automaticly.
-    //! @todo replace std::vector to QVariantList.
-    Q_PROPERTY(QVariantList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
-    DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, meshMaterial);
+    //! Mesh material asset reference list, material requests are handled automaticly.
+    Q_PROPERTY(AssetReferenceList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, meshMaterial);
 
     //! Mesh draw distance.
     Q_PROPERTY(float drawDistance READ getdrawDistance WRITE setdrawDistance);
@@ -163,7 +167,7 @@ public:
     //! Will the mesh cast shadows.
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
-    
+
     //! Set component as serializable.
     /*! Note that despite this, in OpenSim worlds, the network sync will be disabled from the component,
         as mesh attributes are being transmitted through RexPrimData instead.
@@ -172,6 +176,9 @@ public:
     virtual ~EC_Mesh();
 
 public slots:
+    //! open mesh preview window and display the mesh asset.
+    void View(const QString &attributeName);
+
     //! automatically find the placeable and set it
     void AutoSetPlaceable();
     
@@ -189,12 +196,11 @@ public slots:
     
     //! sets mesh
     /*! if mesh already sets, removes the old one
-        \param mesh_name mesh to use. This will not initiate an asset request, but assumes the mesh already exists as a loaded Ogre resource
-        \param clone whether mesh should be cloned for modifying geometry uniquely
-        \return true if successful
-     */
-    bool SetMesh(const std::string& mesh_name, bool clone = false);
-    bool SetMesh(const QString& mesh_name); //same as above, just for PythonQt compatibility
+        \param meshResourceName The name of the mesh resource to use. This will not initiate an asset request, but assumes 
+            the mesh already exists as a loaded Ogre resource.
+        \param clone whether mesh should be cloned for modifying geometry uniquely.
+        \return true if successful. */
+    bool SetMesh(QString meshResourceName, bool clone = false);
 
     //! sets mesh with custom skeleton
     /*! if mesh already sets, removes the old one
@@ -212,6 +218,11 @@ public slots:
      */
     bool SetMaterial(uint index, const std::string& material_name);
     bool SetMaterial(uint index, const QString& material_name);
+
+    /// (Re)applies the currently set material refs to the currently set mesh ref. Does not start any asset requests, but 
+    /// sets the data on the currently loaded assets.
+    void ApplyMaterial();
+
     //! sets adjustment (offset) position
     /*! \param position new position
      */
@@ -273,6 +284,11 @@ public slots:
      */
     uint GetNumAttachments() const { return attachment_entities_.size(); }
     
+    //! returns number of submeshes
+    /*! \return returns 0 if mesh is not set, otherwise will ask Ogre::Mesh the submesh count. 
+    */
+    const uint GetNumSubMeshes() const;
+
     //! returns if attachment mesh exists
     bool HasAttachmentMesh(uint index) const;
     
@@ -349,7 +365,13 @@ public slots:
 
     /// 
 //    float3x4 IComponent::GetWorldTransform();
+    
+    //! Attach this mesh to a bone on another EC_Mesh component. Client-side only. Use with caution.
+    bool AttachMeshToBone(QObject* targetMesh, const QString& boneName);
 
+    //! Detach from the bone and reattach to placeable if was attached
+    void DetachMeshFromBone();
+    
 signals:
     //! Signal is emitted when mesh has successfully loaded and applied to entity.
     void OnMeshChanged();
@@ -371,13 +393,13 @@ private slots:
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
 
     /// Called when mesh asset has been downloaded.
-    void OnMeshAssetLoaded();
+    void OnMeshAssetLoaded(AssetPtr mesh);
 
     /// Called when skeleton asset has been downloaded.
-    void OnSkeletonAssetLoaded();
+    void OnSkeletonAssetLoaded(AssetPtr skeleton);
 
     /// Called when material asset has been downloaded.
-    void OnMaterialAssetLoaded();
+    void OnMaterialAssetLoaded(AssetPtr material);
 
 private:
     //! constructor
@@ -422,9 +444,23 @@ private:
     
     //! mesh entity attached to placeable -flag
     bool attached_;
+    
+    //! attached to bone -flag
+    bool attached_to_bone_;
+    
+    Ogre::TagPoint* bone_tagpoint_;
+    EC_Mesh* bone_attached_mesh_;
+    EC_Mesh* bone_parent_mesh_;
 
-    /// Pending material asset downloads.
-    QMap<int, QString> materialRequests;
+    /// Manages material asset requests for EC_Mesh. This utility object is used so that EC_Mesh also gets notifications about
+    /// changes to material assets on disk.
+    std::vector<AssetRefListenerPtr> materialAssets;
+
+    /// Manages mesh asset requests for EC_Mesh.
+    AssetRefListenerPtr meshAsset;
+
+    /// Manages skeleton asset requests for EC_Mesh.
+    AssetRefListenerPtr skeletonAsset;
 };
 
 #endif

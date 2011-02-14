@@ -14,10 +14,10 @@
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "OgreMaterialUtils.h"
-#include "OgreMaterialResource.h"
-#include "OgreTextureResource.h"
+#include "OgreMaterialAsset.h"
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
+#include "TextureAsset.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Terrain")
 
 #include <Ogre.h>
@@ -54,6 +54,42 @@ EC_Terrain::EC_Terrain(IModule* module) :
 {
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 
+    static AttributeMetadata heightRefMetadata;
+    AttributeMetadata::ButtonInfoList heightRefButtons;
+    heightRefButtons.push_back(AttributeMetadata::ButtonInfo(heightMap.GetName(), "V", "View"));
+    heightRefMetadata.buttons = heightRefButtons;
+    heightMap.SetMetadata(&heightRefMetadata);
+
+    static AttributeMetadata texRefMetadata0;
+    AttributeMetadata::ButtonInfoList texRefButtons;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture0.GetName(), "V", "View"));
+    texRefMetadata0.buttons = texRefButtons;
+    texture0.SetMetadata(&texRefMetadata0);
+    texRefButtons.clear();
+
+    static AttributeMetadata texRefMetadata1;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture1.GetName(), "V", "View"));
+    texRefMetadata1.buttons = texRefButtons;
+    texture1.SetMetadata(&texRefMetadata1);
+    texRefButtons.clear();
+
+    static AttributeMetadata texRefMetadata2;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture2.GetName(), "V", "View"));
+    texRefMetadata2.buttons = texRefButtons;
+    texture2.SetMetadata(&texRefMetadata2);
+    texRefButtons.clear();
+
+    static AttributeMetadata texRefMetadata3;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture3.GetName(), "V", "View"));
+    texRefMetadata3.buttons = texRefButtons;
+    texture3.SetMetadata(&texRefMetadata3);
+    texRefButtons.clear();
+
+    static AttributeMetadata texRefMetadata4;
+    texRefButtons.push_back(AttributeMetadata::ButtonInfo(texture4.GetName(), "V", "View"));
+    texRefMetadata4.buttons = texRefButtons;
+    texture4.SetMetadata(&texRefMetadata4);
+
     xPatches.Set(1, AttributeChange::Disconnected);
     yPatches.Set(1, AttributeChange::Disconnected);
     patches.resize(1);
@@ -68,12 +104,40 @@ EC_Terrain::EC_Terrain(IModule* module) :
     material.Set(AssetReference("local://RexTerrainPCF.material"), AttributeChange::Disconnected);
 
     heightMapAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
-    connect(heightMapAsset.get(), SIGNAL(Downloaded(IAssetTransfer*)), this, SLOT(TerrainAssetLoaded(IAssetTransfer *)));
+    connect(heightMapAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(TerrainAssetLoaded(AssetPtr)));
 }
 
 EC_Terrain::~EC_Terrain()
 {
     Destroy();
+}
+
+void EC_Terrain::View(const QString &attributeName)
+{
+    if (texture0.GetName() == attributeName)
+    {
+        /// \todo add implementation
+    }
+    else if(texture1.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
+    else if(texture2.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
+    else if(texture3.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
+    else if(texture4.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
+    else if(heightMap.GetName() == attributeName)
+    {
+        /// todo! add implementation.
+    }
 }
 
 void EC_Terrain::UpdateSignals()
@@ -84,6 +148,7 @@ void EC_Terrain::UpdateSignals()
         this, SLOT(AttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 
     Scene::Entity *parent = GetParentEntity();
+    CreateRootNode();
     if (parent)
     {    
         connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(AttachTerrainRootNode()), Qt::UniqueConnection);
@@ -186,39 +251,40 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     {
         // Request the new material resource. Once it has loaded, MaterialAssetLoaded will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(material.Get());
-        if (transfer.get())
-            connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(MaterialAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
+        if (transfer)
+            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(MaterialAssetLoaded(AssetPtr)), Qt::UniqueConnection);
     }
+/*
     else if (changedAttribute == texture0.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture0.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture1.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture1.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture2.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture2.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture3.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture3.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
     }
     else if (changedAttribute == texture4.GetNameString())
     {
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(texture4.Get());
-        if (transfer.get())
+        if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(IAssetTransfer*)), this, SLOT(TextureAssetLoaded(IAssetTransfer*)), Qt::UniqueConnection);
-    }
+    } */
     else if (changedAttribute == heightMap.GetNameString())
     {
         heightMapAsset->HandleAssetRefChange(attribute);
@@ -235,18 +301,14 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     ///\todo Delete the old unused textures.
 }
 
-void EC_Terrain::MaterialAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::MaterialAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    OgreRenderer::OgreMaterialResource *ogreMaterial = dynamic_cast<OgreRenderer::OgreMaterialResource *>(transfer->resourcePtr.get());
+    OgreMaterialAsset *ogreMaterial = dynamic_cast<OgreMaterialAsset*>(asset_.get());
     assert(ogreMaterial);
     if (!ogreMaterial)
         return;
 
-    Ogre::MaterialPtr material = ogreMaterial->GetMaterial();
+    Ogre::MaterialPtr material = ogreMaterial->ogreMaterial;
     
     ///\todo We can't free here, since something else might be using the material.
 //    Ogre::MaterialManager::getSingleton().remove(currentMaterial.toStdString()); // Free up the old material.
@@ -268,33 +330,26 @@ void EC_Terrain::MaterialAssetLoaded(IAssetTransfer *transfer)
 */
 }
 
-void EC_Terrain::TextureAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::TextureAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
+    /*
+    TextureAsset *textureAsset = dynamic_cast<TextureAsset*>(asset_.get());
+    if (!textureAsset)
         return;
 
-    OgreRenderer::OgreTextureResource *ogreTexture = dynamic_cast<OgreRenderer::OgreTextureResource *>(transfer->resourcePtr.get());
-    assert(ogreTexture);
-    if (!ogreTexture)
-        return;
-
-    Ogre::TexturePtr texture = ogreTexture->GetTexture();
+    Ogre::TexturePtr texture = textureAsset->ogreTexture;
     
     if (transfer->source == texture0.Get()) SetTerrainMaterialTexture(0, texture->getName().c_str());
     else if (transfer->source == texture1.Get()) SetTerrainMaterialTexture(1, texture->getName().c_str());
     else if (transfer->source == texture2.Get()) SetTerrainMaterialTexture(2, texture->getName().c_str());
     else if (transfer->source == texture3.Get()) SetTerrainMaterialTexture(3, texture->getName().c_str());
     else if (transfer->source == texture4.Get()) SetTerrainMaterialTexture(4, texture->getName().c_str());
+    */
 }
 
-void EC_Terrain::TerrainAssetLoaded(IAssetTransfer *transfer)
+void EC_Terrain::TerrainAssetLoaded(AssetPtr asset_)
 {
-    assert(transfer);
-    if (!transfer)
-        return;
-
-    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(transfer->asset);
+    BinaryAssetPtr assetData = boost::dynamic_pointer_cast<BinaryAsset>(asset_);
     if (!assetData.get() || assetData->data.size() == 0)
         return;
 
@@ -415,6 +470,11 @@ namespace
 
 Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const 
 {
+    if (!rootNode)
+    {
+	LogError("GetPointOnMap called before rootNode initialized, returning zeros");
+	return Vector3df(0, 0, 0);
+    }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
@@ -426,6 +486,11 @@ Vector3df EC_Terrain::GetPointOnMap(const Vector3df &point) const
 
 Vector3df EC_Terrain::GetPointOnMapLocal(const Vector3df &point) const
 {
+    if (!rootNode)
+    {
+	LogError("GetPointOnMapLocal called before rootNode initialized, returning zeros");
+	return Vector3df(0, 0, 0);
+    }
     Ogre::Matrix4 worldTM = GetWorldTransform(rootNode);
 
     Ogre::Matrix4 inv = worldTM.inverse(); // world->local
@@ -481,6 +546,11 @@ float EC_Terrain::GetInterpolatedHeightValue(float x, float y) const
 
 Vector3df EC_Terrain::GetTerrainRotationAngles(float x, float y, float z, const Vector3df& direction) const
 {
+    if (!rootNode)
+    {
+	LogError("GetTerrainRotationAngles called before rootNode initialized, returning zeros");
+	return Vector3df(0, 0, 0);
+    }
     Vector3df worldPos(x,y,z);
     Vector3df local = GetPointOnMapLocal(worldPos);
     // Get terrain normal.
@@ -681,6 +751,9 @@ bool EC_Terrain::SaveToFile(QString filename)
 
         fwrite(&patches[i].heightData[0], sizeof(float), cPatchSize*cPatchSize, handle); ///< \todo Check read error.
     }
+    fflush(handle);
+    if (ferror(handle))
+	LogError("Write error in SaveToFile");
     fclose(handle);
 
     return true;
@@ -1197,8 +1270,8 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
         return;
     }
 //    Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
-//    assert(terrainMaterial.get());
- //   if(terrainMaterial.get())
+//    assert(terrainMaterial);
+ //   if(terrainMaterial)
 //    {
         OgreRenderer::SetTextureUnitOnMaterial(terrainMaterial, textureName, index);
 //        emit TerrainTextureChanged(); ///\todo Regression here. Re-enable this so that the EnvironmentEditor texture viewer can see the textures?
@@ -1241,7 +1314,7 @@ void EC_Terrain::UpdateRootNodeTransform()
 void EC_Terrain::AttachTerrainRootNode()
 {
     if (!rootNode)
-        return;
+        CreateRootNode();
 
     OgreRenderer::RendererPtr renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
     if (!renderer)
@@ -1257,7 +1330,7 @@ void EC_Terrain::AttachTerrainRootNode()
 
     // If this entity has an EC_Placeable, make sure it is the parent of this terrain component.
     boost::shared_ptr<EC_Placeable> pos = GetParentEntity()->GetComponent<EC_Placeable>();
-    if (pos.get())
+    if (pos)
     {
         Ogre::SceneNode *parent = pos->GetSceneNode();
         parent->addChild(rootNode);

@@ -11,7 +11,7 @@
 #include "AttributeChangeType.h"
 
 #include <QtTreePropertyBrowser>
-#include <map>
+#include <QMap>
 #include <set>
 
 class QtTreePropertyBrowser;
@@ -26,7 +26,7 @@ class TreeWidgetItemExpandMemory;
 class ECEditorWindow;
 class ECComponentEditor;
 typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
-typedef std::list<ComponentGroup*> ComponentGroupList;
+//typedef std::list<ComponentGroup*> ComponentGroupList;
 
 //! Widget that will display all selected entity components and their attributes.
 /*! The ECBrowser will iterate all entity's components and pass them to an ECComponentEditor,
@@ -68,6 +68,9 @@ public:
     */
     void SetItemExpandMemory(boost::shared_ptr<TreeWidgetItemExpandMemory> expandMem) { expandMemory_ = expandMem; }
 
+    /// Reads selected components from ComponentGroup and return them as QObjectList.
+    QObjectList GetSelectedComponents() const;
+
 public slots:
     //! Reset browser state to where it was after the browser initialization. Override method from the QtTreePropertyBrowser.
     void clear();
@@ -84,10 +87,14 @@ signals:
     //! User want to add new component for selected entities.
     void CreateNewComponent();
 
-    //! Emitted when component is selected from the browser widget.
-    /*! @param component Pointer to a component that has just been selected.
+    //! This method will tell what component and attribute are currently selected from the ECBrowser.
+    /*! Note! If selected QTreeWidget item isn't attribute or it's children, attribute's type/name is marked as empty string.
+     *  @param compType selected item component type name.
+     *  @param compName selected item component name.
+     *  @param attrType selected item attribute type name (Empty if attribute isn't selected).
+     *  @param attrName selected item attribute name (Empty if attribute isn't selected).
      */
-    void ComponentSelected(IComponent *component);
+    void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
 protected:
     //! Override from QWidget.
@@ -110,8 +117,8 @@ private slots:
      */
     void ShowComponentContextMenu(const QPoint &pos);
 
-    //! QTreeWidget has changed it's focus and we need to highlight new entities from the editor window.
-    void SelectionChanged();
+    //! When QTreeWidget changes it selection a newly selected component need to get highlighted.
+    void SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
     //! Called when a new component have been added to a entity.
     /*! @param comp a new component that has added into the entity.
@@ -134,37 +141,32 @@ private slots:
     //! User has selected paste action from a QMenu.
     void PasteComponent();
 
-    //! Component's name has been changed and we need to remove component from it's previous
-    //! ComponentGroup and create/add component to another componentgroup.
+    //! If dynamic component's attributes have changed in some way, we need to find a new suitable group
+    //! for the component. If any group cant be found create new and insert component into that group.
     void DynamicComponentChanged();
 
     //! Component's name has been changed and we need to remove component from it's previous
-    //! ComponentGroup and create/add component to another componentgroup.
+    //! ComponentGroup and insert component to another componentgroup.
     /*! @param newName component's new name.
      */
     void ComponentNameChanged(const QString &newName);
 
     //! Show dialog, so that user can create a new attribute.
-    //! @Note: Only works with dynamic component.
+    //! @Note: Only works with dynamic components.
     void CreateAttribute();
 
     //! Remove component or attribute based on selected QTreeWidgeItem.
     /*! If selected TreeWidgetItem is a root item, then we can assume that we want to remove component.
-     *  But if item has parent setted, we can assume that selected item is attribute or it's value is selected.
+     *  But if item has parent set, we can assume that selected item is attribute or it's value is selected.
      */
     void OnDeleteAction();
 
 private:
-    //! Try to find the right component group for spesific component type. if found return it's position on the list as in iterator format.
-    //! If any component group wasn't found return .end() iterator value.
-    /*! @param comp component that we want to find in some of the component group.
+    //! Try to find the right component group for given component. If right type of component group is found return it's pointer.
+    //! If any suitable componentGroup wasn't found return null pointer.
+    /*! @param comp component that we want to find a suitable group.
      */
-    ComponentGroupList::iterator FindSuitableGroup(ComponentPtr comp);
-
-    //! Try to find component group for spesific QTreeWidgetItem.
-    /*! @param item QTreeWidgetItem that we want to use to find a right component group.
-     */
-    ComponentGroupList::iterator FindSuitableGroup(const QTreeWidgetItem &item);
+    ComponentGroup *FindSuitableGroup(ComponentPtr comp);
 
     //! Add new component to existing component group if same type of component have been already added to editor,
     /*! if component type is not included, create new component group and add it to editor.
@@ -193,7 +195,8 @@ private:
     //! Remove selected component item from selected entities.
     void DeleteComponent(QTreeWidgetItem *item);
 
-    ComponentGroupList componentGroups_;
+    typedef QMap<QTreeWidgetItem*, ComponentGroup*> TreeItemToComponentGroup;
+    TreeItemToComponentGroup itemToComponentGroups_;
     typedef QList<Scene::EntityWeakPtr> EntityWeakPtrList;
     EntityWeakPtrList entities_;
     QMenu *menu_;

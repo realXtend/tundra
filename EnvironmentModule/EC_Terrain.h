@@ -361,15 +361,18 @@ signals:
     void TerrainRegenerated();
     
 private slots:
+    //! Open asset editor for given asset attribute.
+    void View(const QString &attributeName);
+
     //! Emitted when the parrent entity has been set.
     void UpdateSignals();
 
     //! Emitted when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
 
-    void MaterialAssetLoaded(IAssetTransfer *transfer);
-    void TextureAssetLoaded(IAssetTransfer *transfer);
-    void TerrainAssetLoaded(IAssetTransfer *transfer);
+    void MaterialAssetLoaded(AssetPtr asset);
+    void TextureAssetLoaded(AssetPtr asset);
+    void TerrainAssetLoaded(AssetPtr asset);
 
     /// (Re)checks whether this entity has EC_Placeable (or if it was just added or removed), and reparents the rootNode of this component to it or the scene root.
     /// Additionally re-applies the visibility of each terrain patch that is currently attached to the terrain node.s
