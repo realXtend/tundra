@@ -4,7 +4,7 @@
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
    <attribute value="slidingdoor.mesh" name="Mesh ref"/>
-   <attribute value="a.skeleton" name="Skeleton ref"/>
+   <attribute value="slidingdoor.skeleton" name="Skeleton ref"/>
    <attribute value="lasi_vaalvihrea.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
