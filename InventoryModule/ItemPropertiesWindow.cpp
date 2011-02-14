@@ -14,7 +14,7 @@
 #include "AbstractInventoryDataModel.h"
 #include "ModuleManager.h"
 #include "Framework.h"
-#include "AssetEvents.h"
+//#include "AssetEvents.h" don't exist anymore, new asset api replaced these
 
 #include <QUiLoader>
 #include <QFile>
