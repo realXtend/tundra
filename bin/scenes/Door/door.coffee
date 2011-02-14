@@ -12,6 +12,14 @@ lockbut.show()
 
 data = me.dynamiccomponent
 
+animctrl = me.animationcontroller
+animctrl.EnableAnimation "open", false
+animctrl.SetAnimationTimePosition "open", 1
+
+curpos = 0 #keep so that can interpolate animated change to the var
+animctrl.SetAnimWeight "open", curpos
+newpos = 0
+
 onAttributeChanged = (args...) ->
   print "door.coffee onAttributeChanged", args
   opened = data.GetAttribute 'opened'
@@ -21,9 +29,20 @@ onAttributeChanged = (args...) ->
   lockbut.text = if locked then "Unlock" else "Lock"
   openbut.enabled = not (locked and not opened) #is closed, but not locked. not locked&closed
 
+  newpos = if opened then 0 else 1
+
+animate = (dtime) ->
+  if newpos != curpos
+    diff = Math.abs newpos - curpos
+    dir = if (newpos < curpos) then -1 else 1
+    speed = 1
+    curpos += dir * (Math.min diff, dtime * speed)
+    animctrl.SetAnimWeight "open", curpos
+    print curpos + " - " + diff
+
 onAttributeChanged() #once at startup to init
 data.OnAttributeChanged.connect onAttributeChanged
-
+frame.Updated.connect animate
 
 open = ->
   print "door.coffee open button clicked!"
@@ -54,5 +73,10 @@ hoverIn = ->
 hoverOut = ->
   print "hovering out from over door"
 
+mousePress = ->
+  open()
+
 me.Action("MouseHoverIn").Triggered.connect hoverIn
 me.Action("MouseHoverOut").Triggered.connect hoverOut
+
+me.Action("MousePress").Triggered.connect mousePress
