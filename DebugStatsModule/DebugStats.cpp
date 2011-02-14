@@ -150,17 +150,17 @@ void DebugStatsModule::AddProfilerWidgetToUi()
         return;
     }
 
-    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;*/
-    NaaliUi *ui = GetFramework()->Ui();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
+    /*NaaliUi *ui = GetFramework()->Ui();
+    if (!ui)
+        return;*/
 
     profilerWindow_ = new TimeProfilerWindow(framework_);
-    profilerWindow_->setParent(ui->MainWindow());
-    profilerWindow_->setWindowFlags(Qt::Tool);
-    //profilerWindow_->move(100, 100);
+    /*profilerWindow_->setParent(ui->MainWindow());
+    profilerWindow_->setWindowFlags(Qt::Tool);*/
+    profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);
 //$ BEGIN_MOD $
 #ifdef PLAYER_VIEWER

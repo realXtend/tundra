@@ -50,17 +50,6 @@ void EC_OgreCamera::AutoSetPlaceable()
     }
 }
 
-void EC_OgreCamera::AutoSetPlaceable()
-{
-    Scene::Entity* entity = GetParentEntity();
-    if (entity)
-    {
-        ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
-        if (placeable)
-            SetPlaceable(placeable);
-    }
-}
-
 void EC_OgreCamera::SetPlaceable(ComponentPtr placeable)
 {
     if (!dynamic_cast<EC_Placeable*>(placeable.get()))

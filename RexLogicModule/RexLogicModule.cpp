@@ -265,6 +265,7 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_PlanarMirror_ENABLED
     DECLARE_MODULE_EC(EC_PlanarMirror);
+#endif
 #ifdef EC_Selected_ENABLED
     DECLARE_MODULE_EC(EC_Selected);
 #endif

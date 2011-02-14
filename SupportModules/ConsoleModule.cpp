@@ -60,8 +60,8 @@ namespace Console
 
     void ConsoleModule::HandleKeyEvent(KeyEvent *keyEvent)
     {
-        if (keyEvent->keyCode == Qt::Key_F1 && keyEvent->eventType == KeyEvent::KeyPressed)
-            ui_console_manager_->ToggleConsole();
+        //if (keyEvent->keyCode == Qt::Key_F1 && keyEvent->eventType == KeyEvent::KeyPressed)
+        //    ui_console_manager_->ToggleConsole();
     }
 
     // virtual 
