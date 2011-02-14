@@ -77,9 +77,6 @@ namespace OgreRenderer
         //! Do a frustum query to the world from viewport coordinates.
         virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect);
 
-        //for local dotscene loading to be able to load from the dir where the export is
-        void AddResourceDirectory(const QString &directory);
-
         //! Do raycast into the world from viewport coordinates.
         /*! The coordinates are a position in the render window, not scaled to [0,1].
             \todo Returns raw pointer to entity. Returning smart pointer may take some thinking/design. Maybe just return entity id?
@@ -359,17 +356,12 @@ namespace OgreRenderer
         /// Pixel buffer used with screen captures
         Ogre::uchar *capture_screen_pixel_data_;
         
-<<<<<<< HEAD
-        // swap float values
-        static void swap(float &x, float &y);
-=======
         /// Stores the wall clock time that specifies when the last frame was displayed.
         tick_t lastPresentTime;
         /// Caches the system clock frequency.
         tick_t timerFrequency;
         /// Specifies the target fps to run the system at. By default 60. Setting this to zero means no limit.
         float targetFpsLimit;
->>>>>>> origin/tundra
     };
 }
 

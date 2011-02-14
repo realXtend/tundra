@@ -71,7 +71,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 */
     setWindowTitle("Tundra v1.0-preview");
 
-    width = max(1, min(DesktopWidth(), width));
+    /*width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));
     windowX = max(0, min(DesktopWidth()-width, windowX));
     windowY = max(25, min(DesktopHeight()-height, windowY));
