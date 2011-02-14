@@ -168,7 +168,6 @@ endif()
 
 #add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
 if (NOT UISERVICE_TEST)
-    add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
     #depends on Inventory which doesn't currently build with the new asset api
     #add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined). Depends on OgreRenderingModule and InventoryModule.
     add_subdirectory(LibraryModule)         # Implements drag & drop url meshes, materials and textures from webview to scene. Part of WorldBuildingModule
