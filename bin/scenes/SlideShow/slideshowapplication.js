@@ -30,7 +30,6 @@ print ('foo');
 
 var entity;
 var canvassource;
-var slides = [];
 var prev;
 var next;
 var slide_index = 0;
@@ -144,6 +143,8 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     print("  >> Data len  :", data.size());
     print("  >> index     :", parseInt(data.toString()));
     noSlides = parseInt(data.toString());
+
+    var slides = [];
     
     var baseurl = transfer.GetSourceUrl().replace('/index.txt', '');
     print(baseurl)
