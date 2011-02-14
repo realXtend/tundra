@@ -1,0 +1,28 @@
+material lasi_vaalvihrea
+{
+	receive_shadows on
+	technique
+	{
+		pass
+		{
+            lighting off
+			scene_blend modulate
+			depth_write off
+			cull_hardware none
+			cull_software none
+            texture_unit
+            {
+                colour_op_ex modulate_x2 src_manual src_current 0.45 0.90 0.45
+            }
+        }
+        pass
+        {
+            lighting on
+            scene_blend modulate
+            emissive 0.5 0.5 0.5
+            ambient 1 1 1           
+            diffuse 1 1 1 1
+            specular 0.7 0.7 0.7 1 61.5
+        }
+	}
+}
