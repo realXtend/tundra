@@ -160,127 +160,123 @@ void UiService::OnProxyDestroyed(QObject* obj)
 QByteArray UiService::UpdateAssetPaths(const QByteArray& data)
 {
     QDomDocument document;
-    QString str;
     
-    if ( document.setContent(data) )
+    
+    QString parseError;
+    if (!document.setContent(data, &parseError))
     {
-       AssetAPI *assetAPI = framework_->Asset();
-     
-       str = document.toString();
-      
-       while(str.contains("local://", Qt::CaseInsensitive) || str.contains("file://", Qt::CaseInsensitive))
-       {
-            int sIndex = str.indexOf("local://",0,Qt::CaseInsensitive);
-            if ( sIndex == -1 )
-            {
-                sIndex = str.indexOf("file://", 0, Qt::CaseInsensitive);
-                if ( sIndex == -1)
-                    break;
-            }
-          
-            int eIndex = 0;
-            int i = str.size();
-
-            for (i = sIndex; i < str.size(); ++i )
-            {
-                if ( QString(str[i]) == QString(")") || QString(str[i]) == QString("<") )
-                {
-                    eIndex = i;
-                    break;
-                }
-            }
-
-            if ( i < str.size())
-            {
-                QString name = str.mid(sIndex, eIndex-sIndex);
-             
-                // Ok we have possible asset candidate check that is it loaded, if it is not loaded assume that currently we have not loaded anything.
-                AssetPtr asset;
-                asset = assetAPI->GetAsset(name);
-                
-                if (!asset)
-                {
-                    LogError(("UiService::UpdateAssetPaths: Asset \"" + name + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
-                    return data;
-                }
-                // Get absolute path where this asset is ..
-                QString fileName = asset->DiskSource();
-                str.replace(name, fileName);
-                
-                
-            }
-            else
-            {   
-                // We are end-of-file
-                break;
-            }
-        } 
-
-       // External asset ref (example, http:// or something)
-
-       while(str.contains("://", Qt::CaseInsensitive) )
-       {
-            int sIndex = str.indexOf("://",0,Qt::CaseInsensitive);
-            if ( sIndex == -1 )
-                break;
-        
-            // Get type
-            int eIndex = 0;
-            for (int j = sIndex; j--;)
-            {
-                if ( QString(str[j]) == QString("(") || QString(str[j]) == QString(">") )
-                {
-                    eIndex = j+1;
-                    break;
-                }
-            }
-           
-            int typeSize = sIndex - eIndex;
-            sIndex = sIndex - typeSize;
-            QString tmp = str.mid(sIndex, typeSize);
-       
-            int i = str.size();
-            for (i = sIndex; i < str.size(); ++i )
-            {
-                if ( QString(str[i]) == QString(")") || QString(str[i]) == QString("<") )
-                {
-                    eIndex = i;
-                    break;
-                }
-            }
-
-            if ( i < str.size())
-            {
-                QString name = str.mid(sIndex, eIndex-sIndex);
-             
-                // Ok we have possible asset candidate check that is it loaded, if it is not loaded assume that currently we have not loaded anything.
-                AssetPtr asset;
-                asset = assetAPI->GetAsset(name);
-                
-                if (!asset)
-                {
-                    LogError(("UiService::UpdateAssetPaths: Asset \"" + name + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
-                    return data;
-                }
-                // Get absolute path where this asset is ..
-                QString fileName = asset->DiskSource();
-                str.replace(name, fileName);
-                
-                
-            }
-            else
-            {   
-                // We are end-of-file
-                break;
-            }
-        } 
-           
-    
-    }
-    else
-    {   
-        LogError("UiService::UpdateAssetNames given data was not valid xml file");
+        LogError("Could not process .ui file content, error: " + parseError.toStdString());
         return data;
+    }
+
+    AssetAPI *assetAPI = framework_->Asset();
+    QString str = document.toString();
+    int fromIndex = 0;
+
+    // Check for local:// if not gound check for file://
+    while(str.contains("local://", Qt::CaseInsensitive) || str.contains("file://", Qt::CaseInsensitive))
+    {
+        if (fromIndex > str.size())
+            break;
+
+        int sIndex = str.indexOf("local://", fromIndex, Qt::CaseInsensitive);
+        if (sIndex == -1)
+        {
+            sIndex = str.indexOf("file://", fromIndex, Qt::CaseInsensitive);
+            if (sIndex == -1)
+                break;
+        }
+      
+        int eIndex = str.size();
+        for (int i = sIndex; i < str.size(); ++i )
+        {
+            QString compareString(str[i]);
+            if (compareString == ")" || compareString == "<")
+            {
+                eIndex = i;
+                break;
+            }
+        }
+
+        if (eIndex < str.size())
+        {
+            fromIndex = eIndex;
+            QString name = str.mid(sIndex, eIndex-sIndex);
+            
+            // Ok we have possible asset candidate check that is it loaded, 
+            // if it is not loaded assume that currently we have not loaded anything.
+            AssetPtr asset;
+            asset = assetAPI->GetAsset(name);
+            if (!asset)
+                continue;
+
+            // Get absolute path where this asset is ..
+            QString fileName = asset->DiskSource();
+            str.replace(name, fileName);
+        }
+        else
+        {   
+            // We are end-of-file
+            break;
+        }
+    } 
+
+    // External asset ref eg http://server.com/mypic.com
+    fromIndex = 0;
+    while(str.contains("://", Qt::CaseInsensitive) )
+    {
+        int sIndex = str.indexOf("://", fromIndex, Qt::CaseInsensitive);
+        if (sIndex == -1)
+            break;
+
+        // Get type
+        int eIndex = 0;
+        for (int j = sIndex; j--;)
+        {
+            QString compareString(str[j]);
+            if (compareString == "(" || compareString == ">")
+            {
+                eIndex = j+1;
+                break;
+            }
+        }
+
+        int typeSize = sIndex - eIndex;
+        sIndex = sIndex - typeSize;
+        QString tmp = str.mid(sIndex, typeSize);
+
+        int i = str.size();
+        for (i = sIndex; i < str.size(); ++i )
+        {
+            QString compareString(str[i]);
+            if (compareString == ")" || compareString == "<")
+            {
+                eIndex = i;
+                break;
+            }
+        }
+
+        if (i < str.size())
+        {
+            fromIndex = eIndex;
+            QString name = str.mid(sIndex, eIndex-sIndex);
+
+            // Ok we have possible asset candidate check that is it loaded, if it is not loaded assume that currently we have not loaded anything.
+            AssetPtr asset;
+            asset = assetAPI->GetAsset(name);
+
+            if (!asset)
+                continue;
+
+            // Get absolute path where this asset is ..
+            QString fileName = asset->DiskSource();
+            str.replace(name, fileName);
+        }
+        else
+        {   
+            // We are end-of-file
+            break;
+        }
     }
   
     return str.toUtf8();
