@@ -13,21 +13,16 @@ t.rot = zerovec;
 ball.placeable.transform = t;
 
 var r = ball.rigidbody;
-//r.linearVelocity = new Vector3df(1.0, 0, 0);
-//XXX TODO: doesn't work for some reason, test more and check internals
-//works from ecedit gui but not with this call.
-//r.SetLinearVelocity(new Vector3df(1.0, 0, 0));
+//r.linearVelocity = new Vector3df(1.0, 0, 0); //XXX NOTE: this fails *silently*
+var v = new Vector3df();
+v.x = 1.0;
+r.SetLinearVelocity(v);
 
 //var MAXSPEED = 10.0;
 var motion_x = 1.0;
 var motion_y = 0.2;
-var speed = 10.0;
+var speed = 16.0;
 var prev_collpos = zerovec;
-
-function notprevcoll(pos) {
-  return (Math.abs(prev_collpos.x - pos.x) > 1 ||
-          Math.abs(prev_collpos.y - pos.y) > 1);
-}
 
 function autopilot() {
   var ta = bat_a.placeable.transform;
@@ -39,36 +34,11 @@ function autopilot() {
   bat_b.placeable.transform = tb;
 }
 
-function handlecoll(other, pos, nor, dist, imp, newcoll) {
+/*function handlecoll(other, pos, nor, dist, imp, newcoll) {
 //PhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
   print("---coll:---");
   print(pos.x + " : " + pos.y);
-  if (notprevcoll(pos)) {
-    prev_collpos = pos;
-    //print(nor);
-    print(nor.x + " : " + nor.y);
-
-    //motion_x = -nor.x;
-    //motion_y = -nor.y;
-    if (Math.abs(nor.x) == 1) {
-      motion_x = -motion_x;
-    }
-    else if (Math.abs(nor.y) == 1) {
-      motion_y = -motion_y;
-    }
-    else {
-      print("unknown coll nor -- not straight wall?");
-    }
-  }
-  else {
-    ball.rigidbody.mass = 0;
-  }
-
-  t.rot = zerovec;
-
-  print(motion_x + " - " + motion_y);
-  print("/");
-}
+YAY not needed anymore (?)*/
 
 function update(dt) {
   dt = Math.min(0.1, dt);
@@ -78,36 +48,28 @@ function update(dt) {
   var placeable = ball.placeable;
   var rigidbody = ball.rigidbody;
 
-  /*var velvec = rigidbody.GetLinearVelocity();
-  print(velvec.x);
+  var velvec = rigidbody.GetLinearVelocity();
+  //print(velvec.x);
   var curspeed = Math.abs(velvec.x); //Math.sqrt(rigidbody.GetLinearVelocity().x
   var curdir = new Vector3df(); //null; //velvec.Normalize()
-  print(curspeed);*/
+  //print(curspeed);
 
-  t = placeable.transform;
+  if (velvec.x < 0)
+    velvec.x = -1 * speed;
+  else
+    velvec.x = 1 * speed;
+    
+  r.SetLinearVelocity(velvec);
 
-  if (notprevcoll(t.pos)) {
-    ball.rigidbody.mass = 1.0;
-  }
-
-  if ((motion_x != 0) || (motion_y != 0)) {
-      //var mag = 1.0; // / Math.sqrt(motion_x * motion_y); // + curdir.x * curdir.y);
-      /*var impulseVec = new Vector3df();
-      print(mag + " - " + curdir.x);
-      impulseVec.x = mag * move_force * motion_x; //curdir.x;
-      impulseVec.y = -mag * move_force * motion_y; //curdir.y;
-      impulseVec = placeable.GetRelativeVector(impulseVec);
-      rigidbody.ApplyImpulse(impulseVec);*/
-
+    /* placeable hack -- hopefully not needed anymore 'cause linearVel works
       t.pos.x += speed * motion_x * dt;
       t.pos.y += speed * motion_y * dt;
-      placeable.transform = t;
-  }
+      placeable.transform = t;*/
 
   autopilot();
 }
 
-ball.rigidbody.PhysicsCollision.connect(handlecoll);
+//ball.rigidbody.PhysicsCollision.connect(handlecoll);
 frame.Updated.connect(update);
 
 print("-*-");
