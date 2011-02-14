@@ -38,7 +38,7 @@ var max_slides;
 
 function checkSuffix(url) {
     // FIXME find a better way to get the suffix
-    url = ("" + url).replace('.ppt', '.pptx')
+    url = ("" + url).replace('.pptx', '.ppt')
     if (url.split('.ppt').length == 2) {
 	print("I accept!");
 	return true;
