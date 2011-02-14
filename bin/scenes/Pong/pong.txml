@@ -22,7 +22,7 @@
    <attribute value="true" name="Visible"/>
   </component>
   <component type="EC_RigidBody" sync="1">
-   <attribute value="1" name="Mass"/>
+   <attribute value="0.1" name="Mass"/>
    <attribute value="0" name="Shape type"/>
    <attribute value="2 2 2" name="Size"/>
    <attribute value="" name="Collision mesh ref"/>

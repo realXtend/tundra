@@ -1,23 +1,27 @@
+<!DOCTYPE Scene>
 <scene>
  <entity id="1">
   <component type="EC_Mesh" sync="1">
    <attribute value="0,0,0,90,0,180,1,1,1" name="Transform"/>
-   <attribute value="local://boxA.mesh" name="Mesh ref"/>
-   <attribute value="" name="Skeleton ref"/>
-   <attribute value="local://crate_texture.material" name="Mesh materials"/>
+   <attribute value="slidingdoor.mesh" name="Mesh ref"/>
+   <attribute value="a.skeleton" name="Skeleton ref"/>
+   <attribute value="lasi_vaalvihrea.material" name="Mesh materials"/>
    <attribute value="0" name="Draw distance"/>
    <attribute value="true" name="Cast shadows"/>
   </component>
   <component type="EC_Name" sync="1">
-   <attribute value="TooltipBox" name="name"/>
+   <attribute value="SlidingDoor" name="name"/>
    <attribute value="" name="description"/>
    <attribute value="false" name="user-defined"/>
   </component>
   <component type="EC_Placeable" sync="1">
-   <attribute value="-10,10,30,-0.0942868,-3.76036,4.73495,5,5,5" name="Transform"/>
+   <attribute value="0 0 0" name="Position"/>
+   <attribute value="1 1 1" name="Scale"/>
+   <attribute value="0,0,0,0,0,0,5,5,5" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
+   <attribute value="true" name="Visible"/>
   </component>
-<component type="EC_HoveringText" sync="1" name="TooltipText">
+  <component type="EC_HoveringText" sync="1" name="TooltipText">
    <attribute value="Door" name="Text"/>
    <attribute value="Arial" name="Font"/>
    <attribute value="100" name="Font Size"/>
@@ -35,9 +39,12 @@
    <attribute value="true" name="Run on load"/>
    <attribute value="door.js" name="Script ref"/>
   </component>
-  <component type="EC_DynamicComponent" name="door">
-   <attribute value="true" type="bool" name="opened"/>
+  <component type="EC_DynamicComponent" sync="1" name="door">
+   <attribute value="false" type="bool" name="opened"/>
    <attribute value="true" type="bool" name="locked"/>
+  </component>
+  <component type="EC_AnimationController" sync="1">
+   <attribute value="" name="Animation state"/>
   </component>
  </entity>
 </scene>
