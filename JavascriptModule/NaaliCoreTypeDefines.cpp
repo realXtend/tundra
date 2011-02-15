@@ -57,6 +57,7 @@ void fromScriptValueQColor(const QScriptValue &obj, QColor &s)
 }
 
 QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 {
     QScriptValue obj = engine->newObject();
@@ -65,9 +66,9 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
     obj.setProperty("z", QScriptValue(engine, s.z));
 
     //this should suffice only once for the prototype somehow, but couldn't get that to work
-    QScriptValue normalizeVector3df = engine->newFunction(Vector3df_prototype_normalize);
     //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
-    obj.prototype().setProperty("normalize", normalizeVector3df);
+    obj.prototype().setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
+    obj.prototype().setProperty("getLength", engine->newFunction(Vector3df_prototype_getLength));
 
     return obj;
 }
@@ -85,6 +86,14 @@ QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *e
     fromScriptValueVector3(ctx->thisObject(), vec);
       
     return toScriptValueVector3(engine, vec.normalize());
+}
+
+QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+      
+    return vec.getLength();
 }
 
 QScriptValue toScriptValueQVector3D(QScriptEngine *engine, const QVector3D &s)
