@@ -24,7 +24,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
 using namespace Foundation;
 
-AssetAPI::AssetAPI()
+AssetAPI::AssetAPI(bool isHeadless)
 :assetCache(0),
 diskSourceChangeWatcher(0)
 {
@@ -32,6 +32,7 @@ diskSourceChangeWatcher(0)
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
     RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
+    isHeadless_ = isHeadless;
 }
 
 AssetAPI::~AssetAPI()

@@ -17,6 +17,8 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
         return false; ///\todo Log out error.
     if (numBytes == 0)
         return false; ///\todo Log out error.
+    if (headless)
+	return false;
 
     try
     {
