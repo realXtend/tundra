@@ -6,23 +6,20 @@ print(ball.Id);
 var bat_a = scene.GetEntityByNameRaw("bat_a");
 var bat_b = scene.GetEntityByNameRaw("bat_b"); //$('bat_b') - how about?
 
+//nice to have in code to reinit correctly after live updates when devving
 var t = ball.placeable.transform;
 zerovec = new Vector3df();
 t.pos = zerovec;
 t.rot = zerovec;
 ball.placeable.transform = t;
 
-var r = ball.rigidbody;
 //r.linearVelocity = new Vector3df(1.0, 0, 0); //XXX NOTE: this fails *silently*
 var v = new Vector3df();
 v.x = 1.0;
-r.SetLinearVelocity(v);
+v.y = 0.2;
+ball.rigidbody.SetLinearVelocity(v);
 
-//var MAXSPEED = 10.0;
-var motion_x = 1.0;
-var motion_y = 0.2;
 var speed = 16.0;
-var prev_collpos = zerovec;
 
 function autopilot() {
   var ta = bat_a.placeable.transform;
@@ -41,32 +38,13 @@ function autopilot() {
 YAY not needed anymore (?)*/
 
 function update(dt) {
-  dt = Math.min(0.1, dt);
-  //get very annoying pauses of several seconds now on linux laptop
-  //-- this at least makes it so that the ball doesn't escape after pauses
-
-  var placeable = ball.placeable;
+  var placeable = ball.placeable; //note: could and probably should keep refs to these, and not fetch every time
   var rigidbody = ball.rigidbody;
 
   var velvec = rigidbody.GetLinearVelocity();
-  //print(velvec.x);
-  var curspeed = Math.abs(velvec.x); //Math.sqrt(rigidbody.GetLinearVelocity().x
-  dirvec = velvec.normalize();
-  print(dirvec.x);
-  var curdir = new Vector3df(); //null; //velvec.Normalize()
-  //print(curspeed);
-
-  if (velvec.x < 0)
-    velvec.x = -1 * speed;
-  else
-    velvec.x = 1 * speed;
-    
-  r.SetLinearVelocity(velvec);
-
-    /* placeable hack -- hopefully not needed anymore 'cause linearVel works
-      t.pos.x += speed * motion_x * dt;
-      t.pos.y += speed * motion_y * dt;
-      placeable.transform = t;*/
+  var curdir = velvec.normalize();
+  velvec = curdir.mul(speed);
+  rigidbody.SetLinearVelocity(velvec);
 
   autopilot();
 }
