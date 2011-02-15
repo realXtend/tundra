@@ -63,8 +63,8 @@ frame.DelayedExecute(1).Triggered.connect(this, function () {
 var dyn = me.GetComponentRaw("EC_DynamicComponent", "Slidelist");
 dyn.OnAttributeChanged.connect(onSlideChanged);
 
-var prev = scene.GetEntityByNameRaw('Button prev (' + me.name.name + ')');
+var prev = scene.GetEntityByNameRaw('Button prev (' + me.name.name + ' ' + me.Id + ')');
 prev.Action("MousePress").Triggered.connect(prevSlide);
 
-var next = scene.GetEntityByNameRaw('Button next (' + me.name.name + ')');
+var next = scene.GetEntityByNameRaw('Button next (' + me.name.name + ' ' + me.Id + ')');
 next.Action("MousePress").Triggered.connect(nextSlide);
