@@ -51,6 +51,8 @@ function update(dt) {
   var velvec = rigidbody.GetLinearVelocity();
   //print(velvec.x);
   var curspeed = Math.abs(velvec.x); //Math.sqrt(rigidbody.GetLinearVelocity().x
+  dirvec = velvec.normalize();
+  print(dirvec.x);
   var curdir = new Vector3df(); //null; //velvec.Normalize()
   //print(curspeed);
 
