@@ -58,6 +58,7 @@ void fromScriptValueQColor(const QScriptValue &obj, QColor &s)
 
 QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 {
     QScriptValue obj = engine->newObject();
@@ -69,6 +70,7 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
     //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
     obj.prototype().setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
     obj.prototype().setProperty("getLength", engine->newFunction(Vector3df_prototype_getLength));
+    obj.prototype().setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
 
     return obj;
 }
@@ -94,6 +96,21 @@ QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *e
     fromScriptValueVector3(ctx->thisObject(), vec);
       
     return vec.getLength();
+}
+
+QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError("Vector3df mul() takes a single number argument.");
+    if (!ctx->argument(0).isNumber())
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number");
+    float scalar = ctx->argument(0).toNumber();
+    //XXX add vec*vec
+    
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+
+    return toScriptValueVector3(engine, vec * scalar);
 }
 
 QScriptValue toScriptValueQVector3D(QScriptEngine *engine, const QVector3D &s)
