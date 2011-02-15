@@ -189,6 +189,11 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     var r = script.scriptRef;
     r.ref = "local://slideshow.js";
     script.scriptRef = r;
+
+    //FIXME move this and makeslide widget to slideshow.js when
+    // appropriate
+    // Create UI
+    // makeSlideWidget(slides);
 	
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
@@ -210,9 +215,9 @@ function getSlides(ref) {
     // set name
     entity.name.name = "Slideshow: " + filename;
     entity.name.description = "Simple slideshow app from " + filename;
-    prev.name.name = 'Button prev (' + entity.name.name + ')';
+    prev.name.name = 'Button prev (' + entity.name.name + ' ' + entity.Id + ')';
     scene.EmitEntityCreatedRaw(prev);
-    next.name.name = 'Button next (' + entity.name.name + ')';
+    next.name.name = 'Button next (' + entity.name.name + ' ' + entity.Id + ')';
     scene.EmitEntityCreatedRaw(next);
 }
 
@@ -330,13 +335,6 @@ function createCanvas(event) {
     
     entity.placeable.transform = transform;
 
-    //FIXME move this and makeslide widget to slideshow.js when
-    // appropriate
-    // Create UI
-    //makeSlideWidget(slides);
-
-    // add buttons
-
     rotvec = new Vector3df();
 
     rotvec.x = 187;
@@ -387,7 +385,7 @@ function makeSlideWidget(slides) {
 
     for (s = 0; s < slides.length; s++) {
 	var label = new MyLabel(gfxscene, s);
-	var pic = new QPixmap("C:\\Users\\playsign\\sand_d.jpg");
+	var pic = new QPixmap(slides[s]);
 	label.setPixmap(pic.scaledToWidth(100));
 	label.move(0, 110 * s);
 	gfxscene.addWidget(label)
