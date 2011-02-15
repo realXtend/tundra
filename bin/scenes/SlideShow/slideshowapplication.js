@@ -91,7 +91,9 @@ function handleDrop(event) {
 
 function upload(uploadStorageUrl, uploadStorageName, filename) {
     if (AddAssetStorage(uploadStorageUrl, uploadStorageName)) {
-	    UploadAsset(filename, uploadStorageName, filename, "binary");
+	var parts = filename.split('/');
+	var newName = parts[parts.length - 1];
+	UploadAsset(filename, uploadStorageName, newName, "binary");
     } else {
 	print("HORRERNOUS ERROR! CANNOT HANDLE ERRORNOUS HORROR!!!1!");
     }
