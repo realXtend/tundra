@@ -14,9 +14,10 @@ t.rot = zerovec;
 ball.placeable.transform = t;
 
 //r.linearVelocity = new Vector3df(1.0, 0, 0); //XXX NOTE: this fails *silently*
+//initial vel for the ball
 var v = new Vector3df();
-v.x = 1.0;
-v.y = 0.2;
+v.x = 10.0;
+v.y = 2;
 ball.rigidbody.SetLinearVelocity(v);
 
 var speed = 16.0;
@@ -35,10 +36,14 @@ function autopilot() {
 //PhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
   print("---coll:---");
   print(pos.x + " : " + pos.y);
-YAY not needed anymore (?)*/
+YAY not needed anymore,
+but can perhaps put custom dir setting related to bat speeds etc here, 
+if bullet doesn't do what we want */
 
 function update(dt) {
-  var placeable = ball.placeable; //note: could and probably should keep refs to these, and not fetch every time
+  /* with rigidbody restitution set to 1.0 this shouldn't theoretically be needed,
+     but with even a little mass (and restiturion 2.0) the ball gets really slow after this
+  .. so here we just maintain contant speed (and could of course control it in any way) */
   var rigidbody = ball.rigidbody;
 
   var velvec = rigidbody.GetLinearVelocity();
