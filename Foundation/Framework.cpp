@@ -144,7 +144,7 @@ namespace Foundation
             ui = new NaaliUi(this);
             connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
-            asset = new AssetAPI();
+            asset = new AssetAPI(headless_);
             const char cDefaultAssetCachePath[] = "/assetcache";
             asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
 

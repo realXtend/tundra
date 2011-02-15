@@ -34,7 +34,7 @@ class AssetAPI : public QObject
     Q_OBJECT
 
 public:
-    AssetAPI();
+    AssetAPI(bool isHeadless);
 
     ~AssetAPI();
 
@@ -84,6 +84,11 @@ public:
     void AssetDependenciesCompleted(AssetTransferPtr transfer);
 
     void NotifyAssetDependenciesChanged(AssetPtr asset);
+
+    bool IsHeadless()
+    {
+      return isHeadless_;
+    }
 
     /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
     std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
@@ -330,6 +335,7 @@ private slots:
     void OnAssetDiskSourceChanged(const QString &path);
 
 private:
+    bool isHeadless_;
     typedef std::map<QString, AssetTransferPtr, AssetAPI::QStringLessThanNoCase> AssetTransferMap;
     /// Stores all the currently ongoing asset transfers.
     AssetTransferMap currentTransfers;
