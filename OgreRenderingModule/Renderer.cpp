@@ -272,11 +272,17 @@ namespace OgreRenderer
 #include "DisableMemoryLeakCheck.h"
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
+// On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
+// On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
+///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)
+#ifdef UNIX 
     if (framework_->IsHeadless())
     {
         // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
         new Ogre::DefaultHardwareBufferManager();
     }
+#endif
+
 #include "EnableMemoryLeakCheck.h"
 
         // Setup Ogre logger (use LL_NORMAL for more prints of init)
