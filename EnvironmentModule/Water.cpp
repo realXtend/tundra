@@ -4,6 +4,8 @@
 /// @brief Manages Water-related Rex logic.
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "Water.h"
 #include "EnvironmentModule.h"
 

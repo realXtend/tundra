@@ -1,5 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "DebugOperatorNew.h"
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "Audio.h"
 #include "CoreTypes.h"
 #include "AssetAPI.h"
@@ -79,6 +83,7 @@ assetAPI(assetAPI_)
 AudioAPI::~AudioAPI()
 {
     Uninitialize();
+    delete impl;
 /*
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "masterGain", masterGain);
     framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "triggered_sound_gain", soundMasterGain[SoundChannel::Triggered]);

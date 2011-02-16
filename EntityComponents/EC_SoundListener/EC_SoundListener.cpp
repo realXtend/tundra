@@ -8,6 +8,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "EC_SoundListener.h"
 #include "IModule.h"
 #include "Entity.h"

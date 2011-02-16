@@ -1,4 +1,6 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "OgreSkeletonAsset.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
@@ -41,7 +43,9 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         }
 
         std::vector<u8> tempData(data_, data_ + numBytes);
+#include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&tempData[0], numBytes, false));
+#include "EnableMemoryLeakCheck.h"
         Ogre::SkeletonSerializer serializer;
         serializer.importSkeleton(stream, ogreSkeleton.getPointer());
     }

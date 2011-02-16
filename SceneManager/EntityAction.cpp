@@ -10,6 +10,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "EntityAction.h"
 
 void EntityAction::Trigger(const QString &param1, const QString &param2, const QString &param3, const QStringList &params)

@@ -1,3 +1,6 @@
+#include "DebugOperatorNew.h"
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "OggVorbisLoader.h"
 #include "LoggingFunctions.h"
 #include <sstream>

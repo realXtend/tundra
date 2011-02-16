@@ -40,6 +40,8 @@
 //----------------------------------------------------------------------------------
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "PythonQtScriptingConsole.h"
 
 #include <QMenu>

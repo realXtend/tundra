@@ -6,6 +6,10 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
+#include <QMap>
+#include "MemoryLeakCheck.h"
 #include "EC_OpenSimPrim.h"
 #include "IModule.h"
 #include "SceneManager.h"

@@ -6,6 +6,9 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include <QMap>
+#include "MemoryLeakCheck.h"
 
 #include "IComponent.h"
 
