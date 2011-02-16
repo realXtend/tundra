@@ -235,6 +235,10 @@ void KristalliProtocolModule::PerformConnection()
         LogError("Unable to connect to " + serverIp + ":" + ToString(serverPort));
         return;
     }
+
+    // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
+    if (serverConnection->GetSocket() && serverConnection->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
+        serverConnection->GetSocket()->SetNaglesAlgorithmEnabled(false);
 }
 
 void KristalliProtocolModule::Disconnect()
@@ -283,6 +287,10 @@ void KristalliProtocolModule::StopServer()
 
 void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *source)
 {
+    assert(source);
+    if (!source)
+        return;
+
     source->RegisterInboundMessageHandler(this);
     ///\todo Regression. Re-enable. -jj.
 //    source->SetDatagramInFlowRatePerSecond(200);
@@ -291,7 +299,11 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     connection->userID = AllocateNewConnectionID();
     connection->connection = source;
     connections.push_back(connection);
-    
+
+    // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
+    if (source->GetSocket() && source->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
+        source->GetSocket()->SetNaglesAlgorithmEnabled(false);
+
     LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     Events::KristalliUserConnected msg(connection);
