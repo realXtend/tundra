@@ -335,7 +335,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     try
     {
         mesh->_notifySkeleton(skel);
-        LogDebug("Set skeleton " + skeleton_name + " to mesh " + mesh_name);
+//        LogDebug("Set skeleton " + skeleton_name + " to mesh " + mesh_name);
     }
     catch (Ogre::Exception& e)
     {
@@ -1053,7 +1053,7 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
         
         entity_->getMesh()->_notifySkeleton(skeleton);
         
-        LogDebug("Set skeleton " + skeleton->getName() + " to mesh " + entity_->getName());
+//        LogDebug("Set skeleton " + skeleton->getName() + " to mesh " + entity_->getName());
         emit OnSkeletonChanged(QString::fromStdString(skeleton->getName()));
     }
     catch (...)
