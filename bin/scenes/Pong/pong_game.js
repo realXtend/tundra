@@ -58,3 +58,9 @@ function update(dt) {
 frame.Updated.connect(update);
 
 print("-*-");
+
+/*
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND            
+ 2536 antont    20   0 1013m 176m  85m R   71  4.5  24:57.05 server             
+ 2590 antont    20   0 1010m 176m  84m S   53  4.5   7:59.68 viewer             
+*/
