@@ -7,6 +7,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 
 #include "Poco/Net/DatagramSocket.h" // To get htons etc.
 

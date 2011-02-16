@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include <btBulletDynamicsCommon.h>
+#include "MemoryLeakCheck.h"
 #include "EC_RigidBody.h"
 #include "ConvexHull.h"
 #include "PhysicsModule.h"
@@ -19,7 +22,6 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
 
-#include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 using namespace Physics;

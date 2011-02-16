@@ -188,6 +188,7 @@ namespace Foundation
         delete ui;
         delete input;
         delete asset;
+        delete audio;
 
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
         // When we delete QApplication, we must have ensured that all QObjects have been deleted.

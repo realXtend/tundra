@@ -18,7 +18,9 @@
 
 #if defined(_MSC_VER) && defined(_DEBUG) && defined(MEMORY_LEAK_CHECK)
 
+#include <ios>
 #include <new>
+#include <map>
 
 #define _CRTDBG_MAP_ALLOC
 

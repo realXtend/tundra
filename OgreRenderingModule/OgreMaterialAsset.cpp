@@ -1,4 +1,6 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "OgreMaterialAsset.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
@@ -40,7 +42,9 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     std::string sanitatedname = SanitateAssetIdForOgre(assetName);
     
     std::vector<u8> tempData(data_, data_ + numBytes);
+#include "DisableMemoryLeakCheck.h"
     Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&tempData[0], numBytes));
+#include "EnableMemoryLeakCheck.h"
 
     try
     {
@@ -106,7 +110,9 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         }
 
         std::string output_str = output.str();
+#include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream((u8 *)(&output_str[0]), output_str.size()));
+#include "EnableMemoryLeakCheck.h"
 
         matmgr.parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         ogreMaterial = matmgr.getByName(sanitatedname);

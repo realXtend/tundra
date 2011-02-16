@@ -1,8 +1,11 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include <boost/regex.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 
 #include "ScriptAsset.h"
 #include "AssetAPI.h"
-#include <boost/regex.hpp>
 
 ScriptAsset::~ScriptAsset()
 {

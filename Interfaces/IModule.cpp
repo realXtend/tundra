@@ -7,6 +7,8 @@
  */
  
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "Framework.h"
 #include "IModule.h"
 #include "ServiceManager.h"

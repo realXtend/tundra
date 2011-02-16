@@ -7,6 +7,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "JavascriptInstance.h"
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"

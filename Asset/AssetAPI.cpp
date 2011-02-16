@@ -1,6 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "DebugOperatorNew.h"
+#include <boost/thread.hpp>
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "AssetAPI.h"
 #include "Framework.h"
 #include "IAssetTransfer.h"
@@ -18,7 +22,6 @@
 #include "Platform.h"
 #include <QDir>
 #include <QFileSystemWatcher>
-#include "MemoryLeakCheck.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 

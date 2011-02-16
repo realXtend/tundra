@@ -7,6 +7,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "EC_InputMapper.h"
 
 #include "IAttribute.h"
