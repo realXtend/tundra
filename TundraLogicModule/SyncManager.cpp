@@ -974,7 +974,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                                     endValue->FromBinary(source, AttributeChange::Disconnected);
                                     //! \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
                                     // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                                    scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.25f);
+                                    scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.35f);
                                     // Do not signal attribute change at this point at all
                                     actually_changed_attributes.push_back(false);
                                 }
