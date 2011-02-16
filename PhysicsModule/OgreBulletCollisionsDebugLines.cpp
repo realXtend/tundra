@@ -31,6 +31,8 @@ THE SOFTWARE.
 // Modified for use with realXtend Naali
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "OgreBulletCollisionsDebugLines.h"
 
 using namespace Ogre;

@@ -6,6 +6,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "PropertyTableWidget.h"
 
 #include <RexUUID.h>

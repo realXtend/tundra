@@ -83,12 +83,11 @@ graphicsScene(0)
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
     QVBoxLayout *layout = new QVBoxLayout(mainWindow);
     mainWindow->setLayout(layout);
-    mainWindow->layout()->setMargin(0);
+    mainWindow->layout()->setMargin(0); 
     layout->setContentsMargins(0,0,0,0);
     mainWindow->layout()->addWidget(graphicsView);
 
-
-    QWidget *viewportWidget = new SuppressedPaintWidget();
+    viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
     viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
     viewportWidget->setGeometry(0, 0, graphicsView->width(), graphicsView->height());
@@ -133,6 +132,8 @@ graphicsScene(0)
 
 NaaliUi::~NaaliUi()
 {
+	delete mainWindow;
+	delete viewportWidget;
 }
 
 QWidget *NaaliUi::MainWindow() const

@@ -3,29 +3,43 @@
 
   TODO
    * Get filesuffix better
-   * Open asset from url!
 
 */
 
 engine.ImportExtension("qt.core");
 engine.ImportExtension("qt.gui");
 
+//handly for dealing with qbytearrays
+QByteArray.prototype.toString = function() {
+    ts = new QTextStream( this, QIODevice.ReadOnly ); 
+    return ts.readAll();
+}
+
+
 // connect to Drag events
 ui.GraphicsView().DragEnterEvent.connect(handleEnter);
 ui.GraphicsView().DragMoveEvent.connect(handleMove);
 ui.GraphicsView().DropEvent.connect(handleDrop);
-print ('foo')
+
+// Url for the server
+var serverurl = "http://192.168.1.114:8000/";
+// Storage name
+var storagename = "Productivity Converter storage";
+
+print ('foo');
 
 var entity;
 var canvassource;
-var slides;
+var prev;
+var next;
 var slide_index = 0;
+var max_slides;
 
 function checkSuffix(url) {
-    // FIXME
-    if (("" + url).split('.txt').length == 2) {
+    // FIXME find a better way to get the suffix
+    url = ("" + url).replace('.pptx', '.ppt')
+    if (url.split('.ppt').length == 2) {
 	print("I accept!");
-
 	return true;
     }
     print("No sir, I don't like it");
@@ -67,25 +81,165 @@ function handleDrop(event) {
 	    //FIXME!!!!!!1!
 	    print(urls[u]+"");
 	    var filename = ("" + urls[u]).split('//')[1];
-	    print(filename)
-	    var file = new QFile(filename);
-	    file.open(QIODevice.ReadOnly);
-	    var streamer = new QTextStream(file);
-	    slides = [];
-	    while (true) {
-		var line = streamer.readLine();
-		print(line)
-		if (!line) {
-		    break;
-		}
-		slides.push(line)
-	    }
-    	    print(slides);
-	    createCanvas(filename, slides, event);
+	    print(filename);
+	    upload(serverurl, storagename, filename);
+	    break;
 	}
+    }
+    createCanvas(event);
+}
+
+function upload(uploadStorageUrl, uploadStorageName, filename) {
+    if (AddAssetStorage(uploadStorageUrl, uploadStorageName)) {
+	var parts = filename.split('/');
+	var newName = parts[parts.length - 1];
+	UploadAsset(filename, uploadStorageName, newName, "binary");
+    } else {
+	print("HORRERNOUS ERROR! CANNOT HANDLE ERRORNOUS HORROR!!!1!");
     }
 }
 
+function AddAssetStorage(url, name) {
+    var assetstorageptr = asset.AddAssetStorage(url, name);
+    var assetstorage = assetstorageptr.get();
+    if (assetstorage != null) {
+        print("Added asset storage");
+        print(">>  Name :", assetstorage.Name());
+        print(">>  URL  :", assetstorage.BaseURL(), "\n");
+        return true;
+    } else {
+        print("Failed to add asset storage:", name, "-", url, "\n");
+        return false;
+    }
+}
+
+function UploadAsset(fileName, storageName, uploadName) {
+    print("Uploading:", fileName, "with destination name", uploadName);
+    var uploadtransferptr = asset.UploadAssetFromFile(fileName, storageName, uploadName);
+    var uploadtransfer = uploadtransferptr.get();
+    if (uploadtransfer != null) {
+        uploadtransfer.Completed.connect(UploadCompleted);
+        uploadtransfer.Failed.connect(UploadFailed);
+    } else {
+        print(" >> Failed to upload, AssetAPI returned a null AssetUploadTransferPtr");
+    }
+}
+
+
+function RequestAsset(ref, type)
+{
+    ForgetAsset(ref);
+
+    print("Requesting:", ref);
+    var transferptr = asset.RequestAsset(ref, type);
+    var transfer = transferptr.get();
+    transfer.Downloaded.connect(DownloadReady);
+}
+
+function DownloadReady(/* IAssetTransfer* */ transfer)
+{
+    var data = transfer.GetRawData();
+    print("Download ready");
+    print("  >> Source    :", transfer.GetSourceUrl());
+    print("  >> Type      :", transfer.GetAssetType());
+    print("  >> Data len  :", data.size());
+    print("  >> index     :", parseInt(data.toString()));
+    noSlides = parseInt(data.toString());
+
+    var slides = [];
+    
+    var baseurl = transfer.GetSourceUrl().replace('/index.txt', '');
+    print(baseurl)
+    var parts = baseurl.split('/')
+	print(parts)
+    var slidename = parts[parts.length - 1]
+	print(slidename)
+    
+    for (i = 0; i < noSlides; i++) {
+     	slides.push(baseurl + '/' + slidename + '-' + i + '.png');
+    }
+
+    // set source to first slide
+    canvassource = entity.GetComponentRaw('EC_3DCanvasSource')
+    canvassource.show2d = false;
+    canvassource.source = slides[0];
+    canvassource.submesh = 1;
+
+    // Make dynamic component of the slide stuff
+
+    var dyn = entity.dynamiccomponent;
+
+    dyn.Name = "Slidelist";
+
+    for (s = 0; s < slides.length; s++) {
+	var slidename = s;
+	var attr = dyn.CreateAttribute("string", slidename);
+	dyn.SetAttribute(slidename, slides[s] + "");
+    }
+
+    dyn.CreateAttribute("int", "Current");
+    dyn.SetAttribute("Current", 0);
+
+    dyn.CreateAttribute("int", "MaxIndex");
+    dyn.SetAttribute("MaxIndex", noSlides - 1);
+
+
+    // ec_script
+    var script = entity.script;
+    script.type = "js";
+    script.runOnLoad = true;
+    var r = script.scriptRef;
+    r.ref = "local://slideshow.js";
+    script.scriptRef = r;
+
+    //FIXME move this and makeslide widget to slideshow.js when
+    // appropriate
+    // Create UI
+    // makeSlideWidget(slides);
+	
+    // Now we are done
+    scene.EmitEntityCreatedRaw(entity);
+}
+
+function ForgetAsset(assetRef) {
+    // Make AssetAPI forget this asset if already loaded in
+    // to the system and remove the disk cache entry.
+    asset.ForgetAsset(assetRef, true);
+}
+
+function getSlides(ref) {
+    var parts = ref.split('/');
+    var filename = parts[parts.length - 1];
+    var path = filename.replace('.pptx', '');
+    path = path.replace('.ppt', '');
+    RequestAsset(serverurl + path + '/index.txt', "Binary");
+
+    // set name
+    entity.name.name = "Slideshow: " + filename;
+    entity.name.description = "Simple slideshow app from " + filename;
+    prev.name.name = 'Button prev (' + entity.name.name + ' ' + entity.Id + ')';
+    scene.EmitEntityCreatedRaw(prev);
+    next.name.name = 'Button next (' + entity.name.name + ' ' + entity.Id + ')';
+    scene.EmitEntityCreatedRaw(next);
+}
+
+
+
+function UploadCompleted(/* IAssetUploadTransfer* */ transfer) {
+    print("Upload completed");
+    print("  >> New asset ref    :", transfer.AssetRef());
+    print("  >> Destination name :", transfer.GetDesticationName(), "\n");
+
+    getSlides(transfer.AssetRef())
+}
+
+function UploadFailed(/* IAssetUploadTransfer* */ transfer) {
+    print("Upload failed");
+    print("  >> File name   :", transfer.GetSourceFilename());
+    print("  >> Destination :", transfer.GetDesticationName(), "\n");
+}
+
+    
 function vprint(v) {
     print(v.x + ", " + v.y + ", " + v.z);
 }
@@ -135,38 +289,13 @@ function conjg(quat, v) {
 }
 
 
-function createCanvas(filename, slides, event) {
+function createCanvas(event) {
     entity = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Placeable', 'EC_Mesh', 'EC_3DCanvasSource', 'EC_Name', 'EC_DynamicComponent', 'EC_Script']);
-
-    // set name
-    entity.name.name = "Slideshow: " + filename;
-    entity.name.description = "Simple slideshow app from " + filename;
 
     // set mesh
     var mesh_ref = entity.mesh.meshRef;
     mesh_ref.ref = 'local://screen.mesh';
     entity.mesh.meshRef = mesh_ref;
-
-    // set source to first slide
-    canvassource = entity.GetComponentRaw('EC_3DCanvasSource')
-    canvassource.show2d = false;
-    canvassource.source = slides[0];
-    canvassource.submesh = 1;
-
-    // Make dynamic component of the slide stuff
-
-    var dyn = entity.dynamiccomponent;
-
-    dyn.Name = "Slidelist";
-
-    for (s = 0; s < slides.length; s++) {
-	var slidename = s;
-	var attr = dyn.CreateAttribute("string", slidename);
-	dyn.SetAttribute(slidename, slides[s] + "");
-    }
-
-    dyn.CreateAttribute("int", "Current");
-    dyn.SetAttribute("Current", 0);
 
     var worldpos;
 
@@ -208,43 +337,24 @@ function createCanvas(filename, slides, event) {
     
     entity.placeable.transform = transform;
 
-    // ec_script
-    var script = entity.script;
-    script.type = "js";
-    script.runOnLoad = true;
-    var r = script.scriptRef;
-    r.ref = "local://slideshow.js";
-    script.scriptRef = r;
-
-
-    //FIXME move this and makeslide widget to slideshow.js when
-    // appropriate
-    // Create UI
-    //makeSlideWidget(slides);
-
-    // add buttons
-
     rotvec = new Vector3df();
+
+    rotvec.x = 187;
+    rotvec.y = 180;
+
+    prev = makeButton('prev', entity.placeable, 1, rotvec);
 
     rotvec.x = 180;
     rotvec.y = 0;
 
-    makeButton('prev', entity.placeable, -1, rotvec);
-
-    rotvec.x = 187;
-    rotvec.y = 180;
        
-    makeButton('next', entity.placeable, 1, rotvec);
-
-    // Now we are done
-    scene.EmitEntityCreatedRaw(entity);
+    next = makeButton('next', entity.placeable, -1, rotvec);
 
 }
 
 function makeButton(name, placeable, dir, rotation) {
 
     var button = scene.CreateEntityRaw(scene.NextFreeId(), ['EC_Mesh', 'EC_Placeable', 'EC_Name']);
-    button.name.name = 'Button ' + name +' (' + entity.name.name + ')';
 
     var button_mesh_ref = button.mesh.meshRef;
     button_mesh_ref.ref = 'local://kolmionappi.mesh';
@@ -265,8 +375,7 @@ function makeButton(name, placeable, dir, rotation) {
 
     button.placeable.transform = transform;
 
-    scene.EmitEntityCreatedRaw(button);
-
+    return button;
 
 }
 
@@ -278,11 +387,10 @@ function makeSlideWidget(slides) {
 
     for (s = 0; s < slides.length; s++) {
 	var label = new MyLabel(gfxscene, s);
-	var pic = new QPixmap("C:\\Users\\playsign\\sand_d.jpg");
+	var pic = new QPixmap(slides[s]);
 	label.setPixmap(pic.scaledToWidth(100));
 	label.move(0, 110 * s);
 	gfxscene.addWidget(label)
-
 
     }    
     uiservice.AddWidgetToScene(view);

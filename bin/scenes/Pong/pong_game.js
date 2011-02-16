@@ -6,28 +6,21 @@ print(ball.Id);
 var bat_a = scene.GetEntityByNameRaw("bat_a");
 var bat_b = scene.GetEntityByNameRaw("bat_b"); //$('bat_b') - how about?
 
+//nice to have in code to reinit correctly after live updates when devving
 var t = ball.placeable.transform;
 zerovec = new Vector3df();
 t.pos = zerovec;
 t.rot = zerovec;
 ball.placeable.transform = t;
 
-var r = ball.rigidbody;
-//r.linearVelocity = new Vector3df(1.0, 0, 0);
-//XXX TODO: doesn't work for some reason, test more and check internals
-//works from ecedit gui but not with this call.
-//r.SetLinearVelocity(new Vector3df(1.0, 0, 0));
+//r.linearVelocity = new Vector3df(1.0, 0, 0); //XXX NOTE: this fails *silently*
+//initial vel for the ball
+var v = new Vector3df();
+v.x = 10.0;
+v.y = 2;
+ball.rigidbody.SetLinearVelocity(v);
 
-//var MAXSPEED = 10.0;
-var motion_x = 1.0;
-var motion_y = 0.2;
-var speed = 10.0;
-var prev_collpos = zerovec;
-
-function notprevcoll(pos) {
-  return (Math.abs(prev_collpos.x - pos.x) > 1 ||
-          Math.abs(prev_collpos.y - pos.y) > 1);
-}
+var speed = 16.0;
 
 function autopilot() {
   var ta = bat_a.placeable.transform;
@@ -39,75 +32,35 @@ function autopilot() {
   bat_b.placeable.transform = tb;
 }
 
-function handlecoll(other, pos, nor, dist, imp, newcoll) {
+/*function handlecoll(other, pos, nor, dist, imp, newcoll) {
 //PhysicsCollision(Scene::Entity* otherEntity, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
   print("---coll:---");
   print(pos.x + " : " + pos.y);
-  if (notprevcoll(pos)) {
-    prev_collpos = pos;
-    //print(nor);
-    print(nor.x + " : " + nor.y);
-
-    //motion_x = -nor.x;
-    //motion_y = -nor.y;
-    if (Math.abs(nor.x) == 1) {
-      motion_x = -motion_x;
-    }
-    else if (Math.abs(nor.y) == 1) {
-      motion_y = -motion_y;
-    }
-    else {
-      print("unknown coll nor -- not straight wall?");
-    }
-  }
-  else {
-    ball.rigidbody.mass = 0;
-  }
-
-  t.rot = zerovec;
-
-  print(motion_x + " - " + motion_y);
-  print("/");
-}
+YAY not needed anymore,
+but can perhaps put custom dir setting related to bat speeds etc here, 
+if bullet doesn't do what we want */
 
 function update(dt) {
-  dt = Math.min(0.1, dt);
-  //get very annoying pauses of several seconds now on linux laptop
-  //-- this at least makes it so that the ball doesn't escape after pauses
-
-  var placeable = ball.placeable;
+  /* with rigidbody restitution set to 1.0 this shouldn't theoretically be needed,
+     but with even a little mass (and restiturion 2.0) the ball gets really slow after this
+  .. so here we just maintain contant speed (and could of course control it in any way) */
   var rigidbody = ball.rigidbody;
 
-  /*var velvec = rigidbody.GetLinearVelocity();
-  print(velvec.x);
-  var curspeed = Math.abs(velvec.x); //Math.sqrt(rigidbody.GetLinearVelocity().x
-  var curdir = new Vector3df(); //null; //velvec.Normalize()
-  print(curspeed);*/
-
-  t = placeable.transform;
-
-  if (notprevcoll(t.pos)) {
-    ball.rigidbody.mass = 1.0;
-  }
-
-  if ((motion_x != 0) || (motion_y != 0)) {
-      //var mag = 1.0; // / Math.sqrt(motion_x * motion_y); // + curdir.x * curdir.y);
-      /*var impulseVec = new Vector3df();
-      print(mag + " - " + curdir.x);
-      impulseVec.x = mag * move_force * motion_x; //curdir.x;
-      impulseVec.y = -mag * move_force * motion_y; //curdir.y;
-      impulseVec = placeable.GetRelativeVector(impulseVec);
-      rigidbody.ApplyImpulse(impulseVec);*/
-
-      t.pos.x += speed * motion_x * dt;
-      t.pos.y += speed * motion_y * dt;
-      placeable.transform = t;
-  }
+  var velvec = rigidbody.GetLinearVelocity();
+  var curdir = velvec.normalize();
+  velvec = curdir.mul(speed);
+  rigidbody.SetLinearVelocity(velvec);
 
   autopilot();
 }
 
-ball.rigidbody.PhysicsCollision.connect(handlecoll);
+//ball.rigidbody.PhysicsCollision.connect(handlecoll);
 frame.Updated.connect(update);
 
 print("-*-");
+
+/*
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND            
+ 2536 antont    20   0 1013m 176m  85m R   71  4.5  24:57.05 server             
+ 2590 antont    20   0 1010m 176m  84m S   53  4.5   7:59.68 viewer             
+*/

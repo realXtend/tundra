@@ -1,3 +1,7 @@
+#include "DebugOperatorNew.h"
+#include <QList>
+#include <boost/thread.hpp>
+#include "MemoryLeakCheck.h"
 #include <QCryptographicHash>
 #include <QByteArray>
 #include <set>

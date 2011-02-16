@@ -1,4 +1,6 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "TerrainWeightEditor.h"
 #include "EnvironmentModule.h"
 #include "EC_Terrain.h"

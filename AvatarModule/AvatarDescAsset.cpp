@@ -1,4 +1,6 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "AvatarDescAsset.h"
 #include "AssetAPI.h"
 

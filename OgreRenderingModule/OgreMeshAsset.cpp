@@ -1,4 +1,6 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "OgreMeshAsset.h"
 #include "OgreConversionUtils.h"
 #include "OgreRenderingModule.h"
@@ -36,7 +38,9 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     }
 
     std::vector<u8> tempData(data_, data_ + numBytes);
+#include "DisableMemoryLeakCheck.h"
     Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)&tempData[0], numBytes, false));
+#include "EnableMemoryLeakCheck.h"
     Ogre::MeshSerializer serializer;
     serializer.importMesh(stream, ogreMesh.getPointer()); // Note: importMesh *adds* submeshes to an existing mesh. It doesn't replace old ones.
     

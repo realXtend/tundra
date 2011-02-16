@@ -3,6 +3,8 @@
 /// Contains some common methods for conversions between Ogre and Core variable types.
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "CoreStringUtils.h"
 #include "OgreConversionUtils.h"
 

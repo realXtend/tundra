@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "Color.h"
 #include "Quaternion.h"
 #include "Transform.h"
@@ -56,12 +58,22 @@ void fromScriptValueQColor(const QScriptValue &obj, QColor &s)
     s.setAlpha((float)obj.property("a").toNumber());
 }
 
+QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("x", QScriptValue(engine, s.x));
     obj.setProperty("y", QScriptValue(engine, s.y));
     obj.setProperty("z", QScriptValue(engine, s.z));
+
+    //this should suffice only once for the prototype somehow, but couldn't get that to work
+    //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
+    obj.prototype().setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
+    obj.prototype().setProperty("getLength", engine->newFunction(Vector3df_prototype_getLength));
+    obj.prototype().setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
+
     return obj;
 }
 
@@ -70,6 +82,37 @@ void fromScriptValueVector3(const QScriptValue &obj, Vector3df &s)
     s.x = (float)obj.property("x").toNumber();
     s.y = (float)obj.property("y").toNumber();
     s.z = (float)obj.property("z").toNumber();
+}
+
+QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+      
+    return toScriptValueVector3(engine, vec.normalize());
+}
+
+QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+      
+    return vec.getLength();
+}
+
+QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError("Vector3df mul() takes a single number argument.");
+    if (!ctx->argument(0).isNumber())
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number");
+    float scalar = ctx->argument(0).toNumber();
+    //XXX add vec*vec
+    
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+
+    return toScriptValueVector3(engine, vec * scalar);
 }
 
 QScriptValue toScriptValueQVector3D(QScriptEngine *engine, const QVector3D &s)
@@ -267,10 +310,6 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     // Register constructors
     QScriptValue ctorColor = engine->newFunction(createColor);
     engine->globalObject().setProperty("Color", ctorColor);
-    QScriptValue ctorVector3df = engine->newFunction(createVector3df);
-    engine->globalObject().setProperty("Vector3df", ctorVector3df);
-    QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);
-    engine->globalObject().setProperty("Quaternion", ctorQuaternion);
     QScriptValue ctorTransform = engine->newFunction(createTransform);
     engine->globalObject().setProperty("Transform", ctorTransform);
     QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
@@ -278,4 +317,11 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);
     engine->globalObject().setProperty("AssetReferenceList", ctorAssetReferenceList);
 
+    // Register both constructors and methods (with js prototype style)
+    // http://doc.qt.nokia.com/latest/scripting.html#prototype-based-programming-with-the-qtscript-c-api
+    QScriptValue ctorVector3df = engine->newFunction(createVector3df);
+    engine->globalObject().setProperty("Vector3df", ctorVector3df);
+    
+    QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);
+    engine->globalObject().setProperty("Quaternion", ctorQuaternion);
 }

@@ -1,6 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include <QList>
+#include <QVector>
+#include "MemoryLeakCheck.h"
 #include "EC_Light.h"
 #include "IModule.h"
 #include "Renderer.h"

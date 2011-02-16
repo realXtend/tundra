@@ -6,6 +6,8 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 
 #include "Environment.h"
 #include "EnvironmentModule.h"

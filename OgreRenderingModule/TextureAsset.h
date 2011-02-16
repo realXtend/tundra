@@ -5,6 +5,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include "IAsset.h"
+#include "AssetAPI.h"
 #include <OgreTexture.h>
 
 class TextureAsset : public IAsset
@@ -14,6 +15,7 @@ public:
     TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
     :IAsset(owner, type_, name_)
     {
+      headless = owner->IsHeadless();
     }
 
     ~TextureAsset();
@@ -34,6 +36,8 @@ public:
 
     /// Specifies the unique texture name Ogre uses in its asset pool for this texture.
     QString ogreAssetName;
+
+    bool headless;
 };
 
 typedef boost::shared_ptr<TextureAsset> TextureAssetPtr;

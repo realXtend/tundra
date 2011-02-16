@@ -1,6 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "DebugOperatorNew.h"
+#include <boost/thread.hpp>
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "AssetAPI.h"
 #include "Framework.h"
 #include "IAssetTransfer.h"
@@ -18,13 +22,12 @@
 #include "Platform.h"
 #include <QDir>
 #include <QFileSystemWatcher>
-#include "MemoryLeakCheck.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
 using namespace Foundation;
 
-AssetAPI::AssetAPI()
+AssetAPI::AssetAPI(bool isHeadless)
 :assetCache(0),
 diskSourceChangeWatcher(0)
 {
@@ -32,6 +35,7 @@ diskSourceChangeWatcher(0)
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
     RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
+    isHeadless_ = isHeadless;
 }
 
 AssetAPI::~AssetAPI()

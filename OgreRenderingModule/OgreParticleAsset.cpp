@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "OgreConversionUtils.h"
 #include "OgreParticleAsset.h"
 #include "OgreRenderingModule.h"
@@ -49,7 +51,9 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     StringVector new_templates;
 
     std::vector<u8> tempData(data_, data_ + numBytes);
+#include "DisableMemoryLeakCheck.h"
     Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&tempData[0], numBytes));
+#include "EnableMemoryLeakCheck.h"
     try
     {
         int brace_level = 0;
@@ -144,7 +148,9 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         }
 
         std::string output_str = output.str();
+#include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr modified_data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(&output_str[0], output_str.size()));
+#include "EnableMemoryLeakCheck.h"
         Ogre::ParticleSystemManager::getSingleton().parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     }
     catch (Ogre::Exception& e)

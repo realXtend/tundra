@@ -1,5 +1,5 @@
 (function() {
-  var data, hoverIn, hoverOut, lock, lockbut, onAttributeChanged, open, openbut;
+  var animate, animctrl, curpos, data, hoverIn, hoverOut, lock, lockbut, mousePress, newpos, onAttributeChanged, open, openbut;
   var __slice = Array.prototype.slice;
   print("Hello I want to control a door!");
   engine.ImportExtension("qt.core");
@@ -11,6 +11,12 @@
   openbut.show();
   lockbut.show();
   data = me.dynamiccomponent;
+  animctrl = me.animationcontroller;
+  animctrl.EnableAnimation("open", false);
+  animctrl.SetAnimationTimePosition("open", 1);
+  curpos = 0;
+  animctrl.SetAnimWeight("open", curpos);
+  newpos = 0;
   onAttributeChanged = function() {
     var args, locked, opened;
     args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
@@ -19,10 +25,23 @@
     locked = data.GetAttribute('locked');
     openbut.text = opened ? "Close" : "Open";
     lockbut.text = locked ? "Unlock" : "Lock";
-    return openbut.enabled = !(locked && !opened);
+    openbut.enabled = !(locked && !opened);
+    return newpos = opened ? 0 : 1;
+  };
+  animate = function(dtime) {
+    var diff, dir, speed;
+    if (newpos !== curpos) {
+      diff = Math.abs(newpos - curpos);
+      dir = newpos < curpos ? -1 : 1;
+      speed = 1;
+      curpos += dir * (Math.min(diff, dtime * speed));
+      animctrl.SetAnimWeight("open", curpos);
+      return print(curpos + " - " + diff);
+    }
   };
   onAttributeChanged();
   data.OnAttributeChanged.connect(onAttributeChanged);
+  frame.Updated.connect(animate);
   open = function() {
     var locked, opened;
     print("door.coffee open button clicked!");
@@ -52,6 +71,11 @@
   hoverOut = function() {
     return print("hovering out from over door");
   };
+  mousePress = function() {
+    print("click");
+    return open();
+  };
   me.Action("MouseHoverIn").Triggered.connect(hoverIn);
   me.Action("MouseHoverOut").Triggered.connect(hoverOut);
+  me.Action("MousePress").Triggered.connect(mousePress);
 }).call(this);

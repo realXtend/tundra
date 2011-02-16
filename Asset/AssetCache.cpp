@@ -1,3 +1,7 @@
+#include "DebugOperatorNew.h"
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "AssetCache.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
