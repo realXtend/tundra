@@ -137,10 +137,10 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
     engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));
     
-
+/*
     engine->importExtension("qt.core");
     engine->importExtension("qt.gui");
-/*  engine->importExtension("qt.network");
+    engine->importExtension("qt.network");
     engine->importExtension("qt.uitools");
     engine->importExtension("qt.xml");
     engine->importExtension("qt.xmlpatterns");
@@ -148,7 +148,7 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
 //  Our deps contain these plugins as well, but we don't use them (for now at least).
 //    engine->importExtension("qt.opengl");
 //    engine->importExtension("qt.phonon");
-//    engine->importExtension("qt.webkit"); // The webkit plugin of QtScriptGenerator fails to load.
+//    engine->importExtension("qt.webkit"); //cvetan hacked this to build with msvc, patch is somewhere
 
 }
 
