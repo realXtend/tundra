@@ -7,6 +7,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "ScriptMetaTypeDefines.h"
 
 #include "Entity.h"
@@ -32,7 +33,6 @@
 
 #include <QUiLoader>
 #include <QFile>
-#include "MemoryLeakCheck.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Script")
 
@@ -135,9 +135,9 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     object = engine->scriptValueFromQMetaObject<QTimer>();
     engine->globalObject().setProperty("QTimer", object);
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
-    engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));
-    
+    engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));   
 /*
+/*  
     engine->importExtension("qt.core");
     engine->importExtension("qt.gui");
     engine->importExtension("qt.network");
