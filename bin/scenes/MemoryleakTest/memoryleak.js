@@ -42,3 +42,14 @@ function noop(dt) {
 run = createvec;
 
 frame.Updated.connect(run);
+
+/* camera app
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND            
+ 2276 antont    20   0  928m 155m  82m S   40  3.9   0:09.01 server             
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND            
+ 2276 antont    20   0  932m 159m  82m R   99  4.0   0:37.11 server             
+
+ PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND            
+ 2276 antont    20   0  935m 162m  83m R   55  4.1  14:08.05 server
+*/
