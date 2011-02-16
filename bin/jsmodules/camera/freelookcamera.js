@@ -85,7 +85,7 @@ function Update(frametime)
         return;
     }
 
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.placeable;
     if (motion_z != 0)
     {
         var motionvec = new Vector3df();
