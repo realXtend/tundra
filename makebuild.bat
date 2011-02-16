@@ -45,9 +45,14 @@ del build\pymodules\objectedit\*.pyc
 del build\pymodules\lib\*.pyc
 del build\pymodules\lib\webdav\*.pyc
 del build\pymodules\lib\webdav\acp\*.pyc
+del build\pymodules\lib\poster\*.pyc
 del build\pymodules\usr\*.pyc
 del build\pymodules\webdavinventory\*.pyc
 del build\pymodules\webserver\*.pyc
 del build\pymodules\mediaurlhandler\*.pyc
+del build\pymodules\localscene\*.pyc
+del build\pymodules\objecttools\*.pyc
+del build\pymodules\estatemanagement\*.pyc
+del build\pymodules\loadurlhandler\*.pyc
 del build\pymodules\DLLs\*_d.pyd
 del build\plugins\*_d.dll
