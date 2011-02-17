@@ -79,9 +79,9 @@ namespace WorldBuilding
         if (ui)
         {
 			//$ BEGIN_MOD $
-            backup_proxy_ = ui->AddWidgetToScene(backup_widget_, true, true);
+	  //backup_proxy_ = ui->AddWidgetToScene(backup_widget_, true, true);
 			//$ END_MOD $
-            backup_widget_->hide();
+	  //backup_widget_->hide();
         }
         else
             WorldBuildingModule::LogWarning("OpenSimSceneService: Failed to add OpenSim Scene Tool to scene and menu");
@@ -93,10 +93,11 @@ namespace WorldBuilding
         if (scene_service)
             scene_service->BackupToolButtonEnableRequest();
 
-        if (!backup_proxy_)
-            return;
-        if (backup_proxy_->scene()->isActive() && !backup_proxy_->isVisible())
-            backup_proxy_->show();
+        //if (!backup_proxy_)
+        //    return;
+        //if (backup_proxy_->scene()->isActive() && !backup_proxy_->isVisible())
+        //    backup_proxy_->show();
+	backup_widget_->show();
     }
 
     void SceneExporter::BrowseStoreLocation()
@@ -109,12 +110,12 @@ namespace WorldBuilding
 
     void SceneExporter::StartBackup()
     {
-        if (!backup_button_enabled_)
+      if (!backup_button_enabled_)
         {
             QMessageBox* message = new QMessageBox("Accecc denied", "You don't have permission to excecute this command.", QMessageBox::Critical, QMessageBox::Ok, 0, 0, 0);
             message->show();
             return;
-        }
+	    }
 
         backup_meshes_ = ui_.meshCheckBox->isChecked();
         backup_textures_ = ui_.texturesCheckBox->isChecked();
