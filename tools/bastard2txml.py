@@ -50,7 +50,7 @@ tailxml = """
 
 def entxml(mesh, material, skeleton, pos, ort, scale):
     xml = meshxml % (mesh, material, skeleton) 
-    xml += placeablexml % (pos[0], pos[1], pos[2]) 
+    xml += placeablexml % (pos[0], pos[1], pos[2]) #XXX doesn't do ort, requires quat -> euler conversion
     return xml
 
 source = ElementTree()
@@ -74,8 +74,8 @@ for ent in ents:
         attrib = comp.attrib
         if attrib['type'] == 'EC_DynamicComponent' and attrib['name'] == 'RexPrimExportData':
             mesh = attrval(comp, 'MeshRef')
-            #materials
-            #skeleton
+            materials = attrval(comp, 'Materials')
+            skeleton = attrval(comp, 'SkeletonRef')
 
             pos = floatlist(comp, 'Position')
             ort = floatlist(comp, 'Orientation')
