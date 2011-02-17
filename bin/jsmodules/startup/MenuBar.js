@@ -6,18 +6,20 @@ if (!framework.IsHeadless())
     var menu = ui.MainWindow().menuBar();
     menu.clear();
 
-    var fileMenu = menu.addMenu("&File");                     
+    var fileMenu = menu.addMenu("&File");
+    if (framework.GetModuleQObj("UpdateModule"))
+        fileMenu.addAction(new QIcon("./data/ui/images/icon/update.ico"), "Check Updates").triggered.connect(CheckForUpdates);
     //fileMenu.addAction("New scene").triggered.connect(NewScene);
     // Reconnect menu items for client only
     if (!server.IsAboutToStart())
     {
-        var disconnectAction = fileMenu.addAction("Disconnect");
+        var disconnectAction = fileMenu.addAction(new QIcon("./data/ui/images/icon/disconnect.ico"), "Disconnect");
         disconnectAction.triggered.connect(Disconnect);
         client.Connected.connect(Connected);
         client.Disconnected.connect(Disconnected);
         Disconnected();
     }
-    fileMenu.addAction("Quit").triggered.connect(Quit);
+    fileMenu.addAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
     var viewMenu = menu.addMenu("&View");
     if (framework.GetModuleQObj("SceneStructure"))
@@ -41,6 +43,11 @@ if (!framework.IsHeadless())
 
     if (framework.GetModuleQObj("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
+        
+    var helpMenu = menu.addMenu("&Help");
+    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Wiki").triggered.connect(OpenWikiUrl);
+    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Doxygen").triggered.connect(OpenDoxygenUrl);
+    helpMenu.addAction(new QIcon("./data/ui/images/icon/browser.ico"), "Mailing list").triggered.connect(OpenMailingListUrl);
 
     function NewScene()
     {
@@ -72,6 +79,27 @@ if (!framework.IsHeadless())
         framework.Exit();
     }
 
+    function CheckForUpdates()
+    {
+        if (framework.GetModuleQObj("UpdateModule"))
+            framework.GetModuleQObj("UpdateModule").RunUpdater("/checknow");
+    }
+       
+    function OpenMailingListUrl()
+    {
+        QDesktopServices.openUrl(new QUrl("http://groups.google.com/group/realxtend/"));
+    }
+    
+    function OpenWikiUrl()
+    {
+        QDesktopServices.openUrl(new QUrl("http://wiki.realxtend.org/"));
+    }
+    
+    function OpenDoxygenUrl()
+    {
+        QDesktopServices.openUrl(new QUrl("http://www.realxtend.org/doxygen/"));
+    }
+    
     function OpenSceneWindow()
     {
         framework.GetModuleQObj("SceneStructure").ShowSceneStructureWindow();

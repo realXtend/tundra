@@ -1,0 +1,4 @@
+<config>
+    <entry>UpdateModule</entry>
+    <dependency>OgreRenderingModule</dependency>
+</config>
