@@ -402,10 +402,9 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, Asset
     std::vector<u8> data;
     bool success = LoadFileToVector(filename, data);
     if (!success)
-        return AssetUploadTransferPtr(); ///\todo Log out error.
-
+        throw Exception("AssetAPI::UploadAssetFromFile failed! Could not load file to a data vector.");
     if (data.size() == 0)
-        return AssetUploadTransferPtr(); ///\todo Log out error.
+        throw Exception("AssetAPI::UploadAssetFromFile failed! Loaded file to data vector but size is zero.");
 
     return UploadAssetFromFileInMemory(&data[0], data.size(), destination, assetName);
 }
@@ -1116,7 +1115,7 @@ bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
     FILE *handle = fopen(filename, "rb");
     if (!handle)
     {
-        LogError("Could not open file " + std::string(filename) + ".");
+        LogError("AssetAPI::LoadFileToVector: Failed to open file '" + std::string(filename) + "' for reading.");
         return false;
     }
 
