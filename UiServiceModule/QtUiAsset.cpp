@@ -41,7 +41,13 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
                 indexStart = matcher.indexIn(dataQt, from);
                 if (indexStart == -1)
                     break;
+                // ")" due to Qt style sheets have this syntax most commonly: "some-image-property: url(pattern);"
                 int indexStop = dataQt.indexOf(")", indexStart);
+                if (indexStop == -1)
+                {
+                    from = indexStart + 1;
+                    continue;
+                }
                 QUrl ref(dataQt.mid(indexStart, indexStop - indexStart), QUrl::TolerantMode);
                 if (ref.isValid())
                     refs_.push_back(AssetReference(ref.toString()));
