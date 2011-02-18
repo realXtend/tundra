@@ -11,6 +11,8 @@
 #include "DebugOperatorNew.h"
 
 #include "AssetAPI.h"
+#include "QtUiAsset.h"
+
 #include "UiService.h"
 #include "UiProxyWidget.h"
 
@@ -157,134 +159,6 @@ void UiService::OnProxyDestroyed(QObject* obj)
     fullScreenWidgets_.removeOne(proxy);
 }
 
-QByteArray UiService::UpdateAssetPaths(const QByteArray& data)
-{
-    QDomDocument document;
-    
-    
-    QString parseError;
-    if (!document.setContent(data, &parseError))
-    {
-        LogError("Could not process .ui file content, error: " + parseError.toStdString());
-        return data;
-    }
-
-    AssetAPI *assetAPI = framework_->Asset();
-    QString str = document.toString();
-    int fromIndex = 0;
-
-    // Check for local:// if not gound check for file://
-    while(str.contains("local://", Qt::CaseInsensitive) || str.contains("file://", Qt::CaseInsensitive))
-    {
-        if (fromIndex > str.size())
-            break;
-
-        int sIndex = str.indexOf("local://", fromIndex, Qt::CaseInsensitive);
-        if (sIndex == -1)
-        {
-            sIndex = str.indexOf("file://", fromIndex, Qt::CaseInsensitive);
-            if (sIndex == -1)
-                break;
-        }
-      
-        int eIndex = str.size();
-        for (int i = sIndex; i < str.size(); ++i )
-        {
-            QString compareString(str[i]);
-            if (compareString == ")" || compareString == "<")
-            {
-                eIndex = i;
-                break;
-            }
-        }
-
-        if (eIndex < str.size())
-        {
-            fromIndex = eIndex;
-            QString name = str.mid(sIndex, eIndex-sIndex);
-            
-            // Ok we have possible asset candidate check that is it loaded, 
-            // if it is not loaded assume that currently we have not loaded anything.
-            AssetPtr asset;
-            asset = assetAPI->GetAsset(name);
-            if (!asset)
-                continue;
-
-            // Get absolute path where this asset is ..
-            QString fileName = asset->DiskSource();
-            str.replace(name, fileName);
-        }
-        else
-        {   
-            // We are end-of-file
-            break;
-        }
-    } 
-
-    // External asset ref eg http://server.com/mypic.com
-    fromIndex = 0;
-    while(str.contains("://", Qt::CaseInsensitive) )
-    {
-        int sIndex = str.indexOf("://", fromIndex, Qt::CaseInsensitive);
-        if (sIndex == -1)
-            break;
-
-        // Get type
-        int eIndex = 0;
-        for (int j = sIndex; j--;)
-        {
-            QString compareString(str[j]);
-            if (compareString == "(" || compareString == ">")
-            {
-                eIndex = j+1;
-                break;
-            }
-        }
-
-        int typeSize = sIndex - eIndex;
-        sIndex = sIndex - typeSize;
-        QString tmp = str.mid(sIndex, typeSize);
-
-        int i = str.size();
-        for (i = sIndex; i < str.size(); ++i )
-        {
-            QString compareString(str[i]);
-            if (compareString == ")" || compareString == "<")
-            {
-                eIndex = i;
-                break;
-            }
-        }
-
-        if (i < str.size())
-        {
-            fromIndex = eIndex;
-            QString name = str.mid(sIndex, eIndex-sIndex);
-
-            // Ok we have possible asset candidate check that is it loaded, if it is not loaded assume that currently we have not loaded anything.
-            AssetPtr asset;
-            asset = assetAPI->GetAsset(name);
-
-            if (!asset)
-                continue;
-
-            // Get absolute path where this asset is ..
-            QString fileName = asset->DiskSource();
-            str.replace(name, fileName);
-        }
-        else
-        {   
-            // We are end-of-file
-            break;
-        }
-    }
-  
-    return str.toUtf8();
-}
-
-
-
-
 QWidget *UiService::LoadFromFile(const QString &file_path, bool add_to_scene, QWidget *parent)
 {
     AssetAPI *assetAPI = framework_->Asset();
@@ -300,24 +174,24 @@ QWidget *UiService::LoadFromFile(const QString &file_path, bool add_to_scene, QW
             LogError(("UiService::LoadFromFile: Asset \"" + file_path + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
             return 0;
         }
-        BinaryAssetPtr binaryAsset = boost::dynamic_pointer_cast<BinaryAsset>(asset);
-        if (!binaryAsset)
+        QtUiAsset *uiAsset = dynamic_cast<QtUiAsset*>(asset.get());
+        if (!uiAsset)
         {
-            LogError(("UiService::LoadFromFile: Asset \"" + file_path + "\" is not of type BinaryAsset!").toStdString());
+            LogError(("UiService::LoadFromFile: Asset \"" + file_path + "\" is not of type QtUiFile!").toStdString());
             return 0;
         }
-        if (binaryAsset->data.size() == 0)
+        if (!uiAsset->IsDataValid())
         {
-            LogError(("UiService::LoadFromFile: Asset \"" + file_path + "\" size is zero!").toStdString());
+            LogError(("UiService::LoadFromFile: Asset \"" + file_path + "\" data is not valid!").toStdString());
             return 0;
         }
 
-        QByteArray data((char*)&binaryAsset->data[0], binaryAsset->data.size());
-        // Update asset paths
-        data = UpdateAssetPaths(data);
+        // Get original data and replace refs
+        QByteArray data = uiAsset->GetRawData();
+        uiAsset->ReplaceAssetReferences(data);
         
-        QDataStream dataStream(&data, QIODevice::ReadOnly);
         QUiLoader loader;
+        QDataStream dataStream(&data, QIODevice::ReadOnly);
         widget = loader.load(dataStream.device(), parent);
     }
     else // The file is from absolute source location.
