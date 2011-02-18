@@ -87,6 +87,9 @@ private slots:
     
     /// Exits the program.
     void Exit();
+
+	//! Takes UI screenshots of world/avatar with rendering service
+	void TakeEtherScreenshots();
 };
 
 }
