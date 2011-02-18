@@ -1,9 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_ActionProxyWidget_h
-#define incl_UiModule_ActionProxyWidget_h
-
-#include "UiModuleFwd.h"
+#ifndef incl_EtherModule_ActionProxyWidget_h
+#define incl_EtherModule_ActionProxyWidget_h
 
 #include <QGraphicsProxyWidget>
 #include <QPropertyAnimation>
@@ -11,6 +9,12 @@
 #include <QVBoxLayout>
 #include <QWebView>
 #include <QUrl>
+
+#include "Data/OpenSimAvatar.h"
+#include "Data/OpenSimWorld.h"
+#include "Data/RealXtendAvatar.h"
+#include "Data/DataManager.h"
+#include "View/InfoCard.h"
 
 #include "ui_EtherActionWidget.h"
 

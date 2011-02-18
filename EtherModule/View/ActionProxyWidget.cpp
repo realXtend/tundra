@@ -5,13 +5,13 @@
 #include "ActionProxyWidget.h"
 #include "OpenSim/GridInfoHelper.h"
 #include "CoreDefines.h"
-#include "Ether/View/InfoCard.h"
-#include "Ether/Data/DataManager.h"
-#include "Ether/Data/AvatarInfo.h"
-#include "Ether/Data/OpenSimAvatar.h"
-#include "Ether/Data/RealXtendAvatar.h"
-#include "Ether/Data/WorldInfo.h"
-#include "Ether/Data/OpenSimWorld.h"
+#include "View/InfoCard.h"
+#include "Data/DataManager.h"
+#include "Data/AvatarInfo.h"
+#include "Data/OpenSimAvatar.h"
+#include "Data/RealXtendAvatar.h"
+#include "Data/WorldInfo.h"
+#include "Data/OpenSimWorld.h"
 
 #include <QLayoutItem>
 #include <QHBoxLayout>

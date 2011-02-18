@@ -1,14 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_DataManager_h
-#define incl_UiModule_DataManager_h
+#ifndef incl_EtherModule_DataManager_h
+#define incl_EtherModule_DataManager_h
 
 #include <QObject>
 #include <QSettings>
 #include <QMap>
 #include <QUuid>
 
-#include "UiModuleFwd.h"
+#include "Data/AvatarInfo.h"
+#include "Data/WorldInfo.h"
 #include "EtherDataTypes.h"
 
 namespace Ether

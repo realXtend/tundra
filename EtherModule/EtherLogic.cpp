@@ -35,9 +35,8 @@ namespace Ether
 {
     namespace Logic
     {
-        EtherLogic::EtherLogic(Foundation::Framework *framework, QGraphicsView *view) :
+        EtherLogic::EtherLogic(Foundation::Framework *framework) :
               framework_(framework),
-              view_(view),
               data_manager_(new Data::DataManager(this)),
               card_size_(QRectF(0, 0, 470, 349)),
               previous_scene_(0)
@@ -500,32 +499,32 @@ namespace Ether
             }
         }
 
-        void EtherLogic::SetConnectionState(UiServices::ConnectionState connection_state, const QString &message)
+        void EtherLogic::SetConnectionState(Ether::ConnectionState connection_state, const QString &message)
         {
             switch (connection_state)
             {
-                case UiServices::Connected:
+                case Ether::Connected:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(true);
                     scene_controller_->ShowStatusInformation("Joining world");
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
                     break;
-                case UiServices::Disconnected:
+                case Ether::Disconnected:
                     UpdateUiPixmaps();
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("Disconnected");
                     scene_->SetConnectionStatus(false);
                     break;
-                case UiServices::Failed:
+                case Ether::Failed:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("Failed to connect:\n"+ message);
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);
                     break;
-                case UiServices::Kicked:
+                case Ether::Kicked:
                     UpdateUiPixmaps();
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);

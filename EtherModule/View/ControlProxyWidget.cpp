@@ -3,8 +3,8 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "ControlProxyWidget.h"
-#include "Ether/View/InfoCard.h"
-#include "Ether/View/ActionProxyWidget.h"
+#include "InfoCard.h"
+#include "ActionProxyWidget.h"
 
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsSceneMouseEvent>

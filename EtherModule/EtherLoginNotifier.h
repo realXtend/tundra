@@ -1,14 +1,13 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_EtherLoginNotifier_h
-#define incl_UiModule_EtherLoginNotifier_h
+#ifndef incl_EtherModule_EtherLoginNotifier_h
+#define incl_EtherModule_EtherLoginNotifier_h
 
 #include <QObject>
 #include <QPair>
 #include <QMap>
 #include <QString>
 
-#include "UiModuleApi.h"
 
 class QWebFrame;
 
@@ -53,8 +52,8 @@ namespace Ether
             void EmitLoginFailed(const QString &message);
             void EmitLoginSuccessful();
 
-            UI_MODULE_API void Teleport(QString start_location);
-            UI_MODULE_API void ScriptTeleportAnswer(QString answer, QString region_name);
+            /*UI_MODULE_API*/ void Teleport(QString start_location);
+            /*UI_MODULE_API*/ void ScriptTeleportAnswer(QString answer, QString region_name);
             void ScriptTeleport();
 
         signals:

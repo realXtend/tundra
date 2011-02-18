@@ -1,10 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_EtherLogic_h
-#define incl_UiModule_EtherLogic_h
+#ifndef incl_EtherModule_EtherLogic_h
+#define incl_EtherModule_EtherLogic_h
 
-#include "UiTypes.h"
-#include "UiModuleFwd.h"
+#include "View/EtherScene.h"
+#include "EtherSceneController.h"
 
 #include <QObject>
 #include <QUuid>
@@ -18,6 +18,14 @@ namespace Foundation
 
 namespace Ether
 {
+    enum ConnectionState
+    {
+        Connected,
+        Disconnected,
+        Failed,
+        Kicked
+    };
+
     namespace Logic
     {
         class EtherLogic : public QObject
@@ -25,7 +33,7 @@ namespace Ether
             Q_OBJECT
 
         public:
-            EtherLogic(Foundation::Framework *framework, QGraphicsView *view);
+            EtherLogic(Foundation::Framework *framework);
             virtual ~EtherLogic();
 
         public slots:
@@ -34,7 +42,7 @@ namespace Ether
             void PrintAvatarMap();
             void PrintWorldMap();
 
-            void SetConnectionState(UiServices::ConnectionState connection_state, const QString &message = "");
+            void SetConnectionState(Ether::ConnectionState connection_state, const QString &message = "");
 
             View::EtherScene *GetScene() const { return scene_; }
             EtherSceneController *GetSceneController() const { return scene_controller_; }
@@ -59,7 +67,6 @@ namespace Ether
 
         private:
             Foundation::Framework *framework_;
-            QGraphicsView *view_;
 
             Data::DataManager *data_manager_;
             View::EtherScene *scene_;

@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_RealXtendAvatar_h
-#define incl_UiModule_RealXtendAvatar_h
+#ifndef incl_EtherModule_RealXtendAvatar_h
+#define incl_EtherModule_RealXtendAvatar_h
 
 #include "AvatarInfo.h"
 

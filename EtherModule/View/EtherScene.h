@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_EtherScene_h
-#define incl_UiModule_EtherScene_h
+#ifndef incl_EtherModule_EtherScene_h
+#define incl_EtherModule_EtherScene_h
 
 #include "../Input/InputFwd.h"
 
@@ -14,7 +14,7 @@
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
 
-#include "UiModuleFwd.h"
+#include "View/InfoCard.h"
 
 namespace Ether
 {

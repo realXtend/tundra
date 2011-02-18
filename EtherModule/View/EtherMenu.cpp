@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "EtherMenu.h"
 
-#include "Ether/View/InfoCard.h"
+#include "InfoCard.h"
 
 #include <math.h>
 #include <QPropertyAnimation>

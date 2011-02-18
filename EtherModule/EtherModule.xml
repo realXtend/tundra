@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <entry>EtherModule</entry>
+	<dependency>UiModule</dependency>
+	<dependency>RexLogicModule</dependency>
+	<dependency>TundraLogicModule</dependency>
+</config>

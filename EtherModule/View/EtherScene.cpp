@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "EtherScene.h"
 
-#include "Ether/View/InfoCard.h"
+#include "InfoCard.h"
 
 #include <QKeyEvent>
 #include <QGraphicsSceneMouseEvent>

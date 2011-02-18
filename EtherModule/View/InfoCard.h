@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_InfoCard_h
-#define incl_UiModule_InfoCard_h
+#ifndef incl_EtherModule_InfoCard_h
+#define incl_EtherModule_InfoCard_h
 
 #include <QGraphicsWidget>
 #include <QSequentialAnimationGroup>

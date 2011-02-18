@@ -8,19 +8,23 @@
 #include "Data/OpenSimAvatar.h"
 #include "Data/OpenSimWorld.h"
 
-#include "UiModule.h"
-#include "Inworld/InworldSceneController.h"
-#include "Inworld/ControlPanelManager.h"
-#include "Inworld/ControlPanel/TeleportWidget.h"
-#include "UiNotificationServices.h"
+#include "EtherModule.h"
+//#include "Inworld/InworldSceneController.h"
+//#include "Inworld/ControlPanelManager.h"
+//#include "Inworld/ControlPanel/TeleportWidget.h"
+//#include "UiNotificationServices.h"
 
 #include "ModuleManager.h"
 #include "LoginServiceInterface.h"
+#include "UiServiceInterface.h"
 
 #include <QWebFrame>
 #include <QTimer>
 
 #include "MemoryLeakCheck.h"
+
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("EtherLogin");
 
 namespace Ether
 {
@@ -48,11 +52,12 @@ namespace Ether
                 connect(handler, SIGNAL(LoginSuccessful()), SLOT(EmitLoginSuccessful()));
             }
             else
-                UiServices::UiModule::LogError("Could not retrieve login service.");
+                LogError("Could not retrieve login service.");
 
-            UiServices::UiModule *ui_module =  framework_->GetModule<UiServices::UiModule>();
-            if (ui_module)
-                connect(ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget(), SIGNAL(StartTeleport(QString)), SLOT(Teleport(QString)));
+			//@todo: teleport
+            //UiServices::UiModule *ui_module =  framework_->GetModule<UiServices::UiModule>();
+            //if (ui_module)
+            //    connect(ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget(), SIGNAL(StartTeleport(QString)), SLOT(Teleport(QString)));
         }
 
         void EtherLoginNotifier::ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards)
@@ -174,10 +179,14 @@ namespace Ether
                 emit StartLogin(last_info_map_);
             else
             {
-                UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");
-                boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-                if (ui_module)
-                    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
+                LogError("Webauth avatars can't teleport yet.");
+				UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+				//@todo enable when NotificationBaseWidget is in a public interface
+				//if (ui)
+				//	ui->ShowNotification(new CoreUi::NotificationBaseWidget(5000, "Webauth avatars cannot teleport yet, sorry."));
+                //boost::shared_ptr<UiServices::UiModule> ui_module =  framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+                //if (ui_module)
+                //    ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification("Webauth avatars cannot teleport yet, sorry."));
             }
         }
     }

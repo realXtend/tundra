@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_EtherMenu_h
-#define incl_UiModule_EtherMenu_h
+#ifndef incl_EtherModule_EtherMenu_h
+#define incl_EtherModule_EtherMenu_h
 
 #include <QScopedPointer>
 #include <QVector>
@@ -10,8 +10,7 @@
 #include <QParallelAnimationGroup>
 #include <QTimer>
 
-#include "UiModuleFwd.h"
-//#include "InfoCard.h"
+#include "View/InfoCard.h"
 
 namespace Ether
 {

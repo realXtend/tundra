@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_ControlProxyWidget_h
-#define incl_UiModule_ControlProxyWidget_h
+#ifndef incl_EtherModule_ControlProxyWidget_h
+#define incl_EtherModule_ControlProxyWidget_h
 
 #include <QGraphicsProxyWidget>
 #include <QParallelAnimationGroup>
@@ -9,7 +9,8 @@
 #include <QLabel>
 #include <QPushButton>
 
-#include "UiModuleFwd.h"
+#include "InfoCard.h"
+#include "ActionProxyWidget.h"
 
 namespace Ether
 {

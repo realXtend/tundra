@@ -14,8 +14,6 @@
 #include "View/ControlProxyWidget.h"
 #include "View/Classical/ClassicalLoginWidget.h"
 
-#include "Common/AnchorLayoutManager.h"
-
 #include <QGraphicsProxyWidget>
 #include <QPainter>
 #include <QImage>
@@ -43,7 +41,7 @@ namespace Ether
             last_active_top_card_(0),
             last_active_bottom_card_(0),
             connected_world_(0),
-            layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
+            anchor_layout_(new QGraphicsAnchorLayout()),
             info_hide_timer_(new QTimer(this)),
             login_in_progress_(false),
             classical_login_widget_(0),
@@ -87,7 +85,7 @@ namespace Ether
             QObject(parent),
             data_manager_(data_manager),
             scene_(scene),
-            layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
+            anchor_layout_(new QGraphicsAnchorLayout()),
             info_hide_timer_(new QTimer(this)),
             login_in_progress_(false),
             last_active_top_card_(0),
@@ -116,17 +114,19 @@ namespace Ether
         void EtherSceneController::LoadStaticEther(EtherLoginNotifier *login_notifier, QMap<QString,QString> stored_login_data)
         {
             // Static login space widgets
-			classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data, login_notifier->GetFramework());
-            classical_login_widget_->RemoveEtherButton();
+			//classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data, login_notifier->GetFramework());
+            //classical_login_widget_->RemoveEtherButton();
 
-            classic_login_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
-            classic_login_proxy_->setZValue(1);
-            classic_login_proxy_->setWidget(classical_login_widget_);
+            //classic_login_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
+            //classic_login_proxy_->setZValue(1);
+            //classic_login_proxy_->setWidget(classical_login_widget_);
 
-            layout_manager_->AddFullscreenWidget(classic_login_proxy_);
+            //@todo: Add widget as fullscreen
+			//AddFullscreenWidget(classic_login_proxy_);
+
 
             // Connect static login signals/slots
-            connect(classical_login_widget_, SIGNAL( AppExitRequested() ), SLOT( TryExitApplication() ));
+            //connect(classical_login_widget_, SIGNAL( AppExitRequested() ), SLOT( TryExitApplication() ));
         }
 
         void EtherSceneController::LoadStartUpCardsToScene(QVector<View::InfoCard*> avatar_ordered_vector, int visible_top_items,
@@ -285,46 +285,46 @@ namespace Ether
 
             // Notify widget
             status_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::StatusWidget, View::ControlProxyWidget::NoneDirection);
-            layout_manager_->AddCornerAnchor(status_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner); 
-            layout_manager_->AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
+            AddCornerAnchor(status_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner); 
+            AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
             status_widget_->setZValue(51);
             status_widget_->hide(); 
         }
 
         void EtherSceneController::LoadClassicLoginWidget(EtherLoginNotifier *login_notifier, bool default_view, QMap<QString,QString> stored_login_data)
         {
-            // Classical login widgets
-            classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data, login_notifier->GetFramework());
-            classic_login_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
-            classic_login_proxy_->setZValue(100);
-            classic_login_proxy_->setWidget(classical_login_widget_);
+            //// Classical login widgets
+            //classical_login_widget_ = new CoreUi::Classical::ClassicalLoginWidget(login_notifier, stored_login_data, login_notifier->GetFramework());
+            //classic_login_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
+            //classic_login_proxy_->setZValue(100);
+            //classic_login_proxy_->setWidget(classical_login_widget_);
 
-            // Default to correct view
-            if (default_view)
-            {
-                classic_login_proxy_->show();
-                scene_->SupressKeyEvents(true);
-            }
-            else
-                classic_login_proxy_->hide();
-            scene_->addItem(classic_login_proxy_);
+            //// Default to correct view
+            //if (default_view)
+            //{
+            //    classic_login_proxy_->show();
+            //    scene_->SupressKeyEvents(true);
+            //}
+            //else
+            //    classic_login_proxy_->hide();
+            //scene_->addItem(classic_login_proxy_);
 
-            // Classical login widget control button
-            QPushButton *classical_login_button = new QPushButton("Classic Mode");
-            classical_login_button->setStyleSheet("border: 1px solid rgba(255,255,255,100); color: white; background-color: qlineargradient("
-                "spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(18, 18, 18, 255), stop:1 rgba(54, 54, 54, 255)); padding: 10px;");
-            classical_login_button->setFont(QFont("Narkisim", 12));
+            //// Classical login widget control button
+            //QPushButton *classical_login_button = new QPushButton("Classic Mode");
+            //classical_login_button->setStyleSheet("border: 1px solid rgba(255,255,255,100); color: white; background-color: qlineargradient("
+            //    "spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(18, 18, 18, 255), stop:1 rgba(54, 54, 54, 255)); padding: 10px;");
+            //classical_login_button->setFont(QFont("Narkisim", 12));
 
-            QGraphicsProxyWidget *classic_login_button_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
-            classic_login_button_proxy_->setWidget(classical_login_button);
-            
-            layout_manager_->AddCornerAnchor(classic_login_button_proxy_, Qt::TopRightCorner, Qt::TopRightCorner);
+            //QGraphicsProxyWidget *classic_login_button_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
+            //classic_login_button_proxy_->setWidget(classical_login_button);
+            //
+            //AddCornerAnchor(classic_login_button_proxy_, Qt::TopRightCorner, Qt::TopRightCorner);
 
-            // Connect classic login signals/slots
-            connect(classical_login_button, SIGNAL( clicked() ), classical_login_widget_, SLOT( show() ));
-            connect(classical_login_button, SIGNAL( clicked() ), SLOT( StopActiveItemAnimations() ));
-            connect(classical_login_widget_, SIGNAL(ClassicLoginHidden()), scene_, SLOT(SupressKeyEvents()));
-            connect(classical_login_widget_, SIGNAL( AppExitRequested() ), SLOT( TryExitApplication() ));
+            //// Connect classic login signals/slots
+            //connect(classical_login_button, SIGNAL( clicked() ), classical_login_widget_, SLOT( show() ));
+            //connect(classical_login_button, SIGNAL( clicked() ), SLOT( StopActiveItemAnimations() ));
+            //connect(classical_login_widget_, SIGNAL(ClassicLoginHidden()), scene_, SLOT(SupressKeyEvents()));
+            //connect(classical_login_widget_, SIGNAL( AppExitRequested() ), SLOT( TryExitApplication() ));
         }
 
         void EtherSceneController::RecalculateMenus()
@@ -389,7 +389,7 @@ namespace Ether
             last_scale_ = present_scale * 10;
 
             // Classical login widget (full screen)
-            classic_login_proxy_->setGeometry(new_rect);
+            //classic_login_proxy_->setGeometry(new_rect);
 
             // Make sure conrols stay up to date
             UpdateAvatarInfoWidget();
@@ -782,16 +782,16 @@ namespace Ether
                 data_manager_->StoreSelectedCards(last_active_top_card_->id(), last_active_bottom_card_->id());
            
             // Store classic login data
-            if (classical_login_widget_)
-            {
-                QMap<QString, QString> classic_login_info = classical_login_widget_->GetLoginInfo();
-                data_manager_->StoreClassicLoginInfo(classic_login_info);
-            }
+            //if (classical_login_widget_)
+            //{
+            //    QMap<QString, QString> classic_login_info = classical_login_widget_->GetLoginInfo();
+            //    data_manager_->StoreClassicLoginInfo(classic_login_info);
+            //}
 
             // Store default ether view
-            if (classical_login_widget_->isVisible())
-                data_manager_->StoreDefaultView("classic");
-            else
+            //if (classical_login_widget_->isVisible())
+            //    data_manager_->StoreDefaultView("classic");
+            //else
                 data_manager_->StoreDefaultView("ether");
         }
 
@@ -800,5 +800,17 @@ namespace Ether
             ActiveItemChanged(0);
             scene_->SupressKeyEvents(true);
         }
+
+		void EtherSceneController::AddCornerAnchor(QGraphicsLayoutItem *layout_item, Qt::Corner layout_anchor_corner, Qt::Corner widget_anchor_corner)
+		{
+			anchor_layout_->addCornerAnchors(anchor_layout_, layout_anchor_corner, layout_item, widget_anchor_corner);
+			QGraphicsWidget *widget = dynamic_cast<QGraphicsWidget *>(layout_item);
+			if (!widget)
+				return;
+			if (!widget->isVisible())
+				widget->show();
+		}
+
+
     }
 }

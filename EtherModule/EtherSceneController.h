@@ -1,20 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_EtherSceneController_h
-#define incl_UiModule_EtherSceneController_h
+#ifndef incl_EtherModule_EtherSceneController_h
+#define incl_EtherModule_EtherSceneController_h
 
 #include <QObject>
 #include <QGraphicsScene>
 #include <QUuid>
 #include <QTimer>
+#include <QGraphicsAnchorLayout>
 
-#include "UiModuleFwd.h"
 #include <QScopedPointer>
 #include <QParallelAnimationGroup>
 
 #include "View/EtherScene.h"
 #include "View/VerticalMenu.h"
+#include "View/ControlProxyWidget.h"
+#include "View/ActionProxyWidget.h"
 #include "Data/WorldInfo.h"
+#include "Data/DataManager.h"
 
 namespace CoreUi
 {
@@ -100,6 +103,9 @@ namespace Ether
             void UiServiceSceneChanged(const QString &old_name, const QString &new_name);
 
         private:
+
+			void AddCornerAnchor(QGraphicsLayoutItem *layout_item, Qt::Corner layout_anchor_corner, Qt::Corner widget_anchor_corner);
+
             //! Pointer to data manager
             Data::DataManager *data_manager_;
 
@@ -144,8 +150,8 @@ namespace Ether
             //! Action widget
             View::ActionProxyWidget *action_proxy_widget_;
 
-            //! Anchor layout manager
-            CoreUi::AnchorLayoutManager *layout_manager_;
+            //! Anchor layout
+            QGraphicsAnchorLayout *anchor_layout_;
 
             //! Random locals
             int last_scale_;
