@@ -49,8 +49,6 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     assetMetaDataDir = QDir(cacheDirectory + "metadata");
 }
 
-// QNetworkDiskCache overrides. Don't call directly, used by QNetworkAccessManager.
-
 QIODevice* AssetCache::data(const QUrl &url)
 {
     QScopedPointer<QFile> dataFile;
@@ -65,14 +63,14 @@ QIODevice* AssetCache::data(const QUrl &url)
         }
     }
     // It is the callers responsibility to delete this ptr as said by the Qt docs.
-    // This will most likely happen when QNetworkReply->deleteLater() is called, meaning next qt mainloop cycle.
+    // This will most likely happen when QNetworkReply->deleteLater() is called, meaning next qt mainloop cycle from that call.
     return dataFile.take();
 }
 
 void AssetCache::insert(QIODevice* device)
 {
     // We own this ptr from prepare()
-    QHashIterator<QUrl, QFile*> it(preparedItems);
+    QHashIterator<QString, QFile*> it(preparedItems);
     while (it.hasNext())
     {
         it.next();
@@ -82,6 +80,8 @@ void AssetCache::insert(QIODevice* device)
             break;
         }
     }
+    // Delete later, meaning next qt mainloop cycle, because the asset will 
+    // use this ptr to deserialize the content to and IAsset after this call return.
     device->close();
     device->deleteLater();
 }
@@ -93,13 +93,13 @@ QIODevice* AssetCache::prepare(const QNetworkCacheMetaData &metaData)
     QScopedPointer<QFile> dataFile(new QFile(GetAbsoluteFilePath(false, metaData.url())));
     if (!dataFile->open(QIODevice::ReadWrite))
     {
-        remove(metaData.url());
         dataFile.reset();
+        remove(metaData.url());
         return 0;
     }
     // Take ownership of the ptr
     QFile *dataPtr = dataFile.take();
-    preparedItems[metaData.url()] = dataPtr;
+    preparedItems[metaData.url().toString()] = dataPtr;
     return dataPtr;
 }
 
@@ -108,11 +108,11 @@ bool AssetCache::remove(const QUrl &url)
     // remove() is also used for canceling insertion after prepare()
     // we need to delete the QFile* ptr also in these cases
     // note: this is not a common operation
-    QHashIterator<QUrl, QFile*> it(preparedItems);
+    QHashIterator<QString, QFile*> it(preparedItems);
     while (it.hasNext())
     {
         it.next();
-        if (it.key() == url)
+        if (it.key() == url.toString())
         {
             delete it.value();
             preparedItems.remove(it.key());
@@ -168,8 +168,6 @@ qint64 AssetCache::expire()
     // Skip keeping cache at some static size, unlimited for now.
     return maximumCacheSize() / 2;
 }
-
-// Public Slots
 
 QString AssetCache::GetDiskSource(const QString &assetRef)
 {
@@ -233,8 +231,6 @@ void AssetCache::ClearAssetCache()
     ClearDirectory(assetDataDir.absolutePath());
     ClearDirectory(assetMetaDataDir.absolutePath());
 }
-
-// Private Slots
 
 bool AssetCache::WriteMetadata(const QString &filePath, const QNetworkCacheMetaData &metaData)
 {
