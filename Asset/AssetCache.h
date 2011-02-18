@@ -18,35 +18,47 @@
 class QNetworkDiskCache;
 
 /// An utility function that takes an assetRef and makes a string out of it that can safely be used as a part of a filename.
-/// Cleans characters / \ :
+/// Replaces characters / \ : * ? " ' < > | with _
 QString SanitateAssetRefForCache(QString assetRef);
 
+/// Subclassing QNetworkDiskCache has the main goal of separating metadata from the raw asset data. The basic implementation of QNetworkDiskCache
+/// will store both in the same file. That did not work very well with our asset system as we need absolute paths to loaded assets for various purpouses.
 class AssetCache : public QNetworkDiskCache
 {
 public:
     explicit AssetCache(AssetAPI *owner, QString assetCacheDirectory);
 
+    /// Allocates new QFile*, it is the callers responsibility to free the memory once done with it.
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QIODevice* data(const QUrl &url);
     
+    /// Frees allocated QFile* that was prepared in prepare().
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void insert(QIODevice* device);
-    
-    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
-    virtual QNetworkCacheMetaData metaData(const QUrl &url);
-    
+
+    /// Allocates new QFile*, the data is freed in either insert() or remove(), 
+    /// remove() cancels the preparation and insert() finishes it.
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual QIODevice* prepare(const QNetworkCacheMetaData &metaData);
     
+    /// Frees allocated QFile* if one was prepared in prepare().
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual bool remove(const QUrl &url);
-    
+
+    /// Reads metadata file to hard drive.
+    /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
+    virtual QNetworkCacheMetaData metaData(const QUrl &url);
+
+    /// Writes metadata file to hard drive, if metadata is different from known cache metadata.
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void updateMetaData(const QNetworkCacheMetaData &metaData);
 
+    /// Deletes all data and metadata files from the asset cache.
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual void clear();
 
+    /// Checks if asset cache is currently over the maximum limit.
+    /// This call is ignored untill we decide to limit the disk cache size.
     /// QNetworkDiskCache override. Don't call directly, used by QNetworkAccessManager.
     virtual qint64 expire();
 
@@ -60,7 +72,7 @@ public slots:
     /// Returns an absolute path to a disk source of the url.
     /// @param QUrl url of the asset ref
     /// @return QString absolute path to the assets disk source. Return empty string if asset is not in the cache.
-    /// @note this will return you the disk source for http/http assets unlike the QString overload.
+    /// @note this will return you the disk source for http/https assets unlike the QString overload.
     QString GetDiskSource(const QUrl &assetUrl);
 
     /// Checks whether the asset cache contains an asset with the given content hash, and returns the absolute path name to it, if so.
@@ -88,7 +100,8 @@ public slots:
     /// @param QUrl asset reference url.
     void DeleteAsset(const QUrl &assetUrl);
 
-    /// Deletes all assets/metada in the data and metadata cache directories.
+    /// Deletes all data and metadata files from the asset cache.
+    /// Will not clear subfolders in the cache folders, or remove any folders.
     void ClearAssetCache();
 
 private slots:
@@ -101,7 +114,7 @@ private slots:
     /// Genrates the absolute path to an data asset cache entry.
     QString GetAbsoluteDataFilePath(const QString &filename);
 
-    /// Removes all files from a directory.
+    /// Removes all files from a directory. Will not delete the folder itself or any subfolders it has.
     void ClearDirectory(const QString &absoluteDirPath);
 
 private:
@@ -117,7 +130,8 @@ private:
     /// Asset metadata dir.
     QDir assetMetaDataDir;
 
-    QHash<QUrl, QFile*> preparedItems;
+    /// Internal tracking of prepared QUrl to QIODevice pairs.
+    QHash<QString, QFile*> preparedItems;
 };
 
 #endif
