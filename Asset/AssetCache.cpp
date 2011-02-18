@@ -37,16 +37,29 @@ AssetCache::AssetCache(AssetAPI *owner, QString assetCacheDirectory) :
     assetAPI(owner),
     cacheDirectory(GuaranteeTrailingSlash(assetCacheDirectory))
 {
-    LogInfo("Using AssetCache in directory \"" + assetCacheDirectory.toStdString() + "\".");
+    LogInfo("Using AssetCache in directory '" + assetCacheDirectory.toStdString() + "'");
 
-    setCacheDirectory(cacheDirectory);
+    // Check that the main directory exists
     QDir assetDir(cacheDirectory);
+    if (!assetDir.exists())
+    {
+        QString dirName = cacheDirectory.split("/", QString::SkipEmptyParts).last();
+        QString parentPath = cacheDirectory;
+        parentPath.chop(dirName.length()+1);
+        QDir parentDir(parentPath);
+        parentDir.mkdir(dirName);
+    }
+
+    // Check that the needed subfolders exist
     if (!assetDir.exists("data"))
         assetDir.mkdir("data");
     assetDataDir = QDir(cacheDirectory + "data");
     if (!assetDir.exists("metadata"))
         assetDir.mkdir("metadata");
     assetMetaDataDir = QDir(cacheDirectory + "metadata");
+
+    // Set for QNetworkDiskCache
+    setCacheDirectory(cacheDirectory);
 }
 
 QIODevice* AssetCache::data(const QUrl &url)
