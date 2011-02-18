@@ -48,7 +48,7 @@ void AssetAPI::OpenAssetCache(QString directory)
 {
     SAFE_DELETE(assetCache);
     SAFE_DELETE(diskSourceChangeWatcher);
-    assetCache = new AssetCache(directory.toStdString().c_str());
+    assetCache = new AssetCache(this, directory.toStdString().c_str());
     diskSourceChangeWatcher = new QFileSystemWatcher();
     connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)));
 }
@@ -298,7 +298,11 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     if (removeDiskSource && !asset->DiskSource().isEmpty())
     {
         emit DiskSourceAboutToBeRemoved(asset);
-        QFile::remove(asset->DiskSource());
+        // Remove disk watcher before deleting the file. Otherwise we get tons of spam and not wanted reload tries.
+        if (diskSourceChangeWatcher)
+            diskSourceChangeWatcher->removePath(asset->DiskSource());
+        assetCache->DeleteAsset(asset->Name());
+        asset->SetDiskSource("");
     }
 
     // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
@@ -560,7 +564,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     }
 
     // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache->FindAsset(assetRef);
+    QString assetFileInCache = assetCache->GetDiskSource(assetRef);
     AssetTransferPtr transfer;
 
     if (!assetFileInCache.isEmpty())
@@ -1081,16 +1085,26 @@ void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
     QDir path(path_);
 
     for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
+    {
         if (!iter->second->DiskSource().isEmpty() && QDir(iter->second->DiskSource()) == path)
         {
-            AssetPtr asset = iter->second;
+            // Check if the file actually was deleted manually from hard drive in this case we dont want to 
+            // spam the error prints for nothing, and there is no sense in trying asset->LoadFromCache()
+            if (!QFile::exists(iter->second->DiskSource()))
+            {
+                // Reset the disk source as this file does not exists anymore
+                iter->second->SetDiskSource("");
+                return;
+            }
 
+            AssetPtr asset = iter->second;
             bool success = asset->LoadFromCache();
             if (!success)
                 LogError("Failed to reload changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path_.toStdString() + "\"!");
             else
                 LogDebug("Reloaded changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path_.toStdString() + "\".");
         }
+    }
 }
 
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
