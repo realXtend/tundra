@@ -13,7 +13,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("QtUiAsset")
 QtUiAsset::QtUiAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_)
 {
-    patterns_ << "http://" << "https://" << "local://";
+    patterns_ << "http://" << "https://" << "local://" << "file://";
 }
 
 QtUiAsset::~QtUiAsset() 
