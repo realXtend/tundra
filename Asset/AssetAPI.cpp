@@ -685,7 +685,10 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
 {
     AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->Type());
     if (existingFactory)
-        return; ///\todo Log out warning.
+    {
+        LogWarning("AssetAPI::RegisterAssetTypeFactory: Factory with type '" + factory->Type().toStdString() + "' already registered.");
+        return;
+    }
 
     assert(factory->Type() == factory->Type().trimmed());
 
