@@ -14,10 +14,8 @@ data = me.dynamiccomponent
 
 animctrl = me.animationcontroller
 animctrl.EnableAnimation "open", false
-animctrl.SetAnimationTimePosition "open", 1
 
 curpos = 0 #keep so that can interpolate animated change to the var
-animctrl.SetAnimWeight "open", curpos
 newpos = 0
 
 onAttributeChanged = (args...) ->
@@ -37,7 +35,7 @@ animate = (dtime) ->
     dir = if (newpos < curpos) then -1 else 1
     speed = 1
     curpos += dir * (Math.min diff, dtime * speed)
-    animctrl.SetAnimWeight "open", curpos
+    animctrl.SetAnimWeight "open", 1 - curpos
     print curpos + " - " + diff
 
 onAttributeChanged() #once at startup to init
@@ -76,7 +74,11 @@ hoverOut = ->
 mousePress = ->
   open()
 
+mouseScroll = (args...) ->
+  print "mouse scroll:", args
+
 me.Action("MouseHoverIn").Triggered.connect hoverIn
 me.Action("MouseHoverOut").Triggered.connect hoverOut
 
 me.Action("MousePress").Triggered.connect mousePress
+me.Action("MouseScroll").Triggered.connect mouseScroll

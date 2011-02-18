@@ -1,5 +1,5 @@
 (function() {
-  var animate, animctrl, curpos, data, hoverIn, hoverOut, lock, lockbut, mousePress, newpos, onAttributeChanged, open, openbut;
+  var animate, animctrl, curpos, data, hoverIn, hoverOut, lock, lockbut, mousePress, mouseScroll, newpos, onAttributeChanged, open, openbut;
   var __slice = Array.prototype.slice;
   print("Hello I want to control a door!");
   engine.ImportExtension("qt.core");
@@ -13,9 +13,7 @@
   data = me.dynamiccomponent;
   animctrl = me.animationcontroller;
   animctrl.EnableAnimation("open", false);
-  animctrl.SetAnimationTimePosition("open", 1);
   curpos = 0;
-  animctrl.SetAnimWeight("open", curpos);
   newpos = 0;
   onAttributeChanged = function() {
     var args, locked, opened;
@@ -35,7 +33,7 @@
       dir = newpos < curpos ? -1 : 1;
       speed = 1;
       curpos += dir * (Math.min(diff, dtime * speed));
-      animctrl.SetAnimWeight("open", curpos);
+      animctrl.SetAnimWeight("open", 1 - curpos);
       return print(curpos + " - " + diff);
     }
   };
@@ -72,10 +70,15 @@
     return print("hovering out from over door");
   };
   mousePress = function() {
-    print("click");
     return open();
+  };
+  mouseScroll = function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return print("mouse scroll:", args);
   };
   me.Action("MouseHoverIn").Triggered.connect(hoverIn);
   me.Action("MouseHoverOut").Triggered.connect(hoverOut);
   me.Action("MousePress").Triggered.connect(mousePress);
+  me.Action("MouseScroll").Triggered.connect(mouseScroll);
 }).call(this);

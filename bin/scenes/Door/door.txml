@@ -40,8 +40,8 @@
    <attribute value="door.js" name="Script ref"/>
   </component>
   <component type="EC_DynamicComponent" sync="1" name="door">
-   <attribute value="false" type="bool" name="opened"/>
-   <attribute value="true" type="bool" name="locked"/>
+   <attribute value="true" type="bool" name="opened"/>
+   <attribute value="false" type="bool" name="locked"/>
   </component>
   <component type="EC_AnimationController" sync="1">
    <attribute value="" name="Animation state"/>
