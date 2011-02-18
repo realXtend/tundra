@@ -60,7 +60,14 @@ std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 
 void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
 {
-    ///\todo Debug check for duplicates.
+    for(uint i=0; i<providers.size(); ++i)
+    {
+        if (providers[i]->Name() == provider->Name())
+        {
+            LogWarning("AssetAPI::RegisterAssetProvider: Provider with name '" + provider->Name().toStdString() + "' already registered.");
+            return;
+        }
+    }
     providers.push_back(provider);
 }
 
@@ -79,7 +86,7 @@ AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &nam
     IAssetProvider *provider = GetProviderForAssetRef(url, "Binary").get();
     if (!provider)
     {
-        LogError("AddAssetStorage() Could not find a provider for the new storage location " + url.toStdString());
+        LogError("AssetAPI::AddAssetStorage: Could not find a provider for the new storage location " + url.toStdString());
         return newStorage; 
     }
 
@@ -92,7 +99,7 @@ AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &nam
             continue;
         if (newStorage->BaseURL() == url && newStorage->Name() == name)
         {
-            LogDebug("AddAssetStorage() Found existing storage with same url and name, returning the existing storage.");
+            LogDebug("AssetAPI::AddAssetStorage: Found existing storage with same url and name, returning the existing storage.");
             break;
         }
         // Reset so the last valid provider wont be used! 
@@ -105,7 +112,7 @@ AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &nam
     if (newStorage.get() && setAsDefault)
         SetDefaultAssetStorage(newStorage);
     if (!newStorage.get())
-        LogError("AddAssetStorage() Could not create new storage for " + url.toStdString());
+        LogError("AssetAPI::AddAssetStorage: Could not create new storage for " + url.toStdString());
     return newStorage;
 }
 
