@@ -1083,19 +1083,13 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
 void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 {
     QDir path(path_);
-
     for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
     {
         if (!iter->second->DiskSource().isEmpty() && QDir(iter->second->DiskSource()) == path)
         {
-            // Check if the file actually was deleted manually from hard drive in this case we dont want to 
-            // spam the error prints for nothing, and there is no sense in trying asset->LoadFromCache()
+            // Return if file does not exists at the moment, no need to try asset->LoadFromCache()
             if (!QFile::exists(iter->second->DiskSource()))
-            {
-                // Reset the disk source as this file does not exists anymore
-                iter->second->SetDiskSource("");
                 return;
-            }
 
             AssetPtr asset = iter->second;
             bool success = asset->LoadFromCache();
