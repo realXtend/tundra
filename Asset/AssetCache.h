@@ -11,6 +11,7 @@
 #include <QHash>
 #include <QUrl>
 #include <QDir>
+#include <QObject>
 
 #include "CoreTypes.h"
 #include "AssetFwd.h"
@@ -25,6 +26,9 @@ QString SanitateAssetRefForCache(QString assetRef);
 /// will store both in the same file. That did not work very well with our asset system as we need absolute paths to loaded assets for various purpouses.
 class AssetCache : public QNetworkDiskCache
 {
+
+Q_OBJECT
+
 public:
     explicit AssetCache(AssetAPI *owner, QString assetCacheDirectory);
 
