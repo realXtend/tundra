@@ -85,10 +85,7 @@ public:
 
     void NotifyAssetDependenciesChanged(AssetPtr asset);
 
-    bool IsHeadless()
-    {
-      return isHeadless_;
-    }
+    bool IsHeadless() const { return isHeadless_; }
 
     /// Returns all the currently loaded assets which depend on the asset dependeeAssetRef.
     std::vector<AssetPtr> FindDependents(QString dependeeAssetRef);
