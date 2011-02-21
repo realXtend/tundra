@@ -9,7 +9,7 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace UiExternalServices
+namespace UiServices
 {
 	ExternalPanelManager::ExternalPanelManager(QMainWindow *qWin):
           qWin_(qWin)

@@ -208,7 +208,7 @@ public slots:
 	/*! Add the widget to the edit configuration (if edit mode enable, widget enable, if not, widget disable)
 	 *	\param widget widget
 	 */
-	virtual void AddPanelToEditMode(QWidget* widget) = 0;
+	//virtual void AddPanelToEditMode(QWidget* widget) = 0;
 
 	//TOOLBARS
 

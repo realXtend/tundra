@@ -21,6 +21,7 @@ AddSourceFolder (Inworld/View)
 AddSourceFolder (Inworld/Menus)
 AddSourceFolder (Inworld/ControlPanel)
 AddSourceFolder (Inworld/Notifications)
+AddSourceFolder (Outworld)
 
 # Qt4 Moc files to "CMake Moc" subgroup
 # and ui_*.h generated .h files to "Generated UI" subgroup

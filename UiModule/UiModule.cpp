@@ -18,6 +18,12 @@
 #include "Inworld/Notifications/InputNotification.h"
 #include "Inworld/Notifications/QuestionNotification.h"
 #include "Inworld/Notifications/ProgressNotification.h"
+
+#include "Outworld/ExternalPanelManager.h"
+#include "Outworld/ExternalMenuManager.h"
+#include "Outworld/ExternalToolBarManager.h"
+#include "Outworld/StaticToolBar.h"
+
 #include "Common/UiAction.h"
 #include "UiSceneService.h"
 #include "NaaliUi.h"
@@ -43,7 +49,7 @@
 #include <QApplication>
 #include <QFontDatabase>
 #include <QDir>
-
+#include <QMainWindow>
 #include "MemoryLeakCheck.h"
 
 namespace UiServices
@@ -54,6 +60,11 @@ namespace UiServices
         IModule(type_name_static_),
         ui_state_machine_(0),
         inworld_scene_controller_(0),
+		qWin_(0),
+		external_menu_manager_(0),
+		external_panel_manager_(0),
+		external_toolbar_manager_(0),
+		staticToolBar_(0),
         inworld_notification_manager_(0)
     {
     }
@@ -67,15 +78,9 @@ namespace UiServices
 
     void UiModule::Load()
     {
-        //QApplication::setStyle(new UiProxyStyle());
-        // QApplication take ownership of the new UiDarkBlueStyle
-        ///\todo UiDarkBlueStyle seems to be causing many memory leaks.
-        /// Maybe it's not deleted properly by the QApplication?
-
-        QApplication::setStyle(new UiDarkBlueStyle());
+		QApplication::setStyle(new UiDarkBlueStyle());
         QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
         QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
-
         event_query_categories_ << "Framework" << "Scene" << "Input";
     }
 
@@ -112,6 +117,22 @@ namespace UiServices
         }
         else
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");
+
+		//External Ui
+		qWin_ = dynamic_cast<QMainWindow*>(framework_->Ui()->MainWindow());
+        if (qWin_)
+        {
+			//qWin_->setObjectName("Naali MainWindow");
+		   //Create MenuManager and PanelManager and ToolBarManager
+           external_menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
+		   external_panel_manager_ = new ExternalPanelManager(qWin_);
+		   external_toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
+		   
+		   //Configure Static Stuff of the main window
+		   //createStaticContent();
+        }
+        else
+			LogWarning("Could not acquire QMainWindow!");
     }
 
 
@@ -119,11 +140,25 @@ namespace UiServices
     {
         SubscribeToEventCategories();
 		ui_scene_service_->CreateSettingsPanel();
+
+		//Restore values
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+		if (!settings.contains("win_state")){
+			//Set default settings
+			QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
+			qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
+		} 
+		else
+			qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
     }
 
     void UiModule::Uninitialize()
     {
-        framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
+		//Save state of the MainWindow
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+		settings.setValue("win_state", qWin_->saveState());
+
+		framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
         ui_scene_service_.reset();
     }
 

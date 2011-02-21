@@ -9,7 +9,7 @@
 #include "StaticToolBar.h"
 #include "UiServiceInterface.h"
 
-namespace UiExternalServices
+namespace UiServices
 {
 
 	StaticToolBar::StaticToolBar(const QString &title, QWidget *parent, Foundation::Framework* framework): 
@@ -70,8 +70,9 @@ namespace UiExternalServices
 
 	void StaticToolBar::editMode()
 	{
-		Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
-		uiExternal->SetEnableEditMode(!uiExternal->IsEditModeEnable());
+		//TODO TEST THIS!
+		//Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
+		//uiExternal->SetEnableEditMode(!uiExternal->IsEditModeEnable());
 	}
 
 

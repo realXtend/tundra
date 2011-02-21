@@ -4,18 +4,19 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "ExternalToolBarManager.h"
+#include "ExternalMenuManager.h"
 #include "UiExternalServiceInterface.h"
 
 #include <QDebug>
 
 #include "MemoryLeakCheck.h"
 
-namespace UiExternalServices
+namespace UiServices
 {
     QString ExternalToolBarManager::defaultItemIcon = "./data/ui/images/menus/edbutton_MATWIZ_normal.png";
     QString ExternalToolBarManager::defaultGroupIcon = "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png";
 
-    ExternalToolBarManager::ExternalToolBarManager(QMainWindow *main_window, UiExternalModule *owner) :
+    ExternalToolBarManager::ExternalToolBarManager(QMainWindow *main_window, UiModule *owner) :
             main_window_(main_window),
 			owner_(owner),
 			controller_toolbar_()

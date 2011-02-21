@@ -1,7 +1,7 @@
 //$ HEADER_NEW_FILE $ 
 // For conditions of distribution and use, see copyright notice in license.txt
-#ifndef incl_UiExternalModule_StaticToolBar_h
-#define incl_UiExternalModule_StaticToolBar_h
+#ifndef incl_UiModule_StaticToolBar_h
+#define incl_UiModule_StaticToolBar_h
 
 #include "Framework.h"
 #include "SceneManager.h"
@@ -9,7 +9,7 @@
 #include <QObject>
 #include <QToolBar>
 
-namespace UiExternalServices
+namespace UiServices
 {
 	//! StaticToolBar has the static functionality of toolbar
     /*! This class inherits of QToolBar and build the static actions which has this toolbar. 

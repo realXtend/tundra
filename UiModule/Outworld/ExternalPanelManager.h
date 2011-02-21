@@ -1,10 +1,10 @@
 //$ HEADER_NEW_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiExternalModule_ExternalPanelManager_h
-#define incl_UiExternalModule_ExternalPanelManager_h
+#ifndef incl_UiModule_ExternalPanelManager_h
+#define incl_UiModule_ExternalPanelManager_h
 
-#include "UiExternalModuleApi.h"
+#include "UiModuleApi.h"
 #include "ExternalMenuManager.h"
 
 #include <QObject>
@@ -19,9 +19,9 @@
 #include <QDockWidget>
 
 
-namespace UiExternalServices
+namespace UiServices
 {
-    class ExternalPanelManager : public QObject
+    class UI_MODULE_API ExternalPanelManager : public QObject
     {
         Q_OBJECT
 
@@ -99,4 +99,4 @@ namespace UiExternalServices
     };
 }
 
-#endif // incl_UiExternalModule_ExternalPanelManager_h
+#endif // incl_UiModule_ExternalPanelManager_h

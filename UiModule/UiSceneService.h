@@ -13,9 +13,10 @@
 #define incl_UiModule_UiSceneService_h 
 
 #include "UiServiceInterface.h"
+#include "Outworld/ExternalPanelManager.h"
+#include "Outworld/ExternalMenuManager.h"
+#include "Outworld/ExternalToolBarManager.h"
 //$ BEGIN_MOD $
-#include "UiExternalServiceInterface.h"
-//cjb #include "MenuSettingsWidget.h"
 #include <QMap>
 #include <QList>
 //$ END_MOD $
@@ -117,8 +118,6 @@ namespace UiServices
         void BringWidgetToFront(QString widget);
 		/// UiServiceInterface override.
 		//void TransferWidgetOut(QString widgetToChange, bool out);
-		/// UiServiceInterface override.
-		void AddPanelToEditMode(QWidget* widget);
 
 		//TOOLBARS
 
@@ -186,16 +185,12 @@ namespace UiServices
         /// Owner UI module.
         UiModule *owner_;
 //$ BEGIN_MOD $
-		//! UiExternal Service
-		Foundation::UiExternalServiceInterface *uiExternal;
 		//! List of movable widget
 		QList<QString> *moveable_widgets_;
 		//! QMap of widgets pairs
 		QMap<QString, proxyDock> proxy_dock_list;
 		//! QMap of menu pairs 
 		QMap<QString, menusPair> panels_menus_list_;
-		//!Menu Settings Panel
-		//cjb MenuSettingsWidget *settings_panel_;
 //$ END_MOD $
     };
 }

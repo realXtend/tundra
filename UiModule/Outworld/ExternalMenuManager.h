@@ -1,10 +1,10 @@
 //$ HEADER_NEW_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiExternalModule_ExternalMenuManager_h
-#define incl_UiExternalModule_ExternalMenuManager_h
+#ifndef incl_UiModule_ExternalMenuManager_h
+#define incl_UiModule_ExternalMenuManager_h
 
-#include "UiExternalModule.h"
+#include "UiModule.h"
 
 #include <QObject>
 #include <QMap>
@@ -16,14 +16,14 @@
 #include <QStringList>
 
 
-namespace UiExternalServices
+namespace UiServices
 {
-	class UiExternalModule;
+	class UiModule;
 
 	/*! Is the Menu Manager of the main window, and implements the services offered by UiExternalService 
      *  All the actions and menus are managed by this class
      */
-    class ExternalMenuManager : public QObject
+    class UI_MODULE_API ExternalMenuManager : public QObject
     {
         Q_OBJECT
 
@@ -31,7 +31,7 @@ namespace UiExternalServices
         /*! Constuctor. Gets the main menubar of the main window.
          *  \param parent Main MenuBar of the main window
          */
-		ExternalMenuManager(QMenuBar *parent, UiExternalModule *owner);
+		ExternalMenuManager(QMenuBar *parent, UiModule *owner);
 
         //! Destructor.
         ~ExternalMenuManager();
@@ -103,7 +103,7 @@ namespace UiExternalServices
 
         //! Pointer to the main menu Bar
         QMenuBar *root_menu_;
-		UiExternalModule *owner_;
+		UiModule *owner_;
 
         /// Default icon for menu item node.
         static QString defaultItemIcon;

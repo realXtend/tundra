@@ -9,12 +9,12 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace UiExternalServices
+namespace UiServices
 {
     QString ExternalMenuManager::defaultItemIcon = "./data/ui/images/menus/edbutton_MATWIZ_normal.png";
     QString ExternalMenuManager::defaultGroupIcon = "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png";
 
-    ExternalMenuManager::ExternalMenuManager(QMenuBar *parent, UiExternalModule *owner) :
+    ExternalMenuManager::ExternalMenuManager(QMenuBar *parent, UiModule *owner) :
             root_menu_(parent),
 			owner_(owner),
 			controller_panels_(),
@@ -148,8 +148,7 @@ namespace UiExternalServices
 	void ExternalMenuManager::SceneChanged(const QString &old_name, const QString &new_name)
     {
         if (new_name == "Ether")
-			//DisableMenus();   
-			EnableMenus();
+			DisableMenus();   			
 		else
 			EnableMenus();
     }

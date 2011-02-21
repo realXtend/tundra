@@ -20,6 +20,7 @@
 #include <QString>
 #include <QMenuBar>
 #include <QAction>
+
 //#include "MainWindow.h"
 //$ END_MOD $
 
@@ -36,6 +37,10 @@ namespace UiServices
     class UiSettingsService;
     class UiSceneService;
     class MessageNotification;
+	class ExternalPanelManager;
+	class ExternalMenuManager;
+	class ExternalToolBarManager;
+	class StaticToolBar;
 
     typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
     typedef boost::shared_ptr<UiSceneService> UiSceneServicePtr;
@@ -69,16 +74,15 @@ namespace UiServices
         //! the UI related services like adding your own QWidgets into the 2D scene 
         //! \return InworldSceneController The scene manager with scene services
         InworldSceneController *GetInworldSceneController() const { return inworld_scene_controller_; }
-
         NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
-
         CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
 
-        //cjb Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
+		//!Get Managers of the module
+		ExternalMenuManager *GetExternalMenuManager() const { return external_menu_manager_; }
+		ExternalPanelManager *GetExternalPanelManager() const { return external_panel_manager_; }
+		ExternalToolBarManager *GetExternalToolBarManager() const { return external_toolbar_manager_;}
 
-		//$ BEGIN_MOD $
-		//void ToggleFullScreen();
-		//$ END_MOD $
+        //cjb Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
@@ -110,6 +114,11 @@ namespace UiServices
         //! Type name of this module.
         static std::string type_name_static_;
 
+		//! External Managers of the Module
+		ExternalMenuManager *external_menu_manager_;
+		ExternalPanelManager *external_panel_manager_;
+		ExternalToolBarManager *external_toolbar_manager_;
+
         //! Current query categories
         QStringList event_query_categories_;
 
@@ -128,14 +137,14 @@ namespace UiServices
         //! NotificationManager pointer
         NotificationManager *inworld_notification_manager_;
 
-        //! Ether Logic
-        //cjb Ether::Logic::EtherLogic *ether_logic_;
+        //! MainWindow
+		QMainWindow* qWin_;
+
+		//! Static toolbar
+		StaticToolBar* staticToolBar_;
 
         //! Current World Stream pointer
         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
-
-        //! Ui settings service 
-       //cjb  UiSettingsPtr ui_settings_service_;
 
         //! Ui service.
         UiSceneServicePtr ui_scene_service_;
