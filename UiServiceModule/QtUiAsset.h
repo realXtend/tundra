@@ -9,6 +9,7 @@
 
 #include <QList>
 #include <QByteArray>
+#include <QStringList>
 
 class QtUiAsset : public IAsset
 {
@@ -47,6 +48,8 @@ public slots:
 
 private:
     QList<QByteArray> patterns_;
+    QStringList invalid_ref_chars_;
+
     std::vector<u8> data_;
     std::vector<AssetReference> refs_;
 };
