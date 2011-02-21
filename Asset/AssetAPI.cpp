@@ -29,7 +29,8 @@ using namespace Foundation;
 
 AssetAPI::AssetAPI(bool isHeadless)
 :assetCache(0),
-diskSourceChangeWatcher(0)
+diskSourceChangeWatcher(0),
+isHeadless_(isHeadless)
 {
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
