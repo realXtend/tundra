@@ -14,6 +14,7 @@ QtUiAsset::QtUiAsset(AssetAPI *owner, const QString &type_, const QString &name_
     IAsset(owner, type_, name_)
 {
     patterns_ << "http://" << "https://" << "local://" << "file://";
+    invalid_ref_chars_ << " " << "\n" << "\r" << "\t" << "\v" << "\f" << "\a";
 }
 
 QtUiAsset::~QtUiAsset() 
@@ -41,6 +42,7 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
                 indexStart = matcher.indexIn(dataQt, from);
                 if (indexStart == -1)
                     break;
+
                 // ")" due to Qt style sheets have this syntax most commonly: "some-image-property: url(pattern);"
                 int indexStop = dataQt.indexOf(")", indexStart);
                 if (indexStop == -1)
@@ -48,10 +50,23 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
                     from = indexStart + 1;
                     continue;
                 }
-                QUrl ref(dataQt.mid(indexStart, indexStop - indexStart), QUrl::TolerantMode);
-                if (ref.isValid())
-                    refs_.push_back(AssetReference(ref.toString()));
                 from = indexStop;
+                
+                // Asset reference validation
+                QString stringRef = dataQt.mid(indexStart, indexStop - indexStart).trimmed();
+                if (stringRef.isEmpty() || stringRef.isNull())
+                    continue;
+                // Check for not wanted characters
+                foreach(QString invalid, invalid_ref_chars_)
+                    if (stringRef.contains(invalid))
+                        continue;
+                // QUrl validation, in tolerant mode
+                QUrl ref(stringRef, QUrl::TolerantMode);
+                if (!ref.isValid())
+                    continue;
+
+                // Seems legit, add it
+                refs_.push_back(AssetReference(ref.toString()));
             }
         }
     }
