@@ -14,6 +14,7 @@
 #include "IAssetTransfer.h"
 #include "IAssetUploadTransfer.h"
 #include "IAssetStorage.h"
+#include "AssetCache.h"
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 #include "UiProxyWidget.h"
@@ -56,6 +57,7 @@ Q_DECLARE_METATYPE(AssetUploadTransferPtr);
 Q_DECLARE_METATYPE(IAssetUploadTransfer*);
 Q_DECLARE_METATYPE(AssetStoragePtr);
 Q_DECLARE_METATYPE(IAssetStorage*);
+Q_DECLARE_METATYPE(AssetCache*);
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
@@ -228,6 +230,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<AssetStoragePtr>("AssetStoragePtr");
     qScriptRegisterQObjectMetaType<IAssetStorage*>(engine);
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
+
+    qScriptRegisterQObjectMetaType<AssetCache*>(engine);
 
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<NaaliMainWindow*>(engine);

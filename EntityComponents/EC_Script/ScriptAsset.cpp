@@ -39,6 +39,7 @@ bool ScriptAsset::SerializeTo(std::vector<u8> &dst, const QString &serialization
 void ScriptAsset::ParseReferences()
 {
     references.clear();
+    QStringList addedRefs;
     std::string content = scriptContent.toStdString();
     boost::sregex_iterator searchEnd;
 
@@ -48,7 +49,11 @@ void ScriptAsset::ParseReferences()
         AssetReference ref;
         ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
         ref.ref = assetAPI->LookupAssetRefToStorage((*iter)[1].str().c_str());
-        references.push_back(ref);
+        if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
+        {
+            references.push_back(ref);
+            addedRefs << ref.ref;
+        }
     }
 
     expression = boost::regex("engine.IncludeFile\\(\\s*\"\\s*(.*?)\\s*\"\\s*\\)");
@@ -57,6 +62,10 @@ void ScriptAsset::ParseReferences()
         AssetReference ref;
         ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
         ref.ref = assetAPI->LookupAssetRefToStorage((*iter)[1].str().c_str());
-        references.push_back(ref);
+        if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
+        {
+            references.push_back(ref);
+            addedRefs << ref.ref;
+        }
     }
 }
