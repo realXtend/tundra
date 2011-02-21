@@ -438,6 +438,16 @@ namespace Scene
         return action;
     }
 
+    void Entity::RemoveAction(const QString &name)
+    {
+        ActionMap::iterator iter = actions_.find(name);
+        if (iter != actions_.end())
+        {
+            (*iter)->deleteLater();
+            actions_.erase(iter);
+        }
+    }
+
     void Entity::ConnectAction(const QString &name, const QObject *receiver, const char *member)
     {
         EntityAction *action = Action(name);
