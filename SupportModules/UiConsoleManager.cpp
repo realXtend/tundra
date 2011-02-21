@@ -57,7 +57,7 @@ namespace Console
             proxy_widget_->setZValue(100);
             proxy_widget_->hide();
             ui_service->RegisterUniversalWidget("Console", proxy_widget_);
-			ui_service->TransferWidgetOut("ConsoleWidget",false);
+			//ui_service->TransferWidgetOut("ConsoleWidget",false);
 
             // Init animation
             animation_.setTargetObject(proxy_widget_);

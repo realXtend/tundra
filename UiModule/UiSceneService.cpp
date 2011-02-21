@@ -34,8 +34,7 @@ namespace UiServices
 
         connect(owner_->GetNotificationManager(), SIGNAL(ShowNotificationCalled(const QString&)), this, SIGNAL(Notification(const QString&)));
 
-		connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
-				this,SLOT(HandleTransferToBuild(const QString&, const QString&)));
+		//cjb connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),this,SLOT(HandleTransferToBuild(const QString&, const QString&)));
 		//Settings Panel, List of panels send when we enter the world
 		//connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)), this,SLOT(SetPanelsList(const QString&, const QString&)));
     }
@@ -326,7 +325,7 @@ namespace UiServices
 			return false;
 	}
 
-	void UiSceneService::TransferWidgetOut(QString widgetToChange,bool out)
+	/*void UiSceneService::TransferWidgetOut(QString widgetToChange,bool out)
 	{
 		if (proxy_dock_list.contains(widgetToChange) && uiExternal){
 			//Get info from the list
@@ -389,14 +388,14 @@ namespace UiServices
 			}
 		}
 	}
-
+*/
 	void UiSceneService::AddPanelToEditMode(QWidget* widget){
 		uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		if(uiExternal)
 			uiExternal->AddPanelToEditMode(widget);
 	}
 
-	void UiSceneService::HandleTransferToBuild(const QString& old_name, const QString& new_name)
+	/*void UiSceneService::HandleTransferToBuild(const QString& old_name, const QString& new_name)
 	{
 		uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		if(uiExternal){
@@ -454,7 +453,7 @@ namespace UiServices
                 {
 					QSettings settings("Naali UIExternal2", "UiExternal Settings");
 					QString pos = settings.value(s, QString("vacio")).toString();
-					if (/*pos != "inside" &&*/ uiExternal)
+					if ( && uiExternal)
                     {
                         if (!proxy_dock_list.contains(s))
                             continue;
@@ -481,20 +480,20 @@ namespace UiServices
 					} //else{
 						//TransferWidgetOut(s,false);
 					//}
-					/*Hide panels
+					Hide panels
 					proxyDock pair = proxy_dock_list.value(s);
 					QDockWidget* qdock=pair.second;
 					UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
 					if(qdock->widget())
 						HideWidget(qdock->widget());
 					else
-						HideWidget(proxy->widget());*/
+						HideWidget(proxy->widget());
 				//end_mod
 				}
 			}
 		}
 	}
-
+*/
 	bool UiSceneService::AddExternalToolbar(QToolBar *toolbar, const QString &name){
 		uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 		if (uiExternal)
@@ -595,13 +594,13 @@ namespace UiServices
 			return false;
 	}
 
-	void UiSceneService::SetPanelsList(const QString& old_name, const QString& new_name) {
+	/* cjb void UiSceneService::SetPanelsList(const QString& old_name, const QString& new_name) {
 		if (settings_panel_ && old_name == "Ether" && uiExternal)
         {
             QList<QString> keys = panels_menus_list_.keys();
 			settings_panel_->SetPanelsList(keys);
         }
-	}
+	}*/
 
 
 //$ END_MOD $

@@ -4,8 +4,8 @@
 #include "DebugOperatorNew.h"
 
 #include "ChangeThemeWidget.h"
-#include "UiDarkBlueStyle.h"
-#include "UiProxyStyle.h"
+//cjb #include "UiDarkBlueStyle.h"
+//cjb #include "UiProxyStyle.h"
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -23,7 +23,7 @@ namespace CoreUi
         connect(settings_widget, SIGNAL(SaveSettingsClicked()), this, SLOT(ChangeTheme()));
 //        connect(settings_widget, SIGNAL(CancelClicked()), settings_widget, SLOT(CancelClicked()));
         
-        comboBox_changeTheme->addItem(QString::fromStdString("Naali dark blue"));
+        //cjb comboBox_changeTheme->addItem(QString::fromStdString("Naali dark blue"));
         comboBox_changeTheme->addItems(QStyleFactory::keys());
        
     }
@@ -41,17 +41,18 @@ namespace CoreUi
             return;
         currentTheme = theme;
 
-        if (theme.toLower() == "naali dark blue") 
+        //cjb  
+		/*if (theme.toLower() == "naali dark blue") 
         {
             QApplication::setStyle(new UiServices::UiDarkBlueStyle());
             QFontDatabase::addApplicationFont("./media/fonts/FACEB.TTF");
         } 
         else
-        {            
+        {    */        
             QFontDatabase::removeAllApplicationFonts();
             QApplication::setStyle(QStyleFactory::create(theme));
             QApplication::setPalette(QApplication::style()->standardPalette());
-        }
+       //cjb  }
         QApplication::setPalette(QApplication::style()->standardPalette());
     }
 

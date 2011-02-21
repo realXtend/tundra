@@ -19,40 +19,12 @@ namespace CoreUi
           current_scene_name_("Inworld"),
           connection_state_(UiServices::Disconnected)
     {
-        state_ether_ = new QState(this);
         state_inworld_ = new QState(this);
-
-        SetTransitions();
         setInitialState(state_inworld_);
         start();
     }
 
     // Private
-
-    void UiStateMachine::SetTransitions()
-    {
-        state_ether_->addTransition(this, SIGNAL(EtherTogglePressed()), state_inworld_);
-        state_inworld_->addTransition(this, SIGNAL(EtherTogglePressed()), state_ether_);
-
-        connect(state_ether_, SIGNAL(exited()), SLOT(StateSwitch()));
-        connect(state_inworld_, SIGNAL(exited()), SLOT(StateSwitch()));
-    }
-
-    void UiStateMachine::StateSwitch()
-    {
-        if (current_scene_ == scene_map_["Ether"])
-            next_scene_name_ = "Inworld";
-        else if (current_scene_ == scene_map_["Inworld"])
-            next_scene_name_ = "Ether";
-        else
-        {
-            if (connection_state_ == UiServices::Connected)
-                next_scene_name_ = "Inworld";
-            else
-                next_scene_name_ = "Ether";
-        }
-        AnimationsStart();
-    }
 
     void UiStateMachine::AnimationsStart()
     {
@@ -120,53 +92,11 @@ namespace CoreUi
 
     // Public
 
-    void UiStateMachine::SwitchToInworldScene()
-    {
-        CheckAndSwitch("Inworld");
-    }
-
-    void UiStateMachine::SwitchToEtherScene()
-    {
-        CheckAndSwitch("Ether");
-    }
-
-    void UiStateMachine::SwitchToBuildScene()
-    {
-        CheckAndSwitch("WorldBuilding");
-    }
-
-    void UiStateMachine::SwitchToAvatarScene()
-    {
-        CheckAndSwitch("Avatar");
-    }
-
-    void UiStateMachine::CheckAndSwitch(const QString scene_name)
-    {
-        if (current_scene_)
-        {
-            QString current_name = scene_map_.key(current_scene_);
-            if (current_name != scene_name)
-                SwitchToScene(scene_name);
-            else if (current_name.isEmpty() || current_name.isNull())
-                SwitchToScene(scene_name);
-        }
-        else
-            SwitchToScene(scene_name);
-    }
-
-    void UiStateMachine::ToggleEther()
-    {
-        if (connection_state_ == UiServices::Connected)
-            emit EtherTogglePressed();
-    }
-
     void UiStateMachine::RegisterScene(const QString &name, QGraphicsScene *scene)
     {
         if (!scene_map_.contains(name))
         {
             scene_map_[name] = scene;
-            if (name == "Ether") // Ether notifies when its ready after connected
-                connect(scene, SIGNAL(EtherSceneReadyForSwitch()), SLOT(SwitchToInworldScene()));
         }
     }
 
@@ -237,13 +167,13 @@ namespace CoreUi
         switch (connection_state_)
         {
             case UiServices::Disconnected:
-                SwitchToEtherScene();
+                // SwitchToEtherScene();
                 break;
             case UiServices::Connected:
                 // Dynamic ether notifies when its animations are done after we are connected
                 // and switch will happen then. If static ether is enabled we do the switch here.
 #ifndef DYNAMIC_LOGIN_SCENE
-                SwitchToInworldScene();
+                // SwitchToInworldScene();
 #endif
                 break;
             case UiServices::Failed:

@@ -15,7 +15,7 @@
 #include "UiServiceInterface.h"
 //$ BEGIN_MOD $
 #include "UiExternalServiceInterface.h"
-#include "MenuSettingsWidget.h"
+//cjb #include "MenuSettingsWidget.h"
 #include <QMap>
 #include <QList>
 //$ END_MOD $
@@ -116,7 +116,7 @@ namespace UiServices
 		/// UiServiceInterface override.
         void BringWidgetToFront(QString widget);
 		/// UiServiceInterface override.
-		void TransferWidgetOut(QString widgetToChange, bool out);
+		//void TransferWidgetOut(QString widgetToChange, bool out);
 		/// UiServiceInterface override.
 		void AddPanelToEditMode(QWidget* widget);
 
@@ -166,7 +166,7 @@ namespace UiServices
 		*
 		* \note: this slot is conected to a signal
 		*/
-		void SetPanelsList(const QString& old_name, const QString& new_name);
+		//cjb void SetPanelsList(const QString& old_name, const QString& new_name);
 
 //$ END_MOD $
 
@@ -180,7 +180,7 @@ namespace UiServices
 		 *	old_name name of the old current scene
 		 *	new_name name of the new current scene
 		*/
-		void HandleTransferToBuild(const QString& old_name, const QString& new_name);
+		//void HandleTransferToBuild(const QString& old_name, const QString& new_name);
 //$ END_MOD $
     private:
         /// Owner UI module.
@@ -195,7 +195,7 @@ namespace UiServices
 		//! QMap of menu pairs 
 		QMap<QString, menusPair> panels_menus_list_;
 		//!Menu Settings Panel
-		MenuSettingsWidget *settings_panel_;
+		//cjb MenuSettingsWidget *settings_panel_;
 //$ END_MOD $
     };
 }

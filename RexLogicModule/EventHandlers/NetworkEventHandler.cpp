@@ -29,11 +29,11 @@
 #ifndef UISERVICE_TEST
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
-#include "Inworld/ControlPanel/TeleportWidget.h"
+//cjb #include "Inworld/ControlPanel/TeleportWidget.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/Notifications/QuestionNotification.h"
-#include "Ether/EtherLoginNotifier.h"
+//cjb #include "Ether/EtherLoginNotifier.h"
 #endif
 
 #include "ServiceManager.h"
@@ -238,9 +238,9 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(NetworkEventInboundData* da
 #ifndef UISERVICE_TEST
     // Tell teleportWidget current region name
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
-    if (ui_module)
-        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetCurrentRegion(
-            owner_->GetServerConnection()->GetSimName().c_str());
+    //if (ui_module)
+    //    ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetCurrentRegion(
+    //        owner_->GetServerConnection()->GetSimName().c_str());
 #endif
     return false;
 }
@@ -512,9 +512,9 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(NetworkEventInboundData *data)
         mapBlocks.append(block);
     }
 #ifndef UISERVICE_TEST
-    UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
+   /* UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
-        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
+        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);*/
 #endif
     return false;
 }
@@ -538,11 +538,11 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
         return false;
 
     // Notifier qobject ptr
-    Ether::Logic::EtherLoginNotifier* notifier = ui_module->GetEtherLoginNotifier();
-    if (!notifier)
+    //cjb Ether::Logic::EtherLoginNotifier* notifier = ui_module->GetEtherLoginNotifier();
+    //cjb if (!notifier)
         return false;
 
-    if (!notifier->IsTeleporting())
+    //cjb if (!notifier->IsTeleporting())
         ongoing_script_teleport_ = false;
 
     if (!ongoing_script_teleport_)
@@ -560,14 +560,14 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
                 "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
 
         // Connect notifier to recieve the answer signal
-        QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
+        //cjb QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
 
         // Send notification
         ui_module->GetNotificationManager()->ShowNotification(question_notification);
 
         // Set bools that we dont get spam notification if you are standing in the script zone
         ongoing_script_teleport_ = true;
-        notifier->SetIsTeleporting(true);
+//cjb         notifier->SetIsTeleporting(true);
     }
 #endif
     return false;

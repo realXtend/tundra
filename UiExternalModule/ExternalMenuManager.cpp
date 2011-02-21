@@ -21,7 +21,7 @@ namespace UiExternalServices
 			controller_actions_(),
 			category_menu_()
 	{
-        root_menu_->setVisible(false); // todo read from ini
+        root_menu_->setVisible(true); // todo read from ini
     }
 
     ExternalMenuManager::~ExternalMenuManager()
@@ -148,7 +148,8 @@ namespace UiExternalServices
 	void ExternalMenuManager::SceneChanged(const QString &old_name, const QString &new_name)
     {
         if (new_name == "Ether")
-			DisableMenus();     
+			//DisableMenus();   
+			EnableMenus();
 		else
 			EnableMenus();
     }

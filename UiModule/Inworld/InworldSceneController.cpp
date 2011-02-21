@@ -7,9 +7,7 @@
 #include "ControlPanelManager.h"
 #include "Common/AnchorLayoutManager.h"
 #include "Menus/MenuManager.h"
-#include "View/CommunicationWidget.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
-#include "Inworld/ControlPanel/PersonalWidget.h"
 
 #include "UiProxyWidget.h"
 
@@ -26,8 +24,7 @@ namespace UiServices
     InworldSceneController::InworldSceneController(Foundation::Framework *framework, QGraphicsView *ui_view) :
           framework_(framework),
           ui_view_(ui_view),
-          communication_widget_(0),
-          docking_widget_(0)
+		  docking_widget_(0)
     {
         assert(ui_view_);
 
@@ -41,32 +38,17 @@ namespace UiServices
         // Init UI managers with layout manager
         control_panel_manager_ = new CoreUi::ControlPanelManager(this, layout_manager_);
         menu_manager_ = new CoreUi::MenuManager(this, layout_manager_);
-        
-        // Communication core UI
-        communication_widget_ = new CoreUi::CommunicationWidget(framework);
-        layout_manager_->AddCornerAnchor(communication_widget_, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
-        
+                
         // Connect settings widget
         connect(control_panel_manager_->GetSettingsWidget(), SIGNAL(NewUserInterfaceSettingsApplied(int, int)), SLOT(ApplyNewProxySettings(int, int)));
         
         // Apply new positions to active widgets when the inworld_scene_ is resized
         connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
-
-        // Docking widget
-        /*
-        Disable this feature for now, it is just plain annoying in its current state...
-        docking_widget_ = new QWidget();
-        docking_widget_->setStyleSheet("QWidget { background-color: rgba(0, 0, 0, 75); border: 1px solid rgba(255,255,255,100); border-radius: 0px; }");
-        docking_widget_proxy_ = inworld_scene_->addWidget(docking_widget_);
-        docking_widget_proxy_->hide();
-        docking_widget_proxy_->setVisible(false);
-        */
     }
 
     InworldSceneController::~InworldSceneController()
     {
-        SAFE_DELETE(communication_widget_);
-        SAFE_DELETE(docking_widget_);
+		SAFE_DELETE(docking_widget_);
     }
 
     UiProxyWidget *InworldSceneController::AddWidgetToScene(QWidget *widget,  Qt::WindowFlags flags)
@@ -190,19 +172,6 @@ namespace UiServices
     QObject *InworldSceneController::GetSettingsObject() const
     {
         return dynamic_cast<QObject *>(control_panel_manager_->GetSettingsWidget());
-    }
-
-    void InworldSceneController::SetFocusToChat() const
-    {
-        if (communication_widget_)
-            communication_widget_->SetFocusToChat();
-    }
-
-    // Don't touch, please
-    void InworldSceneController::SetImWidget(UiProxyWidget *im_proxy) const
-    {
-        if (communication_widget_)
-            communication_widget_->UpdateImWidget(im_proxy);
     }
 
     void InworldSceneController::ApplyNewProxySettings(int new_opacity, int new_animation_speed)

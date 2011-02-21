@@ -115,10 +115,10 @@ namespace UiServices
 
         //! Please dont call this if you dont know what you are doing
         //! Set the im proxy to world chat widget for show/hide toggling
-        void SetImWidget(UiProxyWidget *im_proxy) const;
+        //cjb void SetImWidget(UiProxyWidget *im_proxy) const;
 
         //! Set focus to chat line edit
-        void SetFocusToChat() const;
+        //cjb void SetFocusToChat() const;
 
         //! Get ControlPanelManager pointer
         CoreUi::ControlPanelManager *GetControlPanelManager()  const { return control_panel_manager_; }

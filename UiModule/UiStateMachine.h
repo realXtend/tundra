@@ -26,12 +26,6 @@ namespace CoreUi
         UiStateMachine(QGraphicsView *view, QObject *parent = 0);
 
     public slots:
-        void SwitchToInworldScene();
-        void SwitchToEtherScene();
-        void SwitchToBuildScene();
-        void SwitchToAvatarScene();
-        void ToggleEther();
-
         /** Registers new scene.
          *  The instance which creates new scene is also responsible for its deletion.
          *  @param name Name of the scene.
@@ -68,19 +62,14 @@ namespace CoreUi
         UniversalWidgetMap GetUniversalWidgets() { return universal_widgets_; }
 
     private slots:
-        void CheckAndSwitch(const QString scene_name);
         void DelayedSceneChange();
-        void SetTransitions();
-
-        void StateSwitch();
-        void AnimationsStart();
+         void AnimationsStart();
         void AnimationsFinished();
 
         void CheckAnimationTargets(QParallelAnimationGroup *animations);
 
     private:
         QStateMachine *state_machine_;
-        QState *state_ether_;
         QState *state_inworld_;
 
         QGraphicsView *view_;
@@ -97,7 +86,6 @@ namespace CoreUi
         UniversalWidgetMap universal_widgets_;
 
     signals:
-        void EtherTogglePressed();
         void SceneOutAnimationFinised();
         void SceneAboutToChange(const QString &oldName, const QString &newName);
         void SceneChanged(const QString &oldName, const QString &newName);

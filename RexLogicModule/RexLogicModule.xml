@@ -5,4 +5,5 @@
     <dependency>OgreRenderingModule</dependency>
     <dependency>EnvironmentModule</dependency>
     <dependency>AvatarModule</dependency>
+	<dependency>UiModule</dependency>
 </config>

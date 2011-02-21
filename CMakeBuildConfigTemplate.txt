@@ -140,7 +140,7 @@ add_subdirectory(ECEditorModule)        # Tool for editing Naali scene data. Req
 if (OGREASSETEDITOR)
     add_subdirectory(OgreAssetEditorModule) # Enables Ogre-specific asset editors. Depends on OgreRenderingModule.
 endif()
-add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
+#add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
 add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
 add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
 add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
@@ -161,15 +161,15 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by
 #add_subdirectory(LegacyAvatarModule)
 
 if (MSVC)
-   add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+#   add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
    add_subdirectory (TtsModule)
-   add_subdirectory (NotificationTTS)
+#   add_subdirectory (NotificationTTS)
 endif()
 
 #add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
 if (NOT UISERVICE_TEST)
     #depends on Inventory which doesn't currently build with the new asset api
     #add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined). Depends on OgreRenderingModule and InventoryModule.
-    add_subdirectory(LibraryModule)         # Implements drag & drop url meshes, materials and textures from webview to scene. Part of WorldBuildingModule
-    add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
+    #add_subdirectory(LibraryModule)         # Implements drag & drop url meshes, materials and textures from webview to scene. Part of WorldBuildingModule
+    #add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
 endif()

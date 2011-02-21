@@ -203,7 +203,7 @@ public slots:
 	 *
 	 *	\note For now, this method is only used for Console Widget
      */
-	virtual void TransferWidgetOut(QString widgetToChange, bool out) = 0;
+	//virtual void TransferWidgetOut(QString widgetToChange, bool out) = 0;
 
 	/*! Add the widget to the edit configuration (if edit mode enable, widget enable, if not, widget disable)
 	 *	\param widget widget

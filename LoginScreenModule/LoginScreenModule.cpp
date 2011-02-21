@@ -85,7 +85,7 @@ void LoginScreenModule::PostInitialize()
         window_ = new LoginWidget(framework_);
         connect(window_, SIGNAL(ExitClicked()), SLOT(Exit()));
 
-        ui->AddWidgetToScene(window_, Qt::Widget);
+        ui->AddWidgetToScene(window_, true, true, Qt::Widget);
         ui->ShowWidget(window_);
 
         Foundation::LoginServiceInterface *login = framework_->GetService<Foundation::LoginServiceInterface>();
@@ -98,7 +98,7 @@ void LoginScreenModule::PostInitialize()
             connect(window_, SIGNAL(Connect(const QMap<QString, QString> &)),
                 this, SLOT(ProcessTundraLogin(const QMap<QString, QString> &)));
             
-            connect(login, SIGNAL(LoginStarted()), window_, SLOT(StartProgressBar()));
+           connect(login, SIGNAL(LoginStarted()), window_, SLOT(StartProgressBar()));
 
             connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(StopProgressBar()));
             connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(SetStatus(const QString &)));

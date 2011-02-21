@@ -74,7 +74,7 @@ namespace UiServices
 
         CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
 
-        Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
+        //cjb Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
 
 		//$ BEGIN_MOD $
 		//void ToggleFullScreen();
@@ -94,10 +94,10 @@ namespace UiServices
     private slots:
         void OnKeyPressed(KeyEvent *key);
 
-        void OnSceneChanged(const QString &old_name, const QString &new_name);
+        //cjb void OnSceneChanged(const QString &old_name, const QString &new_name);
 
         //! Takes UI screenshots of world/avatar with rendering service
-        void TakeEtherScreenshots();
+       //cjb void TakeEtherScreenshots();
 
     private:
         //! Notify all ui module components of connected/disconnected state
@@ -129,13 +129,13 @@ namespace UiServices
         NotificationManager *inworld_notification_manager_;
 
         //! Ether Logic
-        Ether::Logic::EtherLogic *ether_logic_;
+        //cjb Ether::Logic::EtherLogic *ether_logic_;
 
         //! Current World Stream pointer
         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
 
         //! Ui settings service 
-        UiSettingsPtr ui_settings_service_;
+       //cjb  UiSettingsPtr ui_settings_service_;
 
         //! Ui service.
         UiSceneServicePtr ui_scene_service_;
@@ -145,7 +145,7 @@ namespace UiServices
 
         //! Welcome message to be sent when inworld scene is enabled
         //! Do NOT delete this on deconstructor or anywhere else for that matter!
-        MessageNotification *welcome_message_;
+       //cjb  MessageNotification *welcome_message_;
 
 		//$ BEGIN_MOD $
 		//$ MOD_DESCRIPTION Inside this method is where we create the QMainWindow of the main Aplication $

@@ -19,9 +19,7 @@ namespace CoreUi
     class ControlPanelButton;
 
     class SettingsWidget;
-    class PersonalWidget;
     class LanguageWidget;
-    class TeleportWidget;
     class CacheSettingsWidget;
     class ChangeThemeWidget;
 
@@ -42,14 +40,7 @@ namespace CoreUi
         qreal GetContentWidth() const;
 
         SettingsWidget *GetSettingsWidget()  const { return settings_widget_; }
-        PersonalWidget *GetPersonalWidget() const { return personal_widget_; }
-        TeleportWidget *GetTeleportWidget() const { return teleport_widget_; }
-        LanguageWidget *GetLanguageWidget() const { return language_widget_; }
-        CacheSettingsWidget *GetCacheSettingsWidget() const { return cache_settings_widget_; }
-		//$ BEGIN_MOD $
-		void CreateOptionalControls();
 		void ToggleSettingsVisibility(bool visible);
-		//$ END_MOD $
 
     private slots:
         void CreateBasicControls();
@@ -58,10 +49,7 @@ namespace CoreUi
         void ControlButtonClicked(UiServices::ControlButtonType type);
 
         // Internal handling of settings widget
-        //void ToggleSettingsVisibility(bool visible);
-        void ToggleTeleportVisibility(bool visible);
         void CheckSettingsButtonStyle();
-        void CheckTeleportButtonStyle();
 
     private:
         AnchorLayoutManager *layout_manager_;
@@ -73,9 +61,7 @@ namespace CoreUi
 
         // Contolled core widgets
         SettingsWidget *settings_widget_;
-        PersonalWidget *personal_widget_;
         LanguageWidget* language_widget_;
-        TeleportWidget* teleport_widget_;
         ChangeThemeWidget* changetheme_widget_;
         CacheSettingsWidget *cache_settings_widget_;
 

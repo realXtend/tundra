@@ -13,9 +13,7 @@
 #include "Inworld/ControlPanel/BackdropWidget.h"
 #include "Inworld/ControlPanel/ControlPanelButton.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
-#include "Inworld/ControlPanel/PersonalWidget.h"
 #include "Inworld/ControlPanel/LanguageWidget.h"
-#include "Inworld/ControlPanel/TeleportWidget.h"
 #include "Inworld/ControlPanel/CacheSettingsWidget.h"
 #include "Inworld/ControlPanel/ChangeThemeWidget.h"
 
@@ -34,7 +32,6 @@ namespace CoreUi
         backdrop_widget_(new CoreUi::BackdropWidget()),
         settings_widget_(0),
         language_widget_(0),
-        teleport_widget_(0),
         changetheme_widget_(0)
     {
         // Controls panel
@@ -57,19 +54,6 @@ namespace CoreUi
         language_widget_ = new LanguageWidget(settings_widget_);
         settings_widget_->AddWidget(language_widget_, "Language");
 
-        // Personal widget
-        personal_widget_ = new PersonalWidget();
-        layout_manager_->AddCornerAnchor(personal_widget_, Qt::BottomRightCorner, Qt::BottomRightCorner);
-        connect(personal_widget_, SIGNAL(ControlButtonClicked(UiServices::ControlButtonType)), SLOT(ControlButtonClicked(UiServices::ControlButtonType)));
-
-        // Teleport widget
-        teleport_widget_ = new TeleportWidget(layout_manager_->GetScene(), this);
-        ControlButtonAction *teleport_action = new ControlButtonAction(GetButtonForType(UiServices::Teleport), teleport_widget_, this);
-        
-        SetHandler(UiServices::Teleport, teleport_action);
-        connect(teleport_action, SIGNAL(toggled(bool)), SLOT(ToggleTeleportVisibility(bool)));
-        connect(teleport_widget_, SIGNAL(Hidden()), SLOT(CheckTeleportButtonStyle()));
-
         // Adding change theme tab
         changetheme_widget_ = new ChangeThemeWidget(settings_widget_);
         settings_widget_->AddWidget(changetheme_widget_, "Change theme");
@@ -86,7 +70,7 @@ namespace CoreUi
     {
         QList<UiServices::ControlButtonType> buttons;
         /// @todo: Read from ini
-		buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
+		buttons << UiServices::Notifications /*<< UiServices::Teleport*/ << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;
         previous_button = 0;
@@ -101,7 +85,7 @@ namespace CoreUi
 
             // Add to internal lists
             control_buttons_.append(button);
-            if (button_type == UiServices::Notifications || button_type == UiServices::Settings || button_type == UiServices::Teleport)
+            if (button_type == UiServices::Notifications || button_type == UiServices::Settings /*|| button_type == UiServices::Teleport*/)
                 backdrop_area_buttons_map_[button_type] = button;
 
             connect(button, SIGNAL(ControlButtonClicked(UiServices::ControlButtonType)), SLOT(ControlButtonClicked(UiServices::ControlButtonType)));
@@ -120,44 +104,7 @@ namespace CoreUi
 
     void ControlPanelManager::ControlButtonClicked(UiServices::ControlButtonType type)
     {
-        // Hide others if type is toggle core ui
-        switch (type)
-        {
-            case UiServices::Settings:
-            {
-                /*ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
-                ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Teleport]);
-                if (action_notifications)
-                    action_notifications->RequestHide();
-                if (action_teleport)
-                    action_teleport->RequestHide();*/
-                break;
-            }
-            case UiServices::Teleport:
-            {
-                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
-                //ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
-                if (action_notifications)
-                    action_notifications->RequestHide();
-                //if (action_settings)
-                //   action_settings->RequestHide();
-                break;
-            }
-            case UiServices::Notifications:
-            {
-                //ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
-                ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Teleport]);
-                //if (action_settings)
-                //    action_settings->RequestHide();
-                if (action_teleport)
-                    action_teleport->RequestHide();
-                break;
-            }
-            default:
-                break;
-        }
-
-        if (action_map_.contains(type))
+      if (action_map_.contains(type))
             action_map_[type]->trigger();
     }
 
@@ -174,22 +121,9 @@ namespace CoreUi
 
     }
 
-    void ControlPanelManager::ToggleTeleportVisibility(bool visible)
-    {
-        if (visible)
-            teleport_widget_->show();
-        else
-            teleport_widget_->AnimatedHide();
-    }
-
     void ControlPanelManager::CheckSettingsButtonStyle()
     {
         backdrop_area_buttons_map_[UiServices::Settings]->CheckStyle(false);
-    }
-
-    void ControlPanelManager::CheckTeleportButtonStyle()
-    {
-        backdrop_area_buttons_map_[UiServices::Teleport]->CheckStyle(false);
     }
 
     // Public
@@ -215,33 +149,6 @@ namespace CoreUi
     qreal ControlPanelManager::GetContentWidth() const
     { 
         return backdrop_widget_->GetContentWidth();
-    }
-
-    void ControlPanelManager::CreateOptionalControls()
-    {
-		QList<UiServices::ControlButtonType> buttons;
-        buttons  << UiServices::Build << UiServices::Ether;
-
-        ControlPanelButton *button = 0;
-        //ControlPanelButton *previous_button = 0;
-        foreach(UiServices::ControlButtonType button_type, buttons)
-        {
-            // Create the button and anchor in scene
-            button = new ControlPanelButton(button_type); 
-            if (previous_button)
-                layout_manager_->AnchorWidgetsHorizontally(previous_button, button);
-            else
-                layout_manager_->AddCornerAnchor(button, Qt::TopRightCorner, Qt::TopRightCorner);
-
-            // Add to internal lists
-            control_buttons_.append(button);
-            if (button_type == UiServices::Notifications || button_type == UiServices::Settings || button_type == UiServices::Teleport)
-                backdrop_area_buttons_map_[button_type] = button;
-
-            connect(button, SIGNAL(ControlButtonClicked(UiServices::ControlButtonType)), SLOT(ControlButtonClicked(UiServices::ControlButtonType)));
-            previous_button = button;
-        }
-        UpdateBackdrop();
     }
 
 }
