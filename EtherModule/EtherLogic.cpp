@@ -29,7 +29,13 @@
 
 #include <QDebug>
 
+#include "EventManager.h"
+#include "../TundraLogicModule/TundraEvents.h"
+
 #include "MemoryLeakCheck.h"
+
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("Ether")
 
 namespace Ether
 {
@@ -78,6 +84,9 @@ namespace Ether
 
             // Create login handler
             login_notifier_ = new EtherLoginNotifier(this, scene_controller_, framework);
+
+			connect(login_notifier_, SIGNAL( StartTundraLogin(QMap<QString, QString>) ),
+				this, SLOT( ProcessTundraLogin(QMap<QString, QString>) ));
 
             // Signals from scene contoller
             connect(scene_controller_, SIGNAL( ApplicationExitRequested() ),
@@ -240,12 +249,24 @@ namespace Ether
             qDebug() << "World map in memory" << endl;
             foreach(Data::WorldInfo *world_info, world_map_.values())
             {
-                Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld *>(world_info);
-                if (ow)
-                {
-                    ow->Print();
-                    continue;
-                }
+				if (world_info->worldType() == WorldTypes::OpenSim)
+				{
+					Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld *>(world_info);
+					if (ow)
+					{
+						ow->Print();
+						continue;
+					}
+				}
+				else if (world_info->worldType() == WorldTypes::Tundra)
+				{
+					Data::TundraWorld *tw = dynamic_cast<Data::TundraWorld *>(world_info);
+					if (tw)
+					{
+						tw->Print();
+						continue;
+					}
+				}
                 // Add other types later
             }
             qDebug() << endl;
@@ -301,17 +322,14 @@ namespace Ether
                 switch (world_info->worldType())
                 {
                     case WorldTypes::OpenSim:
+					case WorldTypes::Tundra:
                     {
-                        Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld *>(world_info);
-                        if (ow)
-                        {
-                            QString title;
-                            if (ow->loginUrl().port() != -1)
-                                title = QString("%1:%2").arg(ow->loginUrl().host(), QString::number(ow->loginUrl().port()));
-                            else
-                                title = ow->loginUrl().host();
-                            card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(ow->id()), title, ow->pixmapPath());
-                        }
+						QString title;
+						if (world_info->loginUrl().port() != -1)
+							title = QString("%1:%2").arg(world_info->loginUrl().host(), QString::number(world_info->loginUrl().port()));
+						else
+							title = world_info->loginUrl().host();
+						card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(world_info->id()), title, world_info->pixmapPath());
                         break;
                     }
 
@@ -473,17 +491,16 @@ namespace Ether
         void EtherLogic::WorldCreated(Data::WorldInfo *world_data)
         {
             View::InfoCard *new_world_card = 0;
-            if (world_data->worldType() == WorldTypes::OpenSim)
+			if (world_data->worldType() == WorldTypes::OpenSim || world_data->worldType() == WorldTypes::Tundra)
             {
-                Data::OpenSimWorld *ow = dynamic_cast<Data::OpenSimWorld *>(world_data);
                 QString title;
-                if (ow->loginUrl().port() != -1)
-                    title = QString("%1:%2").arg(ow->loginUrl().host(), QString::number(ow->loginUrl().port()));
+                if (world_data->loginUrl().port() != -1)
+                    title = QString("%1:%2").arg(world_data->loginUrl().host(), QString::number(world_data->loginUrl().port()));
                 else
-                    title = ow->loginUrl().host();
-                if (ow)
-                    new_world_card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(ow->id()), 
-                                                        title, ow->pixmapPath());
+                    title = world_data->loginUrl().host();
+                if (world_data)
+                    new_world_card = new View::InfoCard(View::InfoCard::BottomToTop, card_size_, QUuid(world_data->id()), 
+                                                        title, world_data->pixmapPath());
             }
 
             if (!new_world_card)
@@ -558,5 +575,18 @@ namespace Ether
                 }
             }
         }
+
+		void EtherLogic::ProcessTundraLogin(const QMap<QString, QString> &data)
+		{
+			TundraLogic::Events::TundraLoginEventData logindata;
+			logindata.address_ = data["WorldHost"].toStdString();
+			logindata.port_ = data["WorldPort"].toUShort();
+			logindata.username_ = data["Username"].toStdString();
+			logindata.password_ = data["Password"].toStdString();
+			logindata.protocol_ = data["Protocol"].toStdString();
+			LogInfo("Attempting Tundra connection to " + data["WorldHost"].toStdString() + ":" + data["WorldPort"].toStdString() + " as " + logindata.username_);
+			event_category_id_t tundra_category_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
+			framework_->GetEventManager()->SendEvent(tundra_category_, TundraLogic::Events::EVENT_TUNDRA_LOGIN, &logindata);
+		}
     }
 }

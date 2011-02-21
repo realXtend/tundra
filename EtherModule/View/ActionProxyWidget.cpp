@@ -136,8 +136,8 @@ namespace Ether
                     // Adding a new card
                     if (type == "add")
                     {
-                        action_widget = CreateNewOpenSimWorld();
-                        title = "Creating new OpenSim world";
+                        action_widget = WorldSelectionWidget();
+                        title = "Creating new world";
                     }
 
                     // Removing the card
@@ -151,12 +151,11 @@ namespace Ether
                     else
                     {
                         // Generate QWidget with world and action widget type
-                        if (world_info->worldType() == WorldTypes::OpenSim)
+                        if (world_info->worldType() == WorldTypes::OpenSim || world_info->worldType() == WorldTypes::Tundra)
                         {
-                            Data::OpenSimWorld *os_world = dynamic_cast<Data::OpenSimWorld *>(world_info);
-                            if (os_world && type == "info")
+                            if (world_info && type == "info")
                             {
-                                QMap<QString, QVariant> grid_info = os_world->gridInfo();
+                                QMap<QString, QVariant> grid_info = world_info->gridInfo();
                                 if (grid_info.contains("welcome"))
                                 {
                                     title = grid_info["welcome"].toString();
@@ -173,14 +172,14 @@ namespace Ether
                                     action_widget = new QLabel("This server does not have welcome/information URL in grid info. Try fetching grid info first.");
                                 }
                             }
-                            else if (os_world && type == "edit")
+                            else if (world_info && type == "edit")
                             {
-                                action_widget = OpenSimWorldEditWidget(os_world);
-                                title = QString("Editing OpenSim world %1").arg(os_world->loginUrl().host());
+                                action_widget = OpenSimWorldEditWidget(world_info);
+                                title = QString("Editing OpenSim world %1").arg(world_info->loginUrl().host());
                             }
-                            else if (os_world && type == "register")
+                            else if (world_info && type == "register")
                             {
-                                QMap<QString, QVariant> grid_info = os_world->gridInfo();
+                                QMap<QString, QVariant> grid_info = world_info->gridInfo();
                                 if (grid_info.contains("register"))
                                 {
                                     title = grid_info["register"].toString();
@@ -339,12 +338,12 @@ namespace Ether
             return os_edit_widget;
         }
 
-        QWidget *ActionProxyWidget::OpenSimWorldInfoWidget(Data::OpenSimWorld *data)
+		QWidget *ActionProxyWidget::OpenSimWorldInfoWidget(Data::WorldInfo *data)
         {
             return OpenSimWorldEditWidget(data);
         }
 
-        QWidget *ActionProxyWidget::OpenSimWorldEditWidget(Data::OpenSimWorld *data)
+        QWidget *ActionProxyWidget::OpenSimWorldEditWidget(Data::WorldInfo *data)
         {
             QWidget *os_world_edit_widget;
             current_grid_info_map_.clear();
@@ -409,7 +408,6 @@ namespace Ether
             QLabel *pic_label = new_os_world_widget->findChild<QLabel*>("pictureLabel");
             pic_label->setPixmap(pic);
 
-            current_type_ = "new-world-opensim";
             current_os_world_data_ = 0;
 
             return new_os_world_widget;
@@ -826,7 +824,7 @@ namespace Ether
                     return;
                 }
             }
-            else if (current_type_ == "new-world-opensim")
+            else if (current_type_ == "new-world-opensim" || current_type_ == "new-world-tundra")
             {
                 QUrl login_url;
                 QString url_string;
@@ -852,8 +850,12 @@ namespace Ether
 
                 if (login_url.isValid())
                 {
-					Data::OpenSimWorld *new_opensim_world = new Data::OpenSimWorld(login_url, start_location, current_grid_info_map_);
-                    data_manager_->StoreOrUpdateWorld(new_opensim_world);
+					Data::WorldInfo *new_world;
+					if (current_type_ == "new-world-opensim")
+						new_world = (Data::WorldInfo *) new Data::OpenSimWorld(login_url, start_location, current_grid_info_map_);
+					else
+						new_world = (Data::WorldInfo *) new Data::TundraWorld(login_url, start_location, current_grid_info_map_);
+                    data_manager_->StoreOrUpdateWorld(new_world);
                 }
                 else if (status)
                 {
@@ -865,5 +867,46 @@ namespace Ether
             // Start hiding widget due save was clicked
             StartHideAnimations();
         }
+
+		QWidget *ActionProxyWidget::WorldSelectionWidget()
+        {
+            QWidget *world_selection_widget;
+
+            QUiLoader loader;
+            QFile uiFile("./data/ui/ether/world-selection-widget.ui");
+            world_selection_widget = loader.load(&uiFile, 0);
+            uiFile.close();
+
+            QPushButton *button;
+            button = world_selection_widget->findChild<QPushButton*>("pushButtonOpenSim");
+            connect(button, SIGNAL( clicked() ), SLOT( WorldSelectedOpenSim() ));
+            button = world_selection_widget->findChild<QPushButton*>("pushButtonTundra");
+            connect(button, SIGNAL( clicked() ), SLOT( WorldSelectedTundra() ));
+
+            return world_selection_widget;
+        }
+
+		void ActionProxyWidget::WorldSelectedOpenSim()
+        {
+            current_widget_->hide();
+			current_type_ = "new-world-opensim";
+            QWidget *widget = CreateNewOpenSimWorld();
+            ether_action_widget_ui_.widgetLayout->addWidget(widget);
+            ether_action_widget_ui_.titleLabel->setText("Creating new OpenSim world");
+            current_widget_ = widget;
+			StartShowAnimations(widget);
+        }
+
+        void ActionProxyWidget::WorldSelectedTundra()
+        {
+            current_widget_->hide();
+			current_type_ = "new-world-tundra";
+            QWidget *widget = CreateNewOpenSimWorld();
+            ether_action_widget_ui_.widgetLayout->addWidget(widget);
+            ether_action_widget_ui_.titleLabel->setText("Creating new Tundra world");
+            current_widget_ = widget;
+            StartShowAnimations(widget);
+        }
+
     }
 }

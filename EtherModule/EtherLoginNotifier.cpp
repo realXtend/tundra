@@ -63,18 +63,6 @@ namespace Ether
         void EtherLoginNotifier::ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards)
         {
             QMap<QString, QString> info_map;
-            switch (data_cards.second->worldType())
-            {
-                case WorldTypes::OpenSim:
-                {
-                    Data::OpenSimWorld *ow = checked_static_cast<Data::OpenSimWorld*>(data_cards.second);
-                    assert(ow);
-                    info_map["WorldAddress"] = ow->loginUrl().toString();
-                    info_map["StartLocation"] = ow->startLocation();
-                    break;
-                }
-            }
-
             switch (data_cards.first->avatarType())
             {
                 case AvatarTypes::OpenSim:
@@ -84,8 +72,6 @@ namespace Ether
                     info_map["Username"] = oa->userName();
                     info_map["Password"] = oa->password();
                     info_map["AvatarType"] = "OpenSim";
-                    last_info_map_ = info_map;
-                    emit StartLogin(info_map);
                     break;
                 }
                 case AvatarTypes::RealXtend:
@@ -96,10 +82,33 @@ namespace Ether
                     info_map["Password"] = ra->password();
                     info_map["AuthenticationAddress"] = ra->authUrl().toString();
                     info_map["AvatarType"] = "RealXtend";
-                    last_info_map_ = info_map;
+                    break;
+                }
+            }
+			switch (data_cards.second->worldType())
+            {
+                case WorldTypes::OpenSim:
+                {
+                    Data::WorldInfo *ow = checked_static_cast<Data::WorldInfo*>(data_cards.second);
+                    assert(ow);
+                    info_map["WorldAddress"] = ow->loginUrl().toString();
+                    info_map["StartLocation"] = ow->startLocation();
+
                     emit StartLogin(info_map);
                     break;
                 }
+				case WorldTypes::Tundra:
+				{
+					Data::WorldInfo *ow = checked_static_cast<Data::WorldInfo*>(data_cards.second);
+                    assert(ow);
+                    info_map["WorldAddress"] = ow->loginUrl().toString();
+                    info_map["StartLocation"] = ow->startLocation();
+					info_map["WorldHost"] = ow->loginUrl().host();
+					info_map["WorldPort"] = QString::number( ow->loginUrl().port() );
+					last_info_map_ = info_map;
+					emit StartTundraLogin(info_map);
+                    break;
+				}
             }
         }
 

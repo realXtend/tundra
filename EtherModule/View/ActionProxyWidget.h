@@ -12,6 +12,7 @@
 
 #include "Data/OpenSimAvatar.h"
 #include "Data/OpenSimWorld.h"
+#include "Data/TundraWorld.h"
 #include "Data/RealXtendAvatar.h"
 #include "Data/DataManager.h"
 #include "View/InfoCard.h"
@@ -47,8 +48,8 @@ namespace Ether
             QWidget *OpenSimAvatarEditWidget(Data::OpenSimAvatar *data);
 
             QWidget *CreateNewOpenSimWorld();
-            QWidget *OpenSimWorldInfoWidget(Data::OpenSimWorld *data);
-            QWidget *OpenSimWorldEditWidget(Data::OpenSimWorld *data);
+            QWidget *OpenSimWorldInfoWidget(Data::WorldInfo *data);
+            QWidget *OpenSimWorldEditWidget(Data::WorldInfo *data);
 
             QWidget *CreateNewRealXtendAvatar();
             QWidget *RealXtendAvatarInfoWidget(Data::RealXtendAvatar *data);
@@ -68,6 +69,11 @@ namespace Ether
             QWidget *AvatarSelectionWidget();
             void AvatarSelectedOpenSim();
             void AvatarSelectedRealXtend();
+			
+			QWidget *WorldSelectionWidget();
+            void WorldSelectedOpenSim();
+            void WorldSelectedTundra();
+
 
             void SaveInformation();
 
@@ -81,7 +87,7 @@ namespace Ether
             QPropertyAnimation *visibility_animation_;
 
             // Current data and type
-            Data::OpenSimWorld *current_os_world_data_;
+            Data::WorldInfo *current_os_world_data_;
             Data::OpenSimAvatar *current_os_avatar_data_;
             Data::RealXtendAvatar *current_rex_avatar_data_;
             QString current_type_;

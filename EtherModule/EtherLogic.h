@@ -65,6 +65,9 @@ namespace Ether
             void AvatarCreated(Data::AvatarInfo *avatar_data);
             void WorldCreated(Data::WorldInfo *world_data);
 
+			//! Handles Tundra login (send an event, which TundraLogicModule will handle)
+			void ProcessTundraLogin(const QMap<QString, QString> &data);
+
         private:
             Foundation::Framework *framework_;
 

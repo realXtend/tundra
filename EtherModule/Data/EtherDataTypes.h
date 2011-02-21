@@ -33,7 +33,8 @@ namespace Ether
         {
             None,
             OpenSim,
-            Taiga
+            Taiga,
+			Tundra
         };
     }
 }

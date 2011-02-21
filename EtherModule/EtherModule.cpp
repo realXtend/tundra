@@ -41,14 +41,15 @@ namespace Ether
 #include "LoggingFunctions.h"
 	DEFINE_POCO_LOGGING_FUNCTIONS("Ether")
 
-		std::string EtherModule::type_name_static_ = "Ether";
+	std::string EtherModule::type_name_static_ = "Ether";
 
 	EtherModule::EtherModule() :
 	IModule(type_name_static_),
 		ether_logic_(0),
 		framework_category_(0),
 		network_category_(0),
-		connected_(false)
+		connected_(false),
+		ui_scene_("")
 	{
 	}
 
@@ -82,6 +83,8 @@ namespace Ether
 			// Connect the switch signal to needed places
 			connect(ui, SIGNAL(SceneChanged(const QString&, const QString&)), 
 				ether_logic_->GetQObjSceneController(), SLOT(UiServiceSceneChanged(const QString&, const QString&)));
+			connect(ui, SIGNAL(SceneChanged(const QString&, const QString&)), 
+				this, SLOT(SceneChanged(const QString&, const QString&)));
 			LogDebug("Ether Logic STARTED");
 
 
@@ -154,12 +157,14 @@ namespace Ether
 			case EVENT_SERVER_DISCONNECTED:
 				connected_ = false;
 				ether_logic_->SetConnectionState(Disconnected);
-				//if (ui && window_)
-				//    ui->ShowWidget(window_);
+				if (ui)
+					ui->SwitchToScene("Ether");
 				break;
 			case EVENT_CONNECTION_FAILED:
 				connected_ = false;
 				ether_logic_->SetConnectionState(Failed);
+				if (ui)
+					ui->SwitchToScene("Ether");
 				break;
 			}
 		}
@@ -170,16 +175,19 @@ namespace Ether
 			{
 			case TundraLogic::Events::EVENT_TUNDRA_CONNECTED:
 				connected_ = true;
-				//if (ui && window_)
-				//{
-				//    window_->Connected();
-				//    ui->HideWidget(window_);
-				//}
+				if (ui && ether_logic_)
+				{
+					ether_logic_->SetConnectionState(Connected);
+					ui->SwitchToScene("Inworld");
+				}
 				break;
 			case TundraLogic::Events::EVENT_TUNDRA_DISCONNECTED:
 				connected_ = false;
-				//if (ui && window_)
-				//    ui->ShowWidget(window_);
+				if (ui && ether_logic_)
+				{
+					ether_logic_->SetConnectionState(Disconnected);
+				    ui->SwitchToScene("Ether");
+				}
 				break;
 			}
 		}
@@ -196,43 +204,16 @@ namespace Ether
 		const QKeySequence &toggleMenu = framework_->GetInput()->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
 		if (key->keyCode == toggleMenu)
 		{
-			//UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-			//if (connected_ && ui)
-			//    if (!window_->isVisible())
-			//        ui->ShowWidget(window_);
-			//    else
-			//        ui->HideWidget(window_);
+			UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+			if (ui)
+				if (connected_ && ui_scene_ == "Ether")
+					ui->SwitchToScene("Inworld");
+				else
+					ui->SwitchToScene("Ether");
 		}
 	}
 
-	void EtherModule::ProcessTundraLogin(const QMap<QString, QString> &data)
-	{
-		if (data["AvatarType"] == "Tundra")
-		{
-			std::string worldAddress = data["WorldAddress"].toStdString();
-			unsigned short port = 0; // Use default if not specified
 
-			size_t pos = worldAddress.find(':');
-			if (pos != std::string::npos)
-			{
-				try
-				{
-					port = ParseString<int>(worldAddress.substr(pos + 1));
-				}
-				catch (...) {}
-				worldAddress = worldAddress.substr(0, pos);
-			}
-
-			TundraLogic::Events::TundraLoginEventData logindata;
-			logindata.address_ = worldAddress;
-			logindata.port_ = port;
-			logindata.username_ = data["Username"].toStdString();
-			logindata.password_ = data["Password"].toStdString();
-			logindata.protocol_ = data["Protocol"].toStdString();
-			LogInfo("Attempting Tundra connection to " + worldAddress + " as " + logindata.username_);
-			framework_->GetEventManager()->SendEvent(tundra_category_, TundraLogic::Events::EVENT_TUNDRA_LOGIN, &logindata);
-		}
-	}
 
 	void EtherModule::Exit()
 	{
@@ -292,6 +273,11 @@ namespace Ether
 		    render_result = render_service->RenderAvatar(avatar_head_position, avatar_orientation);
 		    render_result.save(paths.second);
 		}
+	}
+
+	void EtherModule::SceneChanged(const QString &old_name, const QString &new_name)
+	{
+		ui_scene_ = new_name;
 	}
 
 }

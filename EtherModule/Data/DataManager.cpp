@@ -7,6 +7,7 @@
 #include "RealXtendAvatar.h"
 #include "OpenSimAvatar.h"
 #include "OpenSimWorld.h"
+#include "TundraWorld.h"
 
 #include <QVariant>
 #include <QStringList>
@@ -273,6 +274,16 @@ namespace Ether
                             world_map_[id] = opensim_world;
                             break;
                         }
+						case WorldTypes::Tundra:
+                        {
+                            Data::TundraWorld *tundra_world = new Data::TundraWorld(login_url,
+																					   start_location,
+                                                                                       grid_info,
+                                                                                       image_path,
+                                                                                       id);
+                            world_map_[id] = tundra_world;
+                            break;
+                        }
 
                         case WorldTypes::Taiga:
                         case WorldTypes::None:
@@ -304,18 +315,13 @@ namespace Ether
                 switch (type)
                 {
                     case WorldTypes::OpenSim:
+					case WorldTypes::Tundra:
                     {
-                        Data::OpenSimWorld *opensim_world = dynamic_cast<Data::OpenSimWorld *>(world_info);
-                        if (opensim_world)
-                        {
-                            world_settings.setValue("loginurl", opensim_world->loginUrl());
-							world_settings.setValue("startlocation", opensim_world->startLocation());
-                            world_settings.setValue("gridinfo", opensim_world->gridInfo());
-                            world_settings.setValue("imagepath", opensim_world->pixmapPath());
-                            emit WorldDataCreated(opensim_world);
-                        }
-                        else
-                            qDebug() << "Could not cast WorldInfo to OpenSimWorld";
+						world_settings.setValue("loginurl", world_info->loginUrl());
+						world_settings.setValue("startlocation", world_info->startLocation());
+						world_settings.setValue("gridinfo", world_info->gridInfo());
+						world_settings.setValue("imagepath", world_info->pixmapPath());
+						emit WorldDataCreated(world_info);
                         break;
                     }
 
@@ -337,29 +343,25 @@ namespace Ether
                 switch (type)
                 {
                     case WorldTypes::OpenSim:
+					case WorldTypes::Tundra:
                     {
-                        Data::OpenSimWorld *opensim_world = dynamic_cast<Data::OpenSimWorld *>(world_info);
-                        if (opensim_world)
-                        {
-                            world_settings.setValue(QString("%1/loginurl").arg(uuid_string), opensim_world->loginUrl());
-							world_settings.setValue(QString("%1/startlocation").arg(uuid_string), opensim_world->startLocation());
-                            world_settings.setValue(QString("%1/gridinfo").arg(uuid_string), opensim_world->gridInfo());
-                            world_settings.setValue(QString("%1/imagepath").arg(uuid_string), opensim_world->pixmapPath());
-                            
-                            QString new_title;
-                            if (opensim_world->loginUrl().port() != -1)
-                                new_title = QString("%1:%2").arg(opensim_world->loginUrl().host(), QString::number(opensim_world->loginUrl().port()));
-                            else
-                                new_title = opensim_world->loginUrl().host();
+						world_settings.setValue(QString("%1/loginurl").arg(uuid_string), world_info->loginUrl());
+						world_settings.setValue(QString("%1/startlocation").arg(uuid_string), world_info->startLocation());
+						world_settings.setValue(QString("%1/gridinfo").arg(uuid_string), world_info->gridInfo());
+						world_settings.setValue(QString("%1/imagepath").arg(uuid_string), world_info->pixmapPath());
 
-                            emit ObjectUpdated(opensim_world->id(), new_title);
-                        }
-                        else
-                            qDebug() << "Could not cast WorldInfo to OpenSimWorld";
+						QString new_title;
+						if (world_info->loginUrl().port() != -1)
+							new_title = QString("%1:%2").arg(world_info->loginUrl().host(), QString::number(world_info->loginUrl().port()));
+						else
+							new_title = world_info->loginUrl().host();
+
+						emit ObjectUpdated(world_info->id(), new_title);
+
                         break;
                     }
-
-                    case WorldTypes::Taiga:
+	
+					case WorldTypes::Taiga:
                     case WorldTypes::None:
                         qDebug() << "Taiga and None typed world cannot be updated to file yet...";;
                         break;

@@ -66,6 +66,9 @@ namespace Ether
             /// Emitted when login URL for Taiga web login is ready.
             void StartLogin(const QString &url);
 
+			/// Emitted when login info for Tundra login is ready.
+            void StartTundraLogin(const QMap<QString, QString> &info_map);
+
             void Disconnect();
             void Quit();
 

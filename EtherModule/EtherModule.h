@@ -76,20 +76,23 @@ private:
     /// Are we currently connected to world.
     bool connected_;
 
+	/// Current UI scene
+	QString ui_scene_;
+
 private slots:
     /** Handles key events from input service.
      *  @param key Key event.
      */
     void HandleKeyEvent(KeyEvent *key);
-
-    //! Handles Tundra login (send an event, which TundraLogicModule will handle)
-    void ProcessTundraLogin(const QMap<QString, QString> &data);
-    
+   
     /// Exits the program.
     void Exit();
 
 	//! Takes UI screenshots of world/avatar with rendering service
 	void TakeEtherScreenshots();
+
+	/// Handles UI SceneChanged
+	void SceneChanged(const QString &old_name, const QString &new_name);
 };
 
 }
