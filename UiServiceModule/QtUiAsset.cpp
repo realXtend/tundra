@@ -27,6 +27,13 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     data_.clear();
     data_.insert(data_.begin(), data, data + numBytes);   
 
+    // If we are in headless mode, do not mark refs as dependency as it will
+    // just spawn unneeded resources to the asset api without the actual need for them.
+    // Note that this means we assume you will not show any ui on a headless run, while you
+    // still could without the main window.
+    if (assetAPI->IsHeadless())
+        return true;
+
     // Find references
     QByteArray dataQt((const char*)&data_[0], data_.size());
     if (!dataQt.isNull() && !dataQt.isEmpty())
@@ -43,23 +50,49 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
                 if (indexStart == -1)
                     break;
 
-                // ")" due to Qt style sheets have this syntax most commonly: "some-image-property: url(pattern);"
-                int indexStop = dataQt.indexOf(")", indexStart);
-                if (indexStop == -1)
+                // ")" due to Qt style sheets have this syntax for example: 
+                // some-image-property: url({"|'}pattern{"|'});
+                int indexStop1 = dataQt.indexOf(")", indexStart);
+                // "<" due to normal qt xml defining images, for example: 
+                // <iconset><normaloff>pattern</normaloff>pattern</iconset>
+                int indexStop2 = dataQt.indexOf("<", indexStart);
+                if (indexStop1 == -1 && indexStop2 == -1)
                 {
                     from = indexStart + 1;
                     continue;
                 }
+                int indexStop = indexStop1;
+                if (indexStop2 < indexStop || indexStop == -1)
+                    indexStop = indexStop2;
                 from = indexStop;
-                
+                if (indexStop < indexStart)
+                    continue;
+
                 // Asset reference validation
                 QString stringRef = dataQt.mid(indexStart, indexStop - indexStart).trimmed();
+                
+                // Ignore ui elements that have patterns as text, for example:
+                // <widget><property name="text"><string>pattern</string></property></widget>
+                if (indexStop == indexStop2)
+                {
+                    int indexStop3 = dataQt.indexOf(">", indexStart);
+                    QString xmlEndTag = dataQt.mid(indexStop2, (indexStop3 - indexStop2) + 1);
+                    if (xmlEndTag.toLower() == "</string>")
+                        continue;
+                }
+
+                // Remove the last ' or " from url({"|'}pattern{"|'}) before the found )
+                QChar lastChar = stringRef.at(stringRef.length()-1);
+                if (lastChar == '\'' || lastChar == '\"')
+                    stringRef.chop(1);
                 if (stringRef.isEmpty() || stringRef.isNull())
                     continue;
+
                 // Check for not wanted characters
                 foreach(QString invalid, invalid_ref_chars_)
                     if (stringRef.contains(invalid))
                         continue;
+
                 // QUrl validation, in tolerant mode
                 QUrl ref(stringRef, QUrl::TolerantMode);
                 if (!ref.isValid())
