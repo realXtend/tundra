@@ -981,7 +981,7 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
     // This asset is now completely finished, and all its dependencies have been loaded.
     if (transfer->asset)
         transfer->asset->EmitLoaded();
-
+    
     pendingDownloadRequests.erase(transfer->source.ref);
 }
 
@@ -1040,12 +1040,14 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
 {
     std::vector<AssetPtr> dependents;
     for(size_t i = 0; i < assetDependencies.size(); ++i)
+    {
         if (QString::compare(assetDependencies[i].second, dependee, Qt::CaseInsensitive) == 0)
         {
             AssetMap::iterator iter = assets.find(assetDependencies[i].first);
             if (iter != assets.end())
                 dependents.push_back(iter->second);
         }
+    }
     return dependents;
 }
 
@@ -1062,7 +1064,16 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
 
         AssetPtr existing = GetAsset(refs[i].ref);
         if (!existing)
+        {
+            // Not loaded, just mark the single one
             ++numDependencies;
+        }
+        else
+        {
+            // Ask the dependencies of the dependency, we want all of the asset
+            // down the chain to be loaded before we load the base asset
+            numDependencies += NumPendingDependencies(existing);
+        }
     }
 
     return numDependencies;
@@ -1083,7 +1094,6 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
         if (iter != currentTransfers.end())
         {
             AssetTransferPtr transfer = iter->second;
-
             if (NumPendingDependencies(dependent) == 0)
                 AssetDependenciesCompleted(transfer);
         }
@@ -1163,7 +1173,7 @@ QString GetResourceTypeFromResourceFileName(const char *name)
     if (file.endsWith(".particle"))
         return "OgreParticle";
 
-    const char *textureFileTypes[] = { ".jpg", ".png", ".tga", ".bmp", ".dds" };
+    const char *textureFileTypes[] = { ".jpg", ".jpeg", ".png", ".tga", ".bmp", ".dds", ".gif" };
     if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
         return "Texture";
 
