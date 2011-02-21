@@ -265,14 +265,25 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
         return;
     }
 
-    QStringList extension_whitelist; //the search is system wide, so whitelist is best to not leak to 3rd party libs
-    extension_whitelist << "qt.core" << "qt.gui" << "qt.xml" << "qt.xmlpatterns" << "qt.opengl"; //webkit not allowed directly so scripts can't open hidden browsers to do malicious stuff. uitools to be investigated
+    QStringList qt_extension_whitelist;
+    QStringList qt_class_blacklist;
 
-    QStringList qt_blacklist; //the types in qt core&gui which are not safe. should probably be a whitelist too.
-    qt_blacklist << "QDir" << "QFile" << "QFileSystemWatcher" << "QFileInfo" << "QLibrary" << "QPluginLoader" << "QProcess"; //from qtcore. should double&triplecheck. or move to whitelisting, but it's tricky to code here
-    qt_blacklist << "QFileSystemModel" << "QDirModel" << "QFileDialog"; //qt.gui filesys stuff
+    /// Allowed extension imports
+    qt_extension_whitelist << "qt.core" << "qt.gui" << "qt.xml" << "qt.xmlpatterns" << "qt.opengl" << "qt.webkit";
 
-    if (!trusted_ && !extension_whitelist.contains(scriptExtensionName, Qt::CaseInsensitive))
+    /// qt.core and qt.gui: Classes that may be harmful to your system from untrusted scripts
+    qt_class_blacklist << "QLibrary" << "QPluginLoader" << "QProcess"               // process and library access
+                       << "QFile" << "QDir" << "QFileSystemModel" << "QDirModel"    // file system access
+                       << "QFileDialog" << "QFileSystemWatcher" << "QFileInfo" 
+                       << "QFileOpenEvent" << "QFileSystemModel"
+                       << "QClipboard" << "QDesktopServices";                       // "system" access
+    
+    /// qt.webkit: Initial blacklist, enabling some of these can be discussed. 
+    /// Availble classes: QWebView, QGraphicsWebView, QWebPage, QWebFrame
+    qt_class_blacklist << "QWebDatabase" << "QWebElement" << "QWebElementCollection" << "QWebHistory" << "QWebHistoryInterface" << "QWebHistoryItem"
+                       << "QWebHitTestResult" << "QWebInspector" << "QWebPluginFactory" << "QWebSecurityOrigin" << "QWebSettings"; 
+
+    if (!trusted_ && !qt_extension_whitelist.contains(scriptExtensionName, Qt::CaseInsensitive))
     {
         LogWarning("JavascriptInstance::ImportExtension: refusing to load a QtScript plugin for an untrusted instance: " + scriptExtensionName.toStdString());
         return;
@@ -285,7 +296,7 @@ void JavascriptInstance::ImportExtension(const QString &scriptExtensionName)
     if (!trusted_)
     {
         QScriptValue exposed;
-        foreach (const QString &blacktype, qt_blacklist)
+        foreach (const QString &blacktype, qt_class_blacklist)
         {
             exposed = engine_->globalObject().property(blacktype);
             if (exposed.isValid())
