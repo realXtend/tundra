@@ -319,7 +319,10 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
 
     // Register both constructors and methods (with js prototype style)
     // http://doc.qt.nokia.com/latest/scripting.html#prototype-based-programming-with-the-qtscript-c-api
-    QScriptValue ctorVector3df = engine->newFunction(createVector3df);
+    /* doesn't work for some reason, is now hacked in toScriptValue to every instance (bad!)
+    QScriptValue protoVector3df = engine->newObject();
+    protoVector3df.setProperty("normalize2", engine->newFunction(Vector3df_prototype_normalize));*/
+    QScriptValue ctorVector3df = engine->newFunction(createVector3df); //, protoVector3df);
     engine->globalObject().setProperty("Vector3df", ctorVector3df);
     
     QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);

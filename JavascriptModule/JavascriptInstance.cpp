@@ -315,9 +315,11 @@ void JavascriptInstance::CreateEngine()
     engine_ = new QScriptEngine;
     connect(engine_, SIGNAL(signalHandlerException(const QScriptValue &)), SLOT(OnSignalHandlerException(const QScriptValue &)));
 //#ifndef QT_NO_SCRIPTTOOLS
-//    QScriptEngineDebugger debugger;
+//    debugger_ = new QScriptEngineDebugger();
 //    debugger.attachTo(engine_);
+////  debugger_->action(QScriptEngineDebugger::InterruptAction)->trigger();
 //#endif
+
     ExposeQtMetaTypes(engine_);
     ExposeNaaliCoreTypes(engine_);
     ExposeCoreApiMetaTypes(engine_);
@@ -343,6 +345,7 @@ void JavascriptInstance::DeleteEngine()
     if (!destructor.isUndefined())
         destructor.call();
     SAFE_DELETE(engine_);
+    //SAFE_DELETE(debugger_);
 }
 
 void JavascriptInstance::OnSignalHandlerException(const QScriptValue& exception)
