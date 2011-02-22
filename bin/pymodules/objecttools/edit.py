@@ -161,7 +161,7 @@ class ObjectEdit(Component):
         
     def resetValues(self):
         for ent in self.selmasses.iterkeys():
-            if ent.rigidbody == null:
+            if ent.rigidbody == None:
                 continue
             try:
                 mass = self.selmasses[ent]
