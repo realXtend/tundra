@@ -37,7 +37,9 @@ function CreateCamera(scene)
 
     scene.EmitEntityCreatedRaw(entity);
 
-	if (scene.GetEntityByNameRaw("ObjectCamera") != null)
+	/* somehow breaks the game cameras in lvm 
+         - they are deactivated, and av cam or something is activated instead, upon any arrowkey/wasd presses in the games
+    if (scene.GetEntityByNameRaw("ObjectCamera") != null)
 		return;
 
 	var objectcameraentity = scene.CreateEntityRaw(scene.NextFreeIdLocal(), ["EC_Script"]);
@@ -52,5 +54,5 @@ function CreateCamera(scene)
 	objectcamerascript.scriptRef = objectcameraRef;
 	
 	scene.EmitEntityCreatedRaw(objectcameraentity);
-
+     */
 }
