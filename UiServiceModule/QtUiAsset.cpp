@@ -98,7 +98,7 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
                 if (!ref.isValid())
                     continue;
 
-                AssetReference refStruct(ref.toString());
+                AssetReference refStruct(stringRef);
 
                 // Check for duplicates
                 for(size_t i=0; i<refs_.size(); ++i)
