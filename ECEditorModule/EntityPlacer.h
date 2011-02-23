@@ -3,31 +3,21 @@
 #ifndef incl_ECEditorModule_EntityPlacer_h
 #define incl_ECEditorModule_EntityPlacer_h
 
-#include "ForwardDefines.h"
-#include "CoreTypes.h"
-#include "../Input/InputFwd.h"
+#include "InputFwd.h"
+#include "SceneFwd.h"
+#include "OgreModuleFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 
 #include <QObject>
 
+namespace Foundation { class Framework; }
 class EC_Placeable;
-
-namespace OgreRenderer
-{
-    class Renderer;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-}
-
-namespace Ogre
-{
-    class SceneNode;
-    class Entity;
-}
 
 class EntityPlacer : public QObject
 {
     Q_OBJECT
+
 public:
     //! If entity that we want to place in our world wont hold any mesh component. We use default mesh to
     //! tell the user where hes placing his mesh (e.g. placing sound source on the scene).
@@ -54,12 +44,10 @@ private:
     InputContextPtr input_;
     EC_Placeable *placeable_;
     Foundation::Framework *framework_;
-    
     Scene::EntityWeakPtr entity_;
     Ogre::Entity *meshEntity_;
     OgreRenderer::RendererWeakPtr renderer_;
     int previousScrollValue_;
-
     bool finished_;
     bool useCustomMesh_;
 };

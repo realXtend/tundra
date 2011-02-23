@@ -3,20 +3,23 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include <QSignalMapper>
 #include "Provider.h"
 #include "Session.h"
 #include "MumbleVoipModule.h"
 #include "ServerInfoProvider.h"
-#include "EventManager.h"
-#include "NetworkEvents.h" // For network events
 #include "MicrophoneAdjustmentWidget.h"
+#include "EC_VoiceChannel.h"
+
+#include "EventManager.h"
+#include "NetworkEvents.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "EC_VoiceChannel.h"
 #include "SceneManager.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
+#include "Entity.h"
+
+#include <QSignalMapper>
 
 #include "MemoryLeakCheck.h"
 

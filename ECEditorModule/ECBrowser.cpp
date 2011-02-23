@@ -7,6 +7,7 @@
 #include "ECComponentEditor.h"
 #include "TreeWidgetItemExpandMemory.h"
 
+#include "Entity.h"
 #include "IComponent.h"
 #include "SceneManager.h"
 #include "Framework.h"
@@ -23,7 +24,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
 #include <QMimeData>
 
 #include "MemoryLeakCheck.h"
-
 
 ECBrowser::ECBrowser(Foundation::Framework *framework, QWidget *parent):
     QtTreePropertyBrowser(parent),
