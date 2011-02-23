@@ -1,0 +1,175 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "WebLoginWidget.h"
+#include "Framework.h"
+#include "EventManager.h"
+
+#include <QFile>
+#include <QLineEdit>
+#include <QWebFrame>
+#include <QUrl>
+#include <QNetworkCookie>
+
+#include "NetworkAccessManager.h"
+
+#include "MemoryLeakCheck.h"
+
+namespace CoreUi
+{
+    namespace Classical
+    {
+		WebLoginWidget::WebLoginWidget(QWidget *parent, Foundation::Framework *framework) : 
+            QWidget(parent), framework_(framework)
+        {
+            permanentCookieStore = new WebLoginPermanentCookie(this);
+            InitWidget();
+            ConnectSignals();
+        }
+        WebLoginWidget::~WebLoginWidget()
+        {
+            delete permanentCookieStore;
+        }
+
+        void WebLoginWidget::InitWidget()
+        {
+            // Read default url from file
+            QFile confFile("./data/default_login.ini");
+            if (!confFile.open(QIODevice::ReadOnly | QIODevice::Text))
+                return;
+            address_ = confFile.readLine();
+            confFile.close();
+
+            // Init UI
+            setupUi(this);
+
+            comboBox_Address->setEditText(address_);
+            
+            pushButton_Back->setIcon(QIcon("./data/ui/images/arrow_left_48.png"));
+            pushButton_Back->setIconSize(QSize(20, 20));
+            pushButton_Forward->setIcon(QIcon("./data/ui/images/arrow_right_48.png"));
+            pushButton_Forward->setIconSize(QSize(20, 20));
+            pushButton_Stop->setIcon(QIcon("./data/ui/images/cross_48.png"));
+            pushButton_Stop->setIconSize(QSize(20, 20));
+            pushButton_Stop->setEnabled(false);
+            pushButton_Refresh->setIcon(QIcon("./data/ui/images/refresh_48.png"));
+            pushButton_Refresh->setIconSize(QSize(20, 20));
+            pushButton_Go->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
+            pushButton_Go->setIconSize(QSize(20, 20));
+            pushButton_ClearCookie->setIcon(QIcon("./data/ui/images/clear_cookie_48.png"));
+            pushButton_ClearCookie->setIconSize(QSize(20, 20));
+            pushButton_ClearCookie->setToolTip("Clear cookie");
+        }
+
+        void WebLoginWidget::ConnectSignals()
+        {
+            QNetworkAccessManager *oldManager = webView->page()->networkAccessManager();
+            NetworkAccessManager *newManager = new NetworkAccessManager(oldManager, webView);
+
+            webView->page()->setNetworkAccessManager(newManager);
+
+            webView->page()->networkAccessManager()->setCookieJar( permanentCookieStore);
+
+            connect(newManager, SIGNAL( WebLoginUrlReceived(const QUrl &) ), this, SLOT( LoadUrl(const QUrl &) ));
+
+            // Buttons
+            connect(pushButton_Back, SIGNAL( clicked() ), webView, SLOT( back() ));
+            connect(pushButton_Forward, SIGNAL( clicked() ), webView, SLOT( forward() ));
+            connect(pushButton_Stop, SIGNAL( clicked() ), webView, SLOT( stop() ));
+            connect(pushButton_Refresh, SIGNAL( clicked() ), webView, SLOT( reload() ));
+            connect(pushButton_Go, SIGNAL( clicked(bool) ), this, SLOT( GoToUrl(bool) ));
+            connect(pushButton_ClearCookie, SIGNAL( clicked() ), permanentCookieStore, SLOT(clear()));
+            
+            // Addressbar
+            connect(comboBox_Address->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( GoToUrl() ));
+            
+            // Webview
+            connect(webView, SIGNAL( loadStarted() ), this, SLOT( LoadStarted() ));
+            connect(webView, SIGNAL( loadProgress(int) ), this, SLOT( UpdateUi(int) ));
+            connect(webView, SIGNAL( loadFinished(bool) ), this, SLOT( ProcessPage(bool) ));
+
+            webView->setUrl(QUrl(address_));
+        }
+
+        void WebLoginWidget::GoToUrl()
+        {
+            GoToUrl(true);
+        }
+
+        void WebLoginWidget::GoToUrl(bool checked)
+        {
+            webView->setUrl(QUrl(comboBox_Address->lineEdit()->text()));
+        }
+
+        void WebLoginWidget::LoadStarted()
+        {
+            pushButton_Stop->setEnabled(true);
+            label_Status->setText("Loading page...");
+            progressBar_Status->show();
+        }
+
+        void WebLoginWidget::UpdateUi(int progress)
+        {
+            if (progressBar_Status)
+                progressBar_Status->setValue(progress);
+        }
+
+        void WebLoginWidget::ProcessPage(bool success)
+        {
+            if (success)
+            {
+                // Update GUI
+                pushButton_Stop->setEnabled(false);
+                address_ = webView->url().toString();
+                comboBox_Address->lineEdit()->setText(address_);
+                //setWindowTitle(webView_->page()->mainFrame()->title().append(" - realXtend Naali web browser"));
+                if (comboBox_Address->findText(address_, Qt::MatchFixedString) == -1)
+                    comboBox_Address->addItem(address_);
+                label_Status->setText("Done");
+                progressBar_Status->hide();
+
+                // Do actual HTML page processing if this was a login success page...
+                if (webView->page()->mainFrame()->title() == "LoginSuccess")
+                {
+                    int pos1, pos2;
+                    QString entry_point_url;
+                    QString returnValue = webView->page()->mainFrame()->evaluateJavaScript("ReturnSuccessValue()").toString();
+
+                    pos1 = returnValue.indexOf(QString("http://"), 0);
+                    pos2 = returnValue.indexOf(QString("?"), 0);
+                    entry_point_url = returnValue.mid(pos1, pos2-pos1);
+                    //emit WebLoginInfoRecieved(webView->page()->mainFrame());
+                    emit WebLoginUrlReceived(entry_point_url);
+                }
+            }
+        }
+
+        void WebLoginWidget::LoadUrl(const QUrl &url)
+        {
+            if (url.scheme() == "cablebeach")
+            {
+                QString entry_point_url;
+                QString urlString = url.toString().replace("cablebeach://", "");
+                if (urlString.startsWith("http//"))
+                    urlString = urlString.replace("http//", "http://");
+                emit WebLoginUrlReceived(urlString);
+            }
+
+            if (url.scheme() == "realxtend")
+            {
+				QString urlString = url.toString().replace("realxtend://", "");
+				if (!urlString.isEmpty())
+				{
+					QStringList values = urlString.split('?');
+					if (!values.isEmpty() && values.length() == 4)
+					{				
+						Foundation::WebLoginDataEvent data(values[2], values[3], values[1], values[0]);
+						framework_->GetEventManager()->SendEvent(framework_->GetEventManager()->QueryEventCategory("Framework"), Foundation::WEB_LOGIN_DATA_RECEIVED, &data);
+					}
+				}                
+			}
+		
+		}
+    }
+}
