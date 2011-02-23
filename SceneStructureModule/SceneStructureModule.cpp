@@ -3,7 +3,7 @@
  *
  *  @file   SceneStructureModule.cpp
  *  @brief  Provides Scene Structure and Assets windows and raycast drag-and-drop import of
- *          .mesh, .scene, .xml and .nbf files to the main window.
+ *          various content file formats to the main window.
  */
 
 #include "StableHeaders.h"
@@ -17,8 +17,8 @@
 
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-
 #include "SceneManager.h"
+#include "Entity.h"
 #include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
 #include "Input.h"
