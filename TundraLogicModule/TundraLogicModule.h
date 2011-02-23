@@ -7,6 +7,8 @@
 #include "TundraLogicModuleApi.h"
 #include "ModuleLoggingFunctions.h"
 
+#include "AssetFwd.h"
+
 namespace kNet
 {
 class MessageConnection;
@@ -25,8 +27,11 @@ class Client;
 class Server;
 class SyncManager;
 
-class TUNDRALOGIC_MODULE_API TundraLogicModule : public IModule
+class TUNDRALOGIC_MODULE_API TundraLogicModule : public QObject, public IModule
 {
+
+Q_OBJECT
+
 public:
     /// Default constructor.
     TundraLogicModule();
@@ -96,6 +101,10 @@ public:
     /// Return server
     const boost::shared_ptr<Server>& GetServer() const { return server_; }
     
+private slots:
+    void StartupSceneLoaded(AssetPtr asset);
+    void StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason);
+
 private:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
