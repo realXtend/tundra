@@ -96,7 +96,9 @@ namespace Scene
         void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default) { return EmitEntityCreated(dynamic_cast<Scene::Entity*>(entity), change); }
         
         void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
-        
+
+        void LoadSceneXMLRaw(const QString &filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change) { LoadSceneXML(filename.toStdString(), clearScene, replaceOnConflict, change); }
+
         //! Is scene view enabled (ie. rendering-related components actually create stuff)
         bool ViewEnabled() const { return viewenabled_; }
 
