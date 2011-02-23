@@ -10,6 +10,10 @@
 #include "SceneImporter.h"
 #include "SyncManager.h"
 
+#include "AssetAPI.h"
+#include "IAssetTransfer.h"
+#include "IAsset.h"
+
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
@@ -170,12 +174,50 @@ void TundraLogicModule::LoadStartupScene()
     // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
     // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
     // scene we now load will be able to refer to local:// assets in its subfolders.
-
-    bool useBinary = startupScene.find(".tbin") != std::string::npos;
-    if (!useBinary)
-        scene->LoadSceneXML(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+    if (AssetAPI::ParseAssetRefType(QString::fromStdString(startupScene)) != AssetAPI::AssetRefLocalPath)
+    {
+        AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene);
+        if (!sceneTransfer.get())
+        {
+            LogError("Asset transfer initialization failed for scene file " + startupScene + " failed");
+            return;
+        }
+        connect(sceneTransfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(StartupSceneLoaded(AssetPtr)));
+        connect(sceneTransfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(StartupSceneTransferFailed(IAssetTransfer*, QString)));
+        LogInfo("Loading startup scene from " + startupScene);
+    }
     else
-        scene->LoadSceneBinary(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+    {
+        bool useBinary = startupScene.find(".tbin") != std::string::npos;
+        if (!useBinary)
+            scene->LoadSceneXML(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        else
+            scene->LoadSceneBinary(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+    }
+}
+
+void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return;
+
+    QString sceneDiskSource = asset->DiskSource();
+    if (!sceneDiskSource.isEmpty())
+    {
+        bool useBinary = sceneDiskSource.endsWith(".tbin");
+        if (!useBinary)
+            scene->LoadSceneXML(sceneDiskSource.toStdString(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+        else
+            scene->LoadSceneBinary(sceneDiskSource.toStdString(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+    }
+    else
+        LogError("Could not resolve disk source for loaded scene file " + asset->Name().toStdString());
+}
+
+void TundraLogicModule::StartupSceneTransferFailed(IAssetTransfer *transfer, QString reason)
+{
+    LogError("Failed to load startup scene from " + transfer->GetSourceUrl().toStdString() + " reason: " + reason.toStdString());
 }
 
 Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)
