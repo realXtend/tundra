@@ -19,13 +19,15 @@
 //$ BEGIN_MOD $
 #include <QMap>
 #include <QList>
+#include <QWidget>
+#include <QDockWidget>
 //$ END_MOD $
 
 namespace UiServices
 {
     class UiModule;
 //$ BEGIN_MOD $
-	typedef QPair<UiProxyWidget*,QDockWidget*> proxyDock;
+	//typedef QPair<UiProxyWidget*,QDockWidget*> proxyDock;
 	typedef QPair<QString, QString> menusPair;
 //$ END_MOD $
 
@@ -50,7 +52,7 @@ namespace UiServices
     public slots:
 
         /// UiServiceInterface override.
-        UiProxyWidget *AddWidgetToScene(QWidget *widget, bool moveable = true, bool outside = false, Qt::WindowFlags flags = Qt::Dialog);
+        UiProxyWidget *AddWidgetToScene(QWidget *widget, bool dockable = true, bool outside = false, Qt::WindowFlags flags = Qt::Dialog);
 
         /// UiServiceInterface override.
         bool AddWidgetToScene(UiProxyWidget *widget);
@@ -186,11 +188,13 @@ namespace UiServices
         UiModule *owner_;
 //$ BEGIN_MOD $
 		//! List of movable widget
-		QList<QString> *moveable_widgets_;
-		//! QMap of widgets pairs
-		QMap<QString, proxyDock> proxy_dock_list;
-		//! QMap of menu pairs 
+
 		QMap<QString, menusPair> panels_menus_list_;
+
+		//New lists
+		QMap<QString, QDockWidget*> external_dockeable_widgets_;
+		QMap<QString, UiProxyWidget*> internal_widgets_;
+		QMap<QString, QWidget*> external_nondockeable_widgets_;
 //$ END_MOD $
     };
 }

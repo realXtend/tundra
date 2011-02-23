@@ -41,15 +41,16 @@ namespace Console
             
         console_ui_ = new Ui::ConsoleWidget();
         console_widget_ = new QWidget();
+		console_widget_->setWindowTitle("Console");
         
         // Init internals
         console_ui_->setupUi(console_widget_);
         UiServicePtr ui_service = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (!ui_service)
             return;
-        Foundation::UiExternalServiceInterface *ui_external_ui_service = framework_->GetService<Foundation::UiExternalServiceInterface>();
+        //Foundation::UiExternalServiceInterface *ui_external_ui_service = framework_->GetService<Foundation::UiExternalServiceInterface>();
         proxy_widget_ = ui_service->AddWidgetToScene(console_widget_,true,true);
-        if (!ui_external_ui_service)
+        /*if (!ui_external_ui_service)
         {
             proxy_widget_->setMinimumHeight(0);
             proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
@@ -63,10 +64,10 @@ namespace Console
             animation_.setTargetObject(proxy_widget_);
             animation_.setPropertyName("geometry");
             animation_.setDuration(300);
-        }
+       // }*/
 
-        ui_service->AddWidgetToMenu(proxy_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
-
+        ui_service->AddWidgetToMenu(console_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
+		
         // Handle line edit input
         connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
         // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads

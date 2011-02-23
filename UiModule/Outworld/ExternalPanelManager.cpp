@@ -22,7 +22,7 @@ namespace UiServices
     {
     }
 
-	QWidget* ExternalPanelManager::AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags)
+	QDockWidget* ExternalPanelManager::AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags)
     {
         QDockWidget *wid = new QDockWidget(title, qWin_, flags);
 		wid->setObjectName(title);
@@ -40,9 +40,10 @@ namespace UiServices
 		if (all_qdockwidgets_in_window_.contains(widget))
 			return false;
 
-        //Configure zones for the dockwidget
+        //Configure zones for the dockwidget		
 		qWin_->addDockWidget(Qt::LeftDockWidgetArea, widget, Qt::Vertical);
 		widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
+		
 		widget->setFloating(true);
 		widget->hide();
 

@@ -70,7 +70,7 @@ namespace CoreUi
     {
         QList<UiServices::ControlButtonType> buttons;
         /// @todo: Read from ini
-		buttons << UiServices::Notifications /*<< UiServices::Teleport*/ << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
+		buttons << UiServices::Notifications << UiServices::Settings << UiServices::Quit; // << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;
         previous_button = 0;

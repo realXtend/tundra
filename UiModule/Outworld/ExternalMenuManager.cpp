@@ -62,12 +62,12 @@ namespace UiServices
 		return true;	
 	}
 
-	bool ExternalMenuManager::AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu, bool moveable)
+	bool ExternalMenuManager::AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu)
     {       
 		//Check if is not already
 		if (controller_panels_.contains(QString(menu+"+"+widget->windowTitle())))
 			return false;
-		QAction *action = new QAction(name, dynamic_cast<QDockWidget*>(widget));
+		QAction *action = new QAction(name, widget);
 		if (menu.isEmpty())		
         {
 			AddMenu("Others");
@@ -93,7 +93,7 @@ namespace UiServices
     bool ExternalMenuManager::RemoveExternalMenuPanel(QWidget *controlled_widget)
     { 
 		//The widget is the widget of RealXtend that is inside a dockwidget!
-		QString del = controller_panels_.key(dynamic_cast<QDockWidget*>(controlled_widget->parentWidget()));
+		QString del = controller_panels_.key(controlled_widget->parentWidget());
 		if (controller_actions_.contains(del)){
 			//Begin_mod
 			QAction *adel = controller_actions_[del];
@@ -118,7 +118,7 @@ namespace UiServices
     {
 		QAction *act = dynamic_cast<QAction*>(sender());
 
-		QDockWidget  *aux = dynamic_cast<QDockWidget *>(act->parentWidget());
+		QWidget  *aux = dynamic_cast<QWidget *>(act->parentWidget());
 		if (aux->isHidden())
 			aux->show();
 		else

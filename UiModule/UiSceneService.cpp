@@ -25,7 +25,7 @@
 
 namespace UiServices
 {
-    UiSceneService::UiSceneService(UiModule *owner) : owner_(owner), moveable_widgets_(new QList<QString>())
+    UiSceneService::UiSceneService(UiModule *owner) : owner_(owner)
     {
         connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
                 this, SIGNAL(SceneChanged(const QString&, const QString&)));
@@ -43,76 +43,49 @@ namespace UiServices
     {
     }
 
-    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool moveable , bool outside, Qt::WindowFlags flags)
+    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool dockable , bool outside, Qt::WindowFlags flags)
     {
-		bool bydefault=false;
-		//uiExternal= owner_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		QWidget* qdock= new QDockWidget(widget->windowTitle());
-		qdock->setObjectName(widget->windowTitle());
-		qdock->setWindowTitle(widget->windowTitle());		
-		widget->setObjectName(widget->windowTitle());
-		UiProxyWidget *proxy;
+		QSettings settings("Naali UIExternal2", "UiExternal Settings");
+		QString pos = "vacio";
+		if (widget->windowTitle() != "")
+			pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
 
-		QString test = widget->windowTitle(); 
-
-		//First of all, we check if it is moveable and if it has been placed in settings file..
-		if (moveable){
-			//save value
-			moveable_widgets_->append(widget->windowTitle());
-			//then check if we have settings..
-			QSettings settings("Naali UIExternal2", "UiExternal Settings");
-			QString pos = "vacio";
-			if (widget->windowTitle() != "")
-				pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
-
-			if (pos == "outside"){
-				proxy = new UiProxyWidget(widget, flags);
-				proxy->setWidget(0);
-				qdock = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
-			} else if(pos == "inside")
-				proxy= owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
-			else 
-				bydefault = true;
-		}else
-			bydefault = true;
-
-		//We do by default behaviour when seetings var doesn't exist or if it is not moveable
-		if (bydefault) {
-			if(outside){	
-				proxy = new UiProxyWidget(widget, flags);
-				proxy->setWidget(0);
-				qdock = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle()); 
-			}else
-				proxy= owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
+		if (pos == "outside")
+			external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
+		else if(pos == "inside") {
+			internal_widgets_[widget->windowTitle()] = owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
+			return internal_widgets_[widget->windowTitle()];
+		}		
+		else
+		{
+			if (outside && dockable)
+				external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
+			else if (outside && !dockable)
+				external_nondockeable_widgets_[widget->windowTitle()] = widget;
+			else {
+				internal_widgets_[widget->windowTitle()] = owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
+				return internal_widgets_[widget->windowTitle()];
+			}
 		}
-		//Save the pair
-		proxy_dock_list[widget->windowTitle()]=proxyDock(proxy,dynamic_cast<QDockWidget*>(qdock));
-		return proxy;
+		return 0;
     }
 
     bool UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
     {
-		//DEFAULT OUTSIDE = TRUE & MOVEABLE = TRUE. IMPORTANT THING TO HAVE IN MIND!!		
-		QWidget* qdock= new QDockWidget(widget->windowTitle());
-		qdock->setObjectName(widget->windowTitle());
-		qdock->setWindowTitle(widget->windowTitle());
-		widget->setObjectName(widget->windowTitle());
-		QWidget* wid = widget->widget();
-
+		//DEFAULT OUTSIDE = TRUE & MOVEABLE = TRUE. IMPORTANT THING TO HAVE IN MIND!!
 		QSettings settings("Naali UIExternal2", "UiExternal Settings");
-		QString pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
-		if (pos != "inside")
-        {
-			widget->setWidget(0);
-			qdock = owner_->GetExternalPanelManager()->AddExternalPanel(wid,widget->windowTitle());
-		}
-        else
-			owner_->GetInworldSceneController()->AddProxyWidget(widget);
-		//Save the pair
-		proxy_dock_list[widget->windowTitle()]=proxyDock(widget,dynamic_cast<QDockWidget*>(qdock));
-		//If moveable, register it as moveable
-		moveable_widgets_->append(wid->windowTitle());
-		return true;
+		QString pos = "vacio";
+		if (widget->windowTitle() != "")
+			pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
+
+		if(pos == "inside")
+			if (owner_->GetInworldSceneController()->AddProxyWidget(widget)){
+				internal_widgets_[widget->windowTitle()] = widget;
+				return true;
+			}
+		else
+			external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget->widget(),widget->windowTitle());			
+		return false;
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget)
@@ -121,12 +94,12 @@ namespace UiServices
 		if (!panels_menus_list_.contains(widget->windowTitle()))
 			panels_menus_list_[widget->windowTitle()]=menusPair("", "");
 
-		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-		//If is outside is because it has been put outside, and also the menu!
-		if(qdock->widget())
-			owner_->GetExternalMenuManager()->AddExternalMenuPanel(qdock,widget->windowTitle(),"Panels", moveable_widgets_->contains(widget->windowTitle()));
-        else
-		    owner_->GetInworldSceneController()->AddWidgetToMenu(widget, widget->windowTitle(), "", "");
+		if (external_dockeable_widgets_.contains(widget->windowTitle()))
+           owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],widget->windowTitle(),"Panels");
+		else if  (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],widget->windowTitle(),"Panels");
+        else if  (internal_widgets_.contains(widget->windowTitle()))
+			owner_->GetInworldSceneController()->AddWidgetToMenu(external_nondockeable_widgets_[widget->windowTitle()], widget->windowTitle(), "", "");
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon)
@@ -135,10 +108,11 @@ namespace UiServices
 		if (!panels_menus_list_.contains(widget->windowTitle()))
 			panels_menus_list_[widget->windowTitle()]=menusPair(menu, icon);
 
-		QDockWidget* qdock = proxy_dock_list[widget->windowTitle()].second;
-        if (qdock && qdock->widget())
-           owner_->GetExternalMenuManager()->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
-        else
+		if (external_dockeable_widgets_.contains(widget->windowTitle()))
+           owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],entry,menu);
+		else if  (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],entry,menu);
+        else if  (internal_widgets_.contains(widget->windowTitle()))
             owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
     }
 
@@ -148,93 +122,100 @@ namespace UiServices
 		if (!panels_menus_list_.contains(widget->windowTitle()))
 			panels_menus_list_[widget->windowTitle()]=menusPair(menu, icon);
 
-	    QDockWidget* qdock = proxy_dock_list[widget->windowTitle()].second; 
-        if (qdock->widget())
-           owner_->GetExternalMenuManager()->AddExternalMenuPanel(qdock,entry,menu, moveable_widgets_->contains(widget->windowTitle()));
-        else
-            owner_->GetInworldSceneController()->AddWidgetToMenu(widget->widget(), entry, menu, icon);
+		if (internal_widgets_.contains(widget->windowTitle()))
+			owner_->GetInworldSceneController()->AddWidgetToMenu(widget->widget(), entry, menu, icon);
+		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()],entry,menu);
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],entry,menu);
     }
 
     void UiSceneService::RemoveWidgetFromMenu(QWidget *widget)
     {
-		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-		owner_->GetExternalMenuManager()->RemoveExternalMenuPanel(qdock->widget());
+		owner_->GetExternalMenuManager()->RemoveExternalMenuPanel(widget);
 		owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget);
     }
 
     void UiSceneService::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
-    {
-        owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget->widget());
-		QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-		owner_->GetExternalMenuManager()->RemoveExternalMenuPanel(qdock->widget());
-
+    {        
+		if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalMenuManager()->RemoveExternalMenuPanel(external_dockeable_widgets_[widget->windowTitle()]);
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalMenuManager()->RemoveExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()]);
+		else 
+			owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget->widget());
     }
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)
     {
-		if(proxy_dock_list[widget->windowTitle()].second->widget())
-			owner_->GetExternalPanelManager()->RemoveExternalPanel(widget->parentWidget());
-		else
+		if (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
+		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalPanelManager()->RemoveExternalPanel(external_dockeable_widgets_[widget->windowTitle()]);
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			SAFE_DELETE(widget);
     }
 
     void UiSceneService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
     {
-		if(widget->widget())
+		if (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
-		else
-		{
-			QDockWidget* qdock=proxy_dock_list[widget->windowTitle()].second;
-			owner_->GetExternalPanelManager()->RemoveExternalPanel(qdock);
-		}
+		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalPanelManager()->RemoveExternalPanel(external_dockeable_widgets_[widget->windowTitle()]->widget());
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			SAFE_DELETE(widget);
     }
 
     void UiSceneService::ShowWidget(QWidget *widget) const
     {
-		if(proxy_dock_list[widget->windowTitle()].second->widget())
-			owner_->GetExternalPanelManager()->ShowWidget(widget);
-		else
+		if (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
+		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalPanelManager()->ShowWidget(widget);
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			widget->show();
     }
 
     void UiSceneService::HideWidget(QWidget *widget) const
     {
-		if(proxy_dock_list[widget->windowTitle()].second->widget())
-			owner_->GetExternalPanelManager()->HideWidget(widget);
-		else
+		if (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->HideProxyForWidget(widget);
+		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalPanelManager()->HideWidget(widget);
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			widget->hide();
     }
 
     void UiSceneService::BringWidgetToFront(QWidget *widget) const
     {
-		if(proxy_dock_list[widget->windowTitle()].second->widget())
-			owner_->GetExternalPanelManager()->ShowWidget(widget);
-		else
+		if (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->BringProxyToFront(widget);
+		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalPanelManager()->ShowWidget(widget);
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			widget->show();
     }
 
 	void UiSceneService::BringWidgetToFront(QString widget)
     {
-		//To show the widget, it has to exist
-		if (proxy_dock_list.contains(widget)){
-			proxyDock pair = proxy_dock_list.value(widget);
-			QDockWidget* qdock=pair.second;
-			UiProxyWidget* proxy=pair.first;
-			if(qdock->widget())
-				BringWidgetToFront(qdock->widget());
-			else
-				BringWidgetToFront(proxy->widget());
-		}
+		if (internal_widgets_.contains(widget))
+			owner_->GetInworldSceneController()->BringProxyToFront(internal_widgets_[widget]);
+		else if (external_dockeable_widgets_.contains(widget))
+			owner_->GetExternalPanelManager()->ShowWidget(external_dockeable_widgets_[widget]);
+		else if (external_nondockeable_widgets_.contains(widget))
+			external_nondockeable_widgets_[widget]->show();
     }
 
     void UiSceneService::BringWidgetToFront(QGraphicsProxyWidget *widget) const
     {
-		if(widget->widget())
+		if (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->BringProxyToFront(widget);
-		else
-			owner_->GetExternalPanelManager()->ShowWidget(proxy_dock_list[widget->windowTitle()].second->widget());
-
+		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			owner_->GetExternalPanelManager()->ShowWidget(external_dockeable_widgets_[widget->windowTitle()]);
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			external_nondockeable_widgets_[widget->windowTitle()]->show();
     }
+
 //$ END_MOD $
     bool UiSceneService::AddSettingsWidget(QWidget *widget, const QString &name) const
     {
@@ -336,22 +317,14 @@ namespace UiServices
 	}
 
 	bool UiSceneService::IsMenuInside(QString name){
-		if (proxy_dock_list.contains(name)){
-			proxyDock pair = proxy_dock_list.value(name);
-			QDockWidget* qdock=pair.second;
-			UiProxyWidget* proxy=dynamic_cast<UiProxyWidget*>(pair.first);
-			if(qdock->widget())
-				//Is outside
-				return false;
-			else
-				return true;
-		}else
-			//Some widget name that doesnt exist
+		if (internal_widgets_.contains(name))
+			return true;
+		else
 			return false;
 	}
 
 	bool UiSceneService::IsMenuMoveable(QString name){
-		if (moveable_widgets_->contains(name))
+		if (external_dockeable_widgets_.contains(name))
 			return true;
 		else
 			return false;

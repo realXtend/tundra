@@ -121,7 +121,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 		 parentWin_->setMenuBar(menuBar);
 		
 		 //Here?
-		 parentWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+		// parentWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
 }
 
 void NaaliMainWindow::SaveWindowSettingsToFile()

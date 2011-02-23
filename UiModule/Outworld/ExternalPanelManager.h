@@ -46,7 +46,7 @@ namespace UiServices
          *         
          *  \return widget of the added widget (is a QDockWidget).
          */
-		QWidget* AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags = Qt::Dialog);
+		QDockWidget* AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags = Qt::Dialog);
 
         //! Adds a already created QDockWidget into the main window.
         /*! Please prefer using AddExternalWidget() with normal QWidget and properties instead of this directly.

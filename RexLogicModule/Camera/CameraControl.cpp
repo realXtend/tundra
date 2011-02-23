@@ -113,8 +113,8 @@ namespace RexLogic
 			setWindowTitle("Camera Controls");
 			proxy_widget_ = ui_service->AddWidgetToScene(this, true, true);
 			//$ END_MOD $
-            proxy_widget_->setMaximumHeight(800);
-            proxy_widget_->setMaximumWidth(600);
+            setMaximumHeight(800);
+			setMaximumWidth(600);
 			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "View", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
 		}
         connect(proxy_widget_, SIGNAL(Visible(bool)), this, SLOT(Visible(bool)));
