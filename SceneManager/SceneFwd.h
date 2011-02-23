@@ -9,6 +9,7 @@
 #define incl_Scene_SceneFwd
 
 #include <boost/smart_ptr.hpp>
+#include <list>
 
 namespace Scene
 {
@@ -20,6 +21,10 @@ namespace Scene
 
     typedef boost::weak_ptr<Entity> EntityWeakPtr;
     typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
+
+    typedef std::list<EntityPtr> EntityList;
 }
+
+struct SceneDesc;
 
 #endif
