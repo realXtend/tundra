@@ -130,6 +130,7 @@ if (UISERVICE_TEST)
     add_subdirectory(LoginScreenModule)
 else()
     add_subdirectory(UiModule)          # Depends on OgreRenderingModule.
+	add_subdirectory(EtherModule)
 endif()
     
 # The following are optional.
@@ -151,9 +152,7 @@ if (OPENASSETIMPORT)
     add_subdirectory(OpenAssetImport)        # Allows import of various mesh file formats
 endif()
 #add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
-add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
 add_subdirectory(CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
-add_subdirectory (UiExternalModule)
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
