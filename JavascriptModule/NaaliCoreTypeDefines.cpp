@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "Color.h"
 #include "Quaternion.h"
 #include "Transform.h"
@@ -37,7 +39,7 @@ void fromScriptValueColor(const QScriptValue &obj, Color &s)
     s.b = (float)obj.property("b").toNumber();
     s.a = (float)obj.property("a").toNumber();
 }
-
+/*
 QScriptValue toScriptValueQColor(QScriptEngine *engine, const QColor &s)
 {
     QScriptValue obj = engine->newObject();
@@ -55,13 +57,23 @@ void fromScriptValueQColor(const QScriptValue &obj, QColor &s)
     s.setBlue((float)obj.property("b").toNumber());
     s.setAlpha((float)obj.property("a").toNumber());
 }
-
+*/
+QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine);
+QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine);
 QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 {
     QScriptValue obj = engine->newObject();
     obj.setProperty("x", QScriptValue(engine, s.x));
     obj.setProperty("y", QScriptValue(engine, s.y));
     obj.setProperty("z", QScriptValue(engine, s.z));
+
+    //this should suffice only once for the prototype somehow, but couldn't get that to work
+    //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
+    obj.prototype().setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
+    obj.prototype().setProperty("getLength", engine->newFunction(Vector3df_prototype_getLength));
+    obj.prototype().setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
+
     return obj;
 }
 
@@ -72,6 +84,37 @@ void fromScriptValueVector3(const QScriptValue &obj, Vector3df &s)
     s.z = (float)obj.property("z").toNumber();
 }
 
+QScriptValue Vector3df_prototype_normalize(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+      
+    return toScriptValueVector3(engine, vec.normalize());
+}
+
+QScriptValue Vector3df_prototype_getLength(QScriptContext *ctx, QScriptEngine *engine)
+{
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+      
+    return vec.getLength();
+}
+
+QScriptValue Vector3df_prototype_mul(QScriptContext *ctx, QScriptEngine *engine)
+{
+    if (ctx->argumentCount() != 1)
+        return ctx->throwError("Vector3df mul() takes a single number argument.");
+    if (!ctx->argument(0).isNumber())
+        return ctx->throwError(QScriptContext::TypeError, "Vector3df mul(): argument is not a number");
+    float scalar = ctx->argument(0).toNumber();
+    //XXX add vec*vec
+    
+    Vector3df vec;
+    fromScriptValueVector3(ctx->thisObject(), vec);
+
+    return toScriptValueVector3(engine, vec * scalar);
+}
+/*
 QScriptValue toScriptValueQVector3D(QScriptEngine *engine, const QVector3D &s)
 {
     QScriptValue obj = engine->newObject();
@@ -87,7 +130,7 @@ void fromScriptValueQVector3D(const QScriptValue &obj, QVector3D &s)
     s.setY((float)obj.property("y").toNumber());
     s.setZ((float)obj.property("z").toNumber());
 }
-
+*/
 QScriptValue toScriptValueQuaternion(QScriptEngine *engine, const Quaternion &s)
 {
     QScriptValue obj = engine->newObject();
@@ -105,7 +148,7 @@ void fromScriptValueQuaternion(const QScriptValue &obj, Quaternion &s)
     s.z = (float)obj.property("z").toNumber();
     s.w = (float)obj.property("w").toNumber();
 }
-
+/*
 QScriptValue toScriptValueQQuaternion(QScriptEngine *engine, const QQuaternion &s)
 {
     QScriptValue obj = engine->newObject();
@@ -123,7 +166,7 @@ void fromScriptValueQQuaternion(const QScriptValue &obj, QQuaternion &s)
     s.setZ((float)obj.property("z").toNumber());
     s.setScalar((float)obj.property("w").toNumber());
 }
-
+*/
 QScriptValue toScriptValueTransform(QScriptEngine *engine, const Transform &s)
 {
     QScriptValue obj = engine->newObject();
@@ -248,11 +291,11 @@ void RegisterNaaliCoreMetaTypes()
 void ExposeNaaliCoreTypes(QScriptEngine *engine)
 {
     qScriptRegisterMetaType(engine, toScriptValueColor, fromScriptValueColor);
-    qScriptRegisterMetaType(engine, toScriptValueQColor, fromScriptValueQColor);
+    //qScriptRegisterMetaType(engine, toScriptValueQColor, fromScriptValueQColor);
     qScriptRegisterMetaType(engine, toScriptValueVector3, fromScriptValueVector3);
-    qScriptRegisterMetaType(engine, toScriptValueQVector3D, fromScriptValueQVector3D);
+    //qScriptRegisterMetaType(engine, toScriptValueQVector3D, fromScriptValueQVector3D);
     qScriptRegisterMetaType(engine, toScriptValueQuaternion, fromScriptValueQuaternion);
-    qScriptRegisterMetaType(engine, toScriptValueQQuaternion, fromScriptValueQQuaternion);
+    //qScriptRegisterMetaType(engine, toScriptValueQQuaternion, fromScriptValueQQuaternion);
     qScriptRegisterMetaType(engine, toScriptValueTransform, fromScriptValueTransform);
     qScriptRegisterMetaType(engine, toScriptValueAssetReference, fromScriptValueAssetReference);
     qScriptRegisterMetaType(engine, toScriptValueAssetReferenceList, fromScriptValueAssetReferenceList);
@@ -267,10 +310,6 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     // Register constructors
     QScriptValue ctorColor = engine->newFunction(createColor);
     engine->globalObject().setProperty("Color", ctorColor);
-    QScriptValue ctorVector3df = engine->newFunction(createVector3df);
-    engine->globalObject().setProperty("Vector3df", ctorVector3df);
-    QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);
-    engine->globalObject().setProperty("Quaternion", ctorQuaternion);
     QScriptValue ctorTransform = engine->newFunction(createTransform);
     engine->globalObject().setProperty("Transform", ctorTransform);
     QScriptValue ctorAssetReference = engine->newFunction(createAssetReference);
@@ -278,4 +317,14 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     QScriptValue ctorAssetReferenceList = engine->newFunction(createAssetReferenceList);
     engine->globalObject().setProperty("AssetReferenceList", ctorAssetReferenceList);
 
+    // Register both constructors and methods (with js prototype style)
+    // http://doc.qt.nokia.com/latest/scripting.html#prototype-based-programming-with-the-qtscript-c-api
+    /* doesn't work for some reason, is now hacked in toScriptValue to every instance (bad!)
+    QScriptValue protoVector3df = engine->newObject();
+    protoVector3df.setProperty("normalize2", engine->newFunction(Vector3df_prototype_normalize));*/
+    QScriptValue ctorVector3df = engine->newFunction(createVector3df); //, protoVector3df);
+    engine->globalObject().setProperty("Vector3df", ctorVector3df);
+    
+    QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);
+    engine->globalObject().setProperty("Quaternion", ctorQuaternion);
 }

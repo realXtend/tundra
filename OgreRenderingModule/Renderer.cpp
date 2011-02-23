@@ -253,7 +253,18 @@ namespace OgreRenderer
                 targetFpsLimit = 0.f;
         }
         else
-            targetFpsLimit = 60.f; // Default FPS limit is 60.
+#if QT_VERSION < 0x040700
+            // Default FPS limit is 60.
+            targetFpsLimit = 60.f;
+#else
+            // Dues to main window hanging up on Qt 4.7.x when fps limitter is used, that makes using the app impossible. 
+            // Default FPS limit is 0 for non-headless run on Qt 4.7.1 untill the bug can be examined.
+            // \todo Fix Qt 4.7.x hanging up the main window on focus and move events, so that FPS limitter can be set back to 60 by default.
+            if (!framework_->IsHeadless())
+                targetFpsLimit = 0.f; 
+            else
+                targetFpsLimit = 60.f;
+#endif
 
         // Create Ogre root with logfile
         logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
@@ -261,11 +272,17 @@ namespace OgreRenderer
 #include "DisableMemoryLeakCheck.h"
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
+// On Windows, when running with Direct3D in headless mode, preallocating the DefaultHardwareBufferManager singleton will crash.
+// On linux, when running with OpenGL in headless mode, *NOT* preallocating the DefaultHardwareBufferManager singleton will crash.
+///\todo Perhaps this #ifdef should instead be if(Ogre Render System == OpenGL) (test how Windows + OpenGL behaves)
+#ifdef UNIX 
     if (framework_->IsHeadless())
     {
         // This has side effects that make Ogre not crash in headless mode (but would crash in headful mode)
         new Ogre::DefaultHardwareBufferManager();
     }
+#endif
+
 #include "EnableMemoryLeakCheck.h"
 
         // Setup Ogre logger (use LL_NORMAL for more prints of init)

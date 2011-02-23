@@ -284,6 +284,10 @@ QWebView *EC_3DCanvasSource::GetWebView()
 
 void EC_3DCanvasSource::UpdateWidget(QString url)
 {
+    // Don't load QWebViews into memory if headless
+    if (GetFramework()->IsHeadless())
+        return;
+
     // Prefer inparam over the attribute (if sync 2d browsing is disabled)
     QString source;
     if (url.isEmpty())
@@ -468,6 +472,9 @@ void EC_3DCanvasSource::ChangeLanguage()
 
 void EC_3DCanvasSource::CreateWidget()
 {
+    if (GetFramework()->IsHeadless())
+        return;
+
     UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
     {

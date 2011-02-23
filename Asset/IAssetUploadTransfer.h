@@ -4,6 +4,8 @@
 #define incl_Asset_IAssetUploadTransfer_h
 
 #include <QObject>
+#include <QByteArray>
+
 #include "CoreTypes.h"
 #include "AssetFwd.h"
 #include "IAssetStorage.h"
@@ -28,6 +30,14 @@ public:
     /// Specifies the destination name for the asset.
     QString destinationName;
 
+    boost::weak_ptr<IAssetStorage> destinationStorage;
+
+    AssetProviderWeakPtr destinationProvider;
+
+    void EmitTransferCompleted();
+    void EmitTransferFailed();
+
+public slots:
     /// Returns the full assetRef address this asset will have when the upload is complete.
     QString AssetRef()
     { 
@@ -37,12 +47,10 @@ public:
         return storage->GetFullAssetURL(destinationName);
     }
 
-    boost::weak_ptr<IAssetStorage> destinationStorage;
+    QByteArray GetRawData() { return QByteArray::fromRawData((const char*)&assetData[0], assetData.size()); }
 
-    AssetProviderWeakPtr destinationProvider;
-
-    void EmitTransferCompleted();
-    void EmitTransferFailed();
+    QString GetSourceFilename() { return sourceFilename; }
+    QString GetDesticationName() { return destinationName; }
 
 signals:
     void Completed(IAssetUploadTransfer *transfer);

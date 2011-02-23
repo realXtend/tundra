@@ -1,8 +1,8 @@
 // A freelook camera script. Upon run, creates necessary components if they don't exist yet, and hooks to the InputMapper's
 // input context to process camera movement (WASD + mouse)
 
-var rotate_sensitivity = 0.3
-var move_sensitivity = 30.0
+var rotate_sensitivity = 0.3;
+var move_sensitivity = 30.0;
 var motion_z = 0;
 var motion_y = 0;
 var motion_x = 0;
@@ -14,7 +14,7 @@ if (!me.HasComponent("EC_OgreCamera"))
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
     var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
     var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
-    soundlistener.active = true;    
+    soundlistener.active = true;
 
     camera.AutoSetPlaceable();
 
@@ -22,7 +22,7 @@ if (!me.HasComponent("EC_OgreCamera"))
     var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
     if (!avatarcameraentity)
         camera.SetActive();
-    
+
     var transform = placeable.transform;
     transform.rot.x = 90;
     placeable.transform = transform;
@@ -53,15 +53,15 @@ if (!me.HasComponent("EC_OgreCamera"))
     inputmapper.RegisterMapping("Down", "Stop(back)", 3);
     inputmapper.RegisterMapping("Left", "Stop(left)", 3);
     inputmapper.RegisterMapping("Right", "Stop(right)", 3);
-    
+
     // Connect actions
     me.Action("Move").Triggered.connect(HandleMove);
     me.Action("Stop").Triggered.connect(HandleStop);
     me.Action("MouseLookX").Triggered.connect(HandleMouseLookX);
     me.Action("MouseLookY").Triggered.connect(HandleMouseLookY);
-    
+
     // Connect gestures
-    inputContext = inputmapper.GetInputContext();
+    var inputContext = inputmapper.GetInputContext();
     if (inputContext.GestureStarted && inputContext.GestureUpdated)
     {
 	inputContext.GestureStarted.connect(GestureStarted);
@@ -85,7 +85,7 @@ function Update(frametime)
         return;
     }
 
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.placeable;
     if (motion_z != 0)
     {
         var motionvec = new Vector3df();
@@ -177,7 +177,7 @@ function GestureStarted(gestureEvent)
     }
     else if (gestureEvent.GestureType() == Qt.PanGesture)
     {
-        offset = gestureEvent.Gesture().offset.toPoint();
+        var offset = gestureEvent.Gesture().offset.toPoint();
         HandleMouseLookX(offset.x());
         HandleMouseLookY(offset.y());
         gestureEvent.Accept();
@@ -188,10 +188,10 @@ function GestureUpdated(gestureEvent)
 {
     if (!IsCameraActive())
         return;
-        
+
     if (gestureEvent.GestureType() == Qt.PanGesture)
     {
-        delta = gestureEvent.Gesture().delta.toPoint();
+        var delta = gestureEvent.Gesture().delta.toPoint();
         HandleMouseLookX(delta.x());
         HandleMouseLookY(delta.y());
         gestureEvent.Accept();

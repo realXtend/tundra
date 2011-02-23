@@ -29,13 +29,13 @@ class NaaliWebsocketServer(circuits.BaseComponent):
     
     def newclient(self, connectionid):
         id = self.scene.NextFreeId()
-        naali._naali.server.UserConnected(connectionid, 0)
+        naali.server.UserConnected(connectionid, 0)
 
         # Return the id of the connection
         return id
 
     def removeclient(self, connectionid):
-        naali._naali.server.UserDisconnected(connectionid, 0)
+        naali.server.UserDisconnected(connectionid, 0)
 
     @circuits.handler("on_sceneadded")
     def on_sceneadded(self, name):

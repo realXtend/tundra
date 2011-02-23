@@ -9,8 +9,13 @@
 #include "Profiler.h"
 #include "EventManager.h"
 #include "CoreStringUtils.h"
+#include "ConsoleServiceInterface.h"
+#include "ConsoleCommandServiceInterface.h"
 
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 #include "kNet.h"
+#include "kNet/qt/NetworkDialog.h"
 
 #include <algorithm>
 
@@ -126,11 +131,23 @@ void KristalliProtocolModule::Initialize()
 
 void KristalliProtocolModule::PostInitialize()
 {
+    RegisterConsoleCommand(Console::CreateCommand(
+            "kNet", "Shows the kNet statistics window.", 
+            Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
 }
 
 void KristalliProtocolModule::Uninitialize()
 {
     Disconnect();
+}
+
+Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
+{
+    NetworkDialog *networkDialog = new NetworkDialog(0, &network);
+    networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+    networkDialog->show();
+
+    return Console::ResultSuccess();
 }
 
 void KristalliProtocolModule::Update(f64 frametime)
@@ -218,6 +235,10 @@ void KristalliProtocolModule::PerformConnection()
         LogError("Unable to connect to " + serverIp + ":" + ToString(serverPort));
         return;
     }
+
+    // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
+    if (serverConnection->GetSocket() && serverConnection->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
+        serverConnection->GetSocket()->SetNaglesAlgorithmEnabled(false);
 }
 
 void KristalliProtocolModule::Disconnect()
@@ -266,6 +287,10 @@ void KristalliProtocolModule::StopServer()
 
 void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *source)
 {
+    assert(source);
+    if (!source)
+        return;
+
     source->RegisterInboundMessageHandler(this);
     ///\todo Regression. Re-enable. -jj.
 //    source->SetDatagramInFlowRatePerSecond(200);
@@ -274,7 +299,11 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     connection->userID = AllocateNewConnectionID();
     connection->connection = source;
     connections.push_back(connection);
-    
+
+    // For TCP mode sockets, set the TCP_NODELAY option to improve latency for the messages we send.
+    if (source->GetSocket() && source->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
+        source->GetSocket()->SetNaglesAlgorithmEnabled(false);
+
     LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     Events::KristalliUserConnected msg(connection);

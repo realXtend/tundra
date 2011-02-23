@@ -19,7 +19,7 @@
 #include "IAssetTransfer.h"
 
 #include "SceneManager.h"
-#include "Console.h"
+#include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
 #include "Input.h"
 #include "RenderServiceInterface.h"

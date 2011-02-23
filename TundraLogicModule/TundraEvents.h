@@ -29,6 +29,7 @@ namespace Events
         unsigned short port_;
         std::string username_;
         std::string password_;
+        std::string protocol_;
     };
     
     class TundraConnectedEventData : public IEventData

@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "EC_Terrain.h"
 
 #include "BinaryAsset.h"
@@ -846,7 +848,9 @@ void EC_Terrain::NormalizeImage(QString filename) const
     {
         std::vector<u8> imageFile;
         LoadFileToVector(filename.toStdString().c_str(), imageFile);
+#include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
+#include "EnableMemoryLeakCheck.h"
         image.load(stream);
     } catch(...)
     {
@@ -889,7 +893,9 @@ bool EC_Terrain::LoadFromImageFile(QString filename, float offset, float scale)
     {
         std::vector<u8> imageFile;
         LoadFileToVector(filename.toStdString().c_str(), imageFile);
+#include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&imageFile[0], imageFile.size(), false));
+#include "EnableMemoryLeakCheck.h"
         image.load(stream);
     } catch(...)
     {

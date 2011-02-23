@@ -1,6 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include <QMap>
+#include "btBulletDynamicsCommon.h"
+#include "MemoryLeakCheck.h"
 #include "EC_VolumeTrigger.h"
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
@@ -9,7 +13,6 @@
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include <OgreAxisAlignedBox.h>
-#include "btBulletDynamicsCommon.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_VolumeTrigger");

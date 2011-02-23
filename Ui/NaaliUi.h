@@ -4,6 +4,7 @@
 #define incl_Core_Ui_h
 
 #include <QObject>
+#include <QPointer>
 #include <memory>
 
 #include "NaaliUiFwd.h"
@@ -34,9 +35,11 @@ public slots:
 private:
     Foundation::Framework *owner;
 
-    NaaliMainWindow *mainWindow;
+    QPointer<NaaliMainWindow> mainWindow;
     NaaliGraphicsView *graphicsView;
     QGraphicsScene *graphicsScene;
+
+	QPointer<QWidget> viewportWidget;
 };
 
 #endif

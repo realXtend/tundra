@@ -5,6 +5,8 @@ var camera_distance = 7.0;
 var scroll_speed = 0.8;
 var alt_key_pressed = false;
 var last_clicked;
+var zooming = false;
+var global_transform;
 
 if (!me.HasComponent("EC_OgreCamera"))
 {
@@ -45,15 +47,23 @@ function Update(frametime)
 
     var placeable = me.GetComponentRaw("EC_Placeable");
 
+    if (zooming)
+    {
+        cameraZoom();
+    }
+
     if (camera.IsActive() == true && last_clicked != null)
+    {
         placeable.LookAt(last_clicked.placeable.transform.pos);
+    }
+
 }
 
 
 function HandleMouseLookX(param)
 {
     var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false)
+    if (camera.IsActive() == false || last_clicked == null)
         return;
 
     if (!last_clicked)
@@ -76,7 +86,7 @@ function HandleMouseLookX(param)
 function HandleMouseLookY(param)
 {
     var camera = me.GetComponentRaw("EC_OgreCamera");
-    if (camera.IsActive() == false)
+    if (camera.IsActive() == false || last_clicked == null)
         return;
 
     var move = parseInt(param);
@@ -113,14 +123,14 @@ function mouseLeftPress(event)
                 return;
 
             last_clicked = entityclicked;
+            var cameratransform = objectcameraentity.placeable.transform;
 
-            var newtransform = entityclicked.placeable.transform;
-            newtransform.pos.y = camera_distance * Math.sin(newtransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.y;
-            newtransform.pos.x = camera_distance * Math.cos(newtransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.x;
-            newtransform.pos.z = camera_distance * Math.cos(newtransform.rot.x * Math.PI/180) + last_clicked.placeable.transform.pos.z;
-            objectcameraentity.placeable.transform = newtransform;
+            global_transform = entityclicked.placeable.transform;
+            global_transform.pos.y = camera_distance * Math.sin(cameratransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.y;
+            global_transform.pos.x = camera_distance * Math.cos(cameratransform.rot.z * Math.PI/180) + last_clicked.placeable.transform.pos.x;
+            global_transform.pos.z = camera_distance * Math.cos(cameratransform.rot.x * Math.PI/180) + last_clicked.placeable.transform.pos.z;
 
-            objectcameraentity.placeable.LookAt(entityclicked.placeable.transform.pos);
+            zooming = true;
 
             if (avatarcamera.IsActive())
                 objectcamera.SetActive();
@@ -226,4 +236,43 @@ function keyPress(event)
 function keyRelease(event)
 {
     alt_key_pressed = false;
+}
+
+function cameraZoom()
+{
+    var entityplaceable = last_clicked.GetComponentRaw("EC_Placeable");
+    var cameraentity = scene.GetEntityByNameRaw("ObjectCamera");
+    if (cameraentity == null)
+        return;
+    var cameraplaceable = cameraentity.GetComponentRaw("EC_Placeable");
+    var cameratransform = cameraplaceable.transform;
+
+    var dir = new Vector3df();
+    dir.x = global_transform.pos.x - (camera_distance * Math.cos(cameratransform.rot.z * Math.PI/180) + cameratransform.pos.x);
+    dir.y = global_transform.pos.y - (camera_distance * Math.sin(cameratransform.rot.z * Math.PI/180) + cameratransform.pos.y);
+    dir.z = global_transform.pos.z - (camera_distance * Math.cos(cameratransform.rot.x * Math.PI/180) + cameratransform.pos.z);
+
+    var u = Math.sqrt(Math.pow(dir.x, 2) + Math.pow(dir.y, 2) + Math.pow(dir.z, 2));
+    var dir_unit = new Vector3df();
+    dir_unit.x = dir.x / u;
+    dir_unit.y = dir.y / u;
+    dir_unit.z = dir.z / u;
+
+    dir_unit.x *= 0.1;
+    dir_unit.y *= 0.1;
+    dir_unit.z *= 0.1;
+
+    cameratransform.pos.x += dir_unit.x;
+    cameratransform.pos.y += dir_unit.y;
+    cameratransform.pos.z += dir_unit.z;
+
+    if (u > camera_distance)
+    {
+        cameraplaceable.transform = cameratransform;
+        cameraplaceable.LookAt(cameratransform.pos);
+    }
+    else
+    {
+        zooming = false;
+    }
 }

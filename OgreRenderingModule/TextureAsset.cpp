@@ -1,4 +1,6 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 
 #include "TextureAsset.h"
 #include "OgreConversionUtils.h"
@@ -17,12 +19,16 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
         return false; ///\todo Log out error.
     if (numBytes == 0)
         return false; ///\todo Log out error.
+    if (headless)
+	return false;
 
     try
     {
         // Convert the data into Ogre's own DataStream format.
         std::vector<u8> tempData(data, data + numBytes);
+#include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(&tempData[0], tempData.size(), false));
+#include "EnableMemoryLeakCheck.h"
         // Load up the image as an Ogre CPU image object.
         Ogre::Image image;
         image.load(stream);

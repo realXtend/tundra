@@ -1,7 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "SceneImporter.h"
 #include "TundraLogicModule.h"
 
@@ -366,7 +367,9 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
                 return false;
             }
             
+#include "DisableMemoryLeakCheck.h"
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)mesh_bytes.data(), mesh_bytes.size(), false));
+#include "EnableMemoryLeakCheck.h"
             Ogre::MeshSerializer serializer;
             serializer.importMesh(stream, tempmesh.getPointer());
             
@@ -771,7 +774,9 @@ QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfi
             int brace_level = 0;
             bool skip_until_next = false;
             int skip_brace_level = 0;
+#include "DisableMemoryLeakCheck.h"
             Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
+#include "EnableMemoryLeakCheck.h"
             
             while(!data->eof())
             {
@@ -861,7 +866,9 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
         bool skip_until_next = false;
         int skip_brace_level = 0;
 
+#include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
+#include "EnableMemoryLeakCheck.h"
         while(!data->eof())
         {
             std::string line = data->getLine();
@@ -951,7 +958,9 @@ MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename
         MaterialInfo material;
         material.source = filename;
 
+#include "DisableMemoryLeakCheck.h"
         Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
+#include "EnableMemoryLeakCheck.h"
         while(!data->eof())
         {
             std::string line = data->getLine();

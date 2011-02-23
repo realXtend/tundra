@@ -1,17 +1,20 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "HttpAssetProvider.h"
 #include "HttpAssetTransfer.h"
 #include "LoggingFunctions.h"
 #include "IAssetUploadTransfer.h"
 
 #include "AssetAPI.h"
+#include "AssetCache.h"
+#include "IAsset.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QNetworkDiskCache>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("HttpAssetProvider")
 
@@ -20,15 +23,8 @@ HttpAssetProvider::HttpAssetProvider(Foundation::Framework *framework_)
 {
     // Http access manager
     networkAccessManager = new QNetworkAccessManager(this);
+    networkAccessManager->setCache(framework_->Asset()->GetAssetCache());
     connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), SLOT(OnHttpTransferFinished(QNetworkReply*)));
-
-    // Http disk cache
-    QString diskCachePath = QString::fromStdString(framework->GetPlatform()->GetApplicationDataDirectory()) + "/assetcache";
-    QNetworkDiskCache *diskCache = new QNetworkDiskCache(this);
-    diskCache->setCacheDirectory(diskCachePath);
-    qint64 cacheSize = diskCache->maximumCacheSize(); // default is 50mb
-    diskCache->setMaximumCacheSize(cacheSize * 10 * 4); // go up to 2000mb
-    networkAccessManager->setCache(diskCache);
 }
 
 HttpAssetProvider::~HttpAssetProvider()
@@ -96,6 +92,7 @@ void HttpAssetProvider::DeleteAssetFromStorage(QString assetRef)
         LogError("HttpAssetProvider::DeleteAssetFromStorage: Cannot delete asset from invalid URL \"" + assetRef.toStdString() + "\"!");
         return;
     }
+    QUrl assetUrl(assetRef);
     QNetworkRequest request;
     request.setUrl(QUrl(assetRef));
     request.setRawHeader("User-Agent", "realXtend Naali");
@@ -121,15 +118,23 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         }
         HttpAssetTransferPtr transfer = iter->second;
         assert(transfer);
-
         transfer->rawAssetData.clear();
 
         if (reply->error() == QNetworkReply::NoError)
         {
+            // If asset request creator has not allowed caching, remove it now
+            AssetCache *cache = framework->Asset()->GetAssetCache();
+            if (!transfer->CachingAllowed())
+                cache->remove(reply->url());
+
+            // Setting cache allowed as false is very important! The items are already in our cache via the 
+            // QAccessManagers QAbstractNetworkCache (same as our AssetAPI::AssetCache). Network replies will already call them
+            // so the AssetAPI::AssetTransferCompletes doesn't have to.
+            // \note GetDiskSource() will return empty string if above cache remove was performed, this is wanted behaviour.
+            transfer->SetCachingBehavior(false, cache->GetDiskSource(reply->url()));
+
+            // Copy raw data to transfer
             transfer->rawAssetData.insert(transfer->rawAssetData.end(), data.data(), data.data() + data.size());
-            // Say to AssetAPI that we dont want this asset into the normal asset cache
-            // as Qt internally already uses the QNetworkDiskCache we have defined for it
-            transfer->SetCachingBehavior(false, ""); 
             framework->Asset()->AssetTransferCompleted(transfer.get());
         }
         else
@@ -177,21 +182,39 @@ void HttpAssetProvider::OnHttpTransferFinished(QNetworkReply *reply)
         break;
     }
 }
-        
-void HttpAssetProvider::AddStorageAddress(const std::string &address, const std::string &storageName)
+
+AssetStoragePtr HttpAssetProvider::AddStorage(const QString &location, const QString &name)
 {
+    QString locationCleaned = GuaranteeTrailingSlash(location.trimmed());
+
+    // Check if same location and name combination already exists
+    for(size_t i=0; i<storages.size(); ++i)
+    {
+        HttpAssetStoragePtr checkStorage = storages[i];
+        if (!checkStorage.get())
+            continue;
+        if (checkStorage->baseAddress == locationCleaned && checkStorage->storageName == name)
+            return checkStorage;
+    }
+
+    // Add new if not found
     HttpAssetStoragePtr storage = HttpAssetStoragePtr(new HttpAssetStorage());
-    storage->baseAddress = GuaranteeTrailingSlash(QString(address.c_str()).trimmed());
-    storage->storageName = storageName.c_str();
+    storage->baseAddress = locationCleaned;
+    storage->storageName = name;
     storage->provider = this->shared_from_this();
 
     storages.push_back(storage);
+    return storage;
 }
 
 std::vector<AssetStoragePtr> HttpAssetProvider::GetStorages() const
 {
     std::vector<AssetStoragePtr> s;
     for(size_t i = 0; i < storages.size(); ++i)
+    {
+        if (!storages[i].get())
+            continue;
         s.push_back(storages[i]);
+    }
     return s;
 }

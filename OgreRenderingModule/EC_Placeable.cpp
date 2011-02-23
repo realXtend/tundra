@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
@@ -166,12 +168,20 @@ void EC_Placeable::SetPosition(const Vector3df &pos)
    
    if (!RexTypes::IsValidPositionVector(pos))
         return;
-    link_scene_node_->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
+    // link_scene_node_->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
+    Transform newtrans = transform.Get();
+    newtrans.SetPos(pos.x, pos.y, pos.z);
+    transform.Set(newtrans, AttributeChange::Default);
 }
 
 void EC_Placeable::SetOrientation(const Quaternion& orientation)
 {
-    link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+    // link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+    Transform newtrans = transform.Get();
+    Vector3df result;
+    orientation.toEuler(result);
+    newtrans.SetRot(result.x * RADTODEG, result.y * RADTODEG, result.z * RADTODEG);
+    transform.Set(newtrans, AttributeChange::Default);
 }
 
 void EC_Placeable::LookAt(const Vector3df& look_at)
@@ -217,7 +227,11 @@ void EC_Placeable::SetScale(const Vector3df& newscale)
 {
     scene_node_->setScale(Ogre::Vector3(newscale.x, newscale.y, newscale.z));
     this->scale.Set(QVector3D(newscale.x, newscale.y, newscale.z), AttributeChange::Default);
-    AttachNode(); // Nodes become visible only after having their position set at least once
+    // AttachNode(); // Nodes become visible only after having their position set at least once
+
+    Transform newtrans = transform.Get();
+    newtrans.SetScale(newscale.x, newscale.y, newscale.z);
+    transform.Set(newtrans, AttributeChange::Default);
 }
 
 void EC_Placeable::AttachNode()

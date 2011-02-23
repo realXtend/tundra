@@ -36,9 +36,8 @@ public:
     virtual bool IsValidRef(QString assetRef, QString assetType = "");
             
     virtual AssetTransferPtr RequestAsset(QString assetRef, QString assetType);
-            
-    /// Adds the given http URL to the list of current asset storages.
-    void AddStorageAddress(const std::string &address, const std::string &storageName);
+
+    virtual AssetStoragePtr AddStorage(const QString &location, const QString &name);
 
     virtual std::vector<AssetStoragePtr> GetStorages() const;
 
@@ -47,7 +46,7 @@ public:
 
     /// Issues a http DELETE request for the given asset.
     virtual void DeleteAssetFromStorage(QString assetRef);
-
+    
 private slots:
     void OnHttpTransferFinished(QNetworkReply *reply);
 

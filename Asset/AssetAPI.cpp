@@ -1,6 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "DebugOperatorNew.h"
+#include <boost/thread.hpp>
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "AssetAPI.h"
 #include "Framework.h"
 #include "IAssetTransfer.h"
@@ -18,20 +22,21 @@
 #include "Platform.h"
 #include <QDir>
 #include <QFileSystemWatcher>
-#include "MemoryLeakCheck.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
 using namespace Foundation;
 
-AssetAPI::AssetAPI()
+AssetAPI::AssetAPI(bool isHeadless)
 :assetCache(0),
-diskSourceChangeWatcher(0)
+diskSourceChangeWatcher(0),
+isHeadless_(isHeadless)
 {
     // The Asset API always understands at least this single built-in asset type "Binary".
     // You can use this type to request asset data as binary, without generating any kind of in-memory representation or loading for it.
     // Your module/component can then parse the content in a custom way.
     RegisterAssetTypeFactory(AssetTypeFactoryPtr(new BinaryAssetFactory("Binary")));
+    isHeadless_ = isHeadless;
 }
 
 AssetAPI::~AssetAPI()
@@ -44,7 +49,7 @@ void AssetAPI::OpenAssetCache(QString directory)
 {
     SAFE_DELETE(assetCache);
     SAFE_DELETE(diskSourceChangeWatcher);
-    assetCache = new AssetCache(directory.toStdString().c_str());
+    assetCache = new AssetCache(this, directory.toStdString().c_str());
     diskSourceChangeWatcher = new QFileSystemWatcher();
     connect(diskSourceChangeWatcher, SIGNAL(fileChanged(QString)), this, SLOT(OnAssetDiskSourceChanged(QString)));
 }
@@ -56,7 +61,14 @@ std::vector<AssetProviderPtr> AssetAPI::GetAssetProviders() const
 
 void AssetAPI::RegisterAssetProvider(AssetProviderPtr provider)
 {
-    ///\todo Debug check for duplicates.
+    for(uint i=0; i<providers.size(); ++i)
+    {
+        if (providers[i]->Name() == provider->Name())
+        {
+            LogWarning("AssetAPI::RegisterAssetProvider: Provider with name '" + provider->Name().toStdString() + "' already registered.");
+            return;
+        }
+    }
     providers.push_back(provider);
 }
 
@@ -66,8 +78,43 @@ AssetStoragePtr AssetAPI::GetAssetStorage(const QString &name) const
         foreach(AssetStoragePtr storage, provider->GetStorages())
             if (storage->Name() == name)
                 return storage;
-
     return AssetStoragePtr();
+}
+
+AssetStoragePtr AssetAPI::AddAssetStorage(const QString &url, const QString &name, bool setAsDefault)
+{
+    AssetStoragePtr newStorage;
+    IAssetProvider *provider = GetProviderForAssetRef(url, "Binary").get();
+    if (!provider)
+    {
+        LogError("AssetAPI::AddAssetStorage: Could not find a provider for the new storage location " + url.toStdString());
+        return newStorage; 
+    }
+
+    // Inspect if a storage already exists for this url and name combination
+    std::vector<AssetStoragePtr> currentStorages = provider->GetStorages();
+    for(int i=0; i<currentStorages.size(); ++i)
+    {
+        newStorage = currentStorages.at(i);
+        if (!newStorage.get())
+            continue;
+        if (newStorage->BaseURL() == url && newStorage->Name() == name)
+        {
+            LogDebug("AssetAPI::AddAssetStorage: Found existing storage with same url and name, returning the existing storage.");
+            break;
+        }
+        // Reset so the last valid provider wont be used! 
+        newStorage = AssetStoragePtr();
+    }
+
+    // If the url name combination was not found, ask the provider to create a new one
+    if (!newStorage.get())
+        newStorage = provider->AddStorage(url, name);
+    if (newStorage.get() && setAsDefault)
+        SetDefaultAssetStorage(newStorage);
+    if (!newStorage.get())
+        LogError("AssetAPI::AddAssetStorage: Could not create new storage for " + url.toStdString());
+    return newStorage;
 }
 
 AssetStoragePtr AssetAPI::GetDefaultAssetStorage() const
@@ -241,6 +288,13 @@ AssetPtr AssetAPI::CreateAssetFromFile(QString assetType, QString assetFile)
     }
 }
 
+void AssetAPI::ForgetAsset(QString assetRef, bool removeDiskSource)
+{
+    AssetPtr asset = GetAsset(assetRef);
+    if (asset.get())
+        ForgetAsset(asset, removeDiskSource);
+}
+
 void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 {
     if (!asset)
@@ -250,7 +304,14 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
 
     // If we are supposed to remove the cached (or original for local assets) version of the asset, do so.
     if (removeDiskSource && !asset->DiskSource().isEmpty())
-        QFile::remove(asset->DiskSource());
+    {
+        emit DiskSourceAboutToBeRemoved(asset);
+        // Remove disk watcher before deleting the file. Otherwise we get tons of spam and not wanted reload tries.
+        if (diskSourceChangeWatcher)
+            diskSourceChangeWatcher->removePath(asset->DiskSource());
+        assetCache->DeleteAsset(asset->Name());
+        asset->SetDiskSource("");
+    }
 
     // Do an explicit unload of the asset before deletion (the dtor of each asset has to do unload as well, but this handles the cases where
     // some object left a dangling strong ref to an asset).
@@ -265,7 +326,6 @@ void AssetAPI::ForgetAsset(AssetPtr asset, bool removeDiskSource)
     if (diskSourceChangeWatcher && !asset->DiskSource().isEmpty())
         diskSourceChangeWatcher->removePath(asset->DiskSource());
     assets.erase(iter);
-
 }
 
 void AssetAPI::DeleteAssetFromStorage(QString assetRef)
@@ -290,6 +350,41 @@ void AssetAPI::DeleteAssetFromStorage(QString assetRef)
     provider->DeleteAssetFromStorage(assetRef);
 }
 
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const QString &filename, const QString &storageName, const QString &assetName)
+{
+    QFile file(filename);
+    if (!file.exists())
+    {
+        LogError("AssetAPI::UploadAssetFromFile failed! File location not valid for " + filename.toStdString());
+        return AssetUploadTransferPtr();
+    }
+    QString newAssetName = assetName;
+    if (newAssetName.isEmpty())
+        newAssetName = file.fileName().split("/").last();
+    AssetStoragePtr storage = GetAssetStorage(storageName);
+    if (!storage.get())
+    {
+        LogError("AssetAPI::UploadAssetFromFile failed! No storage found with name " + storageName.toStdString() + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        return AssetUploadTransferPtr();
+    }
+
+    // Protect crashes when as this function is called from scripts!
+    AssetUploadTransferPtr transfer;
+    try
+    {
+        transfer = UploadAssetFromFile(filename.toStdString().c_str(), storage, newAssetName.toStdString().c_str());
+    }
+    catch(Exception &e)
+    {
+        LogError(std::string(e.what()));
+    }
+    catch(...)
+    {
+        LogError("AssetAPI::UploadAssetFromFile failed, unknown exception!");
+    }
+    return transfer;
+}
+
 AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, AssetStoragePtr destination, const char *assetName)
 {
     if (!filename || strlen(filename) == 0)
@@ -308,12 +403,42 @@ AssetUploadTransferPtr AssetAPI::UploadAssetFromFile(const char *filename, Asset
     std::vector<u8> data;
     bool success = LoadFileToVector(filename, data);
     if (!success)
-        return AssetUploadTransferPtr(); ///\todo Log out error.
-
+        throw Exception("AssetAPI::UploadAssetFromFile failed! Could not load file to a data vector.");
     if (data.size() == 0)
-        return AssetUploadTransferPtr(); ///\todo Log out error.
+        throw Exception("AssetAPI::UploadAssetFromFile failed! Loaded file to data vector but size is zero.");
 
     return UploadAssetFromFileInMemory(&data[0], data.size(), destination, assetName);
+}
+
+AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const QByteArray &data, const QString &storageName, const QString &assetName)
+{
+    if (data.isEmpty() || data.isNull())
+    {
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed! QByteArray data is empty and/or null for " + assetName.toStdString() + " asset upload request.");
+        return AssetUploadTransferPtr();
+    }
+    AssetStoragePtr storage = GetAssetStorage(storageName);
+    if (!storage.get())
+    {
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed! No storage found with name " + storageName.toStdString() + "! Use AssetAPI::AddAssetStorage to add one with this name.");
+        return AssetUploadTransferPtr();
+    }
+
+    // Protect crashes when as this function is called from scripts!
+    AssetUploadTransferPtr transfer;
+    try
+    {
+        transfer = UploadAssetFromFileInMemory((const u8*)data.constData(), data.size(), storage, assetName.toStdString().c_str());
+    }
+    catch(Exception &e)
+    {
+        LogError(std::string(e.what()));
+    }
+    catch(...)
+    {
+        LogError("AssetAPI::UploadAssetFromFileInMemory failed, unknown exception!");
+    }
+    return transfer;
 }
 
 AssetUploadTransferPtr AssetAPI::UploadAssetFromFileInMemory(const u8 *data, size_t numBytes, AssetStoragePtr destination, const char *assetName)
@@ -446,7 +571,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     }
 
     // Check if we can fetch the asset from the asset cache. If so, we do a immediately load the data in from the asset cache and don't go to any asset provider.
-    QString assetFileInCache = assetCache->FindAsset(assetRef);
+    QString assetFileInCache = assetCache->GetDiskSource(assetRef);
     AssetTransferPtr transfer;
 
     if (!assetFileInCache.isEmpty())
@@ -560,7 +685,10 @@ void AssetAPI::RegisterAssetTypeFactory(AssetTypeFactoryPtr factory)
 {
     AssetTypeFactoryPtr existingFactory = GetAssetTypeFactory(factory->Type());
     if (existingFactory)
-        return; ///\todo Log out warning.
+    {
+        LogWarning("AssetAPI::RegisterAssetTypeFactory: Factory with type '" + factory->Type().toStdString() + "' already registered.");
+        return;
+    }
 
     assert(factory->Type() == factory->Type().trimmed());
 
@@ -853,7 +981,7 @@ void AssetAPI::AssetDependenciesCompleted(AssetTransferPtr transfer)
     // This asset is now completely finished, and all its dependencies have been loaded.
     if (transfer->asset)
         transfer->asset->EmitLoaded();
-
+    
     pendingDownloadRequests.erase(transfer->source.ref);
 }
 
@@ -912,12 +1040,14 @@ std::vector<AssetPtr> AssetAPI::FindDependents(QString dependee)
 {
     std::vector<AssetPtr> dependents;
     for(size_t i = 0; i < assetDependencies.size(); ++i)
+    {
         if (QString::compare(assetDependencies[i].second, dependee, Qt::CaseInsensitive) == 0)
         {
             AssetMap::iterator iter = assets.find(assetDependencies[i].first);
             if (iter != assets.end())
                 dependents.push_back(iter->second);
         }
+    }
     return dependents;
 }
 
@@ -934,7 +1064,16 @@ int AssetAPI::NumPendingDependencies(AssetPtr asset)
 
         AssetPtr existing = GetAsset(refs[i].ref);
         if (!existing)
+        {
+            // Not loaded, just mark the single one
             ++numDependencies;
+        }
+        else
+        {
+            // Ask the dependencies of the dependency, we want all of the asset
+            // down the chain to be loaded before we load the base asset
+            numDependencies += NumPendingDependencies(existing);
+        }
     }
 
     return numDependencies;
@@ -955,7 +1094,6 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
         if (iter != currentTransfers.end())
         {
             AssetTransferPtr transfer = iter->second;
-
             if (NumPendingDependencies(dependent) == 0)
                 AssetDependenciesCompleted(transfer);
         }
@@ -965,18 +1103,22 @@ void AssetAPI::OnAssetLoaded(AssetPtr asset)
 void AssetAPI::OnAssetDiskSourceChanged(const QString &path_)
 {
     QDir path(path_);
-
     for(AssetMap::iterator iter = assets.begin(); iter != assets.end(); ++iter)
+    {
         if (!iter->second->DiskSource().isEmpty() && QDir(iter->second->DiskSource()) == path)
         {
-            AssetPtr asset = iter->second;
+            // Return if file does not exists at the moment, no need to try asset->LoadFromCache()
+            if (!QFile::exists(iter->second->DiskSource()))
+                return;
 
+            AssetPtr asset = iter->second;
             bool success = asset->LoadFromCache();
             if (!success)
                 LogError("Failed to reload changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path_.toStdString() + "\"!");
             else
                 LogDebug("Reloaded changed asset \"" + asset->ToString().toStdString() + "\" from file \"" + path_.toStdString() + "\".");
         }
+    }
 }
 
 bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
@@ -984,7 +1126,7 @@ bool LoadFileToVector(const char *filename, std::vector<u8> &dst)
     FILE *handle = fopen(filename, "rb");
     if (!handle)
     {
-        LogError("Could not open file " + std::string(filename) + ".");
+        LogError("AssetAPI::LoadFileToVector: Failed to open file '" + std::string(filename) + "' for reading.");
         return false;
     }
 
@@ -1031,7 +1173,7 @@ QString GetResourceTypeFromResourceFileName(const char *name)
     if (file.endsWith(".particle"))
         return "OgreParticle";
 
-    const char *textureFileTypes[] = { ".jpg", ".png", ".tga", ".bmp", ".dds" };
+    const char *textureFileTypes[] = { ".jpg", ".jpeg", ".png", ".tga", ".bmp", ".dds", ".gif" };
     if (IsFileOfType(file, textureFileTypes, NUMELEMS(textureFileTypes)))
         return "Texture";
 

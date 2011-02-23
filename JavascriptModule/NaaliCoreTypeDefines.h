@@ -6,4 +6,5 @@
 void RegisterNaaliCoreMetaTypes();
 void ExposeNaaliCoreTypes(QScriptEngine *engine);
 
+
 #endif

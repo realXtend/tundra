@@ -1,5 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "DebugOperatorNew.h"
+#include <boost/thread.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include <QVector>
+#include "MemoryLeakCheck.h"
 #include "Input.h"
 
 #include "ServiceManager.h"
@@ -19,8 +26,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 #include <QGestureEvent>
 #include <QApplication>
 #include <QSettings>
-
-#include <boost/make_shared.hpp>
 
 #include <sstream>
 

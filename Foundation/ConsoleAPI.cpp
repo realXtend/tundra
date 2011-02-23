@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   Console.cpp
+ *  @file   ConsoleAPI.cpp
  *  @brief  Exposes debug console functionality to scripting languages.
  *
  *          Allows printing text to console, executing console commands programmatically
@@ -13,26 +13,26 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "Console.h"
+#include "ConsoleAPI.h"
 #include "Framework.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "MemoryLeakCheck.h"
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("ScriptConsole")
+DEFINE_POCO_LOGGING_FUNCTIONS("ConsoleAPI")
 
 void Command::Invoke(const QStringList &params)
 {
     emit Invoked(params);
 }
 
-ScriptConsole::~ScriptConsole()
+ConsoleAPI::~ConsoleAPI()
 {
     qDeleteAll(commands_);
 }
 
-Command *ScriptConsole::RegisterCommand(const QString &name, const QString &desc)
+Command *ConsoleAPI::RegisterCommand(const QString &name, const QString &desc)
 {
     Command *command = 0;
     Console::ConsoleCommandServiceInterface *consoleCommand = framework_->GetService<Console::ConsoleCommandServiceInterface>();
@@ -58,7 +58,7 @@ Command *ScriptConsole::RegisterCommand(const QString &name, const QString &desc
     return command;
 }
 
-void ScriptConsole::RegisterCommand(const QString &name, const QString &desc, const QObject *receiver, const char *member)
+void ConsoleAPI::RegisterCommand(const QString &name, const QString &desc, const QObject *receiver, const char *member)
 {
     Console::ConsoleCommandServiceInterface *consoleCommand = framework_->GetService<Console::ConsoleCommandServiceInterface>();
     if (consoleCommand && !commands_.contains(name))
@@ -76,27 +76,27 @@ void ScriptConsole::RegisterCommand(const QString &name, const QString &desc, co
     }
 }
 
-void ScriptConsole::ExecuteCommand(const QString &command)
+void ConsoleAPI::ExecuteCommand(const QString &command)
 {
     Console::ConsoleServiceInterface *console = framework_->GetService<Console::ConsoleServiceInterface>();
     if (console)
         console->ExecuteCommand(command.toStdString());
 }
 
-void ScriptConsole::Print(const QString &message)
+void ConsoleAPI::Print(const QString &message)
 {
     Console::ConsoleServiceInterface *console = framework_->GetService<Console::ConsoleServiceInterface>();
     if (console)
         console->Print(message.toStdString());
 }
 
-ScriptConsole::ScriptConsole(Foundation::Framework *fw) :
+ConsoleAPI::ConsoleAPI(Foundation::Framework *fw) :
     QObject(fw),
     framework_(fw)
 {
 }
 
-void ScriptConsole::CheckForCommand(const QString &name, const QStringList &params) const
+void ConsoleAPI::CheckForCommand(const QString &name, const QStringList &params) const
 {
     QMap<QString, Command *>::const_iterator i = commands_.find(name);
     if (i != commands_.end())

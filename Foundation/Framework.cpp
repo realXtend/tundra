@@ -23,8 +23,9 @@
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "Audio.h"
-#include "Console.h"
+#include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
+#include "DebugAPI.h"
 
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
@@ -70,10 +71,11 @@ namespace Foundation
         splitterchannel(0),
         naaliApplication(0),
         frame(new Frame(this)),
-        console(new ScriptConsole(this)),
+        console(new ConsoleAPI(this)),
         ui(0),
         input(0),
-        asset(0)
+        asset(0),
+        debug(new DebugAPI(this))
     {
         ParseProgramOptions();
         
@@ -142,7 +144,7 @@ namespace Foundation
             ui = new NaaliUi(this);
             connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
-            asset = new AssetAPI();
+            asset = new AssetAPI(headless_);
             const char cDefaultAssetCachePath[] = "/assetcache";
             asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
 
@@ -157,6 +159,7 @@ namespace Foundation
             RegisterDynamicObject("console", console);
             RegisterDynamicObject("asset", asset);
             RegisterDynamicObject("audio", audio);
+            RegisterDynamicObject("debug", debug);
         }
     }
 
@@ -185,6 +188,7 @@ namespace Foundation
         delete ui;
         delete input;
         delete asset;
+        delete audio;
 
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
         // When we delete QApplication, we must have ensured that all QObjects have been deleted.
@@ -732,7 +736,7 @@ namespace Foundation
         return GetService<UiServiceInterface>(); 
     }
 
-    ScriptConsole *Framework::Console() const
+    ConsoleAPI *Framework::Console() const
     { 
         return console;
     }
@@ -745,6 +749,11 @@ namespace Foundation
     AssetAPI *Framework::Asset() const
     {
         return asset;
+    }
+
+    DebugAPI *Framework::Debug() const
+    {
+        return debug;
     }
 
     QObject *Framework::GetModuleQObj(const QString &name)

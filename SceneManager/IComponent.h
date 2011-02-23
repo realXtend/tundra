@@ -168,15 +168,14 @@ public slots:
      */
     bool ViewEnabled() const;
 
-	/// Returns an attribute of this component as a Qvaririant
-	/// @param name of attribute
-	/// @return values of the attribute
-	QVariant GetAttributeQVariant(const QString &name) const;
+    /// Returns an attribute of this component as a QVariant
+    /// @param name of attribute
+    /// @return values of the attribute
+    QVariant GetAttributeQVariant(const QString &name) const;
 
-
-	/// Returns list of attribute names of the component
-	/// @return list of attribute names
-	QStringList GetAttributeNames();
+    /// Returns list of attribute names of the component
+    /// @return list of attribute names
+    QStringList GetAttributeNames();
 
 public:
 

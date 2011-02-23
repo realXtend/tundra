@@ -22,6 +22,6 @@ build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 link_ogre()
 link_modules (Core Foundation Interfaces SceneManager RexCommon)
 
-# SetupCompileFlagsWithPCH()
+SetupCompileFlags()
 
 final_target ()

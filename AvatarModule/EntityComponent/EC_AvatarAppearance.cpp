@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 
 const std::string& AvatarAsset::GetLocalOrResourceName() const

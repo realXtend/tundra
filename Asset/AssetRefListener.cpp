@@ -1,3 +1,9 @@
+#include "DebugOperatorNew.h"
+#include <QList>
+#include <boost/thread.hpp>
+#include <boost/algorithm/string.hpp>
+
+#include "MemoryLeakCheck.h"
 #include "AssetRefListener.h"
 #include "IAttribute.h"
 #include "AssetReference.h"

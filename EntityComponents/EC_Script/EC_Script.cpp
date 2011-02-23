@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+#include <QList>
+#include "MemoryLeakCheck.h"
 #include "EC_Script.h"
 #include "IScriptInstance.h"
 
