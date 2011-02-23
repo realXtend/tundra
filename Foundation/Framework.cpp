@@ -286,7 +286,7 @@ namespace Foundation
             ("protocol", po::value<std::string>(), "Spesifies which transport layer to use. Used when starting a server and when client connects. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
             ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable") // OgreRenderingModule
             ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
-            ("file", po::value<std::string>(), "Load scene on startup") // TundraLogicModule & AssetModule
+            ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
             ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
             // The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
             ("user", po::value<std::string>(), "OpenSim login name")
