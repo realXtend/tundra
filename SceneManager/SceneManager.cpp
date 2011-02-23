@@ -39,12 +39,12 @@ namespace Scene
         framework_(0),
         gid_(1),
         gid_local_(LocalEntity + 1),
-        viewenabled_(true),
+        viewEnabled_(true),
         interpolating_(false)
     {
     }
     
-    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework, bool viewenabled) :
+    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework, bool viewEnabled) :
         name_(name),
         framework_(framework),
         gid_(1),
@@ -52,10 +52,7 @@ namespace Scene
         interpolating_(false)
     {
         // In headless mode only view disabled-scenes can be created
-        if (framework->IsHeadless())
-            viewenabled_ = false;
-        else
-            viewenabled_ = viewenabled;
+        viewEnabled_ = framework->IsHeadless() ? false : viewEnabled_ = viewEnabled;
     }
 
     SceneManager::~SceneManager()
@@ -315,7 +312,12 @@ namespace Scene
             change = AttributeChange::Replicate;
         emit EntityCreated(entity.get(), change);
     }
-    
+
+    void SceneManager::EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change)
+    {
+        return EmitEntityCreated(dynamic_cast<Scene::Entity*>(entity), change);
+    }
+
     void SceneManager::EmitEntityRemoved(Scene::Entity* entity, AttributeChange::Type change)
     {
         if (change == AttributeChange::Disconnected)
@@ -388,18 +390,18 @@ namespace Scene
         QDomElement scene_elem = scene_doc.createElement("scene");
 
         for(EntityMap::const_iterator iter = entities_.begin(); iter != entities_.end(); ++iter) 
-		{
+        {
             if (iter->second)
             {
-				bool serialize = true;
-				if (iter->second->IsLocal() && !getlocal)
-						serialize = false;
+                bool serialize = true;
+                if (iter->second->IsLocal() && !getlocal)
+                        serialize = false;
 
-				if (iter->second->IsTemporary() && !gettemporary)
-						serialize = false;
+                if (iter->second->IsTemporary() && !gettemporary)
+                        serialize = false;
 
-				if (serialize) 
-				{
+                if (serialize) 
+                {
                     /* copied from GetEntityXML so that we can get local and temporary components also.
                     ugly hack! */
                     Scene::EntityPtr entity = iter->second;
@@ -415,14 +417,14 @@ namespace Scene
                             components[i]->SerializeTo(scene_doc, entity_elem);
 
                     scene_elem.appendChild(entity_elem);
-				}
-				scene_doc.appendChild(scene_elem);
-			}
-		}
+                }
+                scene_doc.appendChild(scene_elem);
+            }
+        }
 
         return scene_doc.toByteArray();
-	}
-    
+    }
+
     bool SceneManager::SaveSceneXML(const std::string& filename)
     {
         QByteArray bytes = GetSceneXML();
@@ -693,7 +695,7 @@ namespace Scene
         return ret;
     }
 
-    QList<Entity *> SceneManager::CreateContentFromSceneDescription(const SceneDesc &desc, bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromSceneDesc(const SceneDesc &desc, bool replaceOnConflict, AttributeChange::Type change)
     {
         QList<Entity *> ret;
 
@@ -1091,13 +1093,13 @@ namespace Scene
             attr->CopyValue(endvalue, AttributeChange::LocalOnly);
         
         AttributeInterpolation newInterp;
-        newInterp.entityid_ = entity->GetId();
-        newInterp.comp_name_ = comp->Name();
-        newInterp.comp_typenamehash_ = comp->TypeNameHash();
-        newInterp.dest_ = attr;
-        newInterp.start_ = attr->Clone();
-        newInterp.end_ = endvalue;
-        newInterp.length_ = length;
+        newInterp.entityId = entity->GetId();
+        newInterp.compName = comp->Name();
+        newInterp.compTypeNameHash = comp->TypeNameHash();
+        newInterp.dest = attr;
+        newInterp.start = attr->Clone();
+        newInterp.end = endvalue;
+        newInterp.length = length;
         
         interpolations_.push_back(newInterp);
         return true;
@@ -1108,24 +1110,24 @@ namespace Scene
         for (uint i = 0; i < interpolations_.size(); ++i)
         {
             AttributeInterpolation& interp = interpolations_[i];
-            if (interp.dest_ == attr)
+            if (interp.dest == attr)
             {
-                delete interp.start_;
-                delete interp.end_;
+                delete interp.start;
+                delete interp.end;
                 interpolations_.erase(interpolations_.begin() + i);
                 return true;
             }
         }
         return false;
     }
-    
+
     void SceneManager::EndAllAttributeInterpolations()
     {
         for (uint i = 0; i < interpolations_.size(); ++i)
         {
             AttributeInterpolation& interp = interpolations_[i];
-            delete interp.start_;
-            delete interp.end_;
+            delete interp.start;
+            delete interp.end;
         }
         
         interpolations_.clear();
@@ -1143,27 +1145,27 @@ namespace Scene
             bool finished = false;
             
             // Check that the entity & component exist ie. it's safe to access the attribute
-            Entity* entity = GetEntity(interp.entityid_).get();
+            Entity* entity = GetEntity(interp.entityId).get();
             IComponent* comp = 0;
             if (entity)
-                comp = entity->GetComponent(interp.comp_typenamehash_, interp.comp_name_).get();
+                comp = entity->GetComponent(interp.compTypeNameHash, interp.compName).get();
             
             if (comp)
             {
                 // Allow the interpolation to persist for 2x time, though we are no longer setting the value
                 // This is for the continuous/discontinuous update detection in StartAttributeInterpolation()
-                if (interp.time_ <= interp.length_)
+                if (interp.time <= interp.length)
                 {
-                    interp.time_ += frametime;
-                    float t = interp.time_ / interp.length_;
+                    interp.time += frametime;
+                    float t = interp.time / interp.length;
                     if (t > 1.0f)
                         t = 1.0f;
-                    interp.dest_->Interpolate(interp.start_, interp.end_, t, AttributeChange::LocalOnly);
+                    interp.dest->Interpolate(interp.start, interp.end, t, AttributeChange::LocalOnly);
                 }
                 else
                 {
-                    interp.time_ += frametime;
-                    if (interp.time_ >= interp.length_ * 2.0f)
+                    interp.time += frametime;
+                    if (interp.time >= interp.length * 2.0f)
                         finished = true;
                 }
             }
@@ -1174,8 +1176,8 @@ namespace Scene
             // Remove interpolation (& delete start/endpoints) when done
             if (finished)
             {
-                delete interp.start_;
-                delete interp.end_;
+                delete interp.start;
+                delete interp.end;
                 interpolations_.erase(interpolations_.begin() + i);
             }
         }

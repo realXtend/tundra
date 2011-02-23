@@ -3,7 +3,7 @@
  *
  *  @file   SceneStructureModule.h
  *  @brief  Provides Scene Structure and Assets windows and raycast drag-and-drop import of
- *          .mesh, .scene, .txml and .tbinfiles to the main window.
+ *          various content file formats to the main window.
  */
 
 #ifndef incl_SceneStructureModule_SceneStructureModule_h
@@ -33,8 +33,8 @@ struct SceneMaterialDropData
     QList<uint> affectedIndexes;
 };
 
-/// Provides Scene Structure and Assets windows and raycast drag-and-drop import
-/// of .mesh, .scene, .txml and .tbin files to the main window.
+/// Provides Scene Structure and Assets windows and raycast drag-and-drop import of
+/// various content file formats to the main window.
 class SceneStructureModule : public QObject, public IModule
 {
     Q_OBJECT

@@ -11,7 +11,9 @@
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
 #include "JavascriptInstance.h"
+#include "NaaliCoreTypeDefines.h"
 
+#include "Entity.h"
 #include "AssetAPI.h"
 #include "EC_Script.h"
 #include "ScriptAssetFactory.h"
@@ -24,7 +26,6 @@
 #include "Frame.h"
 #include "ConsoleAPI.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "NaaliCoreTypeDefines.h"
 
 #include <QtScript>
 
