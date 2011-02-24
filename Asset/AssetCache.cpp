@@ -106,9 +106,21 @@ QIODevice* AssetCache::prepare(const QNetworkCacheMetaData &metaData)
     QScopedPointer<QFile> dataFile(new QFile(GetAbsoluteFilePath(false, metaData.url())));
     if (!dataFile->open(QIODevice::ReadWrite))
     {
+        LogError("Failed not open data file QIODevice::ReadWrite mode for " + metaData.url().toString().toStdString());
         dataFile.reset();
         remove(metaData.url());
         return 0;
+    }
+    if (dataFile->bytesAvailable() > 0)
+    {
+        if (!dataFile->resize(0))
+        {
+            LogError("Failed not reset existing data from cache entry. Skipping cache store for " + metaData.url().toString().toStdString());
+            dataFile->close();
+            dataFile.reset();
+            remove(metaData.url());
+            return 0;
+        }
     }
     // Take ownership of the ptr
     QFile *dataPtr = dataFile.take();
