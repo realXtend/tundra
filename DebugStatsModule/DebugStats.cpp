@@ -18,7 +18,6 @@
 #include "ModuleManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "WorldStream.h"
-//#include "SceneEvents.h"
 #include "SceneManager.h"
 #include "Entity.h"
 #include "NetworkEvents.h"
