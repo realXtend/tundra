@@ -19,7 +19,7 @@ if (!framework.IsHeadless())
     }
     fileMenu.addAction("Quit").triggered.connect(Quit);
 
-    var viewMenu = menu.addMenu("&View");
+    /*var viewMenu = menu.addMenu("&View");
     if (framework.GetModuleQObj("SceneStructure"))
     {
         viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
@@ -41,7 +41,7 @@ if (!framework.IsHeadless())
 
     if (framework.GetModuleQObj("PythonScript"))
         viewMenu.addAction("Python Console").triggered.connect(OpenPythonConsole);
-
+*/
     function NewScene()
     {
         scene.RemoveAllEntities();
@@ -72,6 +72,7 @@ if (!framework.IsHeadless())
         framework.Exit();
     }
 
+	/*
     function OpenSceneWindow()
     {
         framework.GetModuleQObj("SceneStructure").ShowSceneStructureWindow();
@@ -101,4 +102,5 @@ if (!framework.IsHeadless())
     {
         framework.GetModuleQObj("Console").ToggleConsole();
     }
+	*/
 }

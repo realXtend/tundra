@@ -90,6 +90,11 @@ SceneStructureWindow::~SceneStructureWindow()
     SetScene(ScenePtr());
 }
 
+void SceneStructureWindow::SetNewScene()
+{
+	SetScene(framework->GetDefaultWorldScene());
+}
+
 void SceneStructureWindow::SetScene(const Scene::ScenePtr &s)
 {
     if (!scene.expired() && (s == scene.lock()))

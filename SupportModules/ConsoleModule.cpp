@@ -61,13 +61,13 @@ namespace Console
 
     void ConsoleModule::ToggleConsole()
     {
-        //ui_console_manager_->ToggleConsole();
+        ui_console_manager_->ToggleConsole();
     }
 
     void ConsoleModule::HandleKeyEvent(KeyEvent *keyEvent)
     {
-        //if (keyEvent->keyCode == Qt::Key_F1 && keyEvent->eventType == KeyEvent::KeyPressed)
-        //    ui_console_manager_->ToggleConsole();
+        if (keyEvent->keyCode == Qt::Key_F1 && keyEvent->eventType == KeyEvent::KeyPressed)
+            ui_console_manager_->ToggleConsole();
     }
 
     // virtual 

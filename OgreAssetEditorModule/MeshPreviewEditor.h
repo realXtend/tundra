@@ -81,6 +81,7 @@ public:
     void RequestMeshAsset(const QString &asset_id);
     QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels);
     void Open(const QString& asset_id, const QString& type);
+	MeshPreviewEditor *editor;
 
     static void OpenMeshPreviewEditor(Foundation::Framework *framework, const QString &asset_id, const QString &asset_type, QWidget* parent = 0);
 

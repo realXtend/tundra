@@ -48,24 +48,7 @@ namespace Console
         UiServicePtr ui_service = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (!ui_service)
             return;
-        //Foundation::UiExternalServiceInterface *ui_external_ui_service = framework_->GetService<Foundation::UiExternalServiceInterface>();
         proxy_widget_ = ui_service->AddWidgetToScene(console_widget_,true,true);
-        /*if (!ui_external_ui_service)
-        {
-            proxy_widget_->setMinimumHeight(0);
-            proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
-            proxy_widget_->setOpacity(opacity_);
-            proxy_widget_->setZValue(100);
-            proxy_widget_->hide();
-            ui_service->RegisterUniversalWidget("Console", proxy_widget_);
-			//ui_service->TransferWidgetOut("ConsoleWidget",false);
-
-            // Init animation
-            animation_.setTargetObject(proxy_widget_);
-            animation_.setPropertyName("geometry");
-            animation_.setDuration(300);
-       // }*/
-
         ui_service->AddWidgetToMenu(console_widget_, "Console", tr("View"),"./data/ui/images/menus/edbutton_ENVED_normal");
 		
         // Handle line edit input
@@ -124,75 +107,27 @@ namespace Console
 
     void UiConsoleManager::KeyPressed(KeyEvent *key_event)
     {
-        if (key_event->keyCode == Qt::Key_F1)
-        {
-            Foundation::UiExternalServiceInterface *ui_external_ui_service = framework_->GetService<Foundation::UiExternalServiceInterface>();
-            if (ui_external_ui_service)
-                ToggleExternalConsoleWidget();
-            else
-                ToggleDropdownConsole();
-        }
+		//if (key_event->keyCode == Qt::Key_F1)
+		//		ToggleConsole();
     }
 
-    void UiConsoleManager::ToggleExternalConsoleWidget()
+    void UiConsoleManager::ToggleConsole()
     {
-        QWidget* dock_widget = console_widget_->parentWidget();
+       UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
+	   if (!ui_service)
+		   return;
+
+	  QWidget* dock_widget = console_widget_->parentWidget();
         if (dock_widget)
             if (dock_widget->isVisible())
                 dock_widget->hide();
             else
                 dock_widget->show();
-    }
-
-    void UiConsoleManager::ToggleDropdownConsole()
-    {
-        if (!ui_view_)
-            return;
-
-        if (!hooked_to_scenes_)
-        {
-            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-            if (ui)
-            {
-                QGraphicsScene *scene = ui->GetScene("Inworld");
-                if (scene)
-                    connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-                scene = ui->GetScene("WorldBuilding");
-                if (scene)
-                    connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-                scene = ui->GetScene("Ether");
-                if (scene)
-                    connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-                scene = ui->GetScene("Avatar");
-                if (scene)
-                    connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-                hooked_to_scenes_ = true;
-            }
-        }
-
-        QGraphicsScene *current_scene = proxy_widget_->scene();
-        if (!current_scene)
-            return;
-
-        visible_ = !visible_;
-        int current_height = ui_view_->height()*0.5;
-        if (visible_)
-        {
-            animation_.setStartValue(QRect(0, 0, ui_view_->width(), 0));
-            animation_.setEndValue(QRect(0, 0, ui_view_->width(), current_height));
-            // Not bringing to front, works in UiProxyWidgets, hmm...
-            current_scene->setActiveWindow(proxy_widget_);
-            current_scene->setFocusItem(proxy_widget_, Qt::ActiveWindowFocusReason);
-            console_ui_->ConsoleInputArea->setFocus(Qt::MouseFocusReason);
-            proxy_widget_->show();
-        }
-        else
-        {
-            animation_.setStartValue(QRect(0, 0, ui_view_->width(), current_height));
-            animation_.setEndValue(QRect(0, 0, ui_view_->width(), 0));
-            proxy_widget_->hide();
-        }
-        animation_.start();
+		else
+			if (console_widget_->isVisible())
+				ui_service->ShowWidget(console_widget_);
+			else
+				ui_service->HideWidget(console_widget_);
     }
 
     void UiConsoleManager::StyleString(QString &str)

@@ -72,14 +72,15 @@ namespace UiServices
     }
     
 	void ExternalPanelManager::ShowWidget(QWidget *widget){
-		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget()))){
+		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget))){
 			//QDockWidget *aux = dynamic_cast<QDockWidget *>(widget->parentWidget());
 			//if (!aux)
 			//	return;
 			////Hide or show the widget; we make every widget a qdockwidget before integrate it in the qmainwindow
 			//if (aux->isHidden())
 			//	aux->show();
-			widget->parentWidget()->show();	
+			//widget->parentWidget()->show();	
+			widget->show();
 		}
 	}
 

@@ -137,26 +137,26 @@ void ECEditorModule::AddEditorWindowToUI()
         return;
     }
 
-    //UiServiceInterface *ui = framework_->GetService<UiServiceInterface>(); 
-    //if (!ui)
-    //    return;
+    UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>(); 
+    if (!ui_service)
+        return;
     NaaliUi *ui = GetFramework()->Ui();
     if (!ui)
         return;
 
     active_editor_ = new ECEditorWindow(GetFramework());
     common_editor_ = active_editor_;
-    active_editor_->setParent(ui->MainWindow());
+    //active_editor_->setParent(ui->MainWindow());
     active_editor_->setWindowFlags(Qt::Tool);
     active_editor_->setAttribute(Qt::WA_DeleteOnClose);
 
-    //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
+    ui_service->AddWidgetToScene(active_editor_, true, true);
     // We need to listen proxy widget's focus signal, because for some reason QWidget's focusInEvent wont get triggered when
     // it's attached to QGraphicsProxyWidget.
     //connect(editor_proxy, SIGNAL(FocusChanged(QFocusEvent *)), editor_window_, SLOT(FocusChanged(QFocusEvent *)), Qt::UniqueConnection);
 
-    // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly.
-    //ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+    // We don't need to worry about attaching ECEditorWindow to ui scene, because ECEditorWindow's initialize operation will do it automaticly. DONT
+    ui_service->AddWidgetToMenu(active_editor_, tr("Entity-component Editor"), "View", "./data/ui/images/menus/edbutton_OBJED_normal.png");
     //ui->RegisterUniversalWidget("Components", editor_window_->graphicsProxyWidget());
 }
 
@@ -331,7 +331,11 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
     {
         if (!active_editor_)
             AddEditorWindowToUI();
-        active_editor_->show();
+		UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
+		if (ui_service)
+			ui_service->ShowWidget(active_editor_);
+        //active_editor_->show();
+
     }
         //ShowWindow(StringVector());  
 }

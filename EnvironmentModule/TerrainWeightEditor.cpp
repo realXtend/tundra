@@ -59,10 +59,11 @@ namespace Environment
         //UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
 		setWindowTitle("TerrainTexture Weightmap Editor");
 		UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
+		ui->AddWidgetToMenu(this, tr("TerrainTexture Weightmap Editor"), "View", "./data/ui/images/menus/edbutton_OBJED_normal.png");
 		//$ END_MOD $
-        if(editor_proxy == 0)
-            return;
-		ui->AddWidgetToMenu(this, tr("TerrainTexture Weightmap Editor"), "Scene", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+        //if(editor_proxy == 0)
+        //    return;
+		
         //ui->RegisterUniversalWidget("Weights", editor_proxy);
 
         QSpinBox *box = editor_widget_->findChild<QSpinBox*>("brush_size");

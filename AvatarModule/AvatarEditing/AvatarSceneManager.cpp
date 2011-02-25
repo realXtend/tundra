@@ -82,19 +82,21 @@ namespace Avatar
 		//$ BEGIN_MOD $ 
 		//Insert action in MenuExternal if available to switch to AvatarEditor
 		//Create Action, insert into menu Create->Avatar
-		QAction *action = new QAction("Avatar Editor",this);
-		if (ui_service->AddExternalMenuAction(action, "Avatar Editor", tr("Personal")))
-			connect(action, SIGNAL(triggered()), SLOT(ToggleScene()));
+		//QAction *action = new QAction("Avatar Editor",this);
+		//if (ui_service->AddExternalMenuAction(action, "Avatar Editor", tr("View")))
+		//	connect(action, SIGNAL(triggered()), SLOT(ToggleScene()));
 				//LogWarning("Could not connect with Avatar scene !!");    
 		//$ END_MOD $ 
     }
 
     void AvatarSceneManager::ToggleScene()
     {
+		/*Scene toogle disabled in tundra
         if (avatar_scene_->isActive())
             ExitScene();
         else
             ShowScene();
+			*/
     }
 
     void AvatarSceneManager::ShowScene()

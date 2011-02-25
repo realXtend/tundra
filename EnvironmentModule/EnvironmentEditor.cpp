@@ -257,7 +257,7 @@ namespace Environment
 
         UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this, true, true);
 
-        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("Scene"), "./data/ui/images/menus/edbutton_ENVED_normal");
+        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("View"), "./data/ui/images/menus/edbutton_ENVED_normal");
        // ui->RegisterUniversalWidget("Environment", this);
 
         // Tab window signals

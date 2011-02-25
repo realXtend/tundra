@@ -60,6 +60,25 @@ SceneStructureModule::~SceneStructureModule()
 
 void SceneStructureModule::PostInitialize()
 {
+	//Create panels
+	UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    if (!ui)
+        return;
+
+	//Assets panel
+	assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
+    assetsWindow->setWindowFlags(Qt::Tool);	
+    ui->AddWidgetToScene(assetsWindow, true, true);
+	ui->AddWidgetToMenu(assetsWindow, "Assets", "View");
+
+	//Scene panel
+	sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
+    sceneWindow->setWindowFlags(Qt::Tool);
+	sceneWindow->SetScene(framework_->GetDefaultWorldScene());
+	connect(framework_, SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
+    ui->AddWidgetToScene(sceneWindow, true, true);
+	ui->AddWidgetToMenu(sceneWindow, "Scene", "View");
+
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window.", this, SLOT(ShowSceneStructureWindow()));
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window.", this, SLOT(ShowAssetsWindow()));
 
@@ -278,37 +297,40 @@ void SceneStructureModule::CleanReference(QString &fileRef)
 
 void SceneStructureModule::ShowSceneStructureWindow()
 {
-    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+	if (ui && sceneWindow){
+		ui->ShowWidget(sceneWindow);
+		return;
+	}      
+
+	/*NaaliUi *ui = GetFramework()->Ui();
     if (!ui)
-        return;*/
+        return;
 
     if (sceneWindow)
     {
-        //ui->ShowWidget(sceneWindow);
-        sceneWindow->show();
+        ui->ShowWidget(sceneWindow);
+        //sceneWindow->show();
         return;
     }
-
-    NaaliUi *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
 
     sceneWindow = new SceneStructureWindow(framework_, ui->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(framework_->GetDefaultWorldScene());
-    sceneWindow->show();
-
-    //ui->AddWidgetToScene(sceneWindow);
-    //ui->ShowWidget(sceneWindow);
+    //sceneWindow->show();
+    ui->AddWidgetToScene(sceneWindow);
+    ui->ShowWidget(sceneWindow);*/
 }
 
 void SceneStructureModule::ShowAssetsWindow()
 {
-    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;*/
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+	if (ui && assetsWindow){
+        ui->ShowWidget(assetsWindow);
+		return;
+	}
 
-    if (assetsWindow)
+   /* if (assetsWindow)
     {
         //ui->ShowWidget(assetsWindow);
         assetsWindow->show();
@@ -322,6 +344,7 @@ void SceneStructureModule::ShowAssetsWindow()
     assetsWindow = new AssetsWindow(framework_, ui->MainWindow());
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
+	*/
 
     //ui->AddWidgetToScene(assetsWindow);
     //ui->ShowWidget(assetsWindow);

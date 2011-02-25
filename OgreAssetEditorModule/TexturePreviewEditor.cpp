@@ -268,10 +268,11 @@ void TexturePreviewEditor::Initialize()
 
     // Add widget to UI via ui services module
     setWindowTitle(tr("Texture: ") + objectName());
-    UiProxyWidget *proxy = ui->AddWidgetToScene(this);
+    UiProxyWidget *proxy = ui->AddWidgetToScene(this, false, true);
     QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
-    proxy->show();
-    ui->BringWidgetToFront(proxy);
+    //proxy->show();
+    //ui->BringWidgetToFront(proxy);
+	ui->ShowWidget(this);
 }
 
 void TexturePreviewEditor::OpenOgreTexture(const QString& name)
@@ -332,7 +333,7 @@ void TexturePreviewEditor::OpenPreviewEditor(Foundation::Framework *framework, c
 {
     TexturePreviewEditor *editor = new TexturePreviewEditor(framework, parent);
     QObject::connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
-    editor->OpenOgreTexture(texture);
+    //editor->OpenOgreTexture(texture);
     editor->show();
 }
 

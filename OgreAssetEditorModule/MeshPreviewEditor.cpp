@@ -129,9 +129,13 @@ void MeshPreviewEditor::Open(const QString &asset_id, const QString &type)
 
 void MeshPreviewEditor::OpenMeshPreviewEditor(Foundation::Framework *framework, const QString &asset_id, const QString &asset_type, QWidget* parent)
 {
+	UiServiceInterface *ui_service = framework->GetService<UiServiceInterface>();
+    if(!ui_service)
+		return;
     MeshPreviewEditor *editor = new MeshPreviewEditor(framework, parent);
     QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)), editor, SLOT(Deleted()), Qt::QueuedConnection);
     editor->Open(asset_id, asset_type);
+	ui_service->ShowWidget(editor);
     editor->show();
 }
 
@@ -222,8 +226,10 @@ void MeshPreviewEditor::Update()
     if (!ui)
         return;
 
-    proxy_->show();
-    ui->BringWidgetToFront(proxy_);
+    //proxy_->show();
+    //ui->BringWidgetToFront(proxy_);
+	//if (editor)
+	ui->ShowWidget(this);
 
     delete[] pixelData;
     
@@ -401,7 +407,7 @@ void MeshPreviewEditor::InitializeEditorWidget()
     // Add widget to UI via ui services module
     setWindowTitle((tr("Mesh: ")) + objectName());
 
-    proxy_ = ui->AddWidgetToScene(this);
+    proxy_ = ui->AddWidgetToScene(this, false, true);
     QObject::connect(proxy_, SIGNAL(Closed()), this, SLOT(Closed()));
 }
 

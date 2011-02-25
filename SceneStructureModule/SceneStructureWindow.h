@@ -55,6 +55,7 @@ public slots:
     /** @param show Visibility of asset references in the tree view.
     */
     void ShowAssetReferences(bool show);
+	void SetNewScene();
 
 protected:
     /// QWidget override.

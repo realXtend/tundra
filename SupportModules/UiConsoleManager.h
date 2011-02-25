@@ -38,7 +38,7 @@ namespace Console
 
     public slots:
         //! Toggle console show/hide
-        void ToggleDropdownConsole();
+        void ToggleConsole();
 
         //! Queues the print requests
         void QueuePrintRequest(const QString &text);
@@ -61,7 +61,6 @@ namespace Console
     private slots:
         //! Resize the console to fit scene
         void AdjustToSceneRect(const QRectF &);
-        void ToggleExternalConsoleWidget();
 
     private:
         //! is console visible or hidden?

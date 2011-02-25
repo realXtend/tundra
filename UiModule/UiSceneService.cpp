@@ -171,7 +171,7 @@ namespace UiServices
 		if (internal_widgets_.contains(widget->windowTitle()))
 			owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
 		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
-			owner_->GetExternalPanelManager()->ShowWidget(widget);
+			owner_->GetExternalPanelManager()->ShowWidget(external_dockeable_widgets_[widget->windowTitle()]);
 		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
 			widget->show();
     }

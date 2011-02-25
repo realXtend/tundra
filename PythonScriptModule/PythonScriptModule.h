@@ -146,6 +146,9 @@ namespace PythonScript
         /// Keep list of proxy widgets created from py as the cause mem leaks if not deleted explicitily.
         QList<UiProxyWidget *> proxyWidgets;
 
+		/// Python console
+		PythonQtScriptingConsole* pythonqtconsole_;
+
     private:
         //! Type name of the module.
         static std::string type_name_static_;

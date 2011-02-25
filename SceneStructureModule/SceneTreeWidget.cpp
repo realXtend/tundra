@@ -534,8 +534,8 @@ void SceneTreeWidget::Edit()
 
     if (selection.HasComponents() || selection.HasEntities())
     {
-        //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-        //assert(ui);
+        UiServiceInterface *ui_service = framework->GetService<UiServiceInterface>();
+        assert(ui_service);
 
         // If we have an existing editor instance, use it.
         if (ecEditors.size())
@@ -547,7 +547,8 @@ void SceneTreeWidget::Edit()
                 /*foreach(entity_id_t id, selection.EntityIds())
                 ecEditor->AddEntity(id, false);
                 ecEditor->SetSelectedEntities(selection.EntityIds());*/
-                editor->show();
+				ui_service->ShowWidget(editor);
+                //editor->show();
                 //ui->BringWidgetToFront(ecEditor);
                 return;
             }
@@ -561,10 +562,15 @@ void SceneTreeWidget::Edit()
             editor->setAttribute(Qt::WA_DeleteOnClose);
             ecEditors.push_back(editor);
         }
-        else // If there isn't any active editors in ECEditorModule, create a new one.
+        else if (editor && ecEditors.contains(editor))
+			editor->setAttribute(Qt::WA_DeleteOnClose);
+		else // If there isn't any active editors in ECEditorModule, create a new one.
         {
             editor = new ECEditorWindow(framework);
             editor->setAttribute(Qt::WA_DeleteOnClose);
+			NaaliUi *ui = framework->Ui();
+			if (ui)
+				editor->setParent(ui->MainWindow());
             ecEditors.push_back(editor);
         }
         // To ensure that destroyed editors will get erased from the ecEditors list.
@@ -576,15 +582,12 @@ void SceneTreeWidget::Edit()
         /*foreach(entity_id_t id, selection.EntityIds())
             ecEditor->AddEntity(id, false);
         ecEditor->SetSelectedEntities(selection.EntityIds());*/
-
-        NaaliUi *ui = framework->Ui();
-        if (!ui)
-            return;
-        editor->setParent(ui->MainWindow());
-        editor->setWindowFlags(Qt::Tool);
-        if (!editor->isVisible())
-            editor->show();
-
+         
+        //editor->setParent(ui->MainWindow());
+        //editor->setWindowFlags(Qt::Tool);
+        //if (!editor->isVisible())
+        //    editor->show();
+		ui_service->ShowWidget(editor);
         editor->AddEntities(selection.EntityIds(), true);
 
         /*ui->AddWidgetToScene(ecEditor);

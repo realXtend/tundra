@@ -101,9 +101,9 @@ void OgreScriptEditor::OpenOgreScriptEditor(Foundation::Framework *framework, co
     boost::shared_ptr<UiServiceInterface> uiService = framework->GetServiceManager()->GetService<UiServiceInterface>(Service::ST_Gui).lock();
     if (uiService)
     {
-        uiService->AddWidgetToScene(editor);
+        uiService->AddWidgetToScene(editor, false, true);
         uiService->ShowWidget(editor);
-        uiService->BringWidgetToFront(editor);
+        //uiService->BringWidgetToFront(editor);
     }
 }
 
