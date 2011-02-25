@@ -496,6 +496,12 @@ AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
 
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
+    if (assetRef.isEmpty())
+    {
+        LogError("AssetAPI::RequestAsset: Requested asset reference is an empty string!");
+        return AssetTransferPtr();
+    }
+
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
