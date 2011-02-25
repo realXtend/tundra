@@ -27,31 +27,37 @@ public:
     /// @param serializationParameters Optional parameters for the actual asset type serializer that specifies custom options on how to perform the serialization.
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters = "");
 
-    /// Private-implementation of the unloading of an asset.
-    virtual void DoUnload();
-
     /// Find dependencies from the asset
     virtual std::vector<AssetReference> FindReferences() const;
 
 public slots:
-    /// Call this to replace asset references of the original ui data with our absolute cache file paths.
-    /// Called from UiService::LoadFromFile(). This function will modify the input data and return the number of replaced references.
-    /// @param QByteArray Reference to the original ui file data. This function will modify its contents
-    /// @return int Number of replaced references
-    int ReplaceAssetReferences(QByteArray &uiData);
+    /// Call this to get a copy of the .ui asset file contents, that has each asset reference replaced with the actual disk source of each asset in the system.
+    /// Called from UiService::LoadFromFile(). This function will return a modified copy of the original .ui file.
+    QByteArray GetRefReplacedAssetData() const;
 
     /// Returns if this assets data is valid.
     bool IsDataValid() const;
 
-    /// Return the raw data of this asset.
-    QByteArray GetRawData() const;
-
 private:
-    QList<QByteArray> patterns_;
-    QStringList invalid_ref_chars_;
+    /// Unloading a ui asset does not have any meaning, as it's not a GPU resource and it doesn't have any kind of decompress/unpack step.
+    /// Implementation for this asset is a no-op.
+    virtual void DoUnload();
 
-    std::vector<u8> data_;
-    std::vector<AssetReference> refs_;
+    struct AssetRef
+    {
+        /// The byte index where this assetref occurs in the .ui file.
+        int index;
+        /// The byte length of the ref string.
+        int length;
+        /// Stores a parsed/sanitized version of the assetRef, to be fed to the AssetAPI for retrieval.
+        QString parsedRef;
+    };
+
+    /// Stores the found asset refs in the .ui file.
+    std::vector<AssetRef> refs;
+
+    /// Stores the original asset data. This data doesn't have the asset refs rewritten.
+    std::vector<u8> originalData;
 };
 
 #endif
