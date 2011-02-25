@@ -7,8 +7,10 @@
 #include "AssetAPI.h"
 
 #include <QFile>
-
 #include <Ogre.h>
+
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("OgreMeshAsset")
 
 OgreMeshAsset::~OgreMeshAsset()
 {
@@ -31,7 +33,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
             OgreRenderer::SanitateAssetIdForOgre(this->Name().toStdString()), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         if (ogreMesh.isNull())
         {
-            OgreRenderer::OgreRenderingModule::LogError("Failed to create mesh " + Name().toStdString());
+            LogError("Failed to create mesh " + Name().toStdString());
             return false; 
         }
         ogreMesh->setAutoBuildEdgeLists(false);
@@ -71,7 +73,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         // Assign default materials that won't complain
         SetDefaultMaterial();
         // Set asset references the mesh has
-//        ResetReferences();
+        //ResetReferences();
     }
     catch (Ogre::Exception &e)
     {
@@ -80,9 +82,15 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         return false;
     }
 
-//    internal_name_ = SanitateAssetIdForOgre(id_);
-    OgreRenderer::OgreRenderingModule::LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
+    //internal_name_ = SanitateAssetIdForOgre(id_);
+    
+    LogDebug("Ogre mesh " + this->Name().toStdString() + " created");
     return true;
+}
+
+void OgreMeshAsset::HandleLoadError(const QString &loadError)
+{
+    LogDebug(loadError.toStdString());
 }
 
 void OgreMeshAsset::DoUnload()
