@@ -186,9 +186,8 @@ QWidget *UiService::LoadFromFile(const QString &file_path, bool add_to_scene, QW
             return 0;
         }
 
-        // Get original data and replace refs
-        QByteArray data = uiAsset->GetRawData();
-        uiAsset->ReplaceAssetReferences(data);
+        // Get the asset data with the assetrefs replaced to point to the disk sources on the current local system.
+        QByteArray data = uiAsset->GetRefReplacedAssetData();
         
         QUiLoader loader;
         QDataStream dataStream(&data, QIODevice::ReadOnly);
