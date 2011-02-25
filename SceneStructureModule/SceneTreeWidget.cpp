@@ -540,7 +540,7 @@ void SceneTreeWidget::Edit()
         // If we have an existing editor instance, use it.
         if (ecEditors.size())
         {
-            ECEditorWindow *editor = ecEditors.back();
+			ECEditorWindow *editor = ecEditors.first();
             if (editor)
             {
                 editor->AddEntities(selection.EntityIds(), true);
