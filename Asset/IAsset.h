@@ -94,6 +94,10 @@ public:
     /// Called whenever another asset this asset depends on is loaded.
     virtual void DependencyLoaded(AssetPtr dependee) { }
 
+    /// Handle load error, override this in subclasses if you want to do more inspecting before printing error.
+    /// If you failed the load command in your asset subclass due to some reason (eg. headless) and it was intentional, you can skip the print if youd like.
+    virtual void HandleLoadError(const QString &loadError);
+
     /// Returns all the assets this asset refers to (but not the references those assets refer to).
     /// The default implementation of this function returns an empty list of dependencies.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }

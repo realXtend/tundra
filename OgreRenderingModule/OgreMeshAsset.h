@@ -9,7 +9,9 @@
 
 class OgreMeshAsset : public IAsset
 {
-    Q_OBJECT;
+
+Q_OBJECT
+
 public:
     OgreMeshAsset(AssetAPI *owner, const QString &type_, const QString &name_)
     :IAsset(owner, type_, name_)
@@ -18,11 +20,17 @@ public:
 
     ~OgreMeshAsset();
 
+    /// Load mesh from memory
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
+    /// Loade mesh into memory
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
 
+    /// Unload mesh from ogre
     virtual void DoUnload();
+
+    /// Handle load errors detected by AssetAPI
+    virtual void HandleLoadError(const QString &loadError);
 
     /// Returns an empty list - meshes do not refer to other assets.
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
@@ -33,9 +41,9 @@ public:
     Ogre::MeshPtr ogreMesh;
 
     /// Specifies the unique mesh name Ogre uses in its asset pool for this mesh.
-//    QString ogreAssetName;
+    //QString ogreAssetName;
 
-//    std::vector<QString> originalMaterials;
+    //std::vector<QString> originalMaterials;
 };
 
 typedef boost::shared_ptr<OgreMeshAsset> OgreMeshAssetPtr;

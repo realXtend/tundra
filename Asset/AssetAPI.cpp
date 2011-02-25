@@ -764,6 +764,11 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
     return asset;
 }
 
+QString AssetAPI::GetAssetTypeFromFileName(QString filename) const
+{
+    return GetResourceTypeFromResourceFileName(filename.toStdString().c_str());
+}
+
 AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
 {
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
@@ -869,8 +874,8 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
     if (!success)
     {
-        QString error("AssetAPI: Failed to load asset of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\" from asset data.");
-        LogError(error.toStdString());
+        QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
+        transfer->asset->HandleLoadError(error);
         transfer->EmitAssetFailed(error);
         return;
     }
@@ -1203,8 +1208,8 @@ QString GetResourceTypeFromResourceFileName(const char *name)
     if (file.endsWith(".xml") || file.endsWith(".txml") || file.endsWith(".tbin")) 
         return "Binary";
 
-    // Unknown type.
-    return "";
+    // Unknown type, return Binray type.
+    return "Binary";
 
     // Note: There's a separate OgreImageTextureResource which isn't handled above.
 }

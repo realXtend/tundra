@@ -10,9 +10,9 @@
 #include "IAttribute.h"
 #include "IAssetTransfer.h"
 #include "Entity.h"
-#include "LoggingFunctions.h"
 #include "AssetRefListener.h"
 
+#include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Script")
 
 EC_Script::~EC_Script()
@@ -43,7 +43,7 @@ void EC_Script::Run(const QString &name)
 
     if (!scriptInstance_)
     {
-        LogError("EC_Script::Run: No script instance set");
+        LogError("Run: No script instance set");
         return;
     }
 
@@ -58,7 +58,7 @@ void EC_Script::Unload(const QString &name)
 
     if (!scriptInstance_)
     {
-        LogError("Cannot perform Unload(), no script instance set");
+        LogError("Unload: Cannot perform, no script instance set");
         return;
     }
 

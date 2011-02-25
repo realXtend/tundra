@@ -10,20 +10,25 @@ class BinaryAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    BinaryAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-    :IAsset(owner, type_, name_)
+    BinaryAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+        IAsset(owner, type_, name_)
     {
     }
 
-    ~BinaryAsset() { Unload(); }
+    ~BinaryAsset() 
+    { 
+        Unload(); 
+    }
 
-    virtual void DoUnload() { data.clear(); }
+    virtual void DoUnload() 
+    { 
+        data.clear(); 
+    }
 
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes)
     {
         data.clear();
         data.insert(data.end(), data_, data_ + numBytes);
-
         return true;
     }
 

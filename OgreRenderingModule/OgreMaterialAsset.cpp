@@ -8,6 +8,9 @@
 #include "Renderer.h"
 #include "AssetAPI.h"
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("OgreMaterialAsset")
+
 using namespace OgreRenderer;
 
 OgreMaterialAsset::~OgreMaterialAsset()
@@ -20,22 +23,26 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
     // Remove old material if any
     Unload();
     references_.clear();
-//    original_textures_.clear();
+    ogreAssetName.clear();
+    //original_textures_.clear();
+
+    // Do not go further if in headless mode
+    // Ogre will throw exceptions and things go sideways
+    if (assetAPI->IsHeadless())
+        return false;
 
     const std::string assetName = this->Name().toStdString();
-
     Ogre::MaterialManager& matmgr = Ogre::MaterialManager::getSingleton(); 
-
     OgreRenderingModule::LogDebug("Parsing material " + assetName);
     
     if (!data_)
     {
-        OgreRenderingModule::LogError("Null source asset data pointer");
+        LogError("DeserializeFromData: Null source asset data pointer");
         return false;
     }
     if (numBytes == 0)
     {
-        OgreRenderingModule::LogError("Zero sized material asset");
+        LogError("DeserializeFromData: Zero sized material asset");
         return false;
     }
 
@@ -75,7 +82,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                         }
                         else
                         {
-                            OgreRenderingModule::LogWarning("More than one material defined in material asset " + assetName + " - only first one supported");
+                            LogWarning("More than one material defined in material asset " + assetName + ". Applying the first found, skipping parsing for others.");
                             break;
                         }
                     }
@@ -118,15 +125,12 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         ogreMaterial = matmgr.getByName(sanitatedname);
         if (ogreMaterial.isNull())
         {
-            OgreRenderingModule::LogWarning(std::string("Failed to create an Ogre material from material asset ") +
-                assetName);
-
+            LogWarning("DeserializeFromData: Failed to create an Ogre material from material asset: " + assetName);
             return false;
-        }
+        }        
         if(!ogreMaterial->getNumTechniques())
         {
-            OgreRenderingModule::LogWarning("Failed to create an Ogre material from material asset "  +
-                assetName);
+            LogWarning("DeserializeFromData: Failed to create an Ogre material, no Techniques in material asset: "  + assetName);
             ogreMaterial.setNull();
             return false;
         }
@@ -168,8 +172,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
     } catch (Ogre::Exception &e)
     {
-        OgreRenderingModule::LogWarning(e.what());
-        OgreRenderingModule::LogWarning("Failed to parse Ogre material " + assetName + ".");
+        LogWarning("DeserializeFromData: Failed to parse Ogre material " + assetName + ", reason: " + std::string(e.what()));
         try
         {
             if (!matmgr.getByName(sanitatedname).isNull())
@@ -180,7 +183,8 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         return false;
     }
     
-//    internal_name_ = sanitatedname;
+    // Mark the valid ogre resource name
+    ogreAssetName = QString::fromStdString(sanitatedname);
     return true;
 }
 
@@ -188,7 +192,7 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
 {
     if (ogreMaterial.isNull())
     {
-        OgreRenderingModule::LogWarning("Tried to export non-existing Ogre material " + Name().toStdString() + ".");
+        LogWarning("SerializeTo: Tried to export non-existing Ogre material " + Name().toStdString());
         return false;
     }
     try
@@ -201,16 +205,24 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
 
         data.clear();
         data.insert(data.end(), &materialData[0], &materialData[0] + materialData.length());
-
-//        serializer.exportQueued(filename);
-    } catch (std::exception &e)
+        //serializer.exportQueued(filename);
+    } 
+    catch (std::exception &e)
     {
-        OgreRenderingModule::LogError("Failed to export Ogre material " + Name().toStdString() + ":");
+        OgreRenderingModule::LogError("SerializeTo: Failed to export Ogre material " + Name().toStdString() + ":");
         if (e.what())
             OgreRenderingModule::LogError(e.what());
         return false;
     }
     return true;
+}
+
+void OgreMaterialAsset::HandleLoadError(const QString &loadError)
+{
+    // Don't print anything if we are headless, 
+    // not loading the material was intentional
+    if (!assetAPI->IsHeadless())
+        LogError(loadError.toStdString());
 }
 
 std::vector<AssetReference> OgreMaterialAsset::FindReferences() const

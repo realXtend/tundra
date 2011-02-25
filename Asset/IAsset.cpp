@@ -86,6 +86,11 @@ bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
     return DeserializeFromData(data, numBytes);
 }
 
+void IAsset::HandleLoadError(const QString &loadError)
+{
+    LogError(loadError.toStdString());
+}
+
 std::vector<AssetReference> IAsset::FindReferencesRecursive() const
 {
     std::set<AssetReference> refs;
