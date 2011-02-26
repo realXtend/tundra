@@ -1009,7 +1009,23 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
     if (mesh)
     {
         if (mesh->ogreMesh.get())
-            ogreMeshName = mesh->ogreMesh->getName().c_str();
+        {
+            ogreMeshName = QString::fromStdString(mesh->ogreMesh->getName()).trimmed();
+
+            // Do not reload if all of the following are met
+            // 1. Ogre::Entity and Ogre::Mesh are valid (aka this is not the first load for this EC_Mesh) 
+            // 2. Mesh name is same (aka asset reference with ogre sanitations)
+            // 3. Content hash has not changed (aka data has not changed)
+            if (entity_ && entity_->getMesh().get())
+            {
+                QString currentMeshName = QString::fromStdString(entity_->getMesh()->getName()).trimmed();
+                if (currentMeshName == ogreMeshName && mesh->ContentHashChanged() == false)
+                {
+                    LogInfo("OnMeshAssetLoaded: Skipping load, we already have the same data!");
+                    return;
+                }
+            }
+        }
         else
             LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
     }
