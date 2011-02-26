@@ -27,6 +27,8 @@
 #include "ConsoleAPI.h"
 #include "ConsoleCommandServiceInterface.h"
 
+#include "ScriptAsset.h"
+
 #include <QtScript>
 
 #include "MemoryLeakCheck.h"

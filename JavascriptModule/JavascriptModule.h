@@ -12,18 +12,11 @@
 #include "ModuleLoggingFunctions.h"
 #include "AttributeChangeType.h"
 #include "ScriptServiceInterface.h"
+
 #include "AssetFwd.h"
-#include "ScriptAsset.h"
+#include "JavascriptFwd.h"
 
 #include <QObject>
-
-class QScriptEngine;
-class QScriptContext;
-class QScriptEngine;
-class QScriptValue;
-
-class JavascriptInstance;
-class EC_Script;
 
 /// Enables Javascript execution and scripting in Naali.
 /**
@@ -124,7 +117,7 @@ private:
     event_category_id_t frameworkEventCategory_;
 };
 
-//api stuff
+// API things
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine);
 QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine);
 
