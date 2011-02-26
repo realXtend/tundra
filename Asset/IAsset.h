@@ -33,6 +33,11 @@ public slots:
     /// or if the hash was not computed.
     QString ContentHash() const { return contentHash; }
 
+    /// Returns if this assets content hash has changed from the previous load. Situations where this is useful: 
+    /// checking in your Loaded() handler if the data actually changed and if you need to respond to the change. 
+    /// @note The contentHashChanged boolean is reseted to false always after Loaded() signal is emitted.
+    bool ContentHashChanged() const { return contentHashChanged; }
+
     /// Specifies the file from which this asset can be reloaded, if it is unloaded in between. 
     void SetDiskSource(QString diskSource);
 
@@ -103,7 +108,7 @@ public:
     virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
 
     /// Returns true if the replace succeeds.
-//    bool ReplaceReference(const QString &oldRef, const QString &newRef);
+    //bool ReplaceReference(const QString &oldRef, const QString &newRef);
 
     /// Returns all the assets this asset refers to, and the assets those assets refer to, and so on.
     std::vector<AssetReference> FindReferencesRecursive() const;
@@ -151,6 +156,10 @@ protected:
 
     /// Stores the SHA-1 hash of this content, saved as a string for convenience for script access. 
     QString contentHash;
+
+    /// Boolean if assets content hash has changed.
+    /// @note This is reseted to false always after Loaded() signal is emitted.
+    bool contentHashChanged;
 };
 
 #endif
