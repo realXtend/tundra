@@ -10,8 +10,9 @@
 
 #include "IScriptInstance.h"
 #include "ForwardDefines.h"
+
 #include "AssetFwd.h"
-#include "ScriptAsset.h"
+#include "JavascriptFwd.h"
 
 #include <QtScript>
 //#ifndef QT_NO_SCRIPTTOOLS
@@ -39,15 +40,18 @@ public:
     /// Destroys script engine created for this script instance.
     virtual ~JavascriptInstance();
 
-    //! Overload from IScriptInstance
+    //! IScriptInstance override.
     void Load();
 
-    //! Overload from IScriptInstance
+    //! IScriptInstance override.
     void Unload();
 
-    //! Overload from IScriptInstance
+    //! IScriptInstance override.
     void Run();
-
+    
+    //! IScriptInstance override.
+    virtual QString GetLoadedScriptName() const { return currentScriptName; }
+    
     //! Register new service to java script engine.
     void RegisterService(QObject *serviceObject, const QString &name);
 
@@ -87,8 +91,12 @@ private:
 
     /// If the script content is loaded directly from local file, this points to the actual script content.  
     QString program_;
+    
     /// Specifies the absolute path of the source file where the script is loaded from, if the content is directly loaded from file.
     QString sourceFile;
+
+    /// Current script name that is loaded into this instance. Exposed via GetCurrentScriptName().
+    QString currentScriptName;
 
     ComponentWeakPtr owner_; ///< Owner (EC_Script) component, if existing.
     JavascriptModule *module_; ///< Javascript module.

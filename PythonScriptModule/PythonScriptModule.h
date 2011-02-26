@@ -7,7 +7,6 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "PythonQtScriptingConsole.h"
-#include "ScriptAsset.h"
 
 #include <QObject>
 #include <QList>
@@ -25,6 +24,9 @@
 #else
     #include <Python.h>
 #endif
+
+class ScriptAsset;
+typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 
 namespace OgreRenderer
 {
