@@ -644,13 +644,17 @@ void SceneTreeWidget::EditInNew()
     editor->show();
 	//Disconnect to avoid listen to scene events
 	editor->SetFocus(false);
-	bool j = disconnect(scene.lock().get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)), editor, 
+	disconnect(scene.lock().get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)), editor, 
             SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)));
 
 	//Make focus over main Ec_Editor
 	ECEditorWindow *editor2 = ecEditors.first(); //second We want to listen new events in the main EC_Editor
-    if (editor2)
+	if (editor2){
 		editor2->SetFocus(true);
+		UiServiceInterface *ui_service = framework->GetService<UiServiceInterface>();
+        assert(ui_service);
+		ui_service->ShowWidget(editor2);
+	}
 
     //ecEditors.push_back(editor);
     /*if (!ecEditor)
