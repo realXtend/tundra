@@ -88,11 +88,11 @@ namespace Tts
 		/// TTS service
 		TtsServicePtr tts_service_;
         SettingsWidget* settings_widget_;
-        QString own_avatar_voice_;
+        //QString own_avatar_voice_;
         bool publish_own_voice_;
     private slots:  
-        void ConnectSceneSignals();
-        void CheckNewComponent(Scene::Entity*, IComponent*, AttributeChange::Type);
+        //void ConnectSceneSignals();
+        //void CheckNewComponent(Scene::Entity*, IComponent*, AttributeChange::Type);
         void ReadTtsSettings();
         void UnpublishOwnAvatarVoice();
     };

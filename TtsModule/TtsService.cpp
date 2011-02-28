@@ -42,13 +42,17 @@ namespace Tts
 
 	void TtsService::Text2Speech(QString message, QString voice)
 	{
+		QString voice_params=0;
         if (!voices_.contains(voice))
         {
-            QString message = QString("Unsupported voice %1").arg(voice);
-            TtsModule::LogError(message.toStdString());       
-            return;
-        }
-        QString voice_params = voices_[voice];
+            QString message = QString("Unsupported voice %1, using the default voice").arg(voice);
+            TtsModule::LogError(message.toStdString());
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Tts");
+			QString default_tts_voice = settings.value("Tts/other_default_voice", "").toString();
+			voice_params = voices_[default_tts_voice];
+        }else
+			voice_params = voices_[voice];
+
         message = RemoveUnwantedCharacters(message);
 
         QString command = QString("festival.exe --libdir \"festival/lib\" %1 -A -T \"%2\"").arg(voice_params).arg(message); 
