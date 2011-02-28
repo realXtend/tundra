@@ -648,13 +648,21 @@ void SceneTreeWidget::EditInNew()
             SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)));
 
 	//Make focus over main Ec_Editor
-	ECEditorWindow *editor2 = ecEditors.first(); //second We want to listen new events in the main EC_Editor
+	ECEditorWindow *editor2 = 0;
+	if (ecEditors.size())
+		editor2 = ecEditors.first(); //second We want to listen new events in the main EC_Editor
+	else
+	{
+		ECEditorModule *module = framework->GetModule<ECEditorModule>();
+        editor2 = module->GetActiveECEditor();
+	}
 	if (editor2){
 		editor2->SetFocus(true);
 		UiServiceInterface *ui_service = framework->GetService<UiServiceInterface>();
-        assert(ui_service);
+		assert(ui_service);
 		ui_service->ShowWidget(editor2);
-	}
+	} 
+
 
     //ecEditors.push_back(editor);
     /*if (!ecEditor)
