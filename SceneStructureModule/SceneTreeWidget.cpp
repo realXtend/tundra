@@ -627,6 +627,8 @@ void SceneTreeWidget::EditInNew()
     //assert(ui);
 
     ECEditorWindow *editor = new ECEditorWindow(framework);
+	ECEditorModule *module = framework->GetModule<ECEditorModule>();
+	disconnect(editor, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
     editor->setAttribute(Qt::WA_DeleteOnClose);
     connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
     //editor->move(mapToGlobal(pos()) + QPoint(50, 50));
@@ -636,6 +638,9 @@ void SceneTreeWidget::EditInNew()
         editor->AddEntity(id);
     editor->SetSelectedEntities(selection.EntityIds());*/
 
+	disconnect(scene.lock().get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)), editor, 
+            SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)));
+
     NaaliUi *ui = framework->Ui();
     if (!ui)
         return;
@@ -643,9 +648,9 @@ void SceneTreeWidget::EditInNew()
     editor->setWindowFlags(Qt::Tool);	
     editor->show();
 	//Disconnect to avoid listen to scene events
-	editor->SetFocus(false);
-	disconnect(scene.lock().get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)), editor, 
-            SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)));
+	//editor->SetFocus(true);
+	//editor->setFocus(Qt::MouseFocusReason);
+	
 
 	//Make focus over main Ec_Editor
 	ECEditorWindow *editor2 = 0;
