@@ -16,6 +16,8 @@
 #include "AssetReference.h"
 
 #include <QPointer>
+#include <QWidget>
+#include <QLabel>
 
 class QDragEnterEvent;
 class QDragMoveEvent;
@@ -109,6 +111,11 @@ private:
     boost::shared_ptr<InputContext> inputContext; ///< Input context.
 
     SceneMaterialDropData materialDropData;
+    
+    QWidget *toolTipWidget;
+    QLabel *toolTip;
+    QString currentToolTipSource;
+    QString currentToolTipDestination;
 
 private slots:
     /// Handles KeyPressed() signal from input context.
@@ -121,6 +128,9 @@ private slots:
         @param e Event.
     */
     void HandleDragEnterEvent(QDragEnterEvent *e);
+
+    /// Handles main window drag leave event.
+    void HandleDragLeaveEvent(QDragLeaveEvent *e);
 
     /// Handles main window drag move event.
     /** If event's MIME data contains URL which path has supported file extension we accept it.

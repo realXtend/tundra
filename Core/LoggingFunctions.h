@@ -22,6 +22,9 @@
 
 #include <Poco/Logger.h>
 
+// You cant have #ifdef inside #define so lets break it down
+// This is done to prevent LoggingFunctions.h to leak LogDebugs in release mode!
+#ifdef _DEBUG
 #define DEFINE_POCO_LOGGING_FUNCTIONS(name)                                                                             \
     static const std::string loggingName(name);                                                                         \
     static void LogFatal(const std::string &msg)    { Poco::Logger::get(loggingName).fatal("Fatal: " + msg);         }  \
@@ -32,6 +35,17 @@
     static void LogInfo(const std::string &msg)     { Poco::Logger::get(loggingName).information(msg);               }  \
     static void LogTrace(const std::string &msg)    { Poco::Logger::get(loggingName).trace("Trace: " + msg);         }  \
     static void LogDebug(const std::string &msg)    { Poco::Logger::get(loggingName).debug("Debug: " + msg);         }
+#else
+#define DEFINE_POCO_LOGGING_FUNCTIONS(name)                                                                             \
+    static const std::string loggingName(name);                                                                         \
+    static void LogFatal(const std::string &msg)    { Poco::Logger::get(loggingName).fatal("Fatal: " + msg);         }  \
+    static void LogCritical(const std::string &msg) { Poco::Logger::get(loggingName).critical("Critical: " + msg);   }  \
+    static void LogError(const std::string &msg)    { Poco::Logger::get(loggingName).error("Error: " + msg);         }  \
+    static void LogWarning(const std::string &msg)  { Poco::Logger::get(loggingName).warning("Warning: " + msg);     }  \
+    static void LogNotice(const std::string &msg)   { Poco::Logger::get(loggingName).notice("Notice: " + msg);       }  \
+    static void LogInfo(const std::string &msg)     { Poco::Logger::get(loggingName).information(msg);               }  \
+    static void LogTrace(const std::string &msg)    { Poco::Logger::get(loggingName).trace("Trace: " + msg);         }  \
+    static void LogDebug(const std::string &msg)    { }
+#endif // _DEBUG
 
-#endif
-
+#endif // incl_Interfaces_LoggingFunctions_h

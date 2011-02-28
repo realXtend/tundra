@@ -70,9 +70,9 @@ QScriptValue toScriptValueVector3(QScriptEngine *engine, const Vector3df &s)
 
     //this should suffice only once for the prototype somehow, but couldn't get that to work
     //ctorVector3df.property("prototype").setProperty("normalize", normalizeVector3df);
-    obj.prototype().setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
-    obj.prototype().setProperty("getLength", engine->newFunction(Vector3df_prototype_getLength));
-    obj.prototype().setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
+    obj.setProperty("normalize", engine->newFunction(Vector3df_prototype_normalize));
+    obj.setProperty("getLength", engine->newFunction(Vector3df_prototype_getLength));
+    obj.setProperty("mul", engine->newFunction(Vector3df_prototype_mul));
 
     return obj;
 }
@@ -319,10 +319,10 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
 
     // Register both constructors and methods (with js prototype style)
     // http://doc.qt.nokia.com/latest/scripting.html#prototype-based-programming-with-the-qtscript-c-api
-    /* doesn't work for some reason, is now hacked in toScriptValue to every instance (bad!)
+    /* doesn't work for some reason, is now hacked in toScriptValue to every instance (bad!) */
     QScriptValue protoVector3df = engine->newObject();
-    protoVector3df.setProperty("normalize2", engine->newFunction(Vector3df_prototype_normalize));*/
-    QScriptValue ctorVector3df = engine->newFunction(createVector3df); //, protoVector3df);
+    protoVector3df.setProperty("normalize2", engine->newFunction(Vector3df_prototype_normalize)); //leaving in for debug/test purposes
+    QScriptValue ctorVector3df = engine->newFunction(createVector3df, protoVector3df); //this is supposed to work according to docs, doesnt.
     engine->globalObject().setProperty("Vector3df", ctorVector3df);
     
     QScriptValue ctorQuaternion = engine->newFunction(createQuaternion);

@@ -18,7 +18,6 @@
 #include "EC_Script.h"
 #include "ScriptAssetFactory.h"
 #include "EC_DynamicComponent.h"
-#include "EventManager.h"
 #include "SceneManager.h"
 #include "Input.h"
 #include "UiServiceInterface.h"
@@ -26,6 +25,8 @@
 #include "Frame.h"
 #include "ConsoleAPI.h"
 #include "ConsoleCommandServiceInterface.h"
+
+#include "ScriptAsset.h"
 
 #include <QtScript>
 
@@ -51,10 +52,6 @@ void JavascriptModule::Load()
     framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new ScriptAssetFactory));
 }
 
-void JavascriptModule::PreInitialize()
-{
-}
-
 void JavascriptModule::Initialize()
 {
     connect(GetFramework(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
@@ -70,8 +67,6 @@ void JavascriptModule::Initialize()
     framework_->GetServiceManager()->RegisterService(Service::ST_JavascriptScripting, service);
 
     engine->globalObject().setProperty("print", engine->newFunction(Print));
-
-    frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 }
 
 void JavascriptModule::PostInitialize()
@@ -103,7 +98,6 @@ void JavascriptModule::PostInitialize()
         startupScripts_.push_back(jsInstance);
         jsInstance->Run();
     }
-
 }
 
 void JavascriptModule::Uninitialize()
@@ -115,7 +109,6 @@ void JavascriptModule::Update(f64 frametime)
 {
     RESETPROFILER;
 }
-
 
 Console::CommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
 {
