@@ -6,6 +6,7 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "ECEditorModuleApi.h"
+#include "SceneFwd.h"
 
 #include <QObject>
 #include <QPointer>

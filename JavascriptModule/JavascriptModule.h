@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   JavascriptModule.h
- *  @brief  Enables Javascript execution and scripting in Naali.
+ *  @brief  Enables Javascript execution and scripting by using QtScript.
  */
 
 #ifndef incl_JavascriptModule_JavascriptModule_h
@@ -13,6 +13,7 @@
 #include "AttributeChangeType.h"
 #include "ScriptServiceInterface.h"
 #include "AssetFwd.h"
+#include "SceneFwd.h"
 #include "ScriptAsset.h"
 
 #include <QObject>
@@ -25,9 +26,7 @@ class QScriptValue;
 class JavascriptInstance;
 class EC_Script;
 
-/// Enables Javascript execution and scripting in Naali.
-/**
-*/
+/// Enables Javascript execution and scripting by using QtScript.
 class JavascriptModule : public QObject, public IModule, public Foundation::ScriptServiceInterface
 {
     Q_OBJECT

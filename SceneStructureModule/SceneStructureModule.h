@@ -10,6 +10,7 @@
 #define incl_SceneStructureModule_SceneStructureModule_h
 
 #include "IModule.h"
+#include "SceneFwd.h"
 #include "Vector3D.h"
 #include "AssetAPI.h"
 #include "AssetReference.h"

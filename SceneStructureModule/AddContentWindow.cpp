@@ -399,7 +399,7 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     int fullHeight = entityTreeWidget->header()->height();
     fullHeight += (entityTreeWidget->sizeHintForRow(0)+5) * entityTreeWidget->model()->rowCount();
     int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
-    if(fullHeight<(halfDeskHeight-50))
+    if (fullHeight < halfDeskHeight-50)
     {
         entityTreeWidget->setMinimumHeight(fullHeight);
     }
@@ -585,7 +585,7 @@ void AddContentWindow::AddContent()
     {
         // If no uploads are queued then AddEntities will be called automatically
         if (UploadAssets())
-        {        
+        {
             if (totalUploads_ > 0)
             {
                 uploadStatus_->show();

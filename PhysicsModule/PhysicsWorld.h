@@ -4,7 +4,7 @@
 #define incl_Physics_PhysicsWorld_h
 
 #include "Core.h"
-#include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "PhysicsModuleApi.h"
 
 #include <set>

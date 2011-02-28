@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   JavascriptModule.cpp
- *  @brief  Enables Javascript execution and scripting in Naali.
+ *  @brief  Enables Javascript execution and scripting by using QtScript.
  */
 
 #include "StableHeaders.h"
