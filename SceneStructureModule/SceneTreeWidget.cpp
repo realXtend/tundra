@@ -540,7 +540,7 @@ void SceneTreeWidget::Edit()
         // If we have an existing editor instance, use it.
         if (ecEditors.size())
         {
-			ECEditorWindow *editor = ecEditors.first();
+			ECEditorWindow *editor = ecEditors.first(); //second We want to listen new events in the main EC_Editor
             if (editor)
             {
                 editor->AddEntities(selection.EntityIds(), true);
@@ -640,10 +640,19 @@ void SceneTreeWidget::EditInNew()
     if (!ui)
         return;
     editor->setParent(ui->MainWindow());
-    editor->setWindowFlags(Qt::Tool);
+    editor->setWindowFlags(Qt::Tool);	
     editor->show();
+	//Disconnect to avoid listen to scene events
+	editor->SetFocus(false);
+	bool j = disconnect(scene.lock().get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)), editor, 
+            SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)));
 
-    ecEditors.push_back(editor);
+	//Make focus over main Ec_Editor
+	ECEditorWindow *editor2 = ecEditors.first(); //second We want to listen new events in the main EC_Editor
+    if (editor2)
+		editor2->SetFocus(true);
+
+    //ecEditors.push_back(editor);
     /*if (!ecEditor)
         ecEditor = editor;*/
 
