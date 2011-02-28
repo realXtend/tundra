@@ -462,7 +462,7 @@ private:
     /// Manages skeleton asset requests for EC_Mesh.
     AssetRefListenerPtr skeletonAsset;
 
-    QHash<uint, QString> pendingMaterialApplies;
+    std::map<int, QString> pendingMaterialApplies;
 };
 
 #endif

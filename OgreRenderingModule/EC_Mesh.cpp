@@ -1041,8 +1041,8 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
     // Apply pending materials, these were tried to be applied before the mesh was loaded
     if (!pendingMaterialApplies.empty())
     {
-        foreach(uint index, pendingMaterialApplies.keys())
-            SetMaterial(index, pendingMaterialApplies[index]);
+        for(int idx = 0; idx < pendingMaterialApplies.size(); ++idx)
+            SetMaterial(idx, pendingMaterialApplies[idx]);
         pendingMaterialApplies.clear();
     }
 }

@@ -17,11 +17,11 @@ add_definitions (-DKRISTALLIPROTOCOL_MODULE_EXPORTS)
 add_definitions (-D_WINSOCKAPI_)
 add_definitions (-DNAALI_CLIENT)
 
-use_modules (Core Foundation Interfaces SceneManager)
+use_modules (Core Foundation Interfaces Scene)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager)
+link_modules (Core Foundation Interfaces Scene)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

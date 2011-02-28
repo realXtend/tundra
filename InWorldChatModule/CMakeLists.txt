@@ -19,13 +19,13 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 add_definitions (-DINWORLDCHAT_MODULE_EXPORTS)
 
-use_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities
+use_modules (Core Foundation Interfaces Scene RexCommon ProtocolUtilities
     EntityComponents/EC_ChatBubble EntityComponents/EC_Billboard EntityComponents/EC_OpenSimPresence
     EntityComponents/EC_OpenSimPrim)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities
+link_modules (Core Foundation Interfaces Scene RexCommon ProtocolUtilities
     EC_ChatBubble EC_Billboard EC_OpenSimPresence EC_OpenSimPrim)
 link_ogre()
 
