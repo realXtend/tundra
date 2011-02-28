@@ -11,6 +11,7 @@
 #include <QWidget>
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "AssetFwd.h"
 #include "SceneDesc.h"
 #include "Vector3D.h"

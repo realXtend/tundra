@@ -10,8 +10,8 @@
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-
-#include "../Ui/NaaliUiFwd.h"
+#include "NaaliUiFwd.h"
+#include "SceneFwd.h"
 
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
