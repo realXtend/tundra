@@ -60,7 +60,6 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
             ref.length = r[3].second - r[3].first;
             ref.parsedRef = std::string(r[3].first, r[3].second).c_str();
             ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
-            LogError("ref: " + ref.parsedRef.toStdString());
             refs.push_back(ref);
             start = r[0].second;
         }
@@ -83,7 +82,6 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
             ref.length = r[3].second - r[3].first;
             ref.parsedRef = std::string(r[3].first, r[3].second).c_str();
             ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
-            LogError("1ref: " + ref.parsedRef.toStdString());
             refs.push_back(ref);
             start = r[0].second;
         }
