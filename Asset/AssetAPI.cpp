@@ -496,6 +496,12 @@ AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
 
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
+    if (assetRef.isEmpty())
+    {
+        LogError("AssetAPI::RequestAsset: Requested asset reference is an empty string!");
+        return AssetTransferPtr();
+    }
+
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
@@ -764,6 +770,11 @@ AssetPtr AssetAPI::CreateNewAsset(QString type, QString name)
     return asset;
 }
 
+QString AssetAPI::GetAssetTypeFromFileName(QString filename) const
+{
+    return GetResourceTypeFromResourceFileName(filename.toStdString().c_str());
+}
+
 AssetTypeFactoryPtr AssetAPI::GetAssetTypeFactory(QString typeName)
 {
     for(size_t i = 0; i < assetTypeFactories.size(); ++i)
@@ -825,18 +836,16 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
-//    LogDebug("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" succeeded.");
+    //LogDebug("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" succeeded.");
 
     if (transfer->asset) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
-//        transfer->asset->EmitDecoded
+        //transfer->asset->EmitDecoded
         transfer->EmitAssetDecoded();
         transfer->asset->EmitLoaded();
-        transfer->EmitAssetLoaded();
         pendingDownloadRequests.erase(transfer->source.ref);
         currentTransfers.erase(transfer->source.ref);
-
         return;
     }
 
@@ -869,8 +878,8 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
     bool success = transfer->asset->LoadFromFileInMemory(&transfer->rawAssetData[0], transfer->rawAssetData.size());
     if (!success)
     {
-        QString error("AssetAPI: Failed to load asset of type \"" + transfer->assetType + "\" and name \"" + transfer->source.ref + "\" from asset data.");
-        LogError(error.toStdString());
+        QString error("AssetAPI: Failed to load " + transfer->assetType + " '" + transfer->source.ref + "' from asset data.");
+        transfer->asset->HandleLoadError(error);
         transfer->EmitAssetFailed(error);
         return;
     }
@@ -1203,8 +1212,8 @@ QString GetResourceTypeFromResourceFileName(const char *name)
     if (file.endsWith(".xml") || file.endsWith(".txml") || file.endsWith(".tbin")) 
         return "Binary";
 
-    // Unknown type.
-    return "";
+    // Unknown type, return Binray type.
+    return "Binary";
 
     // Note: There's a separate OgreImageTextureResource which isn't handled above.
 }

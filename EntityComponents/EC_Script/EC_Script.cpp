@@ -6,13 +6,14 @@
 #include "MemoryLeakCheck.h"
 #include "EC_Script.h"
 #include "IScriptInstance.h"
+#include "ScriptAsset.h"
 
 #include "IAttribute.h"
 #include "IAssetTransfer.h"
 #include "Entity.h"
-#include "LoggingFunctions.h"
 #include "AssetRefListener.h"
 
+#include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Script")
 
 EC_Script::~EC_Script()
@@ -28,7 +29,6 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
         scriptInstance_->Unload();
         SAFE_DELETE(scriptInstance_);
     }
-
     scriptInstance_ = instance;
 }
 
@@ -39,11 +39,11 @@ void EC_Script::Run(const QString &name)
     // parameter of RunScript allows the user to specify which EC_Script to run. So, first check
     // if this Run message is meant for us.
     if (!name.isEmpty() && name != scriptRef.Get().ref)
-        return; // Not our RunScript invokation - ignore it.
+        return; // Not our RunScript invocation - ignore it.
 
     if (!scriptInstance_)
     {
-        LogError("EC_Script::Run: No script instance set");
+        LogError("Run: No script instance set");
         return;
     }
 
@@ -54,11 +54,11 @@ void EC_Script::Run(const QString &name)
 void EC_Script::Unload(const QString &name)
 {
     if (!name.isEmpty() && name != scriptRef.Get().ref)
-        return; // Not our UnloadScript invokation - ignore it.
+        return; // Not our UnloadScript invocation - ignore it.
 
     if (!scriptInstance_)
     {
-        LogError("Cannot perform Unload(), no script instance set");
+        LogError("Unload: Cannot perform, no script instance set");
         return;
     }
 
@@ -84,7 +84,7 @@ EC_Script::EC_Script(IModule *module):
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 
     scriptAsset = boost::shared_ptr<AssetRefListener>(new AssetRefListener);
-    connect(scriptAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(ScriptAssetLoaded(AssetPtr)));
+    connect(scriptAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(ScriptAssetLoaded(AssetPtr)), Qt::UniqueConnection);
 }
 
 void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
@@ -105,6 +105,17 @@ void EC_Script::ScriptAssetLoaded(AssetPtr asset_)
     {
         LogError("EC_Script::ScriptAssetLoaded: Loaded asset of type other than ScriptAsset!");
         return;
+    }
+
+    // Don't reload this script is all the following are met:
+    // 1. We already have a valid script instance (aka this is not the first load)
+    // 2. The script name has not changed (aka asset ref)
+    // 3. Assets content hash has not changed since last load (aka source code changed)
+    if (scriptInstance_) // 1.
+    {
+        if (scriptInstance_->GetLoadedScriptName() == asset_->Name()) // 2.
+            if (asset_->ContentHashChanged() == false) // 3.
+                return;
     }
 
     emit ScriptAssetChanged(asset);

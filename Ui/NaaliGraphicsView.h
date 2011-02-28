@@ -44,6 +44,11 @@ signals:
     */
     void DragEnterEvent(QDragEnterEvent *e);
 
+    /// Emitted when DragLeaveEvent is received for the main window.
+    /** @param e Event.
+    */
+    void DragLeaveEvent(QDragLeaveEvent *e);
+
     /// Emitted when DragMoveEvent is received for the main window.
     /** @param e Event.
     */
@@ -78,6 +83,7 @@ private:
     // to all Naali client applications. The individual modules can listen to those signals to be able to perform drag-n-drop
     // handling of custom mime types.
     void dragEnterEvent(QDragEnterEvent *e);
+    void dragLeaveEvent(QDragLeaveEvent *e);
     void dragMoveEvent(QDragMoveEvent *e);
     void dropEvent(QDropEvent *e);
 
