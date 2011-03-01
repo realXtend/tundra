@@ -84,6 +84,10 @@ int main (int argc, char **argv)
 //! post init setup for framework
 void setup (Foundation::Framework &fw)
 {
+    // Exclude the ui modules from loading. Actually would like this for headless only XXX \todo
+    fw.GetModuleManager()->ExcludeModule("UiModule");
+    fw.GetModuleManager()->ExcludeModule("UiExternalModule");
+
     // Exclude the login screen from loading
     fw.GetModuleManager()->ExcludeModule("LoginScreenModule");
 }

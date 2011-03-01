@@ -8,6 +8,8 @@
 #include "UiExternalServiceInterface.h"
 #include "StaticToolBar.h"
 #include "UiServiceInterface.h"
+#include <QIcon>
+#include <QAction>
 
 namespace UiServices
 {

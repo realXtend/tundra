@@ -138,7 +138,9 @@ NaaliUi::~NaaliUi()
 
 QWidget *NaaliUi::MainWindow() const
 {
-    return mainWindow->parentWidget();
+    if (mainWindow)
+        return mainWindow->parentWidget();
+    return 0; //headless
 }
 
 NaaliMainWindow *NaaliUi::CentralWindow() const
