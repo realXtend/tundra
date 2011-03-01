@@ -77,6 +77,8 @@
 #include "IEventData.h"
 #include "Audio.h"
 #include "Input.h"
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
 #include "Renderer.h"
@@ -553,6 +555,13 @@ void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 // virtual
 void RexLogicModule::Update(f64 frametime)
 {
+    // HACK: Added a debug code for SB here since this could not be done in a script and it is not worth adding a separate module for it. -jj.
+    // \todo Remove this for production.
+    if (framework_->GetInput()->IsKeyDown(Qt::Key_O) && 
+        framework_->GetInput()->IsKeyDown(Qt::Key_P))
+    {
+        framework_->Ui()->MainWindow()->resize(1024, 768);
+    }
 
     {
         PROFILE(RexLogicModule_Update);
