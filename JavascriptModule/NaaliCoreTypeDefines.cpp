@@ -225,16 +225,17 @@ void fromScriptValueAssetReferenceList(const QScriptValue &obj, AssetReferenceLi
 
 QScriptValue toScriptValueAssetReferenceList(QScriptEngine *engine, const AssetReferenceList &s)
 {
-    QScriptValue obj = engine->newObject();
-  
+    //QScriptValue obj = engine->newObject();
+    
     /* why this? 
     for( int i = 0; i < s.refs.size(); ++i)
     {
         obj.setProperty(i, QScriptValue(engine, s.refs[i].toString()));
     }*/
-    obj.setProperty("refs", engine->toScriptValue(s.refs)); //could just return refs, but this is consistent with the c++ api and allows for adding methods to the reflist type later 
+    //obj.setProperty("refs", engine->toScriptValue(s.refs)); //could just return refs, but this is consistent with the c++ api and allows for adding methods to the reflist type later 
 
-    return obj;
+    //return obj;
+    return engine->toScriptValue(s.refs); //this is bw compat and symmetric with the from* equivalent
 }
 
 void fromScriptValueIAttribute(const QScriptValue &obj, IAttribute *&s)
