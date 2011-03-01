@@ -13,16 +13,16 @@ import naali
 from naali import renderer #naali.renderer for FrustumQuery, hopefully all ex-rexviewer things soon
 
 try:
-    #window
+    window
     transform
 except: #first run
     try:
-        #import window
+        import window
         import transform
     except ImportError, e:
         print "couldn't load window and transform:", e
 else:
-    #window = reload(window)
+    window = reload(window)
     transform= reload(transform)
 
 # note: difference from develop: in tundra there is no EC_OpenSimPrim, so we assume
@@ -52,6 +52,8 @@ class ObjectEdit(Component):
         self.left_button_down = False
         self.keypressed = False
         self.editing = False
+        
+        self.window = window.ObjectToolsWindow(self)
                 
         self.editingKeyTrigger = (Qt.Key_M, Qt.ShiftModifier)
         self.shortcuts = {
@@ -196,22 +198,25 @@ class ObjectEdit(Component):
         self.highlight(ent)
         self.ec_selected(ent)
         self.changeManipulator(self.getCurrentManipType())
+        self.window.selected(ent)
         return ent
         
     def select(self, ent):        
         self.deselect_all()
         ent = self.baseselect(ent)
         self.sels.append(ent)
-        if not ent in self.selmasses or ent.rigidbody.mass != 0:
-            self.selmasses[ent] = ent.rigidbody.mass
-            ent.rigidbody.mass = 0
+        if hasattr(ent, "rigidbody"):
+            if not ent in self.selmasses or ent.rigidbody.mass != 0:
+                self.selmasses[ent] = ent.rigidbody.mass
+                ent.rigidbody.mass = 0
         self.canmove = True
 
     def multiselect(self, ent):
         self.sels.append(ent)
-        if not ent in self.selmasses or ent.rigidbody.mass != 0:
-            self.selmasses[ent] = ent.rigidbody.mass
-            ent.rigidbody.mass = 0
+        if hasattr(ent, "rigidbody"):
+            if not ent in self.selmasses or ent.rigidbody.mass != 0:
+                self.selmasses[ent] = ent.rigidbody.mass
+                ent.rigidbody.mass = 0
         ent = self.baseselect(ent)
     
     def deselect(self, ent, valid=True):
@@ -297,6 +302,7 @@ class ObjectEdit(Component):
             self.manipulator.hideManipulator()
             self.manipulator = newmanipu
         self.manipulator.showManipulator(self.sels)
+        self.window.changeManipulator(id)
     
     def hideManipulator(self):
         if self.manipulator:
@@ -506,6 +512,8 @@ class ObjectEdit(Component):
                     
                     self.prev_mouse_abs_x = mouse_abs_x
                     self.prev_mouse_abs_y = mouse_abs_y
+                    
+                    self.window.update_gui(ent)
    
     def on_inboundnetwork(self, evid, name):
         #print "editgui got an inbound network event:", id, name
@@ -580,6 +588,7 @@ class ObjectEdit(Component):
 
             #if not self.dragging:
             #    r.networkUpdate(ent.Id)
+            self.window.update_gui(ent)
             self.modified = True
             
     def changescale(self, i, v):
@@ -603,6 +612,7 @@ class ObjectEdit(Component):
                 
                 #if not self.dragging:
                 #    r.networkUpdate(ent.Id)
+                self.window.update_gui(ent)
                 self.modified = True
                 
     def changerot(self, i, v):
@@ -616,7 +626,7 @@ class ObjectEdit(Component):
             #ent.network.Orientation = ort
             #if not self.dragging:
             #    r.networkUpdate(ent.Id)
-                
+            self.window.update_gui(ent)
             self.modified = True
 
     def changerot_cpp(self, x, y, z):

@@ -345,6 +345,7 @@ class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     MANIPULATOR_RULER_TYPE = EC_Ruler.Translation
+    MANIPULATORORIENTATION = QQuaternion(0, 0, 1, 1)
     
     GREENARROW = [0]
     REDARROW = [1]
@@ -386,6 +387,7 @@ class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
     MANIPULATOR_MESH_NAME = "scale1.mesh"
     MANIPULATOR_RULER_TYPE = EC_Ruler.Scale
+    MANIPULATORORIENTATION = QQuaternion(0, 0, 1, 1)
 
     MATERIALNAMES = {
         0: "axis_green",
