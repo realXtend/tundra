@@ -31,7 +31,6 @@ var own_avatar = false;
 var flying = false;
 var falling = false;
 var fish_created = false;
-var tripod = false;
 var first_person = false;
 var crosshair = null;
 
@@ -361,9 +360,6 @@ function ClientInitialize() {
 
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
         me.Action("Zoom").Triggered.connect(ClientHandleKeyboardZoom);
-        me.Action("ToggleTripod").Triggered.connect(ClientHandleToggleTripod);
-        me.Action("MouseLookX").Triggered.connect(ClientHandleTripodLookX);
-        me.Action("MouseLookY").Triggered.connect(ClientHandleTripodLookY);
         me.Action("CheckState").Triggered.connect(ClientCheckState);
         
         // Inspect the login avatar url property
@@ -412,59 +408,6 @@ function IsCameraActive()
     return camera.IsActive();
 }
 
-function ClientHandleToggleTripod()
-{
-    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-    if (cameraentity == null)
-        return;
-
-    var camera = cameraentity.ogrecamera;
-    if (camera.IsActive() == false)
-    {
-        first_person = false;
-        crosshair.hide();
-        tripod = false;
-        return;
-    }
-
-    if (tripod == false)
-        tripod = true;
-    else
-        tripod = false;
-}
-
-function ClientHandleTripodLookX(param)
-{
-    if (tripod)
-    {
-        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-        if (cameraentity == null)
-            return;
-        var cameraplaceable = cameraentity.placeable;
-        var cameratransform = cameraplaceable.transform;
-
-        var move = parseInt(param);
-        cameratransform.rot.z -= mouse_rotate_sensitivity * move;
-        cameraplaceable.transform = cameratransform;
-    }
-}
-
-function ClientHandleTripodLookY(param)
-{
-    if (tripod)
-    {
-        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-        if (cameraentity == null)
-            return;
-        var cameraplaceable = cameraentity.placeable;
-        var cameratransform = cameraplaceable.transform;
-
-        var move = parseInt(param);
-        cameratransform.rot.x -= mouse_rotate_sensitivity * move;
-        cameraplaceable.transform = cameratransform;
-    }
-}
-
 function ClientUpdate(frametime)
 {
     // Tie enabled state of inputmapper to the enabled state of avatar camera
@@ -475,6 +418,7 @@ function ClientUpdate(frametime)
             var active = avatarcameraentity.ogrecamera.IsActive();
             if (inputmapper.enabled != active) {
                 inputmapper.enabled = active;
+	        }
         }
         }
         ClientUpdateAvatarCamera(frametime);
@@ -535,7 +479,6 @@ function ClientCreateInputMapper() {
     inputmapper.takeMouseEventsOverQt = true;
     inputmapper.modifiersEnabled = false;
     inputmapper.executionType = 1; // Execute actions locally
-    inputmapper.RegisterMapping("T", "ToggleTripod", 1);
     inputmapper.RegisterMapping("+", "Zoom(in)", 1);
     inputmapper.RegisterMapping("-", "Zoom(out)", 1);
 }
@@ -671,13 +614,11 @@ function ClientHandleMouseScroll(relativeScroll)
 }
 
 function ClientUpdateAvatarCamera() {
-    if (!tripod)
-    {
-        var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
-        if (cameraentity == null)
-            return;
-        var cameraplaceable = cameraentity.placeable;
-        var avatarplaceable = me.placeable;
+    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    if (cameraentity == null)
+        return;
+    var cameraplaceable = cameraentity.placeable;
+    var avatarplaceable = me.placeable;
 
         var cameratransform = cameraplaceable.transform;
         var avatartransform = avatarplaceable.transform;
@@ -692,8 +633,7 @@ function ClientUpdateAvatarCamera() {
         if(!first_person)
             cameratransform.rot.x = 90;
         cameratransform.rot.z = avatartransform.rot.z - 90;
-        cameraplaceable.transform = cameratransform;
-    }
+    cameraplaceable.transform = cameratransform;
 }
 
 function ClientCheckState()
