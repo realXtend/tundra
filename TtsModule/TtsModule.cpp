@@ -34,7 +34,6 @@ namespace Tts
 	    QObject(),
         IModule(module_name_),
         settings_widget_(0),
-        //own_avatar_voice_(""),
         publish_own_voice_(false)
 	{
 
@@ -70,52 +69,12 @@ namespace Tts
         publish_own_voice_ = settings.value("Tts/publish_own_voice", true).toBool();
         if (old_value == true && publish_own_voice_ == false)
             UnpublishOwnAvatarVoice();
-        //own_avatar_voice_ = settings.value("Tts/own_voice", "").toString();
     }
 
 	void TtsModule::PostInitialize()
 	{
         SetupSettingsWidget();
-        //connect(framework_, SIGNAL(DefaultWorldSceneChanged(const Scene::ScenePtr &)), this, SLOT(ConnectSceneSignals()));
     }
-
-    //void TtsModule::ConnectSceneSignals()
-    //{
-    //    Scene::SceneManager* scene = framework_->DefaultScene();
-    //    if (!scene)
-    //        return;
-
-    //    connect(scene, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ), this, SLOT(CheckNewComponent(Scene::Entity*, IComponent*, AttributeChange::Type)));
-    //}
-
-    //void TtsModule::CheckNewComponent(Scene::Entity* ent, IComponent* comp, AttributeChange::Type change_type)
-    //{
-    //    if (!publish_own_voice_)
-    //        return;
-
-    //    Foundation::WorldLogicInterface* world_logic = framework_->GetService<Foundation::WorldLogicInterface>();
-    //    if (!world_logic)
-    //        return;
-    //    
-    //    Scene::EntityPtr user = world_logic->GetUserAvatarEntity();
-    //    if (!user)
-    //        return;
-
-    //    IComponent* component = user->GetOrCreateComponent("EC_DynamicComponent","EC_TtsVoice", AttributeChange::Replicate, true).get();
-    //    EC_DynamicComponent* tts_voice =  dynamic_cast<EC_DynamicComponent*>(component);
-    //    if (!tts_voice)
-    //        return;
-
-    //    if (!tts_voice->ContainsAttribute("avatar voice"))
-    //        tts_voice->AddQVariantAttribute("avatar voice", AttributeChange::Replicate);
-    //    if (tts_voice->GetAttribute("avatar voice").toString() != own_avatar_voice_)
-    //    {
-    //        tts_voice->SetAttribute("avatar voice", own_avatar_voice_);
-    //        QString message = QString("Added tts voice for own avatar: %1").arg(own_avatar_voice_);
-    //        LogInfo(message.toStdString());
-    //    }
-    //}
-
 	void TtsModule::Uninitialize()
 	{
 		framework_->GetServiceManager()->UnregisterService(tts_service_);
