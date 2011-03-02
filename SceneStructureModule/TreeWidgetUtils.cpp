@@ -12,23 +12,33 @@
 void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter)
 {
     QString f = filter.trimmed();
+
+    // Negation search?
+    bool negation = false;
+    if (!f.isEmpty() && f[0] == '!')
+    {
+        f = f.mid(1);
+        negation = true;
+    }
+
     bool expand = f.size() >= 3;
-    QSet<QTreeWidgetItem *> alreadySetVisible;
+    QSet<QTreeWidgetItem *> handled;
 
     QTreeWidgetItemIterator it(treeWidget);
     while(*it)
     {
         QTreeWidgetItem *item = *it;
-        if (!alreadySetVisible.contains(item))
+        if (!handled.contains(item))
         {
             if (f.isEmpty())
             {
                 item->setHidden(false);
             }
-            else if (item->text(column).contains(filter, Qt::CaseInsensitive))
+            else if (item->text(column).contains(f, Qt::CaseInsensitive))
             {
-                item->setHidden(false);
-                alreadySetVisible.insert(item);
+                item->setHidden(negation ? true : false);
+                handled.insert(item);
+
                 if (expand)
                     item->setExpanded(expand);
 
@@ -36,8 +46,8 @@ void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter
                 QTreeWidgetItem *parent = 0, *child = item;
                 while((parent = child->parent()) != 0)
                 {
-                    parent->setHidden(false);
-                    alreadySetVisible.insert(parent);
+                    parent->setHidden(negation ? true : false);
+                    handled.insert(parent);
                     if (expand)
                         parent->setExpanded(expand);
                     child = parent;
@@ -45,7 +55,7 @@ void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter
             }
             else
             {
-                item->setHidden(true);
+                item->setHidden(negation ? false : true);
             }
         }
 

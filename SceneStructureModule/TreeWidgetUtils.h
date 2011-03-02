@@ -10,9 +10,10 @@
 
 /// Searches for items containing @c filter (case-insensitive) in the item's @c column and toggles their visibility.
 /** If match is found the item is set visible and expanded (if filter >= 3 chars), otherwise it's hidden.
+    If @c filter begins with '!', negation search is performed, i.e. every item containing the filter is hidden instead.
     @param treeWidget Target tree widget for the action.
     @param column Which column's text is used.
-    @param filter Text used as a filter.
+    @param filter Text used as a filter. If an empty string, all items in the tree widget are set visible.
 */
 void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter);
 
