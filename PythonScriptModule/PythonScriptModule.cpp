@@ -836,6 +836,8 @@ namespace PythonScript
 			return 0;
         //NaaliMainWindow *mainWnd = framework_->Ui()->CentralWindow();
 		pythonqtconsole_ = new PythonQtScriptingConsole(framework_->Ui()->MainWindow(), PythonQt::self()->getMainModule(), Qt::Tool);
+		pythonqtconsole_->setObjectName("Python console");
+		pythonqtconsole_->setWindowTitle("Python console");
 		ui->AddWidgetToScene(pythonqtconsole_, true, true);
 		ui->AddWidgetToMenu(pythonqtconsole_, "Python console", "View");
 

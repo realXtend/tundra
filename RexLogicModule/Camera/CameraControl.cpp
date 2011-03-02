@@ -111,6 +111,7 @@ namespace RexLogic
 			//$ BEGIN_MOD $
 			//proxy_widget_ = ui_service->AddWidgetToScene(this);
 			setWindowTitle("Camera Controls");
+			setObjectName("Camera Controls");
 			proxy_widget_ = ui_service->AddWidgetToScene(this, true, true);
 			//$ END_MOD $
             setMaximumHeight(800);

@@ -52,7 +52,7 @@ public slots:
      *          For further information, see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
      *  @return Proxy widget of the added widget.
      */
-    virtual UiProxyWidget *AddWidgetToScene(QWidget *widget,bool dockable = true, bool outside = false, Qt::WindowFlags flags = Qt::Dialog) = 0;
+	virtual UiProxyWidget *AddWidgetToScene(QWidget *widget,bool dockable = true, bool outside = true, Qt::WindowFlags flags = Qt::Dialog) = 0;
 
     /** Adds user-created UiProxyWidget to the scene.
      *  @param widget Proxy widget.

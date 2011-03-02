@@ -11,8 +11,9 @@
 
 namespace UiServices
 {
-	ExternalPanelManager::ExternalPanelManager(QMainWindow *qWin):
-          qWin_(qWin)
+	ExternalPanelManager::ExternalPanelManager(QMainWindow *qWin, UiModule *owner):
+        qWin_(qWin),
+		owner_(owner)
     {
         assert(qWin_);
 		//Define QDockAreas allowed, or configuration staff
@@ -43,12 +44,16 @@ namespace UiServices
         //Configure zones for the dockwidget		
 		qWin_->addDockWidget(Qt::LeftDockWidgetArea, widget, Qt::Vertical);
 		widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
-		
+				
 		widget->setFloating(true);
 		widget->hide();
 
         // Add to internal control list
         all_qdockwidgets_in_window_.append(widget);
+		
+		//Restore estate if neccesary
+		restoreWidget(widget);
+
         return true;
     }
 
@@ -118,5 +123,14 @@ namespace UiServices
 				return s;
 		return false;
 
+	}
+
+	void ExternalPanelManager::restoreWidget(QDockWidget *widget) {
+		//Check if we have to restore it
+		if (owner_->HasBeenPostinitializaded()) {
+			//QtBug: if version <4.7 the restore of the widget doesnt work properly. It's put in front of the application
+			//qWin_->restoreDockWidget(widget);
+		}
+			
 	}
 }

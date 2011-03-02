@@ -65,7 +65,8 @@ namespace UiServices
 		external_panel_manager_(0),
 		external_toolbar_manager_(0),
 		staticToolBar_(0),
-        inworld_notification_manager_(0)
+        inworld_notification_manager_(0),
+		postInitialize_(false)
     {
     }
 
@@ -125,7 +126,7 @@ namespace UiServices
 			//qWin_->setObjectName("Naali MainWindow");
 		   //Create MenuManager and PanelManager and ToolBarManager
            external_menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
-		   external_panel_manager_ = new ExternalPanelManager(qWin_);
+		   external_panel_manager_ = new ExternalPanelManager(qWin_, this);
 		   external_toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
 		   
 		   //Configure Static Stuff of the main window
@@ -150,6 +151,9 @@ namespace UiServices
 		} 
 		else
 			qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+
+		//Notify that the restore of the main window has been done
+		postInitialize_ = true;
     }
 
     void UiModule::Uninitialize()

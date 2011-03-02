@@ -29,7 +29,7 @@ namespace UiServices
         /*! Constructor.
          *	\param qWin MainWindow pointer.
 		 */
-		ExternalPanelManager(QMainWindow *qWin);
+		ExternalPanelManager(QMainWindow *qWin, UiModule *owner);
 
         //! Destructor.
         ~ExternalPanelManager();
@@ -90,11 +90,16 @@ namespace UiServices
          *  \param widget Name of the widget.
          */
 		QDockWidget* GetExternalMenuPanel(QString &widget);
+
+		void restoreWidget(QDockWidget *widget);
 		
     private:
 
         //! Pointer to main QMainWindow
         QMainWindow *qWin_;
+
+		//Pointer to owner
+		UiModule *owner_;
 
     };
 }

@@ -21,7 +21,7 @@ namespace UiServices
 			controller_actions_(),
 			category_menu_()
 	{
-        root_menu_->setVisible(true); // todo read from ini
+        root_menu_->setVisible(false); // todo read from ini
     }
 
     ExternalMenuManager::~ExternalMenuManager()
@@ -34,6 +34,9 @@ namespace UiServices
 		//Creates a new Menu, if it doesnt exist already
 		if (!root_menu_)
 			return;
+
+		if (!root_menu_->isVisible())
+			root_menu_->setVisible(true);
 		//Qicon TODO
 		QMenu* menu = root_menu_->addMenu(name); 
 		category_menu_[name] = menu;

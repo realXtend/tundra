@@ -45,10 +45,13 @@ namespace UiServices
 
     UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool dockable , bool outside, Qt::WindowFlags flags)
     {
-		QSettings settings("Naali UIExternal2", "UiExternal Settings");
+		//QSettings settings("Naali UIExternal2", "UiExternal Settings");
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
 		QString pos = "vacio";
-		if (widget->windowTitle() != "")
-			pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
+		if (widget->windowTitle() == "")
+			return 0;
+		
+		pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
 
 		if (pos == "outside")
 			external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
@@ -58,12 +61,17 @@ namespace UiServices
 		}		
 		else
 		{
-			if (outside && dockable)
+			if (outside && dockable) 
+			{
 				external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
+				settings.setValue(widget->windowTitle(), "outside");
+			}
+
 			else if (outside && !dockable)
 				external_nondockeable_widgets_[widget->windowTitle()] = widget;
 			else {
 				internal_widgets_[widget->windowTitle()] = owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
+				settings.setValue(widget->windowTitle(), "inside");
 				return internal_widgets_[widget->windowTitle()];
 			}
 		}
@@ -73,7 +81,8 @@ namespace UiServices
     bool UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
     {
 		//DEFAULT OUTSIDE = TRUE & MOVEABLE = TRUE. IMPORTANT THING TO HAVE IN MIND!!
-		QSettings settings("Naali UIExternal2", "UiExternal Settings");
+		//QSettings settings("Naali UIExternal2", "UiExternal Settings");
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
 		QString pos = "vacio";
 		if (widget->windowTitle() != "")
 			pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
@@ -328,6 +337,6 @@ namespace UiServices
 			return true;
 		else
 			return false;
-	}
+	}	
 //$ END_MOD $
 }

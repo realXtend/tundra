@@ -81,6 +81,7 @@ namespace UiServices
 		ExternalMenuManager *GetExternalMenuManager() const { return external_menu_manager_; }
 		ExternalPanelManager *GetExternalPanelManager() const { return external_panel_manager_; }
 		ExternalToolBarManager *GetExternalToolBarManager() const { return external_toolbar_manager_;}
+		bool HasBeenPostinitializaded() const { return postInitialize_; }
 
         //cjb Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
 
@@ -152,9 +153,10 @@ namespace UiServices
         //! Input context for Ether
         boost::shared_ptr<InputContext> input;
 
+		bool postInitialize_;
+
         //! Welcome message to be sent when inworld scene is enabled
         //! Do NOT delete this on deconstructor or anywhere else for that matter!
-       //cjb  MessageNotification *welcome_message_;
 
 		//$ BEGIN_MOD $
 		//$ MOD_DESCRIPTION Inside this method is where we create the QMainWindow of the main Aplication $
