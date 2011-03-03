@@ -44,7 +44,9 @@ namespace Tts
         /** Synthetizes text to speech
 		\param message Text to synthetize
         \param voice Voice database. @see GetAvailableVoices*/
-		virtual void Text2Speech(QString message, QString voice) = 0;
+	public slots:
+
+		virtual void Text2Speech(QString message, QString voice, int priority = 3) = 0; //1 put in front, 2 put in back, 3 put in back with time!
 		/** Synthetizes text to WAV
 		\param message Text to synthetize.
 		\param pathAndFileName The path and file name where the WAV is saved.
@@ -77,6 +79,7 @@ namespace Tts
         virtual QStringList GetAvailableVoices() const = 0;
 
         virtual void TriggerSettingsUpdated() = 0;
+		virtual void ToogleAvoidTts() = 0;
 
 		//virtual const Voice GetVoice() = 0;
 		//virtual void SetVoice(Voice voice) = 0;
@@ -92,4 +95,3 @@ namespace Tts
 }
 
 #endif
- 

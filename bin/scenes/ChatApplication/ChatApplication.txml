@@ -12,5 +12,6 @@
    <attribute value="local://ChatApplication.js" name="Script ref"/>
   </component>
   <component type="EC_DynamicComponent" sync="0" name="server"/>
+  <component type="EC_TtsChat" sync="1" name="ChatApplication"/>
  </entity>
 </scene>

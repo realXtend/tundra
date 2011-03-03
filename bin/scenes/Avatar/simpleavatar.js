@@ -43,6 +43,7 @@ if (isserver) {
 function ServerInitialize() {
     var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
     var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
+	var voice = me.GetOrCreateComponentRaw("EC_TtsVoice");
 
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
     // Note: for now, you need the default_avatar.xml in your bin/data/assets folder

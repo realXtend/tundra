@@ -7,10 +7,18 @@
 #include "Framework.h"
 
 #include "TtsServiceInterface.h"
+#include <QProcess>
 #include <QMap>
+#include <QPair>
+#include <queue>
+#include <deque>
+#include <time.h>
 
 namespace Tts
 {
+	using std::queue;
+	using std::deque;
+	typedef QPair<QString, clock_t> ttsPair;
 	
 	class TtsService : public TtsServiceInterface
 	{
@@ -24,7 +32,9 @@ namespace Tts
         //! Destructor
         virtual ~TtsService();
         
-		virtual void Text2Speech(QString message, QString voice);
+	public slots:
+
+		virtual void Text2Speech(QString message, QString voice, int priority = 3); //1 put in front, 2 put in back, 3 put in back with time!
      	virtual void Text2WAV(QString message, QString pathAndFileName, QString voice);
 		virtual void Text2PHO(QString message,QString pathAndFileName, QString voice);
 
@@ -35,11 +45,16 @@ namespace Tts
 
         virtual QStringList GetAvailableVoices() const;
         virtual void TriggerSettingsUpdated();
+
+		void ProcessTtsQueue();
+		void ToogleAvoidTts();
+
 		//virtual const Voice GetVoice();
 		//virtual void SetVoice(Voice voice);
 
     private:
-        void InitializeVoices();
+		
+        void InitializeVoices();		
         QString RemoveUnwantedCharacters(QString text);
         
         //! Framework we belong to
@@ -47,7 +62,12 @@ namespace Tts
         QMap<QString, QString> voices_;
 
 		//Voice voice_;
-		
+
+		//queue	of voices
+		bool tts_available_;
+		bool avoid_tts_overlap_;
+		queue<ttsPair> queue_tts_;
+		deque<ttsPair> deque_tts_;
     };
 }
 #endif

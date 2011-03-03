@@ -6,7 +6,7 @@
 \section Text Text to Speech module
 
 
-This module integrates a speech synthesis system into Naali.
+This module integrates a speech synthesis system into Tundra.
 
 
 Speech synthesis is the artificial production of human speech, and a text-to-speech system converts language text into speech. 
@@ -64,18 +64,25 @@ Like every other modules which registers a service, the use of the module is don
 	tts_service_ = framework_->GetService<Tts::TtsServiceInterface>();
 		if (!tts_service_)
 			return;
-		tts_service_->Text2Speech(message, Tts::Voices.EN4);
+		tts_service_->Text2Speech(message, "Spanish male");
 \endcode
+
+Also, you can use with a component: EC_TtsVoice. With this component you can give a voice to an entity and register two actions: Speak and listen. For example;
+
+\code
+	EC_TtsVoice* voice = avatar.GetOrCreateComponentRaw("EC_TtsVoice");
+	avatar.Exec(4,"Speak","Hello, my name is Avatar");
+\encode
 
 \section example Example applications
 
 
 \subsection TTS-In-World-Chat In-World TTS Chat:
 
-Communication widget has been extended enabling the synthesis of the in world chat, being possible to enable or disable your and others synthesis. It's also the place to configure your own voice 
+The ChatApplication script has been extended enabling the synthesis of the in world chat, being possible to enable or disable your and others synthesis. It's also the place to configure your own voice 
 and listen a demo before choosing it.
 
-Until the avatar has the TTS voice configuration, voice information goes with the message adding a header before this is sent to the network. This will be changed in the near future.
+The chat uses an entity compenent: EC_TtsChat and plays the message to all clients with the voice of the user who has sent the message.
 
 For more information about this application go to \ref InWorldTTS "In-World TTS information page".
 
