@@ -16,6 +16,8 @@
 #include "Outworld/ExternalPanelManager.h"
 #include "Outworld/ExternalMenuManager.h"
 #include "Outworld/ExternalToolBarManager.h"
+#include "AssetAPI.h"
+#include "QtUiAsset.h"
 //$ BEGIN_MOD $
 #include <QMap>
 #include <QList>
@@ -56,6 +58,8 @@ namespace UiServices
 
         /// UiServiceInterface override.
         bool AddWidgetToScene(UiProxyWidget *widget);
+
+		bool AddProxyWidgetToScene(UiProxyWidget *proxy);
 
         /// UiServiceInterface override.
         void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);

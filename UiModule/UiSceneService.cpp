@@ -15,6 +15,7 @@
 #include "Inworld/InworldSceneController.h"
 #include "UiStateMachine.h"
 #include "UiProxyWidget.h"
+#include "LoggingFunctions.h"
 #include "Inworld/Menus/MenuManager.h"
 #include "Inworld/NotificationManager.h"
 
@@ -22,6 +23,8 @@
 #include <QSettings>
 
 #include "Inworld/ControlPanel/SettingsWidget.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("UiSceneService")
 
 namespace UiServices
 {
@@ -96,6 +99,8 @@ namespace UiServices
 			external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget->widget(),widget->windowTitle());			
 		return false;
     }
+
+	bool UiSceneService::AddProxyWidgetToScene(UiProxyWidget *proxy) { return AddWidgetToScene(proxy); }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget)
     {
@@ -263,15 +268,66 @@ namespace UiServices
 
     QWidget *UiSceneService::LoadFromFile(const QString &file_path, bool add_to_scene, QWidget *parent)
     {
-        QWidget *widget = 0;
+        /*QWidget *widget = 0;
         QUiLoader loader;
         QFile file(file_path); 
         file.open(QFile::ReadOnly);
         widget = loader.load(&file, parent);
         if(add_to_scene && widget)
             AddWidgetToScene(widget);
-        return widget;
-    }
+        return widget;*/
+
+		AssetAPI *assetAPI = owner_->GetFramework()->Asset();
+		QString outPath = "";
+		AssetPtr asset;
+		QWidget *widget = 0;
+
+		if (AssetAPI::ParseAssetRefType(file_path) != AssetAPI::AssetRefLocalPath)
+		{
+			asset = assetAPI->GetAsset(file_path);
+			if (!asset)
+			{
+				LogError(("UiService::LoadFromFile: Asset \"" + file_path + "\" is not loaded to the asset system. Call RequestAsset prior to use!").toStdString());
+				return 0;
+			}
+			QtUiAsset *uiAsset = dynamic_cast<QtUiAsset*>(asset.get());
+			if (!uiAsset)
+			{
+				LogError(("UiService::LoadFromFile: Asset \"" + file_path + "\" is not of type QtUiFile!").toStdString());
+				return 0;
+			}
+			if (!uiAsset->IsDataValid())
+			{
+				LogError(("UiService::LoadFromFile: Asset \"" + file_path + "\" data is not valid!").toStdString());
+				return 0;
+			}
+
+			// Get original data and replace refs
+			QByteArray data = uiAsset->GetRawData();
+			uiAsset->ReplaceAssetReferences(data);
+	        
+			QUiLoader loader;
+			QDataStream dataStream(&data, QIODevice::ReadOnly);
+			widget = loader.load(dataStream.device(), parent);
+		}
+		else // The file is from absolute source location.
+		{
+			QFile file(file_path); 
+			QUiLoader loader;
+			file.open(QFile::ReadOnly);    
+			widget = loader.load(&file, parent);
+		}
+
+		if (!widget)
+		{
+			LogError(("UiService::LoadFromFile: Failed to load widget from file \"" + file_path + "\"!").toStdString());
+			return 0;
+		}
+
+		if (add_to_scene && widget)
+			AddWidgetToScene(widget);
+		return widget;
+ }
 
     void UiSceneService::TranferWidgets()
     {

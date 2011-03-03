@@ -43,6 +43,9 @@
 #include "EC_Mesh.h"
 #include "Renderer.h"
 #include "Entity.h"
+#include "AssetAPI.h"
+#include "QtUiAsset.h"
+#include "GenericAssetFactory.h"
 
 #include <Ogre.h>
 
@@ -93,6 +96,11 @@ namespace UiServices
 
     void UiModule::Initialize()
     {
+		framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
+
+		//if (GetFramework()->IsHeadless())
+		//	return;
+
         ui_view_ = GetFramework()->Ui()->GraphicsView();
         if (ui_view_)
         {
