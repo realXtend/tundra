@@ -128,8 +128,10 @@ namespace UiServices
 	void ExternalPanelManager::restoreWidget(QDockWidget *widget) {
 		//Check if we have to restore it
 		if (owner_->HasBeenPostinitializaded()) {
+#if QT_VERSION > 0x040700
 			//QtBug: if version <4.7 the restore of the widget doesnt work properly. It's put in front of the application
-			//qWin_->restoreDockWidget(widget);
+			qWin_->restoreDockWidget(widget);
+#endif
 		}
 			
 	}
