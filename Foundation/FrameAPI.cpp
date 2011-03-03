@@ -1,18 +1,18 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   Frame.cpp
- *  @brief  Exposes Naali framework's update tick.
+ *  @file   FrameAPI.h
+ *  @brief  Frame core API. Exposes framework's update tick.
  * 
- *  Frame object can be used to:
+ *  FrameAPI object can be used to:
  *  -retrieve signal every time frame has been processed
  *  -retrieve the wall clock time of Framework
- *  -to trigger delayed signals when spesified amount of time has elapsed.
+ *  -trigger delayed signals when spesified amount of time has elapsed.
  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 
 #include <QTimer>
 
@@ -27,22 +27,22 @@ void DelayedSignal::Expire()
     emit Triggered((float)((GetCurrentClockTime() - startTime_) / GetCurrentClockFreq()));
 }
 
-Frame::Frame(Foundation::Framework *framework) : QObject(framework)
+FrameAPI::FrameAPI(Foundation::Framework *framework) : QObject(framework)
 {
     startTime_ = GetCurrentClockTime();
 }
 
-Frame::~Frame()
+FrameAPI::~FrameAPI()
 {
     qDeleteAll(delayedSignals_);
 }
 
-float Frame::GetWallClockTime() const
+float FrameAPI::GetWallClockTime() const
 {
     return (GetCurrentClockTime() - startTime_) / GetCurrentClockFreq();
 }
 
-DelayedSignal *Frame::DelayedExecute(float time)
+DelayedSignal *FrameAPI::DelayedExecute(float time)
 {
     DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
     QTimer::singleShot(time*1000, delayed, SLOT(Expire()));
@@ -51,7 +51,7 @@ DelayedSignal *Frame::DelayedExecute(float time)
     return delayed;
 }
 
-void Frame::DelayedExecute(float time, const QObject *receiver, const char *member)
+void FrameAPI::DelayedExecute(float time, const QObject *receiver, const char *member)
 {
     DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
     QTimer::singleShot(time*1000, delayed, SLOT(Expire()));
@@ -60,12 +60,12 @@ void Frame::DelayedExecute(float time, const QObject *receiver, const char *memb
     delayedSignals_.push_back(delayed);
 }
 
-void Frame::Update(float frametime)
+void FrameAPI::Update(float frametime)
 {
     emit Updated(frametime);
 }
 
-void Frame::DeleteDelayedSignal()
+void FrameAPI::DeleteDelayedSignal()
 {
     DelayedSignal *expiredSignal = checked_static_cast<DelayedSignal *>(sender());
     assert(expiredSignal);

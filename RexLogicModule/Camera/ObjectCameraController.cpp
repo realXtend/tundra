@@ -5,7 +5,7 @@
 #include "EventManager.h"
 
 #include "Renderer.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 #include "Entity.h"
 
 #include "InputEvents.h"
@@ -67,7 +67,7 @@ namespace RexLogic
         connect(input_context_.get(), SIGNAL(MouseScroll(MouseEvent*)), this, SLOT(MouseScroll(MouseEvent*)));
         connect(input_context_.get(), SIGNAL(MouseDoubleClicked(MouseEvent*)), this, SLOT(MouseDoubleClicked(MouseEvent*)));
 
-        connect(framework_->GetFrame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
+        connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
         connect(timeline_, SIGNAL(frameChanged(int)), this, SLOT(FrameChanged(int)));
         connect(timeline_, SIGNAL(finished()), this, SLOT(TimeLineFinished()));
     }

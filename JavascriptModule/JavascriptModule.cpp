@@ -22,7 +22,7 @@
 #include "Input.h"
 #include "UiServiceInterface.h"
 #include "Audio.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 #include "ConsoleAPI.h"
 #include "ConsoleCommandServiceInterface.h"
 

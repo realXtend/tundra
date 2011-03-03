@@ -18,7 +18,7 @@
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 #include "UiProxyWidget.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 #include "ConsoleAPI.h"
 #include "SceneManager.h"
 #include "Audio.h"
@@ -76,7 +76,7 @@ Q_DECLARE_METATYPE(AttributeChange::Type);
 
 //! Naali core API object defines.
 Q_DECLARE_METATYPE(Foundation::Framework*);
-Q_DECLARE_METATYPE(Frame*);
+Q_DECLARE_METATYPE(FrameAPI*);
 Q_DECLARE_METATYPE(ConsoleAPI*);
 Q_DECLARE_METATYPE(Command*);
 Q_DECLARE_METATYPE(DelayedSignal*);
@@ -139,7 +139,6 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("findChild", engine->newFunction(findChild));
     engine->globalObject().setProperty("setPixmapToLabel", engine->newFunction(setPixmapToLabel));   
 /*
-/*  
     engine->importExtension("qt.core");
     engine->importExtension("qt.gui");
     engine->importExtension("qt.network");
@@ -171,7 +170,7 @@ QScriptValue qScriptValueFromBoostSharedPtr(QScriptEngine *engine, const boost::
 
 template<typename T>
 void qScriptValueToBoostSharedPtr(const QScriptValue &value, boost::shared_ptr<T> &ptr)
-{   
+{
     ptr = value.toVariant().value<boost::shared_ptr<T> >();
 }
 
@@ -212,7 +211,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Command*>(engine);
 
     // Frame metatypes.
-    qScriptRegisterQObjectMetaType<Frame*>(engine);
+    qScriptRegisterQObjectMetaType<FrameAPI*>(engine);
     qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
 
     // Asset API
