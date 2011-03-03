@@ -20,7 +20,6 @@ namespace Tts
     {
         InitializeVoices();		
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Tts");
-		avoid_tts_overlap_ = settings.value("Tts/avoid_tts_overlap", true).toBool();
 		tts_available_ = true;
 		//$ END_MOD $
     }
@@ -47,75 +46,58 @@ namespace Tts
         return;
     }
 
-	void TtsService::Text2Speech(QString message, QString voice, int priority)
+	qulonglong TtsService::Text2Speech(QString message, QString voice, int type)
 	{
-QString voice_params=0;
-        if (!voices_.contains(voice))
-        {
-            QString message = QString("Unsupported voice %1, using the default voice").arg(voice);
-            TtsModule::LogError(message.toStdString());
+		QString voice_params=0;
+		if (!voices_.contains(voice))
+		{
+			QString message = QString("Unsupported voice %1, using the default voice").arg(voice);
+			TtsModule::LogError(message.toStdString());
 			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Tts");
 			QString default_tts_voice = settings.value("Tts/other_default_voice", "").toString();
 			voice_params = voices_[default_tts_voice];
-        }else
+		}else
 			voice_params = voices_[voice];
 
-        message = RemoveUnwantedCharacters(message);
-		
+		message = RemoveUnwantedCharacters(message);
+
 		QString command = QString("festival.exe --libdir \"festival/lib\" %1 -A -T \"%2\"").arg(voice_params).arg(message);
-		
-		if (avoid_tts_overlap_) {
-			//Avoid tts overlap
-			//check priority
-			if (priority == 1){
-				//Put in front without time
-				if (tts_available_) {
-					deque_tts_.push_front(ttsPair(command, 2*clock() ));
-					ProcessTtsQueue();
-				} else
-					deque_tts_.push_front(ttsPair(command, 2*clock() ));
-			} else if (priority == 2) {
-				//Put in back without time
-				if (tts_available_) {
-					deque_tts_.push_back(ttsPair(command, 2*clock() ));
-					ProcessTtsQueue();
-				} else
-					deque_tts_.push_back(ttsPair(command, 2*clock() ));
-			} else {
-				//put in back with time
-				if (tts_available_) {
-					deque_tts_.push_back(ttsPair(command, clock() ));
-					ProcessTtsQueue();
-				} else
-					deque_tts_.push_back(ttsPair(command, clock() ));
-			}
-		} else {
-			//default
-			QProcess* p = new QProcess;
+				
+		//Avoid tts overlap
+		//check priority
+		QProcess* p = new QProcess;
+		if (type == 1)
+		{
+			//Put in front without time
+			//Chat = overlapped
 			p->start(command);
-		} 		
-	}
-
-	void TtsService::ToogleAvoidTts() {
-		avoid_tts_overlap_ = !avoid_tts_overlap_;
-	}
-
-	void TtsService::ProcessTtsQueue(){ 
-		if (!deque_tts_.empty()){
-			//check time
-			tts_available_ = false;
-			float a = (clock() - deque_tts_.front().second)/3600;
-			if (a > MAX_WAIT_TTS){
-				deque_tts_.pop_front();
-				ProcessTtsQueue();
-			} else {
-				QProcess* p = new QProcess;
-				connect(p, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(ProcessTtsQueue()));
-				p->start(deque_tts_.front().first);
-				deque_tts_.pop_front();
+		}
+		if (type == 2)
+		{
+			//Put in front without time
+			if (tts_available_) 
+			{
+				p->start(command);
+				tts_available_=false;
+				connect(p, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(TtsAvailable()));
 			}
-		} else
-			tts_available_ = true;
+		}
+		p->setProperty("PID", (qulonglong)p->pid());
+		connect(p, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(HandleProcessFinished()));
+
+		return (qulonglong)p->pid();
+	}
+
+	void TtsService::TtsAvailable() {
+		tts_available_=true;
+	}
+
+	void TtsService::HandleProcessFinished()
+	{
+		QProcess *process = qobject_cast<QProcess*>(sender());
+		if (process == 0)
+			return;
+		emit ProcessFinished(process->property("PID").toULongLong());
 	}
 
 	void TtsService::Text2WAV(QString message, QString pathAndFileName, QString voice)

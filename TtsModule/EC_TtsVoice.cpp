@@ -49,7 +49,7 @@ void EC_TtsVoice::ListenMessage(const QString msg,const QString v)
 	if(!ttsService_)
 		ttsService_ = framework_->GetService<Tts::TtsServiceInterface>();
 
-	ttsService_->Text2Speech(msg,v);
+	ttsService_->Text2Speech(msg,v,2);
 }
 
 void EC_TtsVoice::SpeakMessage(const QString msg)
@@ -57,7 +57,7 @@ void EC_TtsVoice::SpeakMessage(const QString msg)
 	if(!ttsService_)
 		ttsService_ = framework_->GetService<Tts::TtsServiceInterface>();
 
-	ttsService_->Text2Speech(msg,voice.Get());
+	ttsService_->Text2Speech(msg,voice.Get(),2);
 }
 
 QString EC_TtsVoice::GetMyVoice()
