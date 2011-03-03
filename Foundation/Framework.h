@@ -23,7 +23,7 @@ class QWidget;
 class QObject;
 
 class UiServiceInterface;
-class Frame;
+class FrameAPI;
 class Input;
 class AudioAPI;
 class AssetAPI;
@@ -276,7 +276,7 @@ namespace Foundation
         Input *GetInput() const;
 
         /// Returns the Naali core API Frame object.
-        Frame *GetFrame() const;
+        FrameAPI *Frame() const;
 
         /// Returns the Naali core API Console object.
         ConsoleAPI *Console() const;
@@ -364,7 +364,7 @@ namespace Foundation
         bool headless_; ///< Are we running in the headless mode.
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.
         NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
-        Frame *frame; ///< The Naali Frame API.
+        FrameAPI *frame; ///< The Naali Frame API.
         ConsoleAPI *console; ///< The Naali console API.
         NaaliUi *ui; ///< The Naali UI API.
         Input *input; ///< The Naali Input API.

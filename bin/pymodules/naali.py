@@ -15,7 +15,7 @@ import PythonQt
 """
 Core API
 """
-frame = _naali.GetFrame()
+frame = _naali.Frame()
 console = _naali.Console()
 input = _naali.GetInput()
 audio = _naali.Audio()

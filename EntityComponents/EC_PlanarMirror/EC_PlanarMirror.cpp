@@ -13,7 +13,7 @@
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "LoggingFunctions.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 #include "EC_OgreCamera.h"
 #include "EC_RttTarget.h"
 #include "NaaliUi.h"
@@ -142,7 +142,7 @@ void EC_PlanarMirror::Initialize()
 
     mirror_cam_->getViewport()->setOverlaysEnabled(false);
 
-    connect(framework_->GetFrame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
+    connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
     connect(framework_->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int, int)), this, SLOT(WindowResized(int,int)));
 }
 

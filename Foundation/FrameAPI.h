@@ -1,17 +1,17 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   Frame.h
- *  @brief  Exposes Naali framework's update tick.
+ *  @file   FrameAPI.h
+ *  @brief  Frame core API. Exposes framework's update tick.
  * 
- *  Frame object can be used to:
+ *  FrameAPI object can be used to:
  *  -retrieve signal every time frame has been processed
  *  -retrieve the wall clock time of Framework
- *  -to trigger delayed signals when spesified amount of time has elapsed.
+ *  -trigger delayed signals when spesified amount of time has elapsed.
  */
 
-#ifndef incl_Foundation_Frame
-#define incl_Foundation_Frame
+#ifndef incl_Foundation_FrameAPI
+#define incl_Foundation_FrameAPI
 
 #include <QObject>
 
@@ -24,14 +24,14 @@ namespace Foundation
 
 /// Class to which scripting languages connect their slots when wanting to receive delayed signal
 /// when certain amount of application time has passed.
-/** In C++ you can ignore the existence of this class, and just give your slot to Frame's DelayedExecute
+/** In C++ you can ignore the existence of this class, and just give your slot to FrameAPI's DelayedExecute
     as a parameter. This class cannot be created directly, it's created by Frame
 */
 class DelayedSignal : public QObject
 {
     Q_OBJECT
 
-    friend class Frame;
+    friend class FrameAPI;
 
 signals:
     /// Emitted when delayed signal is triggered.
@@ -45,31 +45,30 @@ private:
     */
     explicit DelayedSignal(boost::uint64_t startTime);
 
-    /// Application tick when object was created.
-    boost::uint64_t startTime_;
+    boost::uint64_t startTime_; ///< Application tick when object was created.
 
 private slots:
-    /// Emit Triggered() signal
-    /** Called by Frame object when the spesified amount of time has passed.
+    /// Emits Triggered() signal
+    /** Called by FrameAPI object when the spesified amount of time has passed.
     */
     void Expire();
 };
 
-/// Exposes Naali framework's update tick.
+/// Frame core API. Exposes framework's update tick.
 /** This class cannot be created directly, it's created by Framework.
-    Frame object can be used to:
+    FrameAPI object can be used to:
     -retrieve signal every time frame has been processed
     -retrieve the wall clock time of Framework
-    -to trigger delayed signals when spesified amount of time has elapsed.
+    -trigger delayed signals when spesified amount of time has elapsed.
 */
-class Frame : public QObject
+class FrameAPI : public QObject
 {
     Q_OBJECT
 
     friend class Foundation::Framework;
 
     /// Destructor.
-    ~Frame();
+    ~FrameAPI();
 
 public slots:
     /// Return wall clock time of Framework in seconds.
@@ -102,18 +101,15 @@ private:
     /// Constructor. Framework takes ownership of this object.
     /** @param framework Framework
     */
-    explicit Frame(Foundation::Framework *framework);
+    explicit FrameAPI(Foundation::Framework *framework);
 
-    /// Increases the wall clock time and emits Updated() signal. Called by Framework each frame.
+    /// Emits Updated() signal. Called by Framework each frame.
     /** @param frametime Time elapsed since last frame.
     */
     void Update(float frametime);
 
-    /// Start time time of Framework/this object;
-    boost::uint64_t startTime_;
-
-    /// Delayed signals.
-    QList<DelayedSignal *> delayedSignals_;
+    boost::uint64_t startTime_; ///< Start time time of Framework/this object;
+    QList<DelayedSignal *> delayedSignals_; ///< Delayed signals.
 
 private slots:
     /// Deletes delayed signal object and removes it from the list when it's expired.

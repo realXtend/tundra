@@ -10,7 +10,7 @@
 #include "SceneInteract.h"
 
 #include "Framework.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 #include "Input.h"
 #include "RenderServiceInterface.h"
 #include "Entity.h"
@@ -30,7 +30,7 @@ SceneInteract::SceneInteract(Foundation::Framework *fw) :
     connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
-    connect(framework_->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
+    connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
 }
 
 void SceneInteract::Update()

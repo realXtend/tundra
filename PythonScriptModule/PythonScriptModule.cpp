@@ -52,7 +52,7 @@
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "LoginServiceInterface.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 #include "ConsoleAPI.h"
 #include "Audio.h"
 #include "NaaliUi.h"
@@ -1869,7 +1869,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&PythonQtScriptingConsole::staticMetaObject);
 
             mainModule.addObject("_naali", GetFramework());
-            PythonQt::self()->registerClass(&Frame::staticMetaObject);
+            PythonQt::self()->registerClass(&FrameAPI::staticMetaObject);
             PythonQt::self()->registerClass(&DelayedSignal::staticMetaObject);
             PythonQt::self()->registerClass(&ConsoleAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Command::staticMetaObject);
