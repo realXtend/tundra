@@ -174,8 +174,15 @@ namespace Ether
                             }
                             else if (world_info && type == "edit")
                             {
-                                action_widget = OpenSimWorldEditWidget(world_info);
-                                title = QString("Editing OpenSim world %1").arg(world_info->loginUrl().host());
+								if (world_info->worldType() == WorldTypes::OpenSim)
+								{
+									action_widget = OpenSimWorldEditWidget(world_info);
+									title = QString("Editing OpenSim world %1").arg(world_info->loginUrl().host());
+								}
+								else { //WorldTypes::Tundra
+									action_widget = TundraWorldEditWidget(world_info);
+									title = QString("Editing Tundra world %1").arg(world_info->loginUrl().host());
+								}
                             }
                             else if (world_info && type == "register")
                             {
@@ -413,6 +420,88 @@ namespace Ether
             return new_os_world_widget;
         }
 
+		QWidget *ActionProxyWidget::TundraWorldInfoWidget(Data::WorldInfo *data)
+        {
+            return TundraWorldEditWidget(data);
+        }
+
+        QWidget *ActionProxyWidget::TundraWorldEditWidget(Data::WorldInfo *data)
+        {
+            QWidget *tundra_world_edit_widget;
+            current_grid_info_map_.clear();
+
+            QUiLoader loader;
+            QFile uiFile("./data/ui/ether/world-edit-tundra.ui");
+            tundra_world_edit_widget = loader.load(&uiFile, 0);
+            uiFile.close();
+
+            QLineEdit *line_edit;
+            line_edit = tundra_world_edit_widget->findChild<QLineEdit*>("loginURLLineEdit");
+            line_edit->setText(data->loginUrl().toString());
+
+			QPushButton *button;
+            button = tundra_world_edit_widget->findChild<QPushButton*>("pushButtonSave");
+            connect(button, SIGNAL( clicked() ), SLOT( SaveInformation() ));
+
+            QPixmap pic = CretatePicture(QSize(150,150), data->pixmapPath());
+            QLabel *pic_label = tundra_world_edit_widget->findChild<QLabel*>("pictureLabel");
+            pic_label->setPixmap(pic);
+
+            // Grid info from file if it is there
+            if (data->gridInfo().count() > 0)
+            {
+				QRadioButton* tcp_button = tundra_world_edit_widget->findChild<QRadioButton*>("protocolTCPButton");
+				QRadioButton* udp_button = tundra_world_edit_widget->findChild<QRadioButton*>("protocolUDPButton");
+				if (data->gridInfo().contains("Protocol") && tcp_button && udp_button)
+				{
+					if (data->gridInfo()["Protocol"].toString().compare("udp",Qt::CaseInsensitive) == 0)
+					{
+						tcp_button->setChecked(false);
+						udp_button->setChecked(true);
+					}
+					else
+					{
+						tcp_button->setChecked(true);
+						udp_button->setChecked(false);
+					}
+					
+				}
+            }
+
+            // Store data pointer and define types for save function
+            current_type_ = "world-tundra";
+            current_os_world_data_ = data;
+            current_grid_info_map_ = data->gridInfo();
+
+            return tundra_world_edit_widget;
+        }
+
+
+        QWidget *ActionProxyWidget::CreateNewTundraWorld()
+        {
+            QWidget *new_tundra_world_widget;
+            current_grid_info_map_.clear();
+
+            QUiLoader loader;
+            QFile uiFile("./data/ui/ether/world-edit-tundra.ui");
+            new_tundra_world_widget = loader.load(&uiFile, 0);
+            uiFile.close();
+
+            QPushButton *button;
+
+            button = new_tundra_world_widget->findChild<QPushButton*>("pushButtonSave");
+            connect(button, SIGNAL( clicked() ), SLOT( SaveInformation() ));
+
+            QPixmap pic = CretatePicture(QSize(150,150), "./data/ui/images/ether/world.png");
+            QLabel *pic_label = new_tundra_world_widget->findChild<QLabel*>("pictureLabel");
+            pic_label->setPixmap(pic);
+
+            current_os_world_data_ = 0;
+
+            return new_tundra_world_widget;
+        }
+
+
         QWidget *ActionProxyWidget::WebBrowserWidget(QString url)
         {
             QWebView *web_view = new QWebView();
@@ -645,7 +734,7 @@ namespace Ether
             QLabel *status = current_widget_->findChild<QLabel*>("statusLabel");
 
             // Updating cards
-            if (current_type_ == "world-opensim" && current_os_world_data_)
+            if ((current_type_ == "world-opensim" || current_type_ == "world-tundra") && current_os_world_data_)
             {
                 QUrl login_url;
                 QString start_location;
@@ -678,6 +767,19 @@ namespace Ether
                     start_location = line_edit->text();
                     current_os_world_data_->setStartLocation(start_location);
                 }
+
+				if (current_type_ == "world-tundra")
+				{
+					QRadioButton* tcp_button = current_widget_->findChild<QRadioButton*>("protocolUDPButton");
+					QRadioButton* udp_button = current_widget_->findChild<QRadioButton*>("protocolUDPButton");
+					if (tcp_button && udp_button)
+					{
+						if (udp_button->isChecked())
+							current_grid_info_map_["Protocol"] = "udp";
+						else
+							current_grid_info_map_["Protocol"] = "tcp";
+					}
+				}
 
                 current_os_world_data_->setGridInfo(current_grid_info_map_);
                 data_manager_->StoreOrUpdateWorld(current_os_world_data_);
@@ -853,8 +955,19 @@ namespace Ether
 					Data::WorldInfo *new_world;
 					if (current_type_ == "new-world-opensim")
 						new_world = (Data::WorldInfo *) new Data::OpenSimWorld(login_url, start_location, current_grid_info_map_);
-					else
+					else //new-world-tundra
+					{
+						QRadioButton* tcp_button = current_widget_->findChild<QRadioButton*>("protocolUDPButton");
+						QRadioButton* udp_button = current_widget_->findChild<QRadioButton*>("protocolUDPButton");
+						if (tcp_button && udp_button)
+						{
+							if (udp_button->isChecked())
+								current_grid_info_map_["Protocol"] = "udp";
+							else
+								current_grid_info_map_["Protocol"] = "tcp";
+						}
 						new_world = (Data::WorldInfo *) new Data::TundraWorld(login_url, start_location, current_grid_info_map_);
+					}
                     data_manager_->StoreOrUpdateWorld(new_world);
                 }
                 else if (status)
@@ -901,7 +1014,7 @@ namespace Ether
         {
             current_widget_->hide();
 			current_type_ = "new-world-tundra";
-            QWidget *widget = CreateNewOpenSimWorld();
+            QWidget *widget = CreateNewTundraWorld();
             ether_action_widget_ui_.widgetLayout->addWidget(widget);
             ether_action_widget_ui_.titleLabel->setText("Creating new Tundra world");
             current_widget_ = widget;
