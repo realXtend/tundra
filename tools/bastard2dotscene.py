@@ -14,7 +14,7 @@ directly to txml would be more involved 'cause would need to deal with material 
 """
 
 from xml.etree.ElementTree import ElementTree
-
+#import md5 #could add asset ref -> cache id conversion here trially
 SOURCEFILE = "cecil.bastardxml"
 
 head = """

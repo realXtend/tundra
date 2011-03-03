@@ -352,6 +352,12 @@ namespace Scene
         */
         EntityAction *Action(const QString &name);
 
+        /// Find & Delete EntityAction object from EntityActions map.
+        /** Use this function from scripting lanquages.
+            @param name Name of the action.
+        */
+        void RemoveAction(const QString &name);
+
         /// Connects action with a spesific name to a receiver object with member slot.
         /** @param name Name of the action.
             @param receiver Receiver object.

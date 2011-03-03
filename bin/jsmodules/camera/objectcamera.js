@@ -219,6 +219,8 @@ function keyPress(event)
     if (freelookcamera.IsActive())
         return;
 
+    //XXX \todo BUG: steals activity from any other camera, this can not be done!
+    //this cam is now disabled alltogether, fix this if wanna enable it
     if (!avatarcamera.IsActive())
     {
         if (event.sequence.toString() == "W" 

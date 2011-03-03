@@ -172,3 +172,6 @@ if (NOT UISERVICE_TEST)
     #add_subdirectory(LibraryModule)         # Implements drag & drop url meshes, materials and textures from webview to scene. Part of WorldBuildingModule
     #add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
 endif()
+
+# Only useful for msi installer builds
+#add_subdirectory(UpdateModule);

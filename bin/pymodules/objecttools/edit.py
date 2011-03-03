@@ -167,8 +167,13 @@ class ObjectEdit(Component):
         
     def resetValues(self):
         for ent in self.selmasses.iterkeys():
-           mass = self.selmasses[ent]
-           ent.rigidbody.mass = mass
+            if ent.rigidbody == None:
+                continue
+            try:
+                mass = self.selmasses[ent]
+                ent.rigidbody.mass = mass
+            except:
+                continue
         self.selmasses.clear()
         self.left_button_down = False
         self.sel_activated = False #to prevent the selection to be moved on the intial click
@@ -210,19 +215,25 @@ class ObjectEdit(Component):
         self.deselect_all()
         ent = self.baseselect(ent)
         self.sels.append(ent)
-        if hasattr(ent, "rigidbody"):
-            if not ent in self.selmasses or ent.rigidbody.mass != 0:
-                self.selmasses[ent] = ent.rigidbody.mass
-                ent.rigidbody.mass = 0
         self.canmove = True
+        try:
+            rigid = ent.rigidbody
+            if not ent in self.selmasses or rigid.mass != 0:
+                self.selmasses[ent] = rigid.mass
+                ent.rigidbody.mass = 0
+        except:
+            pass
 
     def multiselect(self, ent):
         self.sels.append(ent)
-        if hasattr(ent, "rigidbody"):
-            if not ent in self.selmasses or ent.rigidbody.mass != 0:
-                self.selmasses[ent] = ent.rigidbody.mass
-                ent.rigidbody.mass = 0
         ent = self.baseselect(ent)
+        try:
+            rigid = ent.rigidbody
+            if not ent in self.selmasses or rigid.mass != 0:
+                self.selmasses[ent] = rigid.mass
+                ent.rigidbody.mass = 0
+        except:
+            pass
     
     def deselect(self, ent, valid=True):
         if valid: #the ent is still there, not already deleted by someone else
