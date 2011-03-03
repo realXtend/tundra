@@ -15,15 +15,18 @@ from naali import renderer #naali.renderer for FrustumQuery, hopefully all ex-re
 try:
     window
     transform
+    toolbar
 except: #first run
     try:
         import window
         import transform
+        import toolbar
     except ImportError, e:
         print "couldn't load window and transform:", e
 else:
     window = reload(window)
     transform= reload(transform)
+    toolbar= reload(toolbar)
 
 # note: difference from develop: in tundra there is no EC_OpenSimPrim, so we assume
 # everything that is placeable is editable
@@ -54,6 +57,7 @@ class ObjectEdit(Component):
         self.editing = False
         
         self.window = window.ObjectToolsWindow(self)
+        self.toolbar = toolbar.ObjectToolsToolbar(self)
                 
         self.editingKeyTrigger = (Qt.Key_M, Qt.ShiftModifier)
         self.shortcuts = {
@@ -199,6 +203,7 @@ class ObjectEdit(Component):
         self.ec_selected(ent)
         self.changeManipulator(self.getCurrentManipType())
         self.window.selected(ent)
+        self.toolbar.selected()
         return ent
         
     def select(self, ent):        
@@ -240,7 +245,8 @@ class ObjectEdit(Component):
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0
             self.canmove = False
-            #self.window.deselected()
+            self.window.deselected()
+            self.toolbar.deselected()
             
     def highlight(self, ent):
         try:
