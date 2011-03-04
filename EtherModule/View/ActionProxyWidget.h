@@ -51,6 +51,10 @@ namespace Ether
             QWidget *OpenSimWorldInfoWidget(Data::WorldInfo *data);
             QWidget *OpenSimWorldEditWidget(Data::WorldInfo *data);
 
+			QWidget *CreateNewTundraWorld();
+            QWidget *TundraWorldInfoWidget(Data::WorldInfo *data);
+            QWidget *TundraWorldEditWidget(Data::WorldInfo *data);
+
             QWidget *CreateNewRealXtendAvatar();
             QWidget *RealXtendAvatarInfoWidget(Data::RealXtendAvatar *data);
             QWidget *RealXtendAvatarEditWidget(Data::RealXtendAvatar *data);

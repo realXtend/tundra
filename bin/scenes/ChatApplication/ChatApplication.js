@@ -48,6 +48,20 @@ ServerControl.prototype.ClientMessage = function(sender, msg)
 	{
 		var message = (sender + ": " + msg);
 		me.Exec(4, "ServerSendMessage", message);
+//$ BEGIN_MOD $
+		var userIDs = new Array();
+		userIDs = server.GetConnectionIDs();
+		var senderName=null;
+		for(var i = 0; i < userIDs.length; i++)
+		{
+			if(server.GetUserConnection(userIDs[i]).GetProperty("username") == sender)
+				senderName="Avatar"+userIDs[i];
+		}
+		for(var i = 0; i < userIDs.length; i++)
+		{
+			server.GetUserConnection(userIDs[i]).Exec(scene.GetEntityByNameRaw("ChatApplication"), "SpeakChat", msg, senderName);
+		}
+//$ END_MOD $
 	}
 }
 
@@ -55,19 +69,31 @@ ServerControl.prototype.PrivateClientMessage = function(sender, receiver, msg)
 {
 	if (msg.length > 0)
 	{
+//$ BEGIN_MOD $
 		var userIDs = new Array();
 		userIDs = server.GetConnectionIDs();
+		var senderName=null;
+		for(var i = 0; i < userIDs.length; i++)
+		{
+			if(server.GetUserConnection(userIDs[i]).GetProperty("username") == sender){
+				senderName = "Avatar"+userIDs[i];
+				server.GetUserConnection(userIDs[i]).Exec(scene.GetEntityByNameRaw("ChatApplication"), "SpeakChat", msg, senderName);	
+			}				
+		}
+		//receiverEntity is the entity that has sent the message
 		for(var i = 0; i < userIDs.length; i++)
 		{
 			if(server.GetUserConnection(userIDs[i]).GetProperty("username") == receiver)
 			{
-				server.GetUserConnection(userIDs[i]).Exec(scene.GetEntityByNameRaw("ChatApplication"), "ServerSendPrivateMessage", sender + ": " + msg);
-			}	
-			
+				server.GetUserConnection(userIDs[i]).Exec(scene.GetEntityByNameRaw("ChatApplication"), "ServerSendPrivateMessage", sender + ": " + msg);		
+				server.GetUserConnection(userIDs[i]).Exec(scene.GetEntityByNameRaw("ChatApplication"), "SpeakChat", msg, senderName);
+			}				
 		}
+//$ END_MOD $	
 	}
 }
 
+			
 ServerControl.prototype.ServerUpdateUserList = function(user)
 {
 	me.Exec(4, "UpdateUserList", user);
@@ -193,14 +219,14 @@ ClientControl.prototype.ToggleLog = function()
 		buttonToggleLog.text = "Show Log";
 		widget.setFixedSize(350,30);
 	}
-	proxy.x = 5;
-	proxy.y = 25;
+	widget.x = 5;
+	widget.y = 25;
 }
 
 ClientControl.prototype.ToggleUserList = function()
 {
 	userlist_visible = !userlist_visible;
-	listProxy.visible = userlist_visible;
+	listWidget.visible = userlist_visible;
 }
 
 ClientControl.prototype.StartPrivateChat = function(user)
@@ -225,7 +251,6 @@ ClientControl.prototype.PrivateChatClosed = function()
 	{
 		openChats.splice(removeIndex, 1);
 		privateChatWidgets.splice(removeIndex, 1);
-		privateChatProxies.splice(removeIndex, 1);
 	}
 }
 
@@ -262,16 +287,15 @@ ClientControl.prototype.OpenPrivateChatWidget = function(userStr)
 		
 		openChats.unshift(userStr);
 		privateChatWidgets.unshift(privateChatWidget);
-		privateChatProxies.unshift(new UiProxyWidget(privateChatWidget));
 		
-		privateChatProxies[0].Closed.connect(this, this.PrivateChatClosed);
+		privateChatWidgets[0].Closed.connect(this, this.PrivateChatClosed);
 		
-		uiservice.AddProxyWidgetToScene(privateChatProxies[0]);
-		privateChatProxies[0].x = Math.floor(Math.random() * 301);
-		privateChatProxies[0].y = 300;
-		privateChatProxies[0].visible = true;
+		uiservice.AddWidgetToScene(privateChatWidgets[0]);
+		privateChatWidgets[0].x = Math.floor(Math.random() * 301);
+		privateChatWidgets[0].y = 300;
+		privateChatWidgets[0].visible = true;
 		
-		privateChatProxies[0].ProxyUngrabbed.connect(this, this.FocusChanged);
+		//privateChatWidgets[0].ProxyUngrabbed.connect(this, this.FocusChanged);
 	}
 }
 
@@ -293,28 +317,25 @@ else
 	var lineEdit = findChild(widget, "lineEdit");
 	var buttonToggleLog = findChild(widget, "buttonToggleLog");
 	var buttonUserList = findChild(widget, "buttonUserList");
-	var proxy = new UiProxyWidget(widget);
 					  
-	uiservice.AddProxyWidgetToScene(proxy);
-	proxy.visible = true;
-	proxy.windowFlags = 0;
+	uiservice.AddWidgetToScene(widget);
+	widget.visible = true;
+	widget.windowFlags = 0;
 	
 	var log_visible = true;
 	var userlist_visible = true;
 	
 	var listWidget = uiservice.LoadFromFile("local://UserList.ui", false);
 	var userListWidget = findChild(listWidget, "userListWidget");
-	var listProxy = new UiProxyWidget(listWidget);
+		
+	uiservice.AddWidgetToScene(listWidget);
+	listWidget.visible = userlist_visible;
+	listWidget.windowFlags = 0;
 	
-	uiservice.AddProxyWidgetToScene(listProxy);
-	listProxy.visible = userlist_visible;
-	listProxy.windowFlags = 0;
-	
-	listProxy.x = 360;
-	listProxy.y = 25;
+	listWidget.x = 360;
+	listWidget.y = 25;
 	
 	var privateChatWidgets = new Array();
-	var privateChatProxies = new Array();
 	var openChats = new Array();
 
 	// If the login property specifies a username, don't show the username field.
@@ -330,19 +351,18 @@ else
 		var btn = findChild(joinWidget, "pushJoin");
 		var lineUser = findChild(joinWidget, "lineUserName");
 
-		var joinProxy = new UiProxyWidget(joinWidget);
-		uiservice.AddProxyWidgetToScene(joinProxy);
-		joinProxy.x = 50;
-		joinProxy.y = 50;
-		joinProxy.visible = true;
-		joinProxy.windowFlags = 0;
+		uiservice.AddWidgetToScene(joinWidget);
+		joinWidget.x = 50;
+		joinWidget.y = 50;
+		joinWidget.visible = true;
+		joinWidget.windowFlags = 0;
 
 		btn.pressed.connect(CreateUser);
 		lineUser.returnPressed.connect(CreateUser);
 	}
 	else // The user specified a username. Use that directly.
 	{
-		proxy.visible = true;
+		widget.visible = true;
 		chatControl = new ClientControl(username);
 		chatControl.ToggleLog();
 	}
@@ -352,7 +372,7 @@ else
 function CreateUser()
 {
 	userName = lineUser.text;
-	joinProxy.visible = false;
-	proxy.visible = true;
+	joinWidget.visible = false;
+	widget.visible = true;
 	chatControl = new ClientControl(userName);
 }

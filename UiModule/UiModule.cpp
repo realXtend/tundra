@@ -98,8 +98,8 @@ namespace UiServices
     {
 		framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
 
-		//if (GetFramework()->IsHeadless())
-		//	return;
+		if (GetFramework()->IsHeadless())
+			return;
 
         ui_view_ = GetFramework()->Ui()->GraphicsView();
         if (ui_view_)
@@ -147,31 +147,40 @@ namespace UiServices
 
     void UiModule::PostInitialize()
     {
-        SubscribeToEventCategories();
-		ui_scene_service_->CreateSettingsPanel();
+		if (ui_scene_service_)
+		{
+			SubscribeToEventCategories();
+			ui_scene_service_->CreateSettingsPanel();
 
-		//Restore values
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
-		if (!settings.contains("win_state")){
-			//Set default settings
-			QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
-			qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
-		} 
-		else
-			qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+			//Restore values
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+			if (!settings.contains("win_state")){
+				//Set default settings
+				QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
+				qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
+			} 
+			else
+				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
 
-		//Notify that the restore of the main window has been done
-		postInitialize_ = true;
+			//Notify that the restore of the main window has been done
+			postInitialize_ = true;
+		}
     }
 
     void UiModule::Uninitialize()
     {
 		//Save state of the MainWindow
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
-		settings.setValue("win_state", qWin_->saveState());
+		if (qWin_)
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+			settings.setValue("win_state", qWin_->saveState());
+		}
 
-		framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
-        ui_scene_service_.reset();
+		if (ui_scene_service_)
+		{
+			framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
+			ui_scene_service_.reset();
+		}
     }
 
     void UiModule::Update(f64 frametime)

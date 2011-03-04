@@ -584,7 +584,7 @@ namespace Ether
 			logindata.username_ = data["Username"].toStdString();
 			logindata.password_ = data["Password"].toStdString();
 			logindata.protocol_ = data["Protocol"].toStdString();
-			LogInfo("Attempting Tundra connection to " + data["WorldHost"].toStdString() + ":" + data["WorldPort"].toStdString() + " as " + logindata.username_);
+			LogInfo("Attempting " + logindata.protocol_ + " Tundra connection to " + data["WorldHost"].toStdString() + ":" + data["WorldPort"].toStdString() + " as " + logindata.username_);
 			event_category_id_t tundra_category_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
 			framework_->GetEventManager()->SendEvent(tundra_category_, TundraLogic::Events::EVENT_TUNDRA_LOGIN, &logindata);
 		}

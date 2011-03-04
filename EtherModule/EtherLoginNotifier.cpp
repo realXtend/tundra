@@ -105,6 +105,8 @@ namespace Ether
                     info_map["StartLocation"] = ow->startLocation();
 					info_map["WorldHost"] = ow->loginUrl().host();
 					info_map["WorldPort"] = QString::number( ow->loginUrl().port() );
+					if (ow->gridInfo().contains("Protocol"))
+						info_map["Protocol"] = ow->gridInfo()["Protocol"].toString();
 					last_info_map_ = info_map;
 					emit StartTundraLogin(info_map);
                     break;
