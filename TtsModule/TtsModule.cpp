@@ -59,6 +59,7 @@ namespace Tts
 		tts_service_ = TtsServicePtr(new TtsService(framework_));
 		framework_->GetServiceManager()->RegisterService(Service::ST_Tts, tts_service_);
         connect(tts_service_.get(), SIGNAL(SettingsUpdated()), this, SLOT(ReadTtsSettings()));
+		framework_->RegisterDynamicObject("tts", tts_service_.get());
         ReadTtsSettings();
 	}
 

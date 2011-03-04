@@ -19,7 +19,7 @@
 EC_TtsVoice::EC_TtsVoice(IModule *module) :
     IComponent(module->GetFramework()),
 	ttsService_(0),
-	voice(this, "voice",0)
+	voice(this, "voice","")
 {
 	// Get TTS service
 	ttsService_ = framework_->GetService<Tts::TtsServiceInterface>();
@@ -37,7 +37,6 @@ EC_TtsVoice::EC_TtsVoice(IModule *module) :
 	voice.SetMetadata(&metadata);
 
 	connect(ttsService_,SIGNAL(SettingsUpdated()),SLOT(UpdateVoice()));
-	//UpdateVoice();
 }
 
 EC_TtsVoice::~EC_TtsVoice()

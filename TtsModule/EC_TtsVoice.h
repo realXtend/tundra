@@ -33,9 +33,6 @@ public:
     /// Destructor.
     ~EC_TtsVoice();
 
-	/// Return my voice
-	QString GetMyVoice();
-
 	/// Return true if the component is serializable in XML
 	virtual bool IsSerializable() const { return true; }
 
@@ -51,6 +48,8 @@ public slots:
     /// Add a tooltip to the help button in EC Editor
 	/// @param v The voice of component
 	void Help(const QString v);
+	/// Return my voice
+	QString GetMyVoice();
 
 private slots:
 	// Registers the action this EC provides to the parent entity, when it's set.
