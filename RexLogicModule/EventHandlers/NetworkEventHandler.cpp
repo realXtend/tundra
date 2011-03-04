@@ -29,11 +29,9 @@
 #ifndef UISERVICE_TEST
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
-//cjb #include "Inworld/ControlPanel/TeleportWidget.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/Notifications/QuestionNotification.h"
-//cjb #include "Ether/EtherLoginNotifier.h"
 #endif
 
 #include "ServiceManager.h"
@@ -537,12 +535,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
     if (!ui_module)
         return false;
 
-    // Notifier qobject ptr
-    //cjb Ether::Logic::EtherLoginNotifier* notifier = ui_module->GetEtherLoginNotifier();
-    //cjb if (!notifier)
         return false;
-
-    //cjb if (!notifier->IsTeleporting())
         ongoing_script_teleport_ = false;
 
     if (!ongoing_script_teleport_)
@@ -559,15 +552,11 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
             new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()),
                 "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
 
-        // Connect notifier to recieve the answer signal
-        //cjb QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
-
         // Send notification
         ui_module->GetNotificationManager()->ShowNotification(question_notification);
 
         // Set bools that we dont get spam notification if you are standing in the script zone
         ongoing_script_teleport_ = true;
-//cjb         notifier->SetIsTeleporting(true);
     }
 #endif
     return false;

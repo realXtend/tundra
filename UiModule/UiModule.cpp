@@ -259,7 +259,7 @@ namespace UiServices
     {
     }
 
-    void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state, const QString &message) //cjb
+    void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state, const QString &message)
     {
         switch (connection_state)
         {

@@ -171,22 +171,13 @@ namespace UiServices
 		*
 		* \note: this slot is conected to a signal
 		*/
-		//cjb void SetPanelsList(const QString& old_name, const QString& new_name);
 
 //$ END_MOD $
 
     private slots:
 		/// UiServiceInterface override.
         void TranferWidgets();
-//$ BEGIN_MOD $
-		/*! Transfer to the scene the widgets that WorldBuild uses when the current scene is WorldBuilding.
-		 *	This slot is connected with the SceneChanged signal
-		 *
-		 *	old_name name of the old current scene
-		 *	new_name name of the new current scene
-		*/
-		//void HandleTransferToBuild(const QString& old_name, const QString& new_name);
-//$ END_MOD $
+
     private:
         /// Owner UI module.
         UiModule *owner_;

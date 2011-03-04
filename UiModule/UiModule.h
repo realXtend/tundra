@@ -83,26 +83,14 @@ namespace UiServices
 		ExternalToolBarManager *GetExternalToolBarManager() const { return external_toolbar_manager_;}
 		bool HasBeenPostinitializaded() const { return postInitialize_; }
 
-        //cjb Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
-
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
 
         //! Returns name of this module.
         static const std::string &NameStatic() { return type_name_static_; }
 
-		//$ BEGIN_MOD $
-		//$ MOD_DESCRIPTION Inside this method is where we create the QMainWindow of the main Aplication $
-		//QMainWindow *qtWin_; 
-		//$END_MOD$
-
     private slots:
         void OnKeyPressed(KeyEvent *key);
-
-        //cjb void OnSceneChanged(const QString &old_name, const QString &new_name);
-
-        //! Takes UI screenshots of world/avatar with rendering service
-       //cjb void TakeEtherScreenshots();
 
     private:
         //! Notify all ui module components of connected/disconnected state
@@ -155,13 +143,6 @@ namespace UiServices
 
 		bool postInitialize_;
 
-        //! Welcome message to be sent when inworld scene is enabled
-        //! Do NOT delete this on deconstructor or anywhere else for that matter!
-
-		//$ BEGIN_MOD $
-		//$ MOD_DESCRIPTION Inside this method is where we create the QMainWindow of the main Aplication $
-		//void CreateAndConfigureMainWin();
-		//$ END_MOD $
     };
 }
 
