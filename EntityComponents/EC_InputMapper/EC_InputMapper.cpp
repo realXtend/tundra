@@ -88,7 +88,7 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     executionType.SetMetadata(&executionAttrData);
     
     connect(this, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
-        SLOT(AttributeUpdated(IAttribute *, AttributeChange::Type)));
+        SLOT(HandleAttributeUpdated(IAttribute *, AttributeChange::Type)));
 
     input_ = GetFramework()->GetInput()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
     input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
@@ -97,7 +97,7 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 }
 
-void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
+void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
 {
     if(attribute == &contextName || attribute == &contextPriority)
     {

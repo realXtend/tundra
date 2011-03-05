@@ -15,6 +15,7 @@
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 
+#include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "SceneManager.h"

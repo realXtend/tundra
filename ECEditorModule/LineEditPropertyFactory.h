@@ -4,13 +4,15 @@
 #define incl_ECEditorModule_LineEditFactory_h
 
 #define QT_QTPROPERTYBROWSER_IMPORT
+
+#include "SceneFwd.h"
+#include "IAttribute.h"
+
 #include <qteditorfactory.h>
+
 #include <QtGroupPropertyManager>
 #include <QMap>
 #include <QList>
-
-#include "SceneManager.h"
-#include "IComponent.h"
 
 class QLineEdit;
 class QPushButton;
@@ -76,7 +78,7 @@ private:
     WidgetToPropertyMap widgetToProperty_;
     PropertyToComponentList components2_;
     QList<ComponentWeakPtr> components_;
-    AttributeMetadata::ButtonInfoList buttons_; //! @todo replace this with QMap<QtProperty*, ButtonInfoList> so that create buttons can vary based on QtProperty.
+    AttributeMetadata::ButtonInfoList buttons_; //!< @todo replace this with QMap<QtProperty*, ButtonInfoList> so that create buttons can vary based on QtProperty.
     FunctionInvoker *invoker_;
 };
 

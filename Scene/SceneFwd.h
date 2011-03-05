@@ -10,6 +10,7 @@
 
 #include <boost/smart_ptr.hpp>
 #include <list>
+#include <vector>
 
 namespace Scene
 {
@@ -26,5 +27,14 @@ namespace Scene
 }
 
 struct SceneDesc;
+
+class IComponentFactory;
+class IComponent;
+class IAttribute;
+
+typedef boost::shared_ptr<IComponent> ComponentPtr;
+typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
+typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
+typedef std::vector<IAttribute*> AttributeVector;
 
 #endif

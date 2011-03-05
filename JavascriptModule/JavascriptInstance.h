@@ -9,12 +9,11 @@
 #define incl_JavascriptModule_JavascriptInstance_h
 
 #include "IScriptInstance.h"
-#include "ForwardDefines.h"
-
+#include "SceneFwd.h"
 #include "AssetFwd.h"
 #include "JavascriptFwd.h"
 
-#include <QtScript>
+//#include <QtScript>
 //#ifndef QT_NO_SCRIPTTOOLS
 //#include <QScriptEngineDebugger>
 //#endif

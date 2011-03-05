@@ -11,8 +11,9 @@
 
 #include "IModule.h"
 #include "SceneFwd.h"
+#include "InputFwd.h"
+#include "AssetFwd.h"
 #include "Vector3D.h"
-#include "AssetAPI.h"
 #include "AssetReference.h"
 
 #include <QPointer>
