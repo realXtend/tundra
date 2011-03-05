@@ -15,7 +15,6 @@ mkdir -p $deps
 deps=$(cd $deps && pwd)
 viewer=$(cd $viewer && pwd)
 
-viewerdeps_svn=http://realxtend-naali-deps.googlecode.com/svn/
 prefix=$deps/install
 build=$deps/build
 tarballs=$deps/tarballs
