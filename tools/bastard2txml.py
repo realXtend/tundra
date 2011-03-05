@@ -60,8 +60,13 @@ tailxml = """
 #    ref = BASEURL + filename
 #    return ref
 
-def entxml(mesh, material, skeleton, pos, ort, scale):
+def entxml(mesh, material, skeleton, pos, ort, scale, scaletoprim):
     xml = meshxml % (mesh, material, skeleton)
+
+    if scaletoprim: #not handled in viewer now, instead there's the 1/10 hack here, but this would allow handling in viewer
+        xml += """<component type="EC_DynamicComponent" sync="1" name="ScaleToPrim">
+  </component>"""
+
     rot = quat2euler(*ort)
     xml += placeablexml % (pos[0], pos[1], pos[2], rot[0], rot[1], rot[2], scale[0], scale[1], scale[2])
     return xml
@@ -104,6 +109,7 @@ for ent in ents:
     #digs these from the DC called RexPrimExportData
     mesh = None
     materials = skeleton = pos = ort = scale = ""
+    scaletoprim = False
     for comp in ent:
         attrib = comp.attrib
         if attrib['type'] == 'EC_DynamicComponent' and attrib['name'] == 'RexPrimExportData':
@@ -118,11 +124,16 @@ for ent in ents:
             scale = floatlist(comp, 'Scale')
             #print mesh, ":", pos, ort, scale
 
+            scaletoprimstr = attrval(comp, 'ScaleToPrim')
+            if scaletoprimstr == "true":
+                scaletoprim = True
+                scale = [v/10 for v in scale] #XXX \todo can't handle here, would need to implement in viewer (is in primitive.cpp in rexlogic but not in anything in tundra, could be scripted
+
         else:
             doc += ET.tostring(comp)
 
     if mesh is not None: #the templates are now set so that these xml snippets must come last
-        doc += entxml(mesh, materials, skeleton, pos, ort, scale)
+        doc += entxml(mesh, materials, skeleton, pos, ort, scale, scaletoprim)
 
     else:
         #oh noes, how can bastartxml have entities without this component? perhaps non-placeable?
