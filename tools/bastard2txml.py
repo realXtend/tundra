@@ -50,13 +50,15 @@ tailxml = """
 </scene>
 """
 
-def changeassetref(orgref):
-    if len(orgref) == 0:
-        return orgref #""
-
-    filename = s.split('/')[-1]
-    ref = BASEURL + filename
-    return ref
+#this is not really needed and is broken: doesn't deal with ; separated material lists right
+#just convert urls with a normal string replace after this export
+#def changeassetref(orgref):
+#    if len(orgref) == 0:
+#        return orgref #""
+#
+#    filename = s.split('/')[-1]
+#    ref = BASEURL + filename
+#    return ref
 
 def entxml(mesh, material, skeleton, pos, ort, scale):
     xml = meshxml % (mesh, material, skeleton)
@@ -109,7 +111,7 @@ for ent in ents:
             materials = attrval(comp, 'Materials')
             skeleton = attrval(comp, 'SkeletonRef')
             
-            mesh, materials, skeleton = [changeassetref(s) for s in (mesh, materials, skeleton)]
+            #mesh, materials, skeleton = [changeassetref(s) for s in (mesh, materials, skeleton)]
 
             pos = floatlist(comp, 'Position')
             ort = floatlist(comp, 'Orientation')
