@@ -3,20 +3,23 @@
 #ifndef incl_Core_Input_h
 #define incl_Core_Input_h
 
-#include <map>
 #include "ForwardDefines.h"
-#include <QKeySequence>
-#include <QTime>
-#include <QPoint>
-
+#include "InputFwd.h"
 #include "KeyEvent.h"
 #include "MouseEvent.h"
 #include "GestureEvent.h"
 #include "InputContext.h"
 #include "InputApi.h"
 
+#include <QKeySequence>
+#include <QTime>
+#include <QPoint>
+
+#include <map>
+
 class QGraphicsItem;
 class QGraphicsView;
+
 
 /// The Input API provides other modules with different methods of acquiring keyboard and mouse input.
 /** The input service works with the notion of 'input contexts', which are objects that modules acquire

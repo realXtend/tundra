@@ -7,6 +7,7 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "PythonQtScriptingConsole.h"
+#include "InputFwd.h"
 
 #include <QObject>
 #include <QList>

@@ -8,6 +8,7 @@
 
 #include "ForwardDefines.h"
 #include "SceneFwd.h"
+#include "InputFwd.h"
 
 #include <QObject>
 

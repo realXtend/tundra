@@ -29,7 +29,7 @@
 #include "NaaliMainWindow.h"
 #include "NaaliGraphicsView.h"
 #include "EntityAction.h"
-
+#include "InputFwd.h"
 #include "LoggingFunctions.h"
 
 #include <QUiLoader>

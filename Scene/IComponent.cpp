@@ -7,8 +7,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include <QMap>
-#include "MemoryLeakCheck.h"
 
 #include "IComponent.h"
 
@@ -20,7 +18,9 @@
 
 #include <QDomDocument>
 
-#include "kNet.h"
+#include <kNet.h>
+
+#include "MemoryLeakCheck.h"
 
 IComponent::IComponent(Foundation::Framework* framework) :
     parent_entity_(0),
@@ -55,7 +55,7 @@ void IComponent::SetName(const QString& name)
 
     QString oldName = name_;
     name_ = name;
-    emit OnComponentNameChanged(name, oldName);
+    emit ComponentNameChanged(name, oldName);
 }
 
 void IComponent::SetUpdateMode(AttributeChange::Type defaultmode)

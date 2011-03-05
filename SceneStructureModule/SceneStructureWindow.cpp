@@ -298,7 +298,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
 
             eItem->addChild(cItem);
 
-            connect(comp, SIGNAL(OnComponentNameChanged(const QString &, const QString &)),
+            connect(comp, SIGNAL(ComponentNameChanged(const QString &, const QString &)),
                 SLOT(UpdateComponentName(const QString &, const QString &)));
 
             // If name component exists, retrieve name from it. Also hook up change signal so that UI keeps synch with the name.

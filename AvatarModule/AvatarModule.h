@@ -6,10 +6,8 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "AvatarModuleApi.h"
-#include "Input.h"
-#include "KeyEvent.h"
-#include "SceneManager.h"
-
+#include "InputFwd.h"
+#include "SceneFwd.h"
 #include "WorldStream.h"
 
 #include <QObject>
@@ -40,7 +38,7 @@ namespace Avatar
         AvatarModule();
         virtual ~AvatarModule();
 
-		void Load();
+        void Load();
         void Initialize();
         void PostInitialize();
         void Uninitialize();
@@ -90,4 +88,5 @@ namespace Avatar
         UUID_map uuid_to_local_id_;
     };
 }
+
 #endif
