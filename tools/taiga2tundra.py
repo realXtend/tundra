@@ -2,12 +2,11 @@
 converts xml saved by 'opensim scene backup tool', in naali when used
 with opensim/lludp, to tundra txml (pure naali EC attr style).
 
-potentially useful for taiga->tundra migration, when the creators have
-the original .mesh & .material files, but the scene is only in
-opensim. 
+useful for taiga->tundra migration when there is a scene
+that is only in opensim+modrex (taiga) or old rexserver.
 
 USAGE: requires python 2.7 (which has elementtree 1.3 with good xpath support).
-run with python, change SOURCEFILE below to your backup xml. e.g:
+Run with python and give your your source xml as an argument. e.g:
 c:\python27\python.exe my.xml > my.txml
 """
 
