@@ -84,17 +84,14 @@ namespace UiServices
     bool UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
     {
 		//DEFAULT INSIDE = DOCKEABLE = FALSE & OUTSIDE =  TRUE. IMPORTANT THING TO HAVE IN MIND!!
-		//QSettings settings("Naali UIExternal2", "UiExternal Settings");
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
-
 		if (widget->windowTitle() == "")
-			return 0;
+			return false;
 		
 		if (owner_->GetInworldSceneController()->AddProxyWidget(widget)){
 			internal_widgets_[widget->windowTitle()] = widget;
-			settings.setValue(widget->windowTitle(), "inside");
 			return true;
 		}
+		return false;
     }
 
 	bool UiSceneService::AddProxyWidgetToScene(UiProxyWidget *proxy) { return AddWidgetToScene(proxy); }
