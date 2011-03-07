@@ -41,12 +41,6 @@ typedef boost::shared_ptr<AssetRefListener> AssetRefListenerPtr;
 namespace Foundation
 {
     class Framework;
-
-    class AssetInterface;
-    typedef boost::shared_ptr<AssetInterface> AssetInterfacePtr;
-    
-    class ResourceInterface;
-    typedef boost::shared_ptr<ResourceInterface> ResourcePtr;
 }
 
 #endif

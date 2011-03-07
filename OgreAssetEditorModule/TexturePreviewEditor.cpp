@@ -122,11 +122,10 @@ void TexturePreviewEditor::RequestTextureAsset(const QString &asset_id)
     }
 */
 }
-
+/*
+    ///\todo Regression. Reimplement using the new Asset API. -jj.
 void TexturePreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
 {
-    ///\todo Regression. Reimplement using the new Asset API. -jj.
-/*
     if(request_tag_ == res->tag_)
     {
         Foundation::TextureInterface *tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
@@ -159,8 +158,8 @@ void TexturePreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *r
             }
         }
     }
-*/
 }
+*/
 
 void TexturePreviewEditor::TextureLabelClicked(QMouseEvent *ev)
 {
