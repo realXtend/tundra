@@ -26,14 +26,6 @@ namespace Foundation
     class Framework;
 }
 
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
-}
-
 //! AudioPreviewEditor is used to play different audioclips from the inventory and display a audio info diagram.
 class AudioPreviewEditor: public QWidget
 {
@@ -46,9 +38,9 @@ public:
                        QWidget *parent = 0);
     virtual ~AudioPreviewEditor();
 
-    void HandleAssetReady(Foundation::AssetInterfacePtr asset);
+//    void HandleAssetReady(Foundation::AssetInterfacePtr asset);
 
-    void HandleResouceReady(Resource::Events::ResourceReady *res);
+//    void HandleResouceReady(Resource::Events::ResourceReady *res);
 
 public slots:
     /// Close the window.

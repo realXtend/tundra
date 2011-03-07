@@ -2119,10 +2119,10 @@ namespace Environment
             terrainPaintMode_ = INACTIVE;
     }
 
-    void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
-    {
         ///\todo Regression. Use the new Asset API here instead. -jj.
 /*
+    void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
+    {
         for(uint index = 0; index < terrain_texture_requests_.size(); index++)
         {
             if(terrain_texture_requests_[index] == res->tag_)
@@ -2145,8 +2145,8 @@ namespace Environment
                     texture_label->setPixmap(QPixmap::fromImage(img));
             }
         }
-*/
     }
+*/
 /*
     QImage EnvironmentEditor::ConvertToQImage(Foundation::TextureInterface &tex)
     {
