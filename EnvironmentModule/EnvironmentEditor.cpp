@@ -73,9 +73,6 @@ namespace Environment
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
         terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
-        terrain_texture_requests_.resize(cNumberOfTerrainTextures);
-        for (unsigned i = 0; i < cNumberOfTerrainTextures; ++i)
-            terrain_texture_requests_[i] = 0;
 
         InitEditorWindow();
         mouse_position_[0] = 0;
@@ -1755,7 +1752,7 @@ namespace Environment
                 continue;
             line_edit->setText(QString::fromStdString(terrain_id));
 
-            terrain_texture_requests_[i] = RequestTerrainTexture(i);
+//            terrain_texture_requests_[i] = RequestTerrainTexture(i);
         }
     }
 
@@ -1788,7 +1785,7 @@ namespace Environment
                     terrain->SetTerrainTextures(texture_id);
 
                     //Request a new texture asser even if it's already loaded to cache.
-                    terrain_texture_requests_[line_edit_number] = RequestTerrainTexture(line_edit_number);
+//                    terrain_texture_requests_[line_edit_number] = RequestTerrainTexture(line_edit_number);
                 }
             }
         }
@@ -1829,7 +1826,7 @@ namespace Environment
                             texture_id[i] = terrain_texture_id_list_[i];
                         terrain->SetTerrainTextures(texture_id);
 
-                        terrain_texture_requests_[button_number] = RequestTerrainTexture(button_number);
+//                        terrain_texture_requests_[button_number] = RequestTerrainTexture(button_number);
 
                         environment_module_->SendTextureDetailMessage(texture_id[button_number], button_number);
                     }
@@ -2114,7 +2111,7 @@ namespace Environment
                     continue;
                 line_edit->setText(QString::fromStdString(terrain_id));
 
-                terrain_texture_requests_[i] = RequestTerrainTexture(i);
+//                terrain_texture_requests_[i] = RequestTerrainTexture(i);
             }
             terrainPaintMode_ = INACTIVE;
         }
@@ -2360,11 +2357,11 @@ namespace Environment
             manual_paint_node_ = 0;
         }
     }
-
+/*
     request_tag_t EnvironmentEditor::RequestTerrainTexture(uint index)
     {
         ///\todo Regression. Use the new Asset API here instead. -jj.
-/*
+
         if(index > cNumberOfTerrainTextures) index = cNumberOfTerrainTextures;
 
         ServiceManagerPtr service_manager = environment_module_->GetFramework()->GetServiceManager();
@@ -2380,10 +2377,10 @@ namespace Environment
                 // Request texture assets.
                 return texture_service->RequestTexture(terrain_texture_id_list_[index]);
             }
-        }*/
+        }
         return 0;
     }
-
+*/
     void EnvironmentEditor::UpdateGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
     {
         // Adjust editor widget.

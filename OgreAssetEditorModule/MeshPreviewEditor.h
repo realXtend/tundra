@@ -113,7 +113,7 @@ private:
     QWidget     *mainWidget_;
     QPushButton *okButton_;
     QString assetId_;
-    request_tag_t request_tag_;
+    //request_tag_t request_tag_;
     UiProxyWidget *proxy_; 
     QPointF lastPos_;
     int camAlphaAngle_;

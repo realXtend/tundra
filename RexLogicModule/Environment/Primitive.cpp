@@ -1086,7 +1086,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
 {
     ///\todo Make this only discard mesh resource request tags.
     // Discard old request tags for this entity
-    DiscardRequestTags(entityid, prim_resource_request_tags_);
+//    DiscardRequestTags(entityid, prim_resource_request_tags_);
 
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
@@ -1831,7 +1831,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     }
 }
     */
-
+/*
 void Primitive::DiscardRequestTags(entity_id_t entityid, Primitive::EntityResourceRequestMap& map)
 {
     std::vector<Primitive::EntityResourceRequestMap::iterator> tags_to_remove;
@@ -1846,7 +1846,7 @@ void Primitive::DiscardRequestTags(entity_id_t entityid, Primitive::EntityResour
     for (int j = 0; j < tags_to_remove.size(); ++j)
         map.erase(tags_to_remove[j]);
 }
-
+*/
 void Primitive::HandlePrimScaleAndVisibility(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
@@ -2207,7 +2207,7 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
 
 void Primitive::HandleLogout()
 {
-    prim_resource_request_tags_.clear();
+//    prim_resource_request_tags_.clear();
     pending_rexprimdata_.clear();
     pending_rexfreedata_.clear();
     local_dirty_entities_.clear();

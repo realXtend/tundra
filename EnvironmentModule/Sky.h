@@ -114,7 +114,7 @@ namespace Environment
         /// Whether sky is enabled by this component.
         bool skyEnabled_;
 
-        QList<request_tag_t > lstRequestTags_;
+//        QList<request_tag_t > lstRequestTags_;
         QMap<int, int >  requestMap_;
     };
 }
