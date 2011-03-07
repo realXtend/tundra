@@ -73,7 +73,7 @@ private:
 
     Foundation::Framework *framework_;
     asset_type_t assetType_;
-    request_tag_t request_tag_;
+//    request_tag_t request_tag_;
     QString inventoryId_;
     QString assetId_;
 //    sound_id_t soundId_;

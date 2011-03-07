@@ -57,7 +57,7 @@ headerLabel_(0),
 imageLabel_(0),
 scaleLabel_(0),
 layout_(0),
-request_tag_(0),
+//request_tag_(0),
 imageSize_(QSize(0,0)),
 useOriginalImageSize_(true)
 {
@@ -84,7 +84,7 @@ TexturePreviewEditor::TexturePreviewEditor(Foundation::Framework *framework, QWi
     imageLabel_(0),
     scaleLabel_(0),
     layout_(0),
-    request_tag_(0),
+//    request_tag_(0),
     imageSize_(QSize(0,0)),
     useOriginalImageSize_(true)
 {

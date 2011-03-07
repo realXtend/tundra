@@ -139,7 +139,7 @@ private:
     QString inventoryId_;
     QString assetId_;
     asset_type_t assetType_;
-    request_tag_t request_tag_;
+//    request_tag_t request_tag_;
     bool useOriginalImageSize_;
 };
 
