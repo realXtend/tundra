@@ -43,10 +43,10 @@ AudioPreviewEditor::~AudioPreviewEditor()
 
 }
 
-void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
-{
     ///\todo Regression. Reimplement using the new Asset API. -jj.
     /*
+void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
+{
     ServiceManagerPtr service_manager = framework_->GetServiceManager();
     if(service_manager)
     {
@@ -60,13 +60,13 @@ void AudioPreviewEditor::HandleAssetReady(Foundation::AssetInterfacePtr asset)
             request_tag_ = sound_service->RequestSoundResource(QString::fromStdString(asset->GetId()));
         }
     }
-    */
 }
+    */
 
-void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res) 
-{
     ///\todo Regression. Reimplement using the new Asset API. -jj.
     /*
+void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res) 
+{
     if(request_tag_ == res->tag_)
     {
         SoundResource *sound = dynamic_cast<SoundResource *>(res->resource_.get());
@@ -108,8 +108,8 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
             assetId_ = QString(sound->GetId().c_str());
         }
     }
-    */
 }
+    */
 
 void AudioPreviewEditor::Closed()
 {

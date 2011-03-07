@@ -29,14 +29,6 @@ namespace Ogre
     class SceneNode;
 }
 
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
-}
-
 namespace Foundation
 {
     class TextureInterface;
@@ -103,7 +95,7 @@ namespace Environment
         virtual ~EnvironmentEditor();
 
         //! Handle resource ready event that will return the texture that has been requested.
-        void HandleResourceReady(Resource::Events::ResourceReady *res);
+//        void HandleResourceReady(Resource::Events::ResourceReady *res);
 
         //! Heightmap image width
         static const int cHeightmapImageWidth  = 256;

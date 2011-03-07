@@ -14,14 +14,6 @@
 
 #include <QObject>
 
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
-}
-
 namespace ProtocolUtilities
 {
     class NetworkEventInboundData;
@@ -80,7 +72,7 @@ namespace Environment
         EC_Terrain *GetTerrainComponent();
 
         //! Called whenever a texture is loaded so it can be attached to the terrain.
-        void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
+//        void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
 
         //! Get terrain texture ids
         //! @param index index of texture id range[0-3].
