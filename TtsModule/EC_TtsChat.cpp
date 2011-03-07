@@ -40,7 +40,6 @@ void EC_TtsChat::SpeakChatMessage(const QString msg, const QString name)
 	bool tts_own_messages_ = settings.value("Tts/play_own_chat_messages", false).toBool();
 	bool tts_other_messages_ = settings.value("Tts/play_other_chat_messages", false).toBool();
 	QString default_avatar_tts_voice_ = settings.value("Tts/other_default_voice", "").toString();
-	bool avatar_spesific_voices = settings.value("Tts/use_avatar_specific_voices", false).toBool();
 
 	boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
 	QString nameAvatar= "Avatar" + QString::number(client->GetConnectionID());
@@ -56,13 +55,11 @@ void EC_TtsChat::SpeakChatMessage(const QString msg, const QString name)
 		}
 	}else{
 		if (tts_other_messages_){
-			if (avatar_spesific_voices){
-				EC_TtsVoice* voice = entity->GetComponent<EC_TtsVoice>().get();
-				if(voice){
-					ttsService_->Text2Speech(msg, voice->GetMyVoice());
-				}else{
-					ttsService_->Text2Speech(msg, default_avatar_tts_voice_);
-				}
+			EC_TtsVoice* voice = entity->GetComponent<EC_TtsVoice>().get();
+			if(voice){
+				ttsService_->Text2Speech(msg, voice->GetMyVoice());
+			}else{
+				ttsService_->Text2Speech(msg, default_avatar_tts_voice_);
 			}
 		}
 	}

@@ -74,7 +74,7 @@ namespace Tts
         connect(avatarSpecificVoicesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
 		//$ BEGIN_MOD $
 		connect(overlapTtsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
-		connect(overlapTtsCheckBox, SIGNAL(stateChanged(int)), framework_->GetService<Tts::TtsServiceInterface>(), SLOT(ToogleAvoidTts()));
+		//connect(overlapTtsCheckBox, SIGNAL(stateChanged(int)), framework_->GetService<Tts::TtsServiceInterface>(), SLOT(ToogleAvoidTts()));
 		//$ END_MOD $
     }
 
