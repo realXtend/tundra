@@ -1,16 +1,22 @@
 import naali
 import math
 
+from PythonQt.QtUiTools import QUiLoader
+from PythonQt.QtCore import QFile
+
 class ObjectToolsWindow:
     UIFILE = "pymodules/objecttools/ObjectManipulationsWidget.ui"
     
     def __init__(self, controller):
         self.active = True
-
         self.controller = controller
 
-        self.widget = naali.ui.LoadFromFile(self.UIFILE, False)
+        loader = QUiLoader()
+        loader.setLanguageChangeEnabled(True)
+        uifile = QFile(self.UIFILE)
         
+        self.widget = loader.load(uifile)
+
         if self.widget:
             self.widget.setWindowTitle("Edit Tools")
             naali.ui.AddWidgetToScene(self.widget, True, True)
