@@ -21,7 +21,7 @@ namespace Foundation
         //! Request tag. Assigned when queuing the request & returned to caller.
         /*! Note: assigned by a ThreadTaskManager, not by ThreadTask itself
          */
-        request_tag_t tag_;
+//        request_tag_t tag_;
     };
 
     typedef boost::shared_ptr<ThreadTaskRequest> ThreadTaskRequestPtr;
@@ -31,7 +31,7 @@ namespace Foundation
     {
     public:
         //! Request tag. Should be copied from the request to match the result to request
-        request_tag_t tag_;
+//        request_tag_t tag_;
         
         //! Task description (which kind of task produced the result)
         std::string task_description_;

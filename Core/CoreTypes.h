@@ -56,9 +56,6 @@ namespace
     event_category_id_t IllegalEventCategory = 0;
 }
 
-typedef unsigned int request_tag_t;
-typedef std::vector<request_tag_t> RequestTagVector;
-
 typedef std::vector<std::string> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;
 

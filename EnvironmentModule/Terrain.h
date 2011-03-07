@@ -118,7 +118,7 @@ namespace Environment
         EnvironmentModule *owner_;
 
         /// Request tags for new terrain textures.
-        request_tag_t terrain_texture_requests_[num_terrain_textures];
+//        request_tag_t terrain_texture_requests_[num_terrain_textures];
 
         /// UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
         RexTypes::RexAssetID terrain_textures_[num_terrain_textures];
