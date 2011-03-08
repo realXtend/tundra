@@ -191,7 +191,8 @@ namespace RexLogic
             return;
 
         // Only do obj focus when in the inworld scene, ignore on building and avatar scenes
-        QGraphicsScene *scene = framework_->UiService()->GetScene("Inworld");
+        //QGraphicsScene *scene = framework_->UiService()->GetScene("Inworld");
+		QGraphicsScene *scene = framework_->UiService()->GetMainScene();
         if (!scene)
             return;
         if (!scene->isActive())

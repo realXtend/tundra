@@ -78,7 +78,8 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     if (!ui)
         return;
 
-    proxy_ = ui->GetScene("Inworld")->addWidget(detachedwidget_);
+    //proxy_ = ui->GetScene("Inworld")->addWidget(detachedwidget_);
+	proxy_ = ui->GetMainScene()->addWidget(detachedwidget_);
     proxy_->hide();
 
     QPushButton *b = new QPushButton("Attach");

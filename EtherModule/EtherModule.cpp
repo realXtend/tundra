@@ -178,7 +178,8 @@ namespace Ether
 				if (ui && ether_logic_)
 				{
 					ether_logic_->SetConnectionState(Connected);
-					ui->SwitchToScene("Inworld");
+					ui->SwitchToMainScene();
+					//ui->SwitchToScene("Inworld");
 				}
 				break;
 			case TundraLogic::Events::EVENT_TUNDRA_DISCONNECTED:
@@ -207,7 +208,8 @@ namespace Ether
 			UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
 			if (ui)
 				if (connected_ && ui_scene_ == "Ether")
-					ui->SwitchToScene("Inworld");
+					//ui->SwitchToScene("Inworld");
+					ui->SwitchToMainScene();
 				else
 					ui->SwitchToScene("Ether");
 		}

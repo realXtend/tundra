@@ -141,8 +141,20 @@ public slots:
      *  @return Graphic scene with the requested name, or null if not found.
      */
     virtual QGraphicsScene *GetScene(const QString &name) const = 0;
+	
+	/** Returns main scene 
+	*/
+	virtual QGraphicsScene *GetMainScene() const = 0;
 
-    /** Registers new scene.
+	/** Registers main scene.
+     *  The instance which creates new scene is also responsible for its deletion.
+     *  @param name Name of the scene.
+     *  @param scene Graphics scene.
+     *  @sa UnregisterScene.
+     */
+	virtual void RegisterMainScene(const QString &name, QGraphicsScene *scene) = 0;
+
+	/** Registers new scene.
      *  The instance which creates new scene is also responsible for its deletion.
      *  @param name Name of the scene.
      *  @param scene Graphics scene.
@@ -162,6 +174,10 @@ public slots:
      *  @return True if the scene existed and was activate ok, false otherwise.
      */
     virtual bool SwitchToScene(const QString &name) = 0;
+	
+	/** Switches the main scene.
+	*/
+	virtual bool SwitchToMainScene() = 0;
 
     /** Registers a universal widget. This means when scene is changed all interested will get
      *  a TranferRequest signal

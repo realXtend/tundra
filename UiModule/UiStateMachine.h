@@ -26,6 +26,13 @@ namespace CoreUi
         UiStateMachine(QGraphicsView *view, QObject *parent = 0);
 
     public slots:
+		/** Registers the main scene.
+         *  The instance which creates new scene is also responsible for its deletion.
+         *  @param name Name of the scene.
+         *  @param scene Graphics scene.
+		 */
+		void RegisterMainScene(const QString &name, QGraphicsScene *scene);
+
         /** Registers new scene.
          *  The instance which creates new scene is also responsible for its deletion.
          *  @param name Name of the scene.
@@ -47,11 +54,20 @@ namespace CoreUi
          */
         bool SwitchToScene(const QString &name);
 
+		/** Switches to main active scene if exists
+         *  @return True if the scene existed and was activate ok, false otherwise.
+         */
+        bool SwitchToMainScene();
+
         /** Returns scene with the requested name for introspection.
          *  @param name Name of the scene.
          *  @return Graphic scene with the requested name, or null if not found.
          */
         QGraphicsScene *GetScene(const QString &name) const;
+		
+		/** Returns main scene
+		*/
+		QGraphicsScene *GetMainScene() const { return main_scene_; }
 
         /// Returns name of the current scene.
         QString GetCurrentSceneName() const { return current_scene_name_;}
@@ -71,6 +87,8 @@ namespace CoreUi
     private:
         QStateMachine *state_machine_;
         QState *state_inworld_;
+		QGraphicsScene *main_scene_ ;
+		QString main_scene_name_;
 
         QGraphicsView *view_;
         QGraphicsScene *current_scene_;
@@ -87,6 +105,8 @@ namespace CoreUi
 
     signals:
         void SceneOutAnimationFinised();
+		void SceneChangedToMain();
+		void SceneChangedFromMain();
         void SceneAboutToChange(const QString &oldName, const QString &newName);
         void SceneChanged(const QString &oldName, const QString &newName);
         void SceneChangeComplete();

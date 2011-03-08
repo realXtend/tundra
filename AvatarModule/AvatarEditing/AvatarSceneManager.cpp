@@ -110,7 +110,8 @@ namespace Avatar
     {
         UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<UiServiceInterface>();
         if (ui_service)
-            ui_service->SwitchToScene("Inworld");
+            //ui_service->SwitchToScene("Inworld");
+			ui_service->SwitchToMainScene();
     }
 
     void AvatarSceneManager::SceneChanged(const QString &old_name, const QString &new_name)

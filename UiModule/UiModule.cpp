@@ -105,15 +105,16 @@ namespace UiServices
         if (ui_view_)
         {
             ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
-            ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
+            ui_state_machine_->RegisterMainScene("Inworld", ui_view_->scene());
             LogDebug("State Machine STARTED");
 
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             LogDebug("Scene Manager service READY");
 
             inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
-            connect(ui_state_machine_, SIGNAL(SceneAboutToChange(const QString&, const QString&)), 
-                    inworld_notification_manager_, SLOT(SceneAboutToChange(const QString&, const QString&)));
+            /*connect(ui_state_machine_, SIGNAL(SceneAboutToChange(const QString&, const QString&)), 
+                    inworld_notification_manager_, SLOT(SceneAboutToChange(const QString&, const QString&)));*/
+			connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), inworld_notification_manager_, SLOT(SceneAboutToChange(const QString&, const QString&)));
             LogDebug("Notification Manager service READY");
 
             // Register UI service

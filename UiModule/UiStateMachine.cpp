@@ -15,6 +15,8 @@ namespace CoreUi
     UiStateMachine::UiStateMachine(QGraphicsView *view, QObject *parent)
         : QStateMachine(parent),
           view_(view),
+		  main_scene_(),
+		  main_scene_name_(""),
           current_scene_(view->scene()),
           current_scene_name_("Inworld"),
           connection_state_(UiServices::Disconnected)
@@ -91,6 +93,15 @@ namespace CoreUi
     }
 
     // Public
+	void UiStateMachine::RegisterMainScene(const QString &name, QGraphicsScene *scene)
+    {
+        if (!scene_map_.contains(name))
+        {
+            scene_map_[name] = scene;
+			main_scene_ = scene;
+			main_scene_name_ = name;
+        }
+    }
 
     void UiStateMachine::RegisterScene(const QString &name, QGraphicsScene *scene)
     {
@@ -106,6 +117,7 @@ namespace CoreUi
             return true;
         return false;
     }
+	bool UiStateMachine::SwitchToMainScene() { return SwitchToScene(main_scene_name_);	}
 
     bool UiStateMachine::SwitchToScene(const QString &name)
     {
@@ -146,6 +158,12 @@ namespace CoreUi
             // Emit that invokes sransfering all universal widget
             emit SceneChanged(old_scene_name, current_scene_name_);
 
+			if (current_scene_name_ == main_scene_name_)
+				emit SceneChangedToMain();
+			else
+				emit SceneChangedFromMain();
+
+
             // All transfers done, emit completed signal
             emit SceneChangeComplete();
         }
@@ -159,6 +177,7 @@ namespace CoreUi
         else
             return 0;
     }
+
 
     void UiStateMachine::SetConnectionState(UiServices::ConnectionState new_connection_state)
     {

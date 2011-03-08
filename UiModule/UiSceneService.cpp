@@ -28,7 +28,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("UiSceneService")
 
 namespace UiServices
 {
-    UiSceneService::UiSceneService(UiModule *owner) : owner_(owner)
+    UiSceneService::UiSceneService(UiModule *owner) : owner_(owner),main_scene_(0)
     {
         connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
                 this, SIGNAL(SceneChanged(const QString&, const QString&)));
@@ -235,6 +235,16 @@ namespace UiServices
         return owner_->GetUiStateMachine()->GetScene(name);
     }
 
+	QGraphicsScene *UiSceneService::GetMainScene() const 
+	{
+		return owner_->GetUiStateMachine()->GetMainScene();
+	}
+
+	void UiSceneService::RegisterMainScene(const QString &name, QGraphicsScene *scene)
+    {
+        owner_->GetUiStateMachine()->RegisterMainScene(name, scene);
+    }
+
     void UiSceneService::RegisterScene(const QString &name, QGraphicsScene *scene)
     {
         owner_->GetUiStateMachine()->RegisterScene(name, scene);
@@ -248,6 +258,11 @@ namespace UiServices
     bool UiSceneService::SwitchToScene(const QString &name)
     {
        return owner_->GetUiStateMachine()->SwitchToScene(name);
+    }
+
+	bool UiSceneService::SwitchToMainScene()
+    {
+       return owner_->GetUiStateMachine()->SwitchToMainScene();
     }
 
     void UiSceneService::RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget)

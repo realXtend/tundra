@@ -100,6 +100,12 @@ namespace UiServices
         /// UiServiceInterface override.
         QGraphicsScene *GetScene(const QString &name) const;
 
+		/// UiServiceInterface override.
+		QGraphicsScene *GetMainScene() const ;
+
+		/// UiServiceInterface override.
+        void RegisterMainScene(const QString &name, QGraphicsScene *scene);
+
         /// UiServiceInterface override.
         void RegisterScene(const QString &name, QGraphicsScene *scene);
 
@@ -108,6 +114,9 @@ namespace UiServices
 
         /// UiServiceInterface override.
         bool SwitchToScene(const QString &name);
+
+		/// UiServiceInterface override.
+        bool SwitchToMainScene();
 
         /// UiServiceInterface override.
         void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget);
@@ -183,8 +192,11 @@ namespace UiServices
         UiModule *owner_;
 //$ BEGIN_MOD $
 		//! List of movable widget
-
 		QMap<QString, menusPair> panels_menus_list_;
+
+		//Main scene pointer
+		QGraphicsScene *main_scene_;
+
 
 		//New lists
 		QMap<QString, QDockWidget*> external_dockeable_widgets_;
