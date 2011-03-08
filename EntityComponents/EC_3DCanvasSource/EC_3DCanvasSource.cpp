@@ -496,7 +496,7 @@ void EC_3DCanvasSource::CreateWidget()
     }
 
     widget_->setWindowTitle(tr("Naali Web Browser"));
-    proxy_ = ui->AddWidgetToScene(widget_);
+    proxy_ = ui->AddWidgetToScene(widget_, false, false);
     connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
 
     source_edit_ = widget_->findChild<QLineEdit*>("line_source");
