@@ -19,6 +19,7 @@
 #include <qtpropertybrowser.h>
 #include <qteditorfactory.h>
 
+
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditor")
 
@@ -592,6 +593,102 @@ template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property)
         }
     }
 }
+
+
+
+//-------------------------QVECTOR3D ATTRIBUTE TYPE-------------------------
+
+template<> void ECAttributeEditor<QVector3D>::Update(IAttribute *attr)
+{
+    if(!useMultiEditor_)
+    {
+        Attribute<QVector3D> *attribute = 0;
+        if (!attr)
+            attribute = dynamic_cast<Attribute<QVector3D>*>(FindAttribute(components_[0].lock()));
+        else
+            attribute = dynamic_cast<Attribute<QVector3D>*>(attr);
+        if (!attribute)
+        {
+            LogWarning("Failed to update attribute value in ECEditor, Couldn't dynamic_cast attribute pointer to Attribute<QVector3D> format.");
+            return;
+        }
+
+        QtVariantPropertyManager *variantManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+        if(rootProperty_)
+        {
+            QList<QtProperty *> children = rootProperty_->subProperties();
+            if(children.size() >= 3)
+            {
+                QVector3D vectorValue = attribute->Get();
+                variantManager->setValue(children[0], vectorValue.x());
+                variantManager->setValue(children[1], vectorValue.y());
+                variantManager->setValue(children[2], vectorValue.z());
+            }
+        }
+    }
+    else
+        UpdateMultiEditorValue(attr);
+}
+
+template<> void ECAttributeEditor<QVector3D>::Initialize()
+{
+    ECAttributeEditorBase::PreInitialize();
+    if(!useMultiEditor_)
+    {
+        QtVariantPropertyManager *variantManager = new QtVariantPropertyManager(this);
+        QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+        propertyMgr_ = variantManager;
+        factory_ = variantFactory;
+        rootProperty_ = variantManager->addProperty(QtVariantPropertyManager::groupTypeId(), name_);
+
+        if(rootProperty_)
+        {
+            QtProperty *childProperty = 0;
+            childProperty = variantManager->addProperty(QVariant::Double, "x");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "y");
+            rootProperty_->addSubProperty(childProperty);
+
+            childProperty = variantManager->addProperty(QVariant::Double, "z");
+            rootProperty_->addSubProperty(childProperty);
+            Update();
+            QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
+        }
+        owner_->setFactoryForManager(variantManager, variantFactory);
+    }
+    else
+    {
+        InitializeMultiEditor();
+    }
+    emit EditorChanged(name_);
+}
+
+template<> void ECAttributeEditor<QVector3D>::Set(QtProperty *property)
+{
+    if(listenEditorChangedSignal_)
+    {
+        QList<QtProperty *> children = rootProperty_->subProperties();
+        if(children.size() >= 3)
+        {
+            ComponentPtr comp = components_[0].lock();
+            Attribute<QVector3D> *attribute = dynamic_cast<Attribute<QVector3D> *>(FindAttribute(comp));
+            if (!attribute)
+                return;
+
+            QVector3D newValue = attribute->Get();
+            QString propertyName = property->propertyName();
+            if(propertyName == "x")
+                newValue.setX(ParseString<float>(property->valueText().toStdString()));
+            else if(propertyName == "y")
+                newValue.setY(ParseString<float>(property->valueText().toStdString()));
+            else if(propertyName == "z")
+                newValue.setZ(ParseString<float>(property->valueText().toStdString()));
+            SetValue(newValue);
+        }
+    }
+}
+
 
 //-------------------------COLOR ATTRIBUTE TYPE-------------------------
 

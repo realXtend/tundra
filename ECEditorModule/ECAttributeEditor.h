@@ -298,6 +298,11 @@ template<> void ECAttributeEditor<Vector3df>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<Vector3df>::Initialize();
 template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property);
 
+template<> void ECAttributeEditor<QVector3D>::Update(IAttribute *attr);
+template<> void ECAttributeEditor<QVector3D>::Initialize();
+template<> void ECAttributeEditor<QVector3D>::Set(QtProperty *property);
+
+
 template<> void ECAttributeEditor<Color>::Update(IAttribute *attr);
 template<> void ECAttributeEditor<Color>::Initialize();
 template<> void ECAttributeEditor<Color>::Set(QtProperty *property);

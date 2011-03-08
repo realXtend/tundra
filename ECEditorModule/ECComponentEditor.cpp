@@ -51,6 +51,8 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
     else if(type == "transform")
         attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
+	else if(type == "qvector3d")
+        attributeEditor = new ECAttributeEditor<QVector3D>(browser, component, name, type, editor);
     else
         LogError("Unknown attribute type " + type.toStdString() + " for ECAttributeEditorBase creation.");
 
