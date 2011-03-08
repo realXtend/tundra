@@ -836,16 +836,18 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
-    //LogDebug("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" succeeded.");
+//    LogDebug("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" succeeded.");
 
     if (transfer->asset) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
-        //transfer->asset->EmitDecoded
+//        transfer->asset->EmitDecoded
         transfer->EmitAssetDecoded();
         transfer->asset->EmitLoaded();
+        transfer->EmitAssetLoaded();
         pendingDownloadRequests.erase(transfer->source.ref);
         currentTransfers.erase(transfer->source.ref);
+
         return;
     }
 
