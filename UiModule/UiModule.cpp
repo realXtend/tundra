@@ -114,7 +114,7 @@ namespace UiServices
             inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
             /*connect(ui_state_machine_, SIGNAL(SceneAboutToChange(const QString&, const QString&)), 
                     inworld_notification_manager_, SLOT(SceneAboutToChange(const QString&, const QString&)));*/
-			connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), inworld_notification_manager_, SLOT(SceneAboutToChange(const QString&, const QString&)));
+			connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), inworld_notification_manager_, SLOT(SceneAboutToChange()));
             LogDebug("Notification Manager service READY");
 
             // Register UI service

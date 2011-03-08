@@ -122,7 +122,7 @@ namespace UiServices
             notification->HideNow();
     }
 
-    void NotificationManager::SceneAboutToChange(const QString &old_name, const QString &new_name)
+    void NotificationManager::SceneAboutToChange()
     {
         //if (old_name.toLower() == "inworld") Done already because is connected with signal SceneChangedFromMain
             HideAllNotifications();

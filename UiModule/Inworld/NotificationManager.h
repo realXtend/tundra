@@ -49,7 +49,8 @@ namespace UiServices
         void ToggleNotificationBrowser();
         void HideAllNotifications();
 
-        void SceneAboutToChange(const QString &old_name, const QString &new_name);
+        void SceneAboutToChange();
+		//void SceneAboutToChange(const QString &old_name, const QString &new_name);
 
 	signals:
 		void ShowNotificationCalled(const QString& msg);
