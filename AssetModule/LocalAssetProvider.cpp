@@ -58,6 +58,9 @@ bool LocalAssetProvider::IsValidRef(QString asset_id, QString asset_type)
 
 AssetTransferPtr LocalAssetProvider::RequestAsset(QString assetRef, QString assetType)
 {
+    if (assetRef.isEmpty())
+        return AssetTransferPtr();
+
     AssetTransferPtr transfer = AssetTransferPtr(new IAssetTransfer);
     transfer->source.ref = assetRef.trimmed();
     transfer->assetType = assetType;
