@@ -89,9 +89,17 @@ namespace OgreRenderer
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
         Ogre::MaterialPtr material = mm.getByName(SanitateAssetIdForOgre(sourceMaterialName));
 
+        if (!material.get())
+        {
+             OgreRenderingModule::LogWarning("Failed to clone material \"" + sourceMaterialName + "\". It was not found.");
+             return Ogre::MaterialPtr();
+        }
         material = material->clone(SanitateAssetIdForOgre(newName));
-
-        assert(material.get());
+        if (!material.get())
+        {
+             OgreRenderingModule::LogWarning("Failed to clone material \"" + sourceMaterialName + "\" to name \"" + SanitateAssetIdForOgre(newName) + "\"");
+             return Ogre::MaterialPtr();
+        }
         return material;
     }
 
