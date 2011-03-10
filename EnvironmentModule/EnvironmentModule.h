@@ -11,6 +11,7 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
+#include "SceneFwd.h"
 
 #ifdef CAELUM
 namespace Caelum

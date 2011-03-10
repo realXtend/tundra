@@ -16,11 +16,9 @@
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
 #include "EC_OgreCustomObject.h"
-
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "QuatUtils.h"
-
 #include "SceneEvents.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "SceneManager.h"
@@ -29,21 +27,20 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "WorldStream.h"
-
 #include "EC_NetworkPosition.h"
+#include "EC_OpenSimPrim.h"
+#include "IAttribute.h"
+#include "Entity.h"
+
 #ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
 #endif
-#include "EC_OpenSimPrim.h"
-
-#include "IAttribute.h"
 
 #include <OgreSceneNode.h>
 
 #include <QUrl>
 #include <QColor>
 #include <QDomDocument>
-
 
 #define SEND_EC_AS_BINARY
 

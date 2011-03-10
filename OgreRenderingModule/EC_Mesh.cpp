@@ -580,7 +580,12 @@ void EC_Mesh::RemoveAllAttachments()
 bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
 {
     if (!entity_)
+    {
+        // The mesh is not ready yet, track bending applies 
+        // so we can apply it once OnMeshAssetLoaded() is called
+        pendingMaterialApplies[index] = QString::fromStdString(material_name);
         return false;
+    }
     
     if (index >= entity_->getNumSubEntities())
     {
@@ -1009,7 +1014,20 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
     if (mesh)
     {
         if (mesh->ogreMesh.get())
-            ogreMeshName = mesh->ogreMesh->getName().c_str();
+        {
+            ogreMeshName = QString::fromStdString(mesh->ogreMesh->getName()).trimmed();
+
+            // Do not reload if all of the following are met
+            // 1. Ogre::Entity and Ogre::Mesh are valid (aka this is not the first load for this EC_Mesh) 
+            // 2. Mesh name is same (aka asset reference with ogre sanitations)
+            // 3. Content hash has not changed (aka data has not changed)
+            if (entity_ && entity_->getMesh().get())
+            {
+                QString currentMeshName = QString::fromStdString(entity_->getMesh()->getName()).trimmed();
+                if (currentMeshName == ogreMeshName && mesh->ContentHashChanged() == false)
+                    return;
+            }
+        }
         else
             LogError("OnMeshAssetLoaded: Mesh asset load finished for asset \"" + asset->Name().toStdString() + "\", but Ogre::Mesh pointer was null!");
     }
@@ -1019,6 +1037,14 @@ void EC_Mesh::OnMeshAssetLoaded(AssetPtr asset)
     // Force a re-application of the skeleton on this mesh. ///\todo This path should be re-evaluated to see if we have potential performance issues here. -jj.
     if (skeletonAsset->Asset())
         OnSkeletonAssetLoaded(skeletonAsset->Asset());
+
+    // Apply pending materials, these were tried to be applied before the mesh was loaded
+    if (!pendingMaterialApplies.empty())
+    {
+        for(int idx = 0; idx < pendingMaterialApplies.size(); ++idx)
+            SetMaterial(idx, pendingMaterialApplies[idx]);
+        pendingMaterialApplies.clear();
+    }
 }
 
 void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)

@@ -3,21 +3,23 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "WorldLogicInterface.h"
-#include "EC_OpenSimPresence.h"
 #include "Provider.h"
 #include "Session.h"
 #include "MumbleVoipModule.h"
 #include "ServerInfoProvider.h"
-#include "EventManager.h"
-#include "NetworkEvents.h" // For network events
 #include "MicrophoneAdjustmentWidget.h"
+#include "EC_VoiceChannel.h"
+
+#include "EventManager.h"
+#include "NetworkEvents.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "EC_VoiceChannel.h"
 #include "SceneManager.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
+#include "Entity.h"
+
+#include <QSignalMapper>
 
 #include "MemoryLeakCheck.h"
 
@@ -29,8 +31,11 @@ namespace MumbleVoip
         session_(0),
         server_info_provider_(0),
         settings_(settings),
-        microphone_adjustment_widget_(0)
+        microphone_adjustment_widget_(0),
+        signal_mapper_(new QSignalMapper(this))
     {
+        connect(signal_mapper_, SIGNAL(mapped(const QString &)),this, SLOT(ECVoiceChannelChanged(const QString &)));
+
         server_info_provider_ = new ServerInfoProvider(framework);
         connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
 
@@ -73,6 +78,17 @@ namespace MumbleVoip
             case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 CloseSession();
                 SAFE_DELETE(session_);
+                break;
+            }
+        }
+        if (category_id == framework_event_category_)
+        {
+            switch (event_id)
+            {
+            case Foundation::WORLD_STREAM_READY:
+                ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+                if (event_data)
+                    world_stream_ = event_data->WorldStream;
                 break;
             }
         }
@@ -221,10 +237,8 @@ namespace MumbleVoip
             CreateSession();
        
         connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)),Qt::UniqueConnection);
-        connect(channel, SIGNAL(OnChanged()), this, SLOT(ECVoiceChannelChanged()));
-
-        if (session_->GetChannels().contains(channel->getchannelname()))
-            channel->setenabled(false); // We do not want to create multiple channels with a same name
+        connect(channel, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), signal_mapper_, SLOT(map()));
+        signal_mapper_->setMapping(channel,QString::number(reinterpret_cast<unsigned int>(channel)));
 
         if (session_->GetChannels().contains(channel->getchannelname()))
             channel->setenabled(false); // We do not want to create multiple channels with a same name
@@ -267,21 +281,16 @@ namespace MumbleVoip
         if (!scene)
             return;
 
-        connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)), SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
+        connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     }
 
-    void Provider::ECVoiceChannelChanged()
+    void Provider::ECVoiceChannelChanged(const QString &pointer)
     {
-        if (!session_)        
-            return;
-
-        EC_VoiceChannel* channel = qobject_cast<EC_VoiceChannel*>(sender());
-        if (!channel)
+        if (!session_)
             return;
 
         /// @todo If user have edited the active channel -> close, reopen
-        if (!ec_voice_channels_.contains(channel))
-            return;
 
         foreach(EC_VoiceChannel* channel, ec_voice_channels_)
         {
@@ -311,51 +320,13 @@ namespace MumbleVoip
 
     QString Provider::GetUsername()
     {
-        using namespace Foundation;
-        boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
-        
-        if (!world_logic)
-            return "";
-
-		/// @todo: make work both for Tundra & others somehow, world logic interface perhaps?
-        if (!tundra_logic_->IsServer())
+        if (tundra_logic_ && !tundra_logic_->IsServer())
             return tundra_logic_->GetClient()->GetLoginProperty("username");;
-
-       
-        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
-        if (!user_avatar)
-            return "";
-
-        boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
-        if (!presence)
-            return "";
-
-        QString user_name = presence->GetFullName();
-        user_name.replace(' ', '_');
-        return user_name;
-
         return "";
     }
 
     QString Provider::GetAvatarUuid()
     {
-<<<<<<< HEAD
-        using namespace Foundation;
-        boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
-        
-        if (!world_logic)
-            return "";
-       
-        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
-        if (!user_avatar)
-            return "";
-
-        boost::shared_ptr<EC_OpenSimPresence> presence = user_avatar->GetComponent<EC_OpenSimPresence>();
-        if (!presence)
-            return "";
-
-        return presence->agentId.ToQString();
-=======
         /// @todo: Get user's avatar entity uuid
         return "";
     }
@@ -364,10 +335,6 @@ namespace MumbleVoip
     {
         tundra_logic_ = framework_->GetModuleManager()->GetModule<TundraLogic::TundraLogicModule>().lock();
         if (!tundra_logic_)
-        {
-           throw Exception("Fatal: could not get TundraLogicModule");
-        } 
->>>>>>> origin/tundra
+            RootLogError("MumbleVoip::Proviver: Could not get TundraLogicModule");
     }
-
 } // MumbleVoip

@@ -111,8 +111,9 @@ namespace Foundation
                 if (event->type() == QEvent::ApplicationDeactivate)
                     appActivated = false;
             }
+
             return QObject::eventFilter(obj, event);
-        } 
+        }
         catch(const std::exception &e)
         {
             std::cout << std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)") << std::endl;
@@ -124,7 +125,6 @@ namespace Foundation
             RootLogCritical(std::string("QApp::eventFilter caught an unknown exception!"));
             throw;
         }
-        return true;
     }
 
     void NaaliApplication::ChangeLanguage(const QString& file)

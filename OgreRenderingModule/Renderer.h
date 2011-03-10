@@ -6,6 +6,7 @@
 #include "RenderServiceInterface.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
+#include "SceneFwd.h"
 #include "RenderServiceInterface.h"
 #include "HighPerfClock.h"
 #include "ForwardDefines.h"
@@ -22,8 +23,6 @@ class NaaliRenderWindow;
 
 namespace OgreRenderer
 {
-    
-
     /// Shadow quality settings
     enum ShadowQuality
     {

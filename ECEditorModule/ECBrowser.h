@@ -6,6 +6,7 @@
 #define QT_QTPROPERTYBROWSER_IMPORT
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "CoreTypes.h"
 #include "ComponentGroup.h"
 #include "AttributeChangeType.h"

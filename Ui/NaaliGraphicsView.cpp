@@ -232,6 +232,12 @@ void NaaliGraphicsView::dragEnterEvent(QDragEnterEvent *e)
     emit DragEnterEvent(e);
 }   
 
+void NaaliGraphicsView::dragLeaveEvent(QDragLeaveEvent *e)
+{
+    emit DragLeaveEvent(e);
+    QGraphicsView::dragLeaveEvent(e);
+}
+
 void NaaliGraphicsView::dragMoveEvent(QDragMoveEvent *e)
 {
     // Check whether the drop occurred on top of a QGraphicsView widget or on top of the 3D scene.

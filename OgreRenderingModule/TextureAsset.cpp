@@ -8,6 +8,9 @@
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("OgreTextureAsset")
+
 TextureAsset::~TextureAsset()
 {
     Unload();
@@ -19,8 +22,12 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
         return false; ///\todo Log out error.
     if (numBytes == 0)
         return false; ///\todo Log out error.
-    if (headless)
-	return false;
+
+    // Don't load textures to memory in headless mode
+    if (assetAPI->IsHeadless())
+    {
+	    return false;
+    }
 
     try
     {
@@ -51,7 +58,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 
             if (ogreTexture->getBuffer().isNull())
             {
-                OgreRenderer::OgreRenderingModule::LogError("TextureAsset::DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
+                LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": OgreTexture::getBuffer() was null!");
                 return false;
             }
 
@@ -65,8 +72,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     }
     catch (Ogre::Exception &e)
     {
-        OgreRenderer::OgreRenderingModule::LogError("TextureAsset::DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
-
+        LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
         return false;
     }
 }
@@ -93,7 +99,7 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
 {
     if (ogreTexture.isNull())
     {
-        OgreRenderer::OgreRenderingModule::LogWarning("TextureAsset::SerializeTo called on an unloaded texture \"" + Name().toStdString() + "\".");
+        LogWarning("SerializeTo: Called on an unloaded texture \"" + Name().toStdString() + "\".");
         return false;
     }
 
@@ -131,12 +137,20 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
         }
     } catch (std::exception &e)
     {
-        OgreRenderer::OgreRenderingModule::LogError("Failed to export Ogre texture " + Name().toStdString() + ":");
+        LogError("SerializeTo: Failed to export Ogre texture " + Name().toStdString() + ":");
         if (e.what())
             OgreRenderer::OgreRenderingModule::LogError(e.what());
         return false;
     }
     return true;
+}
+
+void TextureAsset::HandleLoadError(const QString &loadError)
+{
+    // Don't print anything if we are headless, 
+    // not loading the texture was intentional
+    if (!assetAPI->IsHeadless())
+        LogError(loadError.toStdString());
 }
 
 void TextureAsset::DoUnload()

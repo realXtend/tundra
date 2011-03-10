@@ -56,10 +56,10 @@ namespace MumbleLib
         Q_OBJECT
         Q_PROPERTY(int playback_buffer_max_length_ms READ GetPlaybackBufferMaxLengthMs WRITE SetPlaybackBufferMaxLengthMs ) 
         Q_PROPERTY(double encoding_quality READ GetEncodingQuality WRITE SetEncodingQuality)
-        Q_PROPERTY(bool sending_audio) // \todo implement
-        Q_PROPERTY(bool receiving_audio) // \todo implement
-        Q_PROPERTY(bool sending_position) // \todo implement
-        
+//        Q_PROPERTY(bool sending_audio) // \todo implement
+//        Q_PROPERTY(bool receiving_audio) // \todo implement
+//        Q_PROPERTY(bool sending_position) // \todo implement
+
     public:
         enum State { STATE_CONNECTING, STATE_AUTHENTICATING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 

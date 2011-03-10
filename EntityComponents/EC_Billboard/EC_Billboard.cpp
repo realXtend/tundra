@@ -49,8 +49,7 @@ void EC_Billboard::SetDimensions(float w, float h)
 
 void EC_Billboard::Show(const std::string &imageName, int timeToShow)
 {
-    assert(GetFramework());
-    if (GetFramework())
+    if (!GetFramework())
         return;
 
     boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService

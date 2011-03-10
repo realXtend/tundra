@@ -11,15 +11,9 @@
 #include "AddContentWindow.h"
 #include "SceneStructureModule.h"
 #include "TreeWidgetUtils.h"
+
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
-
-#include <QLabel>
-#include <QProgressBar>
-#include <QMessageBox>
-#include <QFont>
-#include <QColor>
-
 #include "Framework.h"
 #include "AssetAPI.h"
 #include "IAssetStorage.h"
@@ -27,6 +21,7 @@
 #include "SceneDesc.h"
 #include "SceneManager.h"
 #include "SceneImporter.h"
+#include "Transform.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
@@ -404,7 +399,7 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     int fullHeight = entityTreeWidget->header()->height();
     fullHeight += (entityTreeWidget->sizeHintForRow(0)+5) * entityTreeWidget->model()->rowCount();
     int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
-    if(fullHeight<(halfDeskHeight-50))
+    if (fullHeight < halfDeskHeight-50)
     {
         entityTreeWidget->setMinimumHeight(fullHeight);
     }
@@ -590,7 +585,7 @@ void AddContentWindow::AddContent()
     {
         // If no uploads are queued then AddEntities will be called automatically
         if (UploadAssets())
-        {        
+        {
             if (totalUploads_ > 0)
             {
                 uploadStatus_->show();
@@ -798,7 +793,7 @@ void AddContentWindow::AddEntities()
         {
         case SceneDesc::Naali:
         case SceneDesc::OgreMesh:
-            entities = destScene->CreateContentFromSceneDescription(newDesc_, false, AttributeChange::Default);
+            entities = destScene->CreateContentFromSceneDesc(newDesc_, false, AttributeChange::Default);
             break;
         /*
         case SceneDesc::OgreMesh:
@@ -821,7 +816,7 @@ void AddContentWindow::AddEntities()
 
             TundraLogic::SceneImporter importer(destScene);
             entities = importer.Import(newDesc_.filename.toStdString(), dirname, Transform(),
-                dest->BaseURL(), AttributeChange::Default, false/*clearScene*/, false, newDesc_);
+                dest->BaseURL(), AttributeChange::Default, false/*clearScene*/, false);
             break;
         }
         case SceneDesc::AssetUpload:

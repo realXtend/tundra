@@ -21,6 +21,7 @@
 #include "EventManager.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
+#include "Entity.h"
 //#include "RealXtend/RexProtocolMsgIDs.h"
 //#include "GenericMessageUtils.h"
 

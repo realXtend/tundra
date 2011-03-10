@@ -93,6 +93,7 @@
 //ECs declared by PythonScriptModule
 #include "EC_DynamicComponent.h"
 #include "EC_Script.h"
+#include "ScriptAsset.h"
 
 #include <PythonQt.h>
 
