@@ -87,3 +87,4 @@ del buildplayer\modules\core\OgreAssetEditorModule*
 del buildplayer\modules\core\SupportModules*
 del buildplayer\modules\core\CommunicationsModule*
 del buildplayer\modules\core\SceneStructureModule*
+del buildplayer\modules\core\DebugStatsModule*
