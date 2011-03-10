@@ -14,7 +14,8 @@
       You can also adjust minutes how ofter auto store is done with 'intervalMinutes' variable.
     - Store Filename: You can change the filename 'storeFilename' where the scene is stored.
     
-    Note to developers: Be careful not to commit 'true' values if you are using this script in your git clone.
+    Note to Tundra developers: Be careful not to commit 'true' values if you are using this 
+    script in your git clone. This script is mostly meant to be used by end users after they install Tundra.
 */
 
 function AutoServerStore()
