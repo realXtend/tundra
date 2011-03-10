@@ -40,12 +40,21 @@ use_package (QT4)
 use_package (CURL)
 use_package (XMLRPC)
 use_package (OGRE)
-use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga UiModule EntityComponents/EC_OpenSimPrim EntityComponents/EC_NetworkPosition)
+
+if (APPLE)
+    use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga UiModule EntityComponents/EC_OpenSimPrim EntityComponents/EC_NetworkPosition)
+else()
+    use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities UiModule EntityComponents/EC_OpenSimPrim EntityComponents/EC_NetworkPosition)
+endif()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga UiModule EC_OpenSimPrim EC_NetworkPosition)
-
+if (APPLE)
+    link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga UiModule EC_OpenSimPrim EC_NetworkPosition)
+else()
+    link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities UiModule EC_OpenSimPrim EC_NetworkPosition)
+endif()
+    
 link_package (BOOST)
 link_package (POCO)
 link_package (OGRE)

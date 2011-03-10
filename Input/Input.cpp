@@ -93,11 +93,14 @@ framework(framework_)
     // to track mouse move events from that window.
     mainWindow = mainView;
 
-	//$ BEGIN_MOD $
-	//$ MOD_DESCRIPTION Commented to get the events only on the render window $ 
-    //while(mainWindow->parentWidget())
-    //    mainWindow = mainWindow->parentWidget();
-	//$ END_MOD $ 
+    //$ BEGIN_MOD $
+    //$ MOD_DESCRIPTION Commented to get the events only on the render window $ 
+    //$ EDIT: However, these lines are needed on Mac OS X, as commenting them breaks mouse clicks inworld
+#ifdef Q_WS_MAC
+    while(mainWindow->parentWidget())
+        mainWindow = mainWindow->parentWidget();
+#endif
+    //$ END_MOD $ 
 
     mainWindow->setMouseTracking(true);
     // For Mouse wheel events, key releases, and mouse moves (no button down).
@@ -740,8 +743,9 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
         // If this event did not originate from the QGraphicsView viewport, we are not interested in it.
         if (obj != qobject_cast<QObject*>(mainView))
             return false;
-#ifdef Q_WS_MAC
+
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
+#ifdef Q_WS_MAC
         QGraphicsItem *itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         if (itemUnderMouse)
         {
