@@ -316,7 +316,7 @@ namespace Scene
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Entity *> LoadSceneXML(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Scene::Entity*> LoadSceneXML(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change);
 
         //! Returns scene content as an XML string.
         /*! \param getTemporary Are temporary entities wanted to be included.
@@ -339,7 +339,7 @@ namespace Scene
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Entity *> LoadSceneBinary(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Scene::Entity*> LoadSceneBinary(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change);
 
         //! Save the scene to binary
         /*! \param filename File name
@@ -353,7 +353,7 @@ namespace Scene
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Entity *> CreateContentFromXml(const QString &xml, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Scene::Entity*> CreateContentFromXml(const QString &xml, bool replaceOnConflict, AttributeChange::Type change);
 
         //! This is an overloaded function.
         /*! \param xml XML document.
@@ -361,7 +361,7 @@ namespace Scene
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Entity *> CreateContentFromXml(const QDomDocument &xml, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Scene::Entity*> CreateContentFromXml(const QDomDocument &xml, bool replaceOnConflict, AttributeChange::Type change);
 
         //! Creates scene content from binary file.
         /*! \param filename File name.
@@ -369,7 +369,7 @@ namespace Scene
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Entity *> CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Scene::Entity*> CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
 
     signals:
         //! Signal when an attribute of a component has changed
