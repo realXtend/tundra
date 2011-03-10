@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_IComponentRegistrar_h
-#define incl_Interfaces_IComponentRegistrar_h
+#ifndef incl_Scene_IComponentRegistrar_h
+#define incl_Scene_IComponentRegistrar_h
 
 #include <boost/shared_ptr.hpp>
 #include <vector>

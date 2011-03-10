@@ -13,6 +13,7 @@
 #include "EC_OpenSimPrim.h"
 #include "IModule.h"
 #include "SceneManager.h"
+#include "Entity.h"
 #include "LoggingFunctions.h"
 
 #include <QTimer>

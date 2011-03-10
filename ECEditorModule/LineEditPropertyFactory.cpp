@@ -1,7 +1,12 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "LineEditPropertyFactory.h"
 #include "FunctionInvoker.h"
+
+#include "Entity.h"
 
 #include <QLineEdit>
 #include <QPushButton>
@@ -25,7 +30,6 @@ LineEditWithButtons::LineEditWithButtons(const QString &text, QWidget *parent):
 
 LineEditWithButtons::~LineEditWithButtons() 
 {
-    
 }
 
 QPushButton* LineEditWithButtons::CreateButton(const QString &objectName, const QString &text)
@@ -42,7 +46,6 @@ LineEditPropertyFactory::LineEditPropertyFactory(QObject *parent):
     QtAbstractEditorFactory<QtStringPropertyManager>(parent),
     invoker_(new FunctionInvoker())
 {
-
 }
 
 void LineEditPropertyFactory::AddButtons(AttributeMetadata::ButtonInfoList buttons)
@@ -81,7 +84,6 @@ void LineEditPropertyFactory::ComponentRemoved(QtProperty *property, IComponent 
 
 void LineEditPropertyFactory::connectPropertyManager(QtStringPropertyManager *manager)
 {
-    
 }
 
 QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager, QtProperty *property, QWidget *parent)
@@ -103,7 +105,6 @@ QWidget *LineEditPropertyFactory::createEditor(QtStringPropertyManager *manager,
 
 void LineEditPropertyFactory::disconnectPropertyManager(QtStringPropertyManager *manager)
 {
-    
 }
 
 void LineEditPropertyFactory::ButtonClicked()

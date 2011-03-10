@@ -9,7 +9,7 @@
 #define incl_SceneStructureModule_SceneTreeWidget_h
 
 #include "CoreTypes.h"
-#include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "AssetFwd.h"
 
 #include <QTreeWidget>

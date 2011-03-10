@@ -8,6 +8,7 @@
 #include "MemoryLeakCheck.h"
 #include "Water.h"
 #include "EnvironmentModule.h"
+#include "Entity.h"
 
 // Ogre renderer -specific.
 #include <OgreManualObject.h>

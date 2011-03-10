@@ -3,7 +3,7 @@
  *
  *  @file   SceneStructureModule.cpp
  *  @brief  Provides Scene Structure and Assets windows and raycast drag-and-drop import of
- *          .mesh, .scene, .xml and .nbf files to the main window.
+ *          various content file formats to the main window.
  */
 
 #include "StableHeaders.h"
@@ -17,8 +17,8 @@
 
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-
 #include "SceneManager.h"
+#include "Entity.h"
 #include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
 #include "Input.h"
@@ -32,6 +32,9 @@
 #include "NaaliMainWindow.h"
 #include "LoggingFunctions.h"
 #include "SceneDesc.h"
+
+#include <QToolTip>
+#include <QCursor>
 
 #include <OgreEntity.h>
 #include <OgreMesh.h>
@@ -56,6 +59,7 @@ SceneStructureModule::SceneStructureModule() :
 SceneStructureModule::~SceneStructureModule()
 {
     SAFE_DELETE(sceneWindow);
+    SAFE_DELETE(toolTipWidget);
 }
 
 void SceneStructureModule::PostInitialize()
@@ -86,8 +90,21 @@ void SceneStructureModule::PostInitialize()
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DragEnterEvent(QDragEnterEvent *)), SLOT(HandleDragEnterEvent(QDragEnterEvent *)));
+    connect(framework_->Ui()->GraphicsView(), SIGNAL(DragLeaveEvent(QDragLeaveEvent *)), SLOT(HandleDragLeaveEvent(QDragLeaveEvent *)));
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DragMoveEvent(QDragMoveEvent *)), SLOT(HandleDragMoveEvent(QDragMoveEvent *)));
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent *)), SLOT(HandleDropEvent(QDropEvent *)));
+
+    toolTipWidget = new QWidget(0, Qt::ToolTip);
+    toolTipWidget->setLayout(new QHBoxLayout());
+    toolTipWidget->layout()->setMargin(0);
+    toolTipWidget->layout()->setSpacing(0);
+    toolTipWidget->setContentsMargins(0,0,0,0);
+    toolTipWidget->setStyleSheet("QWidget { background-color: transparent; } QLabel { padding: 2px; border: 0.5px solid grey; border-radius: 0px; \
+                                  background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(246, 246, 246, 255), stop:1 rgba(237, 237, 237, 255)); }");
+    
+    toolTip = new QLabel(toolTipWidget);
+    toolTip->setTextFormat(Qt::RichText);
+    toolTipWidget->layout()->addWidget(toolTip);
 }
 
 QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene)
@@ -371,32 +388,79 @@ void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
 {
     // If at least one file is supported, accept.
     bool accept = false;
+
+    int acceptedCount = 0;
+    QString dropResourceNames;
+    currentToolTipSource.clear();
     if (e->mimeData()->hasUrls())
     {   
         foreach(QUrl url, e->mimeData()->urls())
         {
             if (IsSupportedFileType(url.path()))
+            {
+                dropResourceNames.append(url.toString().split("/").last() + ", ");
+                acceptedCount++;
                 accept = true;
+            }
             // Accept .material only if a single material is being dropped
             else if (IsMaterialFile(url.path()))
+            {
                 if (e->mimeData()->urls().count() == 1)
+                {
+                    dropResourceNames.append(url.toString().split("/").last());
+                    acceptedCount++;
                     accept = true;
+                }
+            }
         }
     }
+    
+    if (accept)
+    {
+        if (dropResourceNames.endsWith(", "))
+            dropResourceNames.chop(2);
+        if (dropResourceNames.count(",") >= 2 && acceptedCount > 2)
+        {
+            int from = dropResourceNames.indexOf(",");
+            dropResourceNames = dropResourceNames.left(dropResourceNames.indexOf(",", from+1));
+            dropResourceNames.append(QString("... (%1 assets)").arg(acceptedCount));
+        }
+        if (!dropResourceNames.isEmpty())
+        {
+            if (dropResourceNames.count(",") > 0)
+                currentToolTipSource = "<p style='white-space:pre'><span style='font-weight:bold;'>Sources:</span> " + dropResourceNames;
+            else
+                currentToolTipSource = "<p style='white-space:pre'><span style='font-weight:bold;'>Source:</span> " + dropResourceNames;
+        }
+    }
+
     e->setAccepted(accept);
+}
+
+void SceneStructureModule::HandleDragLeaveEvent(QDragLeaveEvent *e)
+{
+    toolTipWidget->hide();
+    currentToolTipSource.clear();
+    currentToolTipDestination.clear();
 }
 
 void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
 {
-    // If at least one file is supported, accept.
     if (!e->mimeData()->hasUrls())
+    {
+        e->ignore();
         return;
+    }
+
+    currentToolTipDestination.clear();
     foreach(QUrl url, e->mimeData()->urls())
     {
         if (IsSupportedFileType(url.path()))
             e->accept();
         else if (IsMaterialFile(url.path()))
         {
+            e->setAccepted(false);
+            currentToolTipDestination = "<br><span style='font-weight:bold;'>Destination:</span> ";
             // Raycast to see if there is a submesh under the material drop
             Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
             if (renderer)
@@ -407,18 +471,72 @@ void SceneStructureModule::HandleDragMoveEvent(QDragMoveEvent *e)
                     EC_Mesh *mesh = res->entity_->GetComponent<EC_Mesh>().get();
                     if (mesh)
                     {
+                        currentToolTipDestination.append("Submesh " + QString::number(res->submesh_));
+                        if (!mesh->Name().isEmpty())
+                            currentToolTipDestination.append(" on " + mesh->Name());
+                        else if (!mesh->GetParentEntity()->GetName().isEmpty())
+                            currentToolTipDestination.append(" on " + mesh->GetParentEntity()->GetName());
+                        currentToolTipDestination.append("</p>");
                         e->accept();
-                        return;
                     }
                 }
-            }                
-            e->ignore();
+            }
+            if (!e->isAccepted())
+            {
+                currentToolTipDestination.append("None</p>");
+                e->ignore();
+            }
         }
+    }
+
+    if (e->isAccepted() && currentToolTipDestination.isEmpty())
+    {
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+        if (renderer)
+        {
+            RaycastResult* res = renderer->Raycast(e->pos().x(), e->pos().y());
+            if (res)
+            {
+                if (res->entity_)
+                {
+                    QString entityName = res->entity_->GetName();
+                    currentToolTipDestination = "<br><span style='font-weight:bold;'>Destination:</span> ";
+                    if (!entityName.isEmpty())
+                        currentToolTipDestination.append(entityName + " ");
+                    QString xStr = QString::number(res->pos_.x);
+                    xStr = xStr.left(xStr.indexOf(".")+3);
+                    QString yStr = QString::number(res->pos_.y);
+                    yStr = yStr.left(yStr.indexOf(".")+3);
+                    QString zStr = QString::number(res->pos_.z);
+                    zStr = zStr.left(zStr.indexOf(".")+3);
+                    currentToolTipDestination.append(QString("(%2 %3 %4)</p>").arg(xStr, yStr, zStr));
+                }
+                else
+                    currentToolTipDestination = "<br><span style='font-weight:bold;'>Destination:</span> Dropping in front of camera</p>";
+            }
+        }
+    }
+    
+    if (!currentToolTipSource.isEmpty())
+    {
+        if (currentToolTipDestination.isEmpty())
+            currentToolTipDestination = "</p>";
+        if (toolTip->text() != currentToolTipSource + currentToolTipDestination)
+        {
+            toolTip->setText(currentToolTipSource + currentToolTipDestination);
+            toolTipWidget->resize(1,1);
+        }
+        toolTipWidget->move(QPoint(QCursor::pos().x()+25, QCursor::pos().y()+25));
+
+        if (!toolTipWidget->isVisible())
+            toolTipWidget->show();
     }
 }
 
 void SceneStructureModule::HandleDropEvent(QDropEvent *e)
 {
+    toolTipWidget->hide();
+
     if (e->mimeData()->hasUrls())
     {
         // Handle materials with own handler
@@ -433,7 +551,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             }
         }
 
-        // Handle other supperted file types
+        // Handle other supported file types
         QList<Scene::Entity *> importedEntities;
 
         Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();

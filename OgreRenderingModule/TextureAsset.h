@@ -12,32 +12,28 @@ class TextureAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-    :IAsset(owner, type_, name_)
-    {
-      headless = owner->IsHeadless();
-    }
-
+    TextureAsset(AssetAPI *owner, const QString &type_, const QString &name_) : IAsset(owner, type_, name_) {}
     ~TextureAsset();
 
+    /// Load texture from memory
     virtual bool DeserializeFromData(const u8 *data_, size_t numBytes);
 
+    /// Load texture into memory
     virtual bool SerializeTo(std::vector<u8> &data, const QString &serializationParameters);
 
-    virtual void DoUnload();
+    /// Handle load errors detected by AssetAPI
+    virtual void HandleLoadError(const QString &loadError);
 
-    /// Returns an empty list - textures do not refer to other assets.
-    virtual std::vector<AssetReference> FindReferences() const { return std::vector<AssetReference>(); }
+    /// Unload texture from ogre
+    virtual void DoUnload();   
 
-//    void RegenerateAllMipLevels();
+    //void RegenerateAllMipLevels();
 
     /// This points to the loaded texture asset, if it is present.
     Ogre::TexturePtr ogreTexture;
 
     /// Specifies the unique texture name Ogre uses in its asset pool for this texture.
     QString ogreAssetName;
-
-    bool headless;
 };
 
 typedef boost::shared_ptr<TextureAsset> TextureAssetPtr;

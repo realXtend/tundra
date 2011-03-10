@@ -18,6 +18,7 @@
 
 #include "Framework.h"
 #include "SceneManager.h"
+#include "Entity.h"
 #include "EC_Name.h"
 #include "AssetReference.h"
 //#ifdef EC_DynamicComponent_ENABLED

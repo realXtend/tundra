@@ -1,9 +1,19 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "TerrainWeightEditor.h"
+#include "TerrainLabel.h"
 #include "EnvironmentModule.h"
 #include "EC_Terrain.h"
+
+#include "Entity.h"
+#include "Framework.h"
+#include "SceneManager.h"
+#include "UiProxyWidget.h"
+#include "UiServiceInterface.h"
+#include "ConsoleCommandServiceInterface.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -11,30 +21,23 @@
 #include <QPixmap>
 #include <QLabel>
 
-#include "TerrainLabel.h"
-#include "Framework.h"
-#include "SceneManager.h"
-#include "UiProxyWidget.h"
-#include "UiServiceInterface.h"
+#include "MemoryLeakCheck.h"
 
-#include "ConsoleCommandServiceInterface.h"
 namespace Environment
 {
-    TerrainWeightEditor::TerrainWeightEditor(EnvironmentModule* env_module)
-        :env_module_(env_module)
-        ,scene_manager_(0),
+    TerrainWeightEditor::TerrainWeightEditor(EnvironmentModule* env_module) :
+        env_module_(env_module),
+        scene_manager_(0),
         brush_size_(1),
         brush_modifier_(1),
         falloff_percentage_(0),
         neutral_color_(128),
         brush_size_max_(800)
     {
-        
     }
+
     TerrainWeightEditor::~TerrainWeightEditor()
     {
-
-    
     }
 
     void TerrainWeightEditor::Initialize()
@@ -80,14 +83,10 @@ namespace Environment
         if(dbox)
             falloff_percentage_ = dbox->value();
 
-
-
-        
         InitializeCanvases();
         InitializeConnections();
         emit BrushValueChanged();
     }
-
 
     Console::CommandResult TerrainWeightEditor::ShowWindow(const StringVector &params)
     {
@@ -105,9 +104,7 @@ namespace Environment
         QLabel *canvas2 = editor_widget_->findChild<QLabel *>("canvas_2");
         QLabel *canvas3 = editor_widget_->findChild<QLabel *>("canvas_3");
         QLabel *canvas4 = editor_widget_->findChild<QLabel *>("canvas_4");
-        
         assert(canvas1 && canvas2 && canvas3 && canvas4);
-
 
         int width = image.width();
         int height = image.height();
@@ -139,12 +136,10 @@ namespace Environment
         canvas2->setPixmap(QPixmap::fromImage(image2));
         canvas3->setPixmap(QPixmap::fromImage(image3));
         canvas4->setPixmap(QPixmap::fromImage(image4));
-
     }
 
     void TerrainWeightEditor::InitializeCanvases()
     {
-
         QGroupBox* group = editor_widget_->findChild<QGroupBox*>("weight_group");
         if(!group)
             return;
@@ -287,10 +282,7 @@ namespace Environment
                 int red = qRed(image1.pixel(i,j));
                 int green = qRed(image2.pixel(i,j));
                 int blue = qRed(image3.pixel(i,j));
-
-
                 int alpha = qRed(image4.pixel(i,j));
-
                 ret_image.setPixel(i,j, QColor(red,green,blue,alpha).rgba());
             }
         }
@@ -299,7 +291,6 @@ namespace Environment
 
     void TerrainWeightEditor::InitializeConnections()
     {
-
         connect(this, SIGNAL(BrushValueChanged()), this, SLOT(RecreateBrush()));
 
         if(!editor_widget_)
@@ -338,8 +329,6 @@ namespace Environment
         box = editor_widget_->findChild<QSpinBox*>("brush_modifier");
         if(box)
             connect(box, SIGNAL(valueChanged(int)), this, SLOT(BrushModifierChanged(int)));
-
-
     }
 
     void TerrainWeightEditor::BrushSizeChanged(int val)
@@ -347,11 +336,13 @@ namespace Environment
         brush_size_ = val;
         emit BrushValueChanged();
     }
+
     void TerrainWeightEditor::BrushFalloffChanged(double val)
     {
         falloff_percentage_ = val;
         emit BrushValueChanged();
     }
+
     void TerrainWeightEditor::BrushModifierChanged(int val)
     {
         brush_modifier_ = val;
@@ -497,13 +488,11 @@ namespace Environment
 
     void TerrainWeightEditor::LoadWeightmapFromFile()
     {
-
         QString fileName = QFileDialog::getOpenFileName(this, tr("Select Image"),"" , tr("Image Files (*.png)"));
         QPixmap pix(fileName, "PNG");
         if(pix.isNull())
             return;
 
-        
         QImage img(pix.size(),QImage::Format_ARGB32);
         QImageReader reader(fileName);
         if(reader.read(&img))

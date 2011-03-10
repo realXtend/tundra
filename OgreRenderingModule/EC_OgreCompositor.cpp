@@ -31,6 +31,11 @@ EC_OgreCompositor::~EC_OgreCompositor()
     UpdateCompositor("");
 }
 
+QStringList EC_OgreCompositor::AvailableCompositors() const
+{
+    return handler_->GetAvailableCompositors().toList();
+}
+
 void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
 {
     if (attribute == &enabled)

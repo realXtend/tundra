@@ -5,14 +5,16 @@
  *  @brief  Base class for all components. Inherit from this class when creating new components.
  */
 
-#ifndef incl_Interfaces_IComponent_h
-#define incl_Interfaces_IComponent_h
+#ifndef incl_Scene_IComponent_h
+#define incl_Scene_IComponent_h
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "AttributeChangeType.h"
 #include "IAttribute.h"
 #include "IEventData.h"
 #include "CoreTypes.h"
+
 #include <boost/enable_shared_from_this.hpp>
 
 #include <QObject>

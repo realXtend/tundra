@@ -43,12 +43,21 @@ void ScriptAsset::ParseReferences()
     std::string content = scriptContent.toStdString();
     boost::sregex_iterator searchEnd;
 
+    // In headless mode we dont want to mark certain asset types as
+    // dependencies for the script, as they will fail Load() anyways
+    QStringList ignoredAssetTypes;
+    if (assetAPI->IsHeadless())
+        ignoredAssetTypes << "QtUiFile" << "Texture" << "OgreParticle" << "OgreMaterial" << "Audio";
+
     boost::regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
     for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
     {
         AssetReference ref;
         ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.
         ref.ref = assetAPI->LookupAssetRefToStorage((*iter)[1].str().c_str());
+        
+        if (ignoredAssetTypes.contains(assetAPI->GetAssetTypeFromFileName(ref.ref)))
+            continue;
         if (!addedRefs.contains(ref.ref, Qt::CaseInsensitive))
         {
             references.push_back(ref);

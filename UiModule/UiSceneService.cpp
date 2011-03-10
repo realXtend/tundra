@@ -387,7 +387,11 @@ namespace UiServices
 		CoreUi::SettingsWidget *settings_widget_ = dynamic_cast<CoreUi::SettingsWidget *>(owner_->GetInworldSceneController()->GetSettingsObject());
 		QWidget *internal_wid = settings_widget_->GetInternalWidget();//
 		if (internal_wid)
+#ifndef PLAYER_VIEWER
 			AddWidgetToScene(internal_wid, true, true);
+#else
+            AddWidgetToScene(internal_wid, false, false);
+#endif
 	}
 
 	bool UiSceneService::IsMenuInside(QString name){

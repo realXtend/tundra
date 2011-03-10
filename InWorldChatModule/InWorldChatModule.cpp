@@ -13,7 +13,7 @@
 
 #include "EC_ChatBubble.h"
 #include "EC_Billboard.h"
-
+#include "Entity.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "WorldStream.h"
 #include "SceneManager.h"

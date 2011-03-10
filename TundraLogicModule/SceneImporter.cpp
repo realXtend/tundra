@@ -7,6 +7,9 @@
 #include "TundraLogicModule.h"
 
 #include "SceneManager.h"
+#include "Entity.h"
+#include "SceneDesc.h"
+#include "OgreMaterialUtils.h"
 #include "CoreStringUtils.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -31,22 +34,6 @@ namespace fs = boost::filesystem;
 namespace TundraLogic
 {
 
-bool ProcessBraces(const std::string& line, int& braceLevel)
-{
-    if (line == "{")
-    {
-        ++braceLevel;
-        return true;
-    }
-    else if (line == "}")
-    {
-        --braceLevel;
-        return true;
-    }
-    else
-        return false;
-}
-
 SceneImporter::SceneImporter(const Scene::ScenePtr &scene) :
     scene_(scene)
 {
@@ -58,15 +45,13 @@ SceneImporter::~SceneImporter()
 
 Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
     const std::string& entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect,
-    const std::string &meshName, const SceneDesc &desc)
+    const std::string &meshName)
 {
     if (!scene_)
     {
         LogError("Null scene for mesh import");
         return Scene::EntityPtr();
     }
-
-    scene_desc_ = desc;
 
     boost::filesystem::path path(filename);
     std::string meshleafname = path.leaf();
@@ -80,26 +65,8 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     QSet<QString> material_names_set;
     for (uint i = 0; i < material_names.size(); ++i)
     {
-        /*
-        bool create = true;
-        if (!scene_desc_.IsEmpty())
-        {
-            create = false;
-            foreach(EntityDesc e, scene_desc_.entities)
-                foreach(ComponentDesc c, e.components)
-                    foreach(AttributeDesc a, c.attributes)
-                        if (a.value == material_names[i].c_str())
-                        {
-                            create = true;
-                            break;
-                        }
-        }
-        */
-        //if (create)
-        {
-            LogDebug("Material ref: " + material_names[i].toStdString());
-            material_names_set.insert(material_names[i]);
-        }
+        LogDebug("Material ref: " + material_names[i].toStdString());
+        material_names_set.insert(material_names[i]);
     }
 
     LogDebug("Skeleton ref: " + skeleton_name.toStdString());
@@ -109,45 +76,6 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     if (inspect)
         material_files = GetMaterialFiles(in_asset_dir);
 
-/*
-    // Copy mesh and skeleton
-    bool createMesh = true;
-    if (!scene_desc_.IsEmpty())
-    {
-        createMesh = false;
-        foreach(EntityDesc e, scene_desc_.entities)
-            foreach(ComponentDesc c, e.components)
-                foreach(AttributeDesc a, c.attributes)
-                    if (a.value == QString::fromStdString(prefix + meshleafname)) // meshname.c_str()
-                    {
-                        createMesh = true;
-                        break;
-                    }
-    }
-
-    if (createMesh)
-        CopyAsset(meshleafname, in_asset_dir, out_asset_dir);
-
-    if (!skeleton_name.empty())
-    {
-        bool create = true;
-        if (!scene_desc_.IsEmpty())
-        {
-            create = false;
-            foreach(EntityDesc e, scene_desc_.entities)
-                foreach(ComponentDesc c, e.components)
-                    foreach(AttributeDesc a, c.attributes)
-                        if (a.value == skeleton_name.c_str())
-                        {
-                            create = true;
-                            break;
-                        }
-        }
-
-        if (create)
-            CopyAsset(skeleton_name, in_asset_dir, out_asset_dir);
-    }
-*/
     // mesh copied, add mesh name inside the file
     if (!meshName.empty() /*&& createMesh*/)
         meshleafname += std::string("/") + meshName;
@@ -226,7 +154,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
 }
 
 QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
-    const QString &prefix, AttributeChange::Type change, bool clearscene, bool replace, const SceneDesc &desc)
+    const QString &prefix, AttributeChange::Type change, bool clearscene, bool replace)
 {
     QList<Scene::Entity *> ret;
     if (!scene_)
@@ -234,8 +162,6 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
         LogError("Null scene for import");
         return ret;
     }
-
-    scene_desc_ = desc;
 
     try
     {
@@ -329,9 +255,6 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
     }
     
     LogInfo("Finished");
-
-    // Reset possible scene descrition filter
-    scene_desc_ = SceneDesc();
 
     return ret;
 }
@@ -786,7 +709,7 @@ QSet<QString> SceneImporter::ProcessMaterialFileForTextures(const QString& matfi
                 if ((line.length()) && (line.substr(0, 2) != "//"))
                 {
                     // Process opening/closing braces
-                    if (!ProcessBraces(line, brace_level))
+                    if (!OgreRenderer::ProcessBraces(line, brace_level))
                     {
                         // If not a brace and on level 0, it should be a new material
                         if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
@@ -877,7 +800,7 @@ QString SceneImporter::LoadSingleMaterialFromFile(const QString &filename, const
             if ((line.length()) && (line.substr(0, 2) != "//"))
             {
                 // Process opening/closing braces
-                if (!ProcessBraces(line, brace_level))
+                if (!OgreRenderer::ProcessBraces(line, brace_level))
                 {
                     // If not a brace and on level 0, it should be a new material
                     if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
@@ -969,7 +892,7 @@ MaterialInfoList SceneImporter::LoadAllMaterialsFromFile(const QString &filename
             if ((line.length()) && (line.substr(0, 2) != "//"))
             {
                 // Process opening/closing braces
-                if (!ProcessBraces(line, brace_level))
+                if (!OgreRenderer::ProcessBraces(line, brace_level))
                 {
                     // If not a brace and on level 0, it should be a new material
                     if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
@@ -1034,53 +957,36 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
         if (!entity_elem.isNull())
         {
             std::string mesh_name = entity_elem.attribute("meshFile").toStdString();
-            bool create = true;
-            if (!scene_desc_.IsEmpty())
+            // Store the original name. Later we fix duplicates.
+            mesh_names_[mesh_name] = mesh_name;
+            QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
+            if (!subentities_elem.isNull())
             {
-                create = false;
-                foreach(EntityDesc e, scene_desc_.entities)
-                    foreach(ComponentDesc c, e.components)
-                        foreach(AttributeDesc a, c.attributes)
-                            if (a.value == mesh_name.c_str())
-                            {
-                                create = true;
-                                break;
-                            }
+                QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
+                while (!subentity_elem.isNull())
+                {
+                    std::string material_name = subentity_elem.attribute("materialName").toStdString();
+                    material_names_.insert(material_name);
+                    subentity_elem = subentity_elem.nextSiblingElement("subentity");
+                }
             }
-
-            if (create)
+            else
             {
-                // Store the original name. Later we fix duplicates.
-                mesh_names_[mesh_name] = mesh_name;
-                QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
-                if (!subentities_elem.isNull())
-                {
-                    QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
-                    while (!subentity_elem.isNull())
-                    {
-                        std::string material_name = subentity_elem.attribute("materialName").toStdString();
-                        material_names_.insert(material_name);
-                        subentity_elem = subentity_elem.nextSiblingElement("subentity");
-                    }
-                }
-                else
-                {
-                    // If no subentity element, have to interrogate the mesh.
-                    QStringList material_names;
-                    QString skeleton_name;
-                    ParseMeshForMaterialsAndSkeleton(QString::fromStdString(in_asset_dir + "/" + mesh_name), material_names, skeleton_name);
-                    for (uint i = 0; i < material_names.size(); ++i)
-                        material_names_.insert(material_names[i].toStdString());
-                    mesh_default_materials_[mesh_name.c_str()] = material_names;
-                }
+                // If no subentity element, have to interrogate the mesh.
+                QStringList material_names;
+                QString skeleton_name;
+                ParseMeshForMaterialsAndSkeleton(QString::fromStdString(in_asset_dir + "/" + mesh_name), material_names, skeleton_name);
+                for (uint i = 0; i < material_names.size(); ++i)
+                    material_names_.insert(material_names[i].toStdString());
+                mesh_default_materials_[mesh_name.c_str()] = material_names;
             }
         }
-        
+
         // Process child nodes
         QDomElement childnode_elem = node_elem.firstChildElement("node");
         if (!childnode_elem.isNull())
             ProcessNodeForAssets(childnode_elem, in_asset_dir);
-        
+
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
     }
@@ -1159,124 +1065,108 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
             bool new_entity = false;
             QString node_name_qstr = QString::fromStdString(node_name);
 
-            // Check if we have scene desc filter in use.
-            bool create = true;
-            if (!scene_desc_.IsEmpty())
+            // Try to find existing entity by name
+            if (replace)
+                entity = scene_->GetEntity(node_name_qstr);
+
+            if (!entity)
             {
-                create = false;
-                foreach(EntityDesc e, scene_desc_.entities)
-                    if (e.name == node_name_qstr)
-                    {
-                        create = true;
-                        break;
-                    }
+                entity = scene_->CreateEntity(scene_->GetNextFreeId());
+                new_entity = true;
+            }
+            else
+            {
+                LogInfo("Updating existing entity " + node_name);
             }
 
-            if (create)
+            EC_Mesh* meshPtr = 0;
+            EC_Name* namePtr = 0;
+            EC_Placeable* placeablePtr = 0;
+
+            if (entity)
             {
-                // Try to find existing entity by name
-                if (replace)
-                    entity = scene_->GetEntity(node_name_qstr);
-
-                if (!entity)
+                meshPtr = checked_static_cast<EC_Mesh*>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
+                namePtr = checked_static_cast<EC_Name*>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
+                placeablePtr = checked_static_cast<EC_Placeable*>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change).get());
+                
+                if ((meshPtr) && (namePtr) && (placeablePtr))
                 {
-                    entity = scene_->CreateEntity(scene_->GetNextFreeId());
-                    new_entity = true;
-                }
-                else
-                {
-                    LogInfo("Updating existing entity " + node_name);
-                }
-
-                EC_Mesh* meshPtr = 0;
-                EC_Name* namePtr = 0;
-                EC_Placeable* placeablePtr = 0;
-
-                if (entity)
-                {
-                    meshPtr = checked_static_cast<EC_Mesh*>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
-                    namePtr = checked_static_cast<EC_Name*>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
-                    placeablePtr = checked_static_cast<EC_Placeable*>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change).get());
+                    namePtr->name.Set(node_name_qstr, change);
                     
-                    if ((meshPtr) && (namePtr) && (placeablePtr))
+                    QVector<QString> materials;
+                    QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
+                    if (!subentities_elem.isNull())
                     {
-                        namePtr->name.Set(node_name_qstr, change);
-                        
-                        QVector<QString> materials;
-                        QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
-                        if (!subentities_elem.isNull())
+                        QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
+                        while (!subentity_elem.isNull())
                         {
-                            QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
-                            while (!subentity_elem.isNull())
-                            {
-                                QString material_name = subentity_elem.attribute("materialName") + ".material";
-                                material_name.replace('/', '_');
-                                
-                                int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
-                                
-                                material_name = prefix + material_name;
-                                if (index >= materials.size())
-                                    materials.resize(index + 1);
-                                materials[index] = material_name;
+                            QString material_name = subentity_elem.attribute("materialName") + ".material";
+                            material_name.replace('/', '_');
+                            
+                            int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
+                            
+                            material_name = prefix + material_name;
+                            if (index >= materials.size())
+                                materials.resize(index + 1);
+                            materials[index] = material_name;
 
-                                subentity_elem = subentity_elem.nextSiblingElement("subentity");
-                            }
+                            subentity_elem = subentity_elem.nextSiblingElement("subentity");
                         }
-                        else
-                        {
-                            // If no subentity element, use the inspected material names we stored earlier
-                            const QStringList& default_materials = mesh_default_materials_[orig_mesh_name.c_str()];
-                            materials.resize(default_materials.size());
-                            for(uint i = 0; i < default_materials.size(); ++i)
-                                materials[i] =  prefix + default_materials[i] + ".material";
-                        }
-                        
-                        Transform entity_transform;
-                        
-                        if (!flipyz)
-                        {
-                            //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
-                            Vector3df rot_euler;
-                            Quaternion adjustedrot = Quaternion(0, 0, PI) * newrot;
-                            adjustedrot.toEuler(rot_euler);
-                            entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
-                            entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                            entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
-                        }
-                        else
-                        {
-                            //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
-                            Vector3df rot_euler;
-                            Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
-                            adjustedrot.toEuler(rot_euler);
-                            entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
-                            entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                            entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
-                        }
-                        
-                        meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
-                        
-                        placeablePtr->transform.Set(entity_transform, change);
-                        meshPtr->meshRef.Set(AssetReference(mesh_name), change);
-
-                        AssetReferenceList materialRefs;
-                        foreach(QString material, materials)
-                            materialRefs.Append(AssetReference(material));
-
-                        meshPtr->meshMaterial.Set(materialRefs, change);
-                        meshPtr->castShadows.Set(cast_shadows, change);
-
-                        if (new_entity)
-                            scene_->EmitEntityCreated(entity, change);
-                        placeablePtr->ComponentChanged(change);
-                        meshPtr->ComponentChanged(change);
-                        namePtr->ComponentChanged(change);
-
-                        entities.append(entity.get());
                     }
                     else
-                        LogError("Could not create mesh, placeable, name components");
+                    {
+                        // If no subentity element, use the inspected material names we stored earlier
+                        const QStringList& default_materials = mesh_default_materials_[orig_mesh_name.c_str()];
+                        materials.resize(default_materials.size());
+                        for(uint i = 0; i < default_materials.size(); ++i)
+                            materials[i] =  prefix + default_materials[i] + ".material";
+                    }
+                    
+                    Transform entity_transform;
+                    
+                    if (!flipyz)
+                    {
+                        //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                        Vector3df rot_euler;
+                        Quaternion adjustedrot = Quaternion(0, 0, PI) * newrot;
+                        adjustedrot.toEuler(rot_euler);
+                        entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
+                        entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                        entity_transform.SetScale(newscale.x, newscale.z, newscale.y);
+                    }
+                    else
+                    {
+                        //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                        Vector3df rot_euler;
+                        Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
+                        adjustedrot.toEuler(rot_euler);
+                        entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
+                        entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                        entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                    }
+                    
+                    meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
+                    
+                    placeablePtr->transform.Set(entity_transform, change);
+                    meshPtr->meshRef.Set(AssetReference(mesh_name), change);
+
+                    AssetReferenceList materialRefs;
+                    foreach(QString material, materials)
+                        materialRefs.Append(AssetReference(material));
+
+                    meshPtr->meshMaterial.Set(materialRefs, change);
+                    meshPtr->castShadows.Set(cast_shadows, change);
+
+                    if (new_entity)
+                        scene_->EmitEntityCreated(entity, change);
+                    placeablePtr->ComponentChanged(change);
+                    meshPtr->ComponentChanged(change);
+                    namePtr->ComponentChanged(change);
+
+                    entities.append(entity.get());
                 }
+                else
+                    LogError("Could not create mesh, placeable, name components");
             }
         }
 

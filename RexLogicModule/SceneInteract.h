@@ -7,6 +7,7 @@
  */
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 
 #include <QObject>
 
@@ -44,26 +45,13 @@ private:
     /// Peforms raycast to last known mouse cursor position.
     void Raycast();
 
-    /// Framework.
-    Foundation::Framework *framework_;
-
-    /// Input context.
-    InputContextPtr input_;
-
-    /// Renderer pointer.
-    Foundation::RendererWeakPtr renderer_;
-
-    /// Last known mouse cursor's x position.
-    int lastX_;
-
-    /// Last known mouse cursor's y position.
-    int lastY_;
-
-    /// Was there widget under mouse in last known position.
-    bool itemUnderMouse_;
-
-    /// Last entity raycast has hit.
-    Scene::EntityWeakPtr lastHitEntity_;
+    Foundation::Framework *framework_; ///< Framework.
+    InputContextPtr input_; ///< Input context.
+    Foundation::RendererWeakPtr renderer_; ///< Renderer pointer.
+    int lastX_; ///< Last known mouse cursor's x position.
+    int lastY_; ///< Last known mouse cursor's y position.
+    bool itemUnderMouse_; ///< Was there widget under mouse in last known position.
+    Scene::EntityWeakPtr lastHitEntity_; ///< Last entity raycast has hit.
 
 private slots:
     /// Executes "MouseHover" action each frame is raycast has hit and entity.

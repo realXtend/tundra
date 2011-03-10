@@ -12,6 +12,7 @@
 #define incl_SceneStructureModule_SceneStructureWindow_h
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 
 #include <QWidget>
 #include <QMap>

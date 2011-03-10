@@ -1,15 +1,20 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "EntityPlacer.h"
 #include "SceneManager.h"
-
+#include "Entity.h"
 #include "EC_Placeable.h"
 #include "Renderer.h"
-#include "../Input/Input.h"
+#include "Input.h"
 #include "EC_Mesh.h"
 #include "OgreRenderingModule.h"
+
 #include <Ogre.h>
+
+#include "MemoryLeakCheck.h"
 
 EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityId, QObject *parent):
     framework_(framework),

@@ -7,9 +7,11 @@
 #include "Declare_EC.h"
 #include "AssetReference.h"
 #include "AssetFwd.h"
-#include "ScriptAsset.h"
 
 class IScriptInstance;
+
+class ScriptAsset;
+typedef boost::shared_ptr<ScriptAsset> ScriptAssetPtr;
 
 /// Provides mechanism for adding scripts to entities.
 /**

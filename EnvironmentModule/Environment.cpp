@@ -7,7 +7,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 
 #include "Environment.h"
 #include "EnvironmentModule.h"
@@ -16,12 +15,15 @@
 
 #include "EC_OgreEnvironment.h"
 #include "SceneManager.h"
+#include "Entity.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "OgreRenderingModule.h"
 
 #ifdef CAELUM
 #include <Caelum.h>
 #endif
+
+#include "MemoryLeakCheck.h"
 
 namespace Environment
 {
