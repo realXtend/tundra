@@ -26,12 +26,23 @@ namespace CoreUi
         
         comboBox_changeTheme->addItem(QString::fromStdString("Naali dark blue"));
         comboBox_changeTheme->addItems(QStyleFactory::keys());
+
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
 		QString theme = settings.value("default_theme_used", QString("")).toString();
 		if (theme == "") {
 			//Use the default one. Typically they include "windows", "motif", "cde", "plastique" and "cleanlooks"
 			QApplication::setPalette(QApplication::style()->standardPalette());
-			/*
+			int i = 1;
+			foreach (QString str, QStyleFactory::keys()) {
+				if (str.toLower().replace(" ","") == QApplication::style()->objectName())
+					comboBox_changeTheme->setCurrentIndex(i);
+				i++;
+			}
+/*
+			QStringList aux_list = QStyleFactory::keys();
+			aux_list.
+			comboBox_changeTheme->setCurrentIndex(QStyleFactory::keys().indexOf(QApplication::style()->objectName()));
+			
 			if (QStyleFactory::keys().contains("Windows"))
 				theme = "Windows";
 			else
