@@ -82,9 +82,9 @@ namespace UiServices
 
     void UiModule::Load()
     {
-		QApplication::setStyle(new UiDarkBlueStyle());
-        QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
-        QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
+		//QApplication::setStyle(new UiDarkBlueStyle());
+        //QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
+        //QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
         event_query_categories_ << "Framework" << "Scene" << "Input";
     }
 
