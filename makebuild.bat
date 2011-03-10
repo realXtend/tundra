@@ -10,7 +10,6 @@ copy vcredist_x86.exe build
 copy oalinst.exe build
 copy dxwebsetup.exe build
 xcopy bin\*.* build /S /C /Y
-
 del build\performancelogger.txt
 del build\fullmemoryleaklog.txt
 del build\scenestats.txt
@@ -31,8 +30,14 @@ del build\liboggd.dll
 del build\libvorbisd.dll
 del build\libvorbisfiled.dll
 del build\viewerd.exe
+del build\viewerp.exe
+del build\viewerpd.exe
 del build\serverd.exe
+del build\serverp.exe
+del build\serverpd.exe
 del build\modules\core\*d.dll
+del build\modules\core\*p.dll
+del build\modules\core\*pd.dll
 del build\pymodules\*.pyc
 del build\pymodules\apitest\*.pyc
 del build\pymodules\circuits\*.pyc

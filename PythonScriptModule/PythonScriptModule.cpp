@@ -255,6 +255,8 @@ namespace PythonScript
             LogError("Unable to create instance from class ModuleManager");
         }
 
+//$ BEGIN_MOD $
+#ifndef PLAYER_VIEWER
         RegisterConsoleCommand(Console::CreateCommand(
             "PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
             Console::Bind(this, &PythonScriptModule::ConsoleRunString))); 
@@ -272,6 +274,8 @@ namespace PythonScript
 
 		CreateConsole();
         framework_->Console()->RegisterCommand("pythonconsole", "Shows the Python console window.", this, SLOT(ShowConsole()));
+#endif
+//$ END_MOD $
         ProcessCommandLineOptions();
     }
 
