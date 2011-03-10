@@ -4,7 +4,7 @@
 #define incl_UiModule_StaticToolBar_h
 
 #include "Framework.h"
-#include "SceneManager.h"
+//#include "SceneManager.h"
 
 #include <QObject>
 #include <QToolBar>
