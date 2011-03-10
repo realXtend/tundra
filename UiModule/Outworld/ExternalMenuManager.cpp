@@ -19,6 +19,7 @@ namespace UiServices
 			owner_(owner),
 			controller_panels_(),
 			controller_actions_(),
+			controller_panels_visibility_(),
 			category_menu_()
 	{
         root_menu_->setVisible(false); // todo read from ini
@@ -86,10 +87,16 @@ namespace UiServices
             category_menu_[menu]->addAction(action);
         }
 
-		QString *aux = new QString(widget->windowTitle());
-        controller_panels_[*aux] = widget;
-		controller_actions_[*aux]= action;		
+		//QString *aux = new QString(widget->windowTitle());
+        controller_panels_[widget->windowTitle()] = widget;
+		controller_actions_[widget->windowTitle()]= action;
+		/*if (widget->nativeParentWidget())
+			controller_panels_visibility_[widget->windowTitle()] = dynamic_cast<QDockWidget *>(widget->nativeParentWidget())->isVisible();
+		else
+			controller_panels_[widget->windowTitle()] = false;
+			*/
 		connect(action, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
+		//bool test = connect(widget->nativeParentWidget(), SIGNAL(visibilityChanged(cambio)), SLOT(SetVisibilityChanged(cambio)));
 		return true;
     }
 
@@ -147,12 +154,4 @@ namespace UiServices
 				i.value()->setEnabled(false);
 		}
 	}
-
-	void ExternalMenuManager::SceneChanged(const QString &old_name, const QString &new_name)
-    {
-        if (new_name == "Ether")
-			DisableMenus();   			
-		else
-			EnableMenus();
-    }
 }

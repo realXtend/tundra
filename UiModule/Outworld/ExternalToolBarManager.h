@@ -36,10 +36,6 @@ namespace UiServices
 
     public slots:
         
-		/*!Slot used when the scene is changed, if we "go" to ether Scene, then disable the Menu "Panels" in the Menu Bar
-		 */
-		void SceneChanged(const QString &old_name, const QString &new_name);
-
 		//TOOLBARS
 
 		/*! Adds a QToolBar given with the name to the main window 

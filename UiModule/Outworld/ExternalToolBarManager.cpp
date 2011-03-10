@@ -28,14 +28,6 @@ namespace UiServices
         //SAFE_DELETE(root_menu_);
     }
 
-	void ExternalToolBarManager::SceneChanged(const QString &old_name, const QString &new_name)
-    {
-        if (new_name == "Ether")
-			DisableToolBars();
-		else
-			EnableToolBars();
-	}
-
 	void ExternalToolBarManager::DisableToolBars(){
 		foreach (QToolBar *tool, controller_toolbar_){
 			//tool->setDisabled(false);

@@ -70,10 +70,6 @@ namespace UiServices
 		 */
 		void DisableMenus();
 
-		/*!Slot used when the scene is changed, if we "go" to ether Scene, then disable the Menu "Panels" in the Menu Bar
-		 */
-		void SceneChanged(const QString &old_name, const QString &new_name);
-
     private slots:
 
 		/*! Adds a new Menu in the Main MenuBar
@@ -100,6 +96,7 @@ namespace UiServices
         QMap<QString, QWidget*> controller_panels_;
 		QMap<QString, QAction*> controller_actions_;
         QMap<QString, QMenu*> category_menu_;
+		QMap<QString, bool> controller_panels_visibility_;
 
         //! Pointer to the main menu Bar
         QMenuBar *root_menu_;

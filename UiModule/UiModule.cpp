@@ -135,8 +135,14 @@ namespace UiServices
 			//qWin_->setObjectName("Naali MainWindow");
 		   //Create MenuManager and PanelManager and ToolBarManager
            external_menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
+		   connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_menu_manager_, SLOT(DisableMenus()));
+		   connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_menu_manager_, SLOT(EnableMenus()));
 		   external_panel_manager_ = new ExternalPanelManager(qWin_, this);
+		   connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_panel_manager_, SLOT(DisableDockWidgets()));
+		   connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_panel_manager_, SLOT(EnableDockWidgets()));
 		   external_toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
+		   connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_toolbar_manager_, SLOT(DisableToolBars()));
+		   connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_toolbar_manager_, SLOT(EnableToolBars()));
 		   
 		   //Configure Static Stuff of the main window
 		   //createStaticContent();
