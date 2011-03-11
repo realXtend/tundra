@@ -1,9 +1,12 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
 
 #include "DebugOperatorNew.h"
-
+//$ BEGIN_MOD $
+#include "UiServiceInterface.h";
+//$ END_MOD $
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "Profiler.h"
@@ -14,8 +17,6 @@
 
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
-#include "kNet.h"
-#include "kNet/qt/NetworkDialog.h"
 
 #include <algorithm>
 
@@ -94,6 +95,9 @@ KristalliProtocolModule::KristalliProtocolModule()
 , serverConnection(0)
 , server(0)
 , reconnectAttempts(0)
+// $ BEGIN_MOD $
+, networkDialog(0)
+// $ END_MOD $
 {
 }
 
@@ -134,6 +138,13 @@ void KristalliProtocolModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand(
             "kNet", "Shows the kNet statistics window.", 
             Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+	//Create menu entry if available to create panel
+	UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>(); 
+	if (ui_service) {
+		networkDialog = new NetworkDialog(0, &network);
+		ui_service->AddWidgetToScene(networkDialog, true, true);
+		ui_service->AddWidgetToMenu(networkDialog, "kNet statistics", "View");
+	}
 }
 
 void KristalliProtocolModule::Uninitialize()
@@ -143,9 +154,20 @@ void KristalliProtocolModule::Uninitialize()
 
 Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
 {
-    NetworkDialog *networkDialog = new NetworkDialog(0, &network);
-    networkDialog->setAttribute(Qt::WA_DeleteOnClose);
-    networkDialog->show();
+	//$ BEGIN_MOD $
+    //NetworkDialog *networkDialog = new NetworkDialog(0, &network);
+    //networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+	//networkDialog->show();
+
+	UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>(); 
+	if (!ui_service){
+		networkDialog = new NetworkDialog(0, &network);
+		networkDialog->setAttribute(Qt::WA_DeleteOnClose);
+		networkDialog->show();
+	}
+	else
+		ui_service->ShowWidget(networkDialog);
+	//$ END_MOD $
 
     return Console::ResultSuccess();
 }
