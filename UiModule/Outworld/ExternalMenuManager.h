@@ -70,6 +70,8 @@ namespace UiServices
 		 */
 		void DisableMenus();
 
+		void ModifyPanelVisibility(bool vis);
+
     private slots:
 
 		/*! Adds a new Menu in the Main MenuBar
