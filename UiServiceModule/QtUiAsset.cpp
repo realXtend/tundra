@@ -139,7 +139,7 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
         assetDiskSource = assetDiskSource.trimmed();
         if (!assetDiskSource.isEmpty() && QFile::exists(assetDiskSource))
         {
-            QByteArray refAsByteArray = assetDiskSource.toAscii();
+            QByteArray refAsByteArray = (QString("\"") + assetDiskSource + QString("\"")).toUtf8();
             refRewrittenData.replace(refs[i].index + indexAdjustment, refs[i].length, refAsByteArray);
             indexAdjustment += refAsByteArray.length() - refs[i].length;
         }
