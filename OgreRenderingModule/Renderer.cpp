@@ -757,7 +757,7 @@ namespace OgreRenderer
             }
         }
 #else // Not using the subrectangle blit - just do a full UI blit.
-        if (view->IsViewDirty())
+        if (view->IsViewDirty() || resized_dirty_)
         {
             DoFullUIRedraw();
         }
