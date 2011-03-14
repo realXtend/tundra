@@ -32,3 +32,9 @@ wait
 grep . exitstatus.?
 grep Error: [sv].out
 test -f core && exit 1
+if test `cat exitstatus.s` = 0 && test `cat exitstatus.v` = 0; then
+    exit 0
+else
+    exit 1
+fi
+
