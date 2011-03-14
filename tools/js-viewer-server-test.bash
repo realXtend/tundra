@@ -4,6 +4,7 @@
 
 bindir=$(dirname $(readlink -f $0))/../bin
 testfile=`readlink -f $1`
+cd $bindir
 
 echo 'var d = frame.DelayedExecute(15.0); d.Triggered.connect(function (time) { print("exiting!"); framework.Exit(); });' > exitdelay.js
 echo 'var d = frame.DelayedExecute(0.5); d.Triggered.connect(function (time) { client.Login("localhost",2345,"foo"," ","tcp");});' > dologin.js
@@ -22,8 +23,6 @@ case $testfile in
 	;;
 esac
 
-
-cd $bindir
 ulimit -t 60 # cpu time limit
 ulimit -c unlimited # i'd like core dumps with that
 cat exitdelay.js dologin.js > v.js
