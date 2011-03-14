@@ -104,39 +104,43 @@ namespace Environment
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
         tundra_event_category_ = event_manager_->QueryEventCategory("Tundra");
-        
-#ifndef PLAYER_VIEWER
-        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
-        if (renderer)
+
+// $ BEGIN_MOD $     
+        if (!framework_->IsEditionless())
         {
-            // Initialize post-process dialog.
+// $ END_MOD $
 
-            postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
-			postprocess_dialog_->setWindowTitle("Post-processing");
+            OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+            if (renderer)
+            {
+                // Initialize post-process dialog.
 
-            // Add to scene.
-            UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-            if (!ui)
-                return;
+                postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
+			    postprocess_dialog_->setWindowTitle("Post-processing");
 
-            ui->AddWidgetToScene(postprocess_dialog_, true, true);
-			ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("View"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+                // Add to scene.
+                UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+                if (!ui)
+                    return;
+
+                ui->AddWidgetToScene(postprocess_dialog_, true, true);
+			    ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("View"),  "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+            }
+
+            environment_editor_ = new EnvironmentEditor(this);
+            Foundation::WorldBuildingServicePtr wb_service = GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Service::ST_WorldBuilding).lock();
+            if (wb_service)
+            {
+                QObject::connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
+                QObject::connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
+            }
+
+            w_editor_ = new TerrainWeightEditor(this);
+            w_editor_->Initialize();
+            RegisterConsoleCommand(Console::CreateCommand("TerrainTextureEditor",
+                "Shows the terrain texture weight editor.",
+                Console::Bind(w_editor_, &TerrainWeightEditor::ShowWindow)));
         }
-
-        environment_editor_ = new EnvironmentEditor(this);
-        Foundation::WorldBuildingServicePtr wb_service = GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Service::ST_WorldBuilding).lock();
-        if (wb_service)
-        {
-            QObject::connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
-            QObject::connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
-        }
-
-        w_editor_ = new TerrainWeightEditor(this);
-        w_editor_->Initialize();
-        RegisterConsoleCommand(Console::CreateCommand("TerrainTextureEditor",
-            "Shows the terrain texture weight editor.",
-            Console::Bind(w_editor_, &TerrainWeightEditor::ShowWindow)));
-#endif
     }
 
     void EnvironmentModule::Uninitialize()
@@ -224,29 +228,32 @@ namespace Environment
                     CreateWater();
                     CreateSky();
 
-#ifdef PLAYER_VIEWER
-					//Make the sun always at midday
-					int new_value = 50; //MidDay
-					environment_->SetTimeOverride(true);
-					EC_EnvironmentLight* light = environment_->GetEnvironmentLight();
-					if ( light != 0)
-					{
-						light->fixedTimeAttr.Set(true, AttributeChange::LocalOnly);
-			            
-						qreal float_time = new_value;
-						float_time /= 100;
-			            
-						light->currentTimeAttr.Set(float_time, AttributeChange::LocalOnly);
-					}
+// $ BEGIN_MOD $     
+                    if (framework_->IsEditionless())
+                    {
+// $ END_MOD $
+					    //Make the sun always at midday
+					    int new_value = 50; //MidDay
+					    environment_->SetTimeOverride(true);
+					    EC_EnvironmentLight* light = environment_->GetEnvironmentLight();
+					    if ( light != 0)
+					    {
+						    light->fixedTimeAttr.Set(true, AttributeChange::LocalOnly);
+    			            
+						    qreal float_time = new_value;
+						    float_time /= 100;
+    			            
+						    light->currentTimeAttr.Set(float_time, AttributeChange::LocalOnly);
+					    }
 
-					EC_OgreEnvironment* ec_ogre_env = environment_->GetEnvironmentComponent();
-					if (ec_ogre_env)
-					{
-						qreal float_time = new_value;
-						float_time /= 100;
-						ec_ogre_env->SetTime(float_time);
-					}
-#endif
+					    EC_OgreEnvironment* ec_ogre_env = environment_->GetEnvironmentComponent();
+					    if (ec_ogre_env)
+					    {
+						    qreal float_time = new_value;
+						    float_time /= 100;
+						    ec_ogre_env->SetTime(float_time);
+					    }
+                    }
                 }
             }
 

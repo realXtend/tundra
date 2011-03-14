@@ -255,26 +255,27 @@ namespace PythonScript
             LogError("Unable to create instance from class ModuleManager");
         }
 
-//$ BEGIN_MOD $
-#ifndef PLAYER_VIEWER
-        RegisterConsoleCommand(Console::CreateCommand(
-            "PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunString))); 
-        /* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
-         * Also in the IPython shell 'run' refers to running an external file and not the given string
-         */
+// $ BEGIN_MOD $ 
+        if (!framework_->IsEditionless())
+        {
+            RegisterConsoleCommand(Console::CreateCommand(
+                "PyExec", "Execute given code in the embedded Python interpreter. Usage: PyExec(mycodestring)", 
+                Console::Bind(this, &PythonScriptModule::ConsoleRunString))); 
+            /* NOTE: called 'exec' cause is similar to py shell builtin exec() func.
+             * Also in the IPython shell 'run' refers to running an external file and not the given string
+             */
 
-        RegisterConsoleCommand(Console::CreateCommand(
-            "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
-            Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
+            RegisterConsoleCommand(Console::CreateCommand(
+                "PyLoad", "Execute a python file. PyLoad(mypymodule)", 
+                Console::Bind(this, &PythonScriptModule::ConsoleRunFile))); 
 
-        RegisterConsoleCommand(Console::CreateCommand(
-            "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
-            Console::Bind(this, &PythonScriptModule::ConsoleReset)));
+            RegisterConsoleCommand(Console::CreateCommand(
+                "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
+                Console::Bind(this, &PythonScriptModule::ConsoleReset)));
 
-		CreateConsole();
-        framework_->Console()->RegisterCommand("pythonconsole", "Shows the Python console window.", this, SLOT(ShowConsole()));
-#endif
+		    CreateConsole();
+            framework_->Console()->RegisterCommand("pythonconsole", "Shows the Python console window.", this, SLOT(ShowConsole()));
+        }
 //$ END_MOD $
         ProcessCommandLineOptions();
     }

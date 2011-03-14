@@ -98,14 +98,18 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 		int width = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_width", 800);
         int height = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_height", 600);
 	
-#ifdef PLAYER_VIEWER
-        bool maximized = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", true);
-		bool fullscreen = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", true);
-#else
-		bool maximized = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", false);
-        bool fullscreen = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", false);
-#endif
-
+// $ BEGIN_MOD $     
+        if (owner->IsEditionless())
+        {
+            bool maximized = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", true);
+		    bool fullscreen = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", true);
+        }
+        else
+        {
+		    bool maximized = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", false);
+            bool fullscreen = owner->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", false);
+        }
+// $ END_MOD $
 		//Assign parameters to our window
 		parentWin_->setWindowTitle(window_title);
 		parentWin_->setMinimumSize(width,height);

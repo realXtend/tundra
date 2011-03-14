@@ -65,13 +65,6 @@ macro (build_library TARGET_NAME LIB_TYPE)
 
     add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
 
-	#player viewer target name postfix
-	if (PLAYER_VIEWER EQUAL 1)  
-	  message (STATUS "creating relseaseplayer and debugplayer targets")
-	  set_target_properties (${TARGET_NAME} PROPERTIES RELEASEPLAYER_POSTFIX p)
-	  set_target_properties (${TARGET_NAME} PROPERTIES DEBUGPLAYER_POSTFIX pd)
-    endif(PLAYER_VIEWER EQUAL 1)
-	
     # internal library naming convention
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 	set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
@@ -93,13 +86,6 @@ macro (build_executable TARGET_NAME)
     if (MSVC)
         target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
     endif (MSVC)
-
-    #player viewer target name postfix
-	if (PLAYER_VIEWER EQUAL 1)  
-      message (STATUS "creating relseaseplayer and debugplayer targets")
-	  set_target_properties (${TARGET_NAME} PROPERTIES RELEASEPLAYER_POSTFIX p)
-	  set_target_properties (${TARGET_NAME} PROPERTIES DEBUGPLAYER_POSTFIX pd)
-	endif(PLAYER_VIEWER EQUAL 1)
 
 	set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 	

@@ -79,12 +79,7 @@ macro (configure_qt4)
             ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR}
             ${QT_PHONON_INCLUDE_DIR})
-        if (PLAYER_VIEWER EQUAL 1)  
-            ADD_DEFINITIONS(${QT_DEFINITIONS})
-            SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASEPLAYER QT_NO_DEBUG)
-            SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_DEBUGPLAYER QT_DEBUG)
-        endif(PLAYER_VIEWER EQUAL 1)
-	
+    	
 	if (APPLE) # they forgot qtdbus from mac qt 4.6.0
 	    # nothing
         else ()
