@@ -26,8 +26,11 @@ namespace CoreUi
         
         comboBox_changeTheme->addItem(QString::fromStdString("Naali dark blue"));
         comboBox_changeTheme->addItems(QStyleFactory::keys());
-
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+#ifndef PLAYER_VIEWER
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+#else
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+#endif
 		QString theme = settings.value("default_theme_used", QString("")).toString();
 		if (theme == "") {
 			//Use the default one. Typically they include "windows", "motif", "cde", "plastique" and "cleanlooks"
@@ -94,7 +97,11 @@ namespace CoreUi
         }
         QApplication::setPalette(QApplication::style()->standardPalette());
 		
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+#ifndef PLAYER_VIEWER
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+#else
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+#endif
 		settings.setValue("default_theme_used", theme.toLower());
 		settings.setValue("default_theme_index_used", comboBox_changeTheme->currentIndex());
     }

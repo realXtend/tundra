@@ -160,7 +160,11 @@ namespace UiServices
 			ui_scene_service_->CreateSettingsPanel();
 
 			//Restore values
-			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+#ifndef PLAYER_VIEWER
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+#else
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+#endif
 			if (!settings.contains("win_state")){
 				//Set default settings
 				QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
@@ -179,8 +183,14 @@ namespace UiServices
 		//Save state of the MainWindow
 		if (qWin_)
 		{
-			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+#ifndef PLAYER_VIEWER
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+#else
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+#endif
 			settings.setValue("win_state", qWin_->saveState());
+			settings.setValue("win_width", qWin_->width());
+			settings.setValue("win_height", qWin_->height());
 		}
 
 		if (ui_scene_service_)

@@ -49,7 +49,11 @@ namespace UiServices
     UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool dockable , bool outside, Qt::WindowFlags flags)
     {
 		//QSettings settings("Naali UIExternal2", "UiExternal Settings");
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+#ifndef PLAYER_VIEWER
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+#else
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+#endif
 		QString pos = "vacio";
 		if (widget->windowTitle() == "")
 			return 0;
