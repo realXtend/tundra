@@ -11,6 +11,7 @@
 #include <QFontDatabase>
 #include <QDebug>
 #include <QStyleFactory>
+#include <QSettings>
 
 #include "MemoryLeakCheck.h"
 
@@ -25,7 +26,45 @@ namespace CoreUi
         
         comboBox_changeTheme->addItem(QString::fromStdString("Naali dark blue"));
         comboBox_changeTheme->addItems(QStyleFactory::keys());
-       
+
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+		QString theme = settings.value("default_theme_used", QString("")).toString();
+		if (theme == "") {
+			//Use the default one. Typically they include "windows", "motif", "cde", "plastique" and "cleanlooks"
+			QApplication::setPalette(QApplication::style()->standardPalette());
+			int i = 1;
+			foreach (QString str, QStyleFactory::keys()) {
+				if (str.toLower().replace(" ","") == QApplication::style()->objectName())
+					comboBox_changeTheme->setCurrentIndex(i);
+				i++;
+			}
+/*
+			QStringList aux_list = QStyleFactory::keys();
+			aux_list.
+			comboBox_changeTheme->setCurrentIndex(QStyleFactory::keys().indexOf(QApplication::style()->objectName()));
+			
+			if (QStyleFactory::keys().contains("Windows"))
+				theme = "Windows";
+			else
+				theme = "naali dark blue";
+				*/
+		}
+		else
+		{
+			comboBox_changeTheme->setCurrentIndex(settings.value("default_theme_index_used", 1).toInt());
+			//Default theme
+			if (theme.toLower() == "naali dark blue")
+			{
+				QApplication::setStyle(new UiServices::UiDarkBlueStyle());
+				QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
+				QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
+			} 
+			else
+			{
+				QApplication::setStyle(QStyleFactory::create(theme));
+			}
+			QApplication::setPalette(QApplication::style()->standardPalette());
+		}
     }
 
     ChangeThemeWidget::~ChangeThemeWidget()
@@ -54,6 +93,10 @@ namespace CoreUi
             QApplication::setPalette(QApplication::style()->standardPalette());
         }
         QApplication::setPalette(QApplication::style()->standardPalette());
+		
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+		settings.setValue("default_theme_used", theme.toLower());
+		settings.setValue("default_theme_index_used", comboBox_changeTheme->currentIndex());
     }
 
 

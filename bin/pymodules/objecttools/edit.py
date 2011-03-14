@@ -96,12 +96,12 @@ class ObjectEdit(Component):
         self.selection_box_inited = False
         
         self.menuToggleAction = None
-        mainWindow = naali.uicore.MainWindow()
-        print mainWindow
-        if mainWindow:
-            menuBar = mainWindow.menuBar()
-            self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
-            self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+        #mainWindow = naali.uicore.MainWindow()
+        #print mainWindow
+        #if mainWindow:
+        #    menuBar = mainWindow.menuBar()
+        #    self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
+        #    self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
         self.toggleEditing(False)
         
         """
@@ -136,6 +136,8 @@ class ObjectEdit(Component):
                 self.menuToggleAction.setText("Disable Manipulation")
             else:
                 self.menuToggleAction.setText("Enable Manipulation")   
+        if self.toolbar != None:
+            self.toolbar.toogleEditing(editing)				
     
     def rotateObject(self):
         self.changeManipulator(self.MANIPULATE_ROTATE)
@@ -208,7 +210,7 @@ class ObjectEdit(Component):
         self.ec_selected(ent)
         self.changeManipulator(self.getCurrentManipType())
         self.window.selected(ent)
-        self.toolbar.selected()
+        self.toolbar.selected(ent)
         return ent
         
     def select(self, ent):        

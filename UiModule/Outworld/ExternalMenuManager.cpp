@@ -6,6 +6,7 @@
 #include "ExternalMenuManager.h"
 
 #include <QDebug>
+#include <QTabBar>
 
 #include "MemoryLeakCheck.h"
 
@@ -19,6 +20,7 @@ namespace UiServices
 			owner_(owner),
 			controller_panels_(),
 			controller_actions_(),
+			controller_panels_visibility_(),
 			category_menu_()
 	{
         root_menu_->setVisible(false); // todo read from ini
@@ -86,12 +88,23 @@ namespace UiServices
             category_menu_[menu]->addAction(action);
         }
 
-		QString *aux = new QString(widget->windowTitle());
-        controller_panels_[*aux] = widget;
-		controller_actions_[*aux]= action;		
+		//QString *aux = new QString(widget->windowTitle());
+        controller_panels_[widget->windowTitle()] = widget;
+		controller_actions_[widget->windowTitle()]= action;
+		controller_panels_visibility_[widget->windowTitle()] = dynamic_cast<QDockWidget *>(widget)->isVisible();
 		connect(action, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
+		bool con = connect(widget, SIGNAL(visibilityChanged(bool)), SLOT(ModifyPanelVisibility(bool)));
+		//bool test = connect(widget->nativeParentWidget(), SIGNAL(visibilityChanged(cambio)), SLOT(SetVisibilityChanged(cambio)));
 		return true;
     }
+
+	void ExternalMenuManager::ModifyPanelVisibility(bool vis)
+	{
+		QDockWidget *qdoc = dynamic_cast<QDockWidget*>(sender());
+		if (!controller_panels_visibility_.contains(qdoc->objectName()))
+			return;
+		controller_panels_visibility_[qdoc->objectName()] = vis;
+	}
 
     bool ExternalMenuManager::RemoveExternalMenuPanel(QWidget *controlled_widget)
     { 
@@ -121,11 +134,25 @@ namespace UiServices
     {
 		QAction *act = dynamic_cast<QAction*>(sender());
 
-		QWidget  *aux = dynamic_cast<QWidget *>(act->parentWidget());
+		QDockWidget  *aux = dynamic_cast<QDockWidget *>(act->parentWidget());
+
+		if (controller_panels_visibility_[aux->objectName()])
+			aux->hide();
+		else
+		{
+			aux->show();
+			QList<QDockWidget *> docks = dynamic_cast<QMainWindow *>(root_menu_->parentWidget())->tabifiedDockWidgets(aux);
+			QDockWidget *value;
+			foreach (value, docks)
+				dynamic_cast<QMainWindow *>(root_menu_->parentWidget())->tabifyDockWidget(value, aux);
+		}
+
+		/*
 		if (aux->isHidden())
 			aux->show();
 		else
 			aux->hide();
+			*/
 	}
 
 	void ExternalMenuManager::EnableMenus(){
@@ -147,12 +174,4 @@ namespace UiServices
 				i.value()->setEnabled(false);
 		}
 	}
-
-	void ExternalMenuManager::SceneChanged(const QString &old_name, const QString &new_name)
-    {
-        if (new_name == "Ether")
-			DisableMenus();   			
-		else
-			EnableMenus();
-    }
 }
