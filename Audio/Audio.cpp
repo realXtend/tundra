@@ -11,8 +11,13 @@
 #include "SoundChannel.h"
 #include "LoggingFunctions.h"
 
+#ifndef Q_WS_MAC
 #include <AL/al.h>
 #include <AL/alc.h>
+#else
+#include <al.h>
+#include <alc.h>
+#endif
 
 DEFINE_POCO_LOGGING_FUNCTIONS("Audio")
 
