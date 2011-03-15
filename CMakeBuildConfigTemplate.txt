@@ -65,6 +65,7 @@ add_subdirectory(Scene)
 add_subdirectory(OgreRenderingModule)
 add_subdirectory(Viewer)
 add_subdirectory(Server)
+add_subdirectory(Player)
 
 add_subdirectory(Input)
 add_subdirectory(Ui)

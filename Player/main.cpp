@@ -92,25 +92,49 @@ int main (int argc, char **argv)
 //! post init setup for framework
 void setup (Foundation::Framework &fw)
 {
+    // Exclude the login screen from loading
+    fw.GetModuleManager()->ExcludeModule("LoginScreenModule");
+    fw.GetModuleManager()->ExcludeModule("ECEditorModule");
+    fw.GetModuleManager()->ExcludeModule("OgreAssetEditorModule");
+    fw.GetModuleManager()->ExcludeModule("ConsoleModule");
+    fw.GetModuleManager()->ExcludeModule("CommunicationsModule");
+    fw.GetModuleManager()->ExcludeModule("SceneStructureModule");
+    fw.GetModuleManager()->ExcludeModule("DebugStatsModule");
 }
 
 int run (int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
-    printf("Starting up viewer. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
+    printf("Starting up player. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
     for(int i = 0; i < argc; ++i)
         printf("argv[%d]: %s\n", i, argv[i]);
-
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     try
 #endif
     {
+        bool editionless = false;
+        // search editionless command
+        for (int i = 0;i < argc; i++)
+        {
+            if (argv[i]=="--editionless")
+                editionless = true;
+        }
+
+        // If there is no editionless command, add to argv
+        if (!editionless)
+        {
+            argv[argc] = "--editionless";
+            argc++;
+        }
+
         Foundation::Framework fw(argc, argv);
+               
         if (fw.Initialized())
         {
-            setup(fw);
+            setup (fw);
+
             fw.Go();
         }
     }
@@ -142,8 +166,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     bool cmd = false;
     bool quote = false;
 
-    arguments.push_back("viewer");
-    
+    arguments.push_back("player");
+
     for (i = 0; i < cmdLine.length(); ++i)
     {
         if (cmdLine[i] == '\"')
@@ -191,8 +215,8 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Naali_v0.6.0";
-	DWORD dwBufferSize = MAX_PATH;
+    WCHAR* szVersion = L"Tundra_v1.0-preview-player";
+    DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
     MINIDUMP_EXCEPTION_INFORMATION ExpParam;
@@ -231,3 +255,5 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
+
+

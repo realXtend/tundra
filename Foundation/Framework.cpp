@@ -67,6 +67,9 @@ namespace Foundation
         argv_(argv),
         initialized_(false),
         headless_(false),
+// $ BEGIN_MOD $
+        editionless_(false),
+// $ END_MOD $
         log_formatter_(0),
         splitterchannel(0),
         naaliApplication(0),
@@ -88,6 +91,11 @@ namespace Foundation
         {
             if (commandLineVariables.count("headless"))
                 headless_ = true;
+
+// $ BEGIN_MOD $
+            if (commandLineVariables.count("editionless"))
+                editionless_ = true;
+// $ END_MOD $
             
 #ifdef PROFILING
             ProfilerSection::SetProfiler(&profiler_);
@@ -124,11 +132,15 @@ namespace Foundation
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
 
-#ifdef PLAYER_VIEWER
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0 Player-0.1"));
-#else
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0"));
-#endif
+// $ BEGIN_MOD $     
+            if (IsEditionless())
+            {
+                config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0 Player-0.1"));
+            }
+            else
+            {
+                config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("4.0"));
+            }
 // $ END_MOD $
             CreateLoggingSystem(); // depends on config and platform
 
@@ -299,8 +311,10 @@ namespace Foundation
             ("server", po::value<std::string>(), "World server and port")
             ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
             ("auth_login", po::value<std::string>(), "RealXtend authentication server user name")
-            ("login", "Automatically login to server using provided credentials");
-
+            ("login", "Automatically login to server using provided credentials")
+// $ BEGIN_MOD $
+            ("editionless", "Run in editionless mode without external widgets");
+// $ END_MOD $
         try
         {
             po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);

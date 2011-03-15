@@ -1,4 +1,6 @@
-if (!framework.IsHeadless())
+var iseditionless = framework.IsEditionless();
+
+if (!framework.IsHeadless() && !iseditionless)
 {
     engine.ImportExtension("qt.core");
     engine.ImportExtension("qt.gui");
