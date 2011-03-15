@@ -36,8 +36,14 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 
 # Linking
 link_ogre()
-link_modules(Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities
-    HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
+
+if (APPLE)
+    link_modules(Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
+        HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
+else()
+    link_modules(Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities
+        HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
+endif()
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
 LinkEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
