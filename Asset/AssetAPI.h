@@ -164,6 +164,9 @@ public slots:
     /// from memory and need to access a file.
     QString GenerateTemporaryNonexistingAssetFilename(QString filename);
 
+    /// Resolve the asset type from filename
+    QString GetAssetTypeFromFileName(QString filename) const;
+
     /// Returns the asset type factory that can create assets of the given type, or null, if no asset type provider of the given type exists.
     AssetTypeFactoryPtr GetAssetTypeFactory(QString typeName);
 

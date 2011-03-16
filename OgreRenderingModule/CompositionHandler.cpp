@@ -204,7 +204,7 @@ namespace OgreRenderer
         }
     }
 
-    void CompositionHandler::SetEnableCompositor(const std::string &compositor, bool enable) const
+    void CompositionHandler::SetCompositorEnabled(const std::string &compositor, bool enable) const
     {
         if (c_manager_ && viewport_)
             c_manager_->setCompositorEnabled(viewport_, compositor, enable);

@@ -17,6 +17,15 @@
 
 #include "MemoryLeakCheck.h"
 
+#ifdef Q_WS_MAC
+#include <QMouseEvent>
+#include <QWheelEvent>
+
+#include "NaaliMainWindow.h"
+#include "NaaliUi.h"
+#include "NaaliGraphicsView.h"
+#endif
+
 namespace Foundation
 {
     NaaliApplication::NaaliApplication(Framework *framework_, int &argc, char **argv) :
@@ -102,6 +111,33 @@ namespace Foundation
     
     bool NaaliApplication::eventFilter(QObject *obj, QEvent *event)
     {
+#ifdef Q_WS_MAC // workaround for Mac, because mouse events are not received as it ought to be
+		QMouseEvent *mouse = dynamic_cast<QMouseEvent*>(event);
+		if (mouse)
+		{
+			if (dynamic_cast<NaaliMainWindow*>(obj))
+			{
+				switch(event->type())
+				{
+					case QEvent::MouseButtonPress:
+						framework->Ui()->GraphicsView()->mousePressEvent(mouse);
+						break;
+					case QEvent::MouseButtonRelease:
+						framework->Ui()->GraphicsView()->mouseReleaseEvent(mouse);
+						break;
+					case QEvent::MouseButtonDblClick:
+						framework->Ui()->GraphicsView()->mouseDoubleClickEvent(mouse);
+						break;
+					case QEvent::MouseMove:
+					{
+						if (mouse->buttons() == Qt::LeftButton)
+							framework->Ui()->GraphicsView()->mouseMoveEvent(mouse);
+					}
+						break;
+				}
+			}
+		}
+#endif
         try
         {
             if (obj == this)
@@ -111,8 +147,9 @@ namespace Foundation
                 if (event->type() == QEvent::ApplicationDeactivate)
                     appActivated = false;
             }
+
             return QObject::eventFilter(obj, event);
-        } 
+        }
         catch(const std::exception &e)
         {
             std::cout << std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)") << std::endl;
@@ -124,7 +161,6 @@ namespace Foundation
             RootLogCritical(std::string("QApp::eventFilter caught an unknown exception!"));
             throw;
         }
-        return true;
     }
 
     void NaaliApplication::ChangeLanguage(const QString& file)

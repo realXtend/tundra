@@ -5,7 +5,8 @@ print("<-");
 
 var latest_y = 0;
 var materials = ["axis_black", "BlueTransparent"];
-//seems that can't assign mat assets from js, so have to use by-default loaded ones. ["road_a", "road_b"];
+//seems that can't assign mat assets from js, so have to use by-default loaded ones. 
+//var materials = ["road_a", "road_b"];
 
 //function addmesh(meshname, pos, ..)
 
@@ -20,7 +21,8 @@ function addpiece(y) {
     roadpiece.mesh.meshRef = ref;
 
     var mat = materials[Math.floor(Math.random() * materials.length)]; //random.choice
-    roadpiece.mesh.SetMaterial(0, mat);
+    print(mat);
+    roadpiece.mesh.SetMaterial(0, mat); // + ".material");
 
     var t = roadpiece.placeable.transform;
     t.pos.y = y;

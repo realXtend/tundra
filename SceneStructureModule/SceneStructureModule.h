@@ -3,18 +3,23 @@
  *
  *  @file   SceneStructureModule.h
  *  @brief  Provides Scene Structure and Assets windows and raycast drag-and-drop import of
- *          .mesh, .scene, .txml and .tbinfiles to the main window.
+ *          various content file formats to the main window.
  */
 
 #ifndef incl_SceneStructureModule_SceneStructureModule_h
 #define incl_SceneStructureModule_SceneStructureModule_h
 
 #include "IModule.h"
+#include "SceneFwd.h"
+#include "InputFwd.h"
+#include "AssetFwd.h"
 #include "Vector3D.h"
-#include "AssetAPI.h"
 #include "AssetReference.h"
 
 #include <QPointer>
+#include <QWidget>
+#include <QLabel>
+#include <QHash>
 
 class QDragEnterEvent;
 class QDragMoveEvent;
@@ -33,8 +38,8 @@ struct SceneMaterialDropData
     QList<uint> affectedIndexes;
 };
 
-/// Provides Scene Structure and Assets windows and raycast drag-and-drop import
-/// of .mesh, .scene, .txml and .tbin files to the main window.
+/// Provides Scene Structure and Assets windows and raycast drag-and-drop import of
+/// various content file formats to the main window.
 class SceneStructureModule : public QObject, public IModule
 {
     Q_OBJECT
@@ -108,6 +113,12 @@ private:
     boost::shared_ptr<InputContext> inputContext; ///< Input context.
 
     SceneMaterialDropData materialDropData;
+    QHash<QString, Vector3df> urlToDropPos;
+
+    QWidget *toolTipWidget;
+    QLabel *toolTip;
+    QString currentToolTipSource;
+    QString currentToolTipDestination;   
 
 private slots:
     /// Handles KeyPressed() signal from input context.
@@ -120,6 +131,9 @@ private slots:
         @param e Event.
     */
     void HandleDragEnterEvent(QDragEnterEvent *e);
+
+    /// Handles main window drag leave event.
+    void HandleDragLeaveEvent(QDragLeaveEvent *e);
 
     /// Handles main window drag move event.
     /** If event's MIME data contains URL which path has supported file extension we accept it.

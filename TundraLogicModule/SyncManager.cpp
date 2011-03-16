@@ -371,7 +371,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         msg.parameters.push_back(p);
     }
 
-    if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0))
+    if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0) && owner_->GetClient()->GetConnection())
     {
         // send without Local flag
         //TundraLogicModule::LogInfo("Tundra client sending EntityAction " + action.toStdString() + " type " + ToString(type));
@@ -384,7 +384,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
         foreach(UserConnection* c, owner_->GetKristalliModule()->GetUserConnections())
         {
-            if (c->properties["authenticated"] == "true")
+            if (c->properties["authenticated"] == "true" && c->connection)
             {
                 //TundraLogicModule::LogInfo("peer " + action.toStdString());
                 c->connection->Send(msg);

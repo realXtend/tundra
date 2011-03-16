@@ -69,6 +69,7 @@ namespace MumbleVoip
         virtual QList<QString> Statistics();
         virtual QString GetServerInfo() const;
         virtual void AddChannel(QString name, const ServerInfo &server_info);
+        virtual void AddChannel(QString name, QString username, QString server);
         virtual void RemoveChannel(QString name);
 
     private:

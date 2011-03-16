@@ -6,6 +6,7 @@
 #define QT_QTPROPERTYBROWSER_IMPORT
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "CoreTypes.h"
 #include "ComponentGroup.h"
 #include "AttributeChangeType.h"
@@ -149,7 +150,7 @@ private slots:
     //! ComponentGroup and insert component to another componentgroup.
     /*! @param newName component's new name.
      */
-    void ComponentNameChanged(const QString &newName);
+    void OnComponentNameChanged(const QString &newName);
 
     //! Show dialog, so that user can create a new attribute.
     //! @Note: Only works with dynamic components.

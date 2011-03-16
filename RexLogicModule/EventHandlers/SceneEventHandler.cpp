@@ -8,6 +8,7 @@
 #include "EC_Placeable.h"
 #include "WorldStream.h"
 #include "EC_OpenSimPrim.h"
+#include "Entity.h"
 
 namespace RexLogic
 {

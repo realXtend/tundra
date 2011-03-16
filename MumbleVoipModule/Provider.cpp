@@ -3,20 +3,23 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include <QSignalMapper>
 #include "Provider.h"
 #include "Session.h"
 #include "MumbleVoipModule.h"
 #include "ServerInfoProvider.h"
-#include "EventManager.h"
-#include "NetworkEvents.h" // For network events
 #include "MicrophoneAdjustmentWidget.h"
+#include "EC_VoiceChannel.h"
+
+#include "EventManager.h"
+#include "NetworkEvents.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "EC_VoiceChannel.h"
 #include "SceneManager.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
+#include "Entity.h"
+
+#include <QSignalMapper>
 
 #include "MemoryLeakCheck.h"
 
@@ -234,7 +237,7 @@ namespace MumbleVoip
             CreateSession();
        
         connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)),Qt::UniqueConnection);
-        connect(channel, SIGNAL(OnChanged()), signal_mapper_, SLOT(map()));
+        connect(channel, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), signal_mapper_, SLOT(map()));
         signal_mapper_->setMapping(channel,QString::number(reinterpret_cast<unsigned int>(channel)));
 
         if (session_->GetChannels().contains(channel->getchannelname()))
@@ -278,12 +281,13 @@ namespace MumbleVoip
         if (!scene)
             return;
 
-        connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)), SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
+        connect(scene, SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(OnECAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     }
 
     void Provider::ECVoiceChannelChanged(const QString &pointer)
     {
-        if (!session_)        
+        if (!session_)
             return;
 
         /// @todo If user have edited the active channel -> close, reopen
@@ -316,9 +320,8 @@ namespace MumbleVoip
 
     QString Provider::GetUsername()
     {
-        if (!tundra_logic_->IsServer())
+        if (tundra_logic_ && !tundra_logic_->IsServer())
             return tundra_logic_->GetClient()->GetLoginProperty("username");;
-
         return "";
     }
 
@@ -332,9 +335,6 @@ namespace MumbleVoip
     {
         tundra_logic_ = framework_->GetModuleManager()->GetModule<TundraLogic::TundraLogicModule>().lock();
         if (!tundra_logic_)
-        {
-           throw Exception("Fatal: could not get TundraLogicModule");
-        } 
+            RootLogError("MumbleVoip::Proviver: Could not get TundraLogicModule");
     }
-
 } // MumbleVoip

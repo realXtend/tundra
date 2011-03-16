@@ -14,7 +14,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("IAsset")
 #include "AssetAPI.h"
 
 IAsset::IAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-:assetAPI(owner), type(type_), name(name_)
+:assetAPI(owner), type(type_), name(name_), contentHashChanged(true)
 {
     assert(assetAPI);
 }
@@ -79,11 +79,23 @@ bool IAsset::LoadFromFileInMemory(const u8 *data, size_t numBytes)
     // Before loading the asset, recompute the content hash for the asset data.
     QCryptographicHash hash(QCryptographicHash::Sha1);
     hash.addData((const char*)data, numBytes);
-    QByteArray result = hash.result().toHex();
 
-    contentHash = QString(result);
+    // Check the hash and update it if needed, set change boolean
+    QString hashNow(hash.result().toHex());
+    if (hashNow != contentHash)
+    {
+        contentHash = hashNow;
+        contentHashChanged = true;
+    }  
+    else
+        contentHashChanged = false;
 
     return DeserializeFromData(data, numBytes);
+}
+
+void IAsset::HandleLoadError(const QString &loadError)
+{
+    LogError(loadError.toStdString());
 }
 
 std::vector<AssetReference> IAsset::FindReferencesRecursive() const
@@ -175,4 +187,6 @@ void IAsset::EmitLoaded()
         assert(t->asset.get() == this);
         t->EmitAssetLoaded();
     }
+
+    contentHashChanged = false;
 }

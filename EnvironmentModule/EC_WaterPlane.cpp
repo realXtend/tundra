@@ -2,15 +2,15 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "EC_WaterPlane.h"
+
+#include "Entity.h"
 #include "EC_Placeable.h"
 #include "IAttribute.h"
-
 #include "Renderer.h"
 #include "SceneManager.h"
-#include "SceneEvents.h"
-#include "EventManager.h"
-#include <OgreMaterialUtils.h>
+#include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 

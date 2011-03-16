@@ -255,9 +255,10 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             // If we are reconnecting, empty the scene, as the server will send everything again anyway
             // Note: when we move to unordered communication, we must guarantee that the server does not send
             // any scene data before the login reply
+
             Scene::ScenePtr scene = framework_->GetScene("TundraClient");
             if (scene)
-                scene->RemoveAllEntities();
+                scene->RemoveAllEntities(true, AttributeChange::LocalOnly);
         }
         reconnect_ = true;
     }

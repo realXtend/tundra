@@ -10,8 +10,8 @@
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-
-#include "../Ui/NaaliUiFwd.h"
+#include "NaaliUiFwd.h"
+#include "SceneFwd.h"
 
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
@@ -23,7 +23,7 @@ class QWidget;
 class QObject;
 
 class UiServiceInterface;
-class Frame;
+class FrameAPI;
 class Input;
 class AudioAPI;
 class AssetAPI;
@@ -151,25 +151,6 @@ namespace Foundation
         template <class T>
         __inline const boost::weak_ptr<T> GetService(service_type_t type) const { return service_manager_->GetService<T>(type); }
 
-        /// Creates new empty scene.
-        /*! 
-            \param name name of the new scene
-            \param viewenabled Whether the scene is view enabled
-            \return The new scene, or empty pointer if scene with the specified name already exists.
-        */
-        Scene::ScenePtr CreateScene(const QString &name, bool viewenabled);
-
-        /// Removes a scene with the specified name.
-        /*! The scene may not get deleted since there may be dangling references to it.
-            If the scene does get deleted, removes all entities which are not shared with
-            another existing scene.
-
-            Does nothing if scene with the specified name doesn't exist.
-
-            \param name name of the scene to delete
-        */
-        void RemoveScene(const QString &name);
-
         /// Returns a pointer to a scene
         /*! Manage the pointer carefully, as scenes may not get deleted properly if
             references to the pointer are left alive.
@@ -266,6 +247,28 @@ namespace Foundation
         }
 
     public slots:
+        /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+        void SetDefaultWorldSceneName(const QString &name);
+
+        /// Removes a scene with the specified name.
+        /*! The scene may not get deleted since there may be dangling references to it.
+            If the scene does get deleted, removes all entities which are not shared with
+            another existing scene.
+
+            Does nothing if scene with the specified name doesn't exist.
+
+            \param name name of the scene to delete
+        */
+        void RemoveScene(const QString &name);
+
+        /// Creates new empty scene.
+        /*! 
+            \param name name of the new scene
+            \param viewenabled Whether the scene is view enabled
+            \return The new scene, or empty pointer if scene with the specified name already exists.
+        */
+        Scene::ScenePtr CreateScene(const QString &name, bool viewenabled);
+
         /// Returns the Naali core API UI object.
         NaaliUi *Ui() const;
 
@@ -276,7 +279,7 @@ namespace Foundation
         Input *GetInput() const;
 
         /// Returns the Naali core API Frame object.
-        Frame *GetFrame() const;
+        FrameAPI *Frame() const;
 
         /// Returns the Naali core API Console object.
         ConsoleAPI *Console() const;
@@ -364,7 +367,7 @@ namespace Foundation
         bool headless_; ///< Are we running in the headless mode.
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.
         NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
-        Frame *frame; ///< The Naali Frame API.
+        FrameAPI *frame; ///< The Naali Frame API.
         ConsoleAPI *console; ///< The Naali console API.
         NaaliUi *ui; ///< The Naali UI API.
         Input *input; ///< The Naali Input API.

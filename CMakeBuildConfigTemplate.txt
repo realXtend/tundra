@@ -12,7 +12,7 @@
 # file, without having to fear about an accidental commit of these changes.
 
 # Configure the use of Caelum. http://www.ogre3d.org/tikiwiki/Caelum
-if (MSVC)
+if (MSVC OR APPLE)
   SET(CAELUM 1)
   configure_caelum ()
 endif()
@@ -61,7 +61,7 @@ add_subdirectory(Core)
 add_subdirectory(Foundation)
 add_subdirectory(Interfaces)
 add_subdirectory(RexCommon)
-add_subdirectory(SceneManager)
+add_subdirectory(Scene)
 add_subdirectory(OgreRenderingModule)
 add_subdirectory(Viewer)
 add_subdirectory(Server)

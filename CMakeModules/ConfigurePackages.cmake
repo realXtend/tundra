@@ -78,13 +78,9 @@ macro (configure_qt4)
             ${QT_QTSCRIPT_INCLUDE_DIR}
             ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR}
-            ${QT_PHONON_INCLUDE_DIR})
+            ${QT_PHONON_INCLUDE_DIR}
+            ${QT_QTDBUS_INCLUDE_DIR})
 
-	if (APPLE) # they forgot qtdbus from mac qt 4.6.0
-	    # nothing
-        else ()
-            LIST(APPEND QT4_INCLUDE_DIRS ${QT_QTDBUS_INCLUDE_DIR})
-        endif()
 		
         set (QT4_LIBRARY_DIR  
             ${QT_LIBRARY_DIR})
@@ -99,13 +95,8 @@ macro (configure_qt4)
             ${QT_QTSCRIPT_LIBRARY}
             ${QT_QTSCRIPTTOOLS_LIBRARY}
             ${QT_QTWEBKIT_LIBRARY}
-            ${QT_PHONON_LIBRARY})
-
-	if (APPLE)
-	    # nothing
-        else ()
-            LIST(APPEND QT4_LIBRARIES ${QT_QTDBUS_LIBRARY})
-        endif()
+            ${QT_PHONON_LIBRARY}
+            ${QT_QTDBUS_LIBRARY})
 		
     endif ()
     
@@ -237,13 +228,23 @@ macro (configure_hydrax)
 endmacro (configure_hydrax)
 
 macro (configure_xmlrpc)
-    sagase_configure_package (XMLRPC 
-        NAMES xmlrpc xmlrpcepi xmlrpc-epi
-        COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid 
-        PREFIXES ${ENV_NAALI_DEP_PATH}
-        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
-        ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
+    if (APPLE)
+        sagase_configure_package (XMLRPC 
+            NAMES xmlrpc xmlrpcepi xmlrpc-epi
+            COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid iconv
+            PREFIXES ${ENV_NAALI_DEP_PATH}
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
+    else()
+        sagase_configure_package (XMLRPC 
+            NAMES xmlrpc xmlrpcepi xmlrpc-epi
+            COMPONENTS xmlrpc xmlrpcepi xmlrpc-epi xmlrpcepid
+            PREFIXES ${ENV_NAALI_DEP_PATH}
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/src
+                ${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Debug
 		${ENV_NAALI_DEP_PATH}/xmlrpc-epi/Release)
+    endif()
    
 	if (MSVC)
 		set (XMLRPC_LIBRARIES xmlrpcepi)
@@ -381,11 +382,17 @@ macro (configure_ogg)
 endmacro (configure_ogg)
 
 macro (configure_vorbis)
+if (APPLE)
+    sagase_configure_package(VORBIS
+        NAMES vorbisfile vorbis libvorbis libvorbisfile
+        COMPONENTS vorbis libvorbis vorbisfile libvorbisfile
+        PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
+else()
     sagase_configure_package(VORBIS
         NAMES vorbisfile vorbis libvorbis
         COMPONENTS vorbis libvorbis libvorbisfile
         PREFIXES ${ENV_NAALI_DEP_PATH}/libvorbis)
-
+endif()
         # Force include dir on MSVC
         if (MSVC)
   		   set (VORBIS_INCLUDE_DIRS ${ENV_NAALI_DEP_PATH}/libvorbis/include)

@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (SceneManager)
+init_target (Scene)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -15,10 +15,11 @@ use_modules (Core Foundation Interfaces Asset)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
+link_modules (Core Foundation Interfaces Asset)
+
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation Interfaces Asset)
 link_package_knet()
 
 SetupCompileFlagsWithPCH()

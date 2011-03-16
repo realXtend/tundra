@@ -12,6 +12,7 @@
 #include "QtUtils.h"
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
+#include "Entity.h"
 
 #include <QUiLoader>
 #include <QFile>
