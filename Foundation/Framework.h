@@ -151,25 +151,6 @@ namespace Foundation
         template <class T>
         __inline const boost::weak_ptr<T> GetService(service_type_t type) const { return service_manager_->GetService<T>(type); }
 
-        /// Creates new empty scene.
-        /*! 
-            \param name name of the new scene
-            \param viewenabled Whether the scene is view enabled
-            \return The new scene, or empty pointer if scene with the specified name already exists.
-        */
-        Scene::ScenePtr CreateScene(const QString &name, bool viewenabled);
-
-        /// Removes a scene with the specified name.
-        /*! The scene may not get deleted since there may be dangling references to it.
-            If the scene does get deleted, removes all entities which are not shared with
-            another existing scene.
-
-            Does nothing if scene with the specified name doesn't exist.
-
-            \param name name of the scene to delete
-        */
-        void RemoveScene(const QString &name);
-
         /// Returns a pointer to a scene
         /*! Manage the pointer carefully, as scenes may not get deleted properly if
             references to the pointer are left alive.
@@ -266,6 +247,28 @@ namespace Foundation
         }
 
     public slots:
+        /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+        void SetDefaultWorldSceneName(const QString &name);
+
+        /// Removes a scene with the specified name.
+        /*! The scene may not get deleted since there may be dangling references to it.
+            If the scene does get deleted, removes all entities which are not shared with
+            another existing scene.
+
+            Does nothing if scene with the specified name doesn't exist.
+
+            \param name name of the scene to delete
+        */
+        void RemoveScene(const QString &name);
+
+        /// Creates new empty scene.
+        /*! 
+            \param name name of the new scene
+            \param viewenabled Whether the scene is view enabled
+            \return The new scene, or empty pointer if scene with the specified name already exists.
+        */
+        Scene::ScenePtr CreateScene(const QString &name, bool viewenabled);
+
         /// Returns the Naali core API UI object.
         NaaliUi *Ui() const;
 
