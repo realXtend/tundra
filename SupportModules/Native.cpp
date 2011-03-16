@@ -13,7 +13,9 @@ namespace Console
 {
     void NativeInput::operator()()
     {
-        #ifndef WINDOWS_APP    
+        // $ BEGIN_MOD $
+        //#ifndef WINDOWS_APP    
+        // $ END_MOD $
         assert (command_service_);
 
         while (true)
@@ -31,7 +33,9 @@ namespace Console
 
             command_service_->QueueCommand(command_line);
         }
-        #endif
+        // $ BEGIN_MOD $
+        //#endif
+        // $ END_MOD $
     }
 
 

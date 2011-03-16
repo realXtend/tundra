@@ -75,20 +75,20 @@ endmacro (build_library)
 # build an executable from internal sources 
 macro (build_executable TARGET_NAME)
 
-    message (STATUS "building executable: " ${TARGET_NAME})
+    message (STATUS "building executable: " ${TARGET_NAME}) 
+	    
+	add_executable (${TARGET_NAME} ${ARGN})
     
-    if (MSVC AND WINDOWS_APP)
-        add_executable (${TARGET_NAME} WIN32 ${ARGN})
-    else ()
-        add_executable (${TARGET_NAME} ${ARGN})
-    endif ()
-
     if (MSVC)
         target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
     endif (MSVC)
 
 	set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 	
+	if(MSVC AND WINDOWS_APP)   
+      set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+      set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
+   endif(MSVC AND WINDOWS_APP)
 endmacro (build_executable)
 
 # include and lib directories, and definitions

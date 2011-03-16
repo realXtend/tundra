@@ -153,7 +153,7 @@ int run (int argc, char **argv)
     return return_value;
 }
 
-#if defined(_MSC_VER) && defined(WINDOWS_APP)
+#if defined(_MSC_VER) && !defined(_DEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     // Parse Windows command line

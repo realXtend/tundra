@@ -56,3 +56,4 @@ del build\pymodules\estatemanagement\*.pyc
 del build\pymodules\loadurlhandler\*.pyc
 del build\pymodules\DLLs\*_d.pyd
 del build\plugins\*_d.dll
+del buildplayer\pymodules\default_editionless.ini
