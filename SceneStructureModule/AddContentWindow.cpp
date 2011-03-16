@@ -793,7 +793,7 @@ void AddContentWindow::AddEntities()
         {
         case SceneDesc::Naali:
         case SceneDesc::OgreMesh:
-            entities = destScene->CreateContentFromSceneDesc(newDesc_, false, AttributeChange::Default);
+            entities = destScene->CreateContentFromSceneDescription(newDesc_, false, AttributeChange::Default);
             break;
         /*
         case SceneDesc::OgreMesh:
