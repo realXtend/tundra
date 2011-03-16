@@ -807,6 +807,16 @@ namespace Foundation
         return GetScene(name).get();
     }
 
+    void Framework::SetDefaultWorldSceneName(const QString &name)
+    {
+        Scene::ScenePtr scene = GetScene(name);
+        if(scene != default_scene_)
+        {
+            default_scene_ = scene;
+            emit DefaultWorldSceneChanged(default_scene_.get());
+        }
+    }
+
     void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
     {
         if(scene != default_scene_)
