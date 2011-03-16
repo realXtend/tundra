@@ -5,9 +5,7 @@
 
 #include "TundraLogicModuleApi.h"
 #include "SceneFwd.h"
-#include "IAttribute.h"
-#include "Transform.h"
-#include "SceneDesc.h"
+#include "AttributeChangeType.h"
 
 #include <QPair>
 #include <QUrl>
@@ -15,6 +13,7 @@
 #include <map>
 
 class QDomElement;
+class Transform;
 
 namespace TundraLogic
 {
@@ -37,7 +36,12 @@ struct MaterialInfo
 
 typedef std::set<MaterialInfo> MaterialInfoList; ///< Set of MaterialInfo structs.
 
-//! Importer tool for OGRE .scene and .mesh files
+//! Importer tool for OGRE .scene and .mesh files.
+/** You can use SceneImporter to directly create and instantiate content from OGRE .mesh and .scene files,
+    or to create scene descriptions for the aforementioned file formats. The scene descriptions can be modified
+    and then instantiated using SceneManager::CreateContentFromSceneDesc().
+    SceneImporter contains also useful OGRE material file utility functions.
+*/
 class TUNDRALOGIC_MODULE_API SceneImporter
 {
 public:
@@ -50,8 +54,7 @@ public:
     ~SceneImporter();
 
     //! Import a single mesh. Scans the mesh for needed skeleton & materials.
-    /*! It's possible to filter the created content by passing scene description (@c desc).
-        \param filename Filename of mesh
+    /*! \param filename Filename of mesh
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param worldtransform Transform to use for the entity's placeable.
@@ -61,16 +64,14 @@ public:
         \param change What changetype to use in scene operations
         \param inspect Load and inspect mesh for materials and skeleton
         \param meshName Name of mesh inside the file
-        \param desc Scene description.
-        \return Entity pointer if successful (null if failed)
+        \return Entity pointer if successful, null if failed.
      */
     Scene::EntityPtr ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
         const std::string& entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect = true,
-        const std::string &meshName = std::string(), const SceneDesc &desc = SceneDesc());
+        const std::string &meshName = std::string());
 
     //! Imports a dotscene.
-    /*! It's possible to filter the created content by passing scene description (@c desc).
-        \param filename Input filename
+    /*! \param filename Input filename
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param worldtransform Transform to use for the entity's placeable
         \param prefix 
@@ -78,11 +79,10 @@ public:
         \param clearscene Whether to clear scene first. Default false
         \param replace Whether to search for entities by name and replace just the visual components (placeable, mesh) if an existing entity is found.
                Default true. If this is false, all entities will be created as new
-        \param desc Scene description.
-        \return List of created entities, of empty list if import failed.
+        \return List of created entities, or an empty list if import failed.
      */
     QList<Scene::Entity *> Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
-        const QString &prefix, AttributeChange::Type change, bool clearscene = false, bool replace = true, const SceneDesc &desc = SceneDesc());
+        const QString &prefix, AttributeChange::Type change, bool clearscene = false, bool replace = true);
 
     //! Parse a mesh for materials & skeleton ref
     /*! \param meshname Full path & filename of mesh
@@ -92,13 +92,14 @@ public:
     bool ParseMeshForMaterialsAndSkeleton(const QString& meshname, QStringList& material_names, QString& skeleton_name) const;
 
     /// Inspects OGRE .mesh file and returns a scene description structure of the contents of the file.
-    /** @param filename File name.
+    /** @param filename Mesh filename.
     */
     SceneDesc GetSceneDescForMesh(const QString &filename) const;
 
-    /// Inspects OGRE .mesh url and returns a scene description structure of the contents of the url.
-    /// Note: this will not dowload the binary data but only add a entity with the url mesh ref in it.
-    /** @param meshUrl Url to mesh file.
+    /// This is an overloaded function.
+    /** Inspects OGRE .mesh URL and returns a scene description structure of the contents of the URL.
+        @param meshUrl URL to mesh file.
+        @note This will not dowload the binary data but only adds an entity with the URL mesh ref in it.
     */
     SceneDesc GetSceneDescForMesh(const QUrl &meshUrl) const;
 
@@ -171,7 +172,7 @@ private:
 //    void ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
 //        const QString &prefix, bool flipyz);
 
-    ///
+    /// Creates asset descriptions from the provided lists of OGRE resource filenames.
     /** @param path 
         @param meshFiles 
         @param skeletons 
@@ -188,25 +189,15 @@ private:
     */
 //    void RewriteAssetRef(const QString &sceneFileName, QString &ref) const;
 
-    //! Materials read from meshes, in case of no subentity elements
-    QMap<QString, QStringList> mesh_default_materials_;
-
-    //! Materials encountered in scene
-    std::set<std::string> material_names_;
+    QMap<QString, QStringList> mesh_default_materials_; //!< Materials read from meshes, in case of no subentity elements
+    std::set<std::string> material_names_; //! Materials encountered in scene
+    std::set<std::string> node_names_; //!< Nodes already created into the scene. Used for name-based "update import" logic
+    Scene::ScenePtr scene_; //!< Destination scene.
 
     //! Meshes encountered in scene
     /*! For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored.
      */
     std::map<std::string, std::string> mesh_names_;
-
-    //! Nodes already created into the scene. Used for name-based "update import" logic
-    std::set<std::string> node_names_;
-
-    //! Destination scene.
-    Scene::ScenePtr scene_;
-
-    //! Optional scene description used for filtering
-    SceneDesc scene_desc_;
 };
 
 }

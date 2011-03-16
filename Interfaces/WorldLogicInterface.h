@@ -10,6 +10,7 @@
 
 #include "IService.h"
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 
 #include <QObject>
 

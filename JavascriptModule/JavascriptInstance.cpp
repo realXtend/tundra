@@ -13,6 +13,7 @@
 #include "ScriptMetaTypeDefines.h"
 #include "NaaliCoreTypeDefines.h"
 #include "EC_Script.h"
+#include "ScriptAsset.h"
 #include "IModule.h"
 #include "AssetAPI.h"
 #include "IAssetProvider.h" //to check if the code was loaded from a local or remote storage
@@ -29,22 +30,21 @@ DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 
 #include "MemoryLeakCheck.h"
 
-JavascriptInstance::JavascriptInstance(const QString &fileName, JavascriptModule *module)
-:engine_(0),
-sourceFile(fileName),
-module_(module),
-evaluated(false)
+JavascriptInstance::JavascriptInstance(const QString &fileName, JavascriptModule *module) :
+    engine_(0),
+    sourceFile(fileName),
+    module_(module),
+    evaluated(false)
 {
     CreateEngine();
     Load();
 }
 
-
-JavascriptInstance::JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module)
-:engine_(0),
-scriptRef_(scriptRef),
-module_(module),
-evaluated(false)
+JavascriptInstance::JavascriptInstance(ScriptAssetPtr scriptRef, JavascriptModule *module) :
+    engine_(0),
+    scriptRef_(scriptRef),
+    module_(module),
+    evaluated(false)
 {
     CreateEngine();
     Load();
@@ -63,18 +63,18 @@ void JavascriptInstance::Load()
     // Can't specify both a file source and an Asset API source.
     assert(sourceFile.isEmpty() || scriptRef_.get() == 0);
 
-    //determine based on code origin whether it can be trusted with system access or not
+    // Determine based on code origin whether it can be trusted with system access or not
     if (scriptRef_.get()) 
     {
+        trusted_ = false;
         AssetProviderPtr provider = scriptRef_.get()->GetAssetProvider();
-        if (provider->Name() == "Local")
-            trusted_ = true;
-        else
-            trusted_ = false;
+        if (provider.get())     
+            if (provider->Name() == "Local")
+                trusted_ = true;
     }
     
-
-    if (sourceFile.length() > 0)
+    // Local file: trusted
+    if (!sourceFile.isEmpty())
     {
         program_ = LoadScript(sourceFile);
         trusted_ = true; //this is a local file directly, right?
@@ -99,6 +99,10 @@ void JavascriptInstance::Load()
         // Delete our loaded script content (if any exists).
         program_ == "";
     }
+
+    // Set the exposed currently loaded script name. 
+    // This is either IAsset::Name() or a absolute local file path.
+    currentScriptName = scriptSourceFilename;
 }
 
 QString JavascriptInstance::LoadScript(const QString &fileName)

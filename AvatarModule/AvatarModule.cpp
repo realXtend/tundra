@@ -2,10 +2,16 @@
 
 #include "StableHeaders.h"
 #include "AvatarModule.h"
-#include "EventManager.h"
 #include "AvatarEvents.h"
-#include "NetworkEvents.h"
+#include "Avatar/AvatarHandler.h"
+#include "Avatar/AvatarControllable.h"
+#include "AvatarEditing/AvatarEditor.h"
+#include "AvatarEditing/AvatarSceneManager.h"
 
+#include "EventManager.h"
+#include "NetworkEvents.h"
+#include "Input.h"
+#include "SceneManager.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "AvatarDescAsset.h"
@@ -20,10 +26,7 @@
 #include "EC_HoveringWidget.h"
 #endif
 
-#include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarControllable.h"
-#include "AvatarEditing/AvatarEditor.h"
-#include "AvatarEditing/AvatarSceneManager.h"
+
 
 namespace Avatar
 {

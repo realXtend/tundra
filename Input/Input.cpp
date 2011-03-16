@@ -648,8 +648,10 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
     case QEvent::MouseButtonRelease:
     {
         // We only take mouse button press and release events from the main QGraphicsView viewport.
+#ifndef Q_WS_MAC
         if (obj != qobject_cast<QObject*>(mainView->viewport()))
             return false;
+#endif
 
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
         //QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
@@ -800,6 +802,16 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
             return false;
 
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
+#ifdef Q_WS_MAC
+        QGraphicsItem *itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
+        if (itemUnderMouse)
+        {
+            mainView->removeEventFilter(this);
+            framework->Ui()->GraphicsView()->wheelEvent(e);
+            mainView->installEventFilter(this);
+            return false;
+        }
+#endif
         //QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
         //if (itemUnderMouse)
         //    return false;

@@ -65,7 +65,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 
     setWindowTitle(QString("%1 %2.%3").arg(title.c_str(), version_major.c_str(), version_minor.c_str()));
 */
-    setWindowTitle("Tundra v1.0.1");
+    setWindowTitle("Tundra v1.0.3");
 
     width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));

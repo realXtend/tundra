@@ -37,11 +37,11 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions (-DUI_MODULE_EXPORTS)
 
-use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui Input)
+use_modules (UiModule Core Foundation Interfaces Scene RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui Input)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule)
+link_modules (Core Foundation Interfaces Scene RexCommon ProtocolUtilities SupportModules OgreRenderingModule)
 link_ogre()
 
 # ETHER TYPE DEFINE

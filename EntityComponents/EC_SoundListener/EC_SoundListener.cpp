@@ -17,7 +17,7 @@
 #include "SceneManager.h"
 #include "LoggingFunctions.h"
 #include "Audio.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
@@ -29,7 +29,7 @@ EC_SoundListener::EC_SoundListener(IModule *module):
     SetNetworkSyncEnabled(false);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
+    connect(GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }

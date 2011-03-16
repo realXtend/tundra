@@ -31,11 +31,16 @@ EC_OgreCompositor::~EC_OgreCompositor()
     UpdateCompositor("");
 }
 
+QStringList EC_OgreCompositor::AvailableCompositors() const
+{
+    return handler_->GetAvailableCompositors().toList();
+}
+
 void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
 {
     if (attribute == &enabled)
     {
-        handler_->SetEnableCompositor(compositorref.Get().toStdString(), enabled.Get());
+        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), enabled.Get());
         UpdateCompositor(compositorref.Get());
         UpdateCompositorParams(compositorref.Get());
     }
@@ -101,8 +106,8 @@ void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
             }
         }
         handler_->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
-        handler_->SetEnableCompositor(compositorref.Get().toStdString(), false);
-        handler_->SetEnableCompositor(compositorref.Get().toStdString(), true);
+        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), false);
+        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), true);
     }
 }
 

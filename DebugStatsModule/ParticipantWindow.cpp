@@ -12,6 +12,7 @@
 
 #include "Framework.h"
 #include "SceneManager.h"
+#include "Entity.h"
 //#include "EntityComponent/EC_OpenSimPresence.h"
 #include "EC_OpenSimPresence.h"
 

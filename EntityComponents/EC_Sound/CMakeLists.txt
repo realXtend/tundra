@@ -15,12 +15,12 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules (Core Foundation Interfaces Audio SceneManager OgreRenderingModule EntityComponents/EC_SoundListener)
+use_modules (Core Foundation Interfaces Audio Scene OgreRenderingModule EntityComponents/EC_SoundListener)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_ogre()
-link_modules (Core Foundation Interfaces Audio SceneManager OgreRenderingModule EC_SoundListener)
+link_modules (Core Foundation Interfaces Audio Scene OgreRenderingModule EC_SoundListener)
 
 SetupCompileFlagsWithPCH()
 

@@ -3,7 +3,7 @@
 #ifndef incl_ECEditorModule_ECComponentEditor_h
 #define incl_ECEditorModule_ECComponentEditor_h
 
-#include "ForwardDefines.h"
+#include "SceneFwd.h"
 #include "AttributeChangeType.h"
 
 #include <QObject>

@@ -253,7 +253,7 @@ namespace OgreRenderer
                 targetFpsLimit = 0.f;
         }
         else
-#if QT_VERSION < 0x040700
+#if QT_VERSION < 0x040700 && !defined(Q_WS_MAC)
             // Default FPS limit is 60.
             targetFpsLimit = 60.f;
 #else

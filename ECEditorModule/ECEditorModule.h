@@ -6,6 +6,8 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "ECEditorModuleApi.h"
+#include "SceneFwd.h"
+#include "InputFwd.h"
 
 #include <QObject>
 #include <QPointer>
@@ -113,12 +115,6 @@ private:
     //! Static name of the module
     static std::string name_static_;
 
-    //! Id for Scene event category
-    event_category_id_t scene_event_category_;
-
-    //! Id for NetworkState event category
-    event_category_id_t network_state_event_category_;
-
     //! EC XML editor window
     QPointer<EcXmlEditorWidget> xmlEditor_;
 
@@ -130,6 +126,7 @@ private:
 
     /// Active ECEditorWindow.
     QPointer<ECEditorWindow> active_editor_;
+
     /// ECEditorModule will create it's own ECEditorWindow instance while it's initializing. 
     /// To avoid a memory leak, we store that pointer.
     QPointer<ECEditorWindow> common_editor_;

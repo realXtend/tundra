@@ -10,7 +10,6 @@
 #include "TreeWidgetItemExpandMemory.h"
 
 #include "EventManager.h"
-#include "SceneEvents.h"
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "ModuleManager.h"
@@ -28,8 +27,6 @@ std::string ECEditorModule::name_static_ = "ECEditor";
 
 ECEditorModule::ECEditorModule() :
     IModule(name_static_),
-    scene_event_category_(0),
-    network_state_event_category_(0),
     xmlEditor_(0)
 {
 }
@@ -70,9 +67,6 @@ void ECEditorModule::PostInitialize()
         "Params:"
         " 0 = The symbol to fetch the documentation for.",
         Console::Bind(this, &ECEditorModule::ShowDocumentation)));
-
-    scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
-    network_state_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 
     AddEditorWindowToUI();
 
