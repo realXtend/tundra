@@ -7,6 +7,7 @@
 #include <QMap>
 #include <QList>
 #include <QListIterator>
+#include <QMessageBox>
 
 namespace UiServices
 {
@@ -122,8 +123,12 @@ namespace UiServices
 			}
 
 			settings.endGroup();
+		}else{
+			QMessageBox* msgInfo=new QMessageBox();
+			msgInfo->setText("Sorry, this view is not available");
+			msgInfo->setIcon(QMessageBox::Information);
+			msgInfo->exec();
 		}
-
 	}
 
 	void ViewManager::SaveView(const QString &name)

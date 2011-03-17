@@ -80,7 +80,7 @@ namespace UiServices
 
 	void ViewDialog::OnRenameButtonClicked()
 	{
-		if(name_line_edit_->text()!="" && !views_.contains(name_line_edit_->text()))
+		if(name_line_edit_->text()!="" && name_line_edit_->text()!="Building" && !views_.contains(name_line_edit_->text()))
 			emit Rename(view_combo_box_->currentText(),name_line_edit_->text());
 		else{
 			QMessageBox* msgInfo=new QMessageBox();
@@ -99,14 +99,17 @@ namespace UiServices
 		msgBox->setDefaultButton(QMessageBox::Yes);
 		msgBox->setIcon(QMessageBox::Question);
 		int option = msgBox->exec();
-		QMessageBox* msgInfo=new QMessageBox();
 		switch (option) {
 			case QMessageBox::Yes:
-				OnRenameButtonClicked();
-				emit Save(view_combo_box_->currentText());
-				msgInfo->setText("The view has been saved");
-				msgInfo->setIcon(QMessageBox::Information);
-				msgInfo->exec();
+				if(view_combo_box_->currentText()!="Building" && view_combo_box_->currentText()!=""){
+					OnRenameButtonClicked();
+					emit Save(view_combo_box_->currentText());
+				}else{
+					QMessageBox* msgInfo=new QMessageBox();
+					msgInfo->setText("Sorry, the view can not be saved");
+					msgInfo->setIcon(QMessageBox::Information);
+					msgInfo->exec();
+				}
 				break;
 			case QMessageBox::No:
 				// Don't Save was clicked
