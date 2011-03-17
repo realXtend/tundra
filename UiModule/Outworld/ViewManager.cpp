@@ -157,8 +157,9 @@ namespace UiServices
 			a->setCheckable(true);
 			actionGroup_->addAction(a);
 			menu_->addAction(a);
+			a->setChecked(true);
 		}
-
+		
 		settings.beginGroup(name);
 
 		settings.setValue("win_state", qWin_->saveState());
@@ -177,6 +178,7 @@ namespace UiServices
 			settings.setValue(dock->windowTitle(),dock->isVisible());
 		}
 		settings.endGroup();
+		
 
 		configWindow_->UpdateViews(settings.childGroups());
 	}
