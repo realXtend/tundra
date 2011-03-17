@@ -224,6 +224,26 @@ namespace UiServices
 			external_nondockeable_widgets_[widget->windowTitle()]->show();
     }
 
+	QList<QWidget*> UiSceneService::GetAllWidgets() const
+	{
+		QList<QWidget*> list;
+		QMap<QString, QWidget*>::const_iterator j = external_nondockeable_widgets_.constBegin();
+		while (j != external_nondockeable_widgets_.constEnd()) {
+			list.push_back(j.value());
+			++j;
+		}
+		return list;
+	}
+	QList<QDockWidget*> UiSceneService::GetAllQDockWidgets() const
+	{
+		QList<QDockWidget*> list;
+		QMap<QString, QDockWidget*>::const_iterator i = external_dockeable_widgets_.constBegin();
+		while (i != external_dockeable_widgets_.constEnd()) {
+			list.push_back(i.value());
+			++i;
+		}
+		return list;
+	}
 //$ END_MOD $
     bool UiSceneService::AddSettingsWidget(QWidget *widget, const QString &name) const
     {

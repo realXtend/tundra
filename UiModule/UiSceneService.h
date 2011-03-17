@@ -94,6 +94,18 @@ namespace UiServices
         /// UiServiceInterface override.
         void BringWidgetToFront(QGraphicsProxyWidget *widget) const;
 
+		/*! Return all not dockable widgets registered in ui.
+		 *	This method is for internal use of Ui, is not accesible from interface 
+		 *	\return QList with the reference to all not dockable widgets
+		 */
+		QList<QWidget*> GetAllWidgets() const;
+
+		/*! Return all dockable widgets registered in ui.
+		 *	This method is for internal use of Ui, is not accesible from interface 
+		 *	\return QList with the reference to all dockable widgets
+		 */
+		QList<QDockWidget*> GetAllQDockWidgets() const;
+
         /// UiServiceInterface override.
         bool AddSettingsWidget(QWidget *widget, const QString &name) const;
 
