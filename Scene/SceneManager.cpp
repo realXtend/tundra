@@ -719,7 +719,7 @@ namespace Scene
         return ret;
     }
 
-    QList<Entity *> SceneManager::CreateContentFromSceneDescription(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
 
