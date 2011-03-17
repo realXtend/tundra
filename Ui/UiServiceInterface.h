@@ -60,6 +60,8 @@ public slots:
     virtual bool AddWidgetToScene(UiProxyWidget *widget) = 0;
 	virtual bool AddProxyWidgetToScene(UiProxyWidget *proxy) = 0;
 
+	virtual bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority) = 0;
+
     /** Adds widget to menu without any spesific properties: adds entry to the root menu,
      *  takes name from the window title and uses default icon.
      *  @param widget Widget.

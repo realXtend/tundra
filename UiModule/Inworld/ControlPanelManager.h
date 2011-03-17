@@ -5,10 +5,12 @@
 
 #include "UiModuleApi.h"
 #include "UiTypes.h"
+#include "InworldSceneController.h"
 
 #include <QObject>
 #include <QAction>
 #include <QMap>
+
 
 namespace UiServices { class UiAction; }
 
@@ -29,7 +31,7 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        ControlPanelManager(QObject *parent, AnchorLayoutManager *layout_manager);
+        ControlPanelManager(UiServices::InworldSceneController *parent, AnchorLayoutManager *layout_manager);
         virtual ~ControlPanelManager();
 
     public slots:
@@ -54,6 +56,7 @@ namespace CoreUi
     private:
         AnchorLayoutManager *layout_manager_;
         BackdropWidget *backdrop_widget_;
+		UiServices::InworldSceneController *owner_;
 
         QList<ControlPanelButton *> control_buttons_;
         QMap<UiServices::ControlButtonType, ControlPanelButton *> backdrop_area_buttons_map_;

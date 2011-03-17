@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QPair>
 #include <QRectF>
 #include <QMap>
 
@@ -21,6 +22,8 @@ class UiProxyWidget;
 
 namespace UiServices
 {
+	typedef QPair<QGraphicsProxyWidget*, int> internal_element;
+
     class UI_MODULE_API InworldSceneController : public QObject
     {
         Q_OBJECT
@@ -58,6 +61,8 @@ namespace UiServices
          *  \param widget Proxy widget.
          */
         bool AddProxyWidget(UiProxyWidget *widget);
+
+		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority = 0);
 
         //! Adds widget to menu.
         /*! \param widget Widget.
@@ -168,6 +173,17 @@ namespace UiServices
         //! QGraphicsProxyWidget from dock_w widget.
         QGraphicsProxyWidget *docking_widget_proxy_;
 
+		//Qlists to place internal_widgets
+		QList<internal_element> bottomleft_horiz_;
+		QList<internal_element> bottomleft_vert_;
+		QList<internal_element> bottomright_horiz_;
+		QList<internal_element> bottomright_vert_;
+		QList<internal_element> topleft_horiz_;
+		QList<internal_element> topleft_vert_;
+		QList<internal_element> topright_horiz_;
+		QList<internal_element> topright_vert_;
+
+
     private slots:
         //! Slot for applying new ui settings to all proxy widgets
         void ApplyNewProxySettings(int new_opacity, int new_animation_speed);
@@ -184,6 +200,8 @@ namespace UiServices
         void DeleteCallingWidgetOnClose();
 
         void HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget);
+
+		void AddInternalWidgets();
     };
 }
 

@@ -62,6 +62,14 @@ namespace CoreUi
     }
 
     // Public
+	void AnchorLayoutManager::resetLayout()
+	{
+		scene_->removeItem(layout_container_);
+		InitLayout();
+        AdjustLayoutContainer(scene_->sceneRect());
+        connect(scene_, SIGNAL( sceneRectChanged(const QRectF &) ), SLOT( AdjustLayoutContainer(const QRectF &) ));
+
+	}
 
     QGraphicsScene *AnchorLayoutManager::GetScene()
     {
@@ -83,6 +91,13 @@ namespace CoreUi
     void AnchorLayoutManager::AnchorWidgetsHorizontally(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item)
     {
         anchor_layout_->addAnchor(first_item, Qt::AnchorLeft, second_item, Qt::AnchorRight);
+		anchor_layout_->addAnchor(first_item, Qt::AnchorBottom, second_item, Qt::AnchorBottom);
+    }
+
+	void AnchorLayoutManager::AnchorWidgetsVertically(QGraphicsLayoutItem *first_item, QGraphicsLayoutItem *second_item)
+    {
+		anchor_layout_->addAnchor(first_item, Qt::AnchorTop, second_item, Qt::AnchorBottom);
+		anchor_layout_->addAnchor(first_item, Qt::AnchorRight, second_item, Qt::AnchorRight);
     }
 
     void AnchorLayoutManager::AddFullscreenWidget(QGraphicsWidget *graphics_widget)
