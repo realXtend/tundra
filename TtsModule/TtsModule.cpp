@@ -22,7 +22,6 @@
 #include "SettingsWidget.h"
 
 #include "EC_TtsVoice.h"
-#include "EC_TtsChat.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -47,7 +46,6 @@ namespace Tts
 	void TtsModule::Load()
 	{
 		DECLARE_MODULE_EC(EC_TtsVoice);
-		DECLARE_MODULE_EC(EC_TtsChat);
 	}
 
 	void TtsModule::UnLoad()
