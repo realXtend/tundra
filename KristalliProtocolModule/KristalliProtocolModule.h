@@ -10,6 +10,7 @@
 #include "UserConnection.h"
 
 #include "kNet.h"
+#include "kNet/qt/NetworkDialog.h"
 
 namespace KristalliProtocol
 {
@@ -84,6 +85,8 @@ namespace KristalliProtocol
 
         /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
         kNet::SocketTransportLayer defaultTransport;
+
+		kNet::NetworkDialog *networkDialog;
         
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
