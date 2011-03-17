@@ -99,6 +99,11 @@ void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
     AttributeVector attributes = component->GetAttributes();
     for(uint i = 0; i < attributes.size(); i++)
     {
+        // Check metadata if this attribute is intended to be shown in designer/editor ui
+        if (attributes[i]->HasMetadata())
+            if (!attributes[i]->GetMetadata()->designable)
+                continue;
+
         ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this,
             component, QString(attributes[i]->GetNameString().c_str()), QString(attributes[i]->TypeName().c_str()));
         if (!attributeEditor)
