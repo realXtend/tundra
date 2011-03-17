@@ -23,6 +23,7 @@ namespace UiServices
 		setWindowTitle(tr("Configure Views"));
 		setModal(true);
 		this->adjustSize();
+		views_.removeOne("Building");
 
 		//Create layout
 		QGridLayout *layout = new QGridLayout(this);
@@ -80,7 +81,7 @@ namespace UiServices
 
 	void ViewDialog::OnRenameButtonClicked()
 	{
-		if(name_line_edit_->text()!="" && name_line_edit_->text()!="Building" && !views_.contains(name_line_edit_->text()))
+		if(name_line_edit_->text()!="" && view_combo_box_->currentText()!="Building" && !views_.contains(name_line_edit_->text()))
 			emit Rename(view_combo_box_->currentText(),name_line_edit_->text());
 		else{
 			QMessageBox* msgInfo=new QMessageBox();
@@ -158,6 +159,7 @@ namespace UiServices
 	{
 		views_=views;
 		view_combo_box_->clear();
+		views_.removeOne("Building");
 		view_combo_box_->addItems(views_);
 	}
 

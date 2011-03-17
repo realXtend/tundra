@@ -15,10 +15,24 @@ namespace UiServices
 		owner_(owner),
 		uiService_(uiservice)
 	{
-		//uiService_=owner->GetFramework()->UiService();
 		qWin_ = dynamic_cast<QMainWindow*>(owner_->GetFramework()->Ui()->MainWindow());
-		QStringList views;
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
+		
+		if(!settings.childGroups().contains("Building")){
+			QSettings build("./data/defaultviews.ini",QSettings::IniFormat);
+			settings.beginGroup("Building");
+			build.beginGroup("Building");
+			QStringList keys = build.childKeys();
+			QListIterator<QString> i(keys);
+			while(i.hasNext()){
+				QString key = i.next();
+				settings.setValue(key,build.value(key));
+			}	
+			build.endGroup();
+			settings.endGroup();
+		}
+
+		QStringList views;
 		views= settings.childGroups();
 
 		//Create the menu
@@ -59,7 +73,7 @@ namespace UiServices
 			a->setCheckable(true);
 			menu_->addAction(a);
 		}
-		
+
 		connect(configWindow_,SIGNAL(Save(const QString &)),this,SLOT(SaveView(const QString &)));		
 		connect(configWindow_,SIGNAL(Delete(const QString &)),this,SLOT(DeleteView(const QString &)));		
 		connect(configWindow_,SIGNAL(Rename(const QString &,const QString &)),this,SLOT(RenameView(const QString &,const QString &)));
@@ -124,10 +138,12 @@ namespace UiServices
 
 			settings.endGroup();
 		}else{
-			QMessageBox* msgInfo=new QMessageBox();
-			msgInfo->setText("Sorry, this view is not available");
-			msgInfo->setIcon(QMessageBox::Information);
-			msgInfo->exec();
+			if(name!="Hide"){
+				QMessageBox* msgInfo=new QMessageBox();
+				msgInfo->setText("Sorry, this view is not available");
+				msgInfo->setIcon(QMessageBox::Information);
+				msgInfo->exec();
+			}
 		}
 	}
 
