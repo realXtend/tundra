@@ -1,4 +1,3 @@
-//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_KristalliProtocolModule_KristalliProtocolModule_h
@@ -9,10 +8,8 @@
 #include "KristalliProtocolModuleApi.h"
 #include "ModuleLoggingFunctions.h"
 #include "UserConnection.h"
-#include "kNet.h"
-#include "kNet/qt/NetworkDialog.h"
 
-using namespace kNet;
+#include "kNet.h"
 
 namespace KristalliProtocol
 {
@@ -132,10 +129,6 @@ namespace KristalliProtocol
         
         /// Id for "Framework" event category.
         event_category_id_t frameworkEventCategory_;
-
-		//$ BEGIN_MOD $
-		NetworkDialog *networkDialog;
-		//$ END_MOD $
     };
 }
 
