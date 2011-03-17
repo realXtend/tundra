@@ -17,6 +17,9 @@
 #include <QGraphicsScene>
 
 #include "MemoryLeakCheck.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("MenuManager")
 
 namespace CoreUi
 {
@@ -32,6 +35,9 @@ namespace CoreUi
             ongoing_animations_(false),
             root_collapsing_(false)
     {
+		// Always require a layout manager to operate the menu.
+		assert(layout_manager_);
+
         // Create the root menu
         root_menu_ = new GroupNode(true, "RootNode", "", -20, 5);
         category_map_["Root"] = root_menu_;
@@ -50,6 +56,8 @@ namespace CoreUi
 
     void MenuManager::AddMenuGroup(const QString &name, const QString &icon, qreal hgap, qreal vgap)
     {
+		assert(layout_manager_);
+
 		//$ BEGIN_MOD $
 		//$ MOD_DESCRIPTION Someone needs to render something in the screen $ 
 		layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
@@ -100,7 +108,11 @@ namespace CoreUi
         }
         else if (category.isEmpty())
         {
-            category_map_["Root"]->AddChildNode(child_node);
+			if (category_map_.contains("Root"))
+				category_map_["Root"]->AddChildNode(child_node);
+			else
+				LogError("CoreUi::MenuManager: Category map doesn't contain a 'Root' element!");
+
         }
         else if (category_map_.contains(category))
         {
@@ -109,6 +121,7 @@ namespace CoreUi
         else
         {
             AddMenuGroup(category);
+			assert(category_map_.contains(category));
             category_map_[category]->AddChildNode(child_node);
         }
 
@@ -285,6 +298,8 @@ namespace CoreUi
             return;
 
         GroupNode *process_layer = expanded_nodes_.last();
+		if (!process_layer)
+			return;
         int depth = process_layer->GetTreeDepth();
         bool level_found = false;
 
@@ -313,6 +328,7 @@ namespace CoreUi
     void MenuManager::Sort()
     {
         root_menu_->Sort();
-        layout_manager_->GetScene()->update();
+		if (layout_manager_->GetScene())
+			layout_manager_->GetScene()->update();
     }
 }
