@@ -102,7 +102,7 @@ namespace UiServices
 		int option = msgBox->exec();
 		switch (option) {
 			case QMessageBox::Yes:
-				if(view_combo_box_->currentText()!="Building" && view_combo_box_->currentText()!=""){
+				if(view_combo_box_->currentText()!="Building" && name_line_edit_->text()!="" && name_line_edit_->text()!="Building"){
 					OnRenameButtonClicked();
 					emit Save(view_combo_box_->currentText());
 				}else{
