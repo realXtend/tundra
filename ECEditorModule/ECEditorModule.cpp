@@ -323,10 +323,13 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
     if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
     {
         if (!active_editor_)
+        {
             AddEditorWindowToUI();
-        active_editor_->show();
+            active_editor_->show();
+        }
+        else
+            active_editor_->setVisible(!active_editor_->isVisible());
     }
-        //ShowWindow(StringVector());  
 }
 
 void ECEditorModule::ActiveECEditorDestroyed(QObject *obj)
