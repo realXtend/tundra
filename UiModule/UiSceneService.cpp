@@ -147,6 +147,10 @@ namespace UiServices
 			owner_->GetExternalMenuManager()->AddExternalMenuPanel(external_nondockeable_widgets_[widget->windowTitle()],entry,menu);
     }
 
+	bool UiSceneService::AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon){
+		return owner_->GetExternalMenuManager()->AddExternalMenu(new_menu,menu,icon);
+	}
+
     void UiSceneService::RemoveWidgetFromMenu(QWidget *widget)
     {
 		owner_->GetExternalMenuManager()->RemoveExternalMenuPanel(widget);

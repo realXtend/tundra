@@ -16,6 +16,7 @@
 #include <QObject>
 //$ BEGIN_MOD $
 #include <QToolBar>
+#include <QMenu>
 //$ END_MOD $
 
 class QWidget;
@@ -98,6 +99,16 @@ public slots:
      *  @note Doesn't add the widget to the scene.
      */
     virtual void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu = "", const QString &icon = "") = 0;
+
+	/*! \brief	Insert the given meu in the Menu of the main window
+         *  \param  action menu
+         *  \param  name Name of the menu
+		 *	\param	menu name of the Menu to put the menu inside it
+		 *	\param	icon Icon of the menu
+         *         
+         *  \return true if everything is ok (action addded)
+         */
+	virtual bool AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon = 0) = 0;
 
     /** Removes widget from the scene.
      *  @param widget Widget.

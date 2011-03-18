@@ -73,6 +73,9 @@ namespace UiServices
         /// UiServiceInterface override.
         void AddWidgetToMenu(QWidget *widget);
 
+		/// UiServiceInterface override.
+		bool AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon = 0);
+
         /// UiServiceInterface override.
         void RemoveWidgetFromMenu(QWidget *widget);
 

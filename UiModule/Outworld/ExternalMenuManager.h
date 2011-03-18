@@ -47,6 +47,16 @@ namespace UiServices
          */
         bool AddExternalMenuPanel(QWidget *widget, const QString &name, const QString &menu);
 
+		/*! \brief	Insert the given meu in the Menu of the main window
+         *  \param  action menu
+         *  \param  name Name of the menu
+		 *	\param	menu name of the Menu to put the menu inside it
+		 *	\param	icon Icon of the menu
+         *         
+         *  \return true if everything is ok (action addded)
+         */
+		bool AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon);
+
         /*! Removes menu item.
          *  \param widget Controlled widget.
          */

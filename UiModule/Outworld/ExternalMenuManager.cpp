@@ -37,6 +37,9 @@ namespace UiServices
 		if (!root_menu_)
 			return;
 
+		if (category_menu_.contains(name))
+			return;
+
 		if (!root_menu_->isVisible())
 			root_menu_->setVisible(true);
 		//Qicon TODO
@@ -44,6 +47,26 @@ namespace UiServices
 		category_menu_[name] = menu;
     }
 
+	bool ExternalMenuManager::AddExternalMenu(QMenu *new_menu, const QString &menu, const QString &icon)
+	{
+		if (menu.isEmpty())  
+        {
+			AddMenu("Others");
+            category_menu_["Others"]->addMenu(new_menu);
+        }
+        else if (category_menu_.contains(menu))
+        {
+            category_menu_[menu]->addMenu(new_menu);
+        }
+        else
+        {
+            AddMenu(menu);
+            category_menu_[menu]->addMenu(new_menu);
+        }
+		if (!category_menu_.contains(new_menu->title()))
+			category_menu_[new_menu->title()] = new_menu;
+		return true;	
+	}
 
 	bool ExternalMenuManager::AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon)
     {
