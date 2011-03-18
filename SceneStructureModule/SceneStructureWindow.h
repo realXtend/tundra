@@ -15,6 +15,8 @@
 #include "SceneFwd.h"
 
 #include <QWidget>
+#include <QLineEdit>
+#include <QPushButton>
 #include <QMap>
 
 class QTreeWidgetItem;
@@ -45,6 +47,9 @@ public:
         @param s Scene.
     */
     void SetScene(const Scene::ScenePtr &s);
+
+    /// Event filter to catch and react to child widget events
+    virtual bool eventFilter(QObject *obj, QEvent *e);
 
 public slots:
     /// Sets do we want to show components in the tree view.
@@ -97,6 +102,10 @@ private:
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
     bool showComponents; ///< Do we show components also in the tree view.
     bool showAssets; ///< Do we show asset references also in the tree view.
+
+    QLineEdit *searchField;
+    QPushButton *expandAndCollapseButton;
+    bool expandingOrCollapsing;
 
 private slots:
     /// Adds the entity to the tree widget.
@@ -163,6 +172,9 @@ private slots:
 
     /// Expands or collapses the whole tree view, depending on the previous action.
     void ExpandOrCollapseAll();
+
+    /// Checks the expand status to mark it to the expand/collapse button
+    void CheckTreeExpandStatus(QTreeWidgetItem *item);
 };
 
 #endif

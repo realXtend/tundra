@@ -19,8 +19,9 @@ void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter
 
 /// Expands or collapses the whole tree view, depending on the previous action.
 /** @param treeWidget Target tree widget for the action.
+    @return bool True all items are expanded, false if all items are collapsed.
 */
-void TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget);
+bool TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget);
 
 /// Sets the check state of all items in the @c treeWidget.
 /** Sorting and updates are disabled before setting the state and enabled afterwards.
