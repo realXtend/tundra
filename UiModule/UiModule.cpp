@@ -23,6 +23,7 @@
 #include "Outworld/ExternalMenuManager.h"
 #include "Outworld/ExternalToolBarManager.h"
 #include "Outworld/StaticToolBar.h"
+#include "Outworld/ViewManager.h"
 
 #include "Common/UiAction.h"
 #include "UiSceneService.h"
@@ -173,6 +174,8 @@ namespace UiServices
 			else
 				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
 
+			//Create the view manager
+			viewManager_=new ViewManager(this,ui_scene_service_.get());
 			//Notify that the restore of the main window has been done
 			postInitialize_ = true;
 		}
