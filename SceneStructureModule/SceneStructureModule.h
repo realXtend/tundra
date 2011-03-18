@@ -101,11 +101,11 @@ public slots:
     */
     static void CleanReference(QString &fileRef);
 
-    /// Shows Scene Structure window.
-    void ShowSceneStructureWindow();
+    /// Toggles visibility of Scene Structure window.
+    void ToggleSceneStructureWindow();
 
-    /// Shows Assets window.
-    void ShowAssetsWindow();
+    /// Toggles visibility of Assets window.
+    void ToggleAssetsWindow();
 
 private:
     SceneStructureWindow *sceneWindow; ///< Scene Structure window.

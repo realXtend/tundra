@@ -65,8 +65,8 @@ SceneStructureModule::~SceneStructureModule()
 
 void SceneStructureModule::PostInitialize()
 {
-    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window.", this, SLOT(ShowSceneStructureWindow()));
-    framework_->Console()->RegisterCommand("assets", "Shows the Assets window.", this, SLOT(ShowAssetsWindow()));
+    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", this, SLOT(ToggleSceneStructureWindow()));
+    framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", this, SLOT(ToggleAssetsWindow()));
 
     inputContext = framework_->GetInput()->RegisterInputContext("SceneStructureInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -297,16 +297,11 @@ void SceneStructureModule::CleanReference(QString &fileRef)
     }
 }
 
-void SceneStructureModule::ShowSceneStructureWindow()
+void SceneStructureModule::ToggleSceneStructureWindow()
 {
-    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;*/
-
     if (sceneWindow)
     {
-        //ui->ShowWidget(sceneWindow);
-        sceneWindow->show();
+        sceneWindow->setVisible(!sceneWindow->isVisible());
         return;
     }
 
@@ -318,21 +313,13 @@ void SceneStructureModule::ShowSceneStructureWindow()
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(framework_->GetDefaultWorldScene());
     sceneWindow->show();
-
-    //ui->AddWidgetToScene(sceneWindow);
-    //ui->ShowWidget(sceneWindow);
 }
 
-void SceneStructureModule::ShowAssetsWindow()
+void SceneStructureModule::ToggleAssetsWindow()
 {
-    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;*/
-
     if (assetsWindow)
     {
-        //ui->ShowWidget(assetsWindow);
-        assetsWindow->show();
+        assetsWindow->setVisible(!assetsWindow->isVisible());
         return;
     }
 
@@ -343,9 +330,6 @@ void SceneStructureModule::ShowAssetsWindow()
     assetsWindow = new AssetsWindow(framework_, ui->MainWindow());
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
-
-    //ui->AddWidgetToScene(assetsWindow);
-    //ui->ShowWidget(assetsWindow);
 }
 
 void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
@@ -360,9 +344,9 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 
     QKeySequence keySeq(e->keyCode | e->modifiers);
     if (keySeq == showSceneStruct)
-        ShowSceneStructureWindow();
+        ToggleSceneStructureWindow();
     if (keySeq == showAssets)
-        ShowAssetsWindow();
+        ToggleAssetsWindow();
 }
 
 void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
