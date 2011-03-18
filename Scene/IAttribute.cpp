@@ -20,6 +20,8 @@
 #include <QVariant>
 #include <QStringList>
 #include <QScriptEngine>
+#include <QSize>
+#include <QPoint>
 
 #include <kNet.h>
 
@@ -173,6 +175,38 @@ template<> std::string Attribute<QVector3D>::ToString() const
         ::ToString<float>(value.z());
 }
 
+template<> std::string Attribute<QSize>::ToString() const
+{
+    QSize value = Get();
+
+    return ::ToString<int>(value.width()) + " " +
+        ::ToString<int>(value.height());
+}
+
+template<> std::string Attribute<QSizeF>::ToString() const
+{
+    QSizeF value = Get();
+
+    return ::ToString<double>(value.width()) + " " +
+        ::ToString<double>(value.height());
+}
+
+template<> std::string Attribute<QPoint>::ToString() const
+{
+    QPoint value = Get();
+
+    return ::ToString<int>(value.x()) + " " +
+        ::ToString<int>(value.y());
+}
+
+template<> std::string Attribute<QPointF>::ToString() const
+{
+    QPointF value = Get();
+
+    return ::ToString<double>(value.x()) + " " +
+        ::ToString<double>(value.y());
+}
+
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> std::string Attribute<int>::TypeName() const
@@ -245,7 +279,27 @@ template<> std::string Attribute<QVector3D>::TypeName() const
     return "qvector3d";
 }
 
-    // FROMSTRING TEMPLATE IMPLEMENTATIONS.
+template<> std::string Attribute<QSize>::TypeName() const
+{
+    return "qsize";
+}
+
+template<> std::string Attribute<QSizeF>::TypeName() const
+{
+    return "qsizef";
+}
+
+template<> std::string Attribute<QPoint>::TypeName() const
+{
+    return "qpoint";
+}
+
+template<> std::string Attribute<QPointF>::TypeName() const
+{
+    return "qpointf";
+}
+
+// FROMSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::FromString(const std::string& str, AttributeChange::Type change)
 {
@@ -433,7 +487,71 @@ template<> void Attribute<QVector3D>::FromString(const std::string& str, Attribu
     }
 }
 
-    // FROMQVARIANT TEMPLATE IMPLEMENTATIONS.
+template<> void Attribute<QSize>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    StringVector components = SplitString(str, ' ');
+    if (components.size() == 2)
+    {
+        try
+        {
+            QSize value;
+            value.setWidth(ParseString<int>(components[0]));
+            value.setHeight(ParseString<int>(components[1]));
+            Set(value, change);
+        }
+        catch (...) {}
+    }
+}
+
+template<> void Attribute<QSizeF>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    StringVector components = SplitString(str, ' ');
+    if (components.size() == 2)
+    {
+        try
+        {
+            QSizeF value;
+            value.setWidth(ParseString<float>(components[0]));
+            value.setHeight(ParseString<float>(components[1]));
+            Set(value, change);
+        }
+        catch (...) {}
+    }
+}
+
+template<> void Attribute<QPoint>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    StringVector components = SplitString(str, ' ');
+    if (components.size() == 2)
+    {
+        try
+        {
+            QPoint value;
+            value.setX(ParseString<int>(components[0]));
+            value.setY(ParseString<int>(components[1]));
+            Set(value, change);
+        }
+        catch (...) {}
+    }
+}
+
+template<> void Attribute<QPointF>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    StringVector components = SplitString(str, ' ');
+    if (components.size() == 2)
+    {
+        try
+        {
+            QPointF value;
+            value.setX(ParseString<float>(components[0]));
+            value.setY(ParseString<float>(components[1]));
+            Set(value, change);
+        }
+        catch (...) {}
+    }
+}
+
+// FROMQVARIANT TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
@@ -505,7 +623,27 @@ template <> void Attribute<QVector3D>::FromQVariant(const QVariant &variant, Att
     Set(qvariant_cast<QVector3D>(variant), change);
 }
 
-    // TOQVARIANT TEMPLATE IMPLEMENTATIONS.
+template <> void Attribute<QSize>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<QSize>(variant), change);
+}
+
+template <> void Attribute<QSizeF>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<QSizeF>(variant), change);
+}
+
+template <> void Attribute<QPoint>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<QPoint>(variant), change);
+}
+
+template <> void Attribute<QPointF>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<QPointF>(variant), change);
+}
+
+// TOQVARIANT TEMPLATE IMPLEMENTATIONS.
 
 template<> QVariant Attribute<QString>::ToQVariant() const
 {
@@ -577,7 +715,27 @@ template<> QVariant Attribute<QVector3D>::ToQVariant() const
     return QVariant::fromValue<QVector3D>(Get());
 }
 
-    // FROMSCRIPTVALUE TEMPLATE IMPLEMENTATIONS.
+template<> QVariant Attribute<QSize>::ToQVariant() const
+{
+    return QVariant::fromValue<QSize>(Get());
+}
+
+template<> QVariant Attribute<QSizeF>::ToQVariant() const
+{
+    return QVariant::fromValue<QSizeF>(Get());
+}
+
+template<> QVariant Attribute<QPoint>::ToQVariant() const
+{
+    return QVariant::fromValue<QPoint>(Get());
+}
+
+template<> QVariant Attribute<QPointF>::ToQVariant() const
+{
+    return QVariant::fromValue<QPointF>(Get());
+}
+
+// FROMSCRIPTVALUE TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
@@ -648,6 +806,27 @@ template<> void Attribute<QVector3D>::FromScriptValue(const QScriptValue &value,
 {
     Set(qScriptValueToValue<QVector3D>(value), change);
 }
+
+template<> void Attribute<QSize>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QSize>(value), change);
+}
+
+template<> void Attribute<QSizeF>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QSizeF>(value), change);
+}
+
+template<> void Attribute<QPoint>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QPoint>(value), change);
+}
+
+template<> void Attribute<QPointF>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QPointF>(value), change);
+}
+
 // TOBINARY TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::ToBinary(kNet::DataSerializer& dest) const
@@ -747,6 +926,30 @@ template<> void Attribute<Transform>::ToBinary(kNet::DataSerializer& dest) const
     dest.Add<float>(value_.scale.x);
     dest.Add<float>(value_.scale.y);
     dest.Add<float>(value_.scale.z);
+}
+
+template<> void Attribute<QSize>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<s32>(value_.width());
+    dest.Add<s32>(value_.height());
+}
+
+template<> void Attribute<QSizeF>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<double>(value_.width());
+    dest.Add<double>(value_.height());
+}
+
+template<> void Attribute<QPoint>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<s32>(value_.x());
+    dest.Add<s32>(value_.y());
+}
+
+template<> void Attribute<QPointF>::ToBinary(kNet::DataSerializer& dest) const
+{
+    dest.Add<double>(value_.x());
+    dest.Add<double>(value_.y());
 }
 
 // FROMBINARY TEMPLATE IMPLEMENTATIONS.
@@ -868,6 +1071,38 @@ template<> void Attribute<Transform>::FromBinary(kNet::DataDeserializer& source,
     value.scale.x = source.Read<float>();
     value.scale.y = source.Read<float>();
     value.scale.z = source.Read<float>();
+    Set(value, change);
+}
+
+template<> void Attribute<QSize>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    QSize value;
+    value.setWidth(source.Read<s32>());
+    value.setHeight(source.Read<s32>());
+    Set(value, change);
+}
+
+template<> void Attribute<QSizeF>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    QSizeF value;
+    value.setWidth(source.Read<double>());
+    value.setHeight(source.Read<double>());
+    Set(value, change);
+}
+
+template<> void Attribute<QPoint>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    QPoint value;
+    value.setX(source.Read<s32>());
+    value.setY(source.Read<s32>());
+    Set(value, change);
+}
+
+template<> void Attribute<QPointF>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+{
+    QPointF value;
+    value.setX(source.Read<double>());
+    value.setY(source.Read<double>());
     Set(value, change);
 }
 
@@ -999,4 +1234,20 @@ template<> void Attribute<Transform>::Interpolate(IAttribute* start, IAttribute*
         
         Set(newTrans, change);
     }
+}
+
+template<> void Attribute<QSize>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
+template<> void Attribute<QSizeF>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
+template<> void Attribute<QPoint>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
+}
+
+template<> void Attribute<QPointF>::Interpolate(IAttribute* start, IAttribute* end, float t, AttributeChange::Type change)
+{
 }

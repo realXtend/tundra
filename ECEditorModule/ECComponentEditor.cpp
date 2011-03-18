@@ -18,6 +18,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditorBase")
 #include <QtGroupPropertyManager>
 #include <QtProperty>
 
+#include <QSize>
+#include <QPoint>
+
 #include "MemoryLeakCheck.h"
 
 // static
@@ -51,6 +54,14 @@ ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         attributeEditor = new ECAttributeEditor<AssetReferenceList>(browser, component, name, type, editor);
     else if(type == "transform")
         attributeEditor = new ECAttributeEditor<Transform>(browser, component, name, type, editor);
+    else if(type == "qsize")
+        attributeEditor = new ECAttributeEditor<QSize>(browser, component, name, type, editor);
+    else if(type == "qsizef")
+        attributeEditor = new ECAttributeEditor<QSizeF>(browser, component, name, type, editor);
+    else if(type == "qpoint")
+        attributeEditor = new ECAttributeEditor<QPoint>(browser, component, name, type, editor);
+    else if(type == "qpointf")
+        attributeEditor = new ECAttributeEditor<QPointF>(browser, component, name, type, editor);
     else
         LogError("Unknown attribute type " + type.toStdString() + " for ECAttributeEditorBase creation.");
 
