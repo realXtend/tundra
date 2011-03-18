@@ -62,6 +62,14 @@ namespace UiServices
          */
         bool AddProxyWidget(UiProxyWidget *widget);
 
+	/* Adds a widget in a layout in the scene in the position and orientation selected
+	* @param widget widget to be placed in the layout
+	* @param corner Corner of the screen: Could be enumCorner { TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner }
+	* @param orientation orientation arround the corner, could be { Horizontal, Vertical }
+	* @param priority higher priority means closer to the corner selected
+	*
+	* @return true if evertything allright
+	*/
 		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority = 0);
 
         //! Adds widget to menu.

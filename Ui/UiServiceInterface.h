@@ -58,8 +58,17 @@ public slots:
      *  @param widget Proxy widget.
      */
     virtual bool AddWidgetToScene(UiProxyWidget *widget) = 0;
+
 	virtual bool AddProxyWidgetToScene(UiProxyWidget *proxy) = 0;
 
+	/* Adds a widget in a layout in the scene in the position and orientation selected
+	* @param widget widget to be placed in the layout
+	* @param corner Corner of the screen: Could be enumCorner { TopLeftCorner, TopRightCorner, BottomLeftCorner, BottomRightCorner }
+	* @param orientation orientation arround the corner, could be { Horizontal, Vertical }
+	* @param priority higher priority means closer to the corner selected
+	*
+	* @return true if evertything allright
+	*/
 	virtual bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority) = 0;
 
     /** Adds widget to menu without any spesific properties: adds entry to the root menu,

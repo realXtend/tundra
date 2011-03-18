@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -136,6 +137,7 @@ void KristalliProtocolModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand(
             "kNet", "Shows the kNet statistics window.", 
             Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
+//$ BEGIN_MOD $
 	if (!framework_->IsHeadless()) {
 		networkDialog = new NetworkDialog(0, &network);
 		UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
@@ -143,6 +145,7 @@ void KristalliProtocolModule::PostInitialize()
 			ui->AddWidgetToScene(networkDialog, true, true);
 			ui->AddWidgetToMenu(networkDialog, "knet Statistics", "View");
 	}
+//$ END_MOD $
 }
 
 void KristalliProtocolModule::Uninitialize()
@@ -152,6 +155,7 @@ void KristalliProtocolModule::Uninitialize()
 
 Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
 {
+//$ BEGIN_MOD $
 	if (framework_->IsHeadless()) {
 		networkDialog = new NetworkDialog(0, &network);
 		networkDialog->setAttribute(Qt::WA_DeleteOnClose);
@@ -164,6 +168,7 @@ Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVe
 		if (ui)
 			ui->ShowWidget(networkDialog);
 	}
+//$ END_MOD $	
 }
 
 void KristalliProtocolModule::Update(f64 frametime)

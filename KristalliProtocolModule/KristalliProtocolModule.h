@@ -1,3 +1,4 @@
+////$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_KristalliProtocolModule_KristalliProtocolModule_h
@@ -86,7 +87,9 @@ namespace KristalliProtocol
         /// What trasport layer to use. Read on startup from --protocol udp/tcp. Defaults to TCP if no start param was given.
         kNet::SocketTransportLayer defaultTransport;
 
+		//$ BEGIN_MOD $
 		kNet::NetworkDialog *networkDialog;
+		//$ END_MOD $
         
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
