@@ -65,13 +65,6 @@ macro (build_library TARGET_NAME LIB_TYPE)
 
     add_library (${TARGET_NAME} ${LIB_TYPE} ${ARGN})
 
-	#player viewer target name postfix
-	if (PLAYER_VIEWER EQUAL 1)  
-	  message (STATUS "creating relseaseplayer and debugplayer targets")
-	  set_target_properties (${TARGET_NAME} PROPERTIES RELEASEPLAYER_POSTFIX p)
-	  set_target_properties (${TARGET_NAME} PROPERTIES DEBUGPLAYER_POSTFIX pd)
-    endif(PLAYER_VIEWER EQUAL 1)
-	
     # internal library naming convention
     set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 	set_target_properties (${TARGET_NAME} PROPERTIES PREFIX "")
@@ -82,27 +75,20 @@ endmacro (build_library)
 # build an executable from internal sources 
 macro (build_executable TARGET_NAME)
 
-    message (STATUS "building executable: " ${TARGET_NAME})
+    message (STATUS "building executable: " ${TARGET_NAME}) 
+	    
+	add_executable (${TARGET_NAME} ${ARGN})
     
-    if (MSVC AND WINDOWS_APP)
-        add_executable (${TARGET_NAME} WIN32 ${ARGN})
-    else ()
-        add_executable (${TARGET_NAME} ${ARGN})
-    endif ()
-
     if (MSVC)
         target_link_libraries (${TARGET_NAME} optimized dbghelp.lib)
     endif (MSVC)
 
-    #player viewer target name postfix
-	if (PLAYER_VIEWER EQUAL 1)  
-      message (STATUS "creating relseaseplayer and debugplayer targets")
-	  set_target_properties (${TARGET_NAME} PROPERTIES RELEASEPLAYER_POSTFIX p)
-	  set_target_properties (${TARGET_NAME} PROPERTIES DEBUGPLAYER_POSTFIX pd)
-	endif(PLAYER_VIEWER EQUAL 1)
-
 	set_target_properties (${TARGET_NAME} PROPERTIES DEBUG_POSTFIX d)
 	
+	if(MSVC AND WINDOWS_APP)   
+      set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+      set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
+   endif(MSVC AND WINDOWS_APP)
 endmacro (build_executable)
 
 # include and lib directories, and definitions

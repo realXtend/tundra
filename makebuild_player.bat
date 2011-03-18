@@ -54,10 +54,11 @@ del buildplayer\plugins\*_d.dll
 
 @rem Player Viewer
 
+del buildplayer\modules\core\*d.dll
+
 rmdir buildplayer\scenes /S /Q
 rmdir buildplayer\tmp /S /Q
 rmdir buildplayer\jsmodules /S /Q
-
 
 rmdir buildplayer\pymodules\objectedit /S /Q
 rmdir buildplayer\pymodules\objecttools /S /Q
@@ -65,22 +66,9 @@ rmdir buildplayer\pymodules\apitest /S /Q
 rmdir buildplayer\pymodules\aligntools /S /Q
 rmdir buildplayer\pymodules\webdavinventory /S /Q
 rmdir buildplayer\pymodules\simiangrid /S /Q
+rmdir buildplayer\pymodules\localscene\ /S /Q
+rmdir buildplayer\pymodules\estatemanagement\ /S /Q
 del buildplayer\pymodules\default.ini
-
-del buildplayer\viewer.exe
-del buildplayer\viewerd.exe
-del buildplayer\viewerpd.exe
-del buildplayer\server.exe
-del buildplayer\serverp.exe
-del buildplayer\serverd.exe
-del buildplayer\serverpd.exe
-
-rmdir buildplayer\modules\core /S /Q
-md buildplayer\modules\core
-rmdir /s /q buildplayer\pymodules\localscene\
-rmdir /s /q buildplayer\pymodules\estatemanagement\
-xcopy bin\modules\core\*p.dll buildplayer\modules\core\
-xcopy bin\modules\core\*.xml buildplayer\modules\core\
 
 del buildplayer\modules\core\ECEditorModule*
 del buildplayer\modules\core\OgreAssetEditorModule*
@@ -88,3 +76,11 @@ del buildplayer\modules\core\SupportModules*
 del buildplayer\modules\core\CommunicationsModule*
 del buildplayer\modules\core\SceneStructureModule*
 del buildplayer\modules\core\DebugStatsModule*
+
+del buildplayer\viewer.exe
+del buildplayer\viewerd.exe
+del buildplayer\server.exe
+del buildplayer\serverd.exe
+del buildplayer\playerd.exe
+
+

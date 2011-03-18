@@ -1,11 +1,19 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "Foundation.h"
-#include "ModuleManager.h"
-
 #include "DebugOperatorNew.h"
 
 #include <QDir>
+
+#include "Foundation.h"
+#include "ModuleManager.h"
+
+// Disable warning C4244 coming from boost
+#ifdef _MSC_VER
+#pragma warning ( push )
+#pragma warning( disable : 4244 )
+#include <boost/thread.hpp>
+#pragma warning( pop )
+#endif
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
@@ -86,14 +94,19 @@ void setup (Foundation::Framework &fw)
 {
     // Exclude the login screen from loading
     fw.GetModuleManager()->ExcludeModule("LoginScreenModule");
-	fw.GetModuleManager()->ExcludeModule("EtherModule");
+    fw.GetModuleManager()->ExcludeModule("ECEditorModule");
+    fw.GetModuleManager()->ExcludeModule("OgreAssetEditorModule");
+    fw.GetModuleManager()->ExcludeModule("ConsoleModule");
+    fw.GetModuleManager()->ExcludeModule("CommunicationsModule");
+    fw.GetModuleManager()->ExcludeModule("SceneStructureModule");
+    fw.GetModuleManager()->ExcludeModule("DebugStatsModule");
 }
 
 int run (int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
-    printf("Starting up server. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
+    printf("Starting up player. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
     for(int i = 0; i < argc; ++i)
         printf("argv[%d]: %s\n", i, argv[i]);
     // Create application object
@@ -101,14 +114,23 @@ int run (int argc, char **argv)
     try
 #endif
     {
-        Foundation::Framework fw(argc, argv);
-        // If there is no startserver command, start one in default port
-        if (!fw.ProgramOptions().count("startserver"))
+        bool editionless = false;
+        // search editionless command
+        for (int i = 0;i < argc; i++)
         {
-            boost::program_options::variables_map& variablemap = fw.ProgramOptions();
-            variablemap.insert(std::pair<std::string, boost::program_options::variable_value>("startserver", boost::program_options::variable_value(0, true)));
+            if (argv[i]=="--editionless")
+                editionless = true;
         }
-        
+
+        // If there is no editionless command, add to argv
+        if (!editionless)
+        {
+            argv[argc] = "--editionless";
+            argc++;
+        }
+
+        Foundation::Framework fw(argc, argv);
+               
         if (fw.Initialized())
         {
             setup (fw);
@@ -131,6 +153,57 @@ int run (int argc, char **argv)
     return return_value;
 }
 
+#if defined(_MSC_VER) && !defined(_DEBUG)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+{
+    // Parse Windows command line
+    std::vector<std::string> arguments;
+
+    std::string cmdLine(lpCmdLine);
+    unsigned i;
+    unsigned cmdStart = 0;
+    unsigned cmdEnd = 0;
+    bool cmd = false;
+    bool quote = false;
+
+    arguments.push_back("player");
+
+    for (i = 0; i < cmdLine.length(); ++i)
+    {
+        if (cmdLine[i] == '\"')
+            quote = !quote;
+        if ((cmdLine[i] == ' ') && (!quote))
+        {
+            if (cmd)
+            {
+                cmd = false;
+                cmdEnd = i;
+                arguments.push_back(cmdLine.substr(cmdStart, cmdEnd-cmdStart));
+            }
+        }
+        else
+        {
+            if (!cmd)
+            {
+               cmd = true;
+               cmdStart = i;
+            }
+        }
+    }
+    if (cmd)
+        arguments.push_back(cmdLine.substr(cmdStart, i-cmdStart));
+    
+    std::vector<const char*> argv;
+    for (int i = 0; i < arguments.size(); ++i)
+        argv.push_back(arguments[i].c_str());
+    
+    if (argv.size())
+        return main(argv.size(), (char**)&argv[0]);
+    else
+        return main(0, 0);
+}
+#endif
+
 #if defined(_MSC_VER) && defined(_DMEMDUMP)
 int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
 {
@@ -142,7 +215,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v1.0-preview-server";
+    WCHAR* szVersion = L"Tundra_v1.0-preview-player";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;

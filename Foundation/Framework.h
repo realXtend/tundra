@@ -293,6 +293,11 @@ namespace Foundation
         /// Returns if Naali is headless
         bool IsHeadless() const { return headless_; }
 
+// $ BEGIN_MOD $
+        /// Returns if Naali is editionless
+        bool IsEditionless() const { return editionless_; }
+// $ END_MOD $
+
         /// Returns the default scene.
         Scene::SceneManager* DefaultScene() const;
 
@@ -362,6 +367,9 @@ namespace Foundation
         boost::timer timer; ///< The Naali Frame API.
         bool initialized_; ///< Is the framework is properly initialized.
         bool headless_; ///< Are we running in the headless mode.
+// $ BEGIN_MOD $
+        bool editionless_;
+// $ END_MOD $
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.
         NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
         Frame *frame; ///< The Naali Frame API.

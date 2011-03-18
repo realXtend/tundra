@@ -175,7 +175,9 @@ namespace UiServices
 				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
 
 			//Create the view manager
+#ifndef PLAYER_VIEWER
 			viewManager_=new ViewManager(this,ui_scene_service_.get());
+#endif
 			//Notify that the restore of the main window has been done
 			postInitialize_ = true;
 		}

@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (server OUTPUT ./)
+init_target (player OUTPUT ./)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -8,8 +8,8 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
-# Never compile server in consoleless mode for release configuration
-set (WINDOWS_APP 0)
+# Compile player in consoleless mode for release configuration
+set(WINDOWS_APP 1)
 
 # Preprocessor defines on MSVC
 if (MSVC)

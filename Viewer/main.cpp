@@ -129,7 +129,7 @@ int run (int argc, char **argv)
     return return_value;
 }
 
-#if defined(_MSC_VER) && defined(WINDOWS_APP)
+#if defined(_MSC_VER) && !defined(_DEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     // Parse Windows command line
@@ -191,13 +191,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-// $ BEGIN_MOD $
-#ifdef PLAYER_VIEWER
-    WCHAR* szVersion = L"Naali_v0.6.0 Player-0.1";
-#else
     WCHAR* szVersion = L"Naali_v0.6.0";
-#endif
-// $ END_MOD $
 	DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;

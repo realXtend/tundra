@@ -44,6 +44,8 @@ class ObjectEdit(Component):
     MANIPULATE_ROTATE = 3
     
     def __init__(self):
+        if naali.framework.IsEditionless() or naali.framework.IsHeadless():
+            return
         self.sels = []  
         self.selmasses = {}
         Component.__init__(self)

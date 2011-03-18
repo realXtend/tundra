@@ -59,7 +59,7 @@ endmacro (configure_poco)
 
 macro (configure_qt4)
     sagase_configure_package (QT4 
-        NAMES Qt4 4.6.1
+        NAMES Qt4
         COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
@@ -79,12 +79,7 @@ macro (configure_qt4)
             ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
             ${QT_QTWEBKIT_INCLUDE_DIR}
             ${QT_PHONON_INCLUDE_DIR})
-        if (PLAYER_VIEWER EQUAL 1)  
-            ADD_DEFINITIONS(${QT_DEFINITIONS})
-            SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_RELEASEPLAYER QT_NO_DEBUG)
-            SET_PROPERTY(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS_DEBUGPLAYER QT_DEBUG)
-        endif(PLAYER_VIEWER EQUAL 1)
-	
+    	
 	if (APPLE) # they forgot qtdbus from mac qt 4.6.0
 	    # nothing
         else ()
