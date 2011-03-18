@@ -50,11 +50,13 @@ namespace UiServices
 		font.setWeight(50);
 		title_label->setFont(font);
 		view_combo_box_->addItems(views_);
+		//view_combo_box_->setFixedSize(name_line_edit_->size());
+		view_combo_box_->setFixedSize(150,30);
 
 		layout->addWidget(title_label,0,0,1,3,Qt::AlignCenter);
 
-		layout->addWidget(view_combo_box_,1,1,Qt::AlignCenter);
-
+		layout->addWidget(view_combo_box_,1,1,1,2,Qt::AlignLeft);
+		
 		layout->addWidget(name_label,2,0,Qt::AlignRight);
 		layout->addWidget(name_line_edit_,2,1,Qt::AlignLeft);
 		layout->addWidget(rename_button_,2,2,Qt::AlignLeft);
@@ -102,9 +104,12 @@ namespace UiServices
 		int option = msgBox->exec();
 		switch (option) {
 			case QMessageBox::Yes:
-				if(view_combo_box_->currentText()!="Building" && name_line_edit_->text()!="" && name_line_edit_->text()!="Building"){
-					OnRenameButtonClicked();
+				if(name_line_edit_->text()!="Building"){
 					emit Save(view_combo_box_->currentText());
+					QMessageBox* msgInfo=new QMessageBox();
+					msgInfo->setText("The view "+view_combo_box_->currentText()+" has been saved");
+					msgInfo->setIcon(QMessageBox::Information);
+					msgInfo->exec();
 				}else{
 					QMessageBox* msgInfo=new QMessageBox();
 					msgInfo->setText("Sorry, the view can not be saved");
