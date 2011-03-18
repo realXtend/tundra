@@ -609,14 +609,14 @@ void ECEditorWindow::ToggleEntityList()
             entity_widget->hide();
             resize(size().width() - entity_widget->size().width(), size().height());
             if (toggle_entities_button_)
-                toggle_entities_button_->setText(tr("Show entities"));
+                toggle_entities_button_->setText(tr("Show Entities"));
         }
         else
         {
             entity_widget->show();
             resize(size().width() + entity_widget->sizeHint().width(), size().height());
             if (toggle_entities_button_)
-                toggle_entities_button_->setText(tr("Hide entities"));
+                toggle_entities_button_->setText(tr("Hide Entities"));
         }
     }
 }
@@ -657,7 +657,7 @@ void ECEditorWindow::hideEvent(QHideEvent* hide_event)
 void ECEditorWindow::changeEvent(QEvent *e)
 {
     if (e->type() == QEvent::LanguageChange)
-        setWindowTitle(QApplication::translate("ECEditor", "Entity-component Editor"));
+        setWindowTitle(QApplication::translate("ECEditor", "Entity-Component Editor"));
     else
        QWidget::changeEvent(e);
 }
