@@ -157,6 +157,10 @@
 #include "EC_PlanarMirror.h"
 #endif
 
+#ifdef EC_WebView_ENABLED
+#include "EC_WebView.h"
+#endif
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
@@ -264,6 +268,10 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_Selected_ENABLED
     DECLARE_MODULE_EC(EC_Selected);
+#endif
+
+#ifdef EC_WebView_ENABLED
+    DECLARE_MODULE_EC(EC_WebView);
 #endif
 }
 
