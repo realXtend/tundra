@@ -48,6 +48,8 @@ EC_3DCanvas::EC_3DCanvas(IModule *module) :
         if (texture.isNull())
             texture_name_ = "";
     }
+
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(ParentEntitySet()), Qt::UniqueConnection);
 }
 
 EC_3DCanvas::~EC_3DCanvas()
@@ -122,7 +124,8 @@ void EC_3DCanvas::MeshMaterialsUpdated(uint index, const QString &material_name)
 void EC_3DCanvas::Stop()
 {
     if (refresh_timer_)
-        refresh_timer_->stop();
+        if (refresh_timer_->isActive())
+            refresh_timer_->stop();
 }
 
 void EC_3DCanvas::Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second)
@@ -138,7 +141,7 @@ void EC_3DCanvas::SetWidget(QWidget *widget)
     {
         widget_ = widget;
         if (widget_)
-            connect(widget_, SIGNAL(destroyed(QObject*)), SLOT(WidgetDestroyed(QObject *)));
+            connect(widget_, SIGNAL(destroyed(QObject*)), SLOT(WidgetDestroyed(QObject *)), Qt::UniqueConnection);
     }
 }
 
@@ -183,8 +186,8 @@ void EC_3DCanvas::SetSubmeshes(const QList<uint> &submeshes)
 void EC_3DCanvas::WidgetDestroyed(QObject *obj)
 {
     widget_ = 0;
-    if (refresh_timer_)
-        refresh_timer_->stop();
+    Stop();
+    RestoreOriginalMeshMaterials();
     SAFE_DELETE(refresh_timer_);
 }
 
@@ -295,5 +298,76 @@ void EC_3DCanvas::UpdateSubmeshes()
             else 
                 return;
         }
+    }
+}
+
+void EC_3DCanvas::RestoreOriginalMeshMaterials()
+{
+    if (restore_materials_.empty())
+    {
+        update_internals_ = true;
+        return;
+    }
+
+    Scene::Entity* entity = GetParentEntity();
+
+    if (material_name_.empty() || !entity)
+        return;
+
+    int draw_type = -1;
+    uint submesh_count = 0;
+    EC_Mesh* ec_mesh = entity->GetComponent<EC_Mesh>().get();
+    EC_OgreCustomObject* ec_custom_object = entity->GetComponent<EC_OgreCustomObject>().get();
+
+    if (ec_mesh)
+    {
+        draw_type = RexTypes::DRAWTYPE_MESH;
+        submesh_count = ec_mesh->GetNumMaterials();
+    }
+    else if (ec_custom_object)
+    {
+        draw_type = RexTypes::DRAWTYPE_PRIM;
+        submesh_count = ec_custom_object->GetNumMaterials();
+    }
+
+    if (draw_type == -1)
+        return;
+
+    // Iterate trough sub meshes
+    for (uint index = 0; index < submesh_count; ++index)
+    {
+        // If submesh not contained, restore the original material
+        if (draw_type == RexTypes::DRAWTYPE_MESH)
+        {
+            if (ec_mesh->GetMaterialName(index) == material_name_)
+                if (restore_materials_.contains(index))
+                    ec_mesh->SetMaterial(index, restore_materials_[index]);
+        }
+        else if(draw_type == RexTypes::DRAWTYPE_PRIM)
+        {
+            if (ec_custom_object->GetMaterialName(index) == material_name_)
+                if (restore_materials_.contains(index))
+                    ec_custom_object->SetMaterial(index, restore_materials_[index]);
+        }
+    }
+
+    restore_materials_.clear();
+    update_internals_ = true;
+}
+
+void EC_3DCanvas::ParentEntitySet()
+{
+    if (GetParentEntity())
+        connect(GetParentEntity(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+}
+
+void EC_3DCanvas::ComponentRemoved(IComponent *component, AttributeChange::Type change)
+{
+    if (component == this)
+    {
+        Stop();
+        RestoreOriginalMeshMaterials();
+        SetWidget(0);
+        submeshes_.clear();
     }
 }
