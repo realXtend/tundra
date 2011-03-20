@@ -12,6 +12,7 @@
 #include <QString>
 #include <QSize>
 #include <QPointer>
+#include <QPoint>
 #include <QTimer>
 #include <QUuid>
 
@@ -251,7 +252,6 @@ private:
 
     //! Tracking the scroll position when we are in control.
     QPoint controlledScrollPos_;
-
 };
 
 #endif
