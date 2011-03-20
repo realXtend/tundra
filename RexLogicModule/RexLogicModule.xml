@@ -5,4 +5,7 @@
     <dependency>OgreRenderingModule</dependency>
     <dependency>EnvironmentModule</dependency>
     <dependency>AvatarModule</dependency>
+    <!-- TundraLogicModule is a load order only dependency
+         due to some of the ECs RexLogic declares -->
+    <dependency>TundraLogicModule</dependency>
 </config>
