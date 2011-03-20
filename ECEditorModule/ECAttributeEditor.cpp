@@ -60,6 +60,20 @@ bool ECAttributeEditorBase::ContainsProperty(QtProperty *property) const
 void ECAttributeEditorBase::UpdateEditorUI(IAttribute *attr)
 {
     PROFILE(ECAttributeEditor_UpdateEditorUI);
+    
+    // Check if the attributes metadata has changed designable to false
+    if (!useMultiEditor_ && !components_.empty())
+    {
+        ComponentPtr comp = components_[0].lock();
+        IAttribute *attribute = FindAttribute(comp);
+        if (attribute && attribute->HasMetadata() && !attribute->GetMetadata()->designable)
+        {
+            // If not uninitialize that attributes ui and return
+            UnInitialize();
+            return;
+        }
+    }
+
     // If attribute editor is holding only single component, "HasIdenticalAttributes" method should automaticly return true.
     bool identical_attr = HasIdenticalAttributes();
     if (!useMultiEditor_ && !identical_attr)
