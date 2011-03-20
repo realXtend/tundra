@@ -2,21 +2,39 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-
 #include "EC_WebView.h"
+
 #include "IModule.h"
 #include "Entity.h"
+
+#include "EventManager.h"
+#include "UserConnection.h"
+
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
+
+#include "TundraLogicModule.h"
+#include "Client.h"
+#include "Server.h"
 
 #include "EC_3DCanvas.h"
 #include "EC_Mesh.h"
 
 #include <QWebView>
-#include <QDebug>
+#include <QWebFrame>
+#include <QCursor>
+#include <QMenu>
+#include <QAction>
+#include <QMessageBox>
+#include <QWheelEvent>
+#include <QApplication>
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_WebView")
 
 #include "MemoryLeakCheck.h"
+
+static int NoneControlID = -1;
 
 EC_WebView::EC_WebView(IModule *module) :
     IComponent(module->GetFramework()),
@@ -25,13 +43,20 @@ EC_WebView::EC_WebView(IModule *module) :
     webviewLoading_(false),
     webviewHasContent_(false),
     componentPrepared_(false),
+    myControllerId_(0),
+    currentControllerName_(""),
     webviewUrl(this, "View URL", QString()),
     webviewSize(this, "View Size", QSize(800,600)),
     renderSubmeshIndex(this, "Render Submesh", 0),
-    renderRefreshRate(this, "Render FPS", 0)
+    renderRefreshRate(this, "Render FPS", 0),
+    interactive(this, "Interactive", false),
+    controllerId(this, "ControllerId", NoneControlID)
 {
+    interactionMetaData_ = new AttributeMetadata();
+
     static AttributeMetadata submeshMetaData;
     static AttributeMetadata refreshRateMetadata;
+    static AttributeMetadata nonDesignableMetadata;
     static bool metadataInitialized = false;
     if (!metadataInitialized)
     {
@@ -40,20 +65,41 @@ EC_WebView::EC_WebView(IModule *module) :
         refreshRateMetadata.minimum = "0";
         refreshRateMetadata.maximum = "25";
         refreshRateMetadata.step = "1";
+        nonDesignableMetadata.designable = false;
         metadataInitialized = true;
     }
     renderSubmeshIndex.SetMetadata(&submeshMetaData);
     renderRefreshRate.SetMetadata(&refreshRateMetadata);
+    controllerId.SetMetadata(&nonDesignableMetadata);
 
-    // Don't do anything if rendering is not enabled
+    // Initializations depending if we are on the server or client
+    TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+    if (tundraLogic)
+    {
+        if (tundraLogic->IsServer())
+            ServerInitialize(tundraLogic->GetServer().get());
+        else
+            myControllerId_ = tundraLogic->GetClient()->GetConnectionID();
+    }
+
+    // Don't do anything beyond if rendering is not enabled
+    // aka headless server. UI enabled server may continue, but they are not going
+    // to have perfect browsing sync as the entity actions are sent to "peers" as in other clients.
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
 
+    // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
     
+    // Prepare render timer
     renderTimer_ = new QTimer(this);
     connect(renderTimer_, SIGNAL(timeout()), SLOT(Render()), Qt::UniqueConnection);
+
+    // Prepare scene interactions
+    QObject *sceneInteract = GetFramework()->property("sceneinteract").value<QObject*>();
+    if (sceneInteract)
+        connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity *)), SLOT(EntityClicked(Scene::Entity*)));
 
     PrepareWebview();
 }
@@ -66,6 +112,104 @@ EC_WebView::~EC_WebView()
 bool EC_WebView::IsSerializable() const
 {
     return true;
+}
+
+bool EC_WebView::eventFilter(QObject *obj, QEvent *e)
+{
+    if (webview_)
+    {
+        if (obj == webview_ || obj == webview_->page())
+        {
+            switch (e->type())
+            {
+                case QEvent::UpdateRequest:
+                case QEvent::Paint:
+                {
+                    QPoint posNow = webview_->page()->mainFrame()->scrollPosition();
+                    if (controlledScrollPos_ != posNow)
+                    {
+                        controlledScrollPos_ = posNow;
+                        // Send scroll position update to peers when we are in control.
+                        if (getcontrollerId() == myControllerId_)
+                        {
+                            GetParentEntity()->Exec(4, "WebViewScroll", 
+                                QString::number(controlledScrollPos_.x()), QString::number(controlledScrollPos_.y()));
+                        }
+                        RenderDelayed();
+                    }
+                    break;
+                }
+                case QEvent::Wheel:
+                {
+                    QWheelEvent *wheelEvent = dynamic_cast<QWheelEvent*>(e);
+                    if (wheelEvent)
+                    {
+                        // Deny wheel scroll if webview is being controlled externally.
+                        int currentControllerId = getcontrollerId();
+                        if (currentControllerId != NoneControlID &&
+                            currentControllerId != myControllerId_)
+                            return true;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+    return false;
+}
+
+void EC_WebView::ServerInitialize(TundraLogic::Server *server)
+{
+    if (!server || !server->IsRunning())
+        return;
+    connect(server, SIGNAL(UserDisconnected(int, UserConnection*)), SLOT(ServerHandleDisconnect(int, UserConnection*)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(ServerHandleAttributeChange(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+}
+
+void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connection)
+{
+    // Server will release the control of a EC_Webview if the controlling user disconnects.
+    // This will ensure that a webview wont be left in a state that no one can take control of it.
+    if (getcontrollerId() != NoneControlID)
+    {
+        if (getcontrollerId() == connectionID)
+        {
+            setcontrollerId(NoneControlID);
+            GetParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
+        }
+    }
+}
+
+void EC_WebView::ServerHandleAttributeChange(IAttribute *attribute, AttributeChange::Type changeType)
+{
+    if (attribute == &controllerId)
+        ServerCheckControllerValidity(getcontrollerId());
+}
+
+void EC_WebView::ServerCheckControllerValidity(int connectionID)
+{
+    TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+    if (tundraLogic)
+    {
+        if (connectionID != NoneControlID)
+        {
+            /// Special case: a non-headless server takes control. We have a reserved id of -2 for this.
+            /// \note You should not control browsers from a non headless server, this will get you in trouble
+            /// when your connection id -2 gets into any .txml/.tbin files!
+            if (connectionID == -2)
+                return;
+
+            UserConnection *user = tundraLogic->GetServer()->GetUserConnection(connectionID);
+            if (!user)
+            {
+                // The ID is not a valid active connection, reset the control id to all clients.
+                setcontrollerId(NoneControlID);
+                GetParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
+            }
+        }
+    }
 }
 
 // Public slots
@@ -199,6 +343,8 @@ void EC_WebView::PrepareComponent()
     if (parent)
     {
         connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), SLOT(ComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
+        parent->ConnectAction("WebViewControllerChanged", this, SLOT(ActionControllerChanged(QString, QString)));
+        parent->ConnectAction("WebViewScroll", this, SLOT(ActionScroll(QString, QString)));
     }
     else
     {
@@ -219,7 +365,7 @@ void EC_WebView::PrepareComponent()
         // Inspect if this mesh is ready for rendering. EC_Mesh being present != being loaded into Ogre and ready for rendering.
         if (!mesh->GetEntity())
         {
-            connect(mesh, SIGNAL(OnMeshChanged()), SLOT(PrepareComponent()), Qt::UniqueConnection);
+            connect(mesh, SIGNAL(OnMeshChanged()), SLOT(TargetMeshReady()), Qt::UniqueConnection);
             return;
         }
     }
@@ -239,7 +385,7 @@ void EC_WebView::PrepareComponent()
     // Resize the widget if needed before loading the page.
     QSize targetSize = getwebviewSize();
     if (webview_->size() != targetSize)
-        webview_->resize(targetSize);
+        webview_->setFixedSize(targetSize);
 
     // Validate and load the 'getwebviewUrl' page to our QWebView if it's not empty.
     QString urlString = getwebviewUrl().simplified();
@@ -266,10 +412,27 @@ void EC_WebView::PrepareWebview()
     ResetWidget();
 
     webview_ = new QWebView();
-    webview_->resize(getwebviewSize());
+    webview_->setParent(GetFramework()->Ui()->MainWindow());
+    webview_->setWindowFlags(Qt::Tool);
+    webview_->setFixedSize(getwebviewSize());
+    webview_->installEventFilter(this);
+    webview_->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
 
+    connect(webview_, SIGNAL(linkClicked(const QUrl&)), this, SLOT(LoadRequested(const QUrl&)), Qt::UniqueConnection);
     connect(webview_, SIGNAL(loadStarted()), this, SLOT(LoadStarted()), Qt::UniqueConnection);
     connect(webview_, SIGNAL(loadFinished(bool)), this, SLOT(LoadFinished(bool)), Qt::UniqueConnection);
+}
+
+void EC_WebView::LoadRequested(const QUrl &url)
+{
+    // If we are sharing browsing, share the url to everyone.
+    // Otherwise load locally. If we are clicking links and someone
+    // else has control, do nothing.
+    int currentControllerId = getcontrollerId();
+    if (currentControllerId == myControllerId_)
+        setwebviewUrl(url.toString());
+    else if (currentControllerId == NoneControlID)
+        webview_->load(url);
 }
 
 void EC_WebView::LoadStarted()
@@ -280,14 +443,35 @@ void EC_WebView::LoadStarted()
 
 void EC_WebView::LoadFinished(bool success)
 {
+    if (!webview_)
+        return;
+
+    QString loadedUrl = webview_->url().toString().trimmed();
     webviewLoading_ = false;
     if (success)
     {
         webviewHasContent_ = true;
-        RenderTimerStartOrSingleShot();
+
+        // Construct the ui title to tell user who is in control of the browsing.
+        QString title;
+        if (getcontrollerId() != NoneControlID)
+        {
+            if (getcontrollerId() != myControllerId_) 
+               title = "Controller by " + currentControllerName_ + " - " + loadedUrl;
+            else
+               title = "Controller by you - " + loadedUrl;
+        }
+        else
+            title = loadedUrl;
+        webview_->setWindowTitle(title);
     }
     else
-        LogWarning("Please check your URL, failed to load " + webview_->url().toString().toStdString());
+    {
+        if (!loadedUrl.isEmpty())
+            webview_->setWindowTitle("Error while loading " + loadedUrl);
+    }
+
+    RenderTimerStartOrSingleShot();
 }
 
 void EC_WebView::ResetSubmeshIndex()
@@ -326,10 +510,19 @@ void EC_WebView::RenderTimerStartOrSingleShot()
         QTimer::singleShot(10, this, SLOT(Render()));
 }
 
+void EC_WebView::TargetMeshReady()
+{
+    if (!componentPrepared_)
+        PrepareComponent();
+}
+
 void EC_WebView::ComponentAdded(IComponent *component, AttributeChange::Type change)
 {
     if (component->TypeName() == EC_Mesh::TypeNameStatic())
-        PrepareComponent();
+    {
+        if (!componentPrepared_)
+            PrepareComponent();
+    }
 }
 
 void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type change)
@@ -344,6 +537,7 @@ void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type c
     */
     if (component == this)
     {
+        // Reset EC_3DCanvas
         EC_3DCanvas *canvasSource = GetSceneCanvasComponent();
         if (canvasSource && webview_)
         {
@@ -356,7 +550,7 @@ void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type c
             }
         }
     }
-    ///\todo Add check if this component has another EC_Mesh then init EC_3DCanvas again for that! Now we just blindly stop this EC.
+    /// \todo Add check if this component has another EC_Mesh then init EC_3DCanvas again for that! Now we just blindly stop this EC.
     else if (component->TypeName() == EC_Mesh::TypeNameStatic())
     {
         RenderTimerStop();
@@ -386,17 +580,27 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
 
         if (!urlString.startsWith("http://") && !urlString.startsWith("https://"))
             urlString = "http://" + urlString;
-        webview_->load(QUrl(urlString, QUrl::TolerantMode));
+
+        // Render if url is same, load page if not. 
+        // If someone has control always reload to set the correct title bars.
+        if (webview_->url().toString() == urlString && getcontrollerId() == NoneControlID)
+            RenderDelayed();
+        else
+            webview_->load(QUrl(urlString, QUrl::TolerantMode));
     }
     else if (attribute == &webviewSize)
     {
         if (!webview_)
             return;
 
+        // Always keep a fixed size. If user wants to resize the
+        // 2D widget, he needs to use the components attribute.
+        // This is done to ensure shared browsing will always be same size on all clients.
+        // The scroll event x,y positions will always show same content on both controller and slaves.
         QSize targetSize = getwebviewSize();
         if (webview_->size() != targetSize)
         {
-            webview_->resize(targetSize);
+            webview_->setFixedSize(targetSize);
             RenderDelayed();
         }
     }
@@ -404,6 +608,9 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
     {
         if (!componentPrepared_ || !webview_)
             return;
+
+        // Rendering will make sure this submesh index is not out of range.
+        // If it is it will reset the submesh index to 0. This is very nice for the user experience.
         RenderDelayed();
     }
     else if (attribute == &renderRefreshRate)
@@ -413,6 +620,50 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         
         RenderTimerStop();
         RenderTimerStartOrSingleShot();
+    }
+    else if (attribute == &controllerId)
+    {
+        int currentControllerId = getcontrollerId();
+
+        // If we have control, leave ui so that we can modify the attributes
+        if (currentControllerId == myControllerId_)
+        {
+            InteractEnableScrollbars(true);
+            return;
+        }
+
+        // If no one has control show scroll bars and reload the current page.
+        // Disable scroll bars from local UI if someone else is controlling.
+        if (currentControllerId == NoneControlID)
+        {
+            InteractEnableScrollbars(true);
+            QString urlString = getwebviewUrl().trimmed();
+            if (urlString.isEmpty())
+                return;
+            if (!urlString.startsWith("http://") && !urlString.startsWith("https://"))
+                urlString = "http://" + urlString;
+            webview_->load(QUrl(urlString, QUrl::TolerantMode));
+        }
+        else
+            InteractEnableScrollbars(false);
+
+        // If control is not on us
+        // 1. No one is controlling = show ui attributes editable
+        // 2. Someone else is controlling = hide all of this components attributes, so slaves cannot modify them.
+        interactionMetaData_->designable = currentControllerId == NoneControlID ? true : false;
+        AttributeVector::iterator iter = attributes_.begin();
+        AttributeVector::iterator end = attributes_.end();
+        while (iter != end)
+        {
+            IAttribute *attr = (*iter);
+            // Always keep 'controlId' hidden from users.
+            if (attr != &controllerId)
+            {
+                attr->SetMetadata(interactionMetaData_);
+                attr->Changed(AttributeChange::LocalOnly);
+            }
+            ++iter;
+        }
     }
 }
 
@@ -430,4 +681,141 @@ EC_3DCanvas *EC_WebView::GetSceneCanvasComponent()
         return 0;
     EC_3DCanvas *canvas = GetParentEntity()->GetComponent<EC_3DCanvas>().get();
     return canvas;
+}
+
+void EC_WebView::EntityClicked(Scene::Entity *entity)
+{
+    if (!getinteractive() || !GetParentEntity())
+        return;
+
+    if (entity == GetParentEntity())
+    {
+        // Entities have EC_Selected if it is being manipulated.
+        // At this situation we don't want to show any ui.
+        if (entity->HasComponent("EC_Selected"))
+            return;
+
+        int currentControlId = getcontrollerId();
+
+        QMenu popupInteract;
+        popupInteract.addAction(QIcon("./data/ui/images/icon/browser.ico"), "Show", this, SLOT(InteractShowRequest()));
+        if (currentControlId == NoneControlID && !webviewLoading_)
+            popupInteract.addAction("Share Browsing", this, SLOT(InteractControlRequest()));
+        else if (currentControlId == NoneControlID && webviewLoading_)
+            popupInteract.addAction("Loading page, please wait...")->setEnabled(false);
+        else
+        {
+            // We have the control
+            if (currentControlId == myControllerId_)
+            {
+                popupInteract.addAction("Release Shared Browsing", this, SLOT(InteractControlReleaseRequest()));
+            }
+            // Another client has control
+            else
+            {
+                popupInteract.addSeparator();
+                if (currentControllerName_.trimmed().isEmpty())
+                    popupInteract.addAction("Controlled by another client")->setEnabled(false);
+                else
+                    popupInteract.addAction("Controlled by " + currentControllerName_.trimmed())->setEnabled(false);
+            }
+        }
+        popupInteract.exec(QCursor::pos());
+    }
+}
+
+void EC_WebView::InteractShowRequest()
+{
+    if (!webview_)
+        return;
+
+    // Center the webview on the click position if possible.
+    QPoint globalMousePos = QCursor::pos();
+    QPoint showPos = globalMousePos;
+    if (globalMousePos.x() > (webview_->width() / 2))
+        showPos.setX(globalMousePos.x() - (webview_->width() / 2));
+    if (globalMousePos.y() > (webview_->height() / 2))
+        showPos.setY(globalMousePos.y() - (webview_->height() / 2));
+
+    webview_->move(showPos);
+    webview_->show();
+}
+
+void EC_WebView::InteractControlRequest()
+{
+    if (getcontrollerId() == NoneControlID)
+    {
+        // Mark us as the controller, this gets synced to all clients
+        setcontrollerId(myControllerId_);
+
+        // Send your local webview up to date url to others
+        QString myCurrentUrl = webview_->url().toString();
+        setwebviewUrl(myCurrentUrl);
+        
+        // Resolve our user name, use connection id if not available
+        QString myControllerName;
+        int myId = -1;
+        TundraLogic::TundraLogicModule *tundraLogic = GetFramework()->GetModule<TundraLogic::TundraLogicModule>();
+        if (tundraLogic)
+        {
+            if (!tundraLogic->IsServer())
+            {
+                myId = myControllerId_;
+                myControllerName = tundraLogic->GetClient()->GetLoginProperty("username");
+                if (myControllerName.trimmed().isEmpty())
+                    myControllerName = "client #" + QString::number(myId);
+            }
+            else
+            {
+                // Not sure if 0 is reserved for the server. Lets stick with -2 being server.
+                // Note that this quite a rare case that server wants to control outside of dev testing.
+                // Also note that servers wont get sync browsing as the entity actions are sent to peers.
+                myControllerName = "server";
+                myId = -2;
+            }
+        }
+
+        // Execute entity action to peers aka other clients.
+        GetParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(myId), myControllerName);
+        InteractEnableScrollbars(true);
+    }
+    else
+        QMessageBox::information(GetFramework()->Ui()->MainWindow(),
+            "Control Request Denied", "Another client already has control of this web browser.");
+}
+
+void EC_WebView::InteractControlReleaseRequest()
+{
+    if (getcontrollerId() == NoneControlID)
+        LogWarning("Seems like anyone does not have control? Making sure by releasing again.");
+    setcontrollerId(NoneControlID);
+    GetParentEntity()->Exec(4, "WebViewControllerChanged", QString::number(NoneControlID), "");
+    InteractEnableScrollbars(true);
+}
+
+void EC_WebView::InteractEnableScrollbars(bool enabled)
+{
+    if (!webview_)
+        return;
+
+    Qt::ScrollBarPolicy policy = enabled ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff;
+    webview_->page()->mainFrame()->setScrollBarPolicy(Qt::Horizontal, policy);
+    webview_->page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, policy);
+    RenderDelayed();
+}
+
+void EC_WebView::ActionControllerChanged(QString id, QString newController)
+{
+    currentControllerName_ = newController.trimmed();
+}
+
+void EC_WebView::ActionScroll(QString x, QString y)
+{
+    int currentControlId = getcontrollerId();
+    if (currentControlId != NoneControlID && currentControlId != myControllerId_)
+    {
+        QPoint scrollPos(x.toInt(), y.toInt());
+        webview_->page()->mainFrame()->setScrollPosition(scrollPos);
+        Render();
+    }
 }
