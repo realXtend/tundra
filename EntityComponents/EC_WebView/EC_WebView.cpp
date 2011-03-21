@@ -22,6 +22,7 @@
 
 #include <QWebView>
 #include <QWebFrame>
+#include <QUrl>
 #include <QCursor>
 #include <QMenu>
 #include <QAction>
@@ -396,11 +397,14 @@ void EC_WebView::PrepareComponent()
         return;
     }
 
-    if (!urlString.startsWith("http://") && !urlString.startsWith("https://"))
-        urlString = "http://" + urlString;
-
-    //! \note loading the url will invoke Render() once QWebView signals the page has been loaded.
-    webview_->load(QUrl(urlString, QUrl::TolerantMode));
+    QUrl url = QUrl::fromUserInput(urlString);
+    if (url.isValid())
+    {
+        //! \note loading the url will invoke Render() once QWebView signals the page has been loaded.
+        webview_->load(url);
+    }
+    else
+        LogWarning("User given url invalid: " + urlString.toStdString());
 }
 
 void EC_WebView::PrepareWebview()
@@ -578,15 +582,18 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
             return;
         }
 
-        if (!urlString.startsWith("http://") && !urlString.startsWith("https://"))
-            urlString = "http://" + urlString;
-
         // Render if url is same, load page if not. 
         // If someone has control always reload to set the correct title bars.
-        if (webview_->url().toString() == urlString && getcontrollerId() == NoneControlID)
-            RenderDelayed();
+        QUrl url = QUrl::fromUserInput(urlString);
+        if (url.isValid())
+        {
+            if (webview_->url() == url && getcontrollerId() == NoneControlID)
+                RenderDelayed();
+            else
+                webview_->load(url);
+        }
         else
-            webview_->load(QUrl(urlString, QUrl::TolerantMode));
+            LogWarning("User given url invalid: " + urlString.toStdString());
     }
     else if (attribute == &webviewSize)
     {
@@ -637,12 +644,14 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         if (currentControllerId == NoneControlID)
         {
             InteractEnableScrollbars(true);
-            QString urlString = getwebviewUrl().trimmed();
+            QString urlString = getwebviewUrl().simplified();
             if (urlString.isEmpty())
                 return;
-            if (!urlString.startsWith("http://") && !urlString.startsWith("https://"))
-                urlString = "http://" + urlString;
-            webview_->load(QUrl(urlString, QUrl::TolerantMode));
+            QUrl url = QUrl::fromUserInput(urlString);
+            if (url.isValid())
+                webview_->load(url);
+            else
+                LogWarning("User given url invalid: " + urlString.toStdString());
         }
         else
             InteractEnableScrollbars(false);
@@ -690,6 +699,13 @@ void EC_WebView::EntityClicked(Scene::Entity *entity)
 
     if (entity == GetParentEntity())
     {
+        /*! 
+            \todo Make this only happen on left mouse click events. This means improving SceneInteract.
+            \todo Make this only show the popup if the our submesh index was hit in the raycast. 
+                  Can do another raycast but for that we would need the mouse position. 
+                  Preferred fix would be to make SceneInteract emit a nice signal with this data already.
+        */
+
         // Entities have EC_Selected if it is being manipulated.
         // At this situation we don't want to show any ui.
         if (entity->HasComponent("EC_Selected"))
