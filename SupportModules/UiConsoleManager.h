@@ -7,7 +7,7 @@
 #include <QPropertyAnimation>
 
 #include "CoreTypes.h"
-#include "Input.h"
+#include "InputAPI.h"
 
 namespace Foundation
 {

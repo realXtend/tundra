@@ -20,7 +20,7 @@
 #include "ScriptAssetFactory.h"
 #include "EC_DynamicComponent.h"
 #include "SceneManager.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "UiServiceInterface.h"
 #include "Audio.h"
 #include "FrameAPI.h"

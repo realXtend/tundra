@@ -24,14 +24,13 @@ class QObject;
 
 class UiServiceInterface;
 class FrameAPI;
-class Input;
+class InputAPI;
 class AudioAPI;
 class AssetAPI;
 class ConsoleAPI;
 class DebugAPI;
 class SceneAPI;
 
-class Input;
 class FrameworkImpl;
 
 namespace Poco
@@ -67,7 +66,6 @@ namespace Foundation
         Q_OBJECT
 
     public:
-
         /// Constructs and initializes the framework.
         /** @param arc Command line argument count as provided by the operating system.
             @param arcv Command line arguments as provided by the operating system.
@@ -202,8 +200,8 @@ namespace Foundation
         /// Get main QApplication
         NaaliApplication *GetNaaliApplication() const;
 
-        /** Returns module by class T.
-            @param T class type of the module.
+        /// Returns module by class T.
+        /** @param T class type of the module.
             @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
             @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
          */
@@ -212,8 +210,8 @@ namespace Foundation
             return GetModuleManager()->GetModule<T>().lock().get();
         }
 
-        /** Returns service by class T.
-            @param T class type of the service.
+        /// Returns service by class T.
+        /** @param T class type of the service.
             @return The service, or null if the service doesn't exist. Always remember to check for null pointer.
             @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
          */
@@ -223,7 +221,6 @@ namespace Foundation
         }
 
     public slots:
-
         /// Returns the Naali core API UI object.
         NaaliUi *Ui() const;
 
@@ -231,7 +228,7 @@ namespace Foundation
         UiServiceInterface *UiService();
 
         /// Returns the Naali core API Input object.
-        Input *GetInput() const;
+        InputAPI *Input() const;
 
         /// Returns the Naali core API Frame object.
         FrameAPI *Frame() const;
@@ -268,11 +265,12 @@ namespace Foundation
         */
         bool RegisterDynamicObject(QString name, QObject *object);
 
-    public slots:
-        /// Signal the framework to exit
+        /// Signals the framework to exit
         void Exit();
 
     private:
+        Q_DISABLE_COPY(Framework)
+
         /// Registers framework specific console commands
         /// Should be called after modules are loaded and initialized
         void RegisterConsoleCommands();
@@ -304,7 +302,7 @@ namespace Foundation
         FrameAPI *frame; ///< The Naali Frame API.
         ConsoleAPI *console; ///< The Naali console API.
         NaaliUi *ui; ///< The Naali UI API.
-        Input *input; ///< The Naali Input API.
+        InputAPI *input; ///< The Naali Input API.
         AssetAPI *asset; ///< The Naali Asset API.
         AudioAPI *audio; ///< The Naali Audio API.
         DebugAPI *debug; ///< The Naali Debug API.

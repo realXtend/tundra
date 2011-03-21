@@ -28,7 +28,7 @@
 #include "SceneEvents.h"
 #include "EventManager.h"
 #include "EC_Placeable.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("ECEditorWindow");
@@ -85,7 +85,7 @@ void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
             entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
 
         //! @todo This will now work if we loose windows focus and previos key state stays, replace this with InputContext.
-        if(!framework_->GetInput()->IsKeyDown(Qt::Key_Control))
+        if(!framework_->Input()->IsKeyDown(Qt::Key_Control))
             entity_list_->clearSelection();
 
         int row = AddUniqueListItem(entity.get(), entity_list_, entity_name);

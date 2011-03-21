@@ -4,7 +4,7 @@
 #define incl_OgreAssetEditorModule_MeshPreviewEditor_h
 
 #include "RexTypes.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "MouseEvent.h"
 #include "OgreAssetEditorModuleApi.h"
 #include "AssetFwd.h"

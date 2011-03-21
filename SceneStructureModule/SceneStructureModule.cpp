@@ -23,7 +23,7 @@
 #include "Entity.h"
 #include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "SceneImporter.h"
 #include "EC_OgreCamera.h"
@@ -69,7 +69,7 @@ void SceneStructureModule::PostInitialize()
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", this, SLOT(ToggleSceneStructureWindow()));
     framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", this, SLOT(ToggleAssetsWindow()));
 
-    inputContext = framework_->GetInput()->RegisterInputContext("SceneStructureInput", 90);
+    inputContext = framework_->Input()->RegisterInputContext("SceneStructureInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DragEnterEvent(QDragEnterEvent *)), SLOT(HandleDragEnterEvent(QDragEnterEvent *)));
@@ -338,7 +338,7 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
     if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
         return;
 
-    Input &input = *framework_->GetInput();
+    InputAPI &input = *framework_->Input();
 
     const QKeySequence &showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
     const QKeySequence &showAssets = input.KeyBinding("ShowAssetsWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_A));

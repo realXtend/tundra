@@ -30,7 +30,7 @@
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
 #include "ConsoleAPI.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
 
@@ -115,7 +115,7 @@ void DebugStatsModule::PostInitialize()
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
-    inputContext = framework_->GetInput()->RegisterInputContext("DebugStatsInput", 90);
+    inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
 
@@ -133,9 +133,7 @@ void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
     if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
         return;
 
-    Input &input = *framework_->GetInput();
-
-    const QKeySequence showProfiler = input.KeyBinding("ShowProfilerWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_P));
+    const QKeySequence showProfiler = framework_->Input()->KeyBinding("ShowProfilerWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_P));
     if (QKeySequence(e->keyCode | e->modifiers) == showProfiler)
         ShowProfilingWindow();
 }

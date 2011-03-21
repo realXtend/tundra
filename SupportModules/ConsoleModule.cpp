@@ -54,7 +54,7 @@ namespace Console
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         manager_->SetUiInitialized(!manager_->IsUiInitialized());
 
-        inputContext = framework_->GetInput()->RegisterInputContext("Console", 100);
+        inputContext = framework_->Input()->RegisterInputContext("Console", 100);
         inputContext->SetTakeKeyboardEventsOverQt(true);
         connect(inputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     }

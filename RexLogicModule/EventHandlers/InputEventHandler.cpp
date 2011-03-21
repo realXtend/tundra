@@ -4,7 +4,7 @@
 #include "InputEventHandler.h"
 #include "InputEvents.h"
 #include "RexLogicModule.h"
-#include "../Input/Input.h"
+#include "../Input/InputAPI.h"
 #include "WorldStream.h"
 #include "RenderServiceInterface.h"
 #include "ServiceManager.h"

@@ -39,7 +39,7 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "PythonEngine.h"
 #include "WorldStream.h"
@@ -196,7 +196,7 @@ namespace PythonScript
         scene_event_category_ = em_->QueryEventCategory("Scene");
         
         // Create a new input context with a default priority of 100.
-        input = framework_->GetInput()->RegisterInputContext("PythonInput", 100);
+        input = framework_->Input()->RegisterInputContext("PythonInput", 100);
 
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
@@ -647,7 +647,7 @@ namespace PythonScript
 
     InputContext* PythonScriptModule::CreateInputContext(const QString &name, int priority)
     {
-        InputContextPtr new_input = framework_->GetInput()->RegisterInputContext(name.toStdString().c_str(), priority);
+        InputContextPtr new_input = framework_->Input()->RegisterInputContext(name.toStdString().c_str(), priority);
         if (new_input)
         {
             LogDebug("Created new input context with name: " + name.toStdString());
@@ -1887,7 +1887,7 @@ namespace PythonScript
             //PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
 
             PythonQt::self()->registerClass(&AudioAPI::staticMetaObject);
-            PythonQt::self()->registerClass(&Input::staticMetaObject);
+            PythonQt::self()->registerClass(&InputAPI::staticMetaObject);
 
             //knet UserConnection
             PythonQt::self()->registerClass(&UserConnection::staticMetaObject);
