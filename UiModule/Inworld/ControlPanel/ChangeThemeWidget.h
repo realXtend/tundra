@@ -5,6 +5,7 @@
 
 #include <QWidget>
 
+#include "Framework.h"
 #include "UiProxyWidget.h"
 #include "ui_ChangeThemeWidget.h"
 
@@ -15,7 +16,7 @@ namespace CoreUi
         Q_OBJECT
 
         public:
-            ChangeThemeWidget(QObject* settings_widget);
+			ChangeThemeWidget(QObject* settings_widget, Foundation::Framework *framework);
             virtual ~ChangeThemeWidget();
 
         public slots:
@@ -23,6 +24,7 @@ namespace CoreUi
 
         private:
             QString currentTheme;
+			Foundation::Framework *framework_;
 
     };
 

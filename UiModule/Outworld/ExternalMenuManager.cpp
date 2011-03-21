@@ -116,8 +116,7 @@ namespace UiServices
 		controller_actions_[widget->windowTitle()]= action;
 		controller_panels_visibility_[widget->windowTitle()] = dynamic_cast<QDockWidget *>(widget)->isVisible();
 		connect(action, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
-		bool con = connect(widget, SIGNAL(visibilityChanged(bool)), SLOT(ModifyPanelVisibility(bool)));
-		//bool test = connect(widget->nativeParentWidget(), SIGNAL(visibilityChanged(cambio)), SLOT(SetVisibilityChanged(cambio)));
+		connect(widget, SIGNAL(visibilityChanged(bool)), SLOT(ModifyPanelVisibility(bool)));
 		return true;
     }
 

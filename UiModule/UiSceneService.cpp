@@ -48,18 +48,22 @@ namespace UiServices
 
     UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, bool dockable , bool outside, Qt::WindowFlags flags)
     {
-		//QSettings settings("Naali UIExternal2", "UiExternal Settings");
-#ifndef PLAYER_VIEWER
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
-#else
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
-#endif
 		QString pos = "vacio";
 		if (widget->windowTitle() == "")
 			return 0;
-		
-		pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
 
+		QSettings settings;
+		if (owner_->GetFramework()->IsEditionless())
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+			pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
+		}
+		else
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+			pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
+		}
+		
 		if (pos == "outside")
 			external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
 		else if(pos == "inside") {

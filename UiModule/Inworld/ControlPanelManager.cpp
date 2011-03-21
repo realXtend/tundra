@@ -55,8 +55,10 @@ namespace CoreUi
         language_widget_ = new LanguageWidget(settings_widget_);
         settings_widget_->AddWidget(language_widget_, "Language");
 
+		Foundation::Framework *frame = dynamic_cast<UiServices::InworldSceneController *>(parent)->framework_;
+
         // Adding change theme tab
-        changetheme_widget_ = new ChangeThemeWidget(settings_widget_);
+        changetheme_widget_ = new ChangeThemeWidget(settings_widget_, frame);
         settings_widget_->AddWidget(changetheme_widget_, "Change theme");
     }
 

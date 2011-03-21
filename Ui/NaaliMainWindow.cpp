@@ -57,17 +57,26 @@ int NaaliMainWindow::DesktopHeight()
 void NaaliMainWindow::LoadWindowSettingsFromFile()
 {
     setWindowTitle("Tundra v1.0.3");
+	
+	QPoint pos;
+	int win_width;
+	int win_height;
 
-//QSettings
-#ifndef PLAYER_VIEWER
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
-#else
+	//QSettings
+	if (owner->IsEditionless())
+	{
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
-#endif
-		QPoint pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
-		int win_width = settings.value("win_width", 800).toInt();
-		int win_height = settings.value("win_height", 600).toInt();
-		
+		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
+		win_width = settings.value("win_width", 800).toInt();
+		win_height = settings.value("win_height", 600).toInt();
+	}
+	else
+	{
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
+		win_width = settings.value("win_width", 800).toInt();
+		win_height = settings.value("win_height", 600).toInt();
+	}
 
 		// Create window title
         std::string group = Foundation::Framework::ConfigurationGroup();

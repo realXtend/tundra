@@ -5,7 +5,7 @@
 
 #include "ChangeThemeWidget.h"
 #include "UiDarkBlueStyle.h"
-// #include "UiProxyStyle.h"
+#include "UiModule.h"
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -17,8 +17,9 @@
 
 namespace CoreUi
 {
-    ChangeThemeWidget::ChangeThemeWidget(QObject* settings_widget) : 
-        QWidget()
+	ChangeThemeWidget::ChangeThemeWidget(QObject* settings_widget, Foundation::Framework *framework) : 
+        QWidget(),
+		framework_(framework)
     {
         setupUi(this);
         connect(settings_widget, SIGNAL(SaveSettingsClicked()), this, SLOT(ChangeTheme()));
@@ -26,12 +27,23 @@ namespace CoreUi
         
         comboBox_changeTheme->addItem(QString::fromStdString("Naali dark blue"));
         comboBox_changeTheme->addItems(QStyleFactory::keys());
-#ifndef PLAYER_VIEWER
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
-#else
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
-#endif
-		QString theme = settings.value("default_theme_used", QString("")).toString();
+		
+		QString theme;
+		int theme_sel = 1;
+		if (framework_->IsEditionless())
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+			theme = settings.value("default_theme_used", QString("")).toString();
+			theme_sel = settings.value("default_theme_index_used", 1).toInt();
+
+		}
+		else
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+			theme = settings.value("default_theme_used", QString("")).toString();
+			theme_sel = settings.value("default_theme_index_used", 1).toInt();
+		}
+		
 		if (theme == "") {
 			//Use the default one. Typically they include "windows", "motif", "cde", "plastique" and "cleanlooks"
 			QApplication::setPalette(QApplication::style()->standardPalette());
@@ -41,20 +53,10 @@ namespace CoreUi
 					comboBox_changeTheme->setCurrentIndex(i);
 				i++;
 			}
-/*
-			QStringList aux_list = QStyleFactory::keys();
-			aux_list.
-			comboBox_changeTheme->setCurrentIndex(QStyleFactory::keys().indexOf(QApplication::style()->objectName()));
-			
-			if (QStyleFactory::keys().contains("Windows"))
-				theme = "Windows";
-			else
-				theme = "naali dark blue";
-				*/
 		}
 		else
 		{
-			comboBox_changeTheme->setCurrentIndex(settings.value("default_theme_index_used", 1).toInt());
+			comboBox_changeTheme->setCurrentIndex(theme_sel);
 			//Default theme
 			if (theme.toLower() == "naali dark blue")
 			{
@@ -97,14 +99,18 @@ namespace CoreUi
         }
         QApplication::setPalette(QApplication::style()->standardPalette());
 		
-#ifndef PLAYER_VIEWER
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
-#else
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
-#endif
-		settings.setValue("default_theme_used", theme.toLower());
-		settings.setValue("default_theme_index_used", comboBox_changeTheme->currentIndex());
+		QSettings settings;
+		if (framework_->IsEditionless())
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+			settings.setValue("default_theme_used", theme.toLower());
+			settings.setValue("default_theme_index_used", comboBox_changeTheme->currentIndex());
+		}
+		else
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+			settings.setValue("default_theme_used", theme.toLower());
+			settings.setValue("default_theme_index_used", comboBox_changeTheme->currentIndex());
+		}
     }
-
-
 }

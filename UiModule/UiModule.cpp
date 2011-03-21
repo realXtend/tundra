@@ -161,23 +161,32 @@ namespace UiServices
 			ui_scene_service_->CreateSettingsPanel();
 
 			//Restore values
-#ifndef PLAYER_VIEWER
-			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
-#else
-			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
-#endif
-			if (!settings.contains("win_state")){
-				//Set default settings
-				QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
-				qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
-			} 
+			if (framework_->IsEditionless()) {
+				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+				if (!settings.contains("win_state") && !framework_->IsEditionless()){
+					//Set default settings
+					QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
+					qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
+				} 
+				else if (settings.contains("win_state"))
+					qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+			}
 			else
-				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+			{
+				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+				if (!settings.contains("win_state") && !framework_->IsEditionless()){
+					//Set default settings
+					QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
+					qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
+				} 
+				else if (settings.contains("win_state"))
+					qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+			}
 
 			//Create the view manager
-#ifndef PLAYER_VIEWER
-			viewManager_=new ViewManager(this,ui_scene_service_.get());
-#endif
+			if (!framework_->IsEditionless())
+				viewManager_=new ViewManager(this,ui_scene_service_.get());
+
 			//Notify that the restore of the main window has been done
 			postInitialize_ = true;
 		}
@@ -188,14 +197,21 @@ namespace UiServices
 		//Save state of the MainWindow
 		if (qWin_)
 		{
-#ifndef PLAYER_VIEWER
-			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
-#else
-			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
-#endif
-			settings.setValue("win_state", qWin_->saveState());
-			settings.setValue("win_width", qWin_->width());
-			settings.setValue("win_height", qWin_->height());
+			QSettings settings;
+			if (framework_->IsEditionless())
+			{
+				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+				settings.setValue("win_state", qWin_->saveState());
+				settings.setValue("win_width", qWin_->width());
+				settings.setValue("win_height", qWin_->height());
+			}
+			else
+			{
+				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+				settings.setValue("win_state", qWin_->saveState());
+				settings.setValue("win_width", qWin_->width());
+				settings.setValue("win_height", qWin_->height());
+			}
 		}
 
 		if (ui_scene_service_)
