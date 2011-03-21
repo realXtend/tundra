@@ -8,6 +8,7 @@
 #include "EnvironmentModule.h"
 #include "EC_Terrain.h"
 
+#include "SceneAPI.h"
 #include "Entity.h"
 #include "Framework.h"
 #include "SceneManager.h"
@@ -431,7 +432,7 @@ namespace Environment
     {
         if(!scene_manager_)
         {
-            Scene::ScenePtr ptr = env_module_->GetFramework()->GetDefaultWorldScene();
+            Scene::ScenePtr ptr = env_module_->GetFramework()->Scene()->GetDefaultScene();
             if(ptr)
                 scene_manager_ = ptr.get();
         }

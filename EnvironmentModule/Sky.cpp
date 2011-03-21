@@ -241,10 +241,10 @@ bool Sky::IsSkyEnabled()
 
 
 
-void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
-{
             ///\todo Regression. Use the new Asset API here instead. -jj.
 /*
+void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
+{
     assert(tex);
     int tags = lstRequestTags_.size();
 
@@ -310,8 +310,8 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
             return;
         }
     }
-    */
 }
+    */
 
 SkyType Sky::GetSkyType() const
 {

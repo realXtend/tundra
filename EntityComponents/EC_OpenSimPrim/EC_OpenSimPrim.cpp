@@ -11,6 +11,7 @@
 #include <QMap>
 #include "MemoryLeakCheck.h"
 #include "EC_OpenSimPrim.h"
+#include "SceneAPI.h"
 #include "IModule.h"
 #include "SceneManager.h"
 #include "Entity.h"
@@ -209,8 +210,8 @@ void EC_OpenSimPrim::setMaterials(QVariantMap &qvmap)
 QStringList EC_OpenSimPrim::GetChildren()
 {
     QStringList prim_children;
-    assert(GetFramework()->GetDefaultWorldScene());
-    Scene::EntityList prims = GetFramework()->GetDefaultWorldScene()->GetEntitiesWithComponent("EC_OpenSimPrim");
+    assert(GetFramework()->Scene()->GetDefaultScene());
+    Scene::EntityList prims = GetFramework()->Scene()->GetDefaultScene()->GetEntitiesWithComponent("EC_OpenSimPrim");
     foreach(Scene::EntityPtr entity, prims)
     {
         boost::shared_ptr<EC_OpenSimPrim> prim = entity->GetComponent<EC_OpenSimPrim>();

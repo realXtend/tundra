@@ -12,6 +12,7 @@
 #include "ModuleManager.h"    // for avatar info
 #include "WorldLogicInterface.h" // for avatar position
 #include "Entity.h" // for avatar position
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "User.h"
 #include "Channel.h"
@@ -443,7 +444,7 @@ namespace MumbleVoip
 
     QString Session::GetAvatarFullName(QString uuid) const
     {
-        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr current_scene = framework_->Scene()->GetDefaultScene();
         if (current_scene)
         {
             for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)

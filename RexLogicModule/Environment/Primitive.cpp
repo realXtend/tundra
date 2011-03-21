@@ -12,6 +12,7 @@
 #include "EntityComponent/EC_FreeData.h"
 #include "Environment/Primitive.h"
 
+#include "SceneAPI.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
@@ -64,7 +65,7 @@ void Primitive::Update(f64 frametime)
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *created)
 {
     // Make sure scene exists
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -105,7 +106,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
 
 Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -267,7 +268,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         rexlogicmodule_->HandleObjectParent(localid);
         if (was_created)
         {
-            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
             if (scene)
                 scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
         }
@@ -1007,7 +1008,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return false;
 
@@ -1083,7 +1084,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
 {
     ///\todo Make this only discard mesh resource request tags.
     // Discard old request tags for this entity
-    DiscardRequestTags(entityid, prim_resource_request_tags_);
+//    DiscardRequestTags(entityid, prim_resource_request_tags_);
 
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)
@@ -1828,7 +1829,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     }
 }
     */
-
+/*
 void Primitive::DiscardRequestTags(entity_id_t entityid, Primitive::EntityResourceRequestMap& map)
 {
     std::vector<Primitive::EntityResourceRequestMap::iterator> tags_to_remove;
@@ -1843,7 +1844,7 @@ void Primitive::DiscardRequestTags(entity_id_t entityid, Primitive::EntityResour
     for (int j = 0; j < tags_to_remove.size(); ++j)
         map.erase(tags_to_remove[j]);
 }
-
+*/
 void Primitive::HandlePrimScaleAndVisibility(entity_id_t entityid)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
@@ -2204,7 +2205,7 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
 
 void Primitive::HandleLogout()
 {
-    prim_resource_request_tags_.clear();
+//    prim_resource_request_tags_.clear();
     pending_rexprimdata_.clear();
     pending_rexfreedata_.clear();
     local_dirty_entities_.clear();

@@ -506,8 +506,7 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
     if (assetType.isEmpty())
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
-    // Turn named storage (and default storage) specifiers to absolute specifiers.
-    assetRef = LookupAssetRefToStorage(assetRef);
+    assetRef = assetRef.trimmed();
 
     if (assetRef.isEmpty())
     {
@@ -516,6 +515,9 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 //        LogError("AssetAPI::RequestAsset: Request by empty url \"\" of type \"" + assetType.toStdString() + " received!");
         return AssetTransferPtr();
     }
+
+    // Turn named storage (and default storage) specifiers to absolute specifiers.
+    assetRef = LookupAssetRefToStorage(assetRef);
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since

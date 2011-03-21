@@ -15,6 +15,7 @@
 
 #include "EC_OgreEnvironment.h"
 #include "SceneManager.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "Renderer.h"
@@ -91,7 +92,7 @@ EC_OgreEnvironment* Environment::GetEnvironmentComponent()
 
 void Environment::CreateEnvironment()
 {
-    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeIdLocal());
 
     // The environment entity exists due to legacy from Taiga. It is bad design to create the entity here.
@@ -105,7 +106,7 @@ void Environment::CreateEnvironment()
     // Creates default fog component
     
     // Does there exist allready Enviroment-entity?
-    //Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    //Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
     
     Scene::Entity* enviroment = active_scene->GetEntityByName("FogEnvironment").get();
     
@@ -189,7 +190,7 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
 
 EC_EnvironmentLight* Environment::GetEnvironmentLight()
 {
-    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
     Scene::Entity* entity = active_scene->GetEntityByName("LightEnvironment").get();
     
     if (entity != 0 )
@@ -299,7 +300,7 @@ void Environment::Update(f64 frametime)
      
     // Go through all water components.
 
-    Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = owner_->GetFramework()->Scene()->GetDefaultScene();
     Scene::EntityList lst = scene->GetEntitiesWithComponent(EC_WaterPlane::TypeNameStatic());
     Scene::EntityList::iterator iter = lst.begin();
 
@@ -380,7 +381,7 @@ void Environment::Update(f64 frametime)
 
 EC_Fog* Environment::GetEnvironmentFog()
 {
-    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
     Scene::Entity* entity = active_scene->GetEntityByName("FogEnvironment").get();
     if (entity != 0 )
     {

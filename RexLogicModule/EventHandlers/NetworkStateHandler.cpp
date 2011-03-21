@@ -16,6 +16,8 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "WorldStream.h"
+
+#include "SceneAPI.h"
 #include "SceneManager.h"
 
 #ifndef UISERVICE_TEST
@@ -65,7 +67,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, IEve
         // Make sure the rexlogic also thinks connection is closed.
         if (owner_->GetServerConnection()->IsConnected())
             owner_->GetServerConnection()->ForceServerDisconnect();
-        if (owner_->GetFramework()->HasScene("World"))
+        if (owner_->GetFramework()->Scene()->HasScene("World"))
             owner_->DeleteScene("World");
         break;
     }

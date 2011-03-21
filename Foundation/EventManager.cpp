@@ -23,7 +23,7 @@
 EventManager::EventManager(Foundation::Framework *framework) :
     framework_(framework),
     next_category_id_(1),
-    next_request_tag_(1),
+//    next_request_tag_(1),
     main_thread_id_(QThread::currentThreadId())
 {
 }
@@ -212,14 +212,14 @@ bool EventManager::UnregisterEventSubscriber(IComponent* component, event_catego
 
    return false;
 }
-
+/*
 request_tag_t EventManager::GetNextRequestTag()
 {
     if (next_request_tag_ == 0) 
         ++next_request_tag_; // Never use 0
     return next_request_tag_++;
 }
-
+*/
 void EventManager::ClearDelayedEvents()
 {
     MutexLock lock(delayed_events_mutex_);

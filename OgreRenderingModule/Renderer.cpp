@@ -22,6 +22,7 @@
 #include "Platform.h"
 #include "CoreException.h"
 #include "Entity.h"
+#include "SceneAPI.h"
 
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
@@ -1224,7 +1225,7 @@ namespace OgreRenderer
     void Renderer::PrepareImageRendering(int width, int height)
     {
         // Only do this once per connect as we create entitys here
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
         if (scene && image_rendering_texture_name_.empty())
         {
             image_rendering_texture_name_ = "ImageRenderingTexture-" + QUuid::createUuid().toString().toStdString();

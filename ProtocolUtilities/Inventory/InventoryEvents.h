@@ -122,7 +122,7 @@ namespace Inventory
     public:
         InventoryItemOpenEventData() : overrideDefaultHandler(false) {}
         virtual ~InventoryItemOpenEventData() {}
-        request_tag_t requestTag;
+//        request_tag_t requestTag;
         RexUUID inventoryId;
         RexUUID assetId;
         inventory_type_t inventoryType;
@@ -140,7 +140,7 @@ namespace Inventory
         RexUUID inventoryId;
     ///\todo Regression. Reimplement using the new Asset API. -jj.
 //        Foundation::AssetInterfacePtr asset;
-        request_tag_t requestTag;
+//        request_tag_t requestTag;
         asset_type_t assetType;
         std::string name;
         bool handled;

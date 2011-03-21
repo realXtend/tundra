@@ -12,7 +12,7 @@
 
     \defgroup Scene_group Scene Model Client Interface
 */
-        typedef std::map<uint, ComponentFactoryPtr> ComponentFactoryHashMap;
+typedef std::map<uint, ComponentFactoryPtr> ComponentFactoryHashMap;
 
 //! Manages components. Also works as a component factory.
 /*! \ingroup Foundation_group

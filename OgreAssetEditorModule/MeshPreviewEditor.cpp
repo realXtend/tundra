@@ -70,7 +70,7 @@ MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework,
     inventoryId_(inventory_id),
     okButton_(0),
     assetId_(assetID),
-    request_tag_(0),
+//    request_tag_(0),
     lastPos_(QPointF()),
     camAlphaAngle_(0),
     mesh_id_(""),
@@ -156,18 +156,17 @@ MeshPreviewEditor::~MeshPreviewEditor()
 }
 
 
-void MeshPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
-{
     ///\todo Regression. Reimplement using the new Asset API. -jj.
     /*
+void MeshPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
+{
     if(request_tag_ == res->tag_)
     {
        mesh_id_ =  res->id_.c_str();
        Update();
     }
-    */
-
 }
+    */
 
 void MeshPreviewEditor::RequestMeshAsset(const QString &asset_id)
 {

@@ -12,8 +12,10 @@
 
 #include <QObject>
 
-#ifndef incl_RexLogicModule_SceneInteract_h
-#define incl_RexLogicModule_SceneInteract_h
+class RaycastResult;
+
+#ifndef incl_Scene_SceneInteract_h
+#define incl_Scene_SceneInteract_h
 
 /// Transforms generic mouse and keyboard input events to input-related Entity Action for scene entities.
 /** Peforms raycast each frame and if entity is hit, performs the following actions on it:
@@ -27,24 +29,32 @@ class SceneInteract : public QObject
     Q_OBJECT
 
 public:
-    /// Costructor.
-    /** Framework takes ownership of this object
-        @param fw Framework.
-    */
-    explicit SceneInteract(Foundation::Framework *fw);
+    //! Costructor. Framework takes ownership of this object
+    /// \param fw Framework.
+    SceneInteract();
 
-    /// Destructor.
+    //! Destructor.
     ~SceneInteract() {}
 
+    //! Set framework.
+    void Initialize(Foundation::Framework *framework);
+
 signals:
-    /// Emitted when scene was clicked and raycast hit an entity.
-    /** @param entity Hit entity.
-    */
+    //! Emitted when scene was clicked and raycast hit an entity.
+    /// \param entity Hit entity.
     void EntityClicked(Scene::Entity *entity);
 
+    //! Emitted when scene was clicked and raycast hit an entity.
+    /// \param entity Hit entity.
+    void EntityClicked(Scene::Entity *entity, Qt::MouseButton button);
+
+    //! Emitted when scene was clicked and raycast hit an entity.
+    /// \param entity Hit entity.
+    void EntityClicked(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
+
 private:
-    /// Peforms raycast to last known mouse cursor position.
-    void Raycast();
+    //! Performs raycast to last known mouse cursor position.
+    RaycastResult* Raycast();
 
     Foundation::Framework *framework_; ///< Framework.
     InputContextPtr input_; ///< Input context.
@@ -55,17 +65,15 @@ private:
     Scene::EntityWeakPtr lastHitEntity_; ///< Last entity raycast has hit.
 
 private slots:
-    /// Executes "MouseHover" action each frame is raycast has hit and entity.
+    //! Executes "MouseHover" action each frame is raycast has hit and entity.
     void Update();
 
-    /// Handles key events from input service.
-    /** @param e Key event.
-    */
+    //! Handles key events from input service.
+    /// \param e Key event.
     void HandleKeyEvent(KeyEvent *e);
 
-    /// Handles mouse events from input service.
-    /** @param e Mouse event.
-    */
+    //! Handles mouse events from input service.
+    /// \param e Mouse event.
     void HandleMouseEvent(MouseEvent *e);
 };
 

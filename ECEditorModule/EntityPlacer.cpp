@@ -5,6 +5,7 @@
 
 #include "EntityPlacer.h"
 #include "SceneManager.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 #include "EC_Placeable.h"
 #include "Renderer.h"
@@ -27,7 +28,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
     static const std::string customMeshName("Selection.mesh");
     input_ = framework_->GetInput()->RegisterInputContext("EntityPlacement", 110);
     
-    entity_ = framework_->GetDefaultWorldScene()->GetEntity(entityId);
+    entity_ = framework_->Scene()->GetDefaultScene()->GetEntity(entityId);
     if(!entity_.expired())
     {
         Scene::Entity *entity = entity_.lock().get();

@@ -10,6 +10,7 @@
 #include "TreeWidgetItemExpandMemory.h"
 
 #include "EventManager.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "ModuleManager.h"
@@ -197,7 +198,7 @@ Console::CommandResult ECEditorModule::ShowDocumentation(const StringVector &par
  */
 Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
 {
-    Scene::SceneManager *sceneMgr = framework_->GetDefaultWorldScene().get();
+    Scene::SceneManager *sceneMgr = GetFramework()->Scene()->GetDefaultScene().get();
     if(!sceneMgr)
         return Console::ResultFailure("Failed to find main scene.");
 
@@ -323,10 +324,13 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
     if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
     {
         if (!active_editor_)
+        {
             AddEditorWindowToUI();
-        active_editor_->show();
+            active_editor_->show();
+        }
+        else
+            active_editor_->setVisible(!active_editor_->isVisible());
     }
-        //ShowWindow(StringVector());  
 }
 
 void ECEditorModule::ActiveECEditorDestroyed(QObject *obj)

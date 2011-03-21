@@ -13,6 +13,7 @@
 #include "ConvexHull.h"
 #include "MemoryLeakCheck.h"
 #include "Entity.h"
+#include "SceneAPI.h"
 #include "Framework.h"
 #include "SceneManager.h"
 #include "ServiceManager.h"
@@ -130,7 +131,7 @@ Console::CommandResult PhysicsModule::ConsoleStartPhysics(const StringVector& pa
 
 Console::CommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVector& params)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Console::ResultFailure("No active scene");
     
@@ -283,7 +284,7 @@ void PhysicsModule::UpdateDebugGeometry()
     PROFILE(PhysicsModule_UpdateDebugGeometry);
 
     // Draw debug only for the active scene
-    PhysicsWorld* world = GetPhysicsWorldForScene(framework_->GetDefaultWorldScene());
+    PhysicsWorld* world = GetPhysicsWorldForScene(GetFramework()->Scene()->GetDefaultScene());
     if (!world)
         return;
     

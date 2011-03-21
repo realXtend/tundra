@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "QtUiAsset.h"
 #include "AssetAPI.h"
+#include <boost/regex.hpp>
 
 #include <QByteArrayMatcher>
 #include <QUrl>
@@ -13,8 +14,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("QtUiAsset")
 QtUiAsset::QtUiAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_)
 {
-    patterns_ << "http://" << "https://" << "local://" << "file://";
-    invalid_ref_chars_ << " " << "\n" << "\r" << "\t" << "\v" << "\f" << "\a";
 }
 
 QtUiAsset::~QtUiAsset() 
@@ -23,9 +22,13 @@ QtUiAsset::~QtUiAsset()
 
 bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 {
-    refs_.clear();
-    data_.clear();
-    data_.insert(data_.begin(), data, data + numBytes);   
+    refs.clear();
+    originalData.clear();
+
+    if (!data || numBytes == 0)
+        return false;
+
+    originalData.insert(originalData.end(), data, data + numBytes);
 
     // If we are in headless mode, do not mark refs as dependency as it will
     // just spawn unneeded resources to the asset api without the actual need for them.
@@ -34,145 +37,121 @@ bool QtUiAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     if (assetAPI->IsHeadless())
         return true;
 
-    // Find references
-    QByteArray dataQt((const char*)&data_[0], data_.size());
-    if (!dataQt.isNull() && !dataQt.isEmpty())
+    // Now, go through the contents of the .ui asset file and look for references to other assets (ui images),
+    // and mark those down into an auxiliary structure. Later, before letting Qt load up the .ui file, 
+    // we replace these network url refs with the actual disk source of each asset.
+    std::string uiAssetFile(data, data + numBytes);
+
+    bool found = true;
+    std::string::const_iterator start = uiAssetFile.begin();
+    const std::string::const_iterator end = uiAssetFile.end();
+    while(found)
     {
-        QByteArrayMatcher matcher;
-        foreach(QByteArray pattern, patterns_)
+        boost::smatch r;
+        // Try to find lines of form 'url(http://myserver.com/asset.png)' or 'url(someotherkindofassetref)'
+        // There may be double-quotes in the form of '"' or '&quot;', which the regex needs to take into account.
+        // The regex ignores all redundant whitespace, i.e. 'url(   "   local://myasset.png &quot;  )' is also matched.
+        boost::regex e("url\\(\\s*((&quot;)|\\\")?\\s*(.*?)\\s*((&quot;)|\\\")?\\s*\\)");
+        found = boost::regex_search(start, end, r, e);
+        if (found)
         {
-            int from = 0;
-            int indexStart = 0;
-            matcher.setPattern(pattern);
-            while (indexStart != -1)
-            {
-                indexStart = matcher.indexIn(dataQt, from);
-                if (indexStart == -1)
-                    break;
-
-                // ")" due to Qt style sheets have this syntax for example: 
-                // some-image-property: url({"|'}pattern{"|'});
-                int indexStop1 = dataQt.indexOf(")", indexStart);
-                // "<" due to normal qt xml defining images, for example: 
-                // <iconset><normaloff>pattern</normaloff>pattern</iconset>
-                int indexStop2 = dataQt.indexOf("<", indexStart);
-                if (indexStop1 == -1 && indexStop2 == -1)
-                {
-                    from = indexStart + 1;
-                    continue;
-                }
-                int indexStop = indexStop1;
-                if (indexStop2 < indexStop || indexStop == -1)
-                    indexStop = indexStop2;
-                from = indexStop;
-                if (indexStop < indexStart)
-                    continue;
-
-                // Asset reference validation
-                QString stringRef = dataQt.mid(indexStart, indexStop - indexStart).trimmed();
-                
-                // Ignore ui elements that have patterns as text, for example:
-                // <widget><property name="text"><string>pattern</string></property></widget>
-                if (indexStop == indexStop2)
-                {
-                    int indexStop3 = dataQt.indexOf(">", indexStart);
-                    QString xmlEndTag = dataQt.mid(indexStop2, (indexStop3 - indexStop2) + 1);
-                    if (xmlEndTag.toLower() == "</string>")
-                        continue;
-                }
-
-                // Remove the last ' or " from url({"|'}pattern{"|'}) before the found )
-                QChar lastChar = stringRef.at(stringRef.length()-1);
-                if (lastChar == '\'' || lastChar == '\"')
-                    stringRef.chop(1);
-                if (stringRef.isEmpty() || stringRef.isNull())
-                    continue;
-
-                // Check for not wanted characters
-                foreach(QString invalid, invalid_ref_chars_)
-                    if (stringRef.contains(invalid))
-                        continue;
-
-                // QUrl validation, in tolerant mode
-                QUrl ref(stringRef, QUrl::TolerantMode);
-                if (!ref.isValid())
-                    continue;
-
-                AssetReference refStruct(stringRef);
-
-                // Check for duplicates
-                for(size_t i=0; i<refs_.size(); ++i)
-                    if (refs_[i].ref == refStruct.ref)
-                        continue;
-
-                // Seems legit, add it
-                refs_.push_back(refStruct);
-            }
+            AssetRef ref;
+            ref.index = r[3].first - uiAssetFile.begin();
+            ref.length = r[3].second - r[3].first;
+            ref.parsedRef = std::string(r[3].first, r[3].second).c_str();
+            ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
+            refs.push_back(ref);
+            start = r[0].second;
         }
     }
-    else
-        LogError("FindReferences: Could not process .ui file content, error: data was null.");
+
+    found = true;
+    start = uiAssetFile.begin();
+    while(found)
+    {
+        boost::smatch r;
+        // Try to find lines of form '<pixmap>http://myserver.com/asset.png</pixmap>' or '<pixmap>someotherkindofassetref</pixmap>'
+        // There may be double-quotes in the form of '"' or '&quot;', which the regex needs to take into account.
+        // The regex ignores all redundant whitespace, i.e. '< pixmap > local://myasset.png </ pixmap >' is also matched.
+        boost::regex e("\\<\\s*pixmap\\s*\\>\\s*((&quot;)|\")?\\s*(.*?)\\s*((&quot;)|\")?\\s*\\<\\s*/pixmap\\s*\\>");
+        found = boost::regex_search(start, end, r, e);
+        if (found)
+        {
+            AssetRef ref;
+            ref.index = r[3].first - uiAssetFile.begin();
+            ref.length = r[3].second - r[3].first;
+            ref.parsedRef = std::string(r[3].first, r[3].second).c_str();
+            ref.parsedRef.replace(QRegExp("[\'\"\\t\\n\\r\\v\\f\\a]"), "");
+            refs.push_back(ref);
+            start = r[0].second;
+        }
+    }
 
     return true;
 }
 
 bool QtUiAsset::SerializeTo(std::vector<u8> &data, const QString &serializationParameters )
 {
-    if (data_.empty())
-        return false;
-    data.clear();
-    data = data_;
-    return true;
+    data = originalData;
+    return data.size() > 0;
 }
 
 void QtUiAsset::DoUnload()
 {
+    // Unloading a ui asset does not have any meaning, as it's not a GPU resource and it doesn't have any kind of decompress/unpack step.
+    // Implementation for this asset is a no-op.
 }
 
 std::vector<AssetReference> QtUiAsset::FindReferences() const
-{   
-    return refs_;
+{  
+    std::vector<AssetReference> assetRefs;
+    for(size_t i = 0; i < refs.size(); ++i)
+    {
+        assetRefs.push_back(AssetReference(refs[i].parsedRef));
+    }
+    return assetRefs;
 }
 
-int QtUiAsset::ReplaceAssetReferences(QByteArray &uiData)
+QByteArray QtUiAsset::GetRefReplacedAssetData() const
 {
-    int replacedRefs = 0;
-    for(uint i=0; i<refs_.size(); ++i)
+    if (originalData.size() == 0)
+        return QByteArray();
+    QByteArray refRewrittenData((const char *)&originalData[0], originalData.size());
+
+    // The AssetRef indices need to be adjusted with an offset after rewriting each ref, since the lengths of the refs change in the file.
+    // This variable tracks the accumulated byte offset that takes this into account.
+    int indexAdjustment = 0; 
+
+    for(size_t i = 0; i < refs.size(); ++i)
     {
-        QString assetRef = refs_[i].ref;
-        AssetPtr asset = assetAPI->GetAsset(assetRef);
+        QString assetDiskSource = "";
+        AssetPtr asset = assetAPI->GetAsset(refs[i].parsedRef);
         if (!asset.get())
         {
-            LogError("ReplaceAssetReferences: Asset not found from asset system even when it was marked as a dependency earlier, skipping: " + assetRef.toStdString());
-            continue;
+            LogError("ReplaceAssetReferences: Asset not found from asset system even when it was marked as a dependency earlier, skipping: " + refs[i].parsedRef.toStdString());
         }
-        QString refDiskSource = asset->DiskSource();
-        if (refDiskSource.isEmpty())
+        else
         {
-            LogWarning("ReplaceAssetReferences: Asset disk source empty, skipping: " + assetRef.toStdString());
-            continue;
+            assetDiskSource = asset->DiskSource();
+            if (assetDiskSource.isEmpty())
+                LogWarning("ReplaceAssetReferences: Asset disk source empty, skipping: " + refs[i].parsedRef.toStdString());
         }
-        if (!QFile::exists(refDiskSource))
+        assetDiskSource = assetDiskSource.trimmed();
+        if (!assetDiskSource.isEmpty() && QFile::exists(assetDiskSource))
         {
-            LogWarning("ReplaceAssetReferences: Asset disk source does not exist, skipping: " + assetRef.toStdString());
-            continue;
+            QByteArray refAsByteArray = (QString("\"") + assetDiskSource + QString("\"")).toUtf8();
+            refRewrittenData.replace(refs[i].index + indexAdjustment, refs[i].length, refAsByteArray);
+            indexAdjustment += refAsByteArray.length() - refs[i].length;
         }
-        uiData.replace(assetRef, refDiskSource.toStdString().c_str());
-        replacedRefs++;
+        else
+        {
+            LogWarning("ReplaceAssetReferences: Asset disk source does not exist, skipping: " + refs[i].parsedRef.toStdString());
+        }
     }
-    return replacedRefs;
+    return refRewrittenData;
 }
 
 bool QtUiAsset::IsDataValid() const
 {
-    return !data_.empty();
-}
-
-QByteArray QtUiAsset::GetRawData() const
-{
-    QByteArray returnData;
-    if (!IsDataValid())
-        return returnData;
-    returnData = QByteArray((const char*)&data_[0], data_.size());
-    return returnData;
+    return originalData.size() > 0;
 }
