@@ -58,6 +58,8 @@ SceneStructureModule::SceneStructureModule() :
 
 SceneStructureModule::~SceneStructureModule()
 {
+	if (GetFramework()->IsHeadless())
+		return; 
     SAFE_DELETE(sceneWindow);
     SAFE_DELETE(toolTipWidget);
 }

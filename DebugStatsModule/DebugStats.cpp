@@ -162,8 +162,8 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->resize(650, 530);
 //$ BEGIN_MOD $
 	UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, true, true);
-//$ END_MOD $
-    connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+    //connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+	//$ END_MOD $
 
 	ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("View"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }

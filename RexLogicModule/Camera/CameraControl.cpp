@@ -109,16 +109,20 @@ namespace RexLogic
         if (ui_service)
 		{
 			//$ BEGIN_MOD $
+			/*
+			* Not used with tundra
 			//proxy_widget_ = ui_service->AddWidgetToScene(this);
 			setWindowTitle("Camera Controls");
 			setObjectName("Camera Controls");
 			proxy_widget_ = ui_service->AddWidgetToScene(this, true, true);
+			//connect(proxy_widget_, SIGNAL(Visible(bool)), this, SLOT(Visible(bool)));
 			//$ END_MOD $
             setMaximumHeight(800);
 			setMaximumWidth(600);
 			ui_service->AddWidgetToMenu(this, tr("Camera Controls"), "View", "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png");
+			*/
 		}
-        connect(proxy_widget_, SIGNAL(Visible(bool)), this, SLOT(Visible(bool)));
+        
 	}
 
     void CameraControl::CameraTripod(bool checked)
