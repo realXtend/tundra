@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
@@ -34,14 +34,14 @@
 #include "OgreMaterialAsset.h"
 #include "TextureAsset.h"
 
+#include "MemoryLeakCheck.h"
+
 namespace OgreRenderer
 {
     std::string OgreRenderingModule::type_name_static_ = "OgreRendering";
 
     OgreRenderingModule::OgreRenderingModule() :
         IModule(type_name_static_),
-        asset_event_category_(0),
-        resource_event_category_(0),
         input_event_category_(0),
         scene_event_category_(0)
     {
@@ -76,11 +76,9 @@ namespace OgreRenderer
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<OgreMaterialAsset>("OgreMaterial")));
     }
 
-    // virtual
     void OgreRenderingModule::PreInitialize()
     {
         std::string ogre_config_filename = "ogre.cfg";
-
 #if defined (_WINDOWS) && (_DEBUG)
         std::string plugins_filename = "pluginsd.cfg";
 #elif defined (_WINDOWS)
@@ -101,7 +99,6 @@ namespace OgreRenderer
         renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
     }
 
-    // virtual
     void OgreRenderingModule::Initialize()
     {
         assert (renderer_);
@@ -113,17 +110,13 @@ namespace OgreRenderer
         framework_->RegisterDynamicObject("renderer", renderer_.get());
     }
 
-    // virtual
     void OgreRenderingModule::PostInitialize()
     {
         EventManagerPtr event_manager = framework_->GetEventManager();
-
-        asset_event_category_ = event_manager->QueryEventCategory("Asset");
-        resource_event_category_ = event_manager->QueryEventCategory("Resource");
         input_event_category_ = event_manager->QueryEventCategory("Input");
         scene_event_category_ = event_manager->QueryEventCategory("Scene");
         network_state_event_category_ = event_manager->QueryEventCategory("NetworkState");
-        
+
         renderer_->PostInitialize();
 
         RegisterConsoleCommand(Console::CreateCommand(
@@ -132,7 +125,6 @@ namespace OgreRenderer
         renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
 
-    // virtual
     bool OgreRenderingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(OgreRenderingModule_HandleEvent);
@@ -171,7 +163,6 @@ namespace OgreRenderer
         return false;
     }
 
-    // virtual 
     void OgreRenderingModule::Uninitialize()
     {
         // We're shutting down. Force a release of all loaded asset objects from the Asset API so that 
@@ -188,8 +179,7 @@ namespace OgreRenderer
         renderer_settings_.reset();
         renderer_.reset();
     }
-    
-    // virtual
+
     void OgreRenderingModule::Update(f64 frametime)
     {
         {
