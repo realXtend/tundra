@@ -27,7 +27,6 @@ SceneInteract::SceneInteract() :
 void SceneInteract::Initialize(Foundation::Framework *framework)
 {
     framework_ = framework;
-
     renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer);
 
     input_ = framework_->GetInput()->RegisterInputContext("SceneInteract", 100);
@@ -35,7 +34,6 @@ void SceneInteract::Initialize(Foundation::Framework *framework)
 
     connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
-
     connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
 }
 
@@ -101,15 +99,18 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
         case  MouseEvent::MousePressed:
         {
             Scene::Entity *hitEntity = lastHitEntity_.lock().get();
-            if (!hitEntity)
+            if (!hitEntity || !raycastResult)
                 return;
             
-            // Execute "MousePress" entity action.
-            hitEntity->Exec(EntityAction::Local, "MousePress", QString::number(static_cast<uint>(e->button)));
-            
-            // Emit all of our signals. Listeners can choose what to listen depending on what data they need.
-            emit EntityClicked(hitEntity);
-            emit EntityClicked(hitEntity, (Qt::MouseButton)e->button);
+            // Execute local "MousePress" entity action with signature:
+            // Action name: "MousePress"  
+            // String parameters: (int)"Qt::MouseButton", (float,float,float)"x,y,z", (int)"submesh index"
+            hitEntity->Exec(EntityAction::Local, "MousePress", 
+                            QString::number(static_cast<uint>(e->button)),
+                            QString("%1,%2,%3").arg(QString::number(raycastResult->pos_.x), QString::number(raycastResult->pos_.y), QString::number(raycastResult->pos_.z)),
+                            QString::number(static_cast<int>(raycastResult->submesh_)));
+
+            // Signal signature: EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)
             emit EntityClicked(hitEntity, (Qt::MouseButton)e->button, raycastResult);
             break;
         }
