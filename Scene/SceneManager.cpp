@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "Entity.h"
 #include "SceneEvents.h"
