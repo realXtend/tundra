@@ -44,6 +44,6 @@ typedef std::vector<IAttribute*> AttributeVector;
 typedef std::map<QString, Scene::ScenePtr> SceneMap;
 
 class SceneInteract;
-typedef QWeakPointer<SceneInteract> SceneIteractWeakPtr;
+typedef QWeakPointer<SceneInteract> SceneInteractWeakPtr;
 
 #endif

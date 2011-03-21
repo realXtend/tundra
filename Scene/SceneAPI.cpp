@@ -51,9 +51,9 @@ void SceneAPI::RegisterSceneEvents() const
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_MEDIAURL_SET, "Mediaurl set");
 }
 
-SceneIteractWeakPtr SceneAPI::GetSceneIteract() const
+SceneInteractWeakPtr SceneAPI::GetSceneIteract() const
 {
-    return SceneIteractWeakPtr(sceneInteract_);
+    return SceneInteractWeakPtr(sceneInteract_);
 }
 
 bool SceneAPI::HasScene(const QString &name) const

@@ -43,7 +43,7 @@ signals:
 
 public slots:
     //! Get Scene Interact weak pointer.
-    SceneIteractWeakPtr GetSceneIteract() const;
+    SceneInteractWeakPtr GetSceneIteract() const;
 
     //! Returns true if specified scene exists, false otherwise
     bool HasScene(const QString &name) const;
