@@ -2,14 +2,15 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "RendererSettings.h"
+#include "Renderer.h"
 #include "OgreRenderingModule.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Framework.h"
 #include "UiServiceInterface.h"
-#include "../Input/Input.h"
+#include "Input.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -19,6 +20,8 @@
 #include <QLabel>
 #include <QKeyEvent>
 #include <QApplication>
+
+#include "MemoryLeakCheck.h"
 
 namespace OgreRenderer
 {

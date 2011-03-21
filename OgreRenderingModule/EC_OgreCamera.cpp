@@ -2,13 +2,16 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "EC_OgreCamera.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreRenderingModule.h"
+#include "Renderer.h"
 
 #include <Ogre.h>
+
+#include "MemoryLeakCheck.h"
 
 using namespace OgreRenderer;
 
@@ -18,25 +21,22 @@ EC_OgreCamera::EC_OgreCamera(IModule* module) :
     attached_(false),
     camera_(0)
 {
-    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
 }
 
 EC_OgreCamera::~EC_OgreCamera()
 {
     if (renderer_.expired())
         return;
-    
+
     DetachCamera();
-    
+
     if (camera_)
     {
         RendererPtr renderer = renderer_.lock();
-        
         if (renderer->GetCurrentCamera() == camera_)
             renderer->SetCurrentCamera(0);
-        
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-        scene_mgr->destroyCamera(camera_);
+        renderer->GetSceneManager()->destroyCamera(camera_);
         camera_ = 0;
     }
 }
@@ -58,8 +58,8 @@ void EC_OgreCamera::SetPlaceable(ComponentPtr placeable)
     {
         OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
         return;
-    }       
-    
+    }
+
     DetachCamera();
     placeable_ = placeable;
     AttachCamera();
@@ -69,7 +69,7 @@ void EC_OgreCamera::SetNearClip(float nearclip)
 {
     if (!camera_)
         return;
-    
+
     camera_->setNearClipDistance(nearclip);
 }
 
@@ -77,10 +77,10 @@ void EC_OgreCamera::SetFarClip(float farclip)
 {
     if (!camera_)
         return;
-    
-    // Enforce that farclip doesn't go past renderer's view distance
     if (renderer_.expired())
         return;
+
+    // Enforce that farclip doesn't go past renderer's view distance
     Renderer* renderer = renderer_.lock().get();
     if (farclip > renderer->GetViewDistance())
         farclip = renderer->GetViewDistance();
@@ -91,7 +91,7 @@ void EC_OgreCamera::SetVerticalFov(float fov)
 {
     if (!camera_)
         return;
-    
+
     camera_->setFOVy(Ogre::Radian(fov));
 }
 
@@ -99,18 +99,17 @@ void EC_OgreCamera::SetActive()
 {
     if (!camera_)
         return;
-    
     if (renderer_.expired())
-        return;           
-    RendererPtr renderer = renderer_.lock();
-    renderer->SetCurrentCamera(camera_);
+        return;
+
+    renderer_.lock()->SetCurrentCamera(camera_);
 }
 
 float EC_OgreCamera::GetNearClip() const
 {
     if (!camera_)
         return 0.0f;
-    
+
     return camera_->getNearClipDistance();
 }
 
@@ -118,7 +117,7 @@ float EC_OgreCamera::GetFarClip() const
 {
     if (!camera_)
         return 0.0f;
-    
+
     return camera_->getFarClipDistance();
 }
 
@@ -126,30 +125,29 @@ float EC_OgreCamera::GetVerticalFov() const
 {
     if (!camera_)
         return 0.0f;
-    
+
     return camera_->getFOVy().valueRadians();
-}  
+}
 
 bool EC_OgreCamera::IsActive() const
 {
     if (!camera_)
         return false;
-    
     if (renderer_.expired())
         return false;
-    RendererPtr renderer = renderer_.lock();    
-    return renderer->GetCurrentCamera() == camera_;
+
+    return renderer_.lock()->GetCurrentCamera() == camera_;
 }
 
 void EC_OgreCamera::DetachCamera()
 {
     if ((!attached_) || (!camera_) || (!placeable_))
         return;
-        
+
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::SceneNode* node = placeable->GetSceneNode();
     node->detachObject(camera_);
-            
+
     attached_ = false;
 }
 
@@ -157,11 +155,11 @@ void EC_OgreCamera::AttachCamera()
 {
     if ((attached_) || (!camera_) || (!placeable_))
         return;
-        
+
     EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::SceneNode* node = placeable->GetSceneNode();
     node->attachObject(camera_);
-            
+
     attached_ = true;
 }
 
@@ -171,7 +169,8 @@ void EC_OgreCamera::UpdateSignals()
     if (parent)
     {
         // Connect to ComponentRemoved signal of the parent entity, so we can check if the mesh gets removed
-        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
+        connect(parent, SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)),
+            SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
         
         // If scene is not view-enabled, no further action
         if (!ViewEnabled())

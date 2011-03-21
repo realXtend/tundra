@@ -13,17 +13,17 @@
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
 
+#include "Renderer.h"
 #include "SceneManager.h"
-
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "OgreMaterialUtils.h"
 #include "InputEvents.h"
-#include "../Input/Input.h"
+#include "Input.h"
 #include "OgreRenderingModule.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include <AttributeChangeType.h>
+#include "AttributeChangeType.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>

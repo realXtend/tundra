@@ -17,7 +17,7 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "NetworkMessages/NetInMessage.h"
-#include "OgreRenderingModule.h"
+#include "Renderer.h"
 
 #ifdef CAELUM
 #include <Caelum.h>
