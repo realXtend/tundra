@@ -42,7 +42,8 @@ class ObjectEdit(Component):
     MANIPULATE_MOVE = 1
     MANIPULATE_SCALE = 2
     MANIPULATE_ROTATE = 3
-    
+    MANIPULATE_SELECT = 4
+	  
     def __init__(self):
         if naali.framework.IsEditionless() or naali.framework.IsHeadless():
             return
@@ -67,6 +68,7 @@ class ObjectEdit(Component):
             (Qt.Key_R, Qt.NoModifier) : self.rotateObject,
             (Qt.Key_S, Qt.NoModifier) : self.scaleObject,
             (Qt.Key_G, Qt.NoModifier) : self.translateObject,
+			(Qt.Key_E, Qt.NoModifier) : self.selectObject,
             (Qt.Key_Tab, Qt.NoModifier) : self.cycleManipulator,
             (Qt.Key_Z, Qt.ControlModifier) : self.undo,
             (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
@@ -98,12 +100,12 @@ class ObjectEdit(Component):
         self.selection_box_inited = False
         
         self.menuToggleAction = None
-        #mainWindow = naali.uicore.MainWindow()
-        #print mainWindow
-        #if mainWindow:
-        #    menuBar = mainWindow.menuBar()
-        #    self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
-        #    self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+        mainWindow = naali.uicore.MainWindow()
+        print mainWindow
+        if mainWindow:
+            menuBar = mainWindow.menuBar()
+            self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
+            self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
         self.toggleEditing(False)
         
         """
@@ -149,7 +151,10 @@ class ObjectEdit(Component):
 
     def translateObject(self):
         self.changeManipulator(self.MANIPULATE_MOVE)
-
+		
+    def selectObject(self):
+        self.changeManipulator(self.MANIPULATE_SELECT)
+		
     def on_keypressed(self, k):
         #print "on_keypressed",k,k.keyCode,k.modifiers
         trigger = (k.keyCodeInt(), k.modifiers)
@@ -198,13 +203,14 @@ class ObjectEdit(Component):
         self.manipulators[self.MANIPULATE_SCALE] =  transform.ScaleManipulator()
         self.manipulators[self.MANIPULATE_FREEMOVE] =  transform.FreeMoveManipulator()
         self.manipulators[self.MANIPULATE_ROTATE] =  transform.RotationManipulator()
-        self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
+        self.manipulators[self.MANIPULATE_SELECT] =  transform.SelectionManipulator()		
+        self.manipulator = self.manipulators[self.MANIPULATE_SELECT]
  
     def getCurrentManipType(self):
         for (type, manip) in self.manipulators.iteritems():
             if manip == self.manipulator:
                 return type
-        return self.MANIPULATE_FREEMOVE
+        return self.MANIPULATE_SELECT
         
     def baseselect(self, ent):
         self.sel_activated = False
@@ -314,8 +320,10 @@ class ObjectEdit(Component):
         elif self.manipulator == self.manipulators[self.MANIPULATE_SCALE]:
             self.changeManipulator(self.MANIPULATE_ROTATE)
         elif self.manipulator == self.manipulators[self.MANIPULATE_ROTATE]:
+            self.changeManipulator(self.MANIPULATE_SELECT)
+        elif self.manipulator == self.manipulators[self.MANIPULATE_SELECT]:
             self.changeManipulator(self.MANIPULATE_FREEMOVE)
-
+			
     def changeManipulator(self, id):
         newmanipu = self.manipulators[id]
         if newmanipu.NAME != self.manipulator.NAME:
