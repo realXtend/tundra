@@ -11,6 +11,8 @@
 #include <QVariant>
 
 namespace Foundation { class Framework; }
+
+class SceneAPI;
 class IComponent;
 class IAttribute;
 
@@ -446,7 +448,7 @@ namespace Scene
 
     private:
         Q_DISABLE_COPY(SceneManager);
-        friend class Foundation::Framework;
+        friend class SceneAPI;
 
         //! default constructor
         SceneManager();

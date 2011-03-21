@@ -6,7 +6,7 @@
 
    the idea of rexlogic, however, is to be a replaceable module that things in core don't generally depend on.
    the framework has developed so that most things can already be gotten without referring to it, like
-   the default scene can now be gotten from Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene(); etc.
+   the default scene can now be gotten from Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene(); etc.
    if we could use the ECs without depending on the module itself, the dependency might be removed,
    and it would be more feasible to replace rexlogic with something and still have the py module work.
 
@@ -53,6 +53,7 @@
 #include "GenericMessageUtils.h"
 #include "LoginServiceInterface.h"
 #include "FrameAPI.h"
+#include "SceneAPI.h"
 #include "ConsoleAPI.h"
 #include "Audio.h"
 #include "NaaliUi.h"
@@ -295,7 +296,7 @@ namespace PythonScript
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
                 value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
 
-                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName.c_str());
+                const Scene::ScenePtr &scene = framework_->Scene()->GetScene(edata->sceneName.c_str());
                 assert(scene);
                 if (scene)
                 {
@@ -598,7 +599,7 @@ namespace PythonScript
 
     Scene::Entity* PythonScriptModule::GetActiveCamera() const
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
         if (!scene)
         {
             LogError("Failed to find active camera, default world scene wasn't setted.");
@@ -627,7 +628,7 @@ namespace PythonScript
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
-        Scene::ScenePtr scene = framework_->GetScene(name);
+        Scene::ScenePtr scene = framework_->Scene()->GetScene(name);
         if (scene)
             return scene.get();
 
@@ -709,7 +710,7 @@ namespace PythonScript
         RexUUID texture_uuid = RexUUID();
         texture_uuid.FromString(uuidstr.toStdString());
 
-        Scene::ScenePtr scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = PythonScript::self()->GetFramework()->Scene()->GetDefaultScene();
         if (!scene)
         {
             //PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
@@ -1041,7 +1042,7 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
     RexUUID texture_uuid(uuidstr);
 
     /// Get scene
-    const Scene::ScenePtr &scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = PythonScript::self()->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
@@ -1944,4 +1945,10 @@ namespace PythonScript
 
         LogInfo(Name() + " initialized succesfully.");
     }
+
+    Scene::ScenePtr PythonScriptModule::GetScenePtr() const
+    {
+         return framework_->Scene()->GetDefaultScene();
+    }
+
 }

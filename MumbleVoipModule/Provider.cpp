@@ -17,6 +17,8 @@
 #include "SceneManager.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
+
+#include "SceneAPI.h"
 #include "Entity.h"
 
 #include <QSignalMapper>
@@ -49,7 +51,7 @@ namespace MumbleVoip
                 communication_service->Register(*this);
         }
 
-        connect(framework_, SIGNAL(SceneAdded(const QString &)), this, SLOT(OnSceneAdded(const QString &)));
+        connect(framework_->Scene(), SIGNAL(SceneAdded(const QString &)), this, SLOT(OnSceneAdded(const QString &)));
     }
 
     Provider::~Provider()
@@ -134,7 +136,7 @@ namespace MumbleVoip
         channel->setchannelname("Public");
         channel->setenabled(true);
 
-        Scene::EntityPtr e = framework_->GetDefaultWorldScene()->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::EntityPtr e = framework_->Scene()->GetDefaultScene()->CreateEntity();
         e->AddComponent(component,  AttributeChange::LocalOnly);
     }
 
@@ -277,7 +279,7 @@ namespace MumbleVoip
 
     void Provider::OnSceneAdded(const QString &name)
     {
-        Scene::SceneManager* scene = framework_->GetScene(name).get();
+        Scene::SceneManager* scene = framework_->Scene()->GetSceneRaw(name);
         if (!scene)
             return;
 

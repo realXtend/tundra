@@ -12,8 +12,8 @@
 
 #include <QObject>
 
-#ifndef incl_RexLogicModule_SceneInteract_h
-#define incl_RexLogicModule_SceneInteract_h
+#ifndef incl_Scene_SceneInteract_h
+#define incl_Scene_SceneInteract_h
 
 /// Transforms generic mouse and keyboard input events to input-related Entity Action for scene entities.
 /** Peforms raycast each frame and if entity is hit, performs the following actions on it:
@@ -31,10 +31,13 @@ public:
     /** Framework takes ownership of this object
         @param fw Framework.
     */
-    explicit SceneInteract(Foundation::Framework *fw);
+    SceneInteract();
 
     /// Destructor.
     ~SceneInteract() {}
+
+    /// Set framework.
+    void SetFramework(Foundation::Framework *framework);
 
 signals:
     /// Emitted when scene was clicked and raycast hit an entity.

@@ -12,6 +12,7 @@
 #include "NetworkEvents.h"
 #include "Input.h"
 #include "SceneManager.h"
+#include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "AvatarDescAsset.h"
@@ -104,7 +105,7 @@ namespace Avatar
 
     Scene::EntityPtr AvatarModule::GetAvatarEntity(entity_id_t entity_id)
     {
-        Scene::ScenePtr current_scene = GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr current_scene = GetFramework()->Scene()->GetDefaultScene();
         if (!current_scene)
             return Scene::EntityPtr();
 

@@ -23,6 +23,7 @@
 #include "ServiceManager.h"
 #include "RexTypes.h"
 #include "NetworkMessages/NetInMessage.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 
 #include <OgreManualObject.h>
@@ -624,7 +625,7 @@ namespace Environment
 
     void Terrain::FindCurrentlyActiveTerrain()
     {
-        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->Scene()->GetDefaultScene();
         for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
         {
             Scene::Entity &entity = *iter->second;

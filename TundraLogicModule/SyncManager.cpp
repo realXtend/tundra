@@ -22,6 +22,8 @@
 #include "MsgEntityAction.h"
 #include "EC_DynamicComponent.h"
 
+#include "SceneAPI.h"
+
 #include <kNet.h>
 
 #include <cstring>
@@ -686,7 +688,7 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -781,7 +783,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
 
 void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -811,7 +813,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
 
 void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -893,7 +895,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -1097,7 +1099,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -1143,7 +1145,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -1169,7 +1171,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
 {
     bool isServer = owner_->IsServer();
     
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     

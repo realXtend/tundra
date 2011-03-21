@@ -14,6 +14,8 @@
 #include "TundraMessages.h"
 #include "TundraEvents.h"
 #include "PhysicsModule.h"
+
+#include "SceneAPI.h"
 #include "SceneManager.h"
 
 #include "MsgLogin.h"
@@ -97,7 +99,7 @@ void Client::Logout(bool fail)
         client_id_ = 0;
         
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
-        framework_->RemoveScene("TundraClient");
+        framework_->Scene()->RemoveScene("TundraClient");
         
         emit Disconnected();
     }
@@ -236,12 +238,12 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
-            Scene::ScenePtr scene = framework_->CreateScene("TundraClient", true);
+            Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true);
             // Create physics world in client (non-authoritative) mode
             Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
             physics->CreatePhysicsWorldForScene(scene, true);
             
-            framework_->SetDefaultWorldScene(scene);
+            framework_->Scene()->SetDefaultScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
             
             Events::TundraConnectedEventData event_data;
@@ -256,7 +258,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             // Note: when we move to unordered communication, we must guarantee that the server does not send
             // any scene data before the login reply
 
-            Scene::ScenePtr scene = framework_->GetScene("TundraClient");
+            Scene::ScenePtr scene = framework_->Scene()->GetScene("TundraClient");
             if (scene)
                 scene->RemoveAllEntities(true, AttributeChange::LocalOnly);
         }

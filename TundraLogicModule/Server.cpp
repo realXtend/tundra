@@ -16,6 +16,8 @@
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 
+#include "SceneAPI.h"
+
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
@@ -86,8 +88,8 @@ bool Server::Start(unsigned short port)
             TundraLogicModule::LogError("Failed to start server in port " + ToString<int>(port));
             return false;
         }
-        Scene::ScenePtr scene = framework_->CreateScene("TundraServer", true);
-        framework_->SetDefaultWorldScene(scene);
+        Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraServer", true);
+        framework_->Scene()->SetDefaultScene(scene);
         owner_->GetSyncManager()->RegisterToScene(scene);
         
         // Create an authoritative physics world
@@ -110,7 +112,7 @@ void Server::Stop()
     if (!owner_->IsServer())
     {
         owner_->GetKristalliModule()->StopServer();
-        framework_->RemoveScene("TundraServer");
+        framework_->Scene()->RemoveScene("TundraServer");
         
         emit ServerStopped();
     }

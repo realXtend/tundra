@@ -6,6 +6,7 @@
 
 #include "Renderer.h"
 #include "FrameAPI.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 
 #include "InputEvents.h"
@@ -352,7 +353,7 @@ namespace RexLogic
 
     void ObjectCameraController::CreateCustomCamera()
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 
