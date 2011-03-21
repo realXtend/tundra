@@ -51,6 +51,16 @@ void SceneAPI::RegisterSceneEvents() const
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_MEDIAURL_SET, "Mediaurl set");
 }
 
+void SceneAPI::Initialise()
+{
+    sceneInteract_->Initialize(framework_);
+}
+
+void SceneAPI::PostInitialize()
+{
+    sceneInteract_->PostInitialize();
+}
+
 SceneInteractWeakPtr SceneAPI::GetSceneIteract() const
 {
     return SceneInteractWeakPtr(sceneInteract_);

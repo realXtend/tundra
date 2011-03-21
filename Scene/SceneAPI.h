@@ -10,10 +10,34 @@
 #include <QString>
 
 typedef std::map<QString, Scene::ScenePtr> SceneMap;
-
 namespace Foundation { class Framework; }
 
-/// \todo Change typedef Scene::ScenePtr from boost::shared_ptr<Scene::SceneManager> to QPointer<Scene::SceneManager> ??
+/**
+<table class="header"><tr><td>
+<h2>SceneAPI</h2>
+
+Manages the scenes for the viewer and server. With this API you can create, remove, get and query scenes.
+You can also get and set the default scene. You can also receive Qt signals about scene events from this API.
+
+Owned by Foundation::Framework.
+
+<b>Qt signals emitted by SceneAPI object:</b>
+<ul>
+<li>SceneAdded(const QString&); - Emitted when a scene is added.
+<div>Parameters: Added scenes name.</div>
+<li>SceneRemoved(const QString&); - Emitted when a scene is removed.
+<div>Parameters: Removed scenes name.</div>
+<li>DefaultWorldSceneChanged(Scene::SceneManager*); - Emitted when a new default world scene is set.
+<div>Parameters: The new default Scene::SceneManager ptr.</div>
+</ul>
+
+</td></tr></table>
+*/
+
+/*! 
+    \todo Change typedef Scene::ScenePtr from boost::shared_ptr<Scene::SceneManager> to 
+    QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> to get rid of *Raw() functions for scripts.
+*/
 
 class SceneAPI : public QObject
 {
@@ -24,9 +48,6 @@ class SceneAPI : public QObject
 public:
     /// Destructor.
     ~SceneAPI();
-
-    // Registers the scene events
-    void RegisterSceneEvents() const;
 
 signals:
     //! Emitted after new scene has been added to framework.
@@ -55,7 +76,7 @@ public slots:
     void SetDefaultScene(const Scene::ScenePtr &scene);
     
     //! Returns the default scene shared ptr.
-    /// \todo remove this function when we move to QPointer<Scene::SceneManager> rename GetDefaultSceneRaw() to GetDefaultScene().
+    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> rename GetDefaultSceneRaw() to GetDefaultScene().
     const Scene::ScenePtr &GetDefaultScene() const;
 
     //! Returns the default scene ptr.
@@ -71,7 +92,7 @@ public slots:
         \param name Name of the scene to return
         \return The scene, or empty pointer if the scene with the specified name could not be found 
     */
-    /// \todo remove this function when we move to QPointer<Scene::SceneManager> rename GetSceneRaw() to GetScene().
+    /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> rename GetSceneRaw() to GetScene().
     Scene::ScenePtr GetScene(const QString &name) const;
 
     //! Returns a scene by name
@@ -100,14 +121,26 @@ public slots:
 
 private:
     //! Constructor. Framework takes ownership of this object.
-    /// \param framework Foundation::Framework ptr
+    /// \param framework Foundation::Framework ptr.
     explicit SceneAPI(Foundation::Framework *framework);
 
     //! Frees all known scene and the scene interact object.
     /// \note This function is called by our fried class Foundation::Framework in its UnloadModules() function.
     void Reset();
 
-    //! Framework ptr
+    //! Registers the scene relaetd events to event manager.
+    /// \note This function is called by our fried class Foundation::Framework when EvenManager is ready.
+    void RegisterSceneEvents() const;
+    
+    //! Initialize the scene interact object. Needs framework->Input() to be valid.
+    /// \note This function is called by our fried class Foundation::Framework when InputAPI is ready.
+    void Initialise();
+
+    //! PostInitialize the scene interact object as RenderServiceInterface is now available.
+    /// \note This function is called by our fried class Foundation::Framework when modules have loaded and RenderServiceInterface is ready.
+    void PostInitialize();
+
+    //! Framework ptr.
     Foundation::Framework *framework_;
 
     //! Map of scenes.
@@ -116,6 +149,7 @@ private:
     //! Current 'default' scene.
     Scene::ScenePtr defaultScene_;
 
+    //! Scene interact shared ptr.
     QSharedPointer<SceneInteract> sceneInteract_;
 
 };

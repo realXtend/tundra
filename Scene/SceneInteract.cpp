@@ -1,10 +1,4 @@
-/**
- *  For conditions of distribution and use, see copyright notice in license.txt
- *
- *  @file   SceneInteract.cpp
- *  @brief  Transforms generic mouse and keyboard input events to 
- *          input-related Entity Action for scene entities.
- */
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
 #include "SceneInteract.h"
@@ -27,14 +21,21 @@ SceneInteract::SceneInteract() :
 void SceneInteract::Initialize(Foundation::Framework *framework)
 {
     framework_ = framework;
-    renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer);
 
     input_ = framework_->GetInput()->RegisterInputContext("SceneInteract", 100);
-    input_->SetTakeMouseEventsOverQt(true);
+    if (input_)
+    {
+        input_->SetTakeMouseEventsOverQt(true);
 
-    connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
-    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
-    connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
+        connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+        connect(framework_->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
+    }
+}
+
+void SceneInteract::PostInitialize()
+{
+    renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer);
 }
 
 void SceneInteract::Update()

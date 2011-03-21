@@ -61,6 +61,9 @@ public:
     /// \param Foundation::Framework Framework pointer.
     void Initialize(Foundation::Framework *framework);
 
+    //! PostInitialize this object. Must be done after modules have been loaded. Called by SceneAPI.
+    void PostInitialize();
+
 signals:
     //! Emitted when scene was clicked and raycast hit an entity.
     /// \param entity Hit entity.
