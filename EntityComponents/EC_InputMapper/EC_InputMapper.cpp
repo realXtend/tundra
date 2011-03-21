@@ -12,7 +12,7 @@
 #include "EC_InputMapper.h"
 
 #include "IAttribute.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "Entity.h"
 
 #include "LoggingFunctions.h"
@@ -90,7 +90,7 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     connect(this, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
         SLOT(HandleAttributeUpdated(IAttribute *, AttributeChange::Type)));
 
-    input_ = GetFramework()->GetInput()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+    input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
     input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
     input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
     connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
@@ -102,7 +102,7 @@ void EC_InputMapper::HandleAttributeUpdated(IAttribute *attribute, AttributeChan
     if(attribute == &contextName || attribute == &contextPriority)
     {
         input_.reset();
-        input_ = GetFramework()->GetInput()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+        input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
         connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
         connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
     }
@@ -178,7 +178,7 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
         return;
     
     //! \todo this hardcoding of look button logic (similar to RexMovementInput) is not nice!
-    if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->GetInput()->IsMouseCursorVisible()))
+    if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
     {
         if (e->relativeX != 0)
             GetParentEntity()->Exec((EntityAction::ExecutionType)executionType.Get(), "MouseLookX" , QString::number(e->relativeX));

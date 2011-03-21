@@ -9,7 +9,6 @@
 #include "MouseEvent.h"
 #include "GestureEvent.h"
 #include "InputContext.h"
-#include "InputApi.h"
 
 #include <QKeySequence>
 #include <QTime>
@@ -47,16 +46,16 @@ class QGraphicsView;
     The InputContext -based API utilizes Qt signals. The polling API can be used by any object that
     has access to QtInputService, and the event tree -based API can be used by all modules.
 */
-class INPUT_API Input : public QObject
+class InputAPI : public QObject
 {
     Q_OBJECT
 
 public:
     /// Initializes the service and hooks it into the main application window.
-    explicit Input(Foundation::Framework *owner);
+    explicit InputAPI(Foundation::Framework *owner);
 
     /// The dtor saves the settings to QSettings.
-    ~Input();
+    ~InputAPI();
 
     /// Proceeds the input system one application frame forward (Ages all double-buffered input data).
     /// Called internally by the Framework to update the polling Input API. Not for client use.
@@ -166,6 +165,8 @@ public slots:
     void SetKeyBindings(const KeyActionsMap &actionMap) { keyboardMappings = actionMap; }
 
 private:
+    Q_DISABLE_COPY(InputAPI)
+
     bool eventFilter(QObject *obj, QEvent *event);
 
     /// Sends key release messages for each currently tracked pressed key and clears the record of all pressed keys.
@@ -268,15 +269,9 @@ private:
     unsigned long newMouseButtonsReleasedQueue;
 
     EventManagerPtr eventManager;
-
     QGraphicsView *mainView;
     QWidget *mainWindow;
-    
     Foundation::Framework *framework;
-
-    // QtInputService is noncopyable.
-    Input(const Input &);
-    void operator =(const Input &);
 };
 
 #endif

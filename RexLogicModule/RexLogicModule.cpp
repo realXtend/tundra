@@ -77,7 +77,7 @@
 #include "ComponentManager.h"
 #include "IEventData.h"
 #include "Audio.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
 #include "Renderer.h"

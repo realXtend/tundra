@@ -11,7 +11,7 @@
 
 #include "Framework.h"
 #include "FrameAPI.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "Entity.h"
 
@@ -30,7 +30,7 @@ void SceneInteract::Initialize(Foundation::Framework *framework)
 
     renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer);
 
-    input_ = framework_->GetInput()->RegisterInputContext("SceneInteract", 100);
+    input_ = framework_->Input()->RegisterInputContext("SceneInteract", 100);
     input_->SetTakeMouseEventsOverQt(true);
 
     connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));

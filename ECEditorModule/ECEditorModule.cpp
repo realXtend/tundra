@@ -16,7 +16,7 @@
 #include "ModuleManager.h"
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
 
@@ -71,7 +71,7 @@ void ECEditorModule::PostInitialize()
 
     AddEditorWindowToUI();
 
-    inputContext = framework_->GetInput()->RegisterInputContext("ECEditorInput", 90);
+    inputContext = framework_->Input()->RegisterInputContext("ECEditorInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 }
 
@@ -318,9 +318,7 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
     if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
         return;
 
-    Input &input = *framework_->GetInput();
-
-    const QKeySequence showEcEditor = input.KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
+    const QKeySequence showEcEditor = framework_->Input()->KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
     if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
     {
         if (!active_editor_)

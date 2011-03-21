@@ -50,7 +50,7 @@
 #include <QUuid>
 
 #ifdef PROFILING
-#include "Input.h"
+#include "InputAPI.h"
 #endif
 
 #include "MemoryLeakCheck.h"
@@ -773,7 +773,7 @@ namespace OgreRenderer
 #ifdef PROFILING
         // Performance debugging: Toggle the UI overlay visibility based on a debug key.
         // Allows testing whether the GPU is majorly fill rate bound.
-        if (framework_->GetInput()->IsKeyDown(Qt::Key_F8))
+        if (framework_->Input()->IsKeyDown(Qt::Key_F8))
             renderWindow->OgreOverlay()->hide();
         else
             renderWindow->OgreOverlay()->show();

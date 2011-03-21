@@ -1,11 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef Core_Input_InputFwd_h
-#define Core_Input_InputFwd_h
+#ifndef Input_InputFwd_h
+#define Input_InputFwd_h
 
 #include <boost/shared_ptr.hpp>
 
-class Input;
+class InputAPI;
 class InputContext;
 struct KeyPressInformation;
 class KeyEvent;

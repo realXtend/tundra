@@ -6,7 +6,7 @@
 #include "RexMovementInput.h"
 #include "InputEvents.h"
 #include "RexTypes.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "EventManager.h"
 
 #include <QApplication>
@@ -19,7 +19,7 @@ RexMovementInput::RexMovementInput(Foundation::Framework *framework_)
     framework = framework_;
 
     // Create a new input context that this object will use to fetch the avatar and camera input from.
-    input = framework->GetInput()->RegisterInputContext("RexAvatarInput", 100);
+    input = framework->Input()->RegisterInputContext("RexAvatarInput", 100);
 
     // To be sure that Qt doesn't play tricks on us and miss a mouse release when we're in FPS mode,
     // grab the mouse movement input over Qt.
@@ -47,7 +47,7 @@ void RexMovementInput::HandleKeyEvent(KeyEvent *key)
     // Naali input events. New modules should really prefer using an InputContext of their
     // own to read input data, or use the QtInputService API directly.
 
-    Input *inputService = framework->GetInput();
+    InputAPI *inputService = framework->Input();
 
     EventManagerPtr eventMgr = framework->GetEventManager();
 
@@ -156,16 +156,16 @@ void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
             // When we start a right mouse button drag, hide the mouse cursor to enter relative mode
             // mouse input.
             if (mouse->button == MouseEvent::RightButton)
-                framework->GetInput()->SetMouseCursorVisible(false);
+                framework->Input()->SetMouseCursorVisible(false);
         }
         break;
     case MouseEvent::MouseReleased:
         // Coming out of a right mouse button drag, restore the mouse cursor to visible state.
         if (mouse->button == MouseEvent::RightButton)
-            framework->GetInput()->SetMouseCursorVisible(true);
+            framework->Input()->SetMouseCursorVisible(true);
         break;
     case MouseEvent::MouseMove:
-        if (mouse->IsRightButtonDown() && !framework->GetInput()->IsMouseCursorVisible()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
+        if (mouse->IsRightButtonDown() && !framework->Input()->IsMouseCursorVisible()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
         {
            eventMgr->SendEvent("Input", InputEvents::MOUSELOOK, &movement);
            mouse->handled = true; // Mouse is in RMB mouselook mode, suppress others from getting the move event.

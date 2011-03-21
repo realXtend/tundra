@@ -1,13 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "DebugOperatorNew.h"
-#include <boost/thread.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/algorithm/string.hpp>
-#include <QList>
-#include <QVector>
-#include "MemoryLeakCheck.h"
-#include "Input.h"
+#include "InputAPI.h"
 
 #include "ServiceManager.h"
 #include "InputEvents.h"
@@ -17,9 +11,13 @@
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
 #include "LoggingFunctions.h"
-
 DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 
+#include <boost/thread.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/algorithm/string.hpp>
+#include <QList>
+#include <QVector>
 #include <QGraphicsItem>
 #include <QGraphicsView>
 #include <QKeyEvent>
@@ -29,7 +27,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 
 #include <sstream>
 
-Input::Input(Foundation::Framework *framework_)
+#include "MemoryLeakCheck.h"
+
+InputAPI::InputAPI(Foundation::Framework *framework_)
 :lastMouseX(0),
 lastMouseY(0),
 mouseCursorVisible(true),
@@ -126,12 +126,12 @@ framework(framework_)
         mainWindow->grabGesture(type);
 }
 
-Input::~Input()
+InputAPI::~InputAPI()
 {
     SaveKeyBindingsToFile();
 }
 
-void Input::SetMouseCursorVisible(bool visible)
+void InputAPI::SetMouseCursorVisible(bool visible)
 {
     if (framework->IsHeadless())
         return;
@@ -156,53 +156,53 @@ void Input::SetMouseCursorVisible(bool visible)
     }
 }
 
-bool Input::IsMouseCursorVisible() const
+bool InputAPI::IsMouseCursorVisible() const
 { 
     return mouseCursorVisible;
 }
 
-bool Input::IsKeyDown(Qt::Key keyCode) const
+bool InputAPI::IsKeyDown(Qt::Key keyCode) const
 {
     return heldKeys.find(keyCode) != heldKeys.end();
 }
 
-bool Input::IsKeyPressed(Qt::Key keyCode) const
+bool InputAPI::IsKeyPressed(Qt::Key keyCode) const
 {
     return std::find(pressedKeys.begin(), pressedKeys.end(), keyCode) != pressedKeys.end();
 }
 
-bool Input::IsKeyReleased(Qt::Key keyCode) const
+bool InputAPI::IsKeyReleased(Qt::Key keyCode) const
 {
     return std::find(releasedKeys.begin(), releasedKeys.end(), keyCode) != releasedKeys.end();
 }
 
-bool Input::IsMouseButtonDown(int mouseButton) const
+bool InputAPI::IsMouseButtonDown(int mouseButton) const
 {
     assert((mouseButton & (mouseButton-1)) == 0); // Must only contain a single '1' bit.
 
     return (heldMouseButtons & mouseButton) != 0;
 }
 
-bool Input::IsMouseButtonPressed(int mouseButton) const
+bool InputAPI::IsMouseButtonPressed(int mouseButton) const
 {
     assert((mouseButton & (mouseButton-1)) == 0); // Must only contain a single '1' bit.
 
     return (pressedMouseButtons & mouseButton) != 0;
 }
 
-bool Input::IsMouseButtonReleased(int mouseButton) const
+bool InputAPI::IsMouseButtonReleased(int mouseButton) const
 {
     assert((mouseButton & (mouseButton-1)) == 0); // Must only contain a single '1' bit.
 
     return (releasedMouseButtons & mouseButton) != 0;
 }
 
-QPoint Input::MousePressedPos(int mouseButton) const
+QPoint InputAPI::MousePressedPos(int mouseButton) const
 {
     return mousePressPositions.Pos(mouseButton);
 }
 
-void Input::DumpInputContexts()
+void InputAPI::DumpInputContexts()
 {
     int idx = 0;
 
@@ -223,7 +223,7 @@ void Input::DumpInputContexts()
     }
 }
 
-InputContextPtr Input::RegisterInputContext(const QString &name, int priority)
+InputContextPtr InputAPI::RegisterInputContext(const QString &name, int priority)
 {
     boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(name.toStdString().c_str(), priority);
 
@@ -246,7 +246,7 @@ InputContextPtr Input::RegisterInputContext(const QString &name, int priority)
     return newInputContext;
 }
 
-void Input::SceneReleaseAllKeys()
+void InputAPI::SceneReleaseAllKeys()
 {
     for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
@@ -256,7 +256,7 @@ void Input::SceneReleaseAllKeys()
     }
 }
 
-void Input::SceneReleaseMouseButtons()
+void InputAPI::SceneReleaseMouseButtons()
 {
     for(int i = 1; i < MouseEvent::MaxButtonMask; i <<= 1)
         if ((heldMouseButtons & i) != 0)
@@ -283,7 +283,7 @@ void Input::SceneReleaseMouseButtons()
 /// \bug Due to not being able to restrict the mouse cursor to the window client are in any cross-platform means,
 /// it is possible that if the screen is resized to very small and if the mouse is moved very fast, the cursor
 /// escapes the window client area and will not get recentered.
-void Input::RecenterMouse()
+void InputAPI::RecenterMouse()
 {
     QGraphicsView *view = framework->Ui()->GraphicsView();
     QPoint centeredCursorPosLocal = QPoint(view->size().width()/2, view->size().height()/2);
@@ -302,7 +302,7 @@ void Input::RecenterMouse()
     lastMouseY = mousePos.y();
 }
 
-void Input::PruneDeadInputContexts()
+void InputAPI::PruneDeadInputContexts()
 {
     InputContextList::iterator iter = registeredInputContexts.begin();
 
@@ -315,7 +315,7 @@ void Input::PruneDeadInputContexts()
     }
 }
 
-void Input::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Key keyCode)
+void InputAPI::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Key keyCode)
 {
     for(; start != registeredInputContexts.end(); ++start)
     {
@@ -334,7 +334,7 @@ void Input::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Ke
     }
 }
 
-void Input::TriggerKeyEvent(KeyEvent &key)
+void InputAPI::TriggerKeyEvent(KeyEvent &key)
 {
     assert(key.eventType != KeyEvent::KeyEventInvalid);
     assert(key.handled == false);
@@ -378,7 +378,7 @@ void Input::TriggerKeyEvent(KeyEvent &key)
     }
 }
 
-void Input::TriggerMouseEvent(MouseEvent &mouse)
+void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
 {
     assert(mouse.handled == false);
 
@@ -432,7 +432,7 @@ void Input::TriggerMouseEvent(MouseEvent &mouse)
     }
 }
 
-void Input::TriggerGestureEvent(GestureEvent &gesture)
+void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
 {
     assert(gesture.handled == false);
 
@@ -474,20 +474,20 @@ void Input::TriggerGestureEvent(GestureEvent &gesture)
 }
 
 /// Associates the given custom action with the given key.
-void Input::SetKeyBinding(const QString &actionName, QKeySequence key)
+void InputAPI::SetKeyBinding(const QString &actionName, QKeySequence key)
 {
     keyboardMappings[actionName.toStdString()] = QKeySequence(key);
 }
 
 /// Returns the key associated with the given action.
-QKeySequence Input::KeyBinding(const QString &actionName) const
+QKeySequence InputAPI::KeyBinding(const QString &actionName) const
 {
     std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
     return iter != keyboardMappings.end() ? iter->second : QKeySequence();
 }
 
 /// Returns the key associated with the given action.
-QKeySequence Input::KeyBinding(const QString &actionName, QKeySequence defaultKey)
+QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaultKey)
 {
     std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
     if (iter == keyboardMappings.end())
@@ -498,7 +498,7 @@ QKeySequence Input::KeyBinding(const QString &actionName, QKeySequence defaultKe
     return iter->second;
 }
 
-void Input::LoadKeyBindingsFromFile()
+void InputAPI::LoadKeyBindingsFromFile()
 {
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/KeyBindings");
 
@@ -513,7 +513,7 @@ void Input::LoadKeyBindingsFromFile()
     settings.endArray();
 }
 
-void Input::SaveKeyBindingsToFile()
+void InputAPI::SaveKeyBindingsToFile()
 {
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/KeyBindings");
 
@@ -537,7 +537,7 @@ Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)
     return (Qt::Key)(qtKeyWithModifiers & 0x01FFFFFF);
 }
 
-QPoint Input::MapPointToMainGraphicsView(QObject *source, const QPoint &point)
+QPoint InputAPI::MapPointToMainGraphicsView(QObject *source, const QPoint &point)
 {
     QWidget *sender = qobject_cast<QWidget*>(source);
     assert(sender);
@@ -550,7 +550,7 @@ QPoint Input::MapPointToMainGraphicsView(QObject *source, const QPoint &point)
         return mainView->mapFromGlobal(sender->mapToGlobal(QCursor::pos()));
 }
 
-bool Input::eventFilter(QObject *obj, QEvent *event)
+bool InputAPI::eventFilter(QObject *obj, QEvent *event)
 {
     switch(event->type())
     {
@@ -868,7 +868,7 @@ bool Input::eventFilter(QObject *obj, QEvent *event)
     return QObject::eventFilter(obj, event);
 }
 
-void Input::Update(float frametime)
+void InputAPI::Update(float frametime)
 {
     // If at any time we don't have main application window focus, release all input
     // so that keys don't get stuck when the window is reactivated. (The key release might be passed
