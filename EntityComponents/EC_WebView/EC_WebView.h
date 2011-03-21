@@ -21,6 +21,7 @@ class QWebView;
 class EC_Mesh;
 class EC_3DCanvas;
 
+class RaycastResult;
 class UserConnection;
 
 //! WebView component
@@ -192,7 +193,7 @@ private slots:
     EC_3DCanvas *GetSceneCanvasComponent();
 
     //! Monitors entity mouse clicks.
-    void EntityClicked(Scene::Entity *entity);
+    void EntityClicked(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
 
     //! Handles request to show the QWebView
     void InteractShowRequest();
