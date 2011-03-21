@@ -4,7 +4,6 @@ if (!framework.IsHeadless())
     engine.ImportExtension("qt.gui");
 
     var menu = ui.MainWindow().menuBar();
-    menu.clear();
 
     var fileMenu = menu.addMenu("&File");
     if (framework.GetModuleQObj("UpdateModule"))

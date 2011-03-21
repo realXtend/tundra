@@ -17,6 +17,10 @@
 #include "SceneFwd.h"
 #include "JavascriptFwd.h"
 
+#ifndef QT_NO_SCRIPTTOOLS
+#include <QScriptEngineDebugger>
+#endif
+
 #include <QObject>
 
 /// Enables Javascript execution and scripting by using QtScript.
@@ -108,6 +112,28 @@ private:
 
     /// Additional startupscript defined from command line
     std::string commandLineStartupScript_;
+
+#ifndef QT_NO_SCRIPTTOOLS
+public:
+	QScriptEngineDebugger* GetDebugger() {return debugger;}
+	void setDebuggerAttached(bool attached);
+
+private slots:
+	//! Debugger has suspended script evaluation
+	void OnEvaluationSuspended(void);
+
+	//! Debugger has resumed script evaluation
+	void OnEvaluationResumed(void);
+
+	//! Menu action slot for toogle debugging
+	void OnToogleDebugging(bool checked);
+
+private:
+	// Script debugger
+	QScriptEngineDebugger *debugger;
+	QWidget *debuggerWindow;
+	QAction *debuggerAction;
+#endif
 };
 
 // API things
