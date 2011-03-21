@@ -25,9 +25,6 @@ namespace Tts
         testVoice = settings.value("Tts/test_voice", "Spanish male").toString();
         otherDefaultVoice = settings.value("Tts/other_default_voice", "Spanish male").toString();
         notificationVoice = settings.value("Tts/notification_voice", "Spanish female").toString();
-		//Tts overlap
-		avoidTtsOverlap = settings.value("Tts/avoid_tts_overlap", true).toBool();
-		//$ END_MOD $
         testPhrase = settings.value("Tts/test_phrase", "Hello world!").toString();
         publishOwnVoice = settings.value("Tts/publish_own_voice", false).toBool();
         useAvatarSpecificVoices = settings.value("Tts/use_avatar_specific_voices", false).toBool();
@@ -48,9 +45,6 @@ namespace Tts
         settings.setValue("Tts/test_phrase", testPhrase);
         settings.setValue("Tts/publish_own_voice", publishOwnVoice);
         settings.setValue("Tts/use_avatar_specific_voices", useAvatarSpecificVoices);
-		//$ BEGIN_MOD $
-		settings.setValue("Tts/avoid_tts_overlap", avoidTtsOverlap);
-		//$ END_MOD $
         settings.sync();
     }
 
@@ -72,10 +66,6 @@ namespace Tts
         connect(testVoice, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(SaveSettings()) );
         connect(publishOwnVoiceCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
         connect(avatarSpecificVoicesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
-		//$ BEGIN_MOD $
-		connect(overlapTtsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(SaveSettings()) );
-		//connect(overlapTtsCheckBox, SIGNAL(stateChanged(int)), framework_->GetService<Tts::TtsServiceInterface>(), SLOT(ToogleAvoidTts()));
-		//$ END_MOD $
     }
 
     SettingsWidget::~SettingsWidget()
@@ -96,7 +86,6 @@ namespace Tts
         settings_.publishOwnVoice = publishOwnVoiceCheckBox->isChecked();
         settings_.useAvatarSpecificVoices = avatarSpecificVoicesCheckBox->isChecked();
 		//$ BEGIN_MOD $
-		settings_.avoidTtsOverlap =  overlapTtsCheckBox->isChecked();
 		//emit SaveSettingsClicked();
 		//$ END_MOD $
         settings_.Save();
@@ -157,12 +146,6 @@ namespace Tts
             avatarSpecificVoicesCheckBox->setCheckState(Qt::Checked);
         else
             avatarSpecificVoicesCheckBox->setCheckState(Qt::Unchecked);
-		//$ BEGIN_MOD $
-		if (settings_.avoidTtsOverlap)
-            overlapTtsCheckBox->setCheckState(Qt::Checked);
-        else
-            overlapTtsCheckBox->setCheckState(Qt::Unchecked);
-		//$ END_MOD $
 
         SetQComboBoxCurrentText(ownVoice, settings_.ownVoice);
         SetQComboBoxCurrentText(notificationVoice, settings_.notificationVoice);

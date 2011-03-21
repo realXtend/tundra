@@ -27,9 +27,6 @@ namespace Tts
         bool playOtherChatMessages;
         bool playNotificationMessages;
         bool publishOwnVoice;
-		//$ BEGIN_MOD $
-		bool avoidTtsOverlap;
-		//$ END_MOD $
         bool useAvatarSpecificVoices;
         QString testPhrase;
 
