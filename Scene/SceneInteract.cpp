@@ -15,13 +15,19 @@
 #include "RenderServiceInterface.h"
 #include "Entity.h"
 
-SceneInteract::SceneInteract(Foundation::Framework *fw) :
-    QObject(fw),
-    framework_(fw),
+SceneInteract::SceneInteract() :
+    QObject(),
+    framework_(0),
     lastX_(-1),
     lastY_(-1),
     itemUnderMouse_(false)
 {
+}
+
+void SceneInteract::SetFramework(Foundation::Framework *framework)
+{
+    framework_ = framework;
+
     renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Service::ST_Renderer);
 
     input_ = framework_->GetInput()->RegisterInputContext("SceneInteract", 100);

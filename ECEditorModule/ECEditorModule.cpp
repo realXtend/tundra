@@ -10,6 +10,7 @@
 #include "TreeWidgetItemExpandMemory.h"
 
 #include "EventManager.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "ModuleManager.h"
@@ -197,7 +198,7 @@ Console::CommandResult ECEditorModule::ShowDocumentation(const StringVector &par
  */
 Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
 {
-    Scene::SceneManager *sceneMgr = framework_->GetDefaultWorldScene().get();
+    Scene::SceneManager *sceneMgr = GetFramework()->Scene()->GetDefaultScene().get();
     if(!sceneMgr)
         return Console::ResultFailure("Failed to find main scene.");
 

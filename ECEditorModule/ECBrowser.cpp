@@ -7,6 +7,7 @@
 #include "ECComponentEditor.h"
 #include "TreeWidgetItemExpandMemory.h"
 
+#include "SceneAPI.h"
 #include "Entity.h"
 #include "IComponent.h"
 #include "SceneManager.h"
@@ -468,7 +469,7 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
 
 void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
 {
-    Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
+    Scene::EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
     ComponentPtr comp_ptr;
@@ -497,7 +498,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
 
 void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
 {
-    Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
+    Scene::EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
 

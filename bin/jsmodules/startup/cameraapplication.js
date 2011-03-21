@@ -1,6 +1,6 @@
 // A startup script that hooks to scene added & scene cleared signals, and creates a local freelook camera upon either signal.
 
-framework.SceneAdded.connect(OnSceneAdded);
+framework.Scene().SceneAdded.connect(OnSceneAdded);
 
 function OnSceneAdded(scenename)
 {
@@ -9,7 +9,7 @@ function OnSceneAdded(scenename)
         return;
 
     // Get pointer to scene through framework
-    scene = framework.Scene(scenename);
+    scene = framework.Scene().GetSceneRaw(scenename);
     scene.SceneCleared.connect(OnSceneCleared);
     CreateCamera(scene);
 }

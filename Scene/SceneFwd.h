@@ -11,6 +11,11 @@
 #include <boost/smart_ptr.hpp>
 #include <list>
 #include <vector>
+#include <map>
+
+#include <QString>
+#include <QSharedPointer>
+#include <QWeakPointer>
 
 namespace Scene
 {
@@ -36,5 +41,9 @@ typedef boost::shared_ptr<IComponent> ComponentPtr;
 typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
 typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
 typedef std::vector<IAttribute*> AttributeVector;
+typedef std::map<QString, Scene::ScenePtr> SceneMap;
+
+class SceneInteract;
+typedef QWeakPointer<SceneInteract> SceneIteractWeakPtr;
 
 #endif

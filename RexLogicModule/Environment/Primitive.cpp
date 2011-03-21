@@ -12,6 +12,7 @@
 #include "EntityComponent/EC_FreeData.h"
 #include "Environment/Primitive.h"
 
+#include "SceneAPI.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
@@ -64,7 +65,7 @@ void Primitive::Update(f64 frametime)
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *created)
 {
     // Make sure scene exists
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -105,7 +106,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
 
 Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -267,7 +268,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         rexlogicmodule_->HandleObjectParent(localid);
         if (was_created)
         {
-            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
             if (scene)
                 scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
         }
@@ -1007,7 +1008,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return false;
 

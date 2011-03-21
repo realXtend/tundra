@@ -26,6 +26,7 @@
 #include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
 #include "DebugAPI.h"
+#include "SceneAPI.h"
 
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
@@ -75,7 +76,8 @@ namespace Foundation
         ui(0),
         input(0),
         asset(0),
-        debug(new DebugAPI(this))
+        debug(new DebugAPI(this)),
+        scene(new SceneAPI(this))
     {
         ParseProgramOptions();
         
@@ -134,8 +136,8 @@ namespace Foundation
             event_manager_ = EventManagerPtr(new EventManager(this));
             thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
-            Scene::Events::RegisterSceneEvents(event_manager_);
             Task::Events::RegisterTaskEvents(event_manager_);
+            scene->RegisterSceneEvents();
 
             naaliApplication = new NaaliApplication(this, argc_, argv_);
 
@@ -161,6 +163,10 @@ namespace Foundation
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
             RegisterDynamicObject("application", naaliApplication);
+
+            /*! \todo JS now registers 'scene' manually to the default scene. Add this maybe later
+                or register additiona 'sceneapi' */
+            //RegisterDynamicObject("sceneapi", scene);
         }
     }
 
@@ -395,9 +401,16 @@ namespace Foundation
             PostInitialize();
         }
         
+        // Run our QApplication subclass NaaliApplication.
         naaliApplication->Go();
+
+        // Qt main loop execution has ended, we are existing.
         exit_signal_ = true;
 
+        // Reset SceneAPI.
+        scene->Reset();
+
+        // Unload modules
         UnloadModules();
     }
 
@@ -436,9 +449,6 @@ namespace Foundation
 
     void Framework::UnloadModules()
     {
-        default_scene_.reset();
-        scenes_.clear();
-
         event_manager_->ClearDelayedEvents();
         module_manager_->UninitializeModules();
         module_manager_->UnloadModules();
@@ -447,34 +457,6 @@ namespace Foundation
     NaaliApplication *Framework::GetNaaliApplication() const
     { 
         return naaliApplication;
-    }
-
-    Scene::ScenePtr Framework::CreateScene(const QString &name, bool viewenabled)
-    {
-        if (HasScene(name))
-            return Scene::ScenePtr();
-
-        Scene::ScenePtr new_scene = Scene::ScenePtr(new Scene::SceneManager(name, this, viewenabled));
-        scenes_[name] = new_scene;
-
-        Scene::Events::SceneEventData event_data(name.toStdString());
-        event_category_id_t cat_id = GetEventManager()->QueryEventCategory("Scene");
-        GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_SCENE_ADDED, &event_data);
-
-        emit SceneAdded(name);
-        return new_scene;
-    }
-
-    void Framework::RemoveScene(const QString &name)
-    {
-        SceneMap::iterator scene = scenes_.find(name);
-        if (scene != scenes_.end())
-        {
-            if (default_scene_ == scene->second)
-                default_scene_.reset();
-            scenes_.erase(scene);
-            emit SceneRemoved(name);
-        }
     }
 
     Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
@@ -757,6 +739,11 @@ namespace Foundation
         return debug;
     }
 
+    SceneAPI *Framework::Scene() const
+    {
+        return scene;
+    }
+
     QObject *Framework::GetModuleQObj(const QString &name)
     {
         ModuleWeakPtr module = GetModuleManager()->GetModule(name.toStdString());
@@ -776,58 +763,5 @@ namespace Foundation
 
         return true;
 
-    }
-
-    Scene::ScenePtr Framework::GetScene(const QString &name) const
-    {
-        SceneMap::const_iterator scene = scenes_.find(name);
-        if (scene != scenes_.end())
-            return scene->second;
-
-        return Scene::ScenePtr();
-    }
-
-    bool Framework::HasScene(const QString &name) const
-    {
-        return scenes_.find(name) != scenes_.end();
-    }
-
-    const Scene::ScenePtr &Framework::GetDefaultWorldScene() const
-    {
-        return default_scene_;
-    }
-    
-    Scene::SceneManager* Framework::DefaultScene() const
-    {
-        return default_scene_.get();
-    }
-    
-    Scene::SceneManager* Framework::Scene(const QString& name) const
-    {
-        return GetScene(name).get();
-    }
-
-    void Framework::SetDefaultWorldSceneName(const QString &name)
-    {
-        Scene::ScenePtr scene = GetScene(name);
-        if(scene != default_scene_)
-        {
-            default_scene_ = scene;
-            emit DefaultWorldSceneChanged(default_scene_.get());
-        }
-    }
-
-    void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
-    {
-        if(scene != default_scene_)
-        {
-            default_scene_ = scene;
-            emit DefaultWorldSceneChanged(default_scene_.get());
-        }
-    }
-
-    const Framework::SceneMap &Framework::GetSceneMap() const
-    {
-        return scenes_;
     }
 }

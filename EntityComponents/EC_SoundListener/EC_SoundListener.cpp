@@ -17,6 +17,7 @@
 #include "SceneManager.h"
 #include "LoggingFunctions.h"
 #include "Audio.h"
+#include "SceneAPI.h"
 #include "FrameAPI.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
@@ -56,7 +57,7 @@ void EC_SoundListener::Update()
 
 void EC_SoundListener::OnActiveChanged()
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Failed on OnActiveChanged method cause default world scene wasn't set.");

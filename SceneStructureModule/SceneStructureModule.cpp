@@ -15,6 +15,7 @@
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 
+#include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
@@ -103,7 +104,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
 {
     QList<Scene::Entity *> ret;
 
-    const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");
@@ -311,7 +312,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
 
     sceneWindow = new SceneStructureWindow(framework_, ui->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
-    sceneWindow->SetScene(framework_->GetDefaultWorldScene());
+    sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
     sceneWindow->show();
 }
 
@@ -528,7 +529,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         if (!res->entity_)
         {
             // No entity hit, use camera's position with hard-coded offset.
-            const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+            const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
             if (!scene)
                 return;
 
@@ -628,7 +629,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                     }
                     else
                     {
-                        const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+                        const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
                         if (!scene)
                         {
                             LogError("Could not retrieve default world scene.");
@@ -732,7 +733,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 {
     QApplication::restoreOverrideCursor();
 
-    const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");
