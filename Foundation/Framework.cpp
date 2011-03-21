@@ -144,7 +144,10 @@ namespace Foundation
             initialized_ = true;
 
             ui = new NaaliUi(this);
-            connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+            
+            // Connect signal if main window was created. Not in headless mode.
+            if (ui->MainWindow())
+                connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
             asset = new AssetAPI(headless_);
             const char cDefaultAssetCachePath[] = "/assetcache";
