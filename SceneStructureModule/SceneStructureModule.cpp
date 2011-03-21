@@ -15,6 +15,7 @@
 #include "SupportedFileTypes.h"
 #include "AddContentWindow.h"
 
+#include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
@@ -65,8 +66,8 @@ SceneStructureModule::~SceneStructureModule()
 
 void SceneStructureModule::PostInitialize()
 {
-    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window.", this, SLOT(ShowSceneStructureWindow()));
-    framework_->Console()->RegisterCommand("assets", "Shows the Assets window.", this, SLOT(ShowAssetsWindow()));
+    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", this, SLOT(ToggleSceneStructureWindow()));
+    framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", this, SLOT(ToggleAssetsWindow()));
 
     inputContext = framework_->GetInput()->RegisterInputContext("SceneStructureInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
@@ -103,7 +104,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
 {
     QList<Scene::Entity *> ret;
 
-    const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");
@@ -297,16 +298,11 @@ void SceneStructureModule::CleanReference(QString &fileRef)
     }
 }
 
-void SceneStructureModule::ShowSceneStructureWindow()
+void SceneStructureModule::ToggleSceneStructureWindow()
 {
-    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;*/
-
     if (sceneWindow)
     {
-        //ui->ShowWidget(sceneWindow);
-        sceneWindow->show();
+        sceneWindow->setVisible(!sceneWindow->isVisible());
         return;
     }
 
@@ -316,23 +312,15 @@ void SceneStructureModule::ShowSceneStructureWindow()
 
     sceneWindow = new SceneStructureWindow(framework_, ui->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
-    sceneWindow->SetScene(framework_->GetDefaultWorldScene());
+    sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
     sceneWindow->show();
-
-    //ui->AddWidgetToScene(sceneWindow);
-    //ui->ShowWidget(sceneWindow);
 }
 
-void SceneStructureModule::ShowAssetsWindow()
+void SceneStructureModule::ToggleAssetsWindow()
 {
-    /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
-        return;*/
-
     if (assetsWindow)
     {
-        //ui->ShowWidget(assetsWindow);
-        assetsWindow->show();
+        assetsWindow->setVisible(!assetsWindow->isVisible());
         return;
     }
 
@@ -343,9 +331,6 @@ void SceneStructureModule::ShowAssetsWindow()
     assetsWindow = new AssetsWindow(framework_, ui->MainWindow());
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
-
-    //ui->AddWidgetToScene(assetsWindow);
-    //ui->ShowWidget(assetsWindow);
 }
 
 void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
@@ -360,9 +345,9 @@ void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
 
     QKeySequence keySeq(e->keyCode | e->modifiers);
     if (keySeq == showSceneStruct)
-        ShowSceneStructureWindow();
+        ToggleSceneStructureWindow();
     if (keySeq == showAssets)
-        ShowAssetsWindow();
+        ToggleAssetsWindow();
 }
 
 void SceneStructureModule::HandleDragEnterEvent(QDragEnterEvent *e)
@@ -544,7 +529,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
         if (!res->entity_)
         {
             // No entity hit, use camera's position with hard-coded offset.
-            const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+            const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
             if (!scene)
                 return;
 
@@ -644,7 +629,7 @@ void SceneStructureModule::HandleMaterialDropEvent(QDropEvent *e, const QString 
                     }
                     else
                     {
-                        const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+                        const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
                         if (!scene)
                         {
                             LogError("Could not retrieve default world scene.");
@@ -748,7 +733,7 @@ void SceneStructureModule::HandleSceneDescLoaded(AssetPtr asset)
 {
     QApplication::restoreOverrideCursor();
 
-    const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Could not retrieve default world scene.");

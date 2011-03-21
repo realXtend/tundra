@@ -10,6 +10,7 @@
 #include "SceneImporter.h"
 #include "SyncManager.h"
 
+#include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAssetTransfer.h"
 #include "IAsset.h"
@@ -149,7 +150,7 @@ void TundraLogicModule::Update(f64 frametime)
         if (syncManager_)
             syncManager_->Update(frametime);
         // Run scene interpolation
-        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
         if (scene)
             scene->UpdateAttributeInterpolations(frametime);
     }
@@ -159,7 +160,7 @@ void TundraLogicModule::Update(f64 frametime)
 
 void TundraLogicModule::LoadStartupScene()
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -198,7 +199,7 @@ void TundraLogicModule::LoadStartupScene()
 
 void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -277,7 +278,7 @@ Console::CommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& 
 
 Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &params)
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Console::ResultFailure("No active scene found.");
     if (params.size() < 1)
@@ -302,7 +303,7 @@ Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &p
 Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &params)
 {
     ///\todo Add loadScene parameter
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Console::ResultFailure("No active scene found.");
     if (params.size() < 1)
@@ -328,7 +329,7 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
 
 Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector &params)
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Console::ResultFailure("No active scene found.");
     if (params.size() < 1)
@@ -357,7 +358,7 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
 
 Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &params)
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Console::ResultFailure("No active scene found.");
     if (params.size() < 1)

@@ -23,6 +23,7 @@
 #include "ServiceManager.h"
 #include "RexTypes.h"
 #include "NetworkMessages/NetInMessage.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 
 #include <OgreManualObject.h>
@@ -417,11 +418,11 @@ namespace Environment
 */
     }
 
+        /*
     void Terrain::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     {
                 ///\todo Regression. Use the new Asset API here instead. -jj.
 
-        /*
         assert(tex);
         for(int i = 0; i < num_terrain_textures; ++i)
         {
@@ -449,8 +450,8 @@ namespace Environment
 //                SetTerrainMaterialTexture(index, tex->id_.c_str());
             }
         }
-        */
     }
+        */
 
     const RexTypes::RexAssetID &Terrain::GetTerrainTextureID(int index) const
     {
@@ -624,7 +625,7 @@ namespace Environment
 
     void Terrain::FindCurrentlyActiveTerrain()
     {
-        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->Scene()->GetDefaultScene();
         for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
         {
             Scene::Entity &entity = *iter->second;

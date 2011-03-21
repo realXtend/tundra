@@ -12,6 +12,7 @@
 #include "ECEditorModule.h"
 
 #include "Framework.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "IComponent.h"
 #include "Entity.h"
@@ -183,7 +184,7 @@ void EcXmlEditorWidget::Save()
     QDomDocument edited_doc;
     if (edited_doc.setContent(text, false, &errorMsg))
     {
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 

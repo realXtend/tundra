@@ -15,6 +15,7 @@
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_Controllable.h"
 
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
@@ -72,7 +73,7 @@ namespace Avatar
     {
         /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         // Make sure scene exists
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return Scene::EntityPtr();
 
@@ -111,7 +112,7 @@ namespace Avatar
     Scene::EntityPtr AvatarHandler::CreateNewAvatarEntity(entity_id_t entityid)
     {
         /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene || !avatar_module_->GetFramework()->GetComponentManager()->CanCreate(EC_Placeable::TypeNameStatic()))
             return Scene::EntityPtr();
 
@@ -278,7 +279,7 @@ namespace Avatar
         /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
         if (!framework_)
             return;
-        if (!framework_->GetDefaultWorldScene())
+        if (!framework_->Scene()->GetDefaultScene())
             return;
 
         // The data contents:
@@ -455,7 +456,7 @@ namespace Avatar
     bool AvatarHandler::HandleOSNE_KillObject(uint32_t objectid)
     {
         /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return false;
 
@@ -527,7 +528,7 @@ namespace Avatar
     void AvatarHandler::CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id)
     {
         /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 
@@ -553,9 +554,9 @@ namespace Avatar
     void AvatarHandler::CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id)
     {
 <<<<<<< HEAD:RexLogicModule/Avatar/Avatar.cpp
-        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->Scene()->GetDefaultScene();
 =======
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
 >>>>>>> origin/develop:AvatarModule/Avatar/AvatarHandler.cpp
         if (!scene)
             return;
@@ -585,7 +586,7 @@ namespace Avatar
     void AvatarHandler::ShowAvatarNameOverlay(entity_id_t entity_id, bool visible)
     {
         /// \todo This code, while still here, is unused in Tundra, and should be cleaned up if to be reimplemented for Taiga. -jj.
-        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return;
 

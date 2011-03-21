@@ -29,14 +29,6 @@ namespace Ogre
     class SceneNode;
 }
 
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
-}
-
 namespace Foundation
 {
     class TextureInterface;
@@ -103,7 +95,7 @@ namespace Environment
         virtual ~EnvironmentEditor();
 
         //! Handle resource ready event that will return the texture that has been requested.
-        void HandleResourceReady(Resource::Events::ResourceReady *res);
+//        void HandleResourceReady(Resource::Events::ResourceReady *res);
 
         //! Heightmap image width
         static const int cHeightmapImageWidth  = 256;
@@ -314,13 +306,13 @@ namespace Environment
         //! Ask texture decoder for a texture resource.
         //! @Param index Index will tell us what terrain texture we are requesting range [0 - 3] where 0 is the lowest terrain texture and 3 is the highest.
         //! @Return request tag for the texture.
-        request_tag_t RequestTerrainTexture(uint index);
+//        request_tag_t RequestTerrainTexture(uint index);
 
         QWidget* GetPage(const QString& name);
         QWidget* GetCurrentPage();
 
         //! Asset_tags for terrain texture requests.
-        std::vector<request_tag_t> terrain_texture_requests_;
+//        std::vector<request_tag_t> terrain_texture_requests_;
 
         //! Terrain texture asset id list.
         std::vector<std::string> terrain_texture_id_list_;

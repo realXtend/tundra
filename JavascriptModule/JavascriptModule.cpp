@@ -13,6 +13,7 @@
 #include "JavascriptInstance.h"
 #include "NaaliCoreTypeDefines.h"
 
+#include "SceneAPI.h"
 #include "Entity.h"
 #include "AssetAPI.h"
 #include "EC_Script.h"
@@ -54,7 +55,7 @@ void JavascriptModule::Load()
 
 void JavascriptModule::Initialize()
 {
-    connect(GetFramework(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
+    connect(GetFramework()->Scene(), SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
 
     LogInfo("Module " + Name() + " initializing...");
 
@@ -164,7 +165,7 @@ void JavascriptModule::RunScript(const QString &scriptFileName)
 
 void JavascriptModule::SceneAdded(const QString &name)
 {
-    Scene::ScenePtr scene = GetFramework()->GetScene(name);
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetScene(name);
     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
             SLOT(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),

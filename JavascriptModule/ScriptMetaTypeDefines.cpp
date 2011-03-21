@@ -10,6 +10,7 @@
 #include "MemoryLeakCheck.h"
 #include "ScriptMetaTypeDefines.h"
 
+#include "SceneAPI.h"
 #include "Entity.h"
 #include "IAssetTransfer.h"
 #include "IAssetUploadTransfer.h"
@@ -66,6 +67,7 @@ Q_DECLARE_METATYPE(NaaliGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
+Q_DECLARE_METATYPE(SceneAPI*);
 Q_DECLARE_METATYPE(Scene::SceneManager*);
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
@@ -193,6 +195,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<GestureEvent::EventType>("GestureEvent::EventType");
 
     // Scene metatypes.
+    qScriptRegisterQObjectMetaType<SceneAPI*>(engine);
     qScriptRegisterQObjectMetaType<Scene::SceneManager*>(engine);
     qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);

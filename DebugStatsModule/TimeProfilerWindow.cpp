@@ -21,6 +21,7 @@
 #include "EventManager.h"
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 //#include "RealXtend/RexProtocolMsgIDs.h"
 //#include "GenericMessageUtils.h"
@@ -1728,7 +1729,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
         return;
     
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
     

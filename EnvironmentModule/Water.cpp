@@ -8,6 +8,7 @@
 #include "MemoryLeakCheck.h"
 #include "Water.h"
 #include "EnvironmentModule.h"
+#include "SceneAPI.h"
 #include "Entity.h"
 
 // Ogre renderer -specific.
@@ -58,7 +59,7 @@ void Water::CreateWaterGeometry(float height, AttributeChange::Type change)
 
 void Water::RemoveWaterGeometry()
 {
-    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
     Scene::Entity* entity = active_scene->GetEntityByName("WaterEnvironment").get();
     if ( entity == 0)
     {
@@ -98,7 +99,7 @@ void Water::SetWaterHeight(float height, AttributeChange::Type type)
 
 EC_WaterPlane* Water::GetEnvironmentWaterComponent()
 {
-    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
     Scene::Entity* entity = active_scene->GetEntityByName("WaterEnvironment").get();
     if (entity != 0 )
         owner_->RemoveLocalEnvironment();
@@ -114,7 +115,7 @@ EC_WaterPlane* Water::GetEnvironmentWaterComponent()
 
 bool Water::IsWaterPlane() const
 {
-    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
     Scene::Entity* entity = active_scene->GetEntityByName("WaterEnvironment").get();
     if ( entity == 0)
     {

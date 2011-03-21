@@ -78,7 +78,7 @@ public:
     typedef std::map<int, std::string> EnumDescMap_t;
 
     //! Default constructor.
-    AttributeMetadata() : interpolation(None) {}
+    AttributeMetadata() : interpolation(None), designable(true) {}
 
     //! Constructor.
     /*! \param desc Description.
@@ -86,16 +86,18 @@ public:
         \param max Maximum value.
         \param step_ Step value.
         \param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
-        \param interpolation_ Interpolation mode for clients
+        \param interpolation_ Interpolation mode for clients.
+        \param designable_ Indicates if Attribute should be shown in designer/editor ui.
      */
     AttributeMetadata(const QString &desc, const QString &min = "", const QString &max = "", const QString &step_ = "", 
-        const EnumDescMap_t &enum_desc = EnumDescMap_t(), InterpolationMode interpolation_ = None) :
+        const EnumDescMap_t &enum_desc = EnumDescMap_t(), InterpolationMode interpolation_ = None, bool designable_ = true) :
         description(desc),
         minimum(min),
         maximum(max),
         step(step_),
         enums(enum_desc),
-        interpolation(interpolation_)
+        interpolation(interpolation_),
+        designable(designable_)
     {
     }
 
@@ -120,11 +122,14 @@ public:
     //! Describes the type for individual elements of this attribute (in case there are multiple, e.g. in the case of QVariantList).
     QString elementType;
 
-    //! Interpolation mode for clients
+    //! Interpolation mode for clients.
     InterpolationMode interpolation;
 
     //! Mapping of enumeration's signatures (in readable form) and actual values.
     EnumDescMap_t enums;
+
+    //! Indicates if Attribute should be shown in designer/editor ui.
+    bool designable;
 
 private:
     AttributeMetadata(const AttributeMetadata &);

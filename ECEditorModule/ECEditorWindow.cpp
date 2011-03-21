@@ -21,6 +21,7 @@
 #include "UiProxyWidget.h"
 #include "UiServiceInterface.h"
 #include "ModuleManager.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
 #include "ComponentManager.h"
@@ -79,7 +80,7 @@ void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
         entity_list_->blockSignals(true);
         //If entity don't have EC_Name then entity_name is same as it's id.
         QString entity_name = QString::number(entity_id);
-        Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
+        Scene::EntityPtr entity = framework_->Scene()->GetDefaultScene()->GetEntity(entity_id);
         if(entity && entity->HasComponent("EC_Name"))
             entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
 
@@ -104,7 +105,7 @@ void ECEditorWindow::AddEntities(const QList<entity_id_t> &entities, bool select
     foreach(entity_id_t id, entities)
     {
         QString entity_name = QString::number(id);
-        Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(id);
+        Scene::EntityPtr entity = framework_->Scene()->GetDefaultScene()->GetEntity(id);
         if(entity && entity->HasComponent("EC_Name"))
             entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
 
@@ -124,7 +125,7 @@ void ECEditorWindow::RemoveEntity(entity_id_t entity_id, bool udpate_ui)
         return;
 
     entity_list_->blockSignals(true);
-    Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
+    Scene::EntityPtr entity = framework_->Scene()->GetDefaultScene()->GetEntity(entity_id);
     if (!entity)
     {
         LogError("Fail to remove entity, since scene don't contain entity by ID:" + ToString<entity_id_t>(entity_id));
@@ -234,7 +235,7 @@ void ECEditorWindow::ActionTriggered(Scene::Entity *entity, const QString &actio
 
 void ECEditorWindow::DeleteEntity()
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -275,7 +276,7 @@ void ECEditorWindow::PasteEntity()
         return;
     // First we need to check if component is holding EC_OgrePlacable component to tell where entity should be located at.
     //! \todo local only server wont save those objects.
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     assert(scene);
     if(!scene)
         return;
@@ -297,7 +298,7 @@ void ECEditorWindow::PasteEntity()
             return;
         }
 
-        Scene::EntityPtr entity = scene->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::EntityPtr entity = scene->CreateEntity();
         assert(entity);
         if(!entity)
             return;
@@ -450,7 +451,7 @@ void ECEditorWindow::RefreshPropertyBrowser()
     if (!browser_)
         return;
 
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
     {
         browser_->clear();
@@ -609,14 +610,14 @@ void ECEditorWindow::ToggleEntityList()
             entity_widget->hide();
             resize(size().width() - entity_widget->size().width(), size().height());
             if (toggle_entities_button_)
-                toggle_entities_button_->setText(tr("Show entities"));
+                toggle_entities_button_->setText(tr("Show Entities"));
         }
         else
         {
             entity_widget->show();
             resize(size().width() + entity_widget->sizeHint().width(), size().height());
             if (toggle_entities_button_)
-                toggle_entities_button_->setText(tr("Hide entities"));
+                toggle_entities_button_->setText(tr("Hide Entities"));
         }
     }
 }
@@ -657,7 +658,7 @@ void ECEditorWindow::hideEvent(QHideEvent* hide_event)
 void ECEditorWindow::changeEvent(QEvent *e)
 {
     if (e->type() == QEvent::LanguageChange)
-        setWindowTitle(QApplication::translate("ECEditor", "Entity-component Editor"));
+        setWindowTitle(QApplication::translate("ECEditor", "Entity-Component Editor"));
     else
        QWidget::changeEvent(e);
 }
@@ -756,13 +757,13 @@ void ECEditorWindow::Initialize()
         connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
 
     // Default world scene is not added yet, so we need to listen when framework will send a DefaultWorldSceneChanged signal.
-    connect(framework_, SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)), SLOT(DefaultSceneChanged(Scene::SceneManager *)));
+    connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)), SLOT(DefaultSceneChanged(Scene::SceneManager *)));
 
     ECEditorModule *module = framework_->GetModule<ECEditorModule>();
     if (module)
         connect(this, SIGNAL(OnFocusChanged(ECEditorWindow *)), module, SLOT(ECEditorFocusChanged(ECEditorWindow*)));
 
-    Scene::SceneManager *scene = framework_->DefaultScene();
+    Scene::SceneManager *scene = framework_->Scene()->GetDefaultSceneRaw();
     if (scene)
     {
         connect(scene, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
@@ -791,7 +792,7 @@ void ECEditorWindow::ComponentDialogFinished(int result)
     if (result != QDialog::Accepted)
         return;
 
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogWarning("Fail to add new component to entity, since default world scene was null");
@@ -833,7 +834,7 @@ QList<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities() const
     if (!entity_list_)
         return ret;
 
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if (!scene)
         return ret;
 

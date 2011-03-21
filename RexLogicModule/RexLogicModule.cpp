@@ -62,10 +62,11 @@
 #include "Environment/Primitive.h"
 #include "Camera/CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
-#include "SceneInteract.h"
 
 #include "Camera/ObjectCameraController.h"
 #include "Camera/CameraControl.h"
+
+#include "SceneAPI.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -155,6 +156,10 @@
 
 #ifdef EC_PlanarMirror_ENABLED
 #include "EC_PlanarMirror.h"
+#endif
+
+#ifdef EC_WebView_ENABLED
+#include "EC_WebView.h"
 #endif
 
 #include <OgreManualObject.h>
@@ -265,6 +270,10 @@ void RexLogicModule::Load()
 #ifdef EC_Selected_ENABLED
     DECLARE_MODULE_EC(EC_Selected);
 #endif
+
+#ifdef EC_WebView_ENABLED
+    DECLARE_MODULE_EC(EC_WebView);
+#endif
 }
 
 // virtual
@@ -286,10 +295,6 @@ void RexLogicModule::Initialize()
     obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
     camera_control_widget_ = CameraControlPtr(new CameraControl(this));
     
-    SceneInteract *sceneInteract = new SceneInteract(framework_);
-    QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
-    framework_->RegisterDynamicObject("sceneinteract", sceneInteract);
-
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
 
@@ -401,16 +406,16 @@ void RexLogicModule::PostInitialize()
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
 {
-    if (framework_->HasScene(name))
+    if (framework_->Scene()->HasScene(name))
     {
         LogWarning("Tried to create new active scene, but it already existed!");
-        Scene::ScenePtr scene = framework_->GetScene(name);
-        framework_->SetDefaultWorldScene(scene);
+        Scene::ScenePtr scene = framework_->Scene()->GetScene(name);
+        framework_->Scene()->SetDefaultScene(scene);
         return scene;
     }
 
-    Scene::ScenePtr scene = framework_->CreateScene(name, true);
-    framework_->SetDefaultWorldScene(scene);
+    Scene::ScenePtr scene = framework_->Scene()->CreateScene(name, true);
+    framework_->Scene()->SetDefaultScene(scene);
 
     // Connect ComponentAdded&Removed signals.
     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
@@ -483,14 +488,14 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::SceneManager* scene, bool 
 
 void RexLogicModule::DeleteScene(const QString &name)
 {
-    if (!framework_->HasScene(name))
+    if (!framework_->Scene()->HasScene(name))
     {
         LogWarning("Tried to delete scene, but it didn't exist!");
         return;
     }
 
-    framework_->RemoveScene(name);
-    assert(!framework_->HasScene(name));
+    framework_->Scene()->RemoveScene(name);
+    assert(!framework_->->Scene()->HasScene(name));
 }
 
 // virtual
@@ -583,7 +588,7 @@ void RexLogicModule::Update(f64 frametime)
         }
         
         // If scene exists, we should be connected and can update these
-        if (framework_->GetDefaultWorldScene())
+        if (framework_->Scene()->GetDefaultScene())
         {
             camera_controllable_->AddTime(frametime);
             // Update overlays last, after camera update
@@ -624,7 +629,7 @@ Scene::EntityPtr RexLogicModule::GetCameraEntity() const
 
 Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QString &component) const
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -746,7 +751,7 @@ void RexLogicModule::LogoutAndDeleteWorld()
     if (primitive_)
         primitive_->HandleLogout();
 
-    if (framework_->HasScene("World"))
+    if (framework_->Scene()->HasScene("World"))
         DeleteScene("World");
 
     pending_parents_.clear();
@@ -819,7 +824,7 @@ void RexLogicModule::SendAvatarUrl()
 
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -862,7 +867,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
 
 void RexLogicModule::HandleMissingParent(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -901,7 +906,7 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 {
 #ifdef EC_HoveringText_ENABLED
 
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -925,7 +930,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
     using namespace OgreRenderer;
 
     //! \todo probably should not be directly in RexLogicModule
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
 
@@ -1008,7 +1013,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 void RexLogicModule::UpdateSoundListener()
 {
 #ifdef EC_SoundListener_ENABLED
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return;
     
@@ -1041,7 +1046,7 @@ bool RexLogicModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 {
-    Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr current_scene = GetFramework()->Scene()->GetDefaultScene();
     if (!current_scene || !users_avatar)
         return;
 
@@ -1117,7 +1122,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, RaycastResult *resu
 
     EC_OgreCamera * camera = 0;
 
-    Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr current_scene = GetFramework()->Scene()->GetDefaultScene();
     if (!current_scene)
         return ret_val;
 
@@ -1261,7 +1266,7 @@ Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &
 Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
 {
 #ifdef EC_Highlight_ENABLED
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
         return Console::ResultFailure("No active scene found.");
 
