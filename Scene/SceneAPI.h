@@ -152,6 +152,9 @@ private:
     //! Scene interact shared ptr.
     QSharedPointer<SceneInteract> sceneInteract_;
 
+    //! Scene events category name.
+    std::string sceneCatergoryName_;
+
 };
 
 #endif
