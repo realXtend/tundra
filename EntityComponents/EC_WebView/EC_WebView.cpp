@@ -546,7 +546,10 @@ void EC_WebView::RenderTimerStartOrSingleShot()
         {
             // Clamp FPS to 0-25, the EC editor UI does this for us with AttributeMetaData,
             // but someone can inject crazy stuff here directly from code
-            renderTimer_->start(clamp(1000/getrenderRefreshRate(), 0, 40));
+            int rateNow = 1000 / getrenderRefreshRate();
+            if (rateNow < 40)
+                rateNow = 40; // Max allowed FPS 25 == 40ms timer timeout
+            renderTimer_->start(rateNow);
         }
         else
             QTimer::singleShot(10, this, SLOT(Render()));
