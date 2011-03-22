@@ -123,11 +123,15 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
 {
     if (!enabled.Get())
         return;
+
+    // Do not act on already handled key events.
+    if (!e || e->handled)
+        return;
     
-    if ( !keyrepeatTrigger.Get() )
+    if (!keyrepeatTrigger.Get())
     {
-        // Now we do not repeat keypressed events.
-        if ( e != 0 && e->eventType == KeyEvent::KeyPressed &&  e->keyPressCount > 1 )
+        // Now we do not repeat key pressed events.
+        if (e != 0 && e->eventType == KeyEvent::KeyPressed &&  e->keyPressCount > 1)
             return;
     }
 
@@ -149,12 +153,10 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
     ActionInvocation& invocation = it.value();
     QString &action = invocation.name;
     int execType = invocation.executionType;
-    // If zero executiontype, use default
+    // If zero execution type, use default
     if (!execType)
         execType = executionType.Get();
     
-//    LogDebug("Invoking action " + action.toStdString() + " for entity " + ToString(entity->GetId()));
-
     // If the action has parameters, parse them from the action string.
     int idx = action.indexOf('(');
     if (idx != -1)
@@ -177,7 +179,7 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     if (!GetParentEntity())
         return;
     
-    //! \todo this hardcoding of look button logic (similar to RexMovementInput) is not nice!
+    //! \todo this hard coding of look button logic (similar to RexMovementInput) is not nice!
     if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
     {
         if (e->relativeX != 0)
