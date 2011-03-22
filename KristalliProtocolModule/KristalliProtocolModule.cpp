@@ -138,7 +138,7 @@ void KristalliProtocolModule::PostInitialize()
             "kNet", "Shows the kNet statistics window.", 
             Console::Bind(this, &KristalliProtocolModule::OpenKNetLogWindow)));
 //$ BEGIN_MOD $
-	if (!framework_->IsHeadless() /*&& !framework_->IsEditionless()*/) {
+	if (!framework_->IsHeadless() && !framework_->IsEditionless()) {
 		networkDialog = new NetworkDialog(0, &network);
 		UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
 		if (ui)
@@ -156,7 +156,7 @@ void KristalliProtocolModule::Uninitialize()
 Console::CommandResult KristalliProtocolModule::OpenKNetLogWindow(const StringVector &)
 {
 //$ BEGIN_MOD $
-	if (framework_->IsHeadless() /*&& !framework_->IsEditionless()*/) {
+	if (framework_->IsHeadless() && !framework_->IsEditionless()) {
 		networkDialog = new NetworkDialog(0, &network);
 		networkDialog->setAttribute(Qt::WA_DeleteOnClose);
 		networkDialog->show();
