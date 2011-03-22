@@ -688,7 +688,8 @@ bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messa
 
 void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg)
 {
-    if (!scene_)
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    if (!scene)
         return;
     
     entity_id_t entityID = msg.entityID;
@@ -711,9 +712,9 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     // Check for ID collision
     if (isServer)
     {
-        if (scene_->GetEntity(entityID))
+        if (scene->GetEntity(entityID))
         {
-            entity_id_t newEntityID = scene_->GetNextFreeId();
+            entity_id_t newEntityID = scene->GetNextFreeId();
             // Send information to the creator that the ID was taken. The reserved ID will never get replicated to others
             MsgEntityIDCollision collisionMsg;
             collisionMsg.oldEntityID = entityID;
@@ -725,14 +726,14 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     else
     {
         // If a client gets a entity that already exists, destroy it forcibly
-        if (scene_->GetEntity(entityID))
+        if (scene->GetEntity(entityID))
         {
             TundraLogicModule::LogWarning("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
-            scene_->RemoveEntity(entityID, change);
+            scene->RemoveEntity(entityID, change);
         }
     }
     
-    Scene::EntityPtr entity = scene_->CreateEntity(entityID);
+    Scene::EntityPtr entity = scene->CreateEntity(entityID);
     if (!entity)
     {
         TundraLogicModule::LogWarning("Scene refused to create entity " + ToString<int>(entityID));
@@ -774,7 +775,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     }
     
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
-    scene_->EmitEntityCreated(entity, change);
+    scene->EmitEntityCreated(entity, change);
     const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
     for(uint i = 0; i < components.size(); ++i)
         components[i]->ComponentChanged(change);
@@ -782,7 +783,8 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
 
 void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg)
 {
-    if (!scene_)
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    if (!scene)
         return;
     
     entity_id_t entityID = msg.entityID;
@@ -802,7 +804,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
-    scene_->RemoveEntity(entityID, change);
+    scene->RemoveEntity(entityID, change);
     
     // Reflect changes back to syncstate
     state->RemoveEntity(entityID);
@@ -811,7 +813,8 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
 
 void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg)
 {
-    if (!scene_)
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    if (!scene)
         return;
     
     entity_id_t entityID = msg.entityID;
@@ -832,11 +835,11 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
-    Scene::EntityPtr entity = scene_->GetEntity(entityID);
+    Scene::EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
         TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for CreateComponents message, creating it now");
-        entity = scene_->CreateEntity(entityID);
+        entity = scene->CreateEntity(entityID);
         if (!entity)
         {
             TundraLogicModule::LogWarning("Scene refused to create entity " + ToString<int>(entityID));
@@ -892,7 +895,8 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg)
 {
-    if (!scene_)
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    if (!scene)
         return;
     
     entity_id_t entityID = msg.entityID;
@@ -913,11 +917,11 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
-    Scene::EntityPtr entity = scene_->GetEntity(entityID);
+    Scene::EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
         TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for UpdateComponents message, creating it now");
-        entity = scene_->CreateEntity(entityID);
+        entity = scene->CreateEntity(entityID);
         if (!entity)
         {
             TundraLogicModule::LogWarning("Scene refused to create entity " + ToString<int>(entityID));
@@ -972,7 +976,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                                     endValue->FromBinary(source, AttributeChange::Disconnected);
                                     //! \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
                                     // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
-                                    scene_->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.35f);
+                                    scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.35f);
                                     // Do not signal attribute change at this point at all
                                     actually_changed_attributes.push_back(false);
                                 }
@@ -1095,7 +1099,8 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg)
 {
-    if (!scene_)
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    if (!scene)
         return;
     
     entity_id_t entityID = msg.entityID;
@@ -1115,7 +1120,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
-    Scene::EntityPtr entity = scene_->GetEntity(msg.entityID);
+    Scene::EntityPtr entity = scene->GetEntity(msg.entityID);
     if (!entity)
         return;
     
@@ -1140,7 +1145,8 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
 
 void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg)
 {
-    if (!scene_)
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+    if (!scene)
         return;
     
     if (owner_->IsServer())
@@ -1150,7 +1156,7 @@ void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const
     }
     
     TundraLogicModule::LogDebug("An entity ID collision occurred. Entity " + ToString<int>(msg.oldEntityID) + " became " + ToString<int>(msg.newEntityID));
-    scene_->ChangeEntityId(msg.oldEntityID, msg.newEntityID);
+    scene->ChangeEntityId(msg.oldEntityID, msg.newEntityID);
     
     // Do the change also in server scene replication state
     SceneSyncState* state = GetSceneSyncState(source);
@@ -1166,11 +1172,11 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     bool isServer = owner_->IsServer();
     
     Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
-    if (!scene_)
+    if (!scene)
         return;
     
     entity_id_t entityId = msg.entityId;
-    Scene::EntityPtr entity = scene_->GetEntity(entityId);
+    Scene::EntityPtr entity = scene->GetEntity(entityId);
     if (!entity)
     {
         TundraLogicModule::LogWarning("Entity " + ToString<int>(entityId) + " not found for EntityAction message.");
