@@ -275,6 +275,44 @@ void EC_WebView::Render()
     sceneCanvas->Update();
 }
 
+QMenu *EC_WebView::GetInteractionMenu(bool createSubmenu)
+{
+    int currentControlId = getcontrollerId();
+    
+    QMenu *actionMenu = new QMenu(0);
+    actionMenu->addAction(QIcon("./data/ui/images/icon/browser.ico"), "Show", this, SLOT(InteractShowRequest()));
+    if (currentControlId == NoneControlID && !webviewLoading_)
+        actionMenu->addAction("Share Browsing", this, SLOT(InteractControlRequest()));
+    else if (currentControlId == NoneControlID && webviewLoading_)
+        actionMenu->addAction("Loading page, please wait...")->setEnabled(false);
+    else
+    {
+        // We have the control
+        if (currentControlId == myControllerId_)
+            actionMenu->addAction("Release Shared Browsing", this, SLOT(InteractControlReleaseRequest()));
+        // Another client has control
+        else
+        {
+            actionMenu->addSeparator();
+            if (currentControllerName_.trimmed().isEmpty())
+                actionMenu->addAction("Controlled by another client")->setEnabled(false);
+            else
+                actionMenu->addAction("Controlled by " + currentControllerName_.trimmed())->setEnabled(false);
+        }
+    }
+
+    // Create root menu or return the action list
+    if (createSubmenu)
+    {
+        QMenu *rootMenu = new QMenu(0);
+        QMenu *subMenu = rootMenu->addMenu(QIcon("./data/ui/images/icon/browser.ico"), "Browser");
+        subMenu->addActions(actionMenu->actions());
+        return rootMenu;
+    }
+    else
+        return actionMenu;
+}
+
 // Private slots
 
 void EC_WebView::RenderDelayed()
@@ -717,32 +755,10 @@ void EC_WebView::EntityClicked(Scene::Entity *entity, Qt::MouseButton button, Ra
         if (entity->HasComponent("EC_Selected"))
             return;
 
-        int currentControlId = getcontrollerId();
-
-        QMenu popupInteract;
-        popupInteract.addAction(QIcon("./data/ui/images/icon/browser.ico"), "Show", this, SLOT(InteractShowRequest()));
-        if (currentControlId == NoneControlID && !webviewLoading_)
-            popupInteract.addAction("Share Browsing", this, SLOT(InteractControlRequest()));
-        else if (currentControlId == NoneControlID && webviewLoading_)
-            popupInteract.addAction("Loading page, please wait...")->setEnabled(false);
-        else
-        {
-            // We have the control
-            if (currentControlId == myControllerId_)
-            {
-                popupInteract.addAction("Release Shared Browsing", this, SLOT(InteractControlReleaseRequest()));
-            }
-            // Another client has control
-            else
-            {
-                popupInteract.addSeparator();
-                if (currentControllerName_.trimmed().isEmpty())
-                    popupInteract.addAction("Controlled by another client")->setEnabled(false);
-                else
-                    popupInteract.addAction("Controlled by " + currentControllerName_.trimmed())->setEnabled(false);
-            }
-        }
-        popupInteract.exec(QCursor::pos());
+        QMenu *popupInteract = GetInteractionMenu(false);
+        if (!popupInteract->actions().empty())
+            popupInteract->exec(QCursor::pos());
+        popupInteract->deleteLater();
     }
 }
 

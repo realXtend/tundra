@@ -14,7 +14,7 @@
 #include <QPointer>
 #include <QPoint>
 #include <QTimer>
-#include <QUuid>
+#include <QMenu>
 
 class QWebView;
 
@@ -127,6 +127,13 @@ public:
 public slots:
     //! Render our QWebViews current state with current Attributes to our EC_3DCanvas.
     void Render();
+
+    //! If you want to show the interaction menu/actions in your own place, use this to retrieve the menu.
+    //! It is the callers responsibility to destroy the returned QMenu ptr. For example use menu->deleteLater() once you are done with it.
+    /// \param bool createSubmenu Defines if all the actions are in the QMenu or as subitems in it. If created the submenu will be called "Browser".
+    /// \return QMenu* A menu with actions connected to the correct handlers inside this component.
+    /// \note If you do custom menu handling set the 'interactive' boolean to false so we wont try to double popup QMenus.
+    QMenu *GetInteractionMenu(bool createSubmenu = true);
 
 private slots:
     //! Server side handler for user disconnects.
