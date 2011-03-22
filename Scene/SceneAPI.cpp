@@ -1,11 +1,15 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "SceneAPI.h"
 #include "SceneEvents.h"
 #include "SceneManager.h"
 
 #include "EventManager.h"
+
+#include "MemoryLeakCheck.h"
 
 SceneAPI::SceneAPI(Foundation::Framework *framework) :
     QObject(framework),
@@ -49,6 +53,16 @@ void SceneAPI::RegisterSceneEvents() const
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_CONTROLLABLE_ENTITY, "Controllable Entity Created");
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, "Entity Visual Appearance Modified");
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_MEDIAURL_SET, "Mediaurl set");
+}
+
+void SceneAPI::Initialise()
+{
+    sceneInteract_->Initialize(framework_);
+}
+
+void SceneAPI::PostInitialize()
+{
+    sceneInteract_->PostInitialize();
 }
 
 SceneInteractWeakPtr SceneAPI::GetSceneIteract() const

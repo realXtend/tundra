@@ -24,11 +24,9 @@ class EC_3DCanvas;
 class RaycastResult;
 class UserConnection;
 
-//! WebView component
+//! A web browser on who's content can be rendered into a 3D scene object.
 /**
-<table class="header">
-<tr>
-<td>
+<table class="header"><tr><td>
 <h2>WebView</h2>
 
 A web browser on who's content can be rendered into a 3D scene object. The component also support sharing your browsing with across all clients in the world.
@@ -71,8 +69,8 @@ Registered by RexLogic::RexLogicModule.
 <ul>
 <li>There are entity actions that this component reacts to, but they are not intended to be executed outside the c++ code of this component. They are related to browser syncing across clients.
 </ul>
-</td>
-</tr>
+
+</td></tr>
 
 Does not emit any actions.
 
@@ -80,6 +78,7 @@ Does not emit any actions.
 
 </table>
 */
+
 namespace TundraLogic { class Server; }
 
 class EC_WebView : public IComponent

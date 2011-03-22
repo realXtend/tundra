@@ -448,7 +448,7 @@ namespace Scene
 
     private:
         Q_DISABLE_COPY(SceneManager);
-        friend class SceneAPI;
+        friend class ::SceneAPI;
 
         //! default constructor
         SceneManager();

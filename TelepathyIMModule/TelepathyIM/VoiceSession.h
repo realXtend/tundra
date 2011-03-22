@@ -10,7 +10,7 @@
 #include "ModuleLoggingFunctions.h"
 //#include <Foundation.h>
 //#include "IService.h"
-//#include "Audio.h"
+#include "../Audio/AudioFwd.h"
 
 //#include "interface.h"
 //#include "Contact.h"

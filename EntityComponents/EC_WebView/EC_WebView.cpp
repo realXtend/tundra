@@ -23,6 +23,7 @@
 
 #include "EC_3DCanvas.h"
 #include "EC_Mesh.h"
+#include "CoreMath.h"
 
 #include <QWebView>
 #include <QWebFrame>
@@ -507,12 +508,7 @@ void EC_WebView::RenderTimerStartOrSingleShot()
         {
             // Clamp FPS to 0-25, the EC editor UI does this for us with AttributeMetaData,
             // but someone can inject crazy stuff here directly from code
-            int renderFPS = 1000 / getrenderRefreshRate();
-            if (renderFPS < 40)
-                renderFPS = 40;
-            if (renderFPS <= 0)
-                return;
-            renderTimer_->start(renderFPS);
+            renderTimer_->start(clamp(1000/getrenderRefreshRate(), 0, 40));
         }
         else
             QTimer::singleShot(10, this, SLOT(Render()));
