@@ -7,7 +7,7 @@
 #include "UiSettingsService.h"
 #include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
-#include "Input.h"
+#include "InputAPI.h"
 
 #include "Ether/EtherLogic.h"
 #include "Ether/EtherSceneController.h"

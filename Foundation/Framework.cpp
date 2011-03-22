@@ -136,11 +136,11 @@ namespace Foundation
             event_manager_ = EventManagerPtr(new EventManager(this));
             thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
+            // Register task and scene events
             Task::Events::RegisterTaskEvents(event_manager_);
             scene->RegisterSceneEvents();
 
             naaliApplication = new NaaliApplication(this, argc_, argv_);
-
             initialized_ = true;
 
             ui = new NaaliUi(this);
@@ -157,6 +157,9 @@ namespace Foundation
             asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
 
             input = new InputAPI(this);
+
+            // Initialize SceneAPI.
+            scene->Initialise();
 
             RegisterDynamicObject("ui", ui);
             RegisterDynamicObject("frame", frame);
@@ -326,6 +329,9 @@ namespace Foundation
         srand(time(0));
 
         LoadModules();
+
+        // PostInitialize SceneAPI.
+        scene->PostInitialize();
 
         // commands must be registered after modules are loaded and initialized
         RegisterConsoleCommands();

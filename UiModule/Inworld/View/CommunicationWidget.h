@@ -5,7 +5,7 @@
 
 #include <QGraphicsProxyWidget>
 #include "ui_CommunicationWidget.h"
-#include "Input.h"
+#include "InputAPI.h"
 
 class QStackedLayout;
 class QTextBrowser;
