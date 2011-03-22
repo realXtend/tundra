@@ -328,6 +328,7 @@ void ECEditorModule::HandleKeyPressed(KeyEvent *e)
         }
         else
             active_editor_->setVisible(!active_editor_->isVisible());
+        e->handled = true;
     }
 }
 
