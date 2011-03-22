@@ -69,11 +69,11 @@ graphicsScene(0)
     
     mainWindow = new NaaliMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
-//    mainWindow->setUpdatesEnabled(false);
+    //mainWindow->setUpdatesEnabled(false);
 
     // Apply the Naali main window icon. 
     // Note: this will only affect to a icon at main window left top corner.
-    //       The application thubnail icon must be set by adding icon resource
+    //       The application thumbnail icon must be set by adding icon resource
     //       to viewer project
     QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
     mainWindow->setWindowIcon(icon);
@@ -81,10 +81,13 @@ graphicsScene(0)
     graphicsView = new NaaliGraphicsView(mainWindow);
 
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
-    QVBoxLayout *layout = new QVBoxLayout(mainWindow);
-    mainWindow->setLayout(layout);
-    mainWindow->layout()->setMargin(0); 
-    layout->setContentsMargins(0,0,0,0);
+
+    // QMainWindow has a layout by default. It will not let you set another.
+    // Leave this check here if the window type changes to for example QWidget so we dont crash then.
+    if (!mainWindow->layout())
+        mainWindow->setLayout(new QVBoxLayout());
+    mainWindow->layout()->setMargin(0);
+    mainWindow->layout()->setContentsMargins(0,0,0,0);
     mainWindow->layout()->addWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
@@ -105,10 +108,10 @@ graphicsScene(0)
     graphicsView->verticalScrollBar()->setRange(0, 0);
 
     // Setup Qts mainwindow with title and geometry
-//    mainWindow->setWindowTitle(QString(window_title_.c_str()));
-//    mainWindow->setGeometry(window_left, window_top, width, height);
-//    if (maximized)
-//        mainWindow->showMaximized();
+    //mainWindow->setWindowTitle(QString(window_title_.c_str()));
+    //mainWindow->setGeometry(window_left, window_top, width, height);
+    //if (maximized)
+    //    mainWindow->showMaximized();
 
     graphicsScene = new QGraphicsScene(this);
 
