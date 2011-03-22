@@ -495,7 +495,7 @@ void RexLogicModule::DeleteScene(const QString &name)
     }
 
     framework_->Scene()->RemoveScene(name);
-    assert(!framework_->->Scene()->HasScene(name));
+    assert(!framework_->Scene()->HasScene(name));
 }
 
 // virtual
