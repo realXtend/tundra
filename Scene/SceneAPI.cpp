@@ -35,12 +35,13 @@ void SceneAPI::Reset()
 
 void SceneAPI::RegisterSceneEvents() const
 {
+    ///\todo Get rid of all the legacy scene events
     const EventManagerPtr &event_manager = framework_->GetEventManager();
     event_category_id_t scene_event_category = event_manager->RegisterEventCategory("Scene");
 
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_ADDED, "Scene Added");
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_DELETED, "Scene Deleted");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_CLONED, "Scene Cloned"); ///\todo
+    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_CLONED, "Scene Cloned");
 
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_ADDED, "Entity Added");
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_UPDATED, "Entity Updated");
