@@ -162,6 +162,11 @@ Scene::EntityPtr EC_Sound::GetActiveSoundListener()
     return Scene::EntityPtr();
 }
 
+Scene::Entity* EC_Sound::GetActiveSoundListenerRaw()
+{
+  return GetActiveSoundListener().get();
+}
+
 void EC_Sound::UpdateSignals()
 {
     if (!GetParentEntity())
