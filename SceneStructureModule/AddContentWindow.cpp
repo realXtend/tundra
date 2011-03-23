@@ -399,13 +399,13 @@ void AddContentWindow::AddEntities(const QList<EntityDesc> &entityDescs)
     int fullHeight = entityTreeWidget->header()->height();
     fullHeight += (entityTreeWidget->sizeHintForRow(0)+5) * entityTreeWidget->model()->rowCount();
     int halfDeskHeight = QApplication::desktop()->screenGeometry().height()/2;
-    if (fullHeight < halfDeskHeight-50)
+    if (fullHeight < halfDeskHeight-300)
     {
         entityTreeWidget->setMinimumHeight(fullHeight);
     }
     else
     {
-        entityTreeWidget->setMinimumHeight(halfDeskHeight - 100);
+        entityTreeWidget->setMinimumHeight(halfDeskHeight - 300);
     }
 }
 
