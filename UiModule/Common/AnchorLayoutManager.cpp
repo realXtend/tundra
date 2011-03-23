@@ -14,6 +14,7 @@
 
 #include "MemoryLeakCheck.h"
 
+
 namespace CoreUi
 {
     AnchorLayoutManager::AnchorLayoutManager(QObject *parent, QGraphicsScene *scene) :

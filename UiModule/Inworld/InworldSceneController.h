@@ -70,7 +70,7 @@ namespace UiServices
 	*
 	* @return true if evertything allright
 	*/
-		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority = 0);
+		bool AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority = 0, bool persistence = true);
 
         //! Adds widget to menu.
         /*! \param widget Widget.
@@ -142,6 +142,8 @@ namespace UiServices
         //! 
         void ProxyClosed();
 
+		void worldDisconnected();
+
     private:
         Q_DISABLE_COPY(InworldSceneController);
 
@@ -190,6 +192,9 @@ namespace UiServices
 		QList<internal_element> topleft_vert_;
 		QList<internal_element> topright_horiz_;
 		QList<internal_element> topright_vert_;
+
+		//Qlist with widgets non-persistente
+		QList<QGraphicsProxyWidget*> non_persistent_widgets;
 
 
     private slots:

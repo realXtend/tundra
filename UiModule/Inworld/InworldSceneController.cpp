@@ -12,6 +12,8 @@
 #include "UiProxyWidget.h"
 
 #include "MemoryLeakCheck.h"
+#include "TundraLogicModule.h"
+#include "Client.h"
 
 #include <QGraphicsView>
 
@@ -34,6 +36,8 @@ namespace UiServices
 
         // Init layout manager with scene
         layout_manager_ = new CoreUi::AnchorLayoutManager(this, inworld_scene_);
+		boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
+		connect(client.get(), SIGNAL(Disconnected()), SLOT(worldDisconnected()));
 
         // Init UI managers with layout manager
         control_panel_manager_ = new CoreUi::ControlPanelManager(this, layout_manager_);
@@ -111,11 +115,15 @@ namespace UiServices
         return true;
     }
 
-	bool InworldSceneController::AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority) 
+	bool InworldSceneController::AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence) 
 	{
 		//Create the QGraphicsProxyWidget
 		QGraphicsProxyWidget *qgrap = new QGraphicsProxyWidget(0, Qt::Widget);
 		qgrap->setWidget(widget);
+
+		//Add to non_priority list if not persistent between worlds
+		if (!persistence)
+			non_persistent_widgets.append(qgrap);
 
 		//Case
 		switch(corner)
@@ -258,6 +266,62 @@ namespace UiServices
 		}
 		AddInternalWidgets();
 		return true;
+	}
+	void InworldSceneController::worldDisconnected()
+	{
+		//Clean lists
+		int i = 0;
+		while(i<bottomleft_horiz_.size())
+			if (non_persistent_widgets.contains(bottomleft_horiz_.at(i).first))
+				bottomleft_horiz_.removeAt(i);
+			else
+				i++;
+		//bottomleft_vert_
+		i = 0;
+		while(i<bottomleft_vert_.size())
+			if (non_persistent_widgets.contains(bottomleft_vert_.at(i).first))
+				bottomleft_vert_.removeAt(i);
+			else
+				i++;
+		//bottomright_horiz_
+		i = 0;
+		while(i<bottomright_horiz_.size())
+			if (non_persistent_widgets.contains(bottomright_horiz_.at(i).first))
+				bottomright_horiz_.removeAt(i);
+			else
+				i++;
+		i = 0;
+		//bottomright_vert_
+		while(i<bottomright_vert_.size())
+			if (non_persistent_widgets.contains(bottomright_vert_.at(i).first))
+				bottomright_vert_.removeAt(i);
+			else
+				i++;
+		//topleft_horiz_
+		while(i<topleft_horiz_.size())
+			if (non_persistent_widgets.contains(topleft_horiz_.at(i).first))
+				topleft_horiz_.removeAt(i);
+			else
+				i++;
+		//topleft_vert_
+		while(i<topleft_vert_.size())
+			if (non_persistent_widgets.contains(topleft_vert_.at(i).first))
+				topleft_vert_.removeAt(i);
+			else
+				i++;
+		//topleft_vert_
+		while(i<topright_horiz_.size())
+			if (non_persistent_widgets.contains(topright_horiz_.at(i).first))
+				topright_horiz_.removeAt(i);
+			else
+				i++;
+		//topleft_vert_
+		while(i<topright_vert_.size())
+			if (non_persistent_widgets.contains(topright_vert_.at(i).first))
+				topright_vert_.removeAt(i);
+			else
+				i++;
+		AddInternalWidgets();
 	}
 
 	void InworldSceneController::AddInternalWidgets()

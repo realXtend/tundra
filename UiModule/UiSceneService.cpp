@@ -118,9 +118,9 @@ namespace UiServices
 			owner_->GetInworldSceneController()->AddWidgetToMenu(external_nondockeable_widgets_[widget->windowTitle()], widget->windowTitle(), "", "");
     }
 
-	bool UiSceneService::AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority) 
+	bool UiSceneService::AddInternalWidgetToScene(QWidget *widget, Qt::Corner corner, Qt::Orientation orientation, int priority, bool persistence)
 	{
-		return owner_->GetInworldSceneController()->AddInternalWidgetToScene(widget, corner, orientation, priority);
+		return owner_->GetInworldSceneController()->AddInternalWidgetToScene(widget, corner, orientation, priority, persistence);
 	}
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon)
