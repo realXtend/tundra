@@ -27,6 +27,7 @@
 #include "UiServiceInterface.h"
 #include "DebugAPI.h"
 #include "SceneAPI.h"
+#include "ConfigAPI.h"
 
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
@@ -119,7 +120,11 @@ namespace Foundation
                 if (boost::filesystem::exists(config_path) == false)
                     boost::filesystem::create_directory(config_path);
 
+                // Old XML based config manager
                 config_manager_->SetPath(config_path);
+
+                // New INI based config api using QSettings
+                config = new ConfigAPI(this, QString::fromStdString(config_path));
             }
             config_manager_->Load();
 
@@ -751,6 +756,11 @@ namespace Foundation
     SceneAPI *Framework::Scene() const
     {
         return scene;
+    }
+
+    ConfigAPI *Framework::Config() const
+    {
+        return config;
     }
 
     QObject *Framework::GetModuleQObj(const QString &name)

@@ -30,6 +30,7 @@ class AssetAPI;
 class ConsoleAPI;
 class DebugAPI;
 class SceneAPI;
+class ConfigAPI;
 
 class FrameworkImpl;
 
@@ -248,6 +249,9 @@ namespace Foundation
         /// Returns Naali core API Debug object.
         SceneAPI *Scene() const;
 
+        /// Returns Naali core API Config object.
+        ConfigAPI *Config() const;
+
         /// Returns if Naali is headless
         bool IsHeadless() const { return headless_; }
 
@@ -298,6 +302,7 @@ namespace Foundation
         bool initialized_; ///< Is the framework is properly initialized.
         bool headless_; ///< Are we running in the headless mode.
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.
+        
         NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
         FrameAPI *frame; ///< The Naali Frame API.
         ConsoleAPI *console; ///< The Naali console API.
@@ -306,7 +311,9 @@ namespace Foundation
         AssetAPI *asset; ///< The Naali Asset API.
         AudioAPI *audio; ///< The Naali Audio API.
         DebugAPI *debug; ///< The Naali Debug API.
-        SceneAPI *scene; ///< Teh Naali Scene API.
+        SceneAPI *scene; ///< The Naali Scene API.
+        ConfigAPI *config; ///< The Naali Config API.
+
         int argc_; ///< Command line argument count as supplied by the operating system.
         char **argv_; ///< Command line arguments as supplied by the operating system.
     };

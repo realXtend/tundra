@@ -31,6 +31,7 @@
 #include "NaaliGraphicsView.h"
 #include "EntityAction.h"
 #include "InputFwd.h"
+#include "ConfigAPI.h"
 #include "LoggingFunctions.h"
 
 #include <QUiLoader>
@@ -87,6 +88,9 @@ Q_DECLARE_METATYPE(DebugAPI*);
 //! Naali Audio API object.
 Q_DECLARE_METATYPE(AudioAPI*);
 Q_DECLARE_METATYPE(SoundChannel*);
+
+//! Naali Config API object.
+Q_DECLARE_METATYPE(ConfigAPI*);
 
 //! Naali renderer defines
 Q_DECLARE_METATYPE(RaycastResult*);
@@ -216,6 +220,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     // Frame metatypes.
     qScriptRegisterQObjectMetaType<FrameAPI*>(engine);
     qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
+
+    // Config metatypes.
+    qScriptRegisterQObjectMetaType<ConfigAPI*>(engine);
 
     // Asset API
     qRegisterMetaType<AssetPtr>("AssetPtr");
