@@ -160,6 +160,7 @@ namespace UiServices
 			SubscribeToEventCategories();
 			ui_scene_service_->CreateSettingsPanel();
 
+			bool window_fullscreen = true;
 			//Restore values
 			if (framework_->IsEditionless()) {
 				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
@@ -170,6 +171,7 @@ namespace UiServices
 				} 
 				else if (settings.contains("win_state"))
 					qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+				window_fullscreen = settings.value("win_fullscreen", false).toBool();
 			}
 			else
 			{
@@ -181,7 +183,10 @@ namespace UiServices
 				} 
 				else if (settings.contains("win_state"))
 					qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+				window_fullscreen = settings.value("win_fullscreen", false).toBool();
 			}
+			if (window_fullscreen)
+				qWin_->showFullScreen();
 
 			//Create the view manager
 			if (!framework_->IsEditionless())
@@ -202,15 +207,23 @@ namespace UiServices
 			{
 				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
 				settings.setValue("win_state", qWin_->saveState());
-				settings.setValue("win_width", qWin_->width());
-				settings.setValue("win_height", qWin_->height());
+				if (!qWin_->isFullScreen())
+				{
+					settings.setValue("win_width", qWin_->width());
+					settings.setValue("win_height", qWin_->height());
+				}
+				settings.setValue("win_fullscreen", qWin_->isFullScreen());
 			}
 			else
 			{
 				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
 				settings.setValue("win_state", qWin_->saveState());
-				settings.setValue("win_width", qWin_->width());
-				settings.setValue("win_height", qWin_->height());
+				if (!qWin_->isFullScreen())
+				{
+					settings.setValue("win_width", qWin_->width());
+					settings.setValue("win_height", qWin_->height());
+				}
+				settings.setValue("win_fullscreen", qWin_->isFullScreen());
 			}
 		}
 

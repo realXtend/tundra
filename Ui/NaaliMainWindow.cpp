@@ -61,6 +61,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 	QPoint pos;
 	int win_width;
 	int win_height;
+	bool window_fullscreen = false;
 
 	//QSettings
 	if (owner->IsEditionless())
@@ -69,6 +70,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
 		win_width = settings.value("win_width", 800).toInt();
 		win_height = settings.value("win_height", 600).toInt();
+		window_fullscreen = settings.value("win_fullscreen", false).toBool();
 	}
 	else
 	{
@@ -76,6 +78,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
 		win_width = settings.value("win_width", 800).toInt();
 		win_height = settings.value("win_height", 600).toInt();
+		window_fullscreen = settings.value("win_fullscreen", false).toBool();
 	}
 
 		// Create window title
@@ -91,14 +94,17 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 		//parentWin_->setMinimumSize(width,height);		
 		parentWin_->setDockNestingEnabled(true);
 
-		//Set size
-		parentWin_->resize(win_width,win_height);
-		parentWin_->move(pos);
-		
 		//Menu bar for Qwin this Mac support
-		 QMenuBar *menuBar = new QMenuBar(parentWin_);
-		 menuBar->heightForWidth(500);
-		 parentWin_->setMenuBar(menuBar);
+		QMenuBar *menuBar = new QMenuBar(parentWin_);
+		menuBar->heightForWidth(500);
+		parentWin_->setMenuBar(menuBar);
+
+		parentWin_->resize(win_width,win_height);
+
+		if (window_fullscreen)
+			parentWin_->showFullScreen();
+		else
+			parentWin_->move(pos);
 }
 
 void NaaliMainWindow::SaveWindowSettingsToFile()
