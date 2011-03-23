@@ -726,7 +726,7 @@ namespace Scene
 
         if (desc.entities.empty())
         {
-            LogError("Empty scene descrition.");
+            LogError("Empty scene description.");
             return ret;
         }
 
@@ -741,7 +741,7 @@ namespace Scene
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
                 LogDebug("SceneManager::CreateContentFromSceneDescription: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
-                LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id).toStdString() + "might not replicate properly!");
+                LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id).toStdString() + " might not replicate properly!");
                 RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
             }
 
