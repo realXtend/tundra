@@ -117,6 +117,7 @@ public slots:
 
     /// Finds from the current scene the SoundListener that is currently active, or null if no SoundListener is active.
     Scene::EntityPtr GetActiveSoundListener();
+    Scene::Entity* GetActiveSoundListenerRaw();
 
 private slots:
     void UpdateSignals();
