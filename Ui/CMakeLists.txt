@@ -5,7 +5,7 @@ init_target (Ui)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_FILES UiAPI.h NaaliGraphicsView.h NaaliMainWindow.h UiServiceInterface.h)
+file (GLOB MOC_FILES UiAPI.h NaaliGraphicsView.h NaaliMainWindow.h UiServiceInterface.h UiProxyWidget.h)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
