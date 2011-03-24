@@ -12,7 +12,7 @@
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 #include "kNet.h"
 #include "kNet/qt/NetworkDialog.h"

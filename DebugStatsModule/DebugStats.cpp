@@ -31,7 +31,7 @@
 #include "EC_OpenSimPresence.h"
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
 #include <utility>
@@ -149,7 +149,7 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     /*UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;*/
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (!ui)
         return;
 

@@ -19,7 +19,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
 #include "EventManager.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 #include "SceneAPI.h"
 #include "Entity.h"

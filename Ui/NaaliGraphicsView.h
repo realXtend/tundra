@@ -1,20 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_NaaliGraphicsView_h
-#define incl_Core_NaaliGraphicsView_h
+#ifndef incl_Ui_NaaliGraphicsView_h
+#define incl_Ui_NaaliGraphicsView_h
+
+#include "UiFwd.h"
+#include "UiApiExport.h"
 
 #include <QGraphicsView>
-#include <QDropEvent>
-#include <QDragEnterEvent>
-#include <QDragMoveEvent>
-#include <QWheelEvent>
 
-#include "NaaliUiFwd.h"
-#include "UiApi.h"
+class QDropEvent;
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QMouseEvent;
+class QWheelEvent;
 
-/// The main view of Naali consists of a single QGraphicsView that spans the whole viewport. NaaliGraphicsView
-/// implements pixel-perfect alpha-tested mouse hotspots for Qt widgets to determine whether clicks should
-/// go to the scene or to Qt widgets.
+/// The main view of Naali consists of a single QGraphicsView that spans the whole viewport.
+/** NaaliGraphicsView implements pixel-perfect alpha-tested mouse hotspots for Qt widgets to
+    determine whether clicks should go to the scene or to Qt widgets.
+*/
 class UI_API NaaliGraphicsView : public QGraphicsView
 {
     Q_OBJECT;
@@ -62,7 +65,7 @@ signals:
 
 public slots:
     /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
-	QGraphicsItem *GetVisibleItemAtCoords(int x, int y);
+    QGraphicsItem *GetVisibleItemAtCoords(int x, int y);
 
     /// Sets a new size for this widget. Will emit the WindowResized signal.
     void Resize(int newWidth, int newHeight);

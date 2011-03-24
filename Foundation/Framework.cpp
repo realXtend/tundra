@@ -29,7 +29,7 @@
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
 #include "SceneManager.h"
@@ -148,7 +148,7 @@ namespace Foundation
             naaliApplication = new NaaliApplication(this, argc_, argv_);
             initialized_ = true;
 
-            ui = new NaaliUi(this);
+            ui = new UiAPI(this);
             
             // Connect signal if main window was created. Not in headless mode.
             if (ui->MainWindow())
@@ -723,7 +723,7 @@ namespace Foundation
         return input;
     }
 
-    NaaliUi *Framework::Ui() const
+    UiAPI *Framework::Ui() const
     {
         return ui;
     }

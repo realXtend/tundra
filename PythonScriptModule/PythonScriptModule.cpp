@@ -57,7 +57,7 @@
 #include "ConsoleAPI.h"
 #include "ConfigAPI.h"
 #include "Audio.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #include "NaaliMainWindow.h"
 #include "DebugAPI.h"
@@ -1882,7 +1882,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
             // Ui() - naali.uicore
-            PythonQt::self()->registerClass(&NaaliUi::staticMetaObject);
+            PythonQt::self()->registerClass(&UiAPI::staticMetaObject);
             PythonQt::self()->registerClass(&NaaliMainWindow::staticMetaObject);
             PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);
             // UiService() - naali.ui

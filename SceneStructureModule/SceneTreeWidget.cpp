@@ -36,7 +36,7 @@
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "IAssetTransfer.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 #ifdef OGREASSETEDITOR_ENABLED
 #include "MeshPreviewEditor.h"
@@ -577,7 +577,7 @@ void SceneTreeWidget::Edit()
             ecEditor->AddEntity(id, false);
         ecEditor->SetSelectedEntities(selection.EntityIds());*/
 
-        NaaliUi *ui = framework->Ui();
+        UiAPI *ui = framework->Ui();
         if (!ui)
             return;
         editor->setParent(ui->MainWindow());
@@ -633,7 +633,7 @@ void SceneTreeWidget::EditInNew()
         editor->AddEntity(id);
     editor->SetSelectedEntities(selection.EntityIds());*/
 
-    NaaliUi *ui = framework->Ui();
+    UiAPI *ui = framework->Ui();
     if (!ui)
         return;
     editor->setParent(ui->MainWindow());

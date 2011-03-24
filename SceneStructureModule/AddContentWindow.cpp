@@ -12,7 +12,7 @@
 #include "SceneStructureModule.h"
 #include "TreeWidgetUtils.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 #include "Framework.h"
 #include "AssetAPI.h"

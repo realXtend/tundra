@@ -5,7 +5,7 @@
 
 #include "UiServiceModule.h"
 #include "UiService.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #include "AssetAPI.h"
 #include "QtUiAsset.h"

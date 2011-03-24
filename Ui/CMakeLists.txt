@@ -5,13 +5,13 @@ init_target (Ui)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_FILES NaaliUi.h NaaliGraphicsView.h NaaliMainWindow.h UiServiceInterface.h)
+file (GLOB MOC_FILES UiAPI.h NaaliGraphicsView.h NaaliMainWindow.h UiServiceInterface.h)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules (Core Foundation RexCommon Interfaces)
+use_modules (Core Foundation Interfaces)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -22,7 +22,7 @@ add_definitions (-DUI_API_EXPORTS)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation)
+link_modules (Core Foundation Interfaces)
 
 SetupCompileFlags()
 

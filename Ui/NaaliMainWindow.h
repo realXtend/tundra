@@ -5,8 +5,8 @@
 
 #include <QMainWindow>
 
-#include "NaaliUiFwd.h"
-#include "UiApi.h"
+#include "UiFwd.h"
+#include "UiApiExport.h"
 
 /// The main application window that is shown when the program starts.
 /** This window contains a fullscreen 3D-rendered scene and modules can embed their own Qt widgets in this window.

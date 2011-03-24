@@ -22,7 +22,7 @@
 #include <QWheelEvent>
 
 #include "NaaliMainWindow.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #endif
 

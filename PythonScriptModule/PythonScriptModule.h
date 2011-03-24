@@ -8,6 +8,7 @@
 #include "ModuleLoggingFunctions.h"
 #include "PythonQtScriptingConsole.h"
 #include "InputFwd.h"
+#include "SceneFwd.h"
 
 #include <QObject>
 #include <QList>

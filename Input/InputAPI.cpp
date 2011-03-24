@@ -8,7 +8,7 @@
 #include "Framework.h"
 #include "EventManager.h"
 #include "RenderServiceInterface.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("Input")
