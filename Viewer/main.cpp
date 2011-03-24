@@ -191,7 +191,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v1.0-preview-client";
+    WCHAR* szVersion = L"Tundra_v1.0.4-client";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
