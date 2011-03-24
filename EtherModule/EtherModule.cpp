@@ -202,6 +202,9 @@ namespace Ether
 		if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
 			return;
 
+		if (framework_->IsEditionless())
+			return;
+
 		const QKeySequence &toggleMenu = framework_->GetInput()->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
 		if (key->keyCode == toggleMenu)
 		{
