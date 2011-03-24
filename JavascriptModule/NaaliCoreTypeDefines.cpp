@@ -22,6 +22,17 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
 
 Q_DECLARE_METATYPE(IAttribute*);
+Q_DECLARE_METATYPE(Scene::EntityPtr);
+
+QScriptValue toScriptValueEntity(QScriptEngine *engine, const Scene::EntityPtr &e)
+{
+    return engine->newQObject(e.get());
+}
+
+void fromScriptValueEntity(const QScriptValue &obj, const QPointer<Scene::Entity> &e)
+{
+  //XXX \todo
+}
 
 QScriptValue toScriptValueColor(QScriptEngine *engine, const Color &s)
 {
@@ -266,6 +277,7 @@ QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine
 
 void RegisterNaaliCoreMetaTypes()
 {
+    qRegisterMetaType<Scene::EntityPtr>("EntityPtr");
     qRegisterMetaType<Color>("Color");
     qRegisterMetaType<Vector3df>("Vector3df");
     qRegisterMetaType<Quaternion>("Quaternion");
@@ -288,6 +300,12 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     qScriptRegisterMetaType_helper(
         engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueIAttribute),
         reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueIAttribute),
+        QScriptValue());
+
+    id = qRegisterMetaType<Scene::EntityPtr>("Scene::EntityPtr");
+    qScriptRegisterMetaType_helper(
+        engine, id, reinterpret_cast<QScriptEngine::MarshalFunction>(toScriptValueEntity),
+        reinterpret_cast<QScriptEngine::DemarshalFunction>(fromScriptValueEntity),
         QScriptValue());
 
     id = qRegisterMetaType< QList<Scene::Entity*> >("QList<Scene::Entity*>");
