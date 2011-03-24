@@ -1877,7 +1877,6 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Command::staticMetaObject);
             PythonQt::self()->registerClass(&DebugAPI::staticMetaObject);
             PythonQt::self()->registerClass(&SceneAPI::staticMetaObject);
-            PythonQt::self()->registerClass(&ConsoleAPI::staticMetaObject);
             PythonQt::self()->registerClass(&ConfigAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
