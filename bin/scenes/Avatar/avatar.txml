@@ -78,7 +78,7 @@
   <component type="EC_Placeable" sync="1">
    <attribute value="0 0 0" name="Position"/>
    <attribute value="1 1 1" name="Scale"/>
-   <attribute value="0,0,0,0,0,0,100,1,100" name="Transform"/>
+   <attribute value="0,0,-5.0,0,0,0,100,1,100" name="Transform"/>
    <attribute value="false" name="Show bounding box"/>
    <attribute value="true" name="Visible"/>
   </component>
