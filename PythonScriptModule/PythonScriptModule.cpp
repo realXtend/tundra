@@ -55,6 +55,7 @@
 #include "FrameAPI.h"
 #include "SceneAPI.h"
 #include "ConsoleAPI.h"
+#include "ConfigAPI.h"
 #include "Audio.h"
 #include "NaaliUi.h"
 #include "NaaliGraphicsView.h"
@@ -1875,6 +1876,9 @@ namespace PythonScript
             PythonQt::self()->registerClass(&ConsoleAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Command::staticMetaObject);
             PythonQt::self()->registerClass(&DebugAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&SceneAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&ConsoleAPI::staticMetaObject);
+            PythonQt::self()->registerClass(&ConfigAPI::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
