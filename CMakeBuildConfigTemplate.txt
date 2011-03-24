@@ -52,6 +52,9 @@ SET(UISERVICE_TEST 1)
 # Enables Open Asset Import Library, which can be used to import various
 # mesh formats.
 SET(OPENASSETIMPORT 0)
+if (MSVC)
+    SET(OPENASSETIMPORT 1)
+endif()
 
 # Enables Ogre asset editor module
 SET(OGREASSETEDITOR 1)
@@ -156,7 +159,7 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by
 #add_subdirectory(LegacyAvatarModule)
 
 if (MSVC)
-#   add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+    add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
 endif()
 
 #add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
@@ -167,4 +170,4 @@ if (NOT UISERVICE_TEST)
 endif()
 
 # Only useful for msi installer builds
-#add_subdirectory(UpdateModule);
+#add_subdirectory(UpdateModule)
