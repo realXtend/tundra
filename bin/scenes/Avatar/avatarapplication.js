@@ -1,3 +1,5 @@
+// !ref: local://simpleavatar.js
+
 // Avatar application. Will handle switching logic between avatar & freelook camera (clientside), and
 // spawning avatars for clients (serverside). Note: this is not a startup script, but is meant to be
 // placed in an entity in a scene that wishes to implement avatar functionality.
