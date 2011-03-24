@@ -151,8 +151,17 @@ namespace Scene
         */
         SceneDesc GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const;
 
+        /// Inspects .js file content for dependencies and adds them to sceneDesc.assets
+        /** @param filePath. Path to the file that is opened for inspection.
+         *  @param SceneDesc. Scene description struct ref, found asset deps will be added here.
+         *  @todo Make one implemenation of this to a common place that EC_Script and SceneManager can use.
+         *  @note If the way we introduce js dependencies (!ref: and engine.IncludeFile()) changes, this function needs to change too.
+         */
+        void SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const;
+
         /// \todo Clean these overload functions created for PythonQt and QtScript compability as much as possible.
         //  For documentation, see the plain C++ public methods above.
+
     public slots:
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
