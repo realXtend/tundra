@@ -1,3 +1,5 @@
+//print("<-- ECSound test ScriptControl.js --:");
+
 //Look for Entities with name Collision box and set RigidBody's mass to 2.0
 var entityList = scene.GetEntityIdsWithComponent("EC_Script");
 
