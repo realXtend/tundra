@@ -30,6 +30,8 @@ class ObjectToolsWindow:
             self.widget.findChild("QPushButton", "button_delete").setVisible(False)
             
             #Manipulator buttons
+            self.button_freemove = self.widget.findChild("QPushButton", "button_freemove")
+            self.button_freemove.connect("clicked()", self.on_freemove_clicked)
             self.button_move = self.widget.findChild("QPushButton", "button_move")
             self.button_move.connect("clicked()", self.on_move_clicked)
             self.button_scale = self.widget.findChild("QPushButton", "button_scale")
@@ -79,16 +81,17 @@ class ObjectToolsWindow:
     def selected(self, ent):
         if ent is not None:
             if hasattr(ent, "placeable"):
-                self.update_gui(ent)           
-                self.button_scale.setEnabled(True)
-                self.button_move.setEnabled(True)
-                self.button_rotate.setEnabled(True)
+				self.update_gui(ent)           
+				self.button_scale.setEnabled(True)
+				self.button_move.setEnabled(True)
+				self.button_rotate.setEnabled(True)
+				self.button_freemove.setEnabled(True)
         
     def deselected(self):
         self.button_scale.setEnabled(False)
         self.button_move.setEnabled(False)
         self.button_rotate.setEnabled(False)
-        
+        self.button_freemove.setEnabled(False)       
         self.rotate_frame.setVisible(False)
         self.scale_frame.setVisible(False)
         self.pos_frame.setVisible(False)
@@ -137,16 +140,29 @@ class ObjectToolsWindow:
         self.active = True
     
     #Methods called by widget
-            
+    def on_freemove_clicked(self):
+        if self.controller.manipulator == self.controller.manipulators[self.controller.MANIPULATE_FREEMOVE]:
+            self.controller.changeManipulator(self.controller.MANIPULATE_SELECT)
+        else:
+            self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
+	
     def on_move_clicked(self):
-        self.controller.changeManipulator(self.controller.MANIPULATE_MOVE)
+		if self.controller.manipulator == self.controller.manipulators[self.controller.MANIPULATE_MOVE]:
+			self.controller.changeManipulator(self.controller.MANIPULATE_SELECT)
+		else:
+			self.controller.changeManipulator(self.controller.MANIPULATE_MOVE)
         
     def on_scale_clicked(self):    
-        self.controller.changeManipulator(self.controller.MANIPULATE_SCALE)
+		if self.controller.manipulator == self.controller.manipulators[self.controller.MANIPULATE_SCALE]:
+			self.controller.changeManipulator(self.controller.MANIPULATE_SELECT)
+		else:
+			self.controller.changeManipulator(self.controller.MANIPULATE_SCALE)
         
     def on_rotate_clicked(self):        
-        self.controller.changeManipulator(self.controller.MANIPULATE_ROTATE)
-        
+		if self.controller.manipulator == self.controller.manipulators[self.controller.MANIPULATE_ROTATE]:
+			self.controller.changeManipulator(self.controller.MANIPULATE_SELECT)
+		else:
+			self.controller.changeManipulator(self.controller.MANIPULATE_ROTATE)
     
     def on_scale_changed(self, value):
         if self.active:
