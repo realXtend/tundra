@@ -212,6 +212,10 @@ public slots:
         @todo move NotificationBaseWidget class to an public interface.
      */
     virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
+
+	virtual void ShowNotification(int hide_in_msec, const QString &message) = 0;
+
+
 //$ BEGIN_MOD $
 
 	/*! \brief	Insert the given action in the Menu of the main window

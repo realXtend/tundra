@@ -142,6 +142,9 @@ namespace UiServices
         /// UiServiceInterface override.
         void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
 
+		/// UiServiceInterface override.
+		void ShowNotification(int hide_in_msec, const QString &message);
+
         /// UiServiceInterface override.
         QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
 //$ BEGIN_MOD $

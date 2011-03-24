@@ -18,6 +18,7 @@
 #include "LoggingFunctions.h"
 #include "Inworld/Menus/MenuManager.h"
 #include "Inworld/NotificationManager.h"
+#include "Inworld/Notifications/NotificationBaseWidget.h"
 
 #include <QUiLoader>
 #include <QSettings>
@@ -311,6 +312,11 @@ namespace UiServices
     {
         owner_->GetNotificationManager()->ShowNotification(notification_widget);
     }
+
+	void UiSceneService::ShowNotification(int hide_in_msec, const QString &message)
+	{
+		owner_->GetNotificationManager()->ShowNotification(new CoreUi::NotificationBaseWidget(hide_in_msec, message));
+	}
 
     QWidget *UiSceneService::LoadFromFile(const QString &file_path, bool add_to_scene, QWidget *parent)
     {
