@@ -4,6 +4,7 @@
 #define incl_Foundation_ComponentManager_h
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 
 #include <map>
 

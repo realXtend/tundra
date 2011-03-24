@@ -24,7 +24,7 @@
 #include "Entity.h"
 #include "SceneAPI.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 #include "NaaliGraphicsView.h"
 

@@ -14,7 +14,7 @@
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 
 #include <QObject>

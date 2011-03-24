@@ -17,7 +17,7 @@
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
 #include "InputAPI.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
 #include "MemoryLeakCheck.h"
@@ -134,7 +134,7 @@ void ECEditorModule::AddEditorWindowToUI()
     //UiServiceInterface *ui = framework_->GetService<UiServiceInterface>(); 
     //if (!ui)
     //    return;
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (!ui)
         return;
 
@@ -272,7 +272,7 @@ QVariantList ECEditorModule::GetSelectedEntities() const
 void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
 {
     //UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (entities.empty() || !ui)
         return;
 
@@ -297,7 +297,7 @@ void ECEditorModule::CreateXmlEditor(ComponentPtr component)
 
 void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
 {
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (!components.empty() && !ui)
         return;
 

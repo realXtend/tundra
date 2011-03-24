@@ -6,22 +6,19 @@
 // Application name is statically defined here
 #define APPLICATION_NAME "realXtend"
 
-#include "IEventData.h"
+//#include "IEventData.h"
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "NaaliUiFwd.h"
-#include "SceneFwd.h"
+//#include "UiFwd.h"
+//#include "SceneFwd.h"
 
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
 #include <boost/timer.hpp>
 
-class QApplication;
-class QGraphicsView;
-class QWidget;
-class QObject;
-
+class FrameworkImpl;
+class UiAPI;
 class UiServiceInterface;
 class FrameAPI;
 class InputAPI;
@@ -31,8 +28,6 @@ class ConsoleAPI;
 class DebugAPI;
 class SceneAPI;
 class ConfigAPI;
-
-class FrameworkImpl;
 
 namespace Poco
 {
@@ -223,7 +218,7 @@ namespace Foundation
 
     public slots:
         /// Returns the Naali core API UI object.
-        NaaliUi *Ui() const;
+        UiAPI *Ui() const;
 
         /// Returns the old UiServiceInterface impl, which is not merged to the core UI object yet
         UiServiceInterface *UiService();
@@ -306,7 +301,7 @@ namespace Foundation
         NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
         FrameAPI *frame; ///< The Naali Frame API.
         ConsoleAPI *console; ///< The Naali console API.
-        NaaliUi *ui; ///< The Naali UI API.
+        UiAPI *ui; ///< The Naali UI API.
         InputAPI *input; ///< The Naali Input API.
         AssetAPI *asset; ///< The Naali Asset API.
         AudioAPI *audio; ///< The Naali Audio API.
@@ -323,11 +318,11 @@ namespace Foundation
     {
         const event_id_t NETWORKING_REGISTERED = 2;
         const event_id_t WORLD_STREAM_READY = 3;
-        const event_id_t WEB_LOGIN_DATA_RECEIVED = 4;
+//        const event_id_t WEB_LOGIN_DATA_RECEIVED = 4;
     }
 
     ///\todo (Re)move, doesn't belong to framework.
-    class WebLoginDataEvent : public IEventData
+/*    class WebLoginDataEvent : public IEventData
     {
         WebLoginDataEvent();
     public:
@@ -338,6 +333,7 @@ namespace Foundation
         QString avatar_address_;
         QString world_address_;
     };
+*/
 }
 
 #endif

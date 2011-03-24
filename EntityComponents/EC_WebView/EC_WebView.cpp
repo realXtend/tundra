@@ -14,7 +14,7 @@
 
 #include "RenderServiceInterface.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
 #include "TundraLogicModule.h"

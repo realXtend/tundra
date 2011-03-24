@@ -29,7 +29,7 @@
 #include "EC_OgreCamera.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #include "NaaliMainWindow.h"
 #include "LoggingFunctions.h"
@@ -317,7 +317,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
         return;
     }
 
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (!ui)
         return;
 
@@ -341,7 +341,7 @@ void SceneStructureModule::ToggleAssetsWindow()
         return;
     }
 
-    NaaliUi *ui = GetFramework()->Ui();
+    UiAPI *ui = GetFramework()->Ui();
     if (!ui)
         return;
 

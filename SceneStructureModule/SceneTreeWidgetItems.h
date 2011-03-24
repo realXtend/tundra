@@ -8,7 +8,7 @@
 #ifndef incl_SceneStructureModule_SceneTreeWidgetItems_h
 #define incl_SceneStructureModule_SceneTreeWidgetItems_h
 
-#include "ForwardDefines.h"
+#include "SceneFwd.h"
 
 /// Tree widget item representing an entity.
 class EntityItem : public QTreeWidgetItem

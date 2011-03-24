@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_UiFwd_h
-#define incl_Core_UiFwd_h
+#ifndef incl_Ui_UiFwd_h
+#define incl_Ui_UiFwd_h
 
 namespace Foundation
 {
@@ -10,13 +10,16 @@ namespace Foundation
 
 class NaaliGraphicsView;
 class NaaliMainWindow;
-class NaaliUi;
+class UiAPI;
 class NaaliUiImpl;
+class UiProxyWidget;
 
+class QGraphicsProxyWidget;
 class QGraphicsScene;
 class QImage;
 class QPainter;
 class QRect;
+class QRectF;
 class QEvent;
 
 #endif
