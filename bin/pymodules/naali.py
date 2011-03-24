@@ -51,7 +51,7 @@ def getScene(name):
     return _pythonscriptmodule.GetScene(name)
     
 def getDefaultScene():
-    return _naali.DefaultScene()
+    return _naali.Scene().GetDefaultSceneRaw()
     
 def createEntity(comptypes = [], localonly = False, sync = True, temporary = False):
     s = getDefaultScene()
