@@ -14,7 +14,7 @@ namespace CoreUi
     NotificationBaseWidget::NotificationBaseWidget(int hide_in_msec, const QString &message) :
         QGraphicsProxyWidget(0, Qt::Widget),
         internal_widget_(new QWidget()),
-        content_widget_(new QWidget()),
+        content_widget_(0),
         fade_animation_(new QPropertyAnimation(this)),
         progress_animation_(new QPropertyAnimation(this)),
         move_animation_(new QPropertyAnimation(this)),

@@ -152,11 +152,8 @@ namespace CoreUi
         // Add inactive log widgets to layout
         foreach (NotificationBaseWidget *log_notification, logged_notifications)
         {
-			//$ BEGIN_MOD $
-			NotificationLogWidget *log_widget = new NotificationLogWidget(false, log_notification->GetContentWidget(), log_notification->GetTimeStamp(),
-                                                                          log_notification->GetMessage(), log_notification->GetResult());
-			//NotificationLogWidget *log_widget = new NotificationLogWidget(false, log_notification->GetContentWidget(), log_notification->GetTimeStamp(), log_notification->GetMessage(), log_notification->GetResult());
-			//$ END_MOD $
+            NotificationLogWidget *log_widget = new NotificationLogWidget(false, log_notification->GetContentWidget(), log_notification->GetTimeStamp(),
+                                                                          log_notification->GetResultTitle(), log_notification->GetResult());
             logLayout->insertWidget(0, log_widget);
             notification_log_widgets_.append(log_widget);
         }
