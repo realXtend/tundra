@@ -84,7 +84,7 @@ namespace UiServices
             AddMenu(menu);
             category_menu_[menu]->addAction(action);
         }
-		
+		action->setCheckable(true);
 		QString *aux = new QString(name+menu);
         controller_actions_[*aux] = action;
 		return true;	
@@ -96,6 +96,7 @@ namespace UiServices
 		if (controller_panels_.contains(QString(menu+"+"+widget->windowTitle())))
 			return false;
 		QAction *action = new QAction(name, widget);
+		action->setCheckable(true);
 		if (menu.isEmpty())		
         {
 			AddMenu("Others");
@@ -126,6 +127,8 @@ namespace UiServices
 		if (!controller_panels_visibility_.contains(qdoc->objectName()))
 			return;
 		controller_panels_visibility_[qdoc->objectName()] = vis;
+		QAction* act= controller_actions_.value(qdoc->windowTitle());
+		act->setChecked(vis);
 	}
 
     bool ExternalMenuManager::RemoveExternalMenuPanel(QWidget *controlled_widget)
@@ -158,11 +161,14 @@ namespace UiServices
 
 		QDockWidget  *aux = dynamic_cast<QDockWidget *>(act->parentWidget());
 
-		if (controller_panels_visibility_[aux->objectName()])
+		if (controller_panels_visibility_[aux->objectName()]){
 			aux->hide();
+			//act->setChecked(false);
+		}
 		else
 		{
 			aux->show();
+			//act->setChecked(true);
 			QList<QDockWidget *> docks = dynamic_cast<QMainWindow *>(root_menu_->parentWidget())->tabifiedDockWidgets(aux);
 			QDockWidget *value;
 			foreach (value, docks)
