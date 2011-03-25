@@ -73,13 +73,13 @@ AutoServerStore.prototype.ServerAboutToStop = function()
 
 AutoServerStore.prototype.LoadScene = function()
 {
-    var entList = framework.DefaultScene().LoadSceneXML(this.storeFilename, true, false, 0);
+    var entList = framework.Scene().GetDefaultSceneRaw().LoadSceneXML(this.storeFilename, true, false, 0);
     return entList.length;
 }
 
 AutoServerStore.prototype.SaveScene = function()
 {
-    var successful = framework.DefaultScene().SaveSceneXML(this.storeFilename);
+    var successful = framework.Scene().GetDefaultSceneRaw().SaveSceneXML(this.storeFilename);
     return successful;
 }
 
