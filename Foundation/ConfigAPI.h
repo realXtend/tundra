@@ -16,18 +16,20 @@ namespace Foundation { class Framework; }
     This class is kept simple and easy to use and designed to be script language friendly. The API is registered to 'config' dynamic property.
 
     JavaScript example on usage:
+    
+    \code
+    var file = "myconfig";
 
-        var file = "myconfig";
+    config.Set(file, "world", new QUrl("http://server.com")); // QUrl
+    config.Set(file, "port", 8013); // int
+    config.Set(file, "login data", "username", "John Doe"); // QString
+    config.Set(file, "login data", "password", "pass123"); // QString
 
-        config.Set(file, "world", new QUrl("http://server.com")); // QUrl
-        config.Set(file, "port", 8013); // int
-        config.Set(file, "login data", "username", "John Doe"); // QString
-        config.Set(file, "login data", "password", "pass123"); // QString
-
-        var username = config.Get(file, "login data", "username");
-        if (username != null)
-            print("Hello there", username);
-        etc.
+    var username = config.Get(file, "login data", "username");
+    if (username != null)
+        print("Hello there", username);
+    etc.
+    \endcode
 
     \note All file, key and section parameters are case insensitive. This means all of them are transformed to 
     lower case before any accessing files. "MyKey" will get and set you same value as "mykey".
