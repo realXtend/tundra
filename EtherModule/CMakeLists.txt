@@ -25,11 +25,11 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
 add_definitions (-DDYNAMIC_LOGIN_SCENE)
 
-use_modules (EtherModule Core Foundation Interfaces Input RexCommon ProtocolUtilities OgreRenderingModule)
+use_modules (EtherModule Core Foundation Interfaces Input RexCommon ProtocolUtilities OgreRenderingModule TundraLogicModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces Input RexCommon ProtocolUtilities OgreRenderingModule)
+link_modules (Core Foundation Interfaces Input RexCommon ProtocolUtilities OgreRenderingModule TundraLogicModule)
 link_ogre()
 
 SetupCompileFlagsWithPCH()

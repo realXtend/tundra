@@ -84,6 +84,8 @@ namespace Ether
 
             // Create login handler
             login_notifier_ = new EtherLoginNotifier(this, scene_controller_, framework);
+			connect (login_notifier_, SIGNAL(LoginSuccessful()), SLOT(LoginSuccesful()));
+
 
 			connect(login_notifier_, SIGNAL( StartTundraLogin(QMap<QString, QString>) ),
 				this, SLOT( ProcessTundraLogin(QMap<QString, QString>) ));
@@ -587,6 +589,13 @@ namespace Ether
 			LogInfo("Attempting " + logindata.protocol_ + " Tundra connection to " + data["WorldHost"].toStdString() + ":" + data["WorldPort"].toStdString() + " as " + logindata.username_);
 			event_category_id_t tundra_category_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
 			framework_->GetEventManager()->SendEvent(tundra_category_, TundraLogic::Events::EVENT_TUNDRA_LOGIN, &logindata);
+		}
+
+		void EtherLogic::LoginSuccesful()
+		{
+			UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
+            if (ui)
+				ui->SwitchToMainScene();
 		}
     }
 }
