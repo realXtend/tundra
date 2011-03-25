@@ -5,7 +5,7 @@
  *  @brief  Window with tree view of contents of scene.
  *
  *          This class will only handle adding and removing of entities and components and updating
- *          their names. The SceneTreeWidget implements most of the functionlity.
+ *          their names. The SceneTreeWidget implements most of the functionality.
  */
 
 #include "StableHeaders.h"
@@ -79,7 +79,7 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw, QWidget *p
 
     QHBoxLayout *layoutSettingsVisibility = new QHBoxLayout;
     layoutSettingsVisibility->addWidget(expandAndCollapseButton);
-    layoutSettingsVisibility->addWidget(new QLabel(tr("Show")));
+    layoutSettingsVisibility->addWidget(new QLabel(tr("Show:")));
     layoutSettingsVisibility->addWidget(compCheckBox);
     layoutSettingsVisibility->addWidget(assetCheckBox);
     layoutSettingsVisibility->addSpacerItem(new QSpacerItem(20, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));

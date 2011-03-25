@@ -5,7 +5,7 @@
  *  @brief  Window with tree view showing every entity in a scene.
  *
  *          This class will only handle adding and removing of entities and components and updating
- *          their names. The SceneTreeWidget implements most of the functionlity.
+ *          their names. The SceneTreeWidget implements most of the functionality.
  */
 
 #ifndef incl_SceneStructureModule_SceneStructureWindow_h
@@ -25,7 +25,7 @@ class SceneTreeWidget;
 
 /// Window with tree view showing every entity in a scene.
 /** This class will only handle adding and removing of entities and components and updating
-    their names. The SceneTreeWidget implements most of the functionlity.
+    their names. The SceneTreeWidget implements most of the functionality.
 */
 class SceneStructureWindow : public QWidget
 {
@@ -125,7 +125,7 @@ private slots:
     void AddComponent(Scene::Entity *entity, IComponent *comp);
 
     /// Removes entity from the tree widget.
-    /** @param entity Aletred entity.
+    /** @param entity Altered entity.
         @param comp Component which was removed.
     */
     void RemoveComponent(Scene::Entity *entity, IComponent *comp);
