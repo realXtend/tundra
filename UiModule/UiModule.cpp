@@ -166,8 +166,10 @@ namespace UiServices
 				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
 				if (!settings.contains("win_state") && !framework_->IsEditionless()){
 					//Set default settings
-					QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
-					qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
+					QSettings default_settings("data/uidefault.ini", QSettings::IniFormat);
+					qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());
+					//First time, show it maximized
+					qWin_->showMaximized();
 				} 
 				else if (settings.contains("win_state"))
 					qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
@@ -178,8 +180,10 @@ namespace UiServices
 				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
 				if (!settings.contains("win_state") && !framework_->IsEditionless()){
 					//Set default settings
-					QSettings default_settings("data/uiexternaldefault.ini", QSettings::IniFormat);
-					qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());		
+					QSettings default_settings("data/uidefault.ini", QSettings::IniFormat);
+					qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());
+					//First time, show it maximized
+					qWin_->showMaximized();
 				} 
 				else if (settings.contains("win_state"))
 					qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());

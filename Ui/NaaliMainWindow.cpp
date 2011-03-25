@@ -68,16 +68,16 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 	{
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
 		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
-		win_width = settings.value("win_width", 800).toInt();
-		win_height = settings.value("win_height", 600).toInt();
+		win_width = settings.value("win_width", 1024).toInt();
+		win_height = settings.value("win_height", 768).toInt();
 		window_fullscreen = settings.value("win_fullscreen", false).toBool();
 	}
 	else
 	{
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
 		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
-		win_width = settings.value("win_width", 800).toInt();
-		win_height = settings.value("win_height", 600).toInt();
+		win_width = settings.value("win_width", 1024).toInt();
+		win_height = settings.value("win_height", 768).toInt();
 		window_fullscreen = settings.value("win_fullscreen", false).toBool();
 	}
 
