@@ -5,12 +5,23 @@
 #include "EC_Sound.h"
 #include "IModule.h"
 #include "Framework.h"
+
 #include "Entity.h"
+#include "SceneManager.h"
+
 #include "Audio.h"
+#include "AudioAsset.h"
+
 #include "AssetAPI.h"
+#include "IAsset.h"
+#include "IAssetTransfer.h"
+
 #include "EC_Placeable.h"
 #include "EC_SoundListener.h"
-#include "SceneManager.h"
+
+
+#include <QString>
+#include <QStringList>
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
@@ -22,6 +33,7 @@ EC_Sound::EC_Sound(IModule *module):
     soundRef(this, "Sound ref"),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
+    playOnLoad(this, "Play", true),
     loopSound(this, "Loop sound", false),
     soundGain(this, "Sound gain", 1.0f),
     spatial(this, "Spatial", true)
@@ -45,16 +57,73 @@ EC_Sound::~EC_Sound()
 
 void EC_Sound::AttributeUpdated(IAttribute *attribute)
 {
+    if (framework_->IsHeadless())
+        return;
+
     if (attribute == &soundRef)
-        framework_->Asset()->RequestAsset(soundRef.Get().ref);
+    {
+        AssetTransferPtr tranfer =  framework_->Asset()->RequestAsset(soundRef.Get().ref);
+        if (tranfer.get())
+            connect(tranfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(AudioAssetLoaded(AssetPtr)), Qt::UniqueConnection);
+    }
+    else if (attribute == &playOnLoad)
+    {
+        if (getplayOnLoad())
+        {
+            if (soundRef.Get().ref.isEmpty())
+                return;
+            AssetPtr audioAsset = GetFramework()->Asset()->GetAsset(soundRef.Get().ref);
+            if (audioAsset.get())
+            {
+                // Channel not created yet
+                if (!soundChannel.get())
+                    PlaySound();
+                // Channel created, check if stopped
+                else if (soundChannel->GetState() == SoundChannel::Stopped)
+                    PlaySound();
+            }
+            else
+            {
+                StopSound();
+            }
+        }
+    }
 
     UpdateSoundSettings();
 }
 
+void EC_Sound::AudioAssetLoaded(AssetPtr asset)
+{
+    if (framework_->IsHeadless())
+        return;
+
+    if (!asset.get())
+        LogError("AudioAssetLoaded: Audio asset ptr null, cannot continue!");
+
+    AudioAsset *audioAsset = dynamic_cast<AudioAsset*>(asset.get());
+    if (audioAsset)
+    {
+        QString fileExt = asset->Name().split(".").last();
+        if (getplayOnLoad())
+        {
+            // Channel not created yet
+            if (!soundChannel.get())
+                PlaySound();
+            // Channel created, check if stopped
+            else if (soundChannel->GetState() == SoundChannel::Stopped)
+                PlaySound();
+        }
+    }
+    else
+        LogError("Audio asset was loaded but not type 'AudioAsset'.");
+}
+
 void EC_Sound::RegisterActions()
 {
+    if (framework_->IsHeadless())
+        return;
+
     Scene::Entity *entity = GetParentEntity();
-    assert(entity);
     if (entity)
     {
         entity->ConnectAction("PlaySound", this, SLOT(PlaySound()));
@@ -64,18 +133,22 @@ void EC_Sound::RegisterActions()
 
 void EC_Sound::PositionChange(const QVector3D &pos)
 {
+    if (framework_->IsHeadless())
+        return;
+
     if (soundChannel)
         soundChannel->SetPosition(Vector3df(pos.x(), pos.y(), pos.z()));
 }
 
 void EC_Sound::View(const QString &attributeName)
 {
-    //! @todo Add implementation.
+    LogWarning("View(const QString &attributeName) not implemented yet!");
 }
 
 void EC_Sound::PlaySound()
 {
-    ComponentChanged(AttributeChange::LocalOnly);
+    if (framework_->IsHeadless())
+        return;
 
     // If previous sound is still playing stop it before we apply a new sound.
     if (soundChannel)
@@ -84,10 +157,13 @@ void EC_Sound::PlaySound()
         soundChannel.reset();
     }
 
+    if (soundRef.Get().ref.isEmpty())
+        return;
+
     AssetPtr audioAsset = GetFramework()->Asset()->GetAsset(soundRef.Get().ref);
     if (!audioAsset)
     {
-        ///\todo Make a request.
+        LogWarning("PlaySound called before audio asset was loaded.");
         return;
     }
 
