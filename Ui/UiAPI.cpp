@@ -121,7 +121,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     graphicsView->setScene(graphicsScene);
     graphicsView->scene()->setSceneRect(graphicsView->rect());
     connect(graphicsScene, SIGNAL(changed(const QList<QRectF> &)), graphicsView, SLOT(HandleSceneChanged(const QList<QRectF> &))); 
-    connect(graphicsScene, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(OnSceneRectChanged(const QRectF &)));
+//    connect(graphicsScene, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(OnSceneRectChanged(const QRectF &)));
 
     connect(mainWindow, SIGNAL(WindowResizeEvent(int,int)), graphicsView, SLOT(Resize(int,int))); 
 
@@ -367,7 +367,7 @@ void UiAPI::BringWidgetToFront(QGraphicsProxyWidget *widget) const
     graphicsScene->setFocusItem(widget, Qt::ActiveWindowFocusReason);
 }
 
-void UiAPI::SceneRectChanged(const QRectF &rect)
+void UiAPI::OnSceneRectChanged(const QRectF &rect)
 {
     foreach(QGraphicsProxyWidget *widget, fullScreenWidgets_)
         widget->setGeometry(rect);
