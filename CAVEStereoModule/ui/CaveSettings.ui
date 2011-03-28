@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>296</width>
-    <height>247</height>
+    <width>334</width>
+    <height>326</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,29 +42,44 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QPushButton" name="bnave_button">
-          <property name="text">
-           <string>BNAVE</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="vcave_button">
-          <property name="text">
-           <string>V-CAVE</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="minicave_button">
-          <property name="text">
-           <string>MiniCave</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QGroupBox" name="groupBox">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QPushButton" name="bnave_button">
+           <property name="minimumSize">
+            <size>
+             <width>114</width>
+             <height>23</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>BNAVE</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="vcave_button">
+           <property name="text">
+            <string>V-CAVE</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="minicave_button">
+           <property name="text">
+            <string>MiniCave</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="panorama_button">
+        <property name="text">
+         <string>Panorama</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="Line" name="line">

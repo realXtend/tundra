@@ -7,6 +7,12 @@
 #include "ModuleLoggingFunctions.h"
 #include "CAVEStereoModuleApi.h"
 #include <QVector>
+#include <QObject>
+
+namespace Ogre
+{
+	class RenderWindow;
+}
 
 namespace Foundation
 {
@@ -18,8 +24,9 @@ namespace CAVEStereo
 {
     class StereoController;
     class CAVEManager;
-    class CAVESTEREO_MODULE_API CAVEStereoModule : public IModule
+    class CAVESTEREO_MODULE_API CAVEStereoModule : public QObject, public IModule
     {
+	Q_OBJECT
     public:
         MODULE_LOGGING_FUNCTIONS;
         CAVEStereoModule();
@@ -33,6 +40,9 @@ namespace CAVEStereo
         static const std::string &NameStatic() { return type_name_static_; }
 
         QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
+    public slots:
+        void ShowStereoscopyWindow();
+        void ShowCaveWindow();
     private:
         //! Type name of the module.
         static std::string type_name_static_;

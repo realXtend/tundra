@@ -94,7 +94,9 @@ namespace CAVEStereo
                 name += QString::number(number_of_views_);
                 stereo_views_[name] = mngr;
                 number_of_views_++;
+
             }
+
         }
 
         if(tech_type == "passive")
@@ -173,4 +175,10 @@ namespace CAVEStereo
         windows_to_dispose_.clear();
         stereo_views_.clear();
     }
+
+    StereoWidget * StereoController::GetStereoWidget() const
+    {
+	    return settings_widget_;
+    }
+
 }
