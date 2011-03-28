@@ -29,6 +29,7 @@ namespace CAVEStereo
         QObject::connect(settings_widget_, SIGNAL(GetCAVEViewProjParams(const QString&, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &)), this, SLOT(GetViewParametersView(const QString&, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &)), Qt::DirectConnection); 
         QObject::connect(settings_widget_, SIGNAL(ToggleCAVE(bool)),this, SLOT(CAVEToggled(bool)) );
         QObject::connect(settings_widget_, SIGNAL(NewCAVEViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)), this, SLOT(AddView(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)));
+        QObject::connect(settings_widget_, SIGNAL(NewCAVEPanoramaViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, int)), this, SLOT(AddPanoramaView(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, int)));
     }
     CAVEManager::~CAVEManager()
     {
@@ -87,7 +88,32 @@ namespace CAVEStereo
         }
 
     }
-
+    void CAVEManager::AddPanoramaView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int n)
+    {
+        if(!view_map_.contains(name))
+        {
+            CAVEView* view = new CAVEView(renderer_);
+            view->InitializePanorama(name, window_width, window_height, top_left, bottom_left, bottom_right, eye_pos,n);
+            view_map_[name] = view;
+            if(enabled_)
+                view->GetExternalRenderWindow()->show();
+            else
+                view->GetExternalRenderWindow()->hide();
+        }
+    }
+    void CAVEManager::AddPanoramaView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int n)
+    {
+        if(!view_map_.contains(name))
+        {
+            CAVEView* view = new CAVEView(renderer_);
+            view->InitializePanorama(name, top_left, bottom_left, bottom_right, eye_pos,n);
+            view_map_[name] = view;
+            if(enabled_)
+                view->GetExternalRenderWindow()->show();
+            else
+                view->GetExternalRenderWindow()->hide();
+        }
+    }
     void CAVEManager::DisableCAVE()
     {
         if(!view_map_.empty())
@@ -160,5 +186,11 @@ namespace CAVEStereo
             }
         }
     }
+
+    CAVEStereo::CAVESettingsWidget* CAVEManager::GetCaveWidget() const
+    {
+        return settings_widget_;
+    }
+
     
 }
