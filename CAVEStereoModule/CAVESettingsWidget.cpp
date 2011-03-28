@@ -4,8 +4,8 @@
 #include "ServiceManager.h"
 #include "UiServiceInterface.h"
 #include "Framework.h"
-#include "NaaliUi.h"
 #include "NaaliMainWindow.h"
+#include "UiAPI.h"
 #include "qdesktopwidget.h"
 
 #include <Ogre.h>
