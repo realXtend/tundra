@@ -37,7 +37,7 @@ namespace Foundation
     {
         QApplication::setApplicationName("realXtend-Naali");
 
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
         // If under windows, add run_dir/plugins as library path
         // unix users will get plugins from their OS Qt installation folder automatically
 
