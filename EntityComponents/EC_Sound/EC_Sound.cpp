@@ -33,7 +33,7 @@ EC_Sound::EC_Sound(IModule *module):
     soundRef(this, "Sound ref"),
     soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
-    playOnLoad(this, "Play", true),
+    playOnLoad(this, "Play on load", false),
     loopSound(this, "Loop sound", false),
     soundGain(this, "Sound gain", 1.0f),
     spatial(this, "Spatial", true)
@@ -68,6 +68,7 @@ void EC_Sound::AttributeUpdated(IAttribute *attribute)
     }
     else if (attribute == &playOnLoad)
     {
+        /// \todo check sound channels audio asset if its different, then play the new one
         if (getplayOnLoad())
         {
             if (soundRef.Get().ref.isEmpty())
@@ -81,10 +82,6 @@ void EC_Sound::AttributeUpdated(IAttribute *attribute)
                 // Channel created, check if stopped
                 else if (soundChannel->GetState() == SoundChannel::Stopped)
                     PlaySound();
-            }
-            else
-            {
-                StopSound();
             }
         }
     }
@@ -103,7 +100,7 @@ void EC_Sound::AudioAssetLoaded(AssetPtr asset)
     AudioAsset *audioAsset = dynamic_cast<AudioAsset*>(asset.get());
     if (audioAsset)
     {
-        QString fileExt = asset->Name().split(".").last();
+        /// \todo check sound channels audio asset if its different, then play the new one
         if (getplayOnLoad())
         {
             // Channel not created yet
