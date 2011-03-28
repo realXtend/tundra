@@ -76,7 +76,7 @@ namespace Camera
 
         void DefaultWorldSceneChanged(Scene::SceneManager *scene);
 
-        void DeleteCameraWidget(CameraWidget *camera_view);
+        void DeleteCameraWidget();
 
         void SetCameraWireframe(int state);
 

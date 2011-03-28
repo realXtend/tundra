@@ -79,7 +79,8 @@ namespace Camera
             i.next();
             QDockWidget *doc = dynamic_cast<QDockWidget*>(i.key()->parent());           
             if (doc)
-                connect(doc,SIGNAL(visibilityChanged(bool)), i.key(), SLOT(ParentVisibilityChanged(bool)));          
+				doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+                //connect(doc,SIGNAL(visibilityChanged(bool)), i.key(), SLOT(ParentVisibilityChanged(bool)));          
         }
 	}    
 
@@ -181,7 +182,8 @@ namespace Camera
         //conect qdoc visibility signal
         QDockWidget *doc = dynamic_cast<QDockWidget*>(new_camera->parent());           
         if (doc)
-            connect(doc,SIGNAL(visibilityChanged(bool)), new_camera, SLOT(ParentVisibilityChanged(bool)));          
+			doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+            //connect(doc,SIGNAL(visibilityChanged(bool)), new_camera, SLOT(ParentVisibilityChanged(bool)));          
     }
     
     CameraWidget* CameraModule::CreateCameraWidget()
@@ -233,8 +235,10 @@ namespace Camera
         //connect signals
          //new camera signal
         connect(camera_view->buttonNewCamera, SIGNAL(released()),this,  SLOT(CreateNewCamera())); 
+		camera_view->buttonNewCamera->
 
-        connect(camera_view, SIGNAL(closeSignal(CameraWidget*)),this,  SLOT(DeleteCameraWidget(CameraWidget*))); 
+        //connect(camera_view, SIGNAL(closeSignal(CameraWidget*)),this,  SLOT(DeleteCameraWidget(CameraWidget*))); 
+		connect(camera_view->buttonDeleteCamera, SIGNAL(released()),this,  SLOT(DeleteCameraWidget())); 
         
         //movement signals
         connect(camera_view->GetRenderer(), SIGNAL(Move(qreal, qreal)),camera_handler,  SLOT(Move(qreal, qreal))); 
@@ -254,8 +258,13 @@ namespace Camera
 
     }
 
-    void CameraModule::DeleteCameraWidget(CameraWidget *camera_view)
+    void CameraModule::DeleteCameraWidget()
     {
+		CameraWidget *camera_view = dynamic_cast<CameraWidget *>(sender()->parent()->parent());
+
+		if (!camera_view)
+            return;
+
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
         if (ui)        
             ui->RemoveWidgetFromScene(camera_view);

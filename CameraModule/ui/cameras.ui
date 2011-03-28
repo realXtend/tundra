@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>354</width>
-    <height>33</height>
+    <width>416</width>
+    <height>110</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -103,7 +103,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0" colspan="6">
+        <item row="2" column="0" colspan="8">
          <widget class="QWidget" name="widgetRenderer" native="true">
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <property name="margin">
@@ -138,7 +138,7 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="4">
+        <item row="0" column="5">
          <widget class="QPushButton" name="buttonNewCamera">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -160,6 +160,19 @@
             <width>16</width>
             <height>16</height>
            </size>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="6">
+         <widget class="QPushButton" name="buttonDeleteCamera">
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>25</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Delete</string>
           </property>
          </widget>
         </item>
