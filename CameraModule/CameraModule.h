@@ -24,6 +24,9 @@
 
 namespace Camera
 {
+    class CameraHanlder;
+    class CameraWidget;
+
     class CAMERA_MODULE_API CameraModule :  public QObject, public IModule
     {
         Q_OBJECT
@@ -53,32 +56,40 @@ namespace Camera
         //!Slots used to update widget viewport
         void UpdateObjectViewport();
 
-        //!Slot used to manage QActions
-        void ShowWidget();
+        void CreateNewCamera();
 
-        /*!Create camera view and qaction
-         *  \param  name The name of the camera to insert in map.
-         */
-        void CreateCameraView(QString name);
+        void CreateNewCameraFromConfig(int camera_type, int projection_type, bool wireframe);
 
-        /*!Create camera handler
-         *  \param  name The name of the handler to insert in map
-         *  \param  type Camera handler type. CameraHandler::Perpective used as default
+        /*!Create camera view 
          */
-        void CreateCameraHandler(QString name, CameraHandler::CameraType type);
+        CameraWidget* CreateCameraWidget();
+
+        /*!Create camera handler         
+         */
+        CameraHandler* CreateCameraHandler();
 
         /*!Connect camera view signals to camera handlers slots
          * \param view_name The ame of the camera view
          * \param handler_name The name of the camera handler
          */
-        void ConnectViewToHandler(QString view_name, QString handler_name);
+        void ConnectViewToHandler(CameraWidget *camera_view, CameraHandler *camera_handler, int camera_type = 0, int projection_type = 1, bool wireframe = false);
 
-		void SceneAdded(const QString &name);
+        void DefaultWorldSceneChanged(Scene::SceneManager *scene);
+
+        void DeleteCameraWidget(CameraWidget *camera_view);
+
+        void SetCameraWireframe(int state);
+
+        void ExitRequested();
 
     private:
-        Q_DISABLE_COPY(CameraModule);
+        Q_DISABLE_COPY(CameraModule);      
 
-		Scene::ScenePtr scene_;
+        void SaveConfig();
+
+        void ReadConfig();
+
+		Scene::SceneManager *scene_;
 
         // Module name
         static const std::string module_name_;
@@ -88,17 +99,9 @@ namespace Camera
         //! Network category event to handle
         event_category_id_t network_state_event_category_;
 
-        //! Map to control camera handlers
-        QMap<QString,CameraHandler*> controller_camera_handlers_;
-        //! Map to control camera views
-        QMap<QString,CameraView*> controller_camera_views_;
-        //! Map to control qactions to show or hide widgets
-        QMap<QAction*,CameraView*> controller_qaction_widgets_;
-        //! Map to control conection between cameraview and camera handler
-        QMap<CameraView*,CameraHandler*> controller_view_handlers_;
+        //! Map to control conection between CameraWidget and camera handler
+        QMap<CameraWidget*,CameraHandler*> controller_view_handlers_;
 
-
-                
         //! timer to control cameras views render 
         QTimer *viewport_poller_;
     };

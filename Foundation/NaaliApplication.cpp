@@ -98,6 +98,7 @@ namespace Foundation
             RootLogCritical(std::string("NaaliApplication::Go caught an unknown exception!"));
             throw;
         }
+        emit ExitRequested();
     }
     
     bool NaaliApplication::eventFilter(QObject *obj, QEvent *event)

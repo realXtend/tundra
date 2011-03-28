@@ -14,19 +14,45 @@
 #include <QPointF>
 #include <QTime>
 
+#include "ui_cameras.h"
+
 class QMouseEvent;
 
 namespace Camera
 {   
+    class CameraView;
+
+    class CameraWidget: public QWidget,  public Ui::Cameras
+    {
+        Q_OBJECT
+    public:
+        /*! Constructor.
+         * \param parent Parent Widget. Default 0
+         */
+        CameraWidget(QWidget* widget=0);
+
+        QLabel* GetRenderer() { return reinterpret_cast<QLabel*>(renderer);};
+
+    signals:
+        void closeSignal(CameraWidget*);
+        void checkBoxStateChanged(int);
+
+    public slots:
+        void SetWindowTitle(const QString &name);
+        void ParentVisibilityChanged(bool visible);
+
+    private:
+        CameraView *renderer;
+    };
+
     class CameraView: public QLabel
     {
         Q_OBJECT
     public:
         /*! Constructor.
-         * \param title Widget title
          * \param parent Parent Widget. Default 0
          */
-        CameraView(QString title,QWidget* widget=0);
+        CameraView(QWidget* widget=0);
 
     protected:
         //! Captures mouse press events
@@ -46,7 +72,7 @@ namespace Camera
         void Move(qreal x, qreal y);
 
         //! Zoom signal
-        void Zoom(qreal delta);
+        void Zoom(qreal delta, Qt::KeyboardModifiers modifiers);
 
     private:
         //! Boolean to manage mouse left button

@@ -17,8 +17,9 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
   IComponent(module->GetFramework()),
   targettexture(this, "Target texture", "RttTex"),
   size_x(this, "Texture size x", 400),
-  size_y(this, "Texture size y", 300)
-{
+  size_y(this, "Texture size y", 300),
+  pixelData_(0)
+{   
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*)));
 
@@ -26,7 +27,7 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
     //.. is not allowed to get other components in the creation of a component. ok?
     if (ViewEnabled())
     {
-         framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(SetupRtt()));
+         framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
         //ScheduleRender();
     }
 }
@@ -43,7 +44,7 @@ EC_RttTarget::~EC_RttTarget()
     //if (!image_rendering_texture_name_.empty())
     Ogre::TextureManager::getSingleton().remove(targettexture.Get().toStdString());
     //does this remove also the rendertarget with the viewports etc? seems so?
-    
+
     Ogre::MaterialManager::getSingleton().remove(material_name_);
 }
 
@@ -94,12 +95,14 @@ void EC_RttTarget::PrepareRtt()
     else
         LogError("render target texture getting failed.");
 
+    
     //create material to show the texture
     material_name_ = targettexture.Get().toStdString() + "_mat"; //renderer_.lock()->GetUniqueObjectName("EC_BillboardWidget_mat");
     OgreRenderer::CloneMaterial("HoveringText", material_name_); //would LitTextured be the right thing? XXX \todo
     Ogre::MaterialManager &material_manager = Ogre::MaterialManager::getSingleton();
     Ogre::MaterialPtr material = material_manager.getByName(material_name_);
     OgreRenderer::SetTextureUnitOnMaterial(material, targettexture.Get().toStdString());    
+  
 }
 
 void EC_RttTarget::SetAutoUpdated(bool val)
@@ -124,6 +127,31 @@ void EC_RttTarget::SetAutoUpdated(bool val)
 
 void EC_RttTarget::AttributeUpdated(IAttribute* attribute)
 {
+    //if change x, y or name prepare rtt again
+    Ogre::TextureManager::getSingleton().remove(targettexture.Get().toStdString());
+    PrepareRtt();    
+}
+
+Ogre::uchar* EC_RttTarget::GetRawTexture(int texture_width, int texture_height)
+{
+    if (texture_width != size_x.Get())
+        size_x.Set(texture_width,AttributeChange::LocalOnly);
+    if (texture_height != size_y.Get())
+        size_y.Set(texture_height,AttributeChange::LocalOnly);
+
+    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
+    if (!tex_->getBuffer()->getRenderTarget()->isAutoUpdated())
+        render_texture->update(false);
+
+    SAFE_DELETE(pixelData_);
+    pixelData_ = new Ogre::uchar[size_x.Get() * size_y.Get() * 4];
+    Ogre::Box bounds(0, 0, size_x.Get(), size_y.Get());
+    Ogre::PixelBox pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, (void*)pixelData_);
+
+    render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
+
+    return pixelData_;
+
 }
 
 /* needed if autoupdate is not good (is too heavy and doesn't provide fps config?)

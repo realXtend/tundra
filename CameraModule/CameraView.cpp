@@ -11,14 +11,47 @@
 
 namespace Camera
 {
-    CameraView::CameraView(QString title, QWidget* widget) :
+    CameraWidget::CameraWidget(QWidget* widget) :
+        QWidget(widget)
+    {                     
+        setupUi(this);
+        srand(time(NULL));
+        setWindowTitle(QString("Camera").append(QString::number(rand())));
+        renderer = new CameraView(widgetRenderer);    
+        verticalLayout_2->addWidget(renderer);
+        connect(comboBoxCameras, SIGNAL(currentIndexChanged(const QString &)),this,  SLOT(SetWindowTitle(const QString &)));         
+    }
+
+    void CameraWidget::SetWindowTitle(const QString &name)
+    {
+        if (this->parent())
+            dynamic_cast<QWidget*>(this->parent())->setWindowTitle(name + " Camera");
+    }
+
+    void CameraWidget::ParentVisibilityChanged(bool visible)
+     {
+         if (visible == false)
+         {
+             
+             QDockWidget *doc = dynamic_cast<QDockWidget*>(this->parent());
+             if (doc)
+             {
+                 if (doc->isVisible() == false)
+                    emit closeSignal(this);
+             }
+         }
+     }
+
+    CameraView::CameraView(QWidget* widget) :
         QLabel(widget),
         left_mousebutton_pressed_(false)
-    {
-        setWindowTitle(title);        
-        setMinimumSize(QSize(300,300));
+    {              
+        if (widget)
+            widget->setMinimumSize(300,300);        
+        setMinimumSize(300,300);
         setAlignment(Qt::AlignCenter);
-        setText(title + " Camera View");
+        setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+        setText("Camera View");
     }
 
     void CameraView::mousePressEvent(QMouseEvent *e)
@@ -26,13 +59,14 @@ namespace Camera
         if (e->button() == Qt::LeftButton)
         {
             left_mousebutton_pressed_ = true;
+            last_pos_= e->posF();
             if (!QApplication::overrideCursor())
                 QApplication::changeOverrideCursor(Qt::SizeAllCursor);
             else
                 QApplication::setOverrideCursor(Qt::SizeAllCursor);
             update_timer_.start();
         }
-    }
+    }    
 
     void CameraView::mouseReleaseEvent(QMouseEvent *e)
     {
@@ -48,7 +82,7 @@ namespace Camera
 
     void CameraView::wheelEvent(QWheelEvent *e)
     {
-        emit Zoom(e->delta());
+        emit Zoom(e->delta(), e->modifiers());
     }
 
     void CameraView::mouseMoveEvent(QMouseEvent *e)

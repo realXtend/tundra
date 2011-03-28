@@ -19,6 +19,7 @@
 #include <QSize>
 #include <QMap>
 
+#include <Ogre.h>
 #include <OgrePrerequisites.h>
 
 
@@ -47,13 +48,18 @@ namespace Camera
 
         /*! Constructor. Creates ogre texture
          * \param framework Framework
-         * \param type Camera type to manages zoom and movement
          * \param parent Parent object
          */
-        CameraHandler(Foundation::Framework *framework,CameraType type = Perspective, QObject *parent = 0);
+        CameraHandler(Foundation::Framework *framework, QObject *parent = 0);
 
         //! Destructor.
         virtual ~CameraHandler();
+
+        int GetCameraType(){ return camera_type_;};
+
+        int GetProjectionType() { return projection_type_;};
+
+        bool IsWireframeEnabled() { return polygon_mode_;};
 
     public slots:
         /*! Destroys ogre texture.         
@@ -62,7 +68,7 @@ namespace Camera
 
         /*! Creates new world entity with ec_ogrecamera and ec_placeable components
          */
-        bool CreateCamera(Scene::ScenePtr scene);
+        bool CreateCamera(Scene::SceneManager *scene);
 
         /*! Moves the camera.
          * \param x X movement. [-1,1]
@@ -74,7 +80,7 @@ namespace Camera
         /*! Makes zoom to the camera.
          * \param delta mouse delta parameter
          */
-        bool Zoom(qreal delta);
+        bool Zoom(qreal delta, Qt::KeyboardModifiers modifiers);
 
         /*! Focus the camera to world entity
          * \param entity World entity
@@ -87,16 +93,29 @@ namespace Camera
          */
         QPixmap RenderCamera(QSize image_size);
 
+        void SetCameraType(int camera_type);
+
+        void SetCameraProjection(int projection);
+
+        void SetCameraWireframe(bool state);
+
+        void SetCameraWireframe(Ogre::PolygonMode polygon_mode);
+
     private:
         /*! Rotates the camera around pivot postion
          * \param pivot Position of the pivot
          * \param x Y movement. [-1,1]
          * \param y X movement. [-1,1]
          */
-        void RotateCamera(Vector3df pivot,qreal x, qreal y);
+        void RotateCamera(Vector3df pivot,qreal x, qreal y);        
+
+        void SetCoordinates();
         
         //! Framework
         Foundation::Framework *framework_;
+
+        //! Scene Manager
+        Scene::SceneManager *scene_;
 
         //! Pointer to new entity
         Scene::EntityPtr cam_entity_;
@@ -104,29 +123,28 @@ namespace Camera
         //! The target entity
         Scene::Entity  *target_entity_;
 
-        //! Ogre texture name
-        std::string render_texture_name_;
-
-        //! Unsigned chars to construct QPixmap
-        Ogre::uchar *pixelData_;
-
         //! Camera type
         CameraType camera_type_;
 
+        Ogre::ProjectionType projection_type_;
+
+        Ogre::PolygonMode polygon_mode_;
+
         //! Zoom acceleration
         qreal zoom_acceleration_;
-
-        //! movement acceleration 
-        qreal x_acceleration_;
-
-        //! movement acceleration 
-        qreal y_acceleration_;
 
         //! Minimun zoom distance
         qreal min_zoom_distance_;
 
         //! Maximun zoom distance
         qreal max_zoom_distance_;
+
+        //! 
+        Vector3df x_vector;
+        Vector3df y_vector;
+        Vector3df z_vector;
+        char z_signed;
+
     };
 }
 

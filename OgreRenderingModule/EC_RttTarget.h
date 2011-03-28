@@ -4,6 +4,7 @@
 #define incl_OgreRenderer_EC_RttTarget_h
 
 #include "StableHeaders.h"
+#include "OgreModuleApi.h"
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "Core.h"
@@ -43,7 +44,7 @@ Does not emit any actions.
 <b>Depends on a camera component.</b>.
 </table>
 */
-class EC_RttTarget : public IComponent
+class OGRE_MODULE_API EC_RttTarget : public IComponent
 {
     Q_OBJECT
     
@@ -68,6 +69,9 @@ public slots:
     void PrepareRtt();
     void SetAutoUpdated(bool val);
 
+    /// Get Texture in raw format
+    Ogre::uchar* GetRawTexture(int texture_width, int texture_height);        
+
 private slots:
     void AttributeUpdated(IAttribute* attribute);
     //void UpdateRtt();
@@ -84,6 +88,8 @@ private:
     Ogre::TexturePtr tex_;
     std::string material_name_;
     //void ScheduleRender();
+
+    Ogre::uchar *pixelData_;
 };
 
 #endif

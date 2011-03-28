@@ -190,6 +190,16 @@ void EC_Placeable::LookAt(const Vector3df& look_at)
     // so start in identity transform
     link_scene_node_->setOrientation(Ogre::Quaternion::IDENTITY);
     link_scene_node_->lookAt(Ogre::Vector3(look_at.x, look_at.y, look_at.z), Ogre::Node::TS_WORLD);
+    
+    Ogre::Quaternion orientation = link_scene_node_->getOrientation();
+    Quaternion tundra_orientation(orientation.x,orientation.y,orientation.z, orientation.w);
+
+    Vector3df tundra_rotation;
+    tundra_orientation.toEuler(tundra_rotation);
+
+    Transform trans = transform.Get();
+    trans.rotation = tundra_rotation*RADTODEG;
+    transform.Set(trans, AttributeChange::LocalOnly);
 }
 
 void EC_Placeable::SetYaw(float radians)

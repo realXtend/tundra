@@ -194,10 +194,10 @@ include_directories(Ui)
 include_directories(Asset)
 include_directories(Scene)
 
-link_directories(Input)
-link_directories(Ui)
-link_directories(Asset)
-link_directories(Scene)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/Input)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/Ui)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/Asset)
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/Scene)
 
 
 # If the custom optional modules configuration file does not yet
