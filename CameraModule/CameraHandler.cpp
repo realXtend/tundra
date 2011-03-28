@@ -130,12 +130,14 @@ namespace Camera
             if (der_size_vector.z > max_distance)
                 max_distance = der_size_vector.z;
 
+            if (cam_ec_camera->GetCamera()->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
+                cam_ec_camera->GetCamera()->setOrthoWindowHeight(max_distance);
+                
             if (camera_type_ == Perspective)
             {
                 position_offset = Vector3df(der_size_vector.x, -der_size_vector.y, der_size_vector.y);
                 position_offset = entity_ec_placeable->GetOrientation()* position_offset;
                 focus_completed = true;
-
             }
             else 
             {
@@ -182,6 +184,8 @@ namespace Camera
             if (camera_type_== Perspective)
             {
                 EC_Placeable *entity_ec_placeable = target_entity_->GetComponent<EC_Placeable>().get();
+                if (!entity_ec_placeable)
+                    return;
                 RotateCamera(entity_ec_placeable->transform.Get().position, x, y);
             }
             else
@@ -229,12 +233,13 @@ namespace Camera
         {
             //get camera entity placeable component
             EC_Placeable *placeable = cam_entity_->GetComponent<EC_Placeable>().get();
+            EC_OgreCamera *cam_ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();
 
             //get target entity placeable component
-            if (!target_entity_)
+            if ((!target_entity_) && (!placeable) && (!cam_ec_camera))
                 return false;
 
-            EC_OgreCamera *cam_ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();
+            
 
             //move near clip distance
             if (modifiers & Qt::AltModifier)
@@ -247,7 +252,7 @@ namespace Camera
             {
                 EC_Placeable *target_placeable = target_entity_->GetComponent<EC_Placeable>().get();
 
-                if (!placeable && !target_placeable)
+                if (!target_placeable)
                     return false;
 
                 //get target and cam position
@@ -473,5 +478,9 @@ namespace Camera
             //Qt::CheckState: 0: unchecked, 1: partial checked, 2: checked
             ec_camera->GetCamera()->setPolygonMode(polygon_mode_);
         }
+    }
+    bool CameraHandler::IsWireframeEnabled() 
+    {
+        return (polygon_mode_ == Ogre::PM_WIREFRAME);
     }
 }

@@ -266,8 +266,7 @@ namespace Camera
             CameraHandler *handler = i.value();            
             controller_view_handlers_.remove(camera);
             delete camera;
-            delete handler;
-            i++;
+            delete handler;       
         } 
     }
     void CameraModule::ReadConfig()

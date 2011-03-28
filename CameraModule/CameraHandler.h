@@ -59,7 +59,7 @@ namespace Camera
 
         int GetProjectionType() { return projection_type_;};
 
-        bool IsWireframeEnabled() { return polygon_mode_;};
+        bool IsWireframeEnabled();
 
     public slots:
         /*! Destroys ogre texture.         
