@@ -267,12 +267,15 @@ namespace Camera
 
         for (int i = 0; i< cameras.length(); i++)
         {
-            camera_config.beginGroup(cameras[i]);
-            QVariant camera_type = camera_config.value("CameraType");
-            QVariant projection_type = camera_config.value("ProjectionType");
-            QVariant wireframe = camera_config.value("Wireframe");
-            CreateNewCamera(cameras[i], true, camera_type.toInt(), projection_type.toInt(), wireframe.toBool());
-            camera_config.endGroup();
+			if (cameras[i].startsWith("CameraExt"))
+			{
+				camera_config.beginGroup(cameras[i]);
+				QVariant camera_type = camera_config.value("CameraType");
+				QVariant projection_type = camera_config.value("ProjectionType");
+				QVariant wireframe = camera_config.value("Wireframe");
+				CreateNewCamera(cameras[i], true, camera_type.toInt(), projection_type.toInt(), wireframe.toBool());
+				camera_config.endGroup();
+			}
         }
         
     }
@@ -318,7 +321,7 @@ namespace Camera
     {       
         if (title.isNull())
         {            
-            title = QString("Camera").append(QString::number(rand()));
+            title = QString("CameraExt").append(QString::number(rand()));
         }
         bool stop = false;
         while (stop == false)
@@ -326,7 +329,7 @@ namespace Camera
             if (!camera_view_titles_.contains(title))
                 stop = true;
             else
-                title = QString("Camera").append(QString::number(rand()));
+                title = QString("CameraExt").append(QString::number(rand()));
         }
 
     }
