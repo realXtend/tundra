@@ -11,12 +11,16 @@
 
 namespace Camera
 {
-    CameraWidget::CameraWidget(QWidget* widget) :
+    CameraWidget::CameraWidget(QString title, QWidget* widget) :
         QWidget(widget)
     {                     
         setupUi(this);
-        srand(time(NULL));
-        setWindowTitle(QString("Camera").append(QString::number(rand())));
+        if (title.isNull())
+        {
+            srand(time(NULL));
+            title = QString("Camera").append(QString::number(rand()));
+        }
+        setWindowTitle(title);
         renderer = new CameraView(widgetRenderer);    
         verticalLayout_2->addWidget(renderer);
         connect(comboBoxCameras, SIGNAL(currentIndexChanged(const QString &)),this,  SLOT(SetWindowTitle(const QString &)));         

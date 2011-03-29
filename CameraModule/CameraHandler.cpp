@@ -27,7 +27,8 @@ namespace Camera
         polygon_mode_(Ogre::PM_SOLID),
         min_zoom_distance_(3),
         max_zoom_distance_(100),
-        target_entity_(0)
+        target_entity_(0),
+        scene_(0)
     {                          
     }
 
@@ -58,7 +59,7 @@ namespace Camera
 
             SetCameraType(camera_type_);
             SetCameraProjection(projection_type_);
-            SetCameraWireframe(polygon_mode_);
+            SetCameraPolygonMode(polygon_mode_);
 
             if (!component_placeable.get() || !ec_camera)
                 return false;          
@@ -440,7 +441,7 @@ namespace Camera
 
     }
 
-    void CameraHandler::SetCameraProjection(int projection)
+    void CameraHandler::SetCameraProjection(int  projection)
     {
         projection_type_ = (Ogre::ProjectionType) projection;
         if (cam_entity_)
@@ -462,23 +463,22 @@ namespace Camera
 
         if (cam_entity_)
         {
-            EC_OgreCamera *ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();
-            //Qt::CheckState: 0: unchecked, 1: partial checked, 2: checked
+            EC_OgreCamera *ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();            
             ec_camera->GetCamera()->setPolygonMode(polygon_mode_);
         }
     }
 
-    void CameraHandler::SetCameraWireframe(Ogre::PolygonMode polygon_mode)
+    void CameraHandler::SetCameraPolygonMode(Ogre::PolygonMode polygon_mode)
     {
         polygon_mode_ = polygon_mode;
 
         if (cam_entity_)
         {
-            EC_OgreCamera *ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();
-            //Qt::CheckState: 0: unchecked, 1: partial checked, 2: checked
+            EC_OgreCamera *ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();            
             ec_camera->GetCamera()->setPolygonMode(polygon_mode_);
         }
     }
+
     bool CameraHandler::IsWireframeEnabled() 
     {
         return (polygon_mode_ == Ogre::PM_WIREFRAME);

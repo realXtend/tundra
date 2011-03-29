@@ -50,11 +50,12 @@ namespace Camera
 
 	void CameraModule::Initialize()
 	{		
+        if (framework_->IsHeadless())
+            return;
+
         //Get Scene and Network event Category 
         scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
-        connect(framework_, SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager*)), this, SLOT(DefaultWorldSceneChanged(Scene::SceneManager*)));
-        connect(framework_->GetNaaliApplication(), SIGNAL(ExitRequested()), this, SLOT(ExitRequested()));
-
+        connect(framework_, SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager*)), this, SLOT(DefaultWorldSceneChanged(Scene::SceneManager*)));        
 
         //Generate widgets
         ReadConfig();
@@ -62,30 +63,25 @@ namespace Camera
 	}
 	void CameraModule::PostInitialize()
 	{
+        if (framework_->IsHeadless())
+            return;
+
         //Check if UiExternalIsAvailable 
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
         if (ui){            
-			//Create Action, insert into menu Camera
+			//Create Action, insert into menu Views
 			QAction *action = new QAction("New Camera View",this);
 			if (ui->AddExternalMenuAction(action, "New Camera View", tr("View"))){
 				connect(action, SIGNAL(triggered()), SLOT(CreateNewCamera()));
 			}
         }
-        connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));
-
-        //connect qdoc visibility to camera views to manage close event
-        QMapIterator<CameraWidget*,CameraHandler*> i(controller_view_handlers_);
-        while (i.hasNext()) {
-            i.next();
-            QDockWidget *doc = dynamic_cast<QDockWidget*>(i.key()->parent());           
-            if (doc)
-				doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-                //connect(doc,SIGNAL(visibilityChanged(bool)), i.key(), SLOT(ParentVisibilityChanged(bool)));          
-        }
+        connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));       
 	}    
 
 	void CameraModule::Uninitialize()
 	{
+        if (framework_->IsHeadless())
+            return;
         //Save widget status to .ini file
         SaveConfig();
 	}
@@ -104,7 +100,8 @@ namespace Camera
             switch(event_id)
             {
                 case Scene::Events::EVENT_ENTITY_CLICKED:
-                {               
+                {           
+                    //focus cameras to entity
                     Scene::Events::EntityClickedData *entity_data = checked_static_cast<Scene::Events::EntityClickedData*>(data);
                     if (entity_data)
                     {
@@ -131,21 +128,10 @@ namespace Camera
         return handled;
 	}
 
-    void CameraModule::ExitRequested()
-    {
-        QMapIterator<CameraWidget*,CameraHandler*> i(controller_view_handlers_);
-        while (i.hasNext()) {
-            i.next();
-            QDockWidget *doc = dynamic_cast<QDockWidget*>(i.key()->parent());           
-            if (doc)
-                disconnect(doc,SIGNAL(visibilityChanged(bool)), i.key(), SLOT(ParentVisibilityChanged(bool)));          
-        }
-
-    }
-
     void CameraModule::DefaultWorldSceneChanged(Scene::SceneManager *scene)
     {
-        scene_ = scene;
+        //create camera entity in all camera handlers
+       scene_ = scene;
        QMapIterator<CameraWidget*,CameraHandler*> i(controller_view_handlers_);
         while (i.hasNext()) {
             i.next();
@@ -155,6 +141,7 @@ namespace Camera
 
     void CameraModule::UpdateObjectViewport()
     {
+        //update renderer label
         QMapIterator<CameraWidget*,CameraHandler*> i(controller_view_handlers_);
         while (i.hasNext()) {
             i.next();
@@ -163,32 +150,17 @@ namespace Camera
         }
     }
 
-    void CameraModule::CreateNewCameraFromConfig(int camera_type, int projection_type, bool wireframe)
+    void CameraModule::CreateNewCamera(QString title, int camera_type, int projection_type, bool wireframe)
     {
         //Create camera view
         //Create camera handler
-        ConnectViewToHandler(CreateCameraWidget(), CreateCameraHandler(),camera_type, projection_type, wireframe);
+        ConnectViewToHandler(CreateCameraWidget(title), CreateCameraHandler(),camera_type, projection_type, wireframe);
 
-    }
-
-    void CameraModule::CreateNewCamera()
-    {
-        //Create camera view
-        //Create camera handler
-        CameraWidget *new_camera = CreateCameraWidget();
-        CameraHandler *handler = CreateCameraHandler();
-        ConnectViewToHandler(new_camera, handler);
-
-        //conect qdoc visibility signal
-        QDockWidget *doc = dynamic_cast<QDockWidget*>(new_camera->parent());           
-        if (doc)
-			doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-            //connect(doc,SIGNAL(visibilityChanged(bool)), new_camera, SLOT(ParentVisibilityChanged(bool)));          
     }
     
-    CameraWidget* CameraModule::CreateCameraWidget()
-    {
-        CameraWidget* camera_view = new CameraWidget();
+    CameraWidget* CameraModule::CreateCameraWidget(QString title)
+    {        
+        CameraWidget* camera_view = new CameraWidget(title);
         //Check if UiExternalIsAvailable 
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
         if (ui)
@@ -196,7 +168,10 @@ namespace Camera
             ui->AddWidgetToScene(camera_view,true,true);            
             ui->ShowWidget(camera_view);
         }
-
+        //set qdoc features to floatable and movable, but not closable
+        QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_view->parent());           
+        if (doc)
+			doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable); 
 
         return camera_view;
     }
@@ -235,9 +210,8 @@ namespace Camera
         //connect signals
          //new camera signal
         connect(camera_view->buttonNewCamera, SIGNAL(released()),this,  SLOT(CreateNewCamera())); 
-		camera_view->buttonNewCamera->
 
-        //connect(camera_view, SIGNAL(closeSignal(CameraWidget*)),this,  SLOT(DeleteCameraWidget(CameraWidget*))); 
+        //close camera signal
 		connect(camera_view->buttonDeleteCamera, SIGNAL(released()),this,  SLOT(DeleteCameraWidget())); 
         
         //movement signals
@@ -250,8 +224,7 @@ namespace Camera
         //projection type signal
         connect(camera_view->comboBoxProjection, SIGNAL(currentIndexChanged(int)),camera_handler,  SLOT(SetCameraProjection(int))); 
         //wireframe signal
-        connect(camera_view->checkBoxWireframe, SIGNAL(stateChanged(int)),camera_view,  SIGNAL(checkBoxStateChanged(int))); 
-        connect(camera_view, SIGNAL(checkBoxStateChanged(int)),this,  SLOT(SetCameraWireframe(int))); 
+        connect(camera_view->checkBoxWireframe, SIGNAL(stateChanged(int)),this, SLOT(SetCameraWireframe(int))); 
 
         //save in map
         controller_view_handlers_.insert(camera_view, camera_handler);       
@@ -260,15 +233,17 @@ namespace Camera
 
     void CameraModule::DeleteCameraWidget()
     {
-		CameraWidget *camera_view = dynamic_cast<CameraWidget *>(sender()->parent()->parent());
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent());
 
 		if (!camera_view)
             return;
 
+        //remove widget from scene
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
         if (ui)        
             ui->RemoveWidgetFromScene(camera_view);
 
+        //remove widget and handler from controller map
         QMap<CameraWidget*,CameraHandler*>::const_iterator i = controller_view_handlers_.find(camera_view);
         while (i != controller_view_handlers_.end() && i.key() == camera_view) {
             CameraWidget *camera = i.key();
@@ -291,7 +266,7 @@ namespace Camera
             QVariant camera_type = camera_config.value("CameraType");
             QVariant projection_type = camera_config.value("ProjectionType");
             QVariant wireframe = camera_config.value("Wireframe");
-            CreateNewCameraFromConfig(camera_type.toInt(), projection_type.toInt(), wireframe.toBool());
+            CreateNewCamera(cameras[i], camera_type.toInt(), projection_type.toInt(), wireframe.toBool());
             camera_config.endGroup();
         }
         
@@ -317,7 +292,10 @@ namespace Camera
 
     void CameraModule::SetCameraWireframe(int state)
     {
-        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender());
+
+        //capture checkbox state and call the handler
+        //Qt::CheckState: 0: unchecked, 1: partial checked, 2: checked
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent());
         if (!camera_view)
             return;
 

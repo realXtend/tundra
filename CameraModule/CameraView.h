@@ -29,13 +29,12 @@ namespace Camera
         /*! Constructor.
          * \param parent Parent Widget. Default 0
          */
-        CameraWidget(QWidget* widget=0);
+        CameraWidget(QString title, QWidget* widget=0);
 
         QLabel* GetRenderer() { return reinterpret_cast<QLabel*>(renderer);};
 
     signals:
         void closeSignal(CameraWidget*);
-        void checkBoxStateChanged(int);
 
     public slots:
         void SetWindowTitle(const QString &name);

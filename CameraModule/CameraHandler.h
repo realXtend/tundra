@@ -55,12 +55,6 @@ namespace Camera
         //! Destructor.
         virtual ~CameraHandler();
 
-        int GetCameraType(){ return camera_type_;};
-
-        int GetProjectionType() { return projection_type_;};
-
-        bool IsWireframeEnabled();
-
     public slots:
         /*! Destroys ogre texture.         
          */
@@ -79,6 +73,7 @@ namespace Camera
 
         /*! Makes zoom to the camera.
          * \param delta mouse delta parameter
+         * \param modifiers key modifiers
          */
         bool Zoom(qreal delta, Qt::KeyboardModifiers modifiers);
 
@@ -93,13 +88,34 @@ namespace Camera
          */
         QPixmap RenderCamera(QSize image_size);
 
+        /*! Set Camera type 
+         * \param camera_type CameraType enum
+         */
         void SetCameraType(int camera_type);
 
+        /*! Set projection type 
+         * \param projection Ogre::ProjectionType: PT_ORTHOGRAPHIC 0, PT_PERSPECTIVE 1
+         */
         void SetCameraProjection(int projection);
 
+        /*! Enable or disable wireframe polygon mode
+         * \param state enable (true) or disable (false) wireframe polygon mode renderer
+         */
         void SetCameraWireframe(bool state);
 
-        void SetCameraWireframe(Ogre::PolygonMode polygon_mode);
+        /*! Set Camera polygon mode 
+         * \param polygon_mode Ogre::PolygonMode: PM_POINTS = 1, PM_WIREFRAME = 2, PM_SOLID = 3
+         */
+        void SetCameraPolygonMode(Ogre::PolygonMode polygon_mode);
+
+        //! Get camera type. CameraType enum
+        int GetCameraType(){ return camera_type_;};
+
+        //! Get projection type. Perpective or orthographic
+        int GetProjectionType() { return projection_type_;};
+
+        //! Return if wireframe polygon mode is enabled or not
+        bool IsWireframeEnabled();
 
     private:
         /*! Rotates the camera around pivot postion
@@ -126,8 +142,10 @@ namespace Camera
         //! Camera type
         CameraType camera_type_;
 
+        //! Camera projection: 
         Ogre::ProjectionType projection_type_;
 
+        //! Camera polygon mode: PM_POINTS = 1, PM_WIREFRAME = 2, PM_SOLID = 3
         Ogre::PolygonMode polygon_mode_;
 
         //! Zoom acceleration
@@ -139,10 +157,16 @@ namespace Camera
         //! Maximun zoom distance
         qreal max_zoom_distance_;
 
-        //! 
+        //! x axis translation
         Vector3df x_vector;
+
+        //! y axis translation
         Vector3df y_vector;
+
+        //! z axis translation
         Vector3df z_vector;
+
+        //! position of the camera in z: negative (-1) or positive (1)
         char z_signed;
 
     };

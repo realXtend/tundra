@@ -56,13 +56,11 @@ namespace Camera
         //!Slots used to update widget viewport
         void UpdateObjectViewport();
 
-        void CreateNewCamera();
-
-        void CreateNewCameraFromConfig(int camera_type, int projection_type, bool wireframe);
+        void CreateNewCamera(QString title = 0, int camera_type = 0, int projection_type = 1, bool wireframe = 0);
 
         /*!Create camera view 
          */
-        CameraWidget* CreateCameraWidget();
+        CameraWidget* CreateCameraWidget(QString title = 0);
 
         /*!Create camera handler         
          */
@@ -72,15 +70,13 @@ namespace Camera
          * \param view_name The ame of the camera view
          * \param handler_name The name of the camera handler
          */
-        void ConnectViewToHandler(CameraWidget *camera_view, CameraHandler *camera_handler, int camera_type = 0, int projection_type = 1, bool wireframe = false);
+        void ConnectViewToHandler(CameraWidget *camera_view, CameraHandler *camera_handler, int camera_type = 0, int projection_type = 1, bool wireframe = 0);
 
         void DefaultWorldSceneChanged(Scene::SceneManager *scene);
 
         void DeleteCameraWidget();
 
-        void SetCameraWireframe(int state);
-
-        void ExitRequested();
+        void SetCameraWireframe(int state);        
 
     private:
         Q_DISABLE_COPY(CameraModule);      
