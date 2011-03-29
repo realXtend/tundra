@@ -4,7 +4,7 @@
 #define incl_MumbleVoipModule_Session_h
 
 #include "CommunicationsService.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include <QMap>
 
 namespace Foundation

@@ -8,7 +8,7 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "ModuleManager.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 
 #include <QUiLoader>
 #include <QFile>

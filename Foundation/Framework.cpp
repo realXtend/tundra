@@ -22,7 +22,7 @@
 #include "FrameAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
 #include "DebugAPI.h"
@@ -82,7 +82,7 @@ namespace Foundation
         scene(new SceneAPI(this))
     {
         ParseProgramOptions();
-        
+
         if (commandLineVariables.count("help")) 
         {
             std::cout << "Supported command line arguments: " << std::endl;
@@ -97,7 +97,7 @@ namespace Foundation
 #endif
             PROFILE(FW_Startup);
             platform_ = PlatformPtr(new Platform(this));
-        
+
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
@@ -264,13 +264,11 @@ namespace Foundation
             splitterchannel->removeChannel(filechannel);
             RootLogInfo("Poco::OpenFileException. Log file not created.");
         }
-
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
         std::string log_level = config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
         Poco::Logger::get("Foundation").setLevel(log_level);
 #endif
-
         if (consolechannel)
             log_channels_.push_back(consolechannel);
         log_channels_.push_back(filechannel);
@@ -307,7 +305,7 @@ namespace Foundation
             ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
             ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
             ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
-            // The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
+            ///\todo The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
             ("user", po::value<std::string>(), "OpenSim login name")
             ("passwd", po::value<std::string>(), "OpenSim login password")
             ("server", po::value<std::string>(), "World server and port")
@@ -329,9 +327,8 @@ namespace Foundation
     void Framework::PostInitialize()
     {
         PROFILE(FW_PostInitialize);
+        event_manager_->RegisterEventCategory("Framework");
 
-        event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
-        UNREFERENCED_PARAM(framework_events);
         srand(time(0));
 
         LoadModules();
@@ -470,7 +467,7 @@ namespace Foundation
     }
 
     NaaliApplication *Framework::GetNaaliApplication() const
-    { 
+    {
         return naaliApplication;
     }
 
@@ -729,13 +726,13 @@ namespace Foundation
         return ui;
     }
 
-    UiServiceInterface *Framework::UiService() 
-    { 
-        return GetService<UiServiceInterface>(); 
+    UiServiceInterface *Framework::UiService()
+    {
+        return GetService<UiServiceInterface>();
     }
 
     ConsoleAPI *Framework::Console() const
-    { 
+    {
         return console;
     }
 
@@ -782,6 +779,5 @@ namespace Foundation
         setProperty(name.toStdString().c_str(), QVariant::fromValue<QObject*>(object));
 
         return true;
-
     }
 }
