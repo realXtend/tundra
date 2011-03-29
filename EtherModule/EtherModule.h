@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
@@ -90,6 +91,7 @@ private slots:
 
 	//! Takes UI screenshots of world/avatar with rendering service
 	void TakeEtherScreenshots();
+	void TakeEtherScreenshotsForTundra();
 
 	/// Handles UI SceneChanged
 	void SceneChanged(const QString &old_name, const QString &new_name);
