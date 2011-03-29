@@ -102,6 +102,8 @@ void EC_RttTarget::PrepareRtt()
     Ogre::MaterialManager &material_manager = Ogre::MaterialManager::getSingleton();
     Ogre::MaterialPtr material = material_manager.getByName(material_name_);
     OgreRenderer::SetTextureUnitOnMaterial(material, targettexture.Get().toStdString());    
+
+    SetAutoUpdated(true);
   
 }
 
@@ -110,13 +112,19 @@ void EC_RttTarget::SetAutoUpdated(bool val)
     if (!ViewEnabled())
         return;
 
-    Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
-    if (render_texture)
+    if (!tex_.isNull())
     {
-         tex_->getBuffer()->getRenderTarget()->setAutoUpdated(val);
+        Ogre::RenderTexture *render_texture = tex_->getBuffer()->getRenderTarget();
+        if (render_texture)
+        {
+             tex_->getBuffer()->getRenderTarget()->setAutoUpdated(val);
+        }
+        else
+            LogError("render target texture getting failed.");
     }
     else
-        LogError("render target texture getting failed.");
+        LogError("target texture getting failed.");
+    
 }
 
 /*void EC_RttTarget::ScheduleRender()

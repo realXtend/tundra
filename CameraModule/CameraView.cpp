@@ -14,12 +14,7 @@ namespace Camera
     CameraWidget::CameraWidget(QString title, QWidget* widget) :
         QWidget(widget)
     {                     
-        setupUi(this);
-        if (title.isNull())
-        {
-            srand(time(NULL));
-            title = QString("Camera").append(QString::number(rand()));
-        }
+        setupUi(this);        
         setWindowTitle(title);
         renderer = new CameraView(widgetRenderer);    
         verticalLayout_2->addWidget(renderer);

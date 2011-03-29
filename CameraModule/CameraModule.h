@@ -85,6 +85,8 @@ namespace Camera
 
         void ReadConfig();
 
+        void GenerateValidWidgetTitle(QString &title);
+
 		Scene::SceneManager *scene_;
 
         // Module name
@@ -100,6 +102,8 @@ namespace Camera
 
         //! timer to control cameras views render 
         QTimer *viewport_poller_;
+
+        QSet<QString> camera_view_titles_;
     };
 }
 

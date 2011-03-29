@@ -159,7 +159,9 @@ namespace Camera
     }
     
     CameraWidget* CameraModule::CreateCameraWidget(QString title)
-    {        
+    {           
+        GenerateValidWidgetTitle(title);
+
         CameraWidget* camera_view = new CameraWidget(title);
         //Check if UiExternalIsAvailable 
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
@@ -168,11 +170,13 @@ namespace Camera
             ui->AddWidgetToScene(camera_view,true,true);            
             ui->ShowWidget(camera_view);
         }
-        //set qdoc features to floatable and movable, but not closable
+        //set qdoc features to flotable and movable, but not closable
         QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_view->parent());           
         if (doc)
 			doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable); 
 
+        //insert title to camera view titles
+        camera_view_titles_.insert(title);
         return camera_view;
     }
 
@@ -306,8 +310,23 @@ namespace Camera
             else
                 i.value()->SetCameraWireframe(true);
             i++;
-        }    
+        }
+    }
 
+    void CameraModule::GenerateValidWidgetTitle(QString &title)
+    {       
+        if (title.isNull())
+        {            
+            title = QString("Camera").append(QString::number(rand()));
+        }
+        bool stop = false;
+        while (stop == false)
+        {
+            if (!camera_view_titles_.contains(title))
+                stop = true;
+            else
+                title = QString("Camera").append(QString::number(rand()));
+        }
 
     }
 
