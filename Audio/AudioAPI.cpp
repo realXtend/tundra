@@ -4,7 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <QList>
 #include "MemoryLeakCheck.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "CoreTypes.h"
 #include "AssetAPI.h"
 #include "AudioAsset.h"

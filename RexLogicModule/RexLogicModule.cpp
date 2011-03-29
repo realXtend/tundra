@@ -76,7 +76,7 @@
 #include "ServiceManager.h"
 #include "ComponentManager.h"
 #include "IEventData.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "InputAPI.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
