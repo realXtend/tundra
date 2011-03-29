@@ -150,15 +150,15 @@ namespace Camera
         }
     }
 
-    void CameraModule::CreateNewCamera(QString title, int camera_type, int projection_type, bool wireframe)
+    void CameraModule::CreateNewCamera(QString title, bool restored, int camera_type, int projection_type, bool wireframe)
     {
         //Create camera view
         //Create camera handler
-        ConnectViewToHandler(CreateCameraWidget(title), CreateCameraHandler(),camera_type, projection_type, wireframe);
+        ConnectViewToHandler(CreateCameraWidget(title, restored), CreateCameraHandler(),camera_type, projection_type, wireframe);
 
     }
     
-    CameraWidget* CameraModule::CreateCameraWidget(QString title)
+    CameraWidget* CameraModule::CreateCameraWidget(QString title, bool restored)
     {           
         GenerateValidWidgetTitle(title);
 
@@ -167,8 +167,9 @@ namespace Camera
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
         if (ui)
         {
-            ui->AddWidgetToScene(camera_view,true,true);            
-            ui->ShowWidget(camera_view);
+            ui->AddWidgetToScene(camera_view,true,true);
+			if (!restored)
+				ui->ShowWidget(camera_view);
         }
         //set qdoc features to flotable and movable, but not closable
         QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_view->parent());           
@@ -270,7 +271,7 @@ namespace Camera
             QVariant camera_type = camera_config.value("CameraType");
             QVariant projection_type = camera_config.value("ProjectionType");
             QVariant wireframe = camera_config.value("Wireframe");
-            CreateNewCamera(cameras[i], camera_type.toInt(), projection_type.toInt(), wireframe.toBool());
+            CreateNewCamera(cameras[i], true, camera_type.toInt(), projection_type.toInt(), wireframe.toBool());
             camera_config.endGroup();
         }
         

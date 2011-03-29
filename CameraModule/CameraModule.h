@@ -56,11 +56,11 @@ namespace Camera
         //!Slots used to update widget viewport
         void UpdateObjectViewport();
 
-        void CreateNewCamera(QString title = 0, int camera_type = 0, int projection_type = 1, bool wireframe = 0);
+        void CreateNewCamera(QString title = 0, bool restored = false, int camera_type = 0, int projection_type = 1, bool wireframe = 0);
 
         /*!Create camera view 
          */
-        CameraWidget* CreateCameraWidget(QString title = 0);
+        CameraWidget* CreateCameraWidget(QString title = 0, bool restored=false);
 
         /*!Create camera handler         
          */
