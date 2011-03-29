@@ -163,12 +163,10 @@ namespace UiServices
 
 		if (controller_panels_visibility_[aux->objectName()]){
 			aux->hide();
-			//act->setChecked(false);
 		}
 		else
 		{
 			aux->show();
-			//act->setChecked(true);
 			QList<QDockWidget *> docks = dynamic_cast<QMainWindow *>(root_menu_->parentWidget())->tabifiedDockWidgets(aux);
 			QDockWidget *value;
 			foreach (value, docks)
