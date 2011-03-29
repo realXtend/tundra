@@ -1,15 +1,20 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "QtUiAsset.h"
+
 #include "AssetAPI.h"
+
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("QtUiAsset")
+
 #include <boost/regex.hpp>
 
 #include <QByteArrayMatcher>
 #include <QUrl>
+#include <QFile>
 
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("QtUiAsset")
+#include "MemoryLeakCheck.h"
 
 QtUiAsset::QtUiAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
     IAsset(owner, type_, name_)

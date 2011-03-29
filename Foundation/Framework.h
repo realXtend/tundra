@@ -39,9 +39,6 @@ namespace Poco
 namespace Foundation
 {
     class NaaliApplication;
-    class FrameworkQtApplication;
-    class KeyStateListener;
-    class MainWindow;
 
     /// Contains entry point for the framework.
     /*! Allows access to various managers and services. The standard way of using
