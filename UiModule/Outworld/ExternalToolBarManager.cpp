@@ -5,7 +5,6 @@
 #include "DebugOperatorNew.h"
 #include "ExternalToolBarManager.h"
 #include "ExternalMenuManager.h"
-#include "UiExternalServiceInterface.h"
 
 #include <QDebug>
 
