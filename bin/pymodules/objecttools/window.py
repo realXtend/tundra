@@ -107,18 +107,22 @@ class ObjectToolsWindow:
 
     def update_gui(self,ent):
         self.active = False
+        ent_trans = ent.placeable.transform
         
-        self.pos_x.setValue(ent.placeable.Position.x())
-        self.pos_y.setValue(ent.placeable.Position.y())
-        self.pos_z.setValue(ent.placeable.Position.z())
+        ent_pos = ent_trans.position()
+        self.pos_x.setValue(ent_pos.x())
+        self.pos_y.setValue(ent_pos.y())
+        self.pos_z.setValue(ent_pos.z())
         
-        self.scale_x.setValue(ent.placeable.Scale.x())
-        self.scale_y.setValue(ent.placeable.Scale.y())
-        self.scale_z.setValue(ent.placeable.Scale.z())
+        ent_scale = ent_trans.scale()
+        self.scale_x.setValue(ent_scale.x())
+        self.scale_y.setValue(ent_scale.y())
+        self.scale_z.setValue(ent_scale.z())
         
-        rot_x = math.degrees(ent.placeable.Pitch)
-        rot_y = math.degrees(ent.placeable.Yaw)
-        rot_z = math.degrees(ent.placeable.Roll)
+        ent_rot = ent_trans.rotation()
+        rot_x = ent_rot.x()
+        rot_y = ent_rot.y()
+        rot_z = ent_rot.z()
         if rot_x < 0:
             rot_x += 360
         if rot_y < 0:

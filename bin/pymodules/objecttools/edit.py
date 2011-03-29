@@ -577,7 +577,7 @@ class ObjectEdit(Component):
         
     def createObject(self):
         avatar = naali.getUserAvatar()
-        pos = avatar.placeable.Position
+        pos = avatar.placeable.transform.position()
 
         # TODO determine what is right in front of avatar and use that instead
         start_x = pos.x() + .7
@@ -603,16 +603,22 @@ class ObjectEdit(Component):
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         ent = self.active
         if ent is not None:
-            qpos = QVector3D(ent.placeable.Position)
+            #qpos = QVector3D(ent.placeable.Position)
+            ent_trans = ent.placeable.transform
+            pos = ent_trans.position()
             if i == 0:
-                qpos.setX(v)
+                #qpos.setX(v)
+                ent_trans.SetPos(v, pos.y(), pos.z())
             elif i == 1:
-                qpos.setY(v)
+                #qpos.setY(v)
+                ent_trans.SetPos(pos.x(), v, pos.z())
             elif i == 2:
-                qpos.setZ(v)
+                #qpos.setZ(v)
+                ent_trans.SetPos(pos.x(), pos.y(), v)
 
-            ent.placeable.Position = qpos
+            #ent.placeable.Position = qpos
             #ent.network.Position = qpos
+            ent.placeable.settransform(ent_trans)
             self.manipulator.moveTo(self.sels)
 
             #if not self.dragging:
@@ -623,9 +629,10 @@ class ObjectEdit(Component):
     def changescale(self, i, v):
         ent = self.active
         if ent is not None:
-            qscale = ent.placeable.Scale
-            #oldscale = list((qscale.x(), qscale.y(), qscale.z()))
-            scale = list((qscale.x(), qscale.y(), qscale.z()))
+            #ent_scale = ent.placeable.Scale
+            ent_trans = ent.placeable.transform
+            ent_scale = ent_trans.scale()
+            scale = list((ent_scale.x(), ent_scale.y(), ent_scale.z()))
                 
             if not self.float_equal(scale[i],v):
                 scale[i] = v
@@ -637,7 +644,9 @@ class ObjectEdit(Component):
 #                        if index != i:
 #                            scale[index] += diff
                 
-                ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
+                #ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
+                ent_trans.SetScale(scale[0], scale[1], scale[2])
+                ent.placeable.settransform(ent_trans)
                 
                 #if not self.dragging:
                 #    r.networkUpdate(ent.Id)
@@ -650,8 +659,12 @@ class ObjectEdit(Component):
         #print "pos index %i changed to: %f" % (i, v[i])
         ent = self.active
         if ent is not None and not self.usingManipulator:
-            ort = mu.euler_to_quat(v)
-            ent.placeable.Orientation = ort
+            #Use transform instead of Orientation attribute
+            #ort = mu.euler_to_quat(v)
+            #ent.placeable.Orientation = ort
+            ent_trans = ent.placeable.transform
+            ent_trans.SetRot(v[0], v[1], v[2])
+            ent.placeable.settransform(ent_trans)
             #ent.network.Orientation = ort
             #if not self.dragging:
             #    r.networkUpdate(ent.Id)

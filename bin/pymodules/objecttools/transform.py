@@ -16,6 +16,8 @@ from PythonQt.QtGui import QQuaternion
 from PythonQt.QtGui import QVector3D
 
 from PythonQt.private import EC_Ruler
+from PythonQt.private import Vector3df
+from PythonQt.private import Quaternion
 
 try:
     qapp = PythonQt.Qt.QApplication.instance()
@@ -81,8 +83,9 @@ class Manipulator:
 
     def compareIds(self, id):
         if self.usesManipulator:
-            if self.manipulator.Id == id:
-                return True
+            if self.manipulator:
+                if self.manipulator.Id == id:
+                    return True
         return False
         
     def moveTo(self, ents):
@@ -133,9 +136,14 @@ class Manipulator:
             ruler.SetVisible(True)
             #r.logInfo("showing ruler showManipulator")
             ruler.UpdateRuler()
-            if False: # self.controller.useLocalTransform:
+            if self.NAME == ScaleManipulator.NAME: # self.controller.useLocalTransform:
                 # first according object, then manipulator orientation - otherwise they go wrong order
-                self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
+                #self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
+                self.manipulator.mesh.SetAdjustOrientation(Quaternion(Vector3df(math.pi/2,0,0)))
+                ent_rot = ents[0].placeable.transform.rotation()
+                man_trans = self.manipulator.placeable.transform
+                man_trans.SetRot(ent_rot)
+                self.manipulator.placeable.settransform(man_trans)
             else:
                 self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
             
@@ -403,8 +411,40 @@ class ScaleManipulator(Manipulator):
     REDARROW = [1]
     BLUEARROW = [2]
     
+    bytransform = True
+    
     def _manipulate(self, ent, amountx, amounty, changevec):
         if self.grabbed:
+            
+            #Implementation using transform
+            if self.bytransform:
+                if self.grabbed_axis == self.AXIS_RED:
+                    axis = Vector3df(1, 0, 0)
+                elif self.grabbed_axis == self.AXIS_GREEN:
+                    axis = Vector3df(0, 1, 0)
+                elif self.grabbed_axis == self.AXIS_BLUE:
+                    axis = Vector3df(0, 0, 1)
+                
+                rot_dir = self.manipulator.mesh.GetAdjustOrientation().product(axis)
+                man_rot = self.manipulator.placeable.transform.rotation()
+                rot_dir = Quaternion(man_rot.x()*math.pi/180,
+                                     man_rot.y()*math.pi/180,
+                                     man_rot.z()*math.pi/180).product(rot_dir)
+                
+                rot_changevec = Vector3df(changevec.x(), changevec.y(), changevec.z())
+                norm_change = rot_changevec.dotProduct(rot_dir)
+                
+                ent_trans = ent.placeable.transform
+                ent_scale = ent_trans.scale()
+                ent_trans.SetScale(ent_scale.x() + axis.x() * norm_change,
+                                   ent_scale.y() + axis.y() * norm_change,
+                                   ent_scale.z() + axis.z() * norm_change)
+                ent.placeable.settransform(ent_trans)
+                
+                return
+            
+            #Implementation using Scale attribute
+            
             if self.grabbed_axis == self.AXIS_BLUE:
                 changevec.setX(0)
                 changevec.setY(0)
@@ -460,10 +500,25 @@ class RotationManipulator(Manipulator):
     REDARROW = [1]
     BLUEARROW = [2] # we do green_axis actions
     
+    bytransform = True
+    
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
     def _manipulate(self, ent, amountx, amounty, changevec):
         if self.grabbed and self.grabbed_axis is not None:
             local = False #self.controller.useLocalTransform
+
+            #Implementation using transform attribute
+            if self.bytransform:
+                #Get rotation quaternion
+                rot_quat = self._getRotationQuaternion(changevec)
+                
+                #Rotate entity
+                self._rotateEntityByTransform(ent, rot_quat)
+                
+                return
+            
+            #Implementation using Orientation attribute
+            
             mov = changevec.length() * 15
             ort = ent.placeable.Orientation
 
@@ -513,6 +568,32 @@ class RotationManipulator(Manipulator):
         
         if self.grabbed and self.grabbed_axis is not None:
             local = False # self.controller.useLocalTransform
+            
+            #Implementation using transform attribute
+            #@todo: Do not use QVector3D and QQuaternion
+            if self.bytransform:
+                rot_quat = self._getRotationQuaternion(changevec)
+                for ent, qvec in centervecs.iteritems():
+                    # rotate center vectors and calculate new points to ents
+                    crot=rot_quat.product(Vector3df(qvec.x(), qvec.y(), qvec.z())) # rotated center vector
+            
+                    calibVec = self.calibrateVec(QVector3D(crot.x(), crot.y(), crot.z()), qvec) # just incase
+                    centervecs[ent]=calibVec # store new rotated vector
+            
+                for ent, newVec in centervecs.iteritems():
+                    newPos = self.vectorAdd(centerpoint, newVec)
+                    if hasattr(ent, "placeable"):
+                        ent_trans = ent.placeable.transform
+                        ent_trans.SetPos(newPos.x(), newPos.y(), newPos.z())
+                        ent.placeable.settransform(ent_trans)
+                        
+                for ent in ents:
+                    self._rotateEntityByTransform(ent, rot_quat)
+            
+                return
+            
+            #Implementation using Orientation and Position attributes
+                
             mov = changevec.length() * 30
 
             axis = None
@@ -600,6 +681,52 @@ class RotationManipulator(Manipulator):
             ent.placeable.Orientation = ort
             #ent.network.Orientation = ort
         pass
+    
+    def _getRotationQuaternion(self, changevec):
+        #The vector pointing positive direction of rotation, rot_dir
+        #can be obtained from the cross product of axis vec and (1,1,1),
+        #being rotated as its EC_Mesh(affected by EC_Placeable)
+        #and EC_Placeable rotations
+        #@todo: perform rot_dir operations 
+        if self.grabbed_axis == self.AXIS_RED:
+            axis = Vector3df(1, 0, 0)
+            rot_dir = Vector3df(0, -1, -1)
+        elif self.grabbed_axis == self.AXIS_GREEN:
+            axis = Vector3df(0, 1, 0)
+            rot_dir = Vector3df(1, 0, 1)
+        elif self.grabbed_axis == self.AXIS_BLUE:
+            axis = Vector3df(0, 0, 1)
+            rot_dir = Vector3df(1, -1, 0)
+                    
+        #Get mouse movement vector projection onto selected axis rotation direction
+        rot_changevec = Vector3df(changevec.x(), changevec.y(), changevec.z())
+        norm_change = rot_changevec.dotProduct(rot_dir)
+                
+        #Return rotation Quaternion
+        return Quaternion(norm_change*15*math.pi/180,axis)
+    
+    def _rotateEntityByTransform(self, ent, q):
+        #Get current rotation as Quaternion
+        ent_trans = ent.placeable.transform
+        ent_rot_deg = ent_trans.rotation()
+        ent_rot_rad = Vector3df(ent_rot_deg.x()*math.pi/180,
+                                ent_rot_deg.y()*math.pi/180,
+                                ent_rot_deg.z()*math.pi/180)
+        ent_quat = Quaternion(ent_rot_rad)
+        
+        #Rotate entity by quaternion product
+        ent_new_quat = ent_quat.product(q)
+                
+        #Transform result quaternion into degrees euler vector
+        ent_new_quat.toEuler(ent_rot_rad)
+        ent_rot_deg = Vector3df(ent_rot_rad.x()/math.pi*180,
+                                ent_rot_rad.y()/math.pi*180,
+                                ent_rot_rad.z()/math.pi*180)
+                
+        #Set new rotation
+        ent_trans.SetRot(ent_rot_deg.x(), ent_rot_deg.y(), ent_rot_deg.z())
+        ent.placeable.settransform(ent_trans)
+        
 
 class SelectionManipulator(Manipulator):
     NAME = "SelectManipulator"
