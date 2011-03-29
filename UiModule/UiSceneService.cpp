@@ -54,27 +54,28 @@ namespace UiServices
 		if (widget->windowTitle() == "")
 			return 0;
 		
-		pos = settings.value(widget->windowTitle(), QString("vacio")).toString();
+		pos = settings.value(widget->windowTitle()+"/position", QString("vacio")).toString();
 
-		if (pos == "outside")
+		if (pos == "outside" && !external_dockeable_widgets_.contains(widget->windowTitle()))
 			external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
-		else if(pos == "inside") {
+		else if(pos == "inside" && !internal_widgets_.contains(widget->windowTitle())) {
 			internal_widgets_[widget->windowTitle()] = owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
 			return internal_widgets_[widget->windowTitle()];
 		}		
 		else
 		{
-			if (outside && dockable) 
+			if (outside && dockable && !external_dockeable_widgets_.contains(widget->windowTitle())) 
 			{
 				external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
-				settings.setValue(widget->windowTitle(), "outside");
+				settings.setValue(widget->windowTitle()+"/position", "outside");
 			}
 
-			else if (outside && !dockable)
+			else if (outside && !dockable && !external_nondockeable_widgets_.contains(widget->windowTitle()))
 				external_nondockeable_widgets_[widget->windowTitle()] = widget;
-			else {
+			else if (!outside && !internal_widgets_.contains(widget->windowTitle()))
+			{
 				internal_widgets_[widget->windowTitle()] = owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
-				settings.setValue(widget->windowTitle(), "inside");
+				settings.setValue(widget->windowTitle()+"/position", "inside");
 				return internal_widgets_[widget->windowTitle()];
 			}
 		}
@@ -156,22 +157,39 @@ namespace UiServices
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)
     {
-		if (internal_widgets_.contains(widget->windowTitle()))
+		if (internal_widgets_.contains(widget->windowTitle())) {
 			owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
-		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			internal_widgets_.remove(widget->windowTitle());
+		}
+		else if (external_dockeable_widgets_.contains(widget->windowTitle())) {
 			owner_->GetExternalPanelManager()->RemoveExternalPanel(external_dockeable_widgets_[widget->windowTitle()]);
-		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			external_dockeable_widgets_.remove(widget->windowTitle());
+		}
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle())) {
 			SAFE_DELETE(widget);
+			external_nondockeable_widgets_.remove(widget->windowTitle());
+		}
+		else
+			return;
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
+		settings.remove(widget->windowTitle());
     }
 
     void UiSceneService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
     {
-		if (internal_widgets_.contains(widget->windowTitle()))
+		if (internal_widgets_.contains(widget->windowTitle())) {
 			owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
-		else if (external_dockeable_widgets_.contains(widget->windowTitle()))
+			internal_widgets_.remove(widget->windowTitle());
+		}
+		else if (external_dockeable_widgets_.contains(widget->windowTitle())) {
 			owner_->GetExternalPanelManager()->RemoveExternalPanel(external_dockeable_widgets_[widget->windowTitle()]->widget());
-		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
+			external_dockeable_widgets_.remove(widget->windowTitle());
+		}
+		else if (external_nondockeable_widgets_.contains(widget->windowTitle())) {
 			SAFE_DELETE(widget);
+			external_nondockeable_widgets_.remove(widget->windowTitle());
+		}
+
     }
 
     void UiSceneService::ShowWidget(QWidget *widget) const
