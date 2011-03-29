@@ -261,7 +261,7 @@ namespace Camera
     void CameraModule::ReadConfig()
     {
         // Init config file if file/segments doesnt exist
-        QSettings camera_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CameraWidgets");
+        QSettings camera_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
 
         QStringList cameras = camera_config.childGroups();
 
@@ -280,9 +280,9 @@ namespace Camera
     void CameraModule::SaveConfig()
     {
         // Init config file if file/segments doesnt exist
-        QSettings camera_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CameraWidgets");
+        QSettings camera_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
         //delete previous file
-        camera_config.clear();
+        //camera_config.clear();
         
         QMapIterator<CameraWidget*,CameraHandler*> i(controller_view_handlers_);
         while (i.hasNext()) {
