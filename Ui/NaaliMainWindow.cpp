@@ -55,9 +55,7 @@ int NaaliMainWindow::DesktopHeight()
 }
 
 void NaaliMainWindow::LoadWindowSettingsFromFile()
-{
-    setWindowTitle("Tundra v1.0.3");
-	
+{	
 	QPoint pos;
 	int win_width;
 	int win_height;
@@ -82,15 +80,16 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
 	}
 
 		// Create window title
-        std::string group = Foundation::Framework::ConfigurationGroup();
+        /*std::string group = Foundation::Framework::ConfigurationGroup();
 		std::string version_major = owner->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
         std::string version_minor = owner->GetDefaultConfig().GetSetting<std::string>(group, "version_minor");
         std::string window_titleaux = owner->GetDefaultConfig().GetSetting<std::string>(group, "window_title") + " " + version_major + "." + version_minor;
-		QString window_title = QString::fromStdString(window_titleaux);
+		QString window_title = QString::fromStdString(window_titleaux);*/
 		
 
 		//Assign parameters to our window
-		parentWin_->setWindowTitle(window_title);
+		//setWindowTitle("Tundra 1.0.3");
+		parentWin_->setWindowTitle("Tundra 1.0.3");
 		//parentWin_->setMinimumSize(width,height);		
 		parentWin_->setDockNestingEnabled(true);
 

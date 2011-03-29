@@ -46,6 +46,7 @@ namespace UiServices
 		widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
 				
 		widget->setFloating(true);
+		widget->move(150,150);
 		widget->hide();
 
         // Add to internal control list
