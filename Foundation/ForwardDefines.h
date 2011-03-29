@@ -39,7 +39,6 @@ namespace Foundation
     class ThreadTaskManager;
     class Framework;
     class KeyBindings;
-    class MainWindow;
     class Profiler;
 
     typedef boost::shared_ptr<Platform> PlatformPtr;

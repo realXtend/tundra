@@ -3,7 +3,7 @@
 #ifndef incl_Foundation_NaaliApplication_h
 #define incl_Foundation_NaaliApplication_h
 
-#include "ForwardDefines.h"
+//#include "ForwardDefines.h"
 
 #include <QTimer>
 #include <QApplication>
@@ -16,7 +16,6 @@ class QTranslator;
 namespace Foundation
 {
     class Framework;
-    class MainWindow;
 
     /// Represents the Naali-subclassed instance of the Qt's QApplication singleton.
     class NaaliApplication : public QApplication
@@ -24,9 +23,11 @@ namespace Foundation
         Q_OBJECT
 
     public:
-        /// Qt requires its own data copy of the argc/argv parameters, so NaaliApplication
-        /// caches them. Pass in received command-line parameters here.
-        /// @param owner Pass in the root framework pointer here.
+        /// Constructor.
+        /** Qt requires its own data copy of the argc/argv parameters, so NaaliApplication
+            caches them. Pass in received command-line parameters here.
+            @param owner Pass in the root framework pointer here.
+        */
         NaaliApplication(Framework *owner, int &argc, char **argv);
 
         ~NaaliApplication();
@@ -52,17 +53,13 @@ namespace Foundation
 
     private:
         QStringList GetQmFiles(const QDir &dir);
-
         Framework *framework;
         QTimer frameUpdateTimer;
         bool appActivated;
-
         QTranslator *nativeTranslator;
         QTranslator *appTranslator;
-
-        /// Command line arguments as supplied by the operating system.
-        int argc;
-        char **argv;
+        int argc; ///< Command line argument count as supplied by the operating system.
+        char **argv; ///< Command line arguments as supplied by the operating system.
     };
 }
 

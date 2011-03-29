@@ -77,6 +77,7 @@ namespace Foundation
         ui(0),
         input(0),
         asset(0),
+        audio(0),
         debug(new DebugAPI(this)),
         scene(new SceneAPI(this))
     {
@@ -91,7 +92,6 @@ namespace Foundation
         {
             if (commandLineVariables.count("headless"))
                 headless_ = true;
-            
 #ifdef PROFILING
             ProfilerSection::SetProfiler(&profiler_);
 #endif
@@ -100,15 +100,15 @@ namespace Foundation
         
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
-
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
-            
+
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
-            // Force install directory as the current working directory. Todo: we may not want to do this in all cases,
-            // but there is a huge load of places that depend on being able to refer to the install dir with .
+            // Force install directory as the current working directory.
+            /** \Todo: we may not want to do this in all cases, but there is a huge load of places
+                that depend on being able to refer to the install dir with .*/
             boost::filesystem::current_path(platform_->GetInstallDirectory());
             
             // Now set proper path for config (one that also non-privileged users can write to)
@@ -126,6 +126,7 @@ namespace Foundation
                 // New INI based config api using QSettings
                 config = new ConfigAPI(this, QString::fromStdString(config_path));
             }
+
             config_manager_->Load();
 
             // Set config values we explicitly always want to override
@@ -148,15 +149,15 @@ namespace Foundation
             naaliApplication = new NaaliApplication(this, argc_, argv_);
             initialized_ = true;
 
-            ui = new UiAPI(this);
-            
-            // Connect signal if main window was created. Not in headless mode.
-            if (ui->MainWindow())
-                connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
-
             asset = new AssetAPI(headless_);
             const char cDefaultAssetCachePath[] = "/assetcache";
             asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
+
+            ui = new UiAPI(this);
+
+            // Connect signal if main window was created. Not in headless mode.
+            if (ui->MainWindow())
+                connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
             audio = new AudioAPI(asset); // Audio API depends on the Asset API, so must be loaded after Asset API is.
             asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
@@ -203,9 +204,9 @@ namespace Foundation
 
         delete frame;
         delete console;
-        delete ui;
         delete input;
         delete asset;
+        delete ui;
         delete audio;
 
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
