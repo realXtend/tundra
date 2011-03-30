@@ -23,11 +23,11 @@ class ObjectToolsWindow:
             naali.ui.AddWidgetToMenu(self.widget,"Edit Tools", "View")
         
             
-            self.widget.findChild("QWidget","tab_widget").setVisible(False)
+            #self.widget.findChild("QWidget","tab_widget").setVisible(False)
                         
-            self.widget.findChild("QPushButton", "button_new").setVisible(False)
-            self.widget.findChild("QPushButton", "button_clone").setVisible(False)
-            self.widget.findChild("QPushButton", "button_delete").setVisible(False)
+            #self.widget.findChild("QPushButton", "button_new").setVisible(False)
+            #self.widget.findChild("QPushButton", "button_clone").setVisible(False)
+            #self.widget.findChild("QPushButton", "button_delete").setVisible(False)
             
             #Manipulator buttons
             self.button_freemove = self.widget.findChild("QPushButton", "button_freemove")
