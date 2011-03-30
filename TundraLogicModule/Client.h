@@ -81,7 +81,7 @@ signals:
     void Disconnected();
 	
 	/// This signal is emitted before the client logout from the server to take the picture of Avatar and World
-	void DisconnectEther();
+	void AboutToDisconnect();
     
 public slots:
 

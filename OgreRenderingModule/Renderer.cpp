@@ -383,6 +383,7 @@ namespace OgreRenderer
 
     void Renderer::PostInitialize()
     {
+		connect(renderWindow,SIGNAL(resizing()),this,SIGNAL(resizeWindow()));
     }
 
     void Renderer::SetFullScreen(bool value)

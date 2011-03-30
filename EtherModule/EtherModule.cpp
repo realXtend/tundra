@@ -129,7 +129,7 @@ namespace Ether
 
 		boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
 		if(client)
-			connect(client.get(), SIGNAL(DisconnectEther()), SLOT(TakeEtherScreenshotsForTundra()));
+			connect(client.get(), SIGNAL(AboutToDisconnect()), SLOT(TakeEtherScreenshotsForTundra()));
 	}
 
 	void EtherModule::Uninitialize()

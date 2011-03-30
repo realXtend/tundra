@@ -85,7 +85,7 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
 
 void Client::Logout(bool fail)
 {
-	emit DisconnectEther();
+	emit AboutToDisconnect();
 
     if (loginstate_ != NotConnected)
     {

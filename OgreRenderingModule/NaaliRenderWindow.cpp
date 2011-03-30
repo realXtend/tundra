@@ -194,4 +194,6 @@ void NaaliRenderWindow::Resize(int width, int height)
         texture->setHeight(height);
         texture->createInternalResources();
     }
+
+	emit resizing();
 }

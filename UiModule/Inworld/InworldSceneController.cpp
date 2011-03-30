@@ -8,12 +8,12 @@
 #include "Common/AnchorLayoutManager.h"
 #include "Menus/MenuManager.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
-
 #include "UiProxyWidget.h"
 
 #include "MemoryLeakCheck.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
+#include "Renderer.h"
 
 #include <QGraphicsView>
 
@@ -48,7 +48,11 @@ namespace UiServices
         
         // Apply new positions to active widgets when the inworld_scene_ is resized
         connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
-    }
+		//OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+		boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer).lock();
+		if(renderer)
+			connect(renderer.get(),SIGNAL(resizeWindow()),this,SLOT(AddInternalWidgets()));
+	}
 
     InworldSceneController::~InworldSceneController()
     {
