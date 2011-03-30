@@ -15,7 +15,6 @@
 
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
-#include <boost/timer.hpp>
 
 class FrameworkImpl;
 class UiAPI;
@@ -293,7 +292,6 @@ namespace Foundation
 #endif
         boost::program_options::variables_map commandLineVariables; ///< program options
         boost::program_options::options_description commandLineDescriptions; ///< program option descriptions
-        boost::timer timer; ///< The Naali Frame API.
         bool initialized_; ///< Is the framework is properly initialized.
         bool headless_; ///< Are we running in the headless mode.
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.

@@ -344,16 +344,25 @@ namespace Foundation
 
     void Framework::ProcessOneFrame()
     {
+        static tick_t clock_freq;
+        static tick_t last_clocktime;
+
+        if (!last_clocktime)
+            last_clocktime = GetCurrentClockTime();
+
+        if (!clock_freq)
+            clock_freq = GetCurrentClockFreq();
+
         if (exit_signal_ == true)
             return; // We've accidentally ended up to update a frame, but we're actually quitting.
 
         {
             PROFILE(FW_MainLoop);
 
-            double frametime = timer.elapsed();
-            
-            timer.restart();
-            // do synchronized update for modules
+            tick_t curr_clocktime = GetCurrentClockTime();
+            double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
+            last_clocktime = curr_clocktime;
+
             {
                 PROFILE(FW_UpdateModules);
                 module_manager_->UpdateModules(frametime);
