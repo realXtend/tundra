@@ -96,10 +96,11 @@ public:
     //! Transformation attribute for position, rotation and scale adjustments.
     //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
     Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
-	//Expose get and set transform as slots to be accesible from python
+	//Expose get and set transform as invokable methods to be accesible from python
 	//DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
 	Attribute<Transform> transform;
-    
+	Q_INVOKABLE Transform gettransform() const { return transform.Get(); }
+	Q_INVOKABLE void settransform(Transform value) { transform.Set(value, AttributeChange::Default); }
     
     //! Show debug bounding box -attribute
     Q_PROPERTY(bool drawDebug READ getdrawDebug WRITE setdrawDebug);
@@ -246,12 +247,6 @@ public slots:
     /*! \param radians how many radians to roll
      */
     void SetRoll(float radians);
-
-	/// Gets transform attribute
-    Transform gettransform() const { return transform.Get(); }
-
-	/// Sets transform attribute
-	void settransform(Transform value) { transform.Set(value, AttributeChange::Default); }
 
 signals:
     //! emmitted when position has changed.
