@@ -84,7 +84,7 @@ class ObjectEdit(Component):
         self.edit_inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
 
         # Connect to mouse events
-        self.edit_inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
+        #self.edit_inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
         self.edit_inputcontext.connect('MouseLeftPressed(MouseEvent*)', self.on_mouseleftpressed)
         self.edit_inputcontext.connect('MouseLeftReleased(MouseEvent*)', self.on_mouseleftreleased)
         self.edit_inputcontext.connect('MouseMove(MouseEvent*)', self.on_mousemove)
