@@ -68,7 +68,7 @@ namespace UiServices
 		external_panel_manager_(0),
 		external_toolbar_manager_(0),
         inworld_notification_manager_(0),
-		postInitialize_(false)
+		win_restored_(false)
     {
     }
 
@@ -142,9 +142,6 @@ namespace UiServices
 		   external_toolbar_manager_ = new ExternalToolBarManager(qWin_, this);
 		   connect(ui_state_machine_, SIGNAL(SceneChangedFromMain()), external_toolbar_manager_, SLOT(DisableToolBars()));
 		   connect(ui_state_machine_, SIGNAL(SceneChangedToMain()), external_toolbar_manager_, SLOT(EnableToolBars()));
-		   
-		   //Configure Static Stuff of the main window
-		   //createStaticContent();
         }
         else
 			LogWarning("Could not acquire QMainWindow!");
@@ -158,46 +155,44 @@ namespace UiServices
 			SubscribeToEventCategories();
 			ui_scene_service_->CreateSettingsPanel();
 
-			bool window_fullscreen = true;
-			//Restore values
-			if (framework_->IsEditionless()) {
-				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
-				if (!settings.contains("win_state") && !framework_->IsEditionless()){
-					//Set default settings
-					QSettings default_settings("data/uidefault.ini", QSettings::IniFormat);
-					qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());
-					//First time, show it maximized
-					qWin_->showMaximized();
-				} 
-				else if (settings.contains("win_state"))
-					qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
-				window_fullscreen = settings.value("win_fullscreen", false).toBool();
-			}
-			else
-			{
-				QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
-				if (!settings.contains("win_state") && !framework_->IsEditionless()){
-					//Set default settings
-					QSettings default_settings("data/uidefault.ini", QSettings::IniFormat);
-					qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());
-					//First time, show it maximized
-					qWin_->showMaximized();
-				} 
-				else if (settings.contains("win_state"))
-					qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
-				window_fullscreen = settings.value("win_fullscreen", false).toBool();
-			}
-			if (window_fullscreen)
-				qWin_->showFullScreen();
-
 			//Create the view manager
 			if (!framework_->IsEditionless())
 				viewManager_=new ViewManager(this,ui_scene_service_.get());
-
-			//Notify that the restore of the main window has been done
-			postInitialize_ = true;
 		}
     }
+
+	void UiModule::RestoreMainWindow()
+	{
+		bool window_fullscreen = true;
+		//Restore values
+		if (framework_->IsEditionless()) {
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
+			if (!settings.contains("win_state") && !framework_->IsEditionless()){
+				//Set default settings
+				QSettings default_settings("data/uidefault.ini", QSettings::IniFormat);
+				qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());
+			} 
+			else if (settings.contains("win_state"))
+				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+			window_fullscreen = settings.value("win_fullscreen", false).toBool();
+		}
+		else
+		{
+			QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
+			if (!settings.contains("win_state") && !framework_->IsEditionless()){
+				//Set default settings
+				QSettings default_settings("data/uidefault.ini", QSettings::IniFormat);
+				qWin_->restoreState(default_settings.value("win_state", QByteArray()).toByteArray());
+				//First time, show it maximized
+				qWin_->showMaximized();
+			} 
+			else if (settings.contains("win_state"))
+				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
+			window_fullscreen = settings.value("win_fullscreen", false).toBool();
+		}
+		if (window_fullscreen)
+			qWin_->showFullScreen();
+	}
 
     void UiModule::Uninitialize()
     {
@@ -238,6 +233,11 @@ namespace UiServices
 
     void UiModule::Update(f64 frametime)
     {
+		//Notify that the restore of the main window has been done
+		if (!win_restored_){
+			win_restored_ = true;
+			RestoreMainWindow();
+		}
     }
 
     bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
