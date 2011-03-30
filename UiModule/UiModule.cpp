@@ -234,7 +234,7 @@ namespace UiServices
     void UiModule::Update(f64 frametime)
     {
 		//Notify that the restore of the main window has been done
-		if (!win_restored_){
+		if (!win_restored_ && !framework_->IsEditionless() && qWin_){
 			win_restored_ = true;
 			RestoreMainWindow();
 		}
