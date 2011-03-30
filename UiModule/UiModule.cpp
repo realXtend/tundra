@@ -22,7 +22,6 @@
 #include "Outworld/ExternalPanelManager.h"
 #include "Outworld/ExternalMenuManager.h"
 #include "Outworld/ExternalToolBarManager.h"
-#include "Outworld/StaticToolBar.h"
 #include "Outworld/ViewManager.h"
 
 #include "Common/UiAction.h"
@@ -68,7 +67,6 @@ namespace UiServices
 		external_menu_manager_(0),
 		external_panel_manager_(0),
 		external_toolbar_manager_(0),
-		staticToolBar_(0),
         inworld_notification_manager_(0),
 		postInitialize_(false)
     {

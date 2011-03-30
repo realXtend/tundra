@@ -40,7 +40,6 @@ namespace UiServices
 	class ExternalPanelManager;
 	class ExternalMenuManager;
 	class ExternalToolBarManager;
-	class StaticToolBar;
 	class ViewManager;
 
     typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
@@ -132,9 +131,6 @@ namespace UiServices
 
 		//! Manager of views
 		ViewManager* viewManager_;
-
-		//! Static toolbar
-		StaticToolBar* staticToolBar_;
 
         //! Current World Stream pointer
         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
