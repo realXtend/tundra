@@ -24,9 +24,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 #include <QFile>
 #include <sstream>
 
-//#ifndef QT_NO_SCRIPTTOOLS
-//#include <QScriptEngineDebugger>
-//#endif
+#ifndef QT_NO_SCRIPTTOOLS
+#include <QScriptEngineDebugger>
+#endif
 
 #include "MemoryLeakCheck.h"
 
@@ -318,11 +318,11 @@ void JavascriptInstance::CreateEngine()
         DeleteEngine();
     engine_ = new QScriptEngine;
     connect(engine_, SIGNAL(signalHandlerException(const QScriptValue &)), SLOT(OnSignalHandlerException(const QScriptValue &)));
-//#ifndef QT_NO_SCRIPTTOOLS
-//    debugger_ = new QScriptEngineDebugger();
-//    debugger.attachTo(engine_);
-////  debugger_->action(QScriptEngineDebugger::InterruptAction)->trigger();
-//#endif
+#ifndef QT_NO_SCRIPTTOOLS
+    debugger_ = new QScriptEngineDebugger();
+    debugger_->attachTo(engine_);
+//  debugger_->action(QScriptEngineDebugger::InterruptAction)->trigger();
+#endif
 
     ExposeQtMetaTypes(engine_);
     ExposeNaaliCoreTypes(engine_);
@@ -349,7 +349,7 @@ void JavascriptInstance::DeleteEngine()
     if (!destructor.isUndefined())
         destructor.call();
     SAFE_DELETE(engine_);
-    //SAFE_DELETE(debugger_);
+    SAFE_DELETE(debugger_);
 }
 
 void JavascriptInstance::OnSignalHandlerException(const QScriptValue& exception)

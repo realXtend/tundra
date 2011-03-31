@@ -13,10 +13,10 @@
 #include "AssetFwd.h"
 #include "JavascriptFwd.h"
 
-//#include <QtScript>
-//#ifndef QT_NO_SCRIPTTOOLS
-//#include <QScriptEngineDebugger>
-//#endif
+#include <QtScript>
+#ifndef QT_NO_SCRIPTTOOLS
+#include <QScriptEngineDebugger>
+#endif
 
 class JavascriptModule;
 
@@ -100,7 +100,7 @@ private:
     ComponentWeakPtr owner_; ///< Owner (EC_Script) component, if existing.
     JavascriptModule *module_; ///< Javascript module.
     bool evaluated; ///< Has the script program been evaluated.
-    //QScriptEngineDebugger *debugger_;
+    QScriptEngineDebugger *debugger_;
 
     /// Already included files for preventing multi-inclusion
     std::vector<QString> included_files_; 
