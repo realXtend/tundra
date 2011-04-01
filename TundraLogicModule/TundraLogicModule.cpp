@@ -140,6 +140,22 @@ void TundraLogicModule::Update(f64 frametime)
             
             check_default_server_start = false;
         }
+
+        static bool check_login_start = true;
+        if (check_login_start)
+        {
+            // Web login handling, if we are on a server the request will be ignored down the chain.
+            const boost::program_options::variables_map &options = GetFramework()->ProgramOptions();
+            if (options.count("login") > 0)
+            {
+                LogInfo(QString::fromStdString(options["login"].as<std::string>()).toStdString());
+                QUrl loginUrl(QString::fromStdString(options["login"].as<std::string>()), QUrl::TolerantMode);
+                if (loginUrl.isValid())
+                    client_->Login(loginUrl);
+            }
+
+            check_login_start = false;
+        }
         
         // Update client & server
         if (client_)
