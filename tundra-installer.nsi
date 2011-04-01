@@ -1,5 +1,5 @@
 !include "fileassoc.nsh"
-!define VERSION "1.0.3"
+!define VERSION "1.0.5"
 
 Name "Tundra ${VERSION}"
 
