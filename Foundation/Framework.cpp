@@ -305,14 +305,13 @@ namespace Foundation
             ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
             ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
             ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
+            ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username")
             ///\todo The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
             ("user", po::value<std::string>(), "OpenSim login name")
             ("passwd", po::value<std::string>(), "OpenSim login password")
             ("server", po::value<std::string>(), "World server and port")
             ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
-            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name")
-            ("login", "Automatically login to server using provided credentials");
-
+            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name");
         try
         {
             po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
