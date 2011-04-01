@@ -178,7 +178,33 @@ void JavascriptInstance::Run()
     QString &scriptContent = (scriptRef_.get() ? scriptRef_->scriptContent : program_);
 
     included_files_.clear();
+
+#ifndef QT_NO_SCRIPTTOOLS
+	bool attachedToDebugger = false;
+	QScriptEngineDebugger* debugger = module_->GetDebugger();
+	if (!engine_->isEvaluating() && debugger)
+	{
+		module_->setDebuggerAttached(true);
+		debugger->detach();
+		debugger->attachTo(engine_);
+		attachedToDebugger = true;
+	}
+#endif
+
     QScriptValue result = engine_->evaluate(scriptContent, scriptSourceFilename);
+
+#ifndef QT_NO_SCRIPTTOOLS
+	if (attachedToDebugger)
+	{
+		debugger = module_->GetDebugger();
+		if(debugger)
+		{
+			debugger->detach();
+			module_->setDebuggerAttached(false);
+		}
+	}
+#endif
+
     if (engine_->hasUncaughtException())
     {
         LogError("In run/evaluate: " + result.toString().toStdString());
