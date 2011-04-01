@@ -76,7 +76,7 @@ void JavascriptModule::Initialize()
 void JavascriptModule::PostInitialize()
 {
 #ifndef QT_NO_SCRIPTTOOLS
-	if (!GetFramework()->IsHeadless() /*&& !GetFramework()->IsEditionless()*/)
+	if (!GetFramework()->IsHeadless() && !GetFramework()->IsEditionless())
 	{
 		bool debugging_enable = false;
 
@@ -145,7 +145,7 @@ void JavascriptModule::Uninitialize()
 {
     UnloadStartupScripts();
 #ifndef QT_NO_SCRIPTTOOLS
-	if (!GetFramework()->IsHeadless() /*&& !GetFramework()->IsEditionless()*/)
+	if (!GetFramework()->IsHeadless() && !GetFramework()->IsEditionless())
 	{
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/Javascript");
 		if (debugger)
