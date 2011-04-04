@@ -215,22 +215,22 @@ class Manipulator:
                     self.grabbed = False
                     
                 if self.grabbed_axis != None:
-					self.manipulator.ruler.SetAxis(self.grabbed_axis)
-					if self.NAME == "FreeMoveManipulator":
-						self.manipulator.ruler.SetVisible(False)
-					else:
-						self.manipulator.ruler.SetVisible(True)
-					#r.logInfo("show ruler initManipulation")
-					self.manipulator.ruler.UpdateRuler()
-					if ents[0]:
-						placeable = ents[0].placeable
-						self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
-					set_custom_cursor(self.CURSOR_HOLD_SHAPE)
+                    self.manipulator.ruler.SetAxis(self.grabbed_axis)
+                    if self.NAME == "FreeMoveManipulator":
+                        self.manipulator.ruler.SetVisible(False)
+                    else:
+                        self.manipulator.ruler.SetVisible(True)
+                    #r.logInfo("show ruler initManipulation")
+                    self.manipulator.ruler.UpdateRuler()
+                    if ents[0]:
+                        placeable = ents[0].placeable
+                        self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+                    set_custom_cursor(self.CURSOR_HOLD_SHAPE)
                 else:
-					remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
-					self.manipulator.ruler.SetVisible(False)
-					#r.logInfo("hide ruler initManipulation")
-					self.manipulator.ruler.UpdateRuler()
+                    remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
+                    self.manipulator.ruler.SetVisible(False)
+                    #r.logInfo("hide ruler initManipulation")
+                    self.manipulator.ruler.UpdateRuler()
 
     def setManipulatorScale(self, ents):
         if ents is None or len(ents) == 0: 
@@ -417,7 +417,7 @@ class ScaleManipulator(Manipulator):
     AXIS_RED = 1
     AXIS_BLUE = 2
     AXIS_YELLOW = 3
-	
+
     GREENARROW = [0]
     REDARROW = [1]
     BLUEARROW = [2]
@@ -468,28 +468,28 @@ class ScaleManipulator(Manipulator):
                 changevec.setZ(0)
             
 class FreeMoveManipulator(Manipulator):
-	NAME = "FreeMoveManipulator"
-	MANIPULATOR_MESH_NAME = "freemove.mesh"
-	MANIPULATORORIENTATION = QQuaternion(0, 0, 1, 1)
-	MATERIALNAMES = {
+    NAME = "FreeMoveManipulator"
+    MANIPULATOR_MESH_NAME = "freemove.mesh"
+    MANIPULATORORIENTATION = QQuaternion(0, 0, 1, 1)
+    MATERIALNAMES = {
 		0: "axis_yellow"
 	}
 
-	AXIS_GREEN = 0
-	AXIS_RED = 1
-	AXIS_BLUE = 2
-	AXIS_YELLOW = 3
-	
-	GREENARROW = [0]
-	REDARROW = [1]
-	BLUEARROW = [2]
-	YELLOWARROW = [3]
+    AXIS_GREEN = 0
+    AXIS_RED = 1
+    AXIS_BLUE = 2
+    AXIS_YELLOW = 3
 
-	
-	""" Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
-	def _manipulate(self, ent, amountx, amounty, changevec):
-		ent.placeable.Position += changevec
-		#ent.network.Position += changevec      
+    GREENARROW = [0]
+    REDARROW = [1]
+    BLUEARROW = [2]
+    YELLOWARROW = [3]
+
+
+    """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
+    def _manipulate(self, ent, amountx, amounty, changevec):
+        ent.placeable.Position += changevec
+        #ent.network.Position += changevec      
 
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
@@ -506,12 +506,12 @@ class RotationManipulator(Manipulator):
     AXIS_RED = 1
     AXIS_BLUE = 2
     AXIS_YELLOW = 3
-	
+
     GREENARROW = [0] # we do blue_axis actions
     REDARROW = [1]
     BLUEARROW = [2] # we do green_axis actions
     YELLOWARROW = [3]
-	
+
     bytransform = True
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
