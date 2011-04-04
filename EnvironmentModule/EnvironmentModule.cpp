@@ -7,10 +7,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "SceneAPI.h"
-#include "AssetAPI.h"
-#include "GenericAssetFactory.h"
-
 #include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "Water.h"
@@ -18,16 +14,18 @@
 #include "Sky.h"
 #include "EnvironmentEditor.h"
 #include "PostProcessWidget.h"
-
 #include "EC_WaterPlane.h"
 #include "EC_Fog.h"
 #include "EC_SkyPlane.h"
 #include "EC_SkyBox.h"
 #include "EC_SkyDome.h"
 #include "EC_EnvironmentLight.h"
+#include "TerrainWeightEditor.h"
+#include "EC_OgreEnvironment.h"
 
-#include <EC_OgreEnvironment.h>
-
+#include "SceneAPI.h"
+#include "AssetAPI.h"
+#include "GenericAssetFactory.h"
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "SceneManager.h"
@@ -38,16 +36,11 @@
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
 #include "CompositionHandler.h"
-#include <EC_Name.h>
-
+#include "EC_Name.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "ConsoleCommandServiceInterface.h"
-
-#include "TerrainWeightEditor.h"
-
 #include "WorldBuildingServiceInterface.h"
-
 #include "../TundraLogicModule/TundraEvents.h"
 
 #include "MemoryLeakCheck.h"
@@ -58,7 +51,7 @@ namespace Environment
 
     EnvironmentModule::EnvironmentModule() :
         IModule(type_name_static_),
-        w_editor_(0),
+        terrainWeightEditor_(0),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),
@@ -113,34 +106,32 @@ namespace Environment
 
             // Add to scene.
             UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-            if (!ui)
-                return;
-
-            ui->AddWidgetToScene(postprocess_dialog_);
-            ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
-                "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+            if (ui)
+            {
+                ui->AddWidgetToScene(postprocess_dialog_);
+                ui->AddWidgetToMenu(postprocess_dialog_, tr("Post-processing"), tr("World Tools"),
+                    "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+            }
         }
 
         environment_editor_ = new EnvironmentEditor(this);
         Foundation::WorldBuildingServicePtr wb_service = GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Service::ST_WorldBuilding).lock();
         if (wb_service)
         {
-            QObject::connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
-            QObject::connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
+            connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
+            connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
         }
 
-        w_editor_ = new TerrainWeightEditor(this);
-        w_editor_->Initialize();
         RegisterConsoleCommand(Console::CreateCommand("TerrainTextureEditor",
             "Shows the terrain texture weight editor.",
-            Console::Bind(w_editor_, &TerrainWeightEditor::ShowWindow)));
+            Console::Bind(this, &EnvironmentModule::ShowTerrainWeightEditor)));
     }
 
     void EnvironmentModule::Uninitialize()
     {
         SAFE_DELETE(environment_editor_);
         SAFE_DELETE(postprocess_dialog_);
-        SAFE_DELETE(w_editor_);
+        SAFE_DELETE(terrainWeightEditor_);
         terrain_.reset();
         water_.reset();
         environment_.reset();
@@ -157,7 +148,7 @@ namespace Environment
      
         PROFILE(EnvironmentModule_Update);
 
-        // Idea of next lines:  Because of initialisation chain, enviroment editor stays in wrong state after logout/login-process. 
+        // Idea of next lines:  Because of initialization chain, environment editor stays in wrong state after logout/login-process. 
         // Solution for that problem is that we initialise it again at that moment when user clicks environment editor, 
         // because currently editor is plain QWidget we have not access to show() - slot. So we here poll widget, and when polling tells us that widget is seen, 
         // we will initialise it again. 
@@ -195,7 +186,24 @@ namespace Environment
          return 0;
     }
 #endif
-    
+
+    Console::CommandResult EnvironmentModule::ShowTerrainWeightEditor(const StringVector &params)
+    {
+        if (framework_->IsHeadless())
+            return Console::ResultFailure("Cannot show window in headless mode.");
+
+        if (terrainWeightEditor_)
+        {
+            terrainWeightEditor_->show();
+            return Console::ResultSuccess();
+        }
+
+        terrainWeightEditor_ = new TerrainWeightEditor(framework_);
+        terrainWeightEditor_->setWindowFlags(Qt::Tool);
+        terrainWeightEditor_->show();
+        return Console::ResultSuccess();
+    }
+
     bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if(category_id == framework_event_category_)
@@ -266,9 +274,9 @@ namespace Environment
                 ReleaseEnvironment();
                 //ReleaseSky();
                 firstTime_ = true;
-               
             }
         }
+
         return false;
     }
 
@@ -351,7 +359,7 @@ namespace Environment
                 if (renderer)
                 {
                     StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);
-                    //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event.
+                    //Since post-processing effect was enabled/disabled elsewhere, we have to notify the dialog about the event.
                     //Also, no need to put effect on from the CompositionHandler since the dialog will notify CompositionHandler when 
                     //button is checked
                     if (postprocess_dialog_)
@@ -554,9 +562,8 @@ namespace Environment
             // Create param component.
             entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name), AttributeChange::LocalOnly);
         }
-        
+
         return entity;
-  
     }
 
     void EnvironmentModule::RemoveLocalEnvironment()
@@ -580,8 +587,6 @@ namespace Environment
                 entity->RemoveComponent(entity->GetComponent(EC_SkyDome::TypeNameStatic()));
             if ( entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) && active_scene->GetEntityByName("LightEnvironment").get() != 0)
                 entity->RemoveComponent(entity->GetComponent(EC_EnvironmentLight::TypeNameStatic()));
-            
-        
         }
 
         if (!entity->HasComponent(EC_WaterPlane::TypeNameStatic()) &&
@@ -589,10 +594,10 @@ namespace Environment
             !entity->HasComponent(EC_SkyPlane::TypeNameStatic()) && 
             !entity->HasComponent(EC_SkyBox::TypeNameStatic()) && 
             !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) &&
-            !entity->HasComponent(EC_SkyDome::TypeNameStatic())) 
-                active_scene->RemoveEntity(entity->GetId());
-        
-
+            !entity->HasComponent(EC_SkyDome::TypeNameStatic()))
+        {
+            active_scene->RemoveEntity(entity->GetId());
+        }
     }
 
     bool EnvironmentModule::HandleInputEvent(event_id_t event_id, IEventData* data)
