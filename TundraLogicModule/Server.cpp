@@ -64,7 +64,9 @@ namespace TundraLogic
 
 Server::Server(TundraLogicModule* owner, Foundation::Framework* fw) :
     owner_(owner),
-    framework_(fw)
+    framework_(fw),
+    current_port_(-1),
+    current_protocol_("")
 {
     tundraEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
@@ -88,6 +90,13 @@ bool Server::Start(unsigned short port)
             TundraLogicModule::LogError("Failed to start server in port " + ToString<int>(port));
             return false;
         }
+
+        // Store current port and protocol
+        current_port_ = (int)port;
+        current_protocol_ = transportLayer == kNet::SocketOverUDP ? "udp" : "tcp";
+
+        // Create the default server scene
+        /// \todo Should be not hard coded like this. Give some unique id (uuid perhaps) that could be returned to the client to make the corresponding named scene in client?
         Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraServer", true);
         framework_->Scene()->SetDefaultScene(scene);
         owner_->GetSyncManager()->RegisterToScene(scene);
@@ -96,7 +105,7 @@ bool Server::Start(unsigned short port)
         Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
         physics->CreatePhysicsWorldForScene(scene, false);
         
-        //! \todo Hack - find better way and remove! Allow environment also on server by sending a fake connect event
+        /// \todo Hack - find better way and remove! Allow environment also on server by sending a fake connect event
         Events::TundraConnectedEventData event_data;
         event_data.user_id_ = 0;
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
@@ -129,6 +138,16 @@ bool Server::IsAboutToStart() const
     if (programOptions.count("startserver"))
         return true;
     return false;
+}
+
+int Server::GetPort() const
+{
+    return current_port_;
+}
+
+QString Server::GetProtocol() const
+{
+    return current_protocol_;
 }
 
 UserConnectionList Server::GetAuthenticatedUsers() const

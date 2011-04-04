@@ -6,18 +6,13 @@
 // Application name is statically defined here
 #define APPLICATION_NAME "realXtend"
 
-//#include "IEventData.h"
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-//#include "UiFwd.h"
-//#include "SceneFwd.h"
 
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
-#include <boost/timer.hpp>
 
-class FrameworkImpl;
 class UiAPI;
 class UiServiceInterface;
 class FrameAPI;
@@ -39,12 +34,9 @@ namespace Poco
 namespace Foundation
 {
     class NaaliApplication;
-    class FrameworkQtApplication;
-    class KeyStateListener;
-    class MainWindow;
 
     /// Contains entry point for the framework.
-    /*! Allows access to various managers and services. The standard way of using
+    /*! Allows access to the core API objects, various managers and services. The standard way of using
         the framework is by first creating the framework and then calling Framework::Go()
         which will then load / initialize all modules and enters the main loop which
         automatically updates all loaded modules.
@@ -52,7 +44,7 @@ namespace Foundation
         There are other ways of using the framework. To f.ex. run without the main loop,
         see Framework::PostInitialize(). All the modules need to be updated manually then.
 
-        The constructor initalizes the framework. Config or logging should not be used
+        The constructor initializes the framework. Config or logging should not be used
         usually without first initializing the framework.
 
         \ingroup Foundation_group
@@ -72,7 +64,7 @@ namespace Foundation
         ~Framework();
 
         /// Parse program options from command line arguments
-        /*! For internal use. Should be called immediatelly after creating the framework,
+        /*! For internal use. Should be called immediately after creating the framework,
             so all options will be taken in effect properly.
         */
         void ParseProgramOptions();
@@ -86,7 +78,7 @@ namespace Foundation
             In that case the correct order is:
                 Foundation::Framework fw;                  // create the framework
                 fw.GetModuleManager()->ExcludeModule(...)  // optional step for excluding certain modules
-                ...                                        // other initalization steps
+                ...                                        // other initialization steps
                 fw.PostInitialize()
                 ...                                        // continue program execution without framework's main loop
         */
@@ -147,7 +139,6 @@ namespace Foundation
 
 #ifdef PROFILING
         /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
-        /// Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
         Profiler &GetProfiler();
 #endif
         /// Add a new log listener for poco log
@@ -241,7 +232,7 @@ namespace Foundation
         /// Returns Naali core API Debug object.
         DebugAPI *Debug() const;
 
-        /// Returns Naali core API Debug object.
+        /// Returns Naali core API Scene object.
         SceneAPI *Scene() const;
 
         /// Returns Naali core API Config object.
@@ -293,7 +284,6 @@ namespace Foundation
 #endif
         boost::program_options::variables_map commandLineVariables; ///< program options
         boost::program_options::options_description commandLineDescriptions; ///< program option descriptions
-        boost::timer timer; ///< The Naali Frame API.
         bool initialized_; ///< Is the framework is properly initialized.
         bool headless_; ///< Are we running in the headless mode.
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.

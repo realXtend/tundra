@@ -10,21 +10,18 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "UiService.h"
+#include "BinaryAsset.h"
+#include "UiProxyWidget.h"
 #include "AssetAPI.h"
 #include "QtUiAsset.h"
-
-#include "UiService.h"
-#include "UiProxyWidget.h"
-
-#include "MemoryLeakCheck.h"
 #include "LoggingFunctions.h"
-#include "BinaryAsset.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("UiService")
+
 #include <QDomDocument>
 #include <QUiLoader>
 
-#include <QDebug>
-
-DEFINE_POCO_LOGGING_FUNCTIONS("UiService")
+#include "MemoryLeakCheck.h"
 
 UiService::UiService(Foundation::Framework *framework, QGraphicsView *view)
 :view_(view), 

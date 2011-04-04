@@ -144,7 +144,18 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
 {
     setWindowModality(Qt::ApplicationModal/*Qt::WindowModal*/);
     setAttribute(Qt::WA_DeleteOnClose);
-    setWindowTitle(" "); //setWindowTitle(tr("Add Content")); imo the add content name is kind of not needed
+    setWindowTitle("Entity And Asset Import");
+
+    // If not parent was given, lets make our main window the parent
+    // and set the window flags to match the other tundra dialogs/windows
+    if (!parent && framework->Ui()->MainWindow())
+    {
+        setParent(framework->Ui()->MainWindow());
+        setWindowFlags(Qt::Tool);
+    }
+    else if (parent && (parent == framework->Ui()->MainWindow()))
+        setWindowFlags(Qt::Tool);
+
     QPixmap nullIcon(16,16); // do a null icon to hide the default ugly one
     nullIcon.fill(Qt::transparent);
     setWindowIcon(nullIcon);

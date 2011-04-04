@@ -23,7 +23,7 @@
 #include "SceneEvents.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "SceneManager.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "GenericMessageUtils.h"
 #include "EventManager.h"
 #include "ServiceManager.h"

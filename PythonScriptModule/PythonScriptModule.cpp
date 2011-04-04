@@ -56,7 +56,7 @@
 #include "SceneAPI.h"
 #include "ConsoleAPI.h"
 #include "ConfigAPI.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #include "NaaliMainWindow.h"

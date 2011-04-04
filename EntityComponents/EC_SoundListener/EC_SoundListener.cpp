@@ -16,7 +16,7 @@
 #include "EC_Placeable.h"
 #include "SceneManager.h"
 #include "LoggingFunctions.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "SceneAPI.h"
 #include "FrameAPI.h"
 

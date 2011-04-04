@@ -54,6 +54,44 @@ void Client::Update(f64 frametime)
         CheckLogin();
 }
 
+void Client::Login(const QUrl& loginUrl)
+{
+    // We support tundra, http and https scheme login urls
+    QString urlScheme = loginUrl.scheme().toLower();
+    if (urlScheme.isEmpty())
+        return;
+    if (urlScheme != "tundra" && 
+        urlScheme != "http" && 
+        urlScheme != "https")
+        return;
+
+    // Parse values from url
+    QString username = loginUrl.queryItemValue("username").trimmed();
+    QString password = loginUrl.queryItemValue("password");
+    QString avatarurl = loginUrl.queryItemValue("avatarurl").trimmed();
+    QString protocol = loginUrl.queryItemValue("protocol").trimmed().toLower();
+    QString address = loginUrl.host();
+    int port = loginUrl.port();
+
+    // Validation: Username and address is the minimal set that with we can login with
+    if (username.isEmpty() || address.isEmpty())
+        return;
+    if (username.count(" ") > 0)
+        username = username.replace(" ", "-");
+    if (port < 0)
+        port = 2345;
+
+    // Set login parameters and login
+    SetLoginProperty("username", username);
+    SetLoginProperty("password", "");
+    SetLoginProperty("protocol", protocol);
+    SetLoginProperty("port", QString::number(port));
+    if (!avatarurl.isEmpty())
+        SetLoginProperty("avatarurl", avatarurl);
+
+    Login(address, port, username, password, protocol);
+}
+
 void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password, const QString &protocol)
 {
     SetLoginProperty("username", username);
