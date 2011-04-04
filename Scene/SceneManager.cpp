@@ -341,7 +341,10 @@ namespace Scene
             return;
         if (change == AttributeChange::Default)
             change = AttributeChange::Replicate;
-        emit EntityCreated(entity.get(), change);
+        
+        //@note This is not enough, it might be that entity is deleted after this call so we have dangling pointer in queue. 
+        if ( entity.get() != 0 )
+            emit EntityCreated(entity.get(), change);
     }
 
     void SceneManager::EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change)
