@@ -67,9 +67,9 @@ Private member variables should be lower case as well, but with an underscore ap
 int AvatarNode::private_member_var_;
 \endverbatim
 
-\subsection Signals and Slots
+\subsection signals_and_slots Signals and Slots
 When naming signals, use the signature to describe what has happened or is about to happen.
-Document the signal signature as you would any normal function. Use "Handle" or "On" prefix for functions
+Document the signal signature as you would any normal function. Use preferably "Handle" or "On" prefix for functions
 handling signals.
 \verbatim
 signals:
@@ -88,7 +88,9 @@ public slots:
 /** @button What button was clicked.
 */
 void HandleMouseButtonClicked(int button);
-\verbatim
+\endverbatim
+
+If you're not familiar with the concepts of Qt's signals and slots, learn about them here: http://doc.qt.nokia.com/4.7/signalsandslots.html
 
 <b>In your editor, set the tab key to produce 4 spaces. Do not use the tab character. </b> In Visual Studio this feature can be found from Tools -> Options -> Text Editor -> C/C++ -> General.
 Parenthesis should use whitespace, and gravitate towards the thing they enclose. ex: if (IsFoo()) Do (bar); not if( IsFoo() ) Do( bar );
