@@ -245,8 +245,14 @@ namespace Foundation
 
         try
         {
-            Poco::Logger::create("",formatchannel,Poco::Message::PRIO_TRACE);
-            Poco::Logger::create("Foundation",Poco::Logger::root().getChannel() ,Poco::Message::PRIO_TRACE);
+#ifdef _DEBUG
+            int loggingLevel = Poco::Message::PRIO_TRACE;
+#else
+            int loggingLevel = Poco::Message::PRIO_INFORMATION;
+#endif            
+
+            Poco::Logger::create("",formatchannel,loggingLevel);
+            Poco::Logger::create("Foundation",Poco::Logger::root().getChannel(), loggingLevel);
         }
         catch (Poco::ExistsException &/*e*/)
         {
