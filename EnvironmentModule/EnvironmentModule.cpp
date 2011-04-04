@@ -53,9 +53,7 @@ namespace Environment
         environment_editor_(0),
         postprocess_dialog_(0),
         resource_event_category_(0),
-        scene_event_category_(0),
         framework_event_category_(0),
-        input_event_category_(0),
         firstTime_(true)
     {
     }
@@ -90,9 +88,7 @@ namespace Environment
         event_manager_->RegisterEventSubscriber(this, 99);
 
         resource_event_category_ = event_manager_->QueryEventCategory("Resource");
-        scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
-        input_event_category_ = event_manager_->QueryEventCategory("Input");
         tundra_event_category_ = event_manager_->QueryEventCategory("Tundra");
 
         environment_editor_ = new EnvironmentEditor(this);
@@ -245,10 +241,6 @@ namespace Environment
                 ReleaseSky();
                 firstTime_ = true;
             }
-        }
-        else if(category_id == input_event_category_)
-        {
-            HandleInputEvent(event_id, data);
         }
         //! \todo Remove - strictly test code!!! We don't want hardcoded environment in Tundra mode, but used for now for testing
         else if (category_id == tundra_event_category_)
@@ -602,11 +594,6 @@ namespace Environment
         {
             active_scene->RemoveEntity(entity->GetId());
         }
-    }
-
-    bool EnvironmentModule::HandleInputEvent(event_id_t event_id, IEventData* data)
-    {
-        return false;
     }
 
     bool EnvironmentModule::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data)
