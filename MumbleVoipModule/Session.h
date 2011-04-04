@@ -4,7 +4,7 @@
 #define incl_MumbleVoipModule_Session_h
 
 #include "CommunicationsService.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include <QMap>
 
 namespace Foundation
@@ -69,7 +69,7 @@ namespace MumbleVoip
         virtual QList<QString> Statistics();
         virtual QString GetServerInfo() const;
         virtual void AddChannel(QString name, const ServerInfo &server_info);
-        virtual void AddChannel(QString name, QString username, QString server);
+        virtual void AddChannel(QString name, QString username, QString server, QString password, QString version, QString channelIdBase);
         virtual void RemoveChannel(QString name);
 
     private:

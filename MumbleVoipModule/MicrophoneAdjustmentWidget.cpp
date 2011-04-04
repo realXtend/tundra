@@ -6,7 +6,7 @@
 #include "MicrophoneAdjustmentWidget.h"
 #include "Settings.h"
 #include "PCMAudioFrame.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "MumbleDefines.h"
 
 #include "MemoryLeakCheck.h"

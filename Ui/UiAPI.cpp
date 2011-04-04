@@ -7,6 +7,10 @@
 #include "NaaliGraphicsView.h"
 #include "Framework.h"
 //#include "UiProxyWidget.h"
+#include "AssetAPI.h"
+#include "QtUiAsset.h"
+#include "GenericAssetFactory.h"
+
 //#include "LoggingFunctions.h"
 //DEFINE_POCO_LOGGING_FUNCTIONS("UiAPI")
 
@@ -134,6 +138,8 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
 
     /// Do a full repaint of the view now that we've shown it.
     graphicsView->MarkViewUndirty();
+
+    owner_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
 }
 
 UiAPI::~UiAPI()

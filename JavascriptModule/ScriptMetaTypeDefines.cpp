@@ -22,7 +22,7 @@
 #include "FrameAPI.h"
 #include "ConsoleAPI.h"
 #include "SceneManager.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "SoundChannel.h"
 #include "InputContext.h"
 #include "RenderServiceInterface.h"

@@ -7,9 +7,6 @@
 #include "UiService.h"
 #include "UiAPI.h"
 #include "NaaliGraphicsView.h"
-#include "AssetAPI.h"
-#include "QtUiAsset.h"
-#include "GenericAssetFactory.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -29,8 +26,6 @@ void UiServiceModule::PreInitialize()
 
 void UiServiceModule::Initialize()
 {
-    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
-
     if (GetFramework()->IsHeadless())
         return;
 

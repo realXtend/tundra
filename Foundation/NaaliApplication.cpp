@@ -15,8 +15,6 @@
 #include <QIcon>
 #include <QWebSettings>
 
-#include "MemoryLeakCheck.h"
-
 #ifdef Q_WS_MAC
 #include <QMouseEvent>
 #include <QWheelEvent>
@@ -25,6 +23,8 @@
 #include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #endif
+
+#include "MemoryLeakCheck.h"
 
 namespace Foundation
 {
@@ -37,7 +37,7 @@ namespace Foundation
     {
         QApplication::setApplicationName("realXtend-Naali");
 
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
         // If under windows, add run_dir/plugins as library path
         // unix users will get plugins from their OS Qt installation folder automatically
 
@@ -112,31 +112,29 @@ namespace Foundation
     bool NaaliApplication::eventFilter(QObject *obj, QEvent *event)
     {
 #ifdef Q_WS_MAC // workaround for Mac, because mouse events are not received as it ought to be
-		QMouseEvent *mouse = dynamic_cast<QMouseEvent*>(event);
-		if (mouse)
-		{
-			if (dynamic_cast<NaaliMainWindow*>(obj))
-			{
-				switch(event->type())
-				{
-					case QEvent::MouseButtonPress:
-						framework->Ui()->GraphicsView()->mousePressEvent(mouse);
-						break;
-					case QEvent::MouseButtonRelease:
-						framework->Ui()->GraphicsView()->mouseReleaseEvent(mouse);
-						break;
-					case QEvent::MouseButtonDblClick:
-						framework->Ui()->GraphicsView()->mouseDoubleClickEvent(mouse);
-						break;
-					case QEvent::MouseMove:
-					{
-						if (mouse->buttons() == Qt::LeftButton)
-							framework->Ui()->GraphicsView()->mouseMoveEvent(mouse);
-					}
-						break;
-				}
-			}
-		}
+        QMouseEvent *mouse = dynamic_cast<QMouseEvent*>(event);
+        if (mouse)
+        {
+            if (dynamic_cast<NaaliMainWindow*>(obj))
+            {
+                switch(event->type())
+                {
+                case QEvent::MouseButtonPress:
+                    framework->Ui()->GraphicsView()->mousePressEvent(mouse);
+                    break;
+                case QEvent::MouseButtonRelease:
+                    framework->Ui()->GraphicsView()->mouseReleaseEvent(mouse);
+                    break;
+                case QEvent::MouseButtonDblClick:
+                    framework->Ui()->GraphicsView()->mouseDoubleClickEvent(mouse);
+                    break;
+                case QEvent::MouseMove:
+                    if (mouse->buttons() == Qt::LeftButton)
+                        framework->Ui()->GraphicsView()->mouseMoveEvent(mouse);
+                    break;
+                }
+            }
+        }
 #endif
         try
         {

@@ -22,7 +22,7 @@
 #include "FrameAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
 #include "DebugAPI.h"
@@ -77,11 +77,12 @@ namespace Foundation
         ui(0),
         input(0),
         asset(0),
+        audio(0),
         debug(new DebugAPI(this)),
         scene(new SceneAPI(this))
     {
         ParseProgramOptions();
-        
+
         if (commandLineVariables.count("help")) 
         {
             std::cout << "Supported command line arguments: " << std::endl;
@@ -91,24 +92,23 @@ namespace Foundation
         {
             if (commandLineVariables.count("headless"))
                 headless_ = true;
-            
 #ifdef PROFILING
             ProfilerSection::SetProfiler(&profiler_);
 #endif
             PROFILE(FW_Startup);
             platform_ = PlatformPtr(new Platform(this));
-        
+
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
-
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
-            
+
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
-            // Force install directory as the current working directory. Todo: we may not want to do this in all cases,
-            // but there is a huge load of places that depend on being able to refer to the install dir with .
+            // Force install directory as the current working directory.
+            /** \Todo: we may not want to do this in all cases, but there is a huge load of places
+                that depend on being able to refer to the install dir with .*/
             boost::filesystem::current_path(platform_->GetInstallDirectory());
             
             // Now set proper path for config (one that also non-privileged users can write to)
@@ -126,6 +126,7 @@ namespace Foundation
                 // New INI based config api using QSettings
                 config = new ConfigAPI(this, QString::fromStdString(config_path));
             }
+
             config_manager_->Load();
 
             // Set config values we explicitly always want to override
@@ -148,15 +149,15 @@ namespace Foundation
             naaliApplication = new NaaliApplication(this, argc_, argv_);
             initialized_ = true;
 
-            ui = new UiAPI(this);
-            
-            // Connect signal if main window was created. Not in headless mode.
-            if (ui->MainWindow())
-                connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
-
             asset = new AssetAPI(headless_);
             const char cDefaultAssetCachePath[] = "/assetcache";
             asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
+
+            ui = new UiAPI(this);
+
+            // Connect signal if main window was created. Not in headless mode.
+            if (ui->MainWindow())
+                connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
             audio = new AudioAPI(asset); // Audio API depends on the Asset API, so must be loaded after Asset API is.
             asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
@@ -203,9 +204,9 @@ namespace Foundation
 
         delete frame;
         delete console;
-        delete ui;
         delete input;
         delete asset;
+        delete ui;
         delete audio;
 
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
@@ -263,13 +264,11 @@ namespace Foundation
             splitterchannel->removeChannel(filechannel);
             RootLogInfo("Poco::OpenFileException. Log file not created.");
         }
-
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
         std::string log_level = config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
         Poco::Logger::get("Foundation").setLevel(log_level);
 #endif
-
         if (consolechannel)
             log_channels_.push_back(consolechannel);
         log_channels_.push_back(filechannel);
@@ -306,14 +305,13 @@ namespace Foundation
             ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
             ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
             ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
-            // The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
+            ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username")
+            ///\todo The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
             ("user", po::value<std::string>(), "OpenSim login name")
             ("passwd", po::value<std::string>(), "OpenSim login password")
             ("server", po::value<std::string>(), "World server and port")
             ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
-            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name")
-            ("login", "Automatically login to server using provided credentials");
-
+            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name");
         try
         {
             po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
@@ -328,9 +326,8 @@ namespace Foundation
     void Framework::PostInitialize()
     {
         PROFILE(FW_PostInitialize);
+        event_manager_->RegisterEventCategory("Framework");
 
-        event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
-        UNREFERENCED_PARAM(framework_events);
         srand(time(0));
 
         LoadModules();
@@ -344,16 +341,25 @@ namespace Foundation
 
     void Framework::ProcessOneFrame()
     {
+        static tick_t clock_freq;
+        static tick_t last_clocktime;
+
+        if (!last_clocktime)
+            last_clocktime = GetCurrentClockTime();
+
+        if (!clock_freq)
+            clock_freq = GetCurrentClockFreq();
+
         if (exit_signal_ == true)
             return; // We've accidentally ended up to update a frame, but we're actually quitting.
 
         {
             PROFILE(FW_MainLoop);
 
-            double frametime = timer.elapsed();
-            
-            timer.restart();
-            // do synchronized update for modules
+            tick_t curr_clocktime = GetCurrentClockTime();
+            double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
+            last_clocktime = curr_clocktime;
+
             {
                 PROFILE(FW_UpdateModules);
                 module_manager_->UpdateModules(frametime);
@@ -469,7 +475,7 @@ namespace Foundation
     }
 
     NaaliApplication *Framework::GetNaaliApplication() const
-    { 
+    {
         return naaliApplication;
     }
 
@@ -728,13 +734,13 @@ namespace Foundation
         return ui;
     }
 
-    UiServiceInterface *Framework::UiService() 
-    { 
-        return GetService<UiServiceInterface>(); 
+    UiServiceInterface *Framework::UiService()
+    {
+        return GetService<UiServiceInterface>();
     }
 
     ConsoleAPI *Framework::Console() const
-    { 
+    {
         return console;
     }
 
@@ -781,6 +787,5 @@ namespace Foundation
         setProperty(name.toStdString().c_str(), QVariant::fromValue<QObject*>(object));
 
         return true;
-
     }
 }

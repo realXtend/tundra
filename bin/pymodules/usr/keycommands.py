@@ -32,7 +32,8 @@ class KeyCommander(Component):
         inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
         #XXX a temp hack to have restart work in login screen / ether too
         uiview = r.getUiView()
-        uiview.connect('PythonRestartRequest()', self.restart_modulemanager)
+        if uiview:
+            uiview.connect('PythonRestartRequest()', self.restart_modulemanager)
         
     # handle KeyPressed event from naali.inputcontext
     def on_keypressed(self, key):

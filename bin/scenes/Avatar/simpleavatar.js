@@ -354,6 +354,17 @@ function ClientInitialize() {
         me.Action("MouseLookX").Triggered.connect(ClientHandleTripodLookX);
         me.Action("MouseLookY").Triggered.connect(ClientHandleTripodLookY);
         me.Action("CheckState").Triggered.connect(ClientCheckState);
+        
+        // Inspect the login avatar url property
+        var avatarurl = client.GetLoginProperty("avatarurl");
+        if (avatarurl && avatarurl.length > 0)
+        {
+            var avatarAssetRef = new QByteArray(avatarurl);
+            var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
+            avatar.OnAttributeChanged.connect(CommonHandleAvatarAttributeChange)
+            avatar.appearanceId = avatarAssetRef;
+            print("Avatar from login parameters enabled:", avatarAssetRef);
+        }
     }
     else
     {

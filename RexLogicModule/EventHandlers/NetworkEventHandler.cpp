@@ -37,7 +37,7 @@
 #endif
 
 #include "ServiceManager.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "ScriptServiceInterface.h" // LoadURL webview opening code is not on the py side, experimentally at least
 
 namespace RexLogic
