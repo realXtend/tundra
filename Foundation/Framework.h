@@ -14,7 +14,6 @@
 #include <boost/program_options.hpp>
 
 class UiAPI;
-class UiServiceInterface;
 class FrameAPI;
 class InputAPI;
 class AudioAPI;
@@ -210,9 +209,6 @@ namespace Foundation
     public slots:
         /// Returns the Naali core API UI object.
         UiAPI *Ui() const;
-
-        /// Returns the old UiServiceInterface impl, which is not merged to the core UI object yet
-        UiServiceInterface *UiService();
 
         /// Returns the Naali core API Input object.
         InputAPI *Input() const;

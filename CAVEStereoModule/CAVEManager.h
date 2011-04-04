@@ -46,6 +46,7 @@ namespace CAVEStereo
             void CAVEToggled(bool val);
             //Add view, this version lets you to decide on window width/height
             void AddView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
+            void AddPanoramaView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int n);
             /*Add view
             @param name of the view (must be unique)
             @param top_left topleft corner of the view
@@ -54,10 +55,12 @@ namespace CAVEStereo
             @param eye_pos position of the eye, relative to view
             */
             void AddView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
+            void AddPanoramaView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int windows_number);
 
             void RemoveView(const QString& name);
             void ModifyView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos); 
             void GetViewParametersView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos); 
+            CAVEStereo::CAVESettingsWidget* GetCaveWidget() const;
         private:
             //! is cave enabled
             bool enabled_;
