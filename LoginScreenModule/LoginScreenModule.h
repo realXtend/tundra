@@ -1,9 +1,4 @@
-/**
- *  For conditions of distribution and use, see copyright notice in license.txt
- *
- *  @file   
- *  @brief  
- */
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_LoginScreenModule_LoginScreenModule_h
 #define incl_LoginScreenModule_LoginScreenModule_h
@@ -29,12 +24,6 @@ public:
 
     /// Destructor.
     ~LoginScreenModule();
-
-    /// IModule override.
-    void PreInitialize();
-
-    /// IModule override.
-    void Initialize();
 
     /// IModule override.
     void PostInitialize();

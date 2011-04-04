@@ -61,7 +61,8 @@ namespace Console
 
     void ConsoleModule::ToggleConsole()
     {
-        ui_console_manager_->ToggleConsole();
+        if (ui_console_manager_)
+            ui_console_manager_->ToggleConsole();
     }
 
     void ConsoleModule::HandleKeyEvent(KeyEvent *keyEvent)
@@ -111,9 +112,9 @@ namespace Console
             }
             case Console::Events::EVENT_CONSOLE_PRINT_LINE:
             {
-		        ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
-		        if (ui_console_manager_)
-		            ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
+                ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
+                if (ui_console_manager_)
+                    ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
                 break;
             }
             default:
