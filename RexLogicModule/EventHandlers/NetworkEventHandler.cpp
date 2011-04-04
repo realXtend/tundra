@@ -26,7 +26,7 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanel/TeleportWidget.h"
@@ -235,7 +235,7 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(NetworkEventInboundData* da
 
     const ClientParameters& client = sp->GetClientParameters();
     owner_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
     // Tell teleportWidget current region name
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
@@ -511,7 +511,7 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(NetworkEventInboundData *data)
         block.mapImageID = msg.ReadUUID();
         mapBlocks.append(block);
     }
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
         ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
@@ -532,7 +532,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *dat
     if (region_name.empty())
         return false;
 
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (!ui_module)
         return false;

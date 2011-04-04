@@ -2,9 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   UiServiceInterface.h
- *  @brief  Interface for Naali's user interface ulitizing Qt's QWidgets.
- *
- *          If you want to see your QWidgets external to the main application just call show() for them.
+ *  @brief  Interface for Naali's user interface utilizing Qt's QWidgets.
+ *  @note   THIS CLASS WILL BE REMOVED OR AT LEAST HEAVILTY REFACTORED.
  */
 
 #ifndef incl_Interfaces_UiServiceInterface_h
@@ -25,8 +24,10 @@ namespace CoreUi
     class NotificationBaseWidget;
 }
 
-/// Interface for Naali's user interface ulitizing Qt's QWidgets.
-/** If you want to see your QWidgets external to the main application just call show() for them.
+/// Interface for Naali's user interface utilizing Qt's QWidgets.
+/** @todo THIS CLASS WILL BE REMOVED OR AT LEAST HEAVILTY REFACTORED.
+    @note THIS CLASS WILL BE REMOVED OR AT LEAST HEAVILTY REFACTORED.
+    If you want to see your QWidgets external to the main application just call show() for them.
 */
 class UiServiceInterface : public QObject, public IService
 {
@@ -55,7 +56,7 @@ public slots:
     */
     virtual bool AddWidgetToScene(UiProxyWidget *widget) = 0;
 
-    /// Adds widget to menu without any spesific properties: adds entry to the root menu,
+    /// Adds widget to menu without any specific properties: adds entry to the root menu,
     /** takes name from the window title and uses default icon.
         @note Doesn't add the widget to the scene.
         @param widget Widget.
@@ -163,7 +164,7 @@ public slots:
     */
     virtual void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget) = 0;
 
-    /// Request notification manager to show given notificaiton widget
+    /// Request notification manager to show given notification widget
     /// @todo move NotificationBaseWidget class to an public interface.
     virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
 
@@ -184,8 +185,8 @@ signals:
 
     /// Emitted when scene changes for every widget that has registered
     /** to be a universal widget. Scenes have to implement to catch this if they accept widgets from other scenes.
-        @param widget_name The tranfering widgets name
-        @param widget The transfering widget
+        @param widget_name The transferring widgets name
+        @param widget The transferring widget
     */
     void TransferRequest(const QString &widget_name, QGraphicsProxyWidget *widget);
 

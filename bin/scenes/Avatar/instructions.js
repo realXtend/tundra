@@ -1,7 +1,7 @@
 var showUi = true;
 if (server.IsRunning() && framework.IsHeadless())
     showUi = false;
-    
+
 if (showUi)
 {
     engine.ImportExtension("qt.core");
@@ -14,7 +14,7 @@ if (showUi)
     label.setStyleSheet("QLabel {background-color: transparent; font-size: 16px; }");
 
     var proxy = new UiProxyWidget(label);
-    uiservice.AddProxyWidgetToScene(proxy);
+    ui.AddProxyWidgetToScene(proxy);
     proxy.x = 50
     proxy.y = 50;
     proxy.windowFlags = 0;

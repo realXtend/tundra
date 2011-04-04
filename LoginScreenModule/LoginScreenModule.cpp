@@ -11,10 +11,9 @@
 #include "LoginScreenModule.h"
 #include "LoginWidget.h"
 
-#include "UiServiceInterface.h"
+#include "UiAPI.h"
 #include "InputAPI.h"
 #include "LoginServiceInterface.h"
-#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
 
@@ -79,7 +78,7 @@ void LoginScreenModule::PostInitialize()
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+    UiAPI *ui = framework_->Ui();
     if (ui)
     {
         window_ = new LoginWidget(framework_);
@@ -125,8 +124,7 @@ void LoginScreenModule::Update(f64 frametime)
 // virtual
 bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    
+    UiAPI *ui = framework_->Ui();
     if (category_id == framework_category_ && event_id == Foundation::NETWORKING_REGISTERED)
     {
         network_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
@@ -189,7 +187,7 @@ void LoginScreenModule::HandleKeyEvent(KeyEvent *key)
     const QKeySequence &toggleMenu = framework_->Input()->KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
     if (key->keyCode == toggleMenu)
     {
-        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
+        UiAPI *ui = framework_->Ui();
         if (connected_ && ui)
             if (!window_->isVisible())
                 ui->ShowWidget(window_);
