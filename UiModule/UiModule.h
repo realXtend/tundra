@@ -41,6 +41,7 @@ namespace UiServices
 	class ExternalMenuManager;
 	class ExternalToolBarManager;
 	class StaticToolBar;
+	class ViewManager;
 
     typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
     typedef boost::shared_ptr<UiSceneService> UiSceneServicePtr;
@@ -128,6 +129,9 @@ namespace UiServices
 
         //! MainWindow
 		QMainWindow* qWin_;
+
+		//! Manager of views
+		ViewManager* viewManager_;
 
 		//! Static toolbar
 		StaticToolBar* staticToolBar_;
