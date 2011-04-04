@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -412,14 +413,16 @@ namespace Ether
         void ControlProxyWidget::UpdateContollerCard(InfoCard *new_card)
         {
             // Disconnect everything
-            if (controlled_card_)
-                disconnect(controlled_card_->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(ControlledWidgetStopped()));
+//$ BEGIN_MOD $
+		//if (controlled_card_)
+		//	disconnect(controlled_card_->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(ControlledWidgetStopped()));
             disconnect();
+//$ END_MOD $
 
             // Set new controlled card
             controlled_card_ = new_card;
             UpdateStatusText(controlled_card_->title());
-            connect(controlled_card_->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(ControlledWidgetStopped()));
+			connect(controlled_card_->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(ControlledWidgetStopped()));
         }
 
         void ControlProxyWidget::IgnoreContollerCardMovement(bool ignore)

@@ -239,6 +239,9 @@ namespace OgreRenderer
         /// Returns the current fps limit.
         float TargetFPSLimit() const { return targetFpsLimit; }
 
+signals:
+		void resizeWindow();
+
     private:
         
         //! Sleeps the main thread to throttle the main loop execution speed.

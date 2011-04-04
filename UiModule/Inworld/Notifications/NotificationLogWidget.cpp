@@ -1,7 +1,8 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "NotificationLogWidget.h"
+#include "Inworld/Notifications/NotificationLogWidget.h"
 
 #include <QDateTime>
 #include <QIcon>
@@ -15,7 +16,10 @@ namespace CoreUi
         setupUi(this);
 
         // Init Ui
-        timestampLabel->setText(timestamp.time().toString("hh:mm:ss"));
+		//$ BEGIN_MOD $
+		timestampLabel->setText(timestamp.time().toString("hh:mm:ss"));
+        timestampLabel->setText(timestamp.time().toString("hh:mm:ss") + "  " +result_title);
+		//$ END_MOD $
         resultLabel->setText(result);
         resultTitleLabel->setText(result_title);
         mainLayout->insertWidget(1, content_widget_);

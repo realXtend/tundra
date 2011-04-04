@@ -64,16 +64,17 @@ class ObjectEdit(Component):
                 
         self.editingKeyTrigger = (Qt.Key_M, Qt.ShiftModifier)
         self.shortcuts = {
-            self.editingKeyTrigger : self.toggleEditingKeyTrigger,
-            (Qt.Key_R, Qt.NoModifier) : self.rotateObject,
-            (Qt.Key_S, Qt.NoModifier) : self.scaleObject,
-            (Qt.Key_G, Qt.NoModifier) : self.translateObject,
-			(Qt.Key_E, Qt.NoModifier) : self.selectObject,
-            (Qt.Key_Tab, Qt.NoModifier) : self.cycleManipulator,
-            (Qt.Key_Z, Qt.ControlModifier) : self.undo,
-            (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
-            (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
-            (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
+			self.editingKeyTrigger : self.toggleEditingKeyTrigger,
+			(Qt.Key_5, Qt.NoModifier) : self.rotateObject,
+			(Qt.Key_4, Qt.NoModifier) : self.scaleObject,
+			(Qt.Key_3, Qt.NoModifier) : self.translateObject,
+			(Qt.Key_2, Qt.NoModifier) : self.freemoveObject,
+			(Qt.Key_1, Qt.NoModifier) : self.selectObject,
+			(Qt.Key_Tab, Qt.NoModifier) : self.cycleManipulator,
+			(Qt.Key_Z, Qt.ControlModifier) : self.undo,
+			(Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
+			(Qt.Key_L, Qt.AltModifier) : self.linkObjects,
+			(Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
 
         # Connect to key pressed signal from input context
@@ -83,7 +84,7 @@ class ObjectEdit(Component):
         self.edit_inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
 
         # Connect to mouse events
-        self.edit_inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
+        #self.edit_inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
         self.edit_inputcontext.connect('MouseLeftPressed(MouseEvent*)', self.on_mouseleftpressed)
         self.edit_inputcontext.connect('MouseLeftReleased(MouseEvent*)', self.on_mouseleftreleased)
         self.edit_inputcontext.connect('MouseMove(MouseEvent*)', self.on_mousemove)
@@ -100,12 +101,12 @@ class ObjectEdit(Component):
         self.selection_box_inited = False
         
         self.menuToggleAction = None
-        mainWindow = naali.uicore.MainWindow()
-        print mainWindow
-        if mainWindow:
-            menuBar = mainWindow.menuBar()
-            self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
-            self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
+        # mainWindow = naali.uicore.MainWindow()
+        # print mainWindow
+        # if mainWindow:
+            # menuBar = mainWindow.menuBar()
+            # self.menuToggleAction = menuBar.addAction("Manipulation Toggle")
+            # self.menuToggleAction.connect("triggered()", self.toggleEditingKeyTrigger)
         self.toggleEditing(False)
         
         """
@@ -132,9 +133,10 @@ class ObjectEdit(Component):
     def toggleEditing(self, editing):
         self.editing = editing
         if not self.editing:
-            self.deselect_all()
-            self.hideManipulator()
-            self.resetValues()
+			self.deselect_all()
+			self.hideManipulator()
+			self.resetManipulators()
+			self.resetValues()
         if self.menuToggleAction != None:
             if self.editing:
                 self.menuToggleAction.setText("Disable Manipulation")
@@ -151,6 +153,9 @@ class ObjectEdit(Component):
 
     def translateObject(self):
         self.changeManipulator(self.MANIPULATE_MOVE)
+		
+    def freemoveObject(self):
+        self.changeManipulator(self.MANIPULATE_FREEMOVE)
 		
     def selectObject(self):
         self.changeManipulator(self.MANIPULATE_SELECT)
@@ -325,13 +330,15 @@ class ObjectEdit(Component):
             self.changeManipulator(self.MANIPULATE_FREEMOVE)
 			
     def changeManipulator(self, id):
-        newmanipu = self.manipulators[id]
-        if newmanipu.NAME != self.manipulator.NAME:
-            #r.logInfo("was something completely different")
-            self.manipulator.hideManipulator()
-            self.manipulator = newmanipu
-        self.manipulator.showManipulator(self.sels)
-        self.window.changeManipulator(id)
+		newmanipu = self.manipulators[id]
+		if newmanipu.NAME != self.manipulator.NAME:
+			#r.logInfo("was something completely different")
+			self.manipulator.hideManipulator()
+			self.manipulator = newmanipu
+		self.manipulator.showManipulator(self.sels)
+		self.window.changeManipulator(id)
+		if self.toolbar != None:
+			self.toolbar.update_toolbar()
     
     def hideManipulator(self):
         if self.manipulator:
@@ -738,9 +745,9 @@ class ObjectEdit(Component):
             self.windowActive = self.windowActiveStoredState
             self.windowActiveStoredState = None
             if self.windowActive == False:
-                self.deselect_all()
-                for ent in self.sels:
-                    self.remove_highlight(ent)
+				self.deselect_all()
+				for ent in self.sels:
+					self.remove_highlight(ent)
 
         # Store the state before build scene activated us
         if activate == True and self.windowActiveStoredState == None:

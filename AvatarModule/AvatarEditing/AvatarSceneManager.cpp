@@ -13,9 +13,6 @@
 
 #include "EventManager.h"
 #include "UiServiceInterface.h"
-//$ BEGIN_MOD $
-#include "UiExternalServiceInterface.h"
-//$ END_MOD $
 
 namespace Avatar
 {

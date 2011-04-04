@@ -40,7 +40,6 @@ namespace UiServices
 	class ExternalPanelManager;
 	class ExternalMenuManager;
 	class ExternalToolBarManager;
-	class StaticToolBar;
 	class ViewManager;
 
     typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
@@ -82,7 +81,7 @@ namespace UiServices
 		ExternalMenuManager *GetExternalMenuManager() const { return external_menu_manager_; }
 		ExternalPanelManager *GetExternalPanelManager() const { return external_panel_manager_; }
 		ExternalToolBarManager *GetExternalToolBarManager() const { return external_toolbar_manager_;}
-		bool HasBeenPostinitializaded() const { return postInitialize_; }
+		bool HasBeenPostinitializaded() const { return win_restored_; }
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
@@ -92,6 +91,9 @@ namespace UiServices
 
     private slots:
         void OnKeyPressed(KeyEvent *key);
+		
+		//To restore it after postinitialize all modules
+		void RestoreMainWindow();
 
     private:
         //! Notify all ui module components of connected/disconnected state
@@ -133,9 +135,6 @@ namespace UiServices
 		//! Manager of views
 		ViewManager* viewManager_;
 
-		//! Static toolbar
-		StaticToolBar* staticToolBar_;
-
         //! Current World Stream pointer
         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
 
@@ -145,7 +144,7 @@ namespace UiServices
         //! Input context for Ether
         boost::shared_ptr<InputContext> input;
 
-		bool postInitialize_;
+		bool win_restored_;
 
     };
 }

@@ -55,50 +55,55 @@ int NaaliMainWindow::DesktopHeight()
 }
 
 void NaaliMainWindow::LoadWindowSettingsFromFile()
-{
-    setWindowTitle("Tundra v1.0.3");
-	
+{	
 	QPoint pos;
 	int win_width;
 	int win_height;
+	bool window_fullscreen = false;
 
 	//QSettings
 	if (owner->IsEditionless())
 	{
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiPlayerSettings");
 		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
-		win_width = settings.value("win_width", 800).toInt();
-		win_height = settings.value("win_height", 600).toInt();
+		win_width = settings.value("win_width", 1024).toInt();
+		win_height = settings.value("win_height", 768).toInt();
+		window_fullscreen = settings.value("win_fullscreen", false).toBool();
 	}
 	else
 	{
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiSettings");
 		pos = settings.value("win_pos", QPoint(200, 200)).toPoint();
-		win_width = settings.value("win_width", 800).toInt();
-		win_height = settings.value("win_height", 600).toInt();
+		win_width = settings.value("win_width", 1024).toInt();
+		win_height = settings.value("win_height", 768).toInt();
+		window_fullscreen = settings.value("win_fullscreen", false).toBool();
 	}
 
 		// Create window title
-        std::string group = Foundation::Framework::ConfigurationGroup();
+        /*std::string group = Foundation::Framework::ConfigurationGroup();
 		std::string version_major = owner->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
         std::string version_minor = owner->GetDefaultConfig().GetSetting<std::string>(group, "version_minor");
         std::string window_titleaux = owner->GetDefaultConfig().GetSetting<std::string>(group, "window_title") + " " + version_major + "." + version_minor;
-		QString window_title = QString::fromStdString(window_titleaux);
+		QString window_title = QString::fromStdString(window_titleaux);*/
 		
 
 		//Assign parameters to our window
-		parentWin_->setWindowTitle(window_title);
+		//setWindowTitle("Tundra 1.0.3");
+		parentWin_->setWindowTitle("Tundra 1.0.3");
 		//parentWin_->setMinimumSize(width,height);		
 		parentWin_->setDockNestingEnabled(true);
 
-		//Set size
-		parentWin_->resize(win_width,win_height);
-		parentWin_->move(pos);
-		
 		//Menu bar for Qwin this Mac support
-		 QMenuBar *menuBar = new QMenuBar(parentWin_);
-		 menuBar->heightForWidth(500);
-		 parentWin_->setMenuBar(menuBar);
+		QMenuBar *menuBar = new QMenuBar(parentWin_);
+		menuBar->heightForWidth(500);
+		parentWin_->setMenuBar(menuBar);
+
+		parentWin_->resize(win_width,win_height);
+
+		if (window_fullscreen)
+			parentWin_->showFullScreen();
+		else
+			parentWin_->move(pos);
 }
 
 void NaaliMainWindow::SaveWindowSettingsToFile()

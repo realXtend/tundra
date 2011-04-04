@@ -86,7 +86,7 @@ namespace CoreUi
                 layout_manager_->AnchorWidgetsHorizontally(previous_button, button);
             else
                 layout_manager_->AddCornerAnchor(button, Qt::TopRightCorner, Qt::TopRightCorner);*/
-			owner_->AddInternalWidgetToScene(button->GetInternalWidget(), Qt::TopRightCorner, Qt::Horizontal, 0);
+			owner_->AddInternalWidgetToScene(button->GetInternalWidget(), Qt::TopRightCorner, Qt::Horizontal, 0, true);
 			
             // Add to internal lists
             control_buttons_.append(button);

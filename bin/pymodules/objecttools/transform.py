@@ -68,6 +68,7 @@ class Manipulator:
     AXIS_RED = 0
     AXIS_GREEN = 1
     AXIS_BLUE = 2
+    AXIS_YELLOW = 3
     
     def __init__(self):
         #self.controller = creator
@@ -133,7 +134,10 @@ class Manipulator:
             except:
                 ruler = self.manipulator.GetOrCreateComponentRaw("EC_Ruler")
             ruler.SetType(self.MANIPULATOR_RULER_TYPE)
-            ruler.SetVisible(True)
+            if self.NAME == "FreeMoveManipulator":
+                ruler.SetVisible(False)
+            else:
+                ruler.SetVisible(True)
             #r.logInfo("showing ruler showManipulator")
             ruler.UpdateRuler()
             if self.NAME == ScaleManipulator.NAME: # self.controller.useLocalTransform:
@@ -202,25 +206,31 @@ class Manipulator:
                 elif submeshid in self.REDARROW:
                     #~ print "arrow is red"
                     self.grabbed_axis = self.AXIS_RED
+                elif submeshid in self.YELLOWARROW:
+                    #~ print "arrow is yellow"
+                    self.grabbed_axis = self.AXIS_YELLOW
                 else:
                     #~ print "arrow got screwed..."
                     self.grabbed_axis = None
                     self.grabbed = False
                     
                 if self.grabbed_axis != None:
-                    self.manipulator.ruler.SetAxis(self.grabbed_axis)
-                    self.manipulator.ruler.SetVisible(True)
-                    #r.logInfo("show ruler initManipulation")
-                    self.manipulator.ruler.UpdateRuler()
-                    if ents[0]:
-                        placeable = ents[0].placeable
-                        self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
-                    set_custom_cursor(self.CURSOR_HOLD_SHAPE)
+					self.manipulator.ruler.SetAxis(self.grabbed_axis)
+					if self.NAME == "FreeMoveManipulator":
+						self.manipulator.ruler.SetVisible(False)
+					else:
+						self.manipulator.ruler.SetVisible(True)
+					#r.logInfo("show ruler initManipulation")
+					self.manipulator.ruler.UpdateRuler()
+					if ents[0]:
+						placeable = ents[0].placeable
+						self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+					set_custom_cursor(self.CURSOR_HOLD_SHAPE)
                 else:
-                    remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
-                    self.manipulator.ruler.SetVisible(False)
-                    #r.logInfo("hide ruler initManipulation")
-                    self.manipulator.ruler.UpdateRuler()
+					remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
+					self.manipulator.ruler.SetVisible(False)
+					#r.logInfo("hide ruler initManipulation")
+					self.manipulator.ruler.UpdateRuler()
 
     def setManipulatorScale(self, ents):
         if ents is None or len(ents) == 0: 
@@ -406,10 +416,12 @@ class ScaleManipulator(Manipulator):
     AXIS_GREEN = 0
     AXIS_RED = 1
     AXIS_BLUE = 2
-    
+    AXIS_YELLOW = 3
+	
     GREENARROW = [0]
     REDARROW = [1]
     BLUEARROW = [2]
+    YELLOWARROW = [3]
     
     bytransform = True
     
@@ -455,26 +467,24 @@ class ScaleManipulator(Manipulator):
                 changevec.setX(0)
                 changevec.setZ(0)
             
-            ent.placeable.Scale += changevec
-            
 class FreeMoveManipulator(Manipulator):
 	NAME = "FreeMoveManipulator"
 	MANIPULATOR_MESH_NAME = "freemove.mesh"
 	MANIPULATORORIENTATION = QQuaternion(0, 0, 1, 1)
-
 	MATERIALNAMES = {
-		0: "axis_green",
-		1: "axis_red",
-		2: "axis_blue"
+		0: "axis_yellow"
 	}
 
 	AXIS_GREEN = 0
 	AXIS_RED = 1
 	AXIS_BLUE = 2
-
+	AXIS_YELLOW = 3
+	
 	GREENARROW = [0]
 	REDARROW = [1]
 	BLUEARROW = [2]
+	YELLOWARROW = [3]
+
 	
 	""" Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
 	def _manipulate(self, ent, amountx, amounty, changevec):
@@ -495,11 +505,13 @@ class RotationManipulator(Manipulator):
     AXIS_GREEN = 0
     AXIS_RED = 1
     AXIS_BLUE = 2
-    
+    AXIS_YELLOW = 3
+	
     GREENARROW = [0] # we do blue_axis actions
     REDARROW = [1]
     BLUEARROW = [2] # we do green_axis actions
-    
+    YELLOWARROW = [3]
+	
     bytransform = True
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
@@ -735,5 +747,3 @@ class SelectionManipulator(Manipulator):
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
     def _manipulate(self, ent, amountx, amounty, changevec):
         pass
-    # def setAttributes(self, ents):
-        # pass

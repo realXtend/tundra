@@ -17,6 +17,8 @@
 #include "ModuleManager.h"
 #include "LoginServiceInterface.h"
 #include "UiServiceInterface.h"
+#include "TundraLogicModule.h"
+#include "Client.h"
 
 #include <QWebFrame>
 #include <QTimer>
@@ -53,6 +55,10 @@ namespace Ether
             }
             else
                 LogError("Could not retrieve login service.");
+
+			// $ BEGIN_MOD $
+			connect (framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient().get(), SIGNAL(Connected()), SLOT(EmitLoginSuccessful()));
+			// $ END_MOD $
 
 			//@todo: teleport
             //UiServices::UiModule *ui_module =  framework_->GetModule<UiServices::UiModule>();

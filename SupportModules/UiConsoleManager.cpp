@@ -12,7 +12,6 @@
 #include "ConsoleModule.h"
 
 #include "UiServiceInterface.h"
-#include "UiExternalServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
 #include "Framework.h"

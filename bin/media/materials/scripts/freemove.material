@@ -1,4 +1,4 @@
-material axis_green
+material axis_yellow
 {
 	receive_shadows on
 	technique
@@ -7,32 +7,15 @@ material axis_green
 		{
 			ambient 0.000000 0.000000 0.000000 0.750000
 			diffuse 0.000000 0.000000 0.000000 0.750000
-			specular 0.000000 0.000000 0.000000 0.750000 12.750000
-			emissive 0.000000 0.800000 0.000000 0.750000
+			specular 1.000000 1.000000 0.252631 0.750000 12.750000
+			emissive 1.000000 1.000000 0.000000 0.750000
 			scene_blend alpha_blend
             depth_check off
-            depth_write off
+			depth_write off
 		}
 	}
 }
-material axis_red
-{
-	receive_shadows on
-	technique
-	{
-		pass
-		{
-			ambient 0.000000 0.000000 0.000000 0.750000
-			diffuse 0.000000 0.000000 0.000000 0.750000
-                        specular 0.000000 0.000000 0.000000 0.750000 12.750000     
-			emissive 0.800000 0.000000 0.000000 0.750000
-			scene_blend alpha_blend
-			depth_check off
-            depth_write off
-		}
-	}
-}
-material axis_blue_hi
+material axis_yellow_hi
 {
 	receive_shadows on
 	technique
@@ -42,72 +25,7 @@ material axis_blue_hi
 			ambient 0.000000 0.000000 0.000000 1.000000
 			diffuse 0.000000 0.000000 0.000000 1.00000
 			specular 0.000000 0.000000 0.000000 1.000000 12.750000
-			emissive 0.000000 0.252631 0.800000 1.000000
-            scene_blend alpha_blend
-            depth_check off
-		}
-	}
-}
-material axis_blue
-{
-	receive_shadows on
-	technique
-	{
-		pass
-		{
-			ambient 0.000000 0.000000 0.000000 0.750000
-			diffuse 0.000000 0.000000 0.000000 0.750000
-			specular 0.000000 0.252631 0.800000 0.750000 12.750000
-			emissive 0.000000 0.000000 0.800000 0.750000
-			scene_blend alpha_blend
-            depth_check off
-			depth_write off
-		}
-	}
-}
-material axis_red_hi
-{
-	receive_shadows on
-	technique
-	{
-		pass
-		{
-			ambient 0.000000 0.000000 0.000000 1.000000
-			diffuse 0.000000 0.000000 0.000000 1.000000
-			specular 0.800000 0.037333 0.000000 1.000000 12.750000
-			emissive 0.800000 0.037333 0.000000 1.000000
-            scene_blend alpha_blend
-            depth_check off
-		}
-	}
-}
-material axis_black
-{
-	receive_shadows on
-	technique
-	{
-		pass
-		{
-			ambient 0.500000 0.500000 0.500000 1.000000
-			diffuse 0.054080 0.054080 0.054080 1.000000
-			specular 0.040460 0.040460 0.040460 1.000000 12.750000
-			emissive 0.000000 0.000000 0.000000 1.000000
-            scene_blend alpha_blend
-            depth_check off
-		}
-	}
-}
-material axis_green_hi
-{
-	receive_shadows on
-	technique
-	{
-		pass
-		{
-			ambient 0.000000 0.000000 0.000000 1.000000
-			diffuse 0.000000 0.000000 0.000000 1.000000
-			specular 0.000000 1.000000 0.000000 1.000000 12.750000
-			emissive 0.000000 1.000000 0.000000 1.000000
+			emissive 1.000000 1.000000 0.252631 1.000000
             scene_blend alpha_blend
             depth_check off
 		}
