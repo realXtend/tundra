@@ -88,6 +88,9 @@ void EC_RttTarget::PrepareRtt()
         // Exclude highlight mesh from rendering
         vp->setVisibilityMask(0x2);
 
+        // set background color to white
+        vp->setBackgroundColour(Ogre::ColourValue::White);
+
         render_texture->update(false);
         tex_->getBuffer()->getRenderTarget()->setAutoUpdated(false); 
     }

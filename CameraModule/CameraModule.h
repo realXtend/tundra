@@ -76,7 +76,12 @@ namespace Camera
 
         void DeleteCameraWidget();
 
-        void SetCameraWireframe(int state);        
+        void SetCameraWireframe(int state);  
+
+        void NearPlusButtonClicked(bool checked);
+        void NearMinusButtonClicked(bool checked);
+        void FarPlusButtonClicked(bool checked);
+        void FarMinusButtonClicked(bool checked);
 
     private:
         Q_DISABLE_COPY(CameraModule);      
@@ -103,7 +108,11 @@ namespace Camera
         //! timer to control cameras views render 
         QTimer *viewport_poller_;
 
+        //! set of created camera titles to generate unique camera title
         QSet<QString> camera_view_titles_;
+
+        //! percent to add or to substract to near or far clip 
+        int click_distance_percent_;
     };
 }
 

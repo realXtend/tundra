@@ -27,20 +27,21 @@ namespace Camera
         Q_OBJECT
     public:
         /*! Constructor.
+         * \param title widget title
          * \param parent Parent Widget. Default 0
          */
         CameraWidget(QString title, QWidget* widget=0);
 
         QLabel* GetRenderer() { return reinterpret_cast<QLabel*>(renderer);};
 
-    signals:
-        void closeSignal(CameraWidget*);
-
     public slots:
+        /*! set parent widget title
+         * \param name  name of parent widget title 
+         */
         void SetWindowTitle(const QString &name);
-        void ParentVisibilityChanged(bool visible);
 
     private:
+        //! Render QLabel
         CameraView *renderer;
     };
 

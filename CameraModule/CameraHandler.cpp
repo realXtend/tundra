@@ -28,8 +28,13 @@ namespace Camera
         min_zoom_distance_(3),
         max_zoom_distance_(100),
         target_entity_(0),
-        scene_(0)
-    {                          
+        scene_(0),
+        min_clip_distance_(0.1),
+        target_distance_(0),        
+        max_clip_distance_(2000)
+    {                       
+        near_clip_distance_ = min_clip_distance_;
+        far_clip_distance_ = max_clip_distance_;
     }
 
     CameraHandler::~CameraHandler()
@@ -57,9 +62,14 @@ namespace Camera
             ComponentPtr component_placeable = cam_entity_->GetComponent(EC_Placeable::TypeNameStatic());
             EC_OgreCamera *ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();
 
+            // set camera options
             SetCameraType(camera_type_);
             SetCameraProjection(projection_type_);
             SetCameraPolygonMode(polygon_mode_);
+
+            // set default near and far clip distance
+            SetNearClipDistance(min_clip_distance_);
+            SetFarClipDistance(max_clip_distance_);
 
             if (!component_placeable.get() || !ec_camera)
                 return false;          
@@ -76,7 +86,7 @@ namespace Camera
             scene_->RemoveEntity(cam_entity_->GetId());
     }
 
-    bool CameraHandler::FocusToEntity(Scene::Entity *entity, Vector3df offset)
+    bool CameraHandler::FocusToEntity(Scene::Entity *entity)
     {
         float max_distance = 0;
         bool focus_completed = false;
@@ -94,6 +104,7 @@ namespace Camera
             EC_OgreCustomObject *entity_custom_object = entity->GetComponent<EC_OgreCustomObject>().get();
 
             Vector3df position_vector = entity_ec_placeable->transform.Get().position;
+            Vector3df cam_pos = cam_ec_placeable->GetPosition();
             Vector3df position_offset;
             Vector3df look_at;
 
@@ -102,6 +113,7 @@ namespace Camera
             Vector3df der_size_vector;
             Ogre::Vector3 derived_scale;
 
+            // get mesh bounding box
             if (entity_mesh)
             {
                 if (!entity_mesh->GetEntity())
@@ -124,6 +136,7 @@ namespace Camera
             else
                 return focus_completed;
             
+            // get the maximun of x, y and z
             if (der_size_vector.x > max_distance)
                 max_distance = der_size_vector.x;
             if (der_size_vector.y > max_distance)
@@ -131,22 +144,32 @@ namespace Camera
             if (der_size_vector.z > max_distance)
                 max_distance = der_size_vector.z;
 
+            //set ortographic camera size
             if (cam_ec_camera->GetCamera()->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
-                cam_ec_camera->GetCamera()->setOrthoWindowHeight(max_distance);
-                
+                cam_ec_camera->GetCamera()->setOrthoWindowHeight(max_distance);                                     
+
             if (camera_type_ == Perspective)
             {
-                position_offset = Vector3df(der_size_vector.x, -der_size_vector.y, der_size_vector.y);
+                position_offset = Vector3df(max_distance, -max_distance, max_distance);
                 position_offset = entity_ec_placeable->GetOrientation()* position_offset;
-                focus_completed = true;
+                focus_completed = true;     
+                SetNearClipDistance(min_clip_distance_);
+                SetFarClipDistance(max_clip_distance_);
             }
             else 
             {
-                if (cam_ec_camera->GetCamera()->getProjectionType() == Ogre::PT_ORTHOGRAPHIC)
-                    cam_ec_camera->GetCamera()->setOrthoWindowHeight(max_distance);
                 position_offset = max_distance * z_vector;
-                focus_completed = true;
+                focus_completed = true;              
+                
+                SetNearClipDistance(min_clip_distance_);
+                //get distance to target                
+                //calculate near and far distance depends on target entity
+                //get direction vector
+                Vector3df dir = position_vector-cam_pos;
+                float distance = dir.getLength();  
+                SetFarClipDistance(distance+max_distance);                
             }
+
 
             if (focus_completed)
             {
@@ -156,6 +179,13 @@ namespace Camera
                 cam_ec_placeable->transform.Set(trans, AttributeChange::LocalOnly);
                 cam_ec_placeable->LookAt(look_at);
                 target_entity_ = entity;
+
+                //save distance to target 
+                //calculate near and far distance depends on target entity
+                //get direction vector
+                Vector3df dir = look_at-trans.position;
+                float distance = dir.getLength();
+                target_distance_ = distance;
             }            
         }
         return focus_completed;
@@ -163,7 +193,7 @@ namespace Camera
 
     void CameraHandler::Move(qreal x, qreal y)
     {
-        if (cam_entity_)
+        if (cam_entity_ && target_entity_)
         {
             EC_Placeable *cam_ec_placeable = cam_entity_->GetComponent<EC_Placeable>().get();
             if (!cam_ec_placeable)
@@ -243,11 +273,14 @@ namespace Camera
             
 
             //move near clip distance
-            if (modifiers & Qt::AltModifier)
+            if ((modifiers == Qt::AltModifier))
+            {
+                SumNearClipDistance(delta*zoom_acceleration_);
+            }
+            //move near clip distance
+            else if ((modifiers == Qt::AltModifier + Qt::ShiftModifier))
             {                
-                float new_near_clip = cam_ec_camera->GetNearClip()+delta*zoom_acceleration_;
-                if (new_near_clip > 0)
-                    cam_ec_camera->SetNearClip(new_near_clip);
+                SumFarClipDistance(delta*zoom_acceleration_);                
             }
             else
             {
@@ -266,75 +299,58 @@ namespace Camera
                 //modify direction vector with wheel delta and zoom aceleration constants
                 dir *=delta*zoom_acceleration_;
                                
-                switch (camera_type_)
+                if (camera_type_ == Perspective)
                 {
-                    case Perspective:
+                    //something fishy, even if we check that we never go beyond min/max, we still might end up there and zoom will be disabled. So we check the also
+                    //if were zooming in or out.
+                    if ((delta>0 && (distance.getLength()+dir.getLength() > min_zoom_distance_)) 
+                       || (delta<0 && (distance.getLength()+dir.getLength() < max_zoom_distance_)))
                     {
-                        //something fishy, even if we check that we never go beyond min/max, we still might end up there and zoom will be disabled. So we check the also
-                        //if were zooming in or out.
-                        if ((delta>0 && (distance.getLength()+dir.getLength() > min_zoom_distance_)) 
-                           || (delta<0 && (distance.getLength()+dir.getLength() < max_zoom_distance_)))
+                        pos = placeable->GetPosition() + dir;                            
+                        //get direction vector
+                        Vector3df new_dir = point-pos;
+                        Vector3df new_distance = new_dir;
+                        if (cam_ec_camera->GetCamera()->getProjectionType() == Ogre::PT_ORTHOGRAPHIC) 
                         {
-                            pos = placeable->GetPosition() + dir;
-                            zoomed = true;
+                            float new_height = new_distance.getLength();
+                            if (new_height > 0)
+                                cam_ec_camera->GetCamera()->setOrthoWindowHeight(new_height);   
                         }
-                        break;
+                        target_distance_ = new_distance.getLength(); 
+                        if (delta < 0)
+                            SumNearClipDistance(dir.getLength());
+                        else
+                            SumNearClipDistance(-dir.getLength());
+                        zoomed = true;
                     }
-                    case Front:
-                    case Back:
+                }
+                else
+                {
+                    float camera_target_distance = (distance * z_vector).getLength();
+                    //get zoom axis.  multipy by z_vector to get local values
+                    Vector3df z_dir_vector = dir * z_vector;
+                    float movement_distance = z_dir_vector.x + z_dir_vector.y + z_dir_vector.z;
+
+                    //check with min and max distance if zoom in x is posible
+                    if((delta>0 && (abs(camera_target_distance) + movement_distance > min_zoom_distance_)) 
+                        || (delta<0 && (abs(camera_target_distance) + movement_distance < max_zoom_distance_)))
+                    {
+                        if (cam_ec_camera->GetCamera()->getProjectionType() == Ogre::PT_ORTHOGRAPHIC) 
                         {
-                            //check with min and max distance if zoom in x is posible
-                            if((delta>0 && (abs(distance.x) + dir.x > min_zoom_distance_)) 
-                                || (delta<0 && (abs(distance.x) + dir.x < max_zoom_distance_)))
-                            {
-                                if (cam_ec_camera->GetCamera()->getProjectionType() == Ogre::PT_ORTHOGRAPHIC) 
-                                {
-                                    float new_height = cam_ec_camera->GetCamera()->getOrthoWindowHeight()+dir.x*z_signed;
-                                    if (new_height > 0)
-                                        cam_ec_camera->GetCamera()->setOrthoWindowHeight(new_height);   
-                                }
-                                pos.x += dir.x;
-                                zoomed = true;
-                            }                        
-                            break;
+                            float new_height = cam_ec_camera->GetCamera()->getOrthoWindowHeight()+movement_distance;
+                            if (new_height > 0)
+                                cam_ec_camera->GetCamera()->setOrthoWindowHeight(new_height);   
                         }
-                    case Left:  
-                    case Rigth:
-                        {      
-                            //check with min and max distance if zoom in y is posible
-                            if((delta>0 && (abs(distance.y) + dir.y > min_zoom_distance_)) 
-                                || (delta<0 && (abs(distance.y) + dir.y < max_zoom_distance_)))
-                            {
-                                if (cam_ec_camera->GetCamera()->getProjectionType() == Ogre::PT_ORTHOGRAPHIC) 
-                                {
-                                    float new_height = cam_ec_camera->GetCamera()->getOrthoWindowHeight()+dir.y*z_signed;
-                                    if (new_height > 0)
-                                        cam_ec_camera->GetCamera()->setOrthoWindowHeight(new_height);   
-                                }
-                                pos.y += dir.y;
-                                zoomed = true;
-                            }                        
-                            break;
-                        }
-                    case Top:
-                    case Bottom:
-                        {                                           
-                            //check with min and max distance if zoom in z is posible
-                            if((delta>0 && (abs(distance.z) + dir.z > min_zoom_distance_)) 
-                                || (delta<0 && (abs(distance.z) + dir.z < max_zoom_distance_)))
-                            {
-                                if (cam_ec_camera->GetCamera()->getProjectionType() == Ogre::PT_ORTHOGRAPHIC) 
-                                {
-                                    float new_height = cam_ec_camera->GetCamera()->getOrthoWindowHeight()+dir.z*z_signed;
-                                    if (new_height > 0)
-                                        cam_ec_camera->GetCamera()->setOrthoWindowHeight(new_height);   
-                                }
-                                pos.z += dir.z;
-                                zoomed = true;
-                            }                        
-                            break;
-                        }
-                    }
+                        target_distance_ += movement_distance;
+                        SumNearClipDistance(movement_distance);
+                        SumFarClipDistance(movement_distance);
+
+                        //move in zoom axis. multipy by z_vector to get absolute values
+                        pos += z_dir_vector * z_vector;                        
+                        zoomed = true;
+                    }                 
+
+                }
                 //if zoom is posible set cam entity new position
                 if (zoomed)
                 {                     
@@ -383,48 +399,42 @@ namespace Camera
             {      
                 x_vector = Vector3df(0,-1,0);
                 y_vector = Vector3df(0,0,1);   
-                z_vector = Vector3df(1,0,0);   
-                z_signed = 1;
+                z_vector = Vector3df(1,0,0);
                 break;
             }
             case Back:
             {      
                 x_vector = Vector3df(0,1,0);
                 y_vector = Vector3df(0,0,1);                
-                z_vector = Vector3df(-1,0,0);   
-                z_signed = -1;
+                z_vector = Vector3df(-1,0,0);
                 break;
             }
             case Left:
             {      
                 x_vector = Vector3df(-1,0,0);
                 y_vector = Vector3df(0,0,1);
-                z_vector = Vector3df(0,-1,0);   
-                z_signed = -1;
+                z_vector = Vector3df(0,-1,0);
                 break;
             }
             case Rigth:
             {      
                 x_vector = Vector3df(1,0,0);
                 y_vector = Vector3df(0,0,1);                
-                z_vector = Vector3df(0,1,0);   
-                z_signed = 1;
+                z_vector = Vector3df(0,1,0);
                 break;
             }
             case Top:
             {      
                 x_vector = Vector3df(1,0,0);
                 y_vector = Vector3df(0,-1,0);                
-                z_vector = Vector3df(0,0,1);   
-                z_signed = 1;
+                z_vector = Vector3df(0,0,1);
                 break;
             }
             case Bottom:
             {      
                 x_vector = Vector3df(1,0,0);
                 y_vector = Vector3df(0,1,0);                
-                z_vector = Vector3df(0,0,-1);   
-                z_signed = -1;
+                z_vector = Vector3df(0,0,-1);
                 break;
             }
         }   
@@ -482,5 +492,45 @@ namespace Camera
     bool CameraHandler::IsWireframeEnabled() 
     {
         return (polygon_mode_ == Ogre::PM_WIREFRAME);
+    }
+
+    void CameraHandler::SetNearClipPercent(int percent)//0-100
+    {
+        SumNearClipDistance(target_distance_*(percent/100.0));
+    }
+
+    void CameraHandler::SumNearClipDistance(float distance)
+    {        
+        SetNearClipDistance(near_clip_distance_+distance);
+    }
+
+    void CameraHandler::SetNearClipDistance(float distance)
+    {        
+        if ((cam_entity_) && (distance < far_clip_distance_) && (distance < target_distance_) && (distance >= min_clip_distance_))
+        {
+            EC_OgreCamera *cam_ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();         
+            cam_ec_camera->SetNearClip(distance);
+            near_clip_distance_ = distance;
+        }
+    }
+
+    void CameraHandler::SetFarClipPercent(int percent)//0-100
+    {
+        SumFarClipDistance(target_distance_*(percent/100.0));
+    }
+
+    void CameraHandler::SumFarClipDistance(float distance)
+    {        
+        SetFarClipDistance(far_clip_distance_+distance);
+    }
+
+    void CameraHandler::SetFarClipDistance(float distance)
+    {
+        if ((cam_entity_) && (distance > near_clip_distance_) && (distance > target_distance_)  && (distance <= max_clip_distance_))
+        {
+            EC_OgreCamera *cam_ec_camera = cam_entity_->GetComponent<EC_OgreCamera>().get();
+            cam_ec_camera->SetFarClip(distance);
+            far_clip_distance_ = distance;                                    
+        }
     }
 }

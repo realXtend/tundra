@@ -30,7 +30,8 @@ namespace Camera
 		scene_event_category_(0),
         network_state_event_category_(0),
         scene_(0),
-        viewport_poller_(new QTimer(this))
+        viewport_poller_(new QTimer(this)),
+        click_distance_percent_(10)
 	{
 
 
@@ -192,7 +193,7 @@ namespace Camera
     void CameraModule::ConnectViewToHandler(CameraWidget *camera_view, CameraHandler *camera_handler, int camera_type, int projection_type, bool wireframe)
     {
         //init camera view
-        camera_view->comboBoxCameras->addItem("Perspective");
+        camera_view->comboBoxCameras->addItem("Pivot");
         camera_view->comboBoxCameras->addItem("Front");
         camera_view->comboBoxCameras->addItem("Back");
         camera_view->comboBoxCameras->addItem("Left");
@@ -200,8 +201,8 @@ namespace Camera
         camera_view->comboBoxCameras->addItem("Top");
         camera_view->comboBoxCameras->addItem("Bottom");
 
-        camera_view->comboBoxProjection->addItem("Orthographic");
-        camera_view->comboBoxProjection->addItem("Perspective");
+        camera_view->comboBoxProjection->addItem("Ortho");
+        camera_view->comboBoxProjection->addItem("Persp");
 
         camera_view->comboBoxCameras->setCurrentIndex(camera_type);        
         camera_view->comboBoxProjection->setCurrentIndex(projection_type);
@@ -231,6 +232,12 @@ namespace Camera
         //wireframe signal
         connect(camera_view->checkBoxWireframe, SIGNAL(stateChanged(int)),this, SLOT(SetCameraWireframe(int))); 
 
+        //clip distance buttons
+        connect(camera_view->pushButtonNearPlus, SIGNAL(clicked(bool)), this, SLOT(NearPlusButtonClicked(bool)));
+        connect(camera_view->pushButtonNearMinus, SIGNAL(clicked(bool)), this, SLOT(NearMinusButtonClicked(bool)));
+        connect(camera_view->pushButtonFarPlus, SIGNAL(clicked(bool)), this, SLOT(FarPlusButtonClicked(bool)));
+        connect(camera_view->pushButtonFarMinus, SIGNAL(clicked(bool)), this, SLOT(FarMinusButtonClicked(bool)));
+        
         //save in map
         controller_view_handlers_.insert(camera_view, camera_handler);       
 
@@ -253,9 +260,10 @@ namespace Camera
         while (i != controller_view_handlers_.end() && i.key() == camera_view) {
             CameraWidget *camera = i.key();
             CameraHandler *handler = i.value();            
+            camera_view_titles_.remove(camera->windowTitle());
             controller_view_handlers_.remove(camera);
             delete camera;
-            delete handler;       
+            delete handler;            
         } 
     }
     void CameraModule::ReadConfig()
@@ -300,10 +308,9 @@ namespace Camera
 
     void CameraModule::SetCameraWireframe(int state)
     {
-
         //capture checkbox state and call the handler
         //Qt::CheckState: 0: unchecked, 1: partial checked, 2: checked
-        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent());
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
         if (!camera_view)
             return;
 
@@ -334,6 +341,57 @@ namespace Camera
 
     }
 
+    void CameraModule::NearPlusButtonClicked(bool checked)
+    {
+        //capture botton clicked widgetand call the handler
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
+        if (!camera_view)
+            return;
+        QMap<CameraWidget*,CameraHandler*>::const_iterator i = controller_view_handlers_.find(camera_view);
+        while (i != controller_view_handlers_.end() && i.key() == camera_view) {            
+            i.value()->SetNearClipPercent(click_distance_percent_);
+            i++;
+        }
+    }
+
+    void CameraModule::NearMinusButtonClicked(bool checked)
+    {
+        //capture botton clicked widgetand call the handler        
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
+        if (!camera_view)
+            return;
+        QMap<CameraWidget*,CameraHandler*>::const_iterator i = controller_view_handlers_.find(camera_view);
+        while (i != controller_view_handlers_.end() && i.key() == camera_view) {            
+            i.value()->SetNearClipPercent(-click_distance_percent_);
+            i++;
+        }
+    }
+
+    void CameraModule::FarPlusButtonClicked(bool checked)
+    {
+        //capture botton clicked widgetand call the handler
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
+        if (!camera_view)
+            return;
+        QMap<CameraWidget*,CameraHandler*>::const_iterator i = controller_view_handlers_.find(camera_view);
+        while (i != controller_view_handlers_.end() && i.key() == camera_view) {            
+            i.value()->SetFarClipPercent(click_distance_percent_);
+            i++;
+        }
+    }
+
+    void CameraModule::FarMinusButtonClicked(bool checked)
+    {
+        //capture botton clicked widgetand call the handler
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
+        if (!camera_view)
+            return;
+        QMap<CameraWidget*,CameraHandler*>::const_iterator i = controller_view_handlers_.find(camera_view);
+        while (i != controller_view_handlers_.end() && i.key() == camera_view) {            
+            i.value()->SetFarClipPercent(-click_distance_percent_);
+            i++;
+        }
+    }
 }
 
 

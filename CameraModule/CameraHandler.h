@@ -3,7 +3,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   CameraHandler.h
- *  @brief  Camera handler creates new world entity with ec_ogrecamera and ec_placeable componets. Manages zoom and movement of the camera depending on the camera type
+ *  @brief  Camera handler creates new world entity with ec_ogrecamera, ec_placeable and ec_rtttarget componets. Manages zoom and movement of the camera depending on the camera type
  *			
  */
 
@@ -61,6 +61,7 @@ namespace Camera
         void DestroyCamera();
 
         /*! Creates new world entity with ec_ogrecamera and ec_placeable components
+         * \param scene XX
          */
         bool CreateCamera(Scene::SceneManager *scene);
 
@@ -68,7 +69,6 @@ namespace Camera
          * \param x X movement. [-1,1]
          * \param y Y movement. [-1,1]
          */
-        //! \todo syncs movement between xy view parameters and xy, xz, or zy world planes
         void Move(qreal x, qreal y);
 
         /*! Makes zoom to the camera.
@@ -78,10 +78,9 @@ namespace Camera
         bool Zoom(qreal delta, Qt::KeyboardModifiers modifiers);
 
         /*! Focus the camera to world entity
-         * \param entity World entity
-         * \param offset
+         * \param entity World target entity
          */
-        bool FocusToEntity(Scene::Entity *entity, Vector3df offset = Vector3df(-0.5f, -0.5f, -0.5f));
+        bool FocusToEntity(Scene::Entity *entity);
 
         /*! Gets QPixmap from ogre texture
          * \param imange_size Size of the image
@@ -117,6 +116,36 @@ namespace Camera
         //! Return if wireframe polygon mode is enabled or not
         bool IsWireframeEnabled();
 
+        /*! Set camera near clip distance
+         * \param distance camera near clip distance
+         */
+        void SetNearClipDistance(float distance);
+        
+        /*! Add target distance percent to near clip
+         * \param percent The percent to add
+         */
+        void SetNearClipPercent(int percent);
+        
+        /*! Sum distance to near clip
+         * \param distance distance to add
+         */
+        void SumNearClipDistance(float distance);
+
+        /*! Set camera far clip distance
+         * \param distance camera far clip distance
+         */
+        void SetFarClipDistance(float distance);
+        
+        /*! Add target distance percent to far clip
+         * \param percent The percent to add
+         */
+        void SetFarClipPercent(int percent);
+        
+        /*! Sum distance to far clip
+         * \param distance distance to add
+         */
+         void SumFarClipDistance(float distance);
+
     private:
         /*! Rotates the camera around pivot postion
          * \param pivot Position of the pivot
@@ -125,6 +154,7 @@ namespace Camera
          */
         void RotateCamera(Vector3df pivot,qreal x, qreal y);        
 
+        //! set axis coordinates for camera type
         void SetCoordinates();
         
         //! Framework
@@ -166,9 +196,20 @@ namespace Camera
         //! z axis translation
         Vector3df z_vector;
 
-        //! position of the camera in z: negative (-1) or positive (1)
-        char z_signed;
+        //! minimum clip distance. 0.1 by default
+        float min_clip_distance_;
 
+        //! maximun clip distance. 2000 by default
+        float max_clip_distance_;
+
+        //! target distance from camera entity
+        float target_distance_;
+
+        //! actual camera near clip distance. 0.1 by default
+        float near_clip_distance_;
+
+        //! actual camera far clip distance. 2000 by default
+        float far_clip_distance_;
     };
 }
 

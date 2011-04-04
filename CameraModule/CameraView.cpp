@@ -27,20 +27,6 @@ namespace Camera
             dynamic_cast<QWidget*>(this->parent())->setWindowTitle(name + " Camera");
     }
 
-    void CameraWidget::ParentVisibilityChanged(bool visible)
-     {
-         if (visible == false)
-         {
-             
-             QDockWidget *doc = dynamic_cast<QDockWidget*>(this->parent());
-             if (doc)
-             {
-                 if (doc->isVisible() == false)
-                    emit closeSignal(this);
-             }
-         }
-     }
-
     CameraView::CameraView(QWidget* widget) :
         QLabel(widget),
         left_mousebutton_pressed_(false)
