@@ -11,7 +11,7 @@ label.resize(660,150);
 label.setStyleSheet("QLabel {background-color: transparent; color: blue; font-size: 20px; }");
 
 var proxy = new UiProxyWidget(label);
-uiservice.AddProxyWidgetToScene(proxy);
+ui.AddProxyWidgetToScene(proxy);
 proxy.x = 100;
 proxy.y = 30;
 proxy.windowFlags = 0;

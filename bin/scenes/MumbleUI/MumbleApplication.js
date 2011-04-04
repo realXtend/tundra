@@ -1,6 +1,7 @@
 // !ref: local://SettingsWidget.ui
 // !ref: local://ParticipantsList.ui
 // !ref: local://TransmissionMode.ui
+
 if (!server.IsRunning())
 {
     engine.ImportExtension("qt.core");
@@ -8,22 +9,22 @@ if (!server.IsRunning())
     engine.ImportExtension("qt.uitools");
 
     // Load ParticipantsList widget and hide
-    var pw = uiservice.LoadFromFile("local://ParticipantsList.ui", false);
+    var pw = ui.LoadFromFile("local://ParticipantsList.ui", false);
     var plTableWidget = findChild(pw, "plTableWidget");
     plTableWidget.setColumnWidth(0, 198);
     plTableWidget.setColumnWidth(1, 51);
-    uiservice.AddWidgetToScene(pw);
+    ui.AddWidgetToScene(pw);
     pw.hide();
 
     // Load TransmissionMode widget and hide
-    var tm = uiservice.LoadFromFile("local://TransmissionMode.ui", false);
+    var tm = ui.LoadFromFile("local://TransmissionMode.ui", false);
     var rbOff = findChild(tm, "rbOff");
     var rbCt = findChild(tm, "rbCt");
-    uiservice.AddWidgetToScene(tm);
+    ui.AddWidgetToScene(tm);
     tm.hide();
 
     // Load SettingWidget
-    var widget = uiservice.LoadFromFile("local://SettingsWidget.ui", false);	
+    var widget = ui.LoadFromFile("local://SettingsWidget.ui", false);	
     var channelsList = findChild(widget, "channelsList");
     var transmissionType = findChild(widget, "transmissionType");
     var participantsList = findChild(widget, "participantsList");
@@ -37,7 +38,7 @@ if (!server.IsRunning())
     if (inWorldVoiceSession)
     {
         var chlist = inWorldVoiceSession.GetChannels();
-        uiservice.AddWidgetToScene(widget);
+        ui.AddWidgetToScene(widget);
 
         widget.x = 10;
         widget.y = 10;

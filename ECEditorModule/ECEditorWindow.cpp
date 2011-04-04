@@ -389,51 +389,51 @@ void ECEditorWindow::OpenFunctionDialog()
 
 void ECEditorWindow::FunctionDialogFinished(int result)
 {
-FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
-if (!dialog)
-    return;
+    FunctionDialog *dialog = qobject_cast<FunctionDialog *>(sender());
+    if (!dialog)
+        return;
 
-if (result == QDialog::Rejected)
-    return;
+    if (result == QDialog::Rejected)
+        return;
 
-// Get the list of parameters we will pass to the function we are invoking,
-// and update the latest values to them from the editor widgets the user inputted.
-QVariantList params;
-foreach(IArgumentType *arg, dialog->Arguments())
-{
-    arg->UpdateValueFromEditor();
-    params << arg->ToQVariant();
-}
-
-// Clear old return value from the dialog.
-dialog->SetReturnValueText("");
-
-foreach(QObjectWeakPtr o, dialog->Objects())
-    if (o.lock())
+    // Get the list of parameters we will pass to the function we are invoking,
+    // and update the latest values to them from the editor widgets the user inputted.
+    QVariantList params;
+    foreach(IArgumentType *arg, dialog->Arguments())
     {
-        QObject *obj = o.lock().get();
-
-        QString objName = obj->metaObject()->className();
-        QString objNameWithId = objName;
-        {
-            Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
-            IComponent *c = dynamic_cast<IComponent *>(obj);
-            if (e)
-                objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
-            else if (c)
-                objNameWithId.append('(' + c->Name() + ')');
-        }
-
-        QString errorMsg;
-        QVariant ret;
-        FunctionInvoker invoker;
-        invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
-
-        if (errorMsg.isEmpty())
-            dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
-        else
-            dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+        arg->UpdateValueFromEditor();
+        params << arg->ToQVariant();
     }
+
+    // Clear old return value from the dialog.
+    dialog->SetReturnValueText("");
+
+    foreach(QObjectWeakPtr o, dialog->Objects())
+        if (o.lock())
+        {
+            QObject *obj = o.lock().get();
+
+            QString objName = obj->metaObject()->className();
+            QString objNameWithId = objName;
+            {
+                Scene::Entity *e = dynamic_cast<Scene::Entity *>(obj);
+                IComponent *c = dynamic_cast<IComponent *>(obj);
+                if (e)
+                    objNameWithId.append('(' + QString::number((uint)e->GetId()) + ')');
+                else if (c)
+                    objNameWithId.append('(' + c->Name() + ')');
+            }
+
+            QString errorMsg;
+            QVariant ret;
+            FunctionInvoker invoker;
+            invoker.Invoke(obj, dialog->Function(), &ret, params, &errorMsg);
+
+            if (errorMsg.isEmpty())
+                dialog->AppendReturnValueText(objNameWithId + ' ' + ret.toString());
+            else
+                dialog->AppendReturnValueText(objNameWithId + ' ' + errorMsg);
+        }
 }
 
 void ECEditorWindow::HighlightEntities(const QString &type, const QString &name)
