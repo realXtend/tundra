@@ -145,7 +145,12 @@ namespace Environment
         Caelum::CaelumSystem* GetCaelum();
 #endif 
 
-        Console::CommandResult ShowTerrainWeightEditor(const StringVector &params);
+    public slots:
+        /// Shows terrain texture editor.
+        void ShowTerrainWeightEditor();
+
+        /// Shows terrain texture editor.
+        void ShowPostProcessWindow();
 
     private slots:
         //! Handle recreate of environment (relevant to Tundra only) when scene is cleared. Hopefully this will only be a temporary solution.

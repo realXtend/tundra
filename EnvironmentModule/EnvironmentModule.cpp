@@ -37,9 +37,6 @@
 #include "RexNetworkUtils.h"
 #include "CompositionHandler.h"
 #include "EC_Name.h"
-#include "UiServiceInterface.h"
-#include "UiProxyWidget.h"
-#include "ConsoleCommandServiceInterface.h"
 #include "WorldBuildingServiceInterface.h"
 #include "../TundraLogicModule/TundraEvents.h"
 
@@ -89,7 +86,7 @@ namespace Environment
     {
         event_manager_ = framework_->GetEventManager();
         
-        // Depends on rexlogic etc. handling messages first to create the scene, so lower priority
+        // Depends on RexLogic etc. handling messages first to create the scene, so lower priority
         event_manager_->RegisterEventSubscriber(this, 99);
 
         resource_event_category_ = event_manager_->QueryEventCategory("Resource");
@@ -97,22 +94,6 @@ namespace Environment
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
         tundra_event_category_ = event_manager_->QueryEventCategory("Tundra");
-        
-        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
-        if (renderer)
-        {
-            // Initialize post-process dialog.
-            postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
-
-            // Add to scene.
-            UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-            if (ui)
-            {
-                ui->AddWidgetToScene(postprocess_dialog_);
-                ui->AddWidgetToMenu(postprocess_dialog_, tr("Post-processing"), tr("World Tools"),
-                    "./data/ui/images/menus/edbutton_POSTPR_normal.png");
-            }
-        }
 
         environment_editor_ = new EnvironmentEditor(this);
         Foundation::WorldBuildingServicePtr wb_service = GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Service::ST_WorldBuilding).lock();
@@ -121,10 +102,6 @@ namespace Environment
             connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
             connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
         }
-
-        RegisterConsoleCommand(Console::CreateCommand("TerrainTextureEditor",
-            "Shows the terrain texture weight editor.",
-            Console::Bind(this, &EnvironmentModule::ShowTerrainWeightEditor)));
     }
 
     void EnvironmentModule::Uninitialize()
@@ -145,7 +122,6 @@ namespace Environment
     void EnvironmentModule::Update(f64 frametime)
     {
         RESETPROFILER;
-     
         PROFILE(EnvironmentModule_Update);
 
         // Idea of next lines:  Because of initialization chain, environment editor stays in wrong state after logout/login-process. 
@@ -172,6 +148,7 @@ namespace Environment
             //    sky_->Update();
         }
     }
+
 #ifdef CAELUM
     Caelum::CaelumSystem* EnvironmentModule::GetCaelum()
     {   
@@ -180,28 +157,55 @@ namespace Environment
             EC_OgreEnvironment* ev = environment_->GetEnvironmentComponent();
             if ( ev != 0)
                 return ev->GetCaelum();
-
          }
-         
+
          return 0;
     }
 #endif
 
-    Console::CommandResult EnvironmentModule::ShowTerrainWeightEditor(const StringVector &params)
+    void EnvironmentModule::ShowTerrainWeightEditor()
     {
         if (framework_->IsHeadless())
-            return Console::ResultFailure("Cannot show window in headless mode.");
+            return;
 
         if (terrainWeightEditor_)
         {
             terrainWeightEditor_->show();
-            return Console::ResultSuccess();
+            return;
         }
 
         terrainWeightEditor_ = new TerrainWeightEditor(framework_);
         terrainWeightEditor_->setWindowFlags(Qt::Tool);
         terrainWeightEditor_->show();
-        return Console::ResultSuccess();
+    }
+
+    void EnvironmentModule::ShowPostProcessWindow()
+    {
+        if (framework_->IsHeadless())
+            return;
+
+        if (postprocess_dialog_)
+        {
+            postprocess_dialog_->show();
+            return;
+        }
+
+        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+        if (renderer)
+        {
+            /*
+            Old deprecated way.
+            UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+            if (ui)
+            {
+                ui->AddWidgetToScene(postprocess_dialog_);
+                ui->AddWidgetToMenu(postprocess_dialog_, tr("Post-processing"), tr("World Tools"),
+                    "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+            */
+            postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
+            postprocess_dialog_->setWindowFlags(Qt::Tool);
+            postprocess_dialog_->show();
+        }
     }
 
     bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
