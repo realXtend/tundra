@@ -88,12 +88,12 @@ namespace CAVEStereo
         }
 
     }
-    void CAVEManager::AddPanoramaView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int n)
+    void CAVEManager::AddPanoramaView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int window_number)
     {
         if(!view_map_.contains(name))
         {
             CAVEView* view = new CAVEView(renderer_);
-            view->InitializePanorama(name, window_width, window_height, top_left, bottom_left, bottom_right, eye_pos,n);
+            view->InitializePanorama(name, window_width, window_height, top_left, bottom_left, bottom_right, eye_pos,window_number);
             view_map_[name] = view;
             if(enabled_)
                 view->GetExternalRenderWindow()->show();
@@ -101,12 +101,12 @@ namespace CAVEStereo
                 view->GetExternalRenderWindow()->hide();
         }
     }
-    void CAVEManager::AddPanoramaView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int n)
+    void CAVEManager::AddPanoramaView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int window_number)
     {
         if(!view_map_.contains(name))
         {
             CAVEView* view = new CAVEView(renderer_);
-            view->InitializePanorama(name, top_left, bottom_left, bottom_right, eye_pos,n);
+            view->InitializePanorama(name, top_left, bottom_left, bottom_right, eye_pos,window_number);
             view_map_[name] = view;
             if(enabled_)
                 view->GetExternalRenderWindow()->show();

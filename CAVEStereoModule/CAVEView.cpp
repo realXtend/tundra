@@ -135,7 +135,7 @@ namespace CAVEStereo
 
         ReCalculateProjection(top_left, bottom_left, bottom_right, eye_pos);
     }
-    void CAVEView::InitializePanorama(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int n)
+    void CAVEView::InitializePanorama(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int window_number)
     {
         assert(renderer_);
         Ogre::Camera* original_cam = renderer_->GetCurrentCamera();
@@ -146,7 +146,7 @@ namespace CAVEStereo
         int new_render_height = rect.height();
         int new_render_x = ((new_render_width/2) - ((new_render_width*0.2)/2) );
 
-        switch(n)
+        switch(window_number)
         {
             case 1:
                 render_window_->CreateRenderWindow(std_name, new_render_width*0.2, new_render_height*0.2,0,0,false);

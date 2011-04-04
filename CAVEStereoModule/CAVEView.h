@@ -44,7 +44,7 @@ namespace CAVEStereo
         */
         void Initialize(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
         void ResizeWindow(int width, int height);
-        void InitializePanorama(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int n);
+        void InitializePanorama(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int window_number);
 
         /*Assumes that the renderwindow and camera_ have been initialized. Calculates the custom projection matrix to be used on the rendering
         @param top_left topleft corner of the view

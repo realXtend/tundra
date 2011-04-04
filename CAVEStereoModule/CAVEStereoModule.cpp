@@ -11,7 +11,7 @@
 namespace CAVEStereo
 {
 
-	std::string CAVEStereoModule::type_name_static_ = "CAVEStereo";
+	std::string CAVEStereoModule::type_name_static_ = "CAVEStereoModule";
 
     CAVEStereoModule::CAVEStereoModule() :
         IModule(type_name_static_),
