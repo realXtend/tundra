@@ -78,3 +78,8 @@ void ScriptAsset::ParseReferences()
         }
     }
 }
+
+bool ScriptAsset::IsLoaded() const
+{
+    return !scriptContent.isEmpty();
+}

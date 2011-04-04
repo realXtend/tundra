@@ -103,3 +103,8 @@ void OgreSkeletonAsset::DoUnload()
     }
     catch (...) {}
 }
+
+bool OgreSkeletonAsset::IsLoaded() const
+{
+    return ogreSkeleton.get() != 0;
+}

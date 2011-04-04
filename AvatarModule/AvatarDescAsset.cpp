@@ -67,3 +67,8 @@ void AvatarDescAsset::ParseReferences()
         }
     }
 }
+
+bool AvatarDescAsset::IsLoaded() const
+{
+    return !avatarAppearanceXML.isEmpty();
+}

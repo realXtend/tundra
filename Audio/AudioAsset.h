@@ -45,8 +45,11 @@ public:
 
     ALuint GetHandle() const { return handle; }
 
+    bool IsLoaded() const;
+
 private:
     /// The actual sound data is stored in an OpenAL internal audio buffer. This handle specifies the buffer.
+    /// If == 0, then this AudioAsset is unloaded.
     ALuint handle;
 };
 

@@ -31,6 +31,8 @@ public:
     /// Returns the name of the template at the given index.
     QString GetTemplateName(int index) const;
 
+    bool IsLoaded() const;
+
 private:
     /// Removes all particle system templates.
     void RemoveTemplates();

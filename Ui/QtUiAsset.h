@@ -35,8 +35,8 @@ public slots:
     /// Called from UiService::LoadFromFile(). This function will return a modified copy of the original .ui file.
     QByteArray GetRefReplacedAssetData() const;
 
-    /// Returns if this assets data is valid.
-    bool IsDataValid() const;
+    /// Returns true if this UI asset is valid and loaded in memory.
+    bool IsLoaded() const;
 
 private:
     /// Unloading a ui asset does not have any meaning, as it's not a GPU resource and it doesn't have any kind of decompress/unpack step.

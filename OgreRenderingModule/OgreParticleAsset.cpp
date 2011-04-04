@@ -189,6 +189,11 @@ QString OgreParticleAsset::GetTemplateName(int index) const
     return templates_[index].c_str();
 }
 
+bool OgreParticleAsset::IsLoaded() const
+{
+    return templates_.size() > 0;
+}
+
 void OgreParticleAsset::RemoveTemplates()
 {
     for (unsigned i = 0; i < templates_.size(); ++i)
@@ -232,3 +237,4 @@ void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_v
         }        
     }
 }
+

@@ -26,6 +26,8 @@ public:
 
     virtual void DoUnload();
 
+    bool IsLoaded() const;
+
     Ogre::SkeletonPtr ogreSkeleton;
 
     std::string internal_name_;

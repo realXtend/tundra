@@ -21,7 +21,7 @@ QtUiAsset::QtUiAsset(AssetAPI *owner, const QString &type_, const QString &name_
 {
 }
 
-QtUiAsset::~QtUiAsset() 
+QtUiAsset::~QtUiAsset()
 {
 }
 
@@ -156,7 +156,7 @@ QByteArray QtUiAsset::GetRefReplacedAssetData() const
     return refRewrittenData;
 }
 
-bool QtUiAsset::IsDataValid() const
+bool QtUiAsset::IsLoaded() const
 {
     return originalData.size() > 0;
 }
