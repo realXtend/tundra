@@ -1,9 +1,4 @@
-/**
- *  For conditions of distribution and use, see copyright notice in license.txt
- *
- *  @file   
- *  @brief  
- */
+// For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -61,14 +56,6 @@ LoginScreenModule::LoginScreenModule() :
 }
 
 LoginScreenModule::~LoginScreenModule()
-{
-}
-
-void LoginScreenModule::PreInitialize()
-{
-}
-
-void LoginScreenModule::Initialize()
 {
 }
 
