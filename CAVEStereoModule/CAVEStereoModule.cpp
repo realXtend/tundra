@@ -3,13 +3,15 @@
 #include "StableHeaders.h"
 #include "CAVEStereoModule.h"
 #include "CAVEManager.h"
+#include "CAVESettingsWidget.h"
 #include "StereoController.h"
-
+#include "StereoWidget.h"
+#include <QDebug>
 #include "OgreRenderingModule.h"
 namespace CAVEStereo
 {
 
-	std::string CAVEStereoModule::type_name_static_ = "CAVEStereo";
+	std::string CAVEStereoModule::type_name_static_ = "CAVEStereoModule";
 
     CAVEStereoModule::CAVEStereoModule() :
         IModule(type_name_static_),
@@ -63,6 +65,17 @@ namespace CAVEStereo
     {
 
     }
+
+    void CAVEStereoModule::ShowStereoscopyWindow()
+    {
+        stereo_->GetStereoWidget()->show();
+    }
+
+    void CAVEStereoModule::ShowCaveWindow()
+    {
+	    cave_->GetCaveWidget()->show();
+    }
+
 }
 //! --- POCO Manifest Stuff ---
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

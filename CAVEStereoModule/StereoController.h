@@ -34,6 +34,7 @@ namespace CAVEStereo
             void DisableStereo();
             void ChangeColorLeft(qreal r, qreal g, qreal b);
             void ChangeColorRight(qreal r, qreal g, qreal b);
+            StereoWidget* GetStereoWidget() const;
 
 
 

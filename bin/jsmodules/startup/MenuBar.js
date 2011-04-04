@@ -22,6 +22,13 @@ if (!framework.IsHeadless())
     fileMenu.addAction(new QIcon("./data/ui/images/icon/system-shutdown.ico"), "Quit").triggered.connect(Quit);
 
     var viewMenu = menu.addMenu("&View");
+    if (framework.GetModuleQObj("CAVEStereoModule"))
+    {
+        var caveMenu = viewMenu.addMenu("&CAVEStereo");
+        caveMenu.addAction("CAVE").triggered.connect(OpenCaveWindow);
+        caveMenu.addAction("Stereoscopy").triggered.connect(OpenStereoscopyWindow);
+    }
+
     if (framework.GetModuleQObj("SceneStructure"))
     {
         viewMenu.addAction("Assets").triggered.connect(OpenAssetsWindow);
@@ -128,5 +135,13 @@ if (!framework.IsHeadless())
     function OpenConsoleWindow()
     {
         framework.GetModuleQObj("Console").ToggleConsole();
+    }
+    function OpenStereoscopyWindow()
+    {
+        framework.GetModuleQObj("CAVEStereoModule").ShowStereoscopyWindow();
+    }
+    function OpenCaveWindow()
+    {
+        framework.GetModuleQObj("CAVEStereoModule").ShowCaveWindow();
     }
 }

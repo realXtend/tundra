@@ -3,10 +3,13 @@
 #include "StableHeaders.h"
 #include "CAVEView.h"
 #include "Renderer.h"
+#include "qdesktopwidget.h"
+
 
 #include <QResizeEvent>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QApplication>
 
 #include "ExternalRenderWindow.h"
 
@@ -30,7 +33,11 @@ namespace CAVEStereo
         assert(renderer_);
         Initialize(name, renderer_->GetWindowWidth(), renderer_->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos); 
     }
-
+    void CAVEView::InitializePanorama(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int n)
+    {
+        assert(renderer_);
+        InitializePanorama(name, renderer_->GetWindowWidth(), renderer_->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos, n); 
+    }
     void CAVEView::GetProjectionParameters( Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
         top_left = tl;
@@ -128,4 +135,56 @@ namespace CAVEStereo
 
         ReCalculateProjection(top_left, bottom_left, bottom_right, eye_pos);
     }
+    void CAVEView::InitializePanorama(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int window_number)
+    {
+        assert(renderer_);
+        Ogre::Camera* original_cam = renderer_->GetCurrentCamera();
+        std::string std_name = name.toStdString();
+        render_window_ = new ExternalRenderWindow();
+        QRect rect = QApplication::desktop()->screenGeometry();
+        int new_render_width = rect.width();
+        int new_render_height = rect.height();
+        int new_render_x = ((new_render_width/2) - ((new_render_width*0.2)/2) );
+
+        switch(window_number)
+        {
+            case 1:
+                render_window_->CreateRenderWindow(std_name, new_render_width*0.2, new_render_height*0.2,0,0,false);
+                render_window_->setGeometry(new_render_x + 2*(new_render_width*0.2),0.77*new_render_height,new_render_width*0.2, new_render_height*0.2);
+                break;
+            case 2:
+                render_window_->CreateRenderWindow(std_name, new_render_width*0.2, new_render_height*0.2,0,0,false);
+                render_window_->setGeometry(new_render_x + (new_render_width*0.2),0.77*new_render_height,new_render_width*0.2, new_render_height*0.2);
+                break;
+            case 3:
+                render_window_->CreateRenderWindow(std_name, new_render_width*0.2, new_render_height*0.2,0,0,false);
+                render_window_->setGeometry(new_render_x ,0.77*new_render_height,new_render_width*0.2, new_render_height*0.2);
+                break;
+            case 4:
+                render_window_->CreateRenderWindow(std_name, new_render_width*0.2, new_render_height*0.2,0,0,false);
+                render_window_->setGeometry(new_render_x - (new_render_width*0.2),0.77*new_render_height,new_render_width*0.2, new_render_height*0.2);
+                break;
+            case 5:
+                render_window_->CreateRenderWindow(std_name, new_render_width*0.2, new_render_height*0.2,0,0,false);
+                render_window_->setGeometry(new_render_x - 2*(new_render_width*0.2),0.77*new_render_height,new_render_width*0.2, new_render_height*0.2);
+                break;
+        }
+
+        camera_ = renderer_->GetSceneManager()->createCamera(std_name + "_camera");
+        render_window_->getRenderWindow()->addViewport(camera_);
+        camera_->getViewport()->setOverlaysEnabled(false);
+        camera_->getViewport()->setShadowsEnabled(true);
+
+        camera_->setCustomProjectionMatrix(false);
+        camera_->setNearClipDistance(original_cam->getNearClipDistance());
+        camera_->setFarClipDistance(original_cam->getFarClipDistance());
+        camera_->setVisibilityFlags(original_cam->getVisibilityFlags());
+
+        Ogre::SceneNode* node = dynamic_cast<Ogre::SceneNode*>(original_cam->getParentNode());
+        if(node)
+            node->attachObject(camera_);
+
+        ReCalculateProjection(top_left, bottom_left, bottom_right, eye_pos);
+    }
+
 }
