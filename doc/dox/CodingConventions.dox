@@ -67,6 +67,24 @@ Private member variables should be lower case as well, but with an underscore ap
 int AvatarNode::private_member_var_;
 \endverbatim
 
+\subsection Signals and Slots
+
+Document the signal signatures as you would normal functions. or similaraly.
+\verbatim
+signals:
+///
+void SomethingHappened();
+
+///
+/** @param
+*/
+void SomethingAboutToHappen();
+
+private slots:
+OnSomethingHappended();
+HandleSomethingHappened();
+\verbatim
+
 In your editor, set the tab key to produce 4 spaces. Do not use the tab character. In Visual Studio this feature can be found from Tools -> Options -> Text Editor -> C/C++ -> General.
 Parenthesis should use whitespace, and gravitate towards the thing they enclose. ex: if (IsFoo()) Do (bar); not if( IsFoo() ) Do( bar );
 Add extra newline at the end of file for crossplatform compatibility.

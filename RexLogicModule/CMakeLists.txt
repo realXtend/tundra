@@ -34,8 +34,8 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 
 add_definitions (-DREXLOGIC_MODULE_EXPORTS)
 
-if (UISERVICE_TEST)
-    add_definitions (-DUISERVICE_TEST)
+if (USE_UIMODULE)
+    add_definitions (-DUSE_UIMODULE)
 endif ()
 
 use_package (OPENJPEG)
@@ -43,7 +43,7 @@ use_package (OPENJPEG)
 use_modules (RexLogicModule Core Foundation Interfaces Scene OgreRenderingModule AssetModule AvatarModule RexCommon
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Input Asset Audio)
 
-if (NOT UISERVICE_TEST)
+if (USE_UIMODULE)
     use_modules (UiModule)
 endif ()
 
@@ -78,7 +78,7 @@ LinkEntityComponent(EntityComponents/EC_WebView EC_WebView)
 link_modules (Core Foundation Interfaces Scene OgreRenderingModule AssetModule AvatarModule RexCommon
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Asset Audio)
 
-if (NOT UISERVICE_TEST)
+if (USE_UIMODULE)
     link_modules (UiModule)
 endif ()
 

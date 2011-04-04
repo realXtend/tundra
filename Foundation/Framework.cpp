@@ -24,7 +24,6 @@
 #include "GenericAssetFactory.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
-#include "UiServiceInterface.h"
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
@@ -732,11 +731,6 @@ namespace Foundation
     UiAPI *Framework::Ui() const
     {
         return ui;
-    }
-
-    UiServiceInterface *Framework::UiService()
-    {
-        return GetService<UiServiceInterface>();
     }
 
     ConsoleAPI *Framework::Console() const
