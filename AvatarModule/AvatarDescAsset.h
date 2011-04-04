@@ -25,6 +25,8 @@ public:
     virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters);
     virtual std::vector<AssetReference> FindReferences() const { return assetReferences; }
 
+    bool IsLoaded() const;
+
     /// Stores the downloaded avatar appearance XML file as raw .xml data.
     QString avatarAppearanceXML;
 

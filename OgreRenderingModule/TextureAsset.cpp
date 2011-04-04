@@ -165,3 +165,8 @@ void TextureAsset::DoUnload()
     }
     catch (...) {}
 }
+
+bool TextureAsset::IsLoaded() const
+{
+    return ogreTexture.get() != 0;
+}

@@ -27,6 +27,8 @@ public:
     /// Unload texture from ogre
     virtual void DoUnload();   
 
+    bool IsLoaded() const;
+
     //void RegenerateAllMipLevels();
 
     /// This points to the loaded texture asset, if it is present.

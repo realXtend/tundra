@@ -31,6 +31,8 @@ public:
     /// Return references of this material, in most cases textures
     virtual std::vector<AssetReference> FindReferences() const;
 
+    bool IsLoaded() const;
+
     /// Material ptr to the asset in ogre
     Ogre::MaterialPtr ogreMaterial;
 

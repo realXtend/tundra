@@ -283,8 +283,7 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
             LogError(("LoadFromFile: Asset \"" + filePath + "\" is not of type QtUiFile!").toStdString());
             return 0;
         }
-
-        if (!uiAsset->IsDataValid())
+        if (!uiAsset->IsLoaded())
         {
             LogError(("LoadFromFile: Asset \"" + filePath + "\" data is not valid!").toStdString());
             return 0;
