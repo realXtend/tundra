@@ -39,8 +39,8 @@ function checkSuffix(url) {
     // FIXME find a better way to get the suffix
     url = ("" + url).replace('.pptx', '.ppt')
     if (url.split('.ppt').length == 2) {
-	print("I accept!");
-	return true;
+    print("I accept!");
+    return true;
     }
     print("No sir, I don't like it");
     return false;
@@ -51,12 +51,12 @@ function accept(event) {
     var mimedata = event.mimeData();
 
     if (mimedata.hasUrls()) {
-	var urls = mimedata.urls();
-	for (u = 0; u < urls.length; u++ ) {
-	    if (checkSuffix(urls[u])) {
-		event.acceptProposedAction();		
-	    }
-	}
+    var urls = mimedata.urls();
+    for (u = 0; u < urls.length; u++ ) {
+        if (checkSuffix(urls[u])) {
+        event.acceptProposedAction();        
+        }
+    }
     }
 }
 
@@ -77,25 +77,25 @@ function handleDrop(event) {
     var mimedata = event.mimeData();
     var urls = mimedata.urls();
     for (u = 0; u < urls.length; u++ ) {
-	if (checkSuffix(urls[u])) {
-	    //FIXME!!!!!!1!
-	    print(urls[u]+"");
-	    var filename = ("" + urls[u]).split('//')[1];
-	    print(filename);
-	    upload(serverurl, storagename, filename);
-	    break;
-	}
+    if (checkSuffix(urls[u])) {
+        //FIXME!!!!!!1!
+        print(urls[u]+"");
+        var filename = ("" + urls[u]).split('//')[1];
+        print(filename);
+        upload(serverurl, storagename, filename);
+        break;
+    }
     }
     createCanvas(event);
 }
 
 function upload(uploadStorageUrl, uploadStorageName, filename) {
     if (AddAssetStorage(uploadStorageUrl, uploadStorageName)) {
-	var parts = filename.split('/');
-	var newName = parts[parts.length - 1];
-	UploadAsset(filename, uploadStorageName, newName, "binary");
+    var parts = filename.split('/');
+    var newName = parts[parts.length - 1];
+    UploadAsset(filename, uploadStorageName, newName, "binary");
     } else {
-	print("HORRERNOUS ERROR! CANNOT HANDLE ERRORNOUS HORROR!!!1!");
+    print("HORRERNOUS ERROR! CANNOT HANDLE ERRORNOUS HORROR!!!1!");
     }
 }
 
@@ -151,12 +151,12 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     var baseurl = transfer.GetSourceUrl().replace('/index.txt', '');
     print(baseurl)
     var parts = baseurl.split('/')
-	print(parts)
+    print(parts)
     var slidename = parts[parts.length - 1]
-	print(slidename)
+    print(slidename)
     
     for (i = 0; i < noSlides; i++) {
-     	slides.push(baseurl + '/' + slidename + '-' + i + '.png');
+         slides.push(baseurl + '/' + slidename + '-' + i + '.png');
     }
 
     // set source to first slide
@@ -172,9 +172,9 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     dyn.Name = "Slidelist";
 
     for (s = 0; s < slides.length; s++) {
-	var slidename = s;
-	var attr = dyn.CreateAttribute("string", slidename);
-	dyn.SetAttribute(slidename, slides[s] + "");
+    var slidename = s;
+    var attr = dyn.CreateAttribute("string", slidename);
+    dyn.SetAttribute(slidename, slides[s] + "");
     }
 
     dyn.CreateAttribute("int", "Current");
@@ -196,7 +196,7 @@ function DownloadReady(/* IAssetTransfer* */ transfer)
     // appropriate
     // Create UI
     // makeSlideWidget(slides);
-	
+    
     // Now we are done
     scene.EmitEntityCreatedRaw(entity);
 }
@@ -303,26 +303,26 @@ function createCanvas(event) {
 
     // Calculationg the correct position for dropped slideshow
     if (!res.entity) {
-    	// no hit
-    	var ids = scene.GetEntityIdsWithComponent('EC_OgreCamera');
-    	for (i = 0; i < ids.length; i++) {
-	    var camentity = scene.GetEntityRaw(ids[i]);
-    	    var placeable = camentity.GetComponentRaw('EC_Placeable');
-    	    if (placeable) {
-    		var q = placeable.Orientation;
+        // no hit
+        var ids = scene.GetEntityIdsWithComponent('EC_OgreCamera');
+        for (i = 0; i < ids.length; i++) {
+        var camentity = scene.GetEntityRaw(ids[i]);
+            var placeable = camentity.GetComponentRaw('EC_Placeable');
+            if (placeable) {
+            var q = placeable.Orientation;
 
-		// create unitvector for negative Z-axis
-		var unz = new Vector3df();
-		unz.z = -1;
+        // create unitvector for negative Z-axis
+        var unz = new Vector3df();
+        unz.z = -1;
 
-		// calculate conjugate
-		var v = conjg(q, unz);
-		worldpos = vadd(placeable.Position, smul(v, 20));
-    		break;
-    	    }
-    	}
+        // calculate conjugate
+        var v = conjg(q, unz);
+        worldpos = vadd(placeable.Position, smul(v, 20));
+            break;
+            }
+        }
     } else {
-    	worldpos = res.pos();
+        worldpos = res.pos();
     }
 
     // set postition and rotation    
@@ -347,9 +347,7 @@ function createCanvas(event) {
     rotvec.x = 180;
     rotvec.y = 0;
 
-       
     next = makeButton('next', entity.placeable, -1, rotvec);
-
 }
 
 function makeButton(name, placeable, dir, rotation) {
@@ -376,7 +374,6 @@ function makeButton(name, placeable, dir, rotation) {
     button.placeable.transform = transform;
 
     return button;
-
 }
 
 function makeSlideWidget(slides) {
@@ -386,16 +383,15 @@ function makeSlideWidget(slides) {
     view.resize(110, 400);
 
     for (s = 0; s < slides.length; s++) {
-	var label = new MyLabel(gfxscene, s);
-	var pic = new QPixmap(slides[s]);
-	label.setPixmap(pic.scaledToWidth(100));
-	label.move(0, 110 * s);
-	gfxscene.addWidget(label)
+    var label = new MyLabel(gfxscene, s);
+    var pic = new QPixmap(slides[s]);
+    label.setPixmap(pic.scaledToWidth(100));
+    label.move(0, 110 * s);
+    gfxscene.addWidget(label)
+    }
 
-    }    
-    uiservice.AddWidgetToScene(view);
+    ui.AddWidgetToScene(view);
     view.show();
-
 }
 
 function MyLabel(parent, slide) {

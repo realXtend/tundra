@@ -27,7 +27,12 @@ IModule::IModule(const std::string &name) :
 {
     try
     {
-        Poco::Logger::create(Name(),Poco::Logger::root().getChannel(), Poco::Message::PRIO_TRACE);
+#ifdef _DEBUG
+            int loggingLevel = Poco::Message::PRIO_TRACE;
+#else
+            int loggingLevel = Poco::Message::PRIO_INFORMATION;
+#endif            
+        Poco::Logger::create(Name(),Poco::Logger::root().getChannel(), loggingLevel);
     }
     catch (const std::exception &e)
     {

@@ -64,7 +64,8 @@ class DoorHandler(circuits.BaseComponent):
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
-        uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
+        # TODO: Due to core UI API refactor AddWidgetToMenu doesn't exist anymore.
+        #uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
     def onAttributeChanged(self, attr, chane):
         try:
@@ -166,6 +167,6 @@ class DoorHandler(circuits.BaseComponent):
     def removegui(self, evid):
         self.proxywidget.hide()
         uism = naali.ui
-        uism.RemoveWidgetFromMenu(self.proxywidget)
+        # TODO: Due to core UI API refactor RemoveWidgetFromMenu doesn't exist anymore.
+        #uism.RemoveWidgetFromMenu(self.proxywidget)
         uism.RemoveWidgetFromScene(self.proxywidget)
-        

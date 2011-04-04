@@ -8,6 +8,7 @@
 #include "CAVEViewSettings.h"
 #include "CAVEViewSettingsAdvanced.h"
 #include <QSignalMapper>
+
 namespace Foundation
 {
     class Framework;
@@ -27,6 +28,7 @@ namespace CAVEStereo
         void GetCAVEViewProjParams(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye);
         void ModifyCAVEViewProjParams(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye);
         void RemoveCAVEView(const QString& name);
+        void NewCAVEPanoramaViewRequested(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye, int n);
 
     public slots:
         void CAVEButtonToggled(bool v);
@@ -35,9 +37,11 @@ namespace CAVEStereo
         void BNAVE();
         void VCAVE();
         void MiniCAVE();
+        void Panorama();
         void AddViewToUi(const QString& name);
         void ModifyViewPressed(QString name);
         void DeleteViewPressed(QString name);
+        void ShowCaveWindow();
 
     private:
         QString GetNextName();
