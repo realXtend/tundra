@@ -113,7 +113,7 @@ if (!framework.IsHeadless())
     }
 
     function OpenTerrainEditor() {
-        framework.GetModuleQObj("Environment").ShowTerrainTextureEditor();
+        framework.GetModuleQObj("Environment").ShowTerrainWeightEditor();
     }
 
     function OpenPostProcessWindow() {
