@@ -7,7 +7,7 @@
 
 #include "Color.h"
 
-#include "../Input/InputFwd.h"
+#include "InputFwd.h"
 
 #include <QPair>
 #include <QTimer>
@@ -46,7 +46,7 @@ namespace Environment
     typedef QPair<float, float> MinMaxValue;
 
     //! Environment editor window. Owned by EnvironmentModule. The editor is responsible for terrain, water, sky, fog and light editing.
-    //! Terrain: Paint terrain heightmap, update terrain textures and height ranges.
+    //! Terrain: Paint terrain height map, update terrain textures and height ranges.
     //! Water: Enable/Disable water geometry and change it height value.
     //! Sky: Choose between three sky types that are Sky_box, Sky_dome and Sky_plane, update sky parameters like distance and texture and enable/disable sky geometry.
     //!      Sky editing is only enabled when the Caelum is turned off.
@@ -59,7 +59,7 @@ namespace Environment
 
     public:
         //! All modify land actions that we can send into the server.
-        //! Note! Dont change the order of this list or server wont do right modify land actions.
+        //! Note! Don't change the order of this list or server wont do right modify land actions.
         enum ModifyLandAction
         {
             Flatten = 0,
@@ -71,7 +71,7 @@ namespace Environment
         };
 
         //! All brush sizes that we can use to modify our land.
-        //! Note! Dont change the order of this list.
+        //! Note! Don't change the order of this list.
         enum BrushSize
         {
             //!Brush size is 3x3 vertices.
@@ -88,7 +88,7 @@ namespace Environment
             INACTIVE
         };
 
-        //! Constuctor
+        //! Constructor
         EnvironmentEditor(EnvironmentModule *environment_module);
 
         //! Destructor
@@ -112,8 +112,8 @@ namespace Environment
         void InitSkyTabWindow();
         void InitFogTabWindow();
         void InitAmbientTabWindow();
-    
-        bool Showed() { return editor_widget_->isVisible(); }
+
+        bool Showed() { return editor_widget_ != 0 ? editor_widget_->isVisible() : false; }
 
     public slots:
         //! Toggle between Paint2D and Paint3D mode.
