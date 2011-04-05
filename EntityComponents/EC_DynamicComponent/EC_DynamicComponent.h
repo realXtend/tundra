@@ -109,7 +109,7 @@ public:
         if (!ContainsAttribute(name))
         {
             IAttribute *attribute = new Attribute<T>(this, name.toStdString().c_str());
-            AttributeChanged(attribute, change);
+            EmitAttributeChanged(attribute, change);
             emit AttributeAdded(attribute);
         }
     }
