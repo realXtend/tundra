@@ -44,6 +44,8 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 - \ref EC_OpenSimPrim "OpenSimPrim"
 - \ref EC_ParticleSystem "ParticleSystem"
 - \ref EC_Placeable "Placeable"
+- \ref EC_PlanarMirror "PlanarMirror"
+- \ref EC_ProximityTrigger "ProximityTrigger"
 - \ref EC_RigidBody "RigidBody"
 - \ref EC_Ruler "Ruler"
 - \ref EC_Script "Script"
