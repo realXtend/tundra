@@ -3,11 +3,10 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "AvatarEditing/AvatarEditor.h"
-
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
-
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
 #include "ConfigurationManager.h"
@@ -90,7 +89,7 @@ namespace Avatar
         but_export->setEnabled(avatar_module_->GetAvatarHandler()->AvatarExportSupported());
 
         // Get users avatar appearance
-        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = GetAvatarEntity();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -406,7 +405,7 @@ namespace Avatar
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = GetAvatarEntity();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -426,7 +425,7 @@ namespace Avatar
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = GetAvatarEntity();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -446,7 +445,7 @@ namespace Avatar
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = GetAvatarEntity();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -473,7 +472,7 @@ namespace Avatar
         if (!filename.empty())
         {
             AvatarHandlerPtr avatar_handler = avatar_module_->GetAvatarHandler();
-            Scene::EntityPtr entity = avatar_handler->GetUserAvatar();
+            Scene::EntityPtr entity = GetAvatarEntity();
             if (!entity)
             {
                 AvatarModule::LogError("User avatar not in scene, cannot load appearance");
@@ -504,7 +503,7 @@ namespace Avatar
         std::string filename = GetOpenFileName(filter, "Choose texture or material");
         if (!filename.empty())
         {
-            Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
+            Scene::EntityPtr entity = GetAvatarEntity();
             if (!entity)
                 return;
                 
@@ -522,7 +521,7 @@ namespace Avatar
         std::string index_str = button->objectName().toStdString();
         uint index = ParseString<uint>(index_str);    
         
-        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = GetAvatarEntity();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -546,7 +545,7 @@ namespace Avatar
 
         if (!filename.empty())
         {
-            Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
+            Scene::EntityPtr entity = GetAvatarEntity();
             if (!entity)
                 return;
                 
@@ -604,5 +603,26 @@ namespace Avatar
             last_directory_ = dirname;
         }
         return filename; 
+    }
+    
+    void AvatarEditor::SetAvatarEntityName(QString name)
+    {
+        avatar_entity_name_ = name;
+    }
+    
+    Scene::EntityPtr AvatarEditor::GetAvatarEntity()
+    {
+        //! Get the avatar entity to edit
+        if (!avatar_entity_name_.length())
+        {
+            return avatar_module_->GetAvatarHandler()->GetUserAvatar();
+        }
+        else
+        {
+            Scene::ScenePtr scene = avatar_module_->GetFramework()->Scene()->GetDefaultScene();
+            if (!scene)
+                return Scene::EntityPtr();
+            return scene->GetEntityByName(avatar_entity_name_);
+        }
     }
 }
