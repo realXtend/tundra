@@ -178,7 +178,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     IAttribute *attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
     if(!attribute)
     {
-        LogError("Fail to create new attribute:" + name + " in dynamic component:" + Name());
+        LogError("Failed to create new attribute:" + name + " in dynamic component:" + Name());
         return 0;
     }
 
