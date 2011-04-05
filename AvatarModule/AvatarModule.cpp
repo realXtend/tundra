@@ -7,7 +7,7 @@
 #include "Avatar/AvatarControllable.h"
 #include "AvatarEditing/AvatarEditor.h"
 #include "AvatarEditing/AvatarSceneManager.h"
-
+#include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
 #include "NetworkEvents.h"
 #include "InputAPI.h"
@@ -66,13 +66,16 @@ namespace Avatar
         avatar_handler_ = AvatarHandlerPtr(new AvatarHandler(this));
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
         avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
-        scene_manager_ = new AvatarSceneManager(this, avatar_editor_.get());
+        
+        //! \todo: no UI in Tundra for the avatarscene, so leave it uncreated
+        //scene_manager_ = new AvatarSceneManager(this, avatar_editor_.get());
     }
 
     void AvatarModule::PostInitialize()
     {
         SubscribeToEventCategories();
-        scene_manager_->InitScene();
+        if (scene_manager_)
+            scene_manager_->InitScene();
 
         avatar_context_ = GetFramework()->Input()->RegisterInputContext("Avatar", 100);
         if (avatar_context_)
@@ -82,6 +85,10 @@ namespace Avatar
         }
 
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("GenericAvatarXml")));
+        
+        RegisterConsoleCommand(Console::CreateCommand("editavatar",
+            "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
+            Console::Bind(this, &AvatarModule::EditAvatar)));
     }
 
     void AvatarModule::Uninitialize()
@@ -231,7 +238,8 @@ namespace Avatar
 
         if (key->HasCtrlModifier() && key->keyCode == Qt::Key_A)
         {
-            scene_manager_->ToggleScene();
+            if (scene_manager_)
+                scene_manager_->ToggleScene();
             return;
         }
     }
@@ -239,6 +247,28 @@ namespace Avatar
     void AvatarModule::KeyReleased(KeyEvent *key)
     {
     
+    }
+    
+    Console::CommandResult AvatarModule::EditAvatar(const StringVector &params)
+    {
+        if (params.size() < 1)
+            return Console::ResultFailure("No entity name given");
+        
+        QString name = QString::fromStdString(params[0]);
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+        if (!scene)
+            return Console::ResultFailure("No scene");
+        Scene::EntityPtr entity = scene->GetEntityByName(name);
+        if (!entity)
+            return Console::ResultFailure("No such entity " + params[0]);
+        
+        avatar_editor_->SetAvatarEntityName(name);
+        avatar_editor_->RebuildEditView();
+        
+        if (avatar_editor_)
+            avatar_editor_->show();
+        
+        return Console::ResultSuccess();
     }
 }
 

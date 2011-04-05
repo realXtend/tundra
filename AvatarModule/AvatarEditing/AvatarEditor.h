@@ -57,6 +57,9 @@ namespace Avatar
         //! Master appearance modifier scrollbar value handler
         void MasterModifierValueChanged(int value);
 
+        //! Set avatar entity by name to edit
+        void SetAvatarEntityName(QString name);
+        
     protected:
         /// QWidget override.
         void changeEvent(QEvent* e);
@@ -72,6 +75,9 @@ signals:
 
         //! Create editor window
         void InitEditorWindow();
+        
+        //! Get the avatar entity to edit. If avatar_entity_name_ is empty, try to get the user's avatar from AvatarHandler.
+        Scene::EntityPtr GetAvatarEntity();
 
         //! Clear a panel
         void ClearPanel(QWidget* panel);
@@ -87,6 +93,9 @@ signals:
 
         //! Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
+
+        //! Avatar entity to edit. If empty, try to get the user's avatar from AvatarHandler.
+        QString avatar_entity_name_;
 
         bool reverting_;
     };
