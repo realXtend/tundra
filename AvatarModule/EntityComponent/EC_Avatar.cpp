@@ -28,8 +28,6 @@ using namespace RexTypes;
 using namespace Avatar;
 
 // Internal helper functions
-void SetupAppearance(Scene::Entity* entity);
-void SetupDynamicAppearance(Scene::Entity* entity);
 void AdjustHeightOffset(Scene::Entity* entity);
 void SetupMeshAndMaterials(Scene::Entity* entity);
 void SetupMorphs(Scene::Entity* entity);
@@ -129,13 +127,14 @@ void EC_Avatar::SetupAvatar(AvatarDescAssetPtr avatarAsset)
         return;
     }
     
-    SetupAppearance(entity);
+    SetupAppearance();
 }
 
-void SetupAppearance(Scene::Entity* entity)
+void EC_Avatar::SetupAppearance()
 {
     PROFILE(Avatar_SetupAppearance);
     
+    Scene::Entity* entity = GetParentEntity();
     if (!entity)
         return;
     
@@ -151,12 +150,13 @@ void SetupAppearance(Scene::Entity* entity)
     
     // Setup appearance
     SetupMeshAndMaterials(entity);
-    SetupDynamicAppearance(entity);
+    SetupDynamicAppearance();
     SetupAttachments(entity);
 }
 
-void SetupDynamicAppearance(Scene::Entity* entity)
+void EC_Avatar::SetupDynamicAppearance()
 {
+    Scene::Entity* entity = GetParentEntity();
     if (!entity)
         return;
     

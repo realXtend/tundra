@@ -6,6 +6,7 @@
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
+#include "EntityComponent/EC_Avatar.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
@@ -409,11 +410,12 @@ namespace Avatar
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        if (!appearance)
+        EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
+        if ((!appearance) || (!avatar))
             return;
 
         appearance->SetModifierValue(control_name, AppearanceModifier::Morph, value / 100.0f);
-        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
+        avatar->SetupDynamicAppearance();
     }
 
     void AvatarEditor::BoneModifierValueChanged(int value)
@@ -429,11 +431,12 @@ namespace Avatar
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        if (!appearance)
+        EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
+        if ((!appearance) || (!avatar))
             return;
 
         appearance->SetModifierValue(control_name, AppearanceModifier::Bone, value / 100.0f);
-        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
+        avatar->SetupDynamicAppearance();
     }
 
     void AvatarEditor::MasterModifierValueChanged(int value)
@@ -449,11 +452,12 @@ namespace Avatar
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        if (!appearance)
+        EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
+        if ((!appearance) || (!avatar))
             return;
-
+    
         appearance->SetMasterModifierValue(control_name, value / 100.0f);
-        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
+        avatar->SetupDynamicAppearance();
     }
 
     void AvatarEditor::changeEvent(QEvent* e)
