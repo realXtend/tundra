@@ -71,7 +71,7 @@ namespace Environment
         }
 
         QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
+            SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         lastXsize_ = xSizeAttr.Get();
         lastYsize_ = ySizeAttr.Get();
@@ -334,7 +334,7 @@ namespace Environment
         return Ogre::ColourValue(col.r, col.g, col.b, col.a);
     }
 
-    void EC_WaterPlane::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
+    void EC_WaterPlane::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
     {
         ChangeWaterPlane(attribute);
     }
