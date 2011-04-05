@@ -61,6 +61,13 @@ public:
     //! Destructor
     virtual ~EC_Avatar();
     
+public slots:
+    //! Refresh appearance completely
+    void SetupAppearance();
+    
+    //! Refresh dynamic parts of the appearance (morphs, bone modifiers)
+    void SetupDynamicAppearance();
+    
 private slots:
     //! Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
