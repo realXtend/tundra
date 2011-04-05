@@ -9,6 +9,8 @@
 #ifndef Environment_Terrain_h
 #define Environment_Terrain_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "BitStream.h"
 
 namespace Environment
@@ -54,5 +56,7 @@ namespace Environment
     /// @param groupHeader 
     void DecompressLand(std::vector<DecodedTerrainPatch> &patches, ProtocolUtilities::BitStream &bits, const TerrainPatchGroupHeader &groupHeader);
 }
+
+#endif
 
 #endif

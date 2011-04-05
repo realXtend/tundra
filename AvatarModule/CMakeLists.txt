@@ -29,21 +29,31 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_modules(AvatarModule Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities
-    HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
+use_modules(AvatarModule Core Foundation Interfaces Scene SupportModules
+    AssetModule OgreRenderingModule Input Asset)
+
+if (ENABLE_TAIGA_SUPPORT)
+use_modules (RexCommon ProtocolUtilities HttpUtilities RpcUtilities)
+endif()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
 # Linking
 link_ogre()
 
-if (APPLE)
-    link_modules(Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
-        HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
-else()
-    link_modules(Core Foundation Interfaces Scene RexCommon SupportModules ProtocolUtilities
-        HttpUtilities RpcUtilities AssetModule OgreRenderingModule Input Asset)
+link_modules(Core Foundation Interfaces Scene SupportModules 
+    AssetModule OgreRenderingModule Input Asset)
+
+if (ENABLE_TAIGA_SUPPORT)
+	if (APPLE)
+		link_modules(RexCommon ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga
+			HttpUtilities RpcUtilities)
+	else()
+		link_modules(RexCommon ProtocolUtilities
+			HttpUtilities RpcUtilities)
+	endif()
 endif()
+
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
 LinkEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)

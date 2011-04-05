@@ -9,7 +9,9 @@
 #include "IModule.h"
 #include "OgreMaterialUtils.h"
 #include "Entity.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
 
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
@@ -237,66 +239,55 @@ void EC_3DCanvas::UpdateSubmeshes()
     if (material_name_.empty() || !entity)
         return;
 
-    int draw_type = -1;
     uint submesh_count = 0;
     EC_Mesh* ec_mesh = entity->GetComponent<EC_Mesh>().get();
     EC_OgreCustomObject* ec_custom_object = entity->GetComponent<EC_OgreCustomObject>().get();
 
     if (ec_mesh)
-    {
-        draw_type = RexTypes::DRAWTYPE_MESH;
         submesh_count = ec_mesh->GetNumMaterials();
-    }
     else if (ec_custom_object)
-    {
-        draw_type = RexTypes::DRAWTYPE_PRIM;
         submesh_count = ec_custom_object->GetNumMaterials();
-    }
-
-    if (draw_type == -1)
+    else
+    {
+        ///\todo Log out error - entity doesn't contain either a EC_Mesh or EC_OgreCustomObject!
         return;
+    }
 
     // Iterate trough sub meshes
     for (uint index = 0; index < submesh_count; ++index)
     {
         // Store original materials
         std::string submesh_material_name;
-        if (draw_type == RexTypes::DRAWTYPE_MESH)
+        if (ec_mesh)
             submesh_material_name = ec_mesh->GetMaterialName(index);
-        else if (draw_type == RexTypes::DRAWTYPE_PRIM)
-            submesh_material_name = ec_custom_object->GetMaterialName(index);
         else
-            return;
+            submesh_material_name = ec_custom_object->GetMaterialName(index);
 
         if (submesh_material_name != material_name_)
             restore_materials_[index] = submesh_material_name;
 
         if (submeshes_.contains(index))
         {
-            if (draw_type == RexTypes::DRAWTYPE_MESH)
+            if (ec_mesh)
                 ec_mesh->SetMaterial(index, material_name_);
-            else if (draw_type == RexTypes::DRAWTYPE_PRIM)
-                ec_custom_object->SetMaterial(index, material_name_);
             else
-                return;
+                ec_custom_object->SetMaterial(index, material_name_);
         }
         else 
         {
             // If submesh not contained, restore the original material
-            if (draw_type == RexTypes::DRAWTYPE_MESH)
+            if (ec_mesh)
             {
                 if (ec_mesh->GetMaterialName(index) == material_name_)
                     if (restore_materials_.contains(index))
                         ec_mesh->SetMaterial(index, restore_materials_[index]);
             }
-            else if(draw_type == RexTypes::DRAWTYPE_PRIM)
+            else
             {
                 if (ec_custom_object->GetMaterialName(index) == material_name_)
                     if (restore_materials_.contains(index))
                         ec_custom_object->SetMaterial(index, restore_materials_[index]);
             }
-            else 
-                return;
         }
     }
 }
@@ -314,36 +305,31 @@ void EC_3DCanvas::RestoreOriginalMeshMaterials()
     if (material_name_.empty() || !entity)
         return;
 
-    int draw_type = -1;
     uint submesh_count = 0;
     EC_Mesh* ec_mesh = entity->GetComponent<EC_Mesh>().get();
     EC_OgreCustomObject* ec_custom_object = entity->GetComponent<EC_OgreCustomObject>().get();
 
     if (ec_mesh)
-    {
-        draw_type = RexTypes::DRAWTYPE_MESH;
         submesh_count = ec_mesh->GetNumMaterials();
-    }
     else if (ec_custom_object)
-    {
-        draw_type = RexTypes::DRAWTYPE_PRIM;
         submesh_count = ec_custom_object->GetNumMaterials();
-    }
-
-    if (draw_type == -1)
+    else
+    {
+        ///\todo Log out error - entity doesn't contain either a EC_Mesh or EC_OgreCustomObject!
         return;
+    }
 
     // Iterate trough sub meshes
     for (uint index = 0; index < submesh_count; ++index)
     {
         // If submesh not contained, restore the original material
-        if (draw_type == RexTypes::DRAWTYPE_MESH)
+        if (ec_mesh)
         {
             if (ec_mesh->GetMaterialName(index) == material_name_)
                 if (restore_materials_.contains(index))
                     ec_mesh->SetMaterial(index, restore_materials_[index]);
         }
-        else if(draw_type == RexTypes::DRAWTYPE_PRIM)
+        else
         {
             if (ec_custom_object->GetMaterialName(index) == material_name_)
                 if (restore_materials_.contains(index))

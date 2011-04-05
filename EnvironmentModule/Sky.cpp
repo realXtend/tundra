@@ -9,9 +9,11 @@
 #include "OgreRenderingModule.h"
 
 #include "CoreTypes.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "NetworkEvents.h"
-#include "ServiceManager.h"
 #include "NetworkMessages/NetInMessage.h"
+#endif
+#include "ServiceManager.h"
 
 
 namespace Environment
@@ -24,7 +26,7 @@ Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(SK
 Sky::~Sky()
 {
 }
-
+#ifdef ENABLE_TAIGA_SUPPORT
 bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
 {
     // HACK ON REX MODE, return false if you have problems
@@ -74,7 +76,7 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
 
     return false;
 }
-
+#endif
 void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
     const float &curvature, const float &tiling)
 {

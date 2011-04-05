@@ -9,7 +9,9 @@
 #ifndef incl_OgreAssetEditorModule_OgreScriptEditor_h
 #define incl_OgreAssetEditorModule_OgreScriptEditor_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
 #include "OgreAssetEditorModuleApi.h"
 #include "AssetFwd.h"
 

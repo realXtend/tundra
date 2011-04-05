@@ -17,9 +17,11 @@
 #include "EC_RttTarget.h"
 #include "EC_BillboardWidget.h"
 #include "EC_SelectionBox.h"
-#include "InputEvents.h"
 #include "SceneEvents.h"
+#ifdef ENABLE_TAIGA_SUPPORT
+#include "InputEvents.h"
 #include "NetworkEvents.h"
+#endif
 #include "Entity.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -131,6 +133,7 @@ namespace OgreRenderer
         if (!renderer_)
             return false;
 
+#ifdef ENABLE_TAIGA_SUPPORT
         if (category_id == input_event_category_ && event_id == InputEvents::INWORLD_CLICK)
         {
             // do raycast into the world when user clicks mouse button
@@ -159,7 +162,7 @@ namespace OgreRenderer
                 renderer_->ResetImageRendering();
             return false;
         }
-
+#endif
         return false;
     }
 

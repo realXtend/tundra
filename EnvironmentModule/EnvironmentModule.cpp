@@ -27,14 +27,17 @@
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "Renderer.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RealXtend/RexProtocolMsgIDs.h"
-#include "SceneManager.h"
 #include "NetworkEvents.h"
 #include "InputEvents.h"
+#include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
+#endif
+
+#include "SceneManager.h"
 #include "ModuleManager.h"
 #include "EventManager.h"
-#include "RexNetworkUtils.h"
 #include "CompositionHandler.h"
 #include "EC_Name.h"
 #include "WorldBuildingServiceInterface.h"
@@ -49,11 +52,13 @@ namespace Environment
     EnvironmentModule::EnvironmentModule() :
         IModule(type_name_static_),
         terrainWeightEditor_(0),
+#ifdef ENABLE_TAIGA_SUPPORT
         waiting_for_regioninfomessage_(false),
-        environment_editor_(0),
-        postprocess_dialog_(0),
         resource_event_category_(0),
         framework_event_category_(0),
+#endif
+        environment_editor_(0),
+        postprocess_dialog_(0),
         firstTime_(true)
     {
     }
@@ -86,10 +91,12 @@ namespace Environment
         
         // Depends on RexLogic etc. handling messages first to create the scene, so lower priority
         event_manager_->RegisterEventSubscriber(this, 99);
+        tundra_event_category_ = event_manager_->QueryEventCategory("Tundra");
+
+#ifdef ENABLE_TAIGA_SUPPORT
 
         resource_event_category_ = event_manager_->QueryEventCategory("Resource");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
-        tundra_event_category_ = event_manager_->QueryEventCategory("Tundra");
 
         environment_editor_ = new EnvironmentEditor(this);
         Foundation::WorldBuildingServicePtr wb_service = GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Service::ST_WorldBuilding).lock();
@@ -98,11 +105,11 @@ namespace Environment
             connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
             connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
         }
+#endif
     }
 
     void EnvironmentModule::Uninitialize()
     {
-        SAFE_DELETE(environment_editor_);
         SAFE_DELETE(postprocess_dialog_);
         SAFE_DELETE(terrainWeightEditor_);
         terrain_.reset();
@@ -110,9 +117,11 @@ namespace Environment
         environment_.reset();
         sky_.reset();
         event_manager_.reset();
+#ifdef ENABLE_TAIGA_SUPPORT
+        SAFE_DELETE(environment_editor_);
         currentWorldStream_.reset();
-
         waiting_for_regioninfomessage_ = false;
+#endif
     }
 
     void EnvironmentModule::Update(f64 frametime)
@@ -120,6 +129,7 @@ namespace Environment
         RESETPROFILER;
         PROFILE(EnvironmentModule_Update);
 
+#ifdef ENABLE_TAIGA_SUPPORT
         // Idea of next lines:  Because of initialization chain, environment editor stays in wrong state after logout/login-process. 
         // Solution for that problem is that we initialise it again at that moment when user clicks environment editor, 
         // because currently editor is plain QWidget we have not access to show() - slot. So we here poll widget, and when polling tells us that widget is seen, 
@@ -133,7 +143,7 @@ namespace Environment
                 firstTime_ = false;
             }
         }
-
+#endif
         if (GetFramework()->Scene()->GetDefaultScene())
         {
             if (environment_.get() != 0)
@@ -206,6 +216,7 @@ namespace Environment
 
     bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         if(category_id == framework_event_category_)
         {
             HandleFrameworkEvent(event_id, data);
@@ -243,7 +254,9 @@ namespace Environment
             }
         }
         //! \todo Remove - strictly test code!!! We don't want hardcoded environment in Tundra mode, but used for now for testing
-        else if (category_id == tundra_event_category_)
+        else 
+#endif
+            if (category_id == tundra_event_category_)
         {
             if (event_id == TundraLogic::Events::EVENT_TUNDRA_CONNECTED)
             {
@@ -310,6 +323,7 @@ namespace Environment
 
     bool EnvironmentModule::HandleFrameworkEvent(event_id_t event_id, IEventData* data)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         switch(event_id)
         {
             case Foundation::NETWORKING_REGISTERED:
@@ -328,12 +342,13 @@ namespace Environment
                 return false;
             }
         }
-
+#endif
         return false;
     }
 
     bool EnvironmentModule::HandleNetworkEvent(event_id_t event_id, IEventData* data)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
         assert(netdata);
 
@@ -517,7 +532,7 @@ namespace Environment
             }
         }
         }
-
+#endif
         return false;
     }
 
@@ -596,6 +611,7 @@ namespace Environment
         }
     }
 
+#ifdef ENABLE_TAIGA_SUPPORT
     bool EnvironmentModule::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data)
     {
         ProtocolUtilities::NetInMessage &msg = *data->message;
@@ -644,12 +660,13 @@ namespace Environment
 
         return false;
     }
-
     TerrainPtr EnvironmentModule::GetTerrainHandler() const
     {
         return terrain_;
     }
+#endif
 
+#ifdef ENABLE_TAIGA_SUPPORT
     EnvironmentPtr EnvironmentModule::GetEnvironmentHandler() const
     {
         return environment_;
@@ -688,7 +705,6 @@ namespace Environment
             waiting_for_regioninfomessage_ = true;
         }
     }
-
     void EnvironmentModule::CreateTerrain()
     {
         terrain_ = TerrainPtr(new Terrain(this));
@@ -715,13 +731,13 @@ namespace Environment
         /*if ( environment_editor_ != 0 )
              environment_editor_->InitWaterTabWindow();*/
     }
-
+#endif
     void EnvironmentModule::CreateEnvironment()
     {
         environment_ = EnvironmentPtr(new Environment(this));
         environment_->CreateEnvironment();
     }
-
+#ifdef ENABLE_TAIGA_SUPPORT
     void EnvironmentModule::CreateSky()
     {
         sky_ = SkyPtr(new Sky(this));
@@ -755,16 +771,17 @@ namespace Environment
     {
         water_.reset();
     }
-
+#endif
     void EnvironmentModule::ReleaseEnvironment()
     {
         environment_.reset();
     }
-
+#ifdef ENABLE_TAIGA_SUPPORT
     void EnvironmentModule::ReleaseSky()
     {
         sky_.reset();
     }
+#endif
     
     void EnvironmentModule::OnSceneCleared(Scene::SceneManager* scene)
     {

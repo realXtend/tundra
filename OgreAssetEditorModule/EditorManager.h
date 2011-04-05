@@ -8,7 +8,9 @@
 #ifndef incl_OgreAssetEditorModule_EditorManager_h
 #define incl_OgreAssetEditorModule_EditorManager_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
 
 #include <QWidget>
 #include <QMap>

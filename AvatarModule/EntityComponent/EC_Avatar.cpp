@@ -4,7 +4,10 @@
 #include "DebugOperatorNew.h"
 #include "EntityComponent/EC_Avatar.h"
 #include "EventManager.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
+
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
 #include "EC_Placeable.h"
@@ -24,7 +27,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Avatar")
 
 #include "MemoryLeakCheck.h"
 
+#ifdef ENABLE_TAIGA_SUPPORT
 using namespace RexTypes;
+#endif
 using namespace Avatar;
 
 // Internal helper functions
@@ -102,7 +107,7 @@ void EC_Avatar::AttributeUpdated(IAttribute *attribute)
         if (ref.isEmpty())
             return;
 
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(ref.toStdString().c_str(), ASSETTYPENAME_GENERIC_AVATAR_XML.c_str());
+        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(ref.toStdString().c_str(), "GenericAvatarXml");
         if (transfer)
             connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)));
     }

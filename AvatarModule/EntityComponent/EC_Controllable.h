@@ -3,6 +3,8 @@
 #ifndef incl_RexLogic_EC_Controllable_h
 #define incl_RexLogic_EC_Controllable_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "IComponent.h"
 #include "RexTypes.h"
 #include "InputEvents.h"
@@ -141,5 +143,7 @@ namespace ControllableActions
         }
     }
 }
+
+#endif
 
 #endif

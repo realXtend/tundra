@@ -13,7 +13,9 @@
 #include "IModule.h"
 #include "InputFwd.h"
 #include "ModuleLoggingFunctions.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
 
 #include <QObject>
 #include <QPointer>
@@ -55,8 +57,10 @@ namespace DebugStats
         /// Creates and shows the profiling window.
         Console::CommandResult ShowProfilingWindow(/*const StringVector &params*/);
 
+#ifdef ENABLE_TAIGA_SUPPORT
         /// Creates and shows the participant window.
         Console::CommandResult ShowParticipantWindow(const StringVector &params);
+#endif
 
     private slots:
         void AddProfilerWidgetToUi();
@@ -70,6 +74,7 @@ namespace DebugStats
     private:
         Q_DISABLE_COPY(DebugStatsModule);
 
+#ifdef ENABLE_TAIGA_SUPPORT
         /// Sends random NetInMessage packet
         Console::CommandResult SendRandomNetworkInPacket(const StringVector &params);
 
@@ -84,18 +89,19 @@ namespace DebugStats
 
         /// Dumps J2K decoded textures to PNG images in the viewer working directory.
         Console::CommandResult DumpTextures(const StringVector &params);
-
+#endif
         /// Invokes action in entity.
         Console::CommandResult Exec(const StringVector &params);
 
         /// A history of estimated frame times.
-        std::vector<std::pair<uint64_t, double> > frameTimes;
+        std::vector<std::pair<u64, double> > frameTimes;
 
 #ifdef _WINDOWS
         /// Last call time of Update() function
         LARGE_INTEGER lastCallTime;
 #endif
 
+#ifdef ENABLE_TAIGA_SUPPORT
         /// Framework event category
         event_category_id_t frameworkEventCategory_;
 
@@ -107,9 +113,11 @@ namespace DebugStats
 
         /// NetworkState event category
         event_category_id_t networkStateEventCategory_;
-
+#endif
         /// Profiler window
         QPointer<TimeProfilerWindow> profilerWindow_;
+
+#ifdef ENABLE_TAIGA_SUPPORT
 
         /// Participant window
         QPointer<ParticipantWindow> participantWindow_;
@@ -117,6 +125,7 @@ namespace DebugStats
         /// World stream pointer.
         ProtocolUtilities::WorldStreamPtr current_world_stream_;
 
+#endif
         /// DebugStatsModules registers an InputContext to be able to do a Shift-P - Profiler window shortcut.
         boost::shared_ptr<InputContext> inputContext;
 

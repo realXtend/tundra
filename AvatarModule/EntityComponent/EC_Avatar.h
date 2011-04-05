@@ -4,7 +4,9 @@
 #define incl_Avatar_EC_Avatar_h
 
 #include "IComponent.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexUUID.h"
+#endif
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
 #include "AssetFwd.h"

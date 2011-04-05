@@ -9,7 +9,9 @@
 #include "AvatarEditing/AvatarSceneManager.h"
 
 #include "EventManager.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "NetworkEvents.h"
+#endif
 #include "InputAPI.h"
 #include "SceneManager.h"
 #include "SceneAPI.h"
@@ -18,11 +20,16 @@
 #include "AvatarDescAsset.h"
 
 #include "EntityComponent/EC_AvatarAppearance.h"
+
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_Controllable.h"
+#include "EC_NetworkPosition.h"
+#endif
+
 #include "EntityComponent/EC_Avatar.h"
 
-#include "EC_NetworkPosition.h"
+
 #ifdef EC_HoveringWidget_ENABLED
 #include "EC_HoveringWidget.h"
 #endif
@@ -39,8 +46,10 @@ namespace Avatar
         IModule(module_name),
         scene_manager_(0)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         world_stream_.reset();
         uuid_to_local_id_.clear();
+#endif
     }
 
     AvatarModule::~AvatarModule()
@@ -50,9 +59,11 @@ namespace Avatar
     void AvatarModule::Load()
     {
         DECLARE_MODULE_EC(EC_AvatarAppearance);
+#ifdef ENABLE_TAIGA_SUPPORT
         DECLARE_MODULE_EC(EC_OpenSimAvatar);
         DECLARE_MODULE_EC(EC_NetworkPosition);
         DECLARE_MODULE_EC(EC_Controllable);
+#endif
         DECLARE_MODULE_EC(EC_Avatar);
 #ifdef EC_HoveringWidget_ENABLED
         DECLARE_MODULE_EC(EC_HoveringWidget);
@@ -61,19 +72,21 @@ namespace Avatar
 
     void AvatarModule::Initialize()
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         event_query_categories_ << "Framework" << "Scene" << "NetworkState" << "Avatar" << "Resource" << "Asset" << "Inventory" << "Input" << "Action";
-
         avatar_handler_ = AvatarHandlerPtr(new AvatarHandler(this));
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
-        avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
         scene_manager_ = new AvatarSceneManager(this, avatar_editor_.get());
+        avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
+#endif
     }
 
     void AvatarModule::PostInitialize()
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         SubscribeToEventCategories();
         scene_manager_->InitScene();
-
+#endif
         avatar_context_ = GetFramework()->Input()->RegisterInputContext("Avatar", 100);
         if (avatar_context_)
         {
@@ -89,12 +102,14 @@ namespace Avatar
         avatar_handler_.reset();
         avatar_controllable_.reset();
         avatar_editor_.reset();
+#ifdef ENABLE_TAIGA_SUPPORT
         world_stream_.reset();
         uuid_to_local_id_.clear();
-
         SAFE_DELETE(scene_manager_);
+#endif
     }
 
+#ifdef ENABLE_TAIGA_SUPPORT
     Scene::EntityPtr AvatarModule::GetAvatarEntity(const RexUUID &uuid)
     {
         if (uuid_to_local_id_.contains(uuid))
@@ -135,15 +150,19 @@ namespace Avatar
             GetFramework()->GetEventManager()->SendEvent("Avatar", Events::EVENT_UNREGISTER_UUID_TO_LOCALID, &data);
         }
     }
-
+#endif
     void AvatarModule::Update(f64 frametime)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         avatar_handler_->Update(frametime);
         avatar_controllable_->AddTime(frametime);
+#endif
     }
 
     bool AvatarModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
+
         bool handled = false;
         QString category = service_category_identifiers_.keys().value(
             service_category_identifiers_.values().indexOf(category_id));
@@ -215,17 +234,22 @@ namespace Avatar
             handled = avatar_handler_->HandleResourceEvent(event_id, data);
         }
         return handled;
+#else
+        return false;
+#endif
     }
 
+#ifdef ENABLE_TAIGA_SUPPORT
     void AvatarModule::SubscribeToEventCategories()
     {
         service_category_identifiers_.clear();
         foreach (QString category, event_query_categories_)
             service_category_identifiers_[category] = GetFramework()->GetEventManager()->QueryEventCategory(category.toStdString());
     }
-
+#endif
     void AvatarModule::KeyPressed(KeyEvent *key)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         if (key->IsRepeat())
             return;
 
@@ -234,6 +258,7 @@ namespace Avatar
             scene_manager_->ToggleScene();
             return;
         }
+#endif
     }
 
     void AvatarModule::KeyReleased(KeyEvent *key)

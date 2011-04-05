@@ -3,6 +3,8 @@
 #ifndef incl_EC_OpenSimAvatar_h
 #define incl_EC_OpenSimAvatar_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "IComponent.h"
 #include "RexUUID.h"
 #include "AvatarModuleApi.h"
@@ -60,5 +62,7 @@ private:
 
     EC_OpenSimAvatar(IModule* module);
 };
+
+#endif
 
 #endif

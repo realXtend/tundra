@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "DebugOperatorNew.h"
 #include "AvatarEditing/AvatarEditor.h"
 
@@ -606,3 +609,5 @@ namespace Avatar
         return filename; 
     }
 }
+
+#endif

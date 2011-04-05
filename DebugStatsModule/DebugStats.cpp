@@ -18,18 +18,20 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ConsoleCommandServiceInterface.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "WorldStream.h"
-#include "SceneAPI.h"
-#include "SceneManager.h"
-#include "Entity.h"
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
+#include "EC_OpenSimPresence.h"
+#endif
+#include "SceneAPI.h"
+#include "SceneManager.h"
+#include "Entity.h"
 #include "Renderer.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "EC_OpenSimPresence.h"
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
@@ -56,12 +58,14 @@ const std::string DebugStatsModule::moduleName = std::string("DebugStats");
 
 DebugStatsModule::DebugStatsModule() :
     IModule(NameStatic()),
+#ifdef ENABLE_TAIGA_SUPPORT
     frameworkEventCategory_(0),
     networkEventCategory_(0),
     networkOutEventCategory_(0),
     networkStateEventCategory_(0),
-    profilerWindow_(0),
     participantWindow_(0),
+#endif
+    profilerWindow_(0),
     godMode_(false)
 {
 }
@@ -85,6 +89,7 @@ void DebugStatsModule::PostInitialize()
 */
     framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
 
+#ifdef ENABLE_TAIGA_SUPPORT
     RegisterConsoleCommand(Console::CreateCommand("rin", 
         "Sends a random network message in.",
         Console::Bind(this, &DebugStatsModule::SendRandomNetworkInPacket)));
@@ -93,7 +98,9 @@ void DebugStatsModule::PostInitialize()
         "Sends a random network message out.",
         Console::Bind(this, &DebugStatsModule::SendRandomNetworkOutPacket)));
 #endif
+#endif
 
+#ifdef ENABLE_TAIGA_SUPPORT
     RegisterConsoleCommand(Console::CreateCommand("Participant", 
         "Shows the participant window.",
         Console::Bind(this, &DebugStatsModule::ShowParticipantWindow)));
@@ -109,13 +116,14 @@ void DebugStatsModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand("dumptextures",
         "Dumps all currently existing J2K decoded textures as PNG files into the viewer working directory.",
         Console::Bind(this, &DebugStatsModule::DumpTextures)));
-        
+#endif        
     RegisterConsoleCommand(Console::CreateCommand("exec",
         "Invokes action execution in entity",
         Console::Bind(this, &DebugStatsModule::Exec)));
 
+#ifdef ENABLE_TAIGA_SUPPORT
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-
+#endif
     inputContext = framework_->Input()->RegisterInputContext("DebugStatsInput", 90);
     connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 
@@ -189,6 +197,7 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVecto
         return Console::ResultFailure("Profiler window has not been initialized, something went wrong on startup!");
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
 //    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
@@ -211,7 +220,7 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
 
     return Console::ResultSuccess();
 }
-
+#endif
 void DebugStatsModule::Update(f64 frametime)
 {
     RESETPROFILER;
@@ -242,6 +251,7 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
     using namespace ProtocolUtilities;
     PROFILE(DebugStatsModule_HandleEvent);
 
+#ifdef ENABLE_TAIGA_SUPPORT
     if (category_id == frameworkEventCategory_)
     {
         if (event_id == Foundation::WORLD_STREAM_READY)
@@ -343,10 +353,11 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
 
         return false;
     }
-
+#endif
     return false;
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringVector &params)
 {
     if (params.size() == 0)
@@ -444,7 +455,9 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
 
     return Console::ResultSuccess();
 }
+#endif
 
+#ifdef ENABLE_TAIGA_SUPPORT
 Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params)
 {
     /* /// \todo Regression. Reimplement using the Asset API. -jj.
@@ -509,6 +522,7 @@ Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params
     */
     return Console::ResultSuccess();
 }
+#endif
 
 Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
 {

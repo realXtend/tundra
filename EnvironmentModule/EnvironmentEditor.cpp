@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "DebugOperatorNew.h"
 
 #include "EnvironmentEditor.h"
@@ -18,7 +20,9 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "OgreMaterialUtils.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "InputEvents.h"
+#endif
 #include "InputAPI.h"
 #include "OgreRenderingModule.h"
 #include "UiServiceInterface.h"
@@ -89,7 +93,6 @@ namespace Environment
         editor_widget_ = 0;
         
     }
-
     void EnvironmentEditor::CreateHeightmapImage()
     {
         assert(environment_module_);
@@ -2626,3 +2629,4 @@ namespace Environment
         }
     }
 }
+#endif

@@ -6,7 +6,10 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 #include "CoreTypes.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
+#include "Vector3D.h"
 #include "OgreModuleFwd.h"
 
 #include <Color.h>

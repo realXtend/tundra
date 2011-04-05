@@ -8,6 +8,8 @@
 #ifndef incl_DebugStatsModule_ParticipantWindow_h
 #define incl_DebugStatsModule_ParticipantWindow_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "RexUUID.h"
 
 #include <QWidget>
@@ -62,5 +64,7 @@ namespace DebugStats
 
     };
 }
+
+#endif
 
 #endif

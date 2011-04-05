@@ -17,12 +17,15 @@
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "OgreConversionUtils.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "BitStream.h"
-#include "SceneManager.h"
 #include "NetworkEvents.h"
-#include "ServiceManager.h"
 #include "RexTypes.h"
 #include "NetworkMessages/NetInMessage.h"
+#endif
+
+#include "SceneManager.h"
+#include "ServiceManager.h"
 #include "SceneAPI.h"
 #include "Entity.h"
 
@@ -93,6 +96,7 @@ namespace Environment
             EnvironmentModule::LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
     }
 */
+#ifdef ENABLE_TAIGA_SUPPORT
     void Terrain::DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize)
     {
         assert(node->numAttachedObjects() == 1);
@@ -647,4 +651,6 @@ namespace Environment
             return 0;
         return entity->GetComponent<EC_Terrain>().get();
     }
+
+#endif
 }

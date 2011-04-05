@@ -1,5 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "Foundation.h"
 #include "IEventData.h"
 #include "Entity.h"
@@ -60,3 +62,5 @@ namespace Avatar
         };
     }
 }
+
+#endif

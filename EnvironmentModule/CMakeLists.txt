@@ -33,9 +33,16 @@ if (CAELUM)
     use_package (CAELUM)
 endif (CAELUM)
 
-use_modules (Core Foundation Interfaces Scene RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim Asset)
+use_modules (Core Foundation Interfaces Scene OgreRenderingModule Asset)
+if (ENABLE_TAIGA_SUPPORT)
+use_modules (RexCommon ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim)
+endif()
+
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
-link_modules (Core Foundation Interfaces RexCommon Scene OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim Asset)
+link_modules (Core Foundation Interfaces Scene OgreRenderingModule Asset)
+if (ENABLE_TAIGA_SUPPORT)
+link_modules (RexCommon ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim)
+endif()
 
 link_ogre()
 

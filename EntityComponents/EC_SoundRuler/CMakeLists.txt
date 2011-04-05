@@ -15,12 +15,20 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules (Core Foundation Interfaces Scene RexCommon OgreRenderingModule EntityComponents/EC_OpenSimPrim)
+use_modules (Core Foundation Interfaces Scene OgreRenderingModule)
+
+if (ENABLE_TAIGA_SUPPORT)
+use_modules (RexCommon EntityComponents/EC_OpenSimPrim)
+endif()
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_ogre()
-link_modules (Core Foundation Interfaces Scene RexCommon OgreRenderingModule EC_OpenSimPrim)
+link_modules (Core Foundation Interfaces Scene OgreRenderingModule)
+
+if (ENABLE_TAIGA_SUPPORT)
+link_modules (EC_OpenSimPrim)
+endif()
 
 SetupCompileFlagsWithPCH()
 

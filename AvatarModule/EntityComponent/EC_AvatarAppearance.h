@@ -4,8 +4,10 @@
 #define incl_RexLogic_EC_AvatarAppearance_h
 
 #include "IComponent.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
 #include "RexUUID.h"
+#endif
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
@@ -247,7 +249,11 @@ struct AV_MODULE_API AnimationDefinition
     }
 };
 
+#ifdef ENABLE_TAIGA_SUPPORT
 typedef std::map<RexUUID, AnimationDefinition> AnimationDefinitionMap;
+#else
+typedef std::map<std::string, AnimationDefinition> AnimationDefinitionMap;
+#endif
 
 typedef std::map<std::string, std::string> AvatarPropertyMap;
 

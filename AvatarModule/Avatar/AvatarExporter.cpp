@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "AvatarModule.h"
 #include "Avatar/AvatarExporter.h"
 
@@ -288,3 +291,5 @@ namespace Avatar
         hash_ = std::string(encoded.constData());
     }
 }
+
+#endif

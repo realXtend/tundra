@@ -23,7 +23,9 @@
 #include <QCryptographicHash>
 #include <QSizePolicy>
 
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_VideoSource")
