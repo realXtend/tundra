@@ -102,6 +102,8 @@ public slots:
     //! Return selected entity ids as QVariantList from the active ECEditorWindow.
     QVariantList GetSelectedEntities() const;
 
+    bool IsECEditorWindowVisible() const;
+
 signals:
     //! Signal is emitted when active ECEditorWindow's selection has changed.
     /*! @param compType selected item's component type name.
