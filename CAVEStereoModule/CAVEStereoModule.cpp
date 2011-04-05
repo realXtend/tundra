@@ -1,17 +1,21 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "CAVEStereoModule.h"
 #include "CAVEManager.h"
 #include "CAVESettingsWidget.h"
 #include "StereoController.h"
 #include "StereoWidget.h"
-#include <QDebug>
+
 #include "OgreRenderingModule.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace CAVEStereo
 {
-    std::string CAVEStereoModule::type_name_static_ = "CAVEStereoModule";
+    std::string CAVEStereoModule::type_name_static_ = "CAVEStereo";
 
     CAVEStereoModule::CAVEStereoModule() :
         IModule(type_name_static_),
@@ -35,7 +39,7 @@ namespace CAVEStereo
             if (renderer)
             {
                 stereo_ = new StereoController(renderer.get(),this);
-                cave_ = new CAVEManager(renderer.get());
+                cave_ = new CAVEManager(renderer);
                 stereo_->InitializeUi();
                 cave_->InitializeUi();
             }
@@ -49,7 +53,7 @@ namespace CAVEStereo
 
     QVector<Ogre::RenderWindow*> CAVEStereoModule::GetCAVERenderWindows()
     {
-        return cave_->getExternalWindows();
+        return cave_->GetExternalWindows();
     }
 
     void CAVEStereoModule::ShowStereoscopyWindow()
