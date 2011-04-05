@@ -9,8 +9,10 @@
 #include "UiFwd.h"
 #include "UiApiExport.h"
 
+class QMenu;
+
 /// UiAPI is the core API object exposed for all UI-related functionality.
-/** @todo More detailed description. Maybe make a new .dox file with extensive code examples etc?
+/** @todo More detailed description. Make a new .dox file with extensive code examples etc?
 */
 class UI_API UiAPI : public QObject
 {
@@ -76,13 +78,13 @@ public slots:
     /** Removes proxy widget from the scene.
         @param widget Proxy widget.
     */
-    void RemoveWidgetFromScene(QGraphicsProxyWidget *widget) { return RemoveProxyWidgetFromScene(widget); }
+    void RemoveWidgetFromScene(QGraphicsProxyWidget *widget);
 
     /// Removes proxy widget from scene.
     /** @param widget Proxy widget.
-        @todo Try to make QtScript understand function overloads and change this function signature to RemoveWidgetFromScene()
+        @todo Make function overloads work with QtScript and remove this function.
     */
-    void RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget);
+    void RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget) { return RemoveWidgetFromScene(widget); }
 
     /// Shows the widget's proxy widget in the scene.
     /** @param widget Widget.
@@ -107,12 +109,13 @@ public slots:
 
     /// Brings the proxy widget to front in the graphics scene and sets focus to it.
     /** @param widget Proxy widget.
-        @todo Try to make QtScript understand function overloads and change this function signature to BringWidgetToFront()
+        @todo Make function overloads work with QtScript and remove this function.
     */
     void BringProxyWidgetToFront(QGraphicsProxyWidget *widget) const;
 
     /// Loads widget from .ui file and adds it to the graphics scene.
-    /** @note This is a convenience function for scripting languages.
+    /** @todo This function will be removed shortly
+        @note This is a convenience function for scripting languages.
         @param filePath .ui file location.
         @param parent Parent widget.
         @param addToScene Do we want to add new widget to the graphics scene.
@@ -120,17 +123,18 @@ public slots:
     */
     QWidget *LoadFromFile(const QString &filePath,  bool addToScene = true, QWidget *parent = 0);
 
-    ///
-    /** @param
-        @param
+    /// Emits a signal that can be used to attach context menu actions for specific object types.
+    /** @param menu Menu to which possible functionality can be appended.
+        @param List of targets objects for which the context menu is about to open.
     */
-//    void EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
+    void EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
+
 signals:
-    ///
-    /** @param
-        @param
+    /// Signals that context menu @c menu is about to open for specific objects.
+    /** @param menu Menu to which append functionalities.
+        @param List of target objects. Use to inspect that 
     */
-//    void ContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
+    void ContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 
 private slots:
     /// Removes proxy widget from internally maintained lists upon destruction.

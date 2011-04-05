@@ -252,7 +252,7 @@ void SceneStructureWindow::CreateAssetReferences()
         else
         {
             // Create asset ref items as children of entity items.
-            foreach(ComponentPtr comp, entity->GetComponentVector())
+            foreach(ComponentPtr comp, entity->Components())
                 foreach(IAttribute *attr, comp->GetAttributes())
                     if (attr->TypeName() == "assetreference" || attr->TypeName() == "assetreferencelist")
                         CreateAssetItem(eItem, attr);
@@ -289,7 +289,7 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 
     treeWidget->addTopLevelItem(item);
 
-    foreach(ComponentPtr c, entity->GetComponentVector())
+    foreach(ComponentPtr c, entity->Components())
         AddComponent(entity, c.get());
 }
 

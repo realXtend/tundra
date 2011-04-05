@@ -13,7 +13,6 @@
 #include "SceneStructureModule.h"
 #include "SupportedFileTypes.h"
 
-#include "UiServiceInterface.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
@@ -444,7 +443,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
                 QDomElement entity_elem = scene_doc.createElement("entity");
                 entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-                foreach(ComponentPtr component, entity->GetComponentVector())
+                foreach(ComponentPtr component, entity->Components())
                     if (component->IsSerializable())
                         component->SerializeTo(scene_doc, entity_elem);
 
@@ -534,9 +533,6 @@ void SceneTreeWidget::Edit()
 
     if (selection.HasComponents() || selection.HasEntities())
     {
-        //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-        //assert(ui);
-
         // If we have an existing editor instance, use it.
         if (ecEditors.size())
         {
@@ -620,9 +616,6 @@ void SceneTreeWidget::EditInNew()
         return;
 
     // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
-    //UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
-    //assert(ui);
-
     ECEditorWindow *editor = new ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
     connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(ECEditorDestroyed(QObject *)), Qt::UniqueConnection);
@@ -1352,7 +1345,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
             if (!comp)
                 continue;
 
-            foreach(ComponentPtr comp, entity->GetComponentVector())
+            foreach(ComponentPtr comp, entity->Components())
                 foreach(IAttribute *attr, comp->GetAttributes())
                     if (attr->TypeName() == "assetreference")
                     {

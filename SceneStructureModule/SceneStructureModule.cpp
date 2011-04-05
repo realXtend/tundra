@@ -22,7 +22,6 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "ConsoleAPI.h"
-#include "UiServiceInterface.h"
 #include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "SceneImporter.h"
