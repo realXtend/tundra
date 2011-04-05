@@ -69,7 +69,7 @@ public slots:
     void SetAutoUpdated(bool val);
 
 private slots:
-    void AttributeUpdated(IAttribute* attribute);
+    void OnAttributeUpdated(IAttribute* attribute);
     //void UpdateRtt();
 
 private:

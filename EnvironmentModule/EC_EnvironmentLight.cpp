@@ -53,7 +53,7 @@ namespace Environment
         currentTimeAttr.SetMetadata(&currentTimeMetaData);
 
         connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
+            SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         UpdateSun();
         UpdateAmbientLight();
@@ -143,7 +143,7 @@ namespace Environment
     
     }
 
-    void EC_EnvironmentLight::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
+    void EC_EnvironmentLight::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
     {
         ChangeEnvironmentLight(attribute);
     }
