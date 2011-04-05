@@ -338,6 +338,18 @@ void ECEditorModule::ActiveECEditorDestroyed(QObject *obj)
         active_editor_ = 0;
 }
 
+bool ECEditorModule::IsECEditorWindowVisible() const
+{
+    if (active_editor_)
+    {
+        return active_editor_->isVisible();
+    }
+    else
+    {
+        return false;
+    }
+}
+
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {

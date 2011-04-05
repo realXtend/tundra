@@ -10,7 +10,7 @@
 #include "ConsoleManager.h"
 #include "ConsoleModule.h"
 
-#include "UiServiceInterface.h"
+#include "UiAPI.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
 #include "Framework.h"
@@ -36,12 +36,14 @@ namespace Console
     {
         if (!ui_view_)
             return; // Headless
-            
+
         console_ui_ = new Ui::ConsoleWidget();
         console_widget_ = new QWidget();
-        
+
         // Init internals
         console_ui_->setupUi(console_widget_);
+        ///\todo UiService deprecated.
+        /*
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
         if (ui)
         {
@@ -51,6 +53,16 @@ namespace Console
             proxy_widget_->setOpacity(opacity_);
             proxy_widget_->setZValue(100);
             ui->RegisterUniversalWidget("Console", proxy_widget_);
+        }
+        */
+
+        if (framework_->Ui())
+        {
+            proxy_widget_ = framework_->Ui()->AddWidgetToScene(console_widget_);
+            proxy_widget_->setMinimumHeight(0);
+            proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
+            proxy_widget_->setOpacity(opacity_);
+            proxy_widget_->setZValue(100);
         }
 
         // Init animation
@@ -125,6 +137,12 @@ namespace Console
 
         if (!hooked_to_scenes_)
         {
+            QGraphicsScene *scene = framework_->Ui()->GraphicsScene();
+            if (scene)
+                connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
+            hooked_to_scenes_ = true;
+            ///\todo UiService is deprecated.
+            /*
             UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
             if (ui)
             {
@@ -142,6 +160,7 @@ namespace Console
                     connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
                 hooked_to_scenes_ = true;
             }
+            */
         }
 
         QGraphicsScene *current_scene = proxy_widget_->scene();
@@ -171,7 +190,7 @@ namespace Console
 
     void UiConsoleManager::StyleString(QString &str)
     {
-        // Make all timespamp + module name blocks white
+        // Make all timestamp + module name blocks white
         int block_end_index = str.indexOf("]");
         if (block_end_index != -1)
         {

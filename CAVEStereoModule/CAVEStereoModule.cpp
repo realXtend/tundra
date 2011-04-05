@@ -8,40 +8,24 @@
 #include "StereoWidget.h"
 #include <QDebug>
 #include "OgreRenderingModule.h"
+
 namespace CAVEStereo
 {
-
-	std::string CAVEStereoModule::type_name_static_ = "CAVEStereoModule";
+    std::string CAVEStereoModule::type_name_static_ = "CAVEStereoModule";
 
     CAVEStereoModule::CAVEStereoModule() :
         IModule(type_name_static_),
         stereo_(0),
         cave_(0)
     {
-
     }
+
     CAVEStereoModule::~CAVEStereoModule()
     {
         SAFE_DELETE(stereo_);
         SAFE_DELETE(cave_);
     }
-    QVector<Ogre::RenderWindow*> CAVEStereoModule::GetCAVERenderWindows()
-    {
-        return cave_->getExternalWindows();
-    }
 
-    void CAVEStereoModule::Load()
-    {
-
-    }
-    void CAVEStereoModule::PreInitialize()
-    {
-
-    }
-    void CAVEStereoModule::Initialize()
-    {
-
-    }
     void CAVEStereoModule::PostInitialize()
     {
         OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
@@ -57,13 +41,15 @@ namespace CAVEStereo
             }
         }
     }
-    void CAVEStereoModule::Uninitialize()
-    {
 
-    }
     void CAVEStereoModule::Update(f64 frametime)
     {
+        RESETPROFILER;
+    }
 
+    QVector<Ogre::RenderWindow*> CAVEStereoModule::GetCAVERenderWindows()
+    {
+        return cave_->getExternalWindows();
     }
 
     void CAVEStereoModule::ShowStereoscopyWindow()
@@ -73,11 +59,10 @@ namespace CAVEStereo
 
     void CAVEStereoModule::ShowCaveWindow()
     {
-	    cave_->GetCaveWidget()->show();
+        cave_->GetCaveWidget()->show();
     }
-
 }
-//! --- POCO Manifest Stuff ---
+
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {

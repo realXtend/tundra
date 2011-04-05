@@ -1,25 +1,35 @@
-#include <QWidget>
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "ForwardDefines.h"
 #include "CoreTypes.h"
 
-#include "IModule.h"
-#include "ModuleLoggingFunctions.h"
-namespace Scene
-{
-    class SceneManager;
-}
+#include <QWidget>
 
-
+namespace Scene { class SceneManager; }
 
 namespace Environment
 {
-    class EnvironmentModule;
-
     class TerrainWeightEditor : public QWidget
     {
         Q_OBJECT
 
+    public:
+        explicit TerrainWeightEditor(Foundation::Framework *fw);
+        ~TerrainWeightEditor();
+
+    public slots:
+        void RecreateBrush();
+        void LoadWeightmapFromFile();
+        void Initialize();
+        void ApplyWeightTexture();
+        void SetUseWeights(bool val);
+        void BrushSizeChanged(int val);
+        void BrushFalloffChanged(double val);
+        void BrushModifierChanged(int val);
+        void HandleMouseEventFromCanvas(QMouseEvent *ev, QString name);
+
     private:
-        EnvironmentModule* env_module_;
+        Foundation::Framework *fw_;
         QWidget* editor_widget_;
         Scene::SceneManager* scene_manager_;
         Scene::SceneManager* GetSceneManager();
@@ -37,26 +47,5 @@ namespace Environment
 
     signals:
         void BrushValueChanged();
-        
-
-    public slots:
-        void RecreateBrush();
-        void LoadWeightmapFromFile();
-        void Initialize();
-        void ApplyWeightTexture();
-        void SetUseWeights(bool val);
-        void BrushSizeChanged(int val);
-        void BrushFalloffChanged(double val);
-        void BrushModifierChanged(int val);
-
-        Console::CommandResult ShowWindow(const StringVector &params);
-
-        void HandleMouseEventFromCanvas(QMouseEvent *ev, QString name);
-
-
-    public:
-        TerrainWeightEditor(EnvironmentModule* env_module);
-        ~TerrainWeightEditor();
     };
-
 }
