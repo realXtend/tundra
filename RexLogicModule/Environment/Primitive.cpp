@@ -585,7 +585,7 @@ void Primitive::HandleECRemove(entity_id_t entityid, StringVector params)
 {
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
 
-    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
+    Scene::Entity::ComponentVector all_components = entity->Components();
     for (uint i = 0; i < all_components.size(); ++i)
     {
         if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
@@ -2366,7 +2366,7 @@ void Primitive::SerializeECsToNetwork()
         
         //std::cout << "Processing locally dirty entity" << std::endl;
         
-        const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
+        const Scene::Entity::ComponentVector& components = entity->Components();
         
         // Get/create freedata component
         ComponentPtr freeptr = entity->GetOrCreateComponent(EC_FreeData::TypeNameStatic());
@@ -2436,7 +2436,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
     
     // If the entity has extra serializable EC's, we must remove them if they are no longer in the freedata.
     // However, at present time majority of EC's are not serializable, are handled internally, and must not be removed
-    Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
+    Scene::Entity::ComponentVector all_components = entity->Components();
     for (uint i = 0; i < all_components.size(); ++i)
     {
         if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
@@ -2455,13 +2455,10 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
         }
     }
     
-    // Finally trigger localonly change for the components we deserialized.
+    // Finally trigger LocalOnly change for the components we deserialized.
     //! \todo All attributes will reflect a change, even if they had the same value as before. Optimize this away.
-    //! \todo ComponentChanged() currently triggers deprecated OnChanged() signal. This will be removed. Do not rely on it!
     for (uint i = 0; i < deserialized.size(); ++i)
-    {
         deserialized[i]->ComponentChanged(AttributeChange::LocalOnly);
-    }
 }
 
 } // namespace RexLogic

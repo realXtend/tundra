@@ -98,7 +98,7 @@ void ECBrowser::RemoveEntity(Scene::EntityPtr entity)
             disconnect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this,
                 SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
 
-            Scene::Entity::ComponentVector components = ent_ptr->GetComponentVector();
+            Scene::Entity::ComponentVector components = ent_ptr->Components();
             for(uint i = 0; i < components.size(); i++)
                 RemoveComponentFromGroup(components[i]);
 
@@ -167,7 +167,7 @@ void ECBrowser::UpdateBrowser()
         if((*iter).expired())
             continue;
 
-        const Scene::Entity::ComponentVector components = (*iter).lock()->GetComponentVector();
+        const Scene::Entity::ComponentVector components = (*iter).lock()->Components();
         for(uint i = 0; i < components.size(); i++)
             AddNewComponentToGroup(components[i]);
     }

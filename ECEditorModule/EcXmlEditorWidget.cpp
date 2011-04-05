@@ -135,7 +135,7 @@ void EcXmlEditorWidget::Refresh()
             temp_doc.appendChild(entity_elem);
         entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-        const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+        const Scene::Entity::ComponentVector &components = entity->Components();
         for(uint i = 0; i < components.size(); ++i)
             if (components[i]->IsSerializable())
             {

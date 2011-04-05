@@ -117,7 +117,7 @@ class DoorHandler(circuits.BaseComponent):
             return None
     def set_opened(self, newval):
         self.comp.SetAttribute("opened", newval)
-        self.comp.OnChanged()
+        self.comp.ComponentChanged(0)
     opened = property(get_opened, set_opened)
 
     def get_locked(self):
@@ -127,7 +127,7 @@ class DoorHandler(circuits.BaseComponent):
             return None
     def set_locked(self, newval):
         self.comp.SetAttribute("locked", newval)
-        self.comp.OnChanged()
+        self.comp.ComponentChanged(0)
     locked = property(get_locked, set_locked)
 
     def open(self):
