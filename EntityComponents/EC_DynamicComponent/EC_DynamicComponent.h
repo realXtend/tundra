@@ -38,12 +38,9 @@ When component is deserialized it will compare old and a new attribute values an
 between those two and use that information to remove attributes that are not in the new list and add those
 that are only in new list and only update those values that are same in both lists.
 
-@todo Serialization is now done using a FreeData field that has character limit of 1000.
-If XML file will get larger than that client will not send a new attribute values to the server.
+Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
-Registered by PythonScript::PythonScriptModule.
-
-<b>No Attributes.</b>
+<b>No Static Attributes.</b>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
