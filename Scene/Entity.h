@@ -121,9 +121,6 @@ namespace Scene
         ComponentPtr CreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
         ComponentPtr CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
-        //! component container
-        typedef std::vector<ComponentPtr> ComponentVector;
-
         typedef std::vector<ComponentPtr> ComponentVector; //!< Component container.
         typedef QMap<QString, EntityAction *> ActionMap; //!< Action container
 
