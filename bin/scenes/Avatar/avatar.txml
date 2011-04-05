@@ -11,17 +11,6 @@
    <attribute value="" name="description"/>
    <attribute value="false" name="user-defined"/>
   </component>
-  <component type="EC_InputMapper" sync="1">
-   <attribute value="EC_InputMapper" name="Input context name"/>
-   <attribute value="102" name="Input context priority"/>
-   <attribute value="false" name="Take keyboard events over Qt"/>
-   <attribute value="false" name="Take mouse events over Qt"/>
-   <attribute value="" name="Mappings"/>
-   <attribute value="1" name="Action execution type"/>
-   <attribute value="1" name="Key modifiers enable"/>
-   <attribute value="true" name="Enable actions"/>
-   <attribute value="true" name="Trigger on keyrepeats"/>
-  </component>
  </entity>
  <entity id="4">
   <component type="EC_Mesh" sync="1">
