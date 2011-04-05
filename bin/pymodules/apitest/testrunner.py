@@ -250,16 +250,15 @@ class TestDynamicProperties(TestRunner):
         d = ent.qent.EC_DynamicComponent
         val = 42.0
         d.CreateAttribute("real", val)
-        # Todo: OnChanged() is deprecated
-        d.OnChanged()
+        d.ComponentChanged(0)
         assert val == d.GetAttribute("real")
 
         val = 8.5
         d.SetAttribute("real", val)
-        d.OnChanged()
+        d.ComponentChanged(0)
         assert val == d.GetAttribute("real")
         d.RemoveAttribute("real")
-        d.OnChanged()
+        d.ComponentChanged(0)
 
         yield "created, changed and removed attribute"
         r.exit()
@@ -369,11 +368,11 @@ class TestApi(TestRunner):
         print ent, type(ent)
         d = ent.EC_DynamicComponent
         d.CreateAttribute("real", 42.0)
-        d.OnChanged()
+        d.ComponentChanged(0)
         d.SetAttribute("real", 8.5)
-        d.OnChanged()
+        d.ComponentChanged(0)
         d.RemoveAttribute("real")
-        d.OnChanged()
+        d.ComponentChanged(0)
 
         yield "test javascript"
         cam = naali.getCamera()

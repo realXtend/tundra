@@ -244,7 +244,7 @@ void UiAPI::RemoveWidgetFromScene(QWidget *widget)
     fullScreenWidgets.removeOne(widget->graphicsProxyWidget());
 }
 
-void UiAPI::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
+void UiAPI::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
 {
     if (!widget)
         return;
@@ -312,7 +312,13 @@ QWidget *UiAPI::LoadFromFile(const QString &filePath, bool addToScene, QWidget *
 
     if (addToScene && widget)
         AddWidgetToScene(widget);
+
     return widget;
+}
+
+void UiAPI::EmitContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
+{
+    emit ContextMenuAboutToOpen(menu,targets);
 }
 
 void UiAPI::ShowWidget(QWidget *widget) const

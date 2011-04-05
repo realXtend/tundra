@@ -145,7 +145,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
         LogError("No EC_Name was created!");
 
     // All components have been loaded/modified. Trigger change for them now.
-    foreach(ComponentPtr c, newentity->GetComponentVector())
+    foreach(ComponentPtr c, newentity->Components())
         c->ComponentChanged(change);
 
     scene_->EmitEntityCreated(newentity, change);

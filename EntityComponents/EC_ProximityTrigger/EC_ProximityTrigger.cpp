@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_ProximityTrigger.cpp
- *  @brief  EC_ProximityTrigger reports distance, each frame, to other entities with EC_ProximityTrigger
- *  @note   The entity should have EC_Placeable available in advance.
+ *  @brief  EC_ProximityTrigger reports distance, each frame, of other entities that also have EC_ProximityTrigger component
  */
 
 #include "StableHeaders.h"
@@ -20,9 +19,10 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ProximityTrigger")
 EC_ProximityTrigger::EC_ProximityTrigger(IModule *module)
     :IComponent(module->GetFramework()),
     active(this, "Is active", true),
-    thresholdDistance(this, "Threshold distance", 0.0f)
+    thresholdDistance(this, "Threshold distance", 0.0f),
+    period(this, "Period", 0.0f)
 {
-    connect(framework_->Frame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
+    SetUpdateMode();
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(AttributeUpdated(IAttribute*)));
 }
@@ -33,6 +33,8 @@ EC_ProximityTrigger::~EC_ProximityTrigger()
 
 void EC_ProximityTrigger::AttributeUpdated(IAttribute* attr)
 {
+    if (attr == &period)
+        SetUpdateMode();
 }
 
 void EC_ProximityTrigger::Update(float timeStep)
@@ -64,7 +66,38 @@ void EC_ProximityTrigger::Update(float timeStep)
             float distance = offset.getLength();
             
             if ((threshold <= 0.0f) || (distance <= threshold))
+            {
                 emit Triggered(otherEntity, distance);
+            }
         }
     }
 }
+
+void EC_ProximityTrigger::SetUpdateMode()
+{
+    FrameAPI* frame = framework_->Frame();
+    
+    float perSec = period.Get();
+    if (perSec <= 0.0f)
+    {
+        // Update every frame
+        connect(frame, SIGNAL(Updated(float)), this, SLOT(Update(float)));
+    }
+    else
+    {
+        // Update periodically
+        disconnect(frame, SIGNAL(Updated(float)), this, SLOT(Update(float)));
+        frame->DelayedExecute(perSec, this, SLOT(PeriodicUpdate()));
+    }
+}
+
+void EC_ProximityTrigger::PeriodicUpdate()
+{
+    // Set up the next periodic update
+    float perSec = period.Get();
+    if (perSec > 0.0f)
+        framework_->Frame()->DelayedExecute(perSec, this, SLOT(PeriodicUpdate()));
+    
+    Update(perSec);
+}
+
