@@ -212,9 +212,6 @@ public slots:
     /// Informs that every attribute in this Component has changed with the change
     /** you specify. If change is Replicate, or it is Default and the UpdateMode is Replicate,
         every attribute will be synced to the network.
-
-        \todo Triggers also the deprecated OnChanged() signal. That will be removed in the future.
-        Do not rely on it.
     */
     void ComponentChanged(AttributeChange::Type change);
 
@@ -252,12 +249,6 @@ public slots:
     QStringList GetAttributeNames() const;
 
 signals:
-    /// This signal is emitted when any Attribute of this component has changed.
-    /// Users may freely register to this signal to get notifications of the changes to this Component.
-    /// \todo This member is deprecated and will be removed. You can achieve the exact same thing by 
-    /// connecting to AttributeChanged() and just ignoring the parameters of that signal.
-    void OnChanged();
-
     /// This signal is emitted when an Attribute of this Component has changed. 
     void OnAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
