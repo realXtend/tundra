@@ -107,7 +107,7 @@ namespace Scene
             \param syncEnabled Whether new component will have network sync enabled
         */
         ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
-1
+
         //! Creates a new component using the ComponentManager and attaches it to this entity. 
         /*! 
             \param type_name type of the component
