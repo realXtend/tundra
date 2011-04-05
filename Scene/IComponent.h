@@ -192,8 +192,7 @@ public slots:
     /** You may call this function manually to force Attribute change signal to
         occur, but it is not necessary if you use the Attribute::Set function, since
         it notifies this function automatically.
-        @param attribute The attribute that was changed. The attribute passed here
-                   must be an Attribute member of this component.
+        @param attribute The attribute that was changed. The attribute passed here must be an Attribute member of this component.
         @param change Informs to the component the type of change that occurred.
 
         This function calls Scene::EmitAttributeChanged and triggers the 
@@ -202,20 +201,13 @@ public slots:
         This function is called by IAttribute::Changed whenever the value in that
         attribute is changed.
     */
-    void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+    void EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
-    /// Informs this component that the value of a member Attribute of this component has changed.
-    /** You may call this function manually to force Attribute change signal to
-        occur, but it is not necessary if you use the Attribute::Set function, since
-        it notifies this function automatically.
-        @param attributeName Name of the attribute that changed. Note: this is a no-op
-               if the named attribute is not found.
+    /// This is an overloaded function.
+    /** @param attributeName Name of the attribute that changed. Note: this is a no-op if the named attribute is not found.
         @param change Informs to the component the type of change that occurred.
-
-        This function calls Scene::EmitAttributeChanged and triggers the 
-        OnAttributeChanged signal of this component.
     */
-    void AttributeChanged(const QString& attributeName, AttributeChange::Type change);
+    void EmitAttributeChanged(const QString& attributeName, AttributeChange::Type change);
 
     /// Informs that every attribute in this Component has changed with the change
     /** you specify. If change is Replicate, or it is Default and the UpdateMode is Replicate,
@@ -257,13 +249,13 @@ public slots:
 
     /// Returns list of attribute names of the component
     /// @return list of attribute names
-    QStringList GetAttributeNames();
+    QStringList GetAttributeNames() const;
 
 signals:
     /// This signal is emitted when any Attribute of this component has changed.
     /// Users may freely register to this signal to get notifications of the changes to this Component.
     /// \todo This member is deprecated and will be removed. You can achieve the exact same thing by 
-    /// connecting to OnAttributeChanged and just ignoring the parameters of that signal.
+    /// connecting to AttributeChanged() and just ignoring the parameters of that signal.
     void OnChanged();
 
     /// This signal is emitted when an Attribute of this Component has changed. 
@@ -294,7 +286,7 @@ protected:
     void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& value, const QString &type) const;
 
     /// Helper function for starting deserialization. 
-    /** Checks that xml element contains the right kind of EC, and if it is right, sets the component name.
+    /** Checks that XML element contains the right kind of EC, and if it is right, sets the component name.
         Otherwise returns false and does nothing.
     */
     bool BeginDeserialization(QDomElement& comp_element);

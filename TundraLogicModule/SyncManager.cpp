@@ -1069,7 +1069,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 if (i->second[j])
                 {
                     currentSender = source;
-                    compShared->AttributeChanged(attributes[j], change);
+                    compShared->EmitAttributeChanged(attributes[j], change);
                 }
         }
         ++i;
@@ -1089,7 +1089,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 if (attr)
                 {
                     currentSender = source;
-                    compShared->AttributeChanged(attr, change);
+                    compShared->EmitAttributeChanged(attr, change);
                 }
             }
         }
