@@ -105,7 +105,20 @@ namespace Scene
         ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
         ComponentPtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
         ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
-        
+
+        //! Creates a new component using the ComponentManager and attaches it to this entity. 
+        /*! 
+            \param type_name type of the component
+            \param change Network replication mode, in case component has to be created
+            \param syncEnabled Whether new component will have networksync enabled
+            \return Retuns a pointer to the newly created component, or null if creation failed. Common causes for failing to create an component
+            is that a component with the same (typename, name) pair exists, or that components of the given typename are not recognized by the system.
+        */
+        ComponentPtr CreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+        ComponentPtr CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
+        ComponentPtr CreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
+        ComponentPtr CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
+
         //! component container
         typedef std::vector<ComponentPtr> ComponentVector;
 
@@ -124,13 +137,13 @@ namespace Scene
         //! comparison by id
         virtual bool operator < (const Entity &other) const { return GetId() < other.GetId(); }
 
-        //! Add a new component to this entity.
+        //! Attachs an existing parentless component to this entity.
         /*! Entities can contain any number of components of any type.
             It is also possible to have several components of the same type,
             although in most cases it is probably not sensible.
             
             Each component type that is added to this entity is registered as
-            Q_PROPETY as in following syntax EC_Light -> light, where EC_ is cutted off
+            Q_PROPERTY as in following syntax EC_Light -> light, where EC_ is cutted off
             and name is converted to low case format. This allow scripter to get access to
             component using a following code "entity.mesh.SetMesh("mesh id");"
             
@@ -138,7 +151,8 @@ namespace Scene
             is accessable through Q_PROERTY and if you want to edit other same type of components
             you should use GetComponent mehtod instead.
 
-            \param component An entity component
+            \param component The component to add to this entity. The component must be parentless, i.e.
+                          previously created using ComponentManager::CreateComponent.
             \param change Network replication mode
         */
         void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
@@ -402,6 +416,7 @@ namespace Scene
 		//! Returns if this entity is local
         bool IsLocal() const { return (id_ & LocalEntity) != 0; }
 
+        QString ToString() const;
 	private:
         /// Validates that the action has receivers. If not, deletes the action and removes it from the registered actions.
         /** @param action Action to be validated.
