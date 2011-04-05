@@ -24,7 +24,6 @@
 #include "GenericAssetFactory.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
-#include "UiServiceInterface.h"
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
@@ -246,8 +245,14 @@ namespace Foundation
 
         try
         {
-            Poco::Logger::create("",formatchannel,Poco::Message::PRIO_TRACE);
-            Poco::Logger::create("Foundation",Poco::Logger::root().getChannel() ,Poco::Message::PRIO_TRACE);
+#ifdef _DEBUG
+            int loggingLevel = Poco::Message::PRIO_TRACE;
+#else
+            int loggingLevel = Poco::Message::PRIO_INFORMATION;
+#endif            
+
+            Poco::Logger::create("",formatchannel,loggingLevel);
+            Poco::Logger::create("Foundation",Poco::Logger::root().getChannel(), loggingLevel);
         }
         catch (Poco::ExistsException &/*e*/)
         {
@@ -732,11 +737,6 @@ namespace Foundation
     UiAPI *Framework::Ui() const
     {
         return ui;
-    }
-
-    UiServiceInterface *Framework::UiService()
-    {
-        return GetService<UiServiceInterface>();
     }
 
     ConsoleAPI *Framework::Console() const

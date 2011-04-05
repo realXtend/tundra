@@ -36,6 +36,8 @@ public:
 
     QString scriptContent;
 
+    bool IsLoaded() const;
+
 private slots:
     /// Parse internal references from script
     void ParseReferences();

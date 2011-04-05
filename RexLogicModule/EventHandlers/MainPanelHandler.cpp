@@ -8,7 +8,7 @@
 #include "Framework.h"
 #include "WorldStream.h"
 
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
@@ -20,7 +20,7 @@ namespace RexLogic
 
 MainPanelHandler::MainPanelHandler(RexLogicModule *rexlogic) : rexlogic_(rexlogic)
 {
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
     UiServices::UiModule *ui_module = rexlogic_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
     {

@@ -51,6 +51,7 @@ class AnimationSync(circuits.BaseComponent):
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
+        # TODO: Due to core UI API refactor AddWidgetToMenu doesn't exist anymore.
         #uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
         #to not flood the network

@@ -14,6 +14,7 @@
 #include "ParticipantWindow.h"
 
 #include "Framework.h"
+#include "UiAPI.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -174,29 +175,29 @@ void DebugStatsModule::StartProfiling(bool visible)
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVector &params*/)
 {
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (!ui)
-        return Console::ResultFailure("Failed to acquire UI service!");
+//    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
+//    if (!ui)
+//        return Console::ResultFailure("Failed to acquire UI service!");
 
     // If the window is already created, bring it to front.
     if (profilerWindow_)
     {
-        ui->BringWidgetToFront(profilerWindow_);
+        framework_->Ui()->BringWidgetToFront(profilerWindow_);
         return Console::ResultSuccess();
     }
     else
-        return Console::ResultFailure("Profiler window has not been initialised, something went wrong on startup!");
+        return Console::ResultFailure("Profiler window has not been initialized, something went wrong on startup!");
 }
 
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
-    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
-    if (!ui)
-        return Console::ResultFailure("Failed to acquire UI service!");
+//    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Service::ST_Gui).lock();
+//    if (!ui)
+//        return Console::ResultFailure("Failed to acquire UI service!");
 
     if (participantWindow_)
     {
-        ui->BringWidgetToFront(participantWindow_);
+        framework_->Ui()->BringWidgetToFront(participantWindow_);
         return Console::ResultSuccess();
     }
 
@@ -204,8 +205,8 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
     participantWindow_->move(100, 100);
     participantWindow_->setWindowFlags(Qt::Dialog);
 
-    /*QGraphicsProxyWidget *proxy = */ui->AddWidgetToScene(participantWindow_);
-    ui->BringWidgetToFront(participantWindow_);
+    /*QGraphicsProxyWidget *proxy = */framework_->Ui()->AddWidgetToScene(participantWindow_);
+    framework_->Ui()->BringWidgetToFront(participantWindow_);
 //    proxy->show();
 
     return Console::ResultSuccess();

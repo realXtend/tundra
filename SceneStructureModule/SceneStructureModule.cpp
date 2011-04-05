@@ -211,8 +211,8 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
         addContent->show();
     }
 
-    /** \todo this is always empty list of entities, remove (?!) as we actually dont know the entity count yet.
-     *  it is known only after the add content window selectios and processing has been done 
+    /** \todo this is always empty list of entities, remove (?!) as we actually don't know the entity count yet.
+     *  it is known only after the add content window selections and processing has been done 
      */
     return ret; 
 }
@@ -317,11 +317,7 @@ void SceneStructureModule::ToggleSceneStructureWindow()
         return;
     }
 
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
-    sceneWindow = new SceneStructureWindow(framework_, ui->MainWindow());
+    sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
     sceneWindow->SetScene(GetFramework()->Scene()->GetDefaultScene());
     sceneWindow->show();
@@ -341,11 +337,7 @@ void SceneStructureModule::ToggleAssetsWindow()
         return;
     }
 
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
-    assetsWindow = new AssetsWindow(framework_, ui->MainWindow());
+    assetsWindow = new AssetsWindow(framework_, framework_->Ui()->MainWindow());
     assetsWindow->setWindowFlags(Qt::Tool);
     assetsWindow->show();
 }

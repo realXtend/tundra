@@ -90,7 +90,7 @@ class ObjectEdit(Component):
         self.selection_box_inited = False
         
         self.menuToggleAction = None
-        mainWindow = naali.uicore.MainWindow()
+        mainWindow = naali.ui.MainWindow()
         print mainWindow
         if mainWindow:
             menuBar = mainWindow.menuBar()

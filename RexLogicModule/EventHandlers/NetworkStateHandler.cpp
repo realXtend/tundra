@@ -20,7 +20,7 @@
 #include "SceneAPI.h"
 #include "SceneManager.h"
 
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
 #include "UiModule.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
@@ -78,7 +78,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, IEve
         assert(event_data);
         if (!event_data)
             return false;
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
         UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
         if (ui_module)
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
@@ -92,7 +92,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, IEve
         assert(event_data);
         if (!event_data)
             return false;
-#ifndef UISERVICE_TEST
+#ifdef USE_UIMODULE
         UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
         if (ui_module)
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
