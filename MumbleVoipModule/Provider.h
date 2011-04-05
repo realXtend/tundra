@@ -4,10 +4,13 @@
 #define incl_MumbleVoipModule_Provider_h
 
 #include <QObject>
+#include <QMap>
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
 #include "AttributeChangeType.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "WorldStream.h"
+#endif
 
 namespace TundraLogic
 {
@@ -77,7 +80,9 @@ namespace MumbleVoip
         QList<EC_VoiceChannel*> ec_voice_channels_;
         QMap<EC_VoiceChannel*, QString> channel_names_;
         QSignalMapper* signal_mapper_;
+#ifdef ENABLE_TAIGA_SUPPORT
         ProtocolUtilities::WorldStreamPtr world_stream_;
+#endif
         boost::shared_ptr<TundraLogic::TundraLogicModule> tundra_logic_;
         QList<EC_VoiceChannel*> channel_queue_;
 

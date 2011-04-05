@@ -1,13 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
 #include "LegacyAvatarSerializer.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
 #include "RexNetworkUtils.h"
-#include "OgreConversionUtils.h"
-#include "RexNetworkUtils.h"
 #include "HttpUtilities.h"
+#include "RexNetworkUtils.h"
+#endif
 #include "XMLUtilities.h"
+
+#include "OgreConversionUtils.h"
 
 #include "AvatarModule.h"
 
@@ -17,7 +21,9 @@
 
 #include <Ogre.h>
 
+#ifdef ENABLE_TAIGA_SUPPORT
 using namespace RexTypes;
+#endif
 
 namespace Avatar
 {
@@ -386,8 +392,12 @@ namespace Avatar
         new_def.fadeout_ = ParseReal(elem.attribute("fadeout", "0").toStdString());
         new_def.speedfactor_ = ParseReal(elem.attribute("speedfactor", "1").toStdString());
         new_def.weightfactor_ = ParseReal(elem.attribute("weightfactor", "1").toStdString());
-        
+
+#ifdef ENABLE_TAIGA_SUPPORT
         dest[RexUUID(new_def.id_)] = new_def;
+#else
+        dest[new_def.id_] = new_def;
+#endif
         
         return true;
     }
@@ -886,4 +896,3 @@ namespace Avatar
         return elem;
     }
 }
-

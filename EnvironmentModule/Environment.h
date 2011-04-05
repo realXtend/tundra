@@ -58,6 +58,7 @@ namespace Environment
          * Creates the environment EC to current active scene and adjust it using default parameters.
          **/
         void CreateEnvironment();
+#ifdef ENABLE_TAIGA_SUPPORT
 
         /// Handles the "SimulatorViewerTimeMessage" packet.
         /** @param data The network event data pointer.
@@ -100,13 +101,14 @@ namespace Environment
 
         /// Returns current fog ground color. 
         QVector<float> GetFogGroundColor();
-
+#endif
         /// Updates the visual effects (fog, skybox etc).
         void Update(f64 frametime);
 
         /// @return true if caelum library is used.
         bool IsCaelum();
 
+#ifdef ENABLE_TAIGA_SUPPORT
         //! Set new sunlight direction
         //! @param vector new sun light direction.
         void SetSunDirection(const QVector<float>& vector);
@@ -130,7 +132,7 @@ namespace Environment
         //! Set new ambient light color.
         //! @param vector new ambient light color value.
         void SetAmbientLight(const QVector<float>& vector);
-
+#endif
         /// Converts string vector to QVector.
         template<typename T> QVector<T> ConvertToQVector(const StringVector& vector) 
         {
@@ -153,26 +155,36 @@ namespace Environment
         }
 
     public slots:
+
+#ifdef ENABLE_TAIGA_SUPPORT
         //! Setter/getter for bool local override of server time
         void SetTimeOverride(bool enabled) { time_override_ = enabled; }
         bool GetTimeOverride() { return time_override_; }
-
+#endif
     signals:
-      
+
+#ifdef ENABLE_TAIGA_SUPPORT
+
         //! Emitted when ground fog is adjusted.
         void GroundFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
 
+#endif
     private:
+#ifdef ENABLE_TAIGA_SUPPORT
+
         /// Creates the global sunlight.
         void CreateGlobalLight();
 
         EC_Fog* GetEnvironmentFog();
 
+#endif
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
 
         /// Weak pointer to the entity which has the environment component.
         Scene::EntityWeakPtr activeEnvEntity_;
+
+#ifdef ENABLE_TAIGA_SUPPORT
 
         /// Time override, default false
         bool time_override_;
@@ -194,7 +206,7 @@ namespace Environment
 
         /// Sun's angle velocity.
         Vector3df sunAngVelocity_;
-
+#endif
         /// Bit mask of Caelum components we use.
         int caelumComponents_;
     };

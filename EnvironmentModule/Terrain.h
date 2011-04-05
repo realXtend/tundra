@@ -10,7 +10,9 @@
 
 #include "EC_Terrain.h"
 #include "EnvironmentModuleApi.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
 
 #include <QObject>
 
@@ -40,6 +42,7 @@ namespace Environment
         //! Destructor
         ~Terrain();
 
+#ifdef ENABLE_TAIGA_SUPPORT
         //! Called to handle an OpenSim LayerData packet.
         //! Decodes terrain data from a LayerData packet and generates terrain patches accordingly.
         bool HandleOSNE_LayerData(ProtocolUtilities::NetworkEventInboundData* data);
@@ -85,6 +88,7 @@ namespace Environment
         //! Get terrain texture height ranges in meters.
         //! @param switch texture height value need to return range[0-3].
         const float &GetTerrainTextureHeightRange(int index) const;
+#endif
 
     signals:
         //! Signal is sended when height map values have changed.
@@ -94,6 +98,7 @@ namespace Environment
         void TerrainTextureChanged();
 
     private:
+#ifdef ENABLE_TAIGA_SUPPORT
         void CreateOrUpdateTerrainPatchHeightData(const DecodedTerrainPatch &patch, int patchSize);
 //        void RegenerateDirtyTerrainPatches();
 //        void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
@@ -105,10 +110,11 @@ namespace Environment
 
         /// Sets the terrain parameters to OpenSim-specific hardcoded values.
         void SetupOpenSimTerrainParameters();
-
+#endif
         /// Environment module's pointer.
         EnvironmentModule *owner_;
 
+#ifdef ENABLE_TAIGA_SUPPORT
         /// Request tags for new terrain textures.
 //        request_tag_t terrain_texture_requests_[num_terrain_textures];
 
@@ -122,6 +128,7 @@ namespace Environment
         float height_ranges_[num_terrain_textures];
 
         Scene::EntityWeakPtr cachedTerrainEntity_;
+#endif
     };
 }
 

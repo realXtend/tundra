@@ -11,7 +11,9 @@
 #include "EC_VoiceChannel.h"
 
 #include "EventManager.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "NetworkEvents.h"
+#endif
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "SceneManager.h"
@@ -72,6 +74,7 @@ namespace MumbleVoip
         if (server_info_provider_)
             server_info_provider_->HandleEvent(category_id, event_id, data);
 
+#ifdef ENABLE_TAIGA_SUPPORT
         if (category_id == networkstate_event_category_)
         {
             switch (event_id)
@@ -94,7 +97,7 @@ namespace MumbleVoip
                 break;
             }
         }
-
+#endif
         return false;
     }
 

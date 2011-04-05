@@ -18,16 +18,18 @@
 #include "OgreLocalResourceUtils.h"
 #include "Renderer.h"
 #include "OgreConversionUtils.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "HttpTask.h"
 #include "HttpUtilities.h"
 #include "LLSDUtilities.h"
+#include "WorldStream.h"
+#endif
 #include "RenderServiceInterface.h"
 //#include "Inventory/InventoryEvents.h"
 #include "ConfigurationManager.h"
 #include "CoreStringUtils.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
-#include "WorldStream.h"
 #ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
 #endif
@@ -38,7 +40,9 @@
 
 #include <Ogre.h>
 
+#ifdef ENABLE_TAIGA_SUPPORT
 using namespace RexTypes;
+#endif
 
 static const float FIXED_HEIGHT_OFFSET = -0.87f;
 static const float OVERLAY_HEIGHT_MULTIPLIER = 1.5f;

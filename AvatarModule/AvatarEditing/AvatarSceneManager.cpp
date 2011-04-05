@@ -1,6 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "AvatarEditing/AvatarSceneManager.h"
 #include "AvatarEditing/AnchorLayout.h"
 
@@ -158,3 +160,5 @@ namespace Avatar
 
     }
 }
+
+#endif

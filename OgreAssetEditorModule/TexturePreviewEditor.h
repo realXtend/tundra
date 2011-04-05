@@ -9,7 +9,9 @@
 #ifndef incl_OgreAssetEditorModule_TexturePreviewEditor_h
 #define incl_OgreAssetEditorModule_TexturePreviewEditor_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
 #include <RexTypes.h>
+#endif
 #include <QWidget>
 #include <QLabel>
 #include "OgreAssetEditorModuleApi.h"

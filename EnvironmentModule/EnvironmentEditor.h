@@ -3,6 +3,8 @@
 #ifndef incl_Environment_EnvironmentEditor_h
 #define incl_Environment_EnvironmentEditor_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "EC_OgreSky.h"
 
 #include "Color.h"
@@ -366,5 +368,7 @@ namespace Environment
         Ogre::SceneNode *manual_paint_node_;
     };
 }
+
+#endif
 
 #endif

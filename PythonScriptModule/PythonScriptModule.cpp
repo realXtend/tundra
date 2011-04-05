@@ -42,15 +42,24 @@
 #include "InputAPI.h"
 #include "RenderServiceInterface.h"
 #include "PythonEngine.h"
+
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "WorldStream.h"
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
-#include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 #include "Inventory/InventorySkeleton.h"
-#include "SceneManager.h"
-#include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
+#include "RexLogicModule.h" //much of the api used to be here -- now the dep is almost refactored out (actually in develop branch only, should be merged here!)
+#include "Camera/CameraControllable.h"
+#include "Environment/Primitive.h"
+#include "Environment/PrimGeometryUtils.h"
+#include "EC_OpenSimPrim.h"
+#endif
+
+#include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
+#include "SceneManager.h"
+#include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 #include "LoginServiceInterface.h"
 #include "FrameAPI.h"
 #include "SceneAPI.h"
@@ -62,6 +71,8 @@
 #include "NaaliMainWindow.h"
 #include "DebugAPI.h"
 
+#include "Entity.h"
+
 //Kristalli UserConnection
 //for JS this is actually registered in TundraLogicModule, which depends on QtScript directly.
 //we could probably use the service mechanism for modules to register these optionally
@@ -70,10 +81,6 @@
 //#include "Avatar/AvatarHandler.h"
 //#include "Avatar/AvatarControllable.h"
 
-#include "RexLogicModule.h" //much of the api used to be here -- now the dep is almost refactored out (actually in develop branch only, should be merged here!)
-#include "Camera/CameraControllable.h"
-#include "Environment/Primitive.h"
-#include "Environment/PrimGeometryUtils.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_Mesh.h"
@@ -87,7 +94,6 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
-#include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
 #include "EC_Touchable.h"
 #include "EC_Ruler.h"
@@ -349,6 +355,7 @@ namespace PythonScript
                 }
             }*/            
         }
+#ifdef ENABLE_TAIGA_SUPPORT
         else if (category_id == networkstate_category_id) // if (category_id == "NETWORK?") 
         {
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
@@ -384,7 +391,6 @@ namespace PythonScript
                 }
             }
         }
-
         //was for first receive chat test, when no module provided it, so handles net event directly
         /* got a crash with this now during login, when the viewer was also getting asset data etc.
            disabling the direct reading of network data here now to be on the safe side,
@@ -463,6 +469,7 @@ namespace PythonScript
                 }
             }*/
         }
+#endif
 
         if (value)
         {
@@ -617,6 +624,7 @@ namespace PythonScript
         return 0;
     }
 
+#ifdef ENABLE_TAIGA_SUPPORT
     Foundation::WorldLogicInterface* PythonScriptModule::GetWorldLogic() const
     {
         Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
@@ -626,7 +634,7 @@ namespace PythonScript
         LogError("WorldLogicInterface service not available in py GetWorldLogic");
         return 0;
     }
-
+#endif
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
         Scene::ScenePtr scene = framework_->Scene()->GetScene(name);
@@ -699,8 +707,9 @@ namespace PythonScript
     }
 
     //this whole thing could be probably implemented in py now as well, but perhaps ok in c++ for speed
-  QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate)
+    QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         // Iterate the scene to find all submeshes that use this texture uuid
         QList<uint> submeshes_;
         QList<Scene::Entity*> affected_entitys_;
@@ -799,6 +808,9 @@ namespace PythonScript
         }
 
         return affected_entitys_;
+#else
+    return QList<Scene::Entity*>();
+#endif
     }
 
     void PythonScriptModule::LoadScript(ScriptAssetPtr scriptAsset)
@@ -862,6 +874,8 @@ POCO_END_MANIFEST
 extern "C"
 #endif
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 /* API calls exposed to py. 
 will probably be wrapping the actual modules in separate files,
 but first test now here. also will use boostpy or something, but now first by hand */
@@ -884,7 +898,6 @@ PyObject* SendChat(PyObject *self, PyObject *args)
     //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
     //rexlogic_->GetCameraControllable()->GetPitch();
     //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
-
     Py_RETURN_TRUE;
 }
 
@@ -904,9 +917,9 @@ static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
         Quaternion newrot(x, y, z, w); //seriously, is this how constructing a quat works!?
         rexlogic->SetAvatarRotation(newrot);
     }
-
     Py_RETURN_NONE;
 }
+#endif
 
 //returns the entity(id) at the position (x, y), if nothing there, returns None
 //\todo XXX renderer is a qobject now, rc should be made a slot there and this removed.
@@ -935,6 +948,7 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 static PyObject* GetQWorldBuildingHandler(PyObject *self)
 {
     Foundation::WorldBuildingServiceInterface *wb =  PythonScript::self()->GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>();
@@ -943,6 +957,7 @@ static PyObject* GetQWorldBuildingHandler(PyObject *self)
     else
         Py_RETURN_NONE;
 }
+#endif
 
 static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 {
@@ -964,6 +979,7 @@ static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 static PyObject* SwitchCameraState(PyObject *self)
 {
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
@@ -995,7 +1011,6 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
     } 
     else
         std::cout << "failed..." << std::endl;
-
     Py_RETURN_TRUE;
 }
 
@@ -1193,9 +1208,9 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     Py_DECREF(py_iter);
 
     PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
-
     Py_RETURN_NONE;
 }
+#endif
 
 //XXX \todo remove and use the generic component adding mechanism from core directly. remove (canvas &) touchable deps from py module then
 void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate)
@@ -1234,6 +1249,7 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     }
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
     // Read params from py: entid as uint, textureuuid as string
@@ -1340,9 +1356,9 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
             return py_submeshes;
         }
     }
-
     Py_RETURN_NONE;
 }
+#endif
 
 PyObject* GetApplicationDataDirectory(PyObject *self)
 {
@@ -1383,6 +1399,7 @@ PyObject* RemoveEntity(PyObject *self, PyObject *value)
 */
 
 //XXX logic CameraControllable has GetPitch, perhaps should have SetPitch too
+#ifdef ENABLE_TAIGA_SUPPORT
 PyObject* SetCameraYawPitch(PyObject *self, PyObject *args) 
 {
     float newyaw, newpitch;
@@ -1416,7 +1433,6 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_RuntimeError, "No logic module, no cameracontrollable.");
         return NULL;
     }
-
     Py_RETURN_NONE;
 }
 
@@ -1435,6 +1451,7 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
     //else - no logic module. can that ever happen?)
     return NULL; //rises py exception
 }
+#endif
 
 PyObject* PyLogInfo(PyObject *self, PyObject *args) 
 {
@@ -1488,6 +1505,7 @@ PyObject* PyLogError(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
     float newyaw;
@@ -1518,9 +1536,9 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_RuntimeError, "No logic module, no AvatarControllable.");
         return NULL;
     }
-
     Py_RETURN_NONE;
 }
+#endif
 
 //PyObject* CreateCanvas(PyObject *self, PyObject *args)
 //{        
@@ -1595,6 +1613,7 @@ PyObject* GetUIView(PyObject *self)
     return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->GetFramework()->Ui()->GraphicsView());
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 PyObject* GetRexLogic(PyObject *self)
 {
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
@@ -1607,6 +1626,7 @@ PyObject* GetRexLogic(PyObject *self)
 PyObject* GetServerConnection(PyObject *self)
 {
     return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->worldstream.get());
+    return NULL;
 }
 
 PyObject* SendRexPrimData(PyObject *self, PyObject *args)
@@ -1633,7 +1653,6 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic)
         rexlogic->SendRexPrimData(ent_id); //py_ent->ent_id);
-
     Py_RETURN_NONE;
 }
 
@@ -1700,6 +1719,7 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
 
     Py_RETURN_NONE;
 }
+#endif
 
 PyObject *Exit(PyObject *self, PyObject *null)
 {
@@ -1707,6 +1727,7 @@ PyObject *Exit(PyObject *self, PyObject *null)
     Py_RETURN_NONE;
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 PyObject* Logout(PyObject *self)
 {
     Foundation::LoginServiceInterface *login_service = PythonScript::self()->GetFramework()->GetService<Foundation::LoginServiceInterface>();
@@ -1715,7 +1736,7 @@ PyObject* Logout(PyObject *self)
 
     Py_RETURN_NONE;
 }
-
+#endif
 /*
 PyObject* PyEventCallback(PyObject *self, PyObject *args){
     std::cout << "PyEventCallback" << std::endl;
@@ -1735,6 +1756,7 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html
 static PyMethodDef EmbMethods[] = {
+#ifdef ENABLE_TAIGA_SUPPORT
     {"sendChat", (PyCFunction)SendChat, METH_VARARGS,
     "Send the given text as an in-world chat message."},
 
@@ -1743,9 +1765,12 @@ static PyMethodDef EmbMethods[] = {
 
     {"getEntityByUUID", (PyCFunction)GetEntityByUUID, METH_VARARGS,
     "Gets the entity with the given UUID."},
+#endif
 
     {"removeEntity", (PyCFunction)RemoveEntity, METH_VARARGS,
     "Creates a new entity with the given ID, and returns it."},
+
+#ifdef ENABLE_TAIGA_SUPPORT
 
     {"getCameraYawPitch", (PyCFunction)GetCameraYawPitch, METH_VARARGS,
     "Returns the camera yaw and pitch."},
@@ -1755,9 +1780,12 @@ static PyMethodDef EmbMethods[] = {
 
     {"setAvatarYaw", (PyCFunction)SetAvatarYaw, METH_VARARGS,
     "Changes the avatar yaw with the given amount. Keys left/right are -1/+1."},    
+#endif
 
     {"rayCast", (PyCFunction)RayCast, METH_VARARGS,
     "RayCasting from camera to point (x,y)."},
+
+#ifdef ENABLE_TAIGA_SUPPORT
 
     {"switchCameraState", (PyCFunction)SwitchCameraState, METH_VARARGS,
     "Switching the camera mode from free to thirdperson and back again."},
@@ -1768,6 +1796,7 @@ static PyMethodDef EmbMethods[] = {
     {"sendEvent", (PyCFunction)SendEvent, METH_VARARGS,
     "Send an event id (WIP other stuff)."},
 
+#endif
     {"takeScreenshot", (PyCFunction)TakeScreenshot, METH_VARARGS,
     "Takes a screenshot and saves it to a timestamped file."},
 
@@ -1789,6 +1818,8 @@ static PyMethodDef EmbMethods[] = {
     {"disconnectUiViewSignals", (PyCFunction)DisconnectUIViewSignals, METH_NOARGS,
     "Disconnects all signals from uiview (temporary HACK)"},
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},
 
@@ -1800,10 +1831,11 @@ static PyMethodDef EmbMethods[] = {
 
     {"logout", (PyCFunction)Logout, METH_NOARGS,
     "Log out from the world. Made for test script to be able to stop."},
-
+#endif
     {"exit", (PyCFunction)Exit, METH_NOARGS,
     "Exits viewer. Takes no arguments."},
 
+#ifdef ENABLE_TAIGA_SUPPORT
     {"getRexLogic", (PyCFunction)GetRexLogic, METH_NOARGS,
     "Gets the RexLogicModule."},
 
@@ -1812,13 +1844,14 @@ static PyMethodDef EmbMethods[] = {
 
     {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
     "gets the trash folder id"},
-
+#endif
     {"createUiProxyWidget", (PyCFunction)CreateUiProxyWidget, METH_VARARGS, 
     "creates a new UiProxyWidget"},
 
 //    {"getEntityMatindicesWithTexture", (PyCFunction)GetEntityMatindicesWithTexture, METH_VARARGS, 
 //    "Finds all entities with material indices which are using the given texture"},
 
+#ifdef ENABLE_TAIGA_SUPPORT
     {"checkSceneForTexture", (PyCFunction)CheckSceneForTexture, METH_VARARGS, 
     "Return true if texture exists in scene, otherwise false: Parameters: textureuuid"},
 
@@ -1827,7 +1860,7 @@ static PyMethodDef EmbMethods[] = {
     
     {"getSubmeshesWithTexture", (PyCFunction)GetSubmeshesWithTexture, METH_VARARGS, 
     "Find the submeshes in this entity that use the given texture, if any. Parameters: entity id, texture uuid"},
-    
+#endif    
     {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
     "Get application data directory."},
 
@@ -1865,7 +1898,9 @@ namespace PythonScript
 
             mainModule.addObject("_pythonscriptmodule", this);
             PythonQt::self()->registerClass(&OgreRenderer::Renderer::staticMetaObject);
+#ifdef ENABLE_TAIGA_SUPPORT
             PythonQt::self()->registerClass(&Foundation::WorldLogicInterface::staticMetaObject);
+#endif
             PythonQt::self()->registerClass(&Scene::SceneManager::staticMetaObject);
             PythonQt::self()->registerClass(&MediaPlayer::ServiceInterface::staticMetaObject);
             PythonQt::self()->registerClass(&PythonQtScriptingConsole::staticMetaObject);

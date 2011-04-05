@@ -17,7 +17,9 @@
 #include "SceneManager.h"
 #include "SceneAPI.h"
 #include "Entity.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "NetworkMessages/NetInMessage.h"
+#endif
 #include "Renderer.h"
 
 #ifdef CAELUM
@@ -41,13 +43,14 @@ void ClampFog(float& start, float& end, float farclip)
 }
 
 Environment::Environment(EnvironmentModule *owner) :
-    owner_(owner),
-    activeEnvEntity_(Scene::EntityWeakPtr()),
-    time_override_(false),
+    owner_(owner)
+#ifdef ENABLE_TAIGA_SUPPORT
+    ,time_override_(false),
     usecSinceStart_(0),
     secPerDay_(0),
     secPerYear_(0),
     sunPhase_(0.0)
+#endif
 {
 
 #ifdef CAELUM
@@ -126,6 +129,7 @@ void Environment::CreateEnvironment()
     }
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
 {
     ProtocolUtilities::NetInMessage &msg = *data->message;
@@ -187,7 +191,7 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     }
     return false;
 }
-
+#endif
 EC_EnvironmentLight* Environment::GetEnvironmentLight()
 {
     Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
@@ -219,6 +223,7 @@ EC_EnvironmentLight* Environment::GetEnvironmentLight()
     return entity->GetComponent<EC_EnvironmentLight >().get();
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 void Environment::SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
     EC_Fog *fog = GetEnvironmentFog();
@@ -255,10 +260,11 @@ QVector<float> Environment::GetFogGroundColor()
     Ogre::ColourValue color = fog->GetColorAsOgreValue();
     return QVector<float>(QVector<float>() << color[0] <<color[1] <<color[2]);
 }
-
+#endif
 void Environment::Update(f64 frametime)
 {
     PROFILE(Environment_Update);
+#ifdef ENABLE_TAIGA_SUPPORT ///\todo Reimplement this whole logic in Tundra.
 
     // We are still little depend of old EC_OgreEnvironment component,
     /// todo refactor away depency of old EC_OgreEnvironmen component 
@@ -377,7 +383,10 @@ void Environment::Update(f64 frametime)
             viewport->setBackgroundColour(fogColor);
             camera->setFarClipDistance(cameraFarClip);
     }
+#endif
 }
+
+#ifdef ENABLE_TAIGA_SUPPORT ///\todo Reimplement this whole logic in Tundra.
 
 EC_Fog* Environment::GetEnvironmentFog()
 {
@@ -406,7 +415,7 @@ EC_Fog* Environment::GetEnvironmentFog()
 
     return entity->GetComponent<EC_Fog >().get();
 }
-
+#endif
 bool Environment::IsCaelum()
 {
     EC_OgreEnvironment* env = GetEnvironmentComponent();
@@ -415,6 +424,8 @@ bool Environment::IsCaelum()
 
     return env->IsCaelumUsed();
 }
+
+#ifdef ENABLE_TAIGA_SUPPORT ///\todo Reimplement this whole logic in Tundra.
 
 void Environment::SetGroundFogColor(const QVector<float>& color)
 {
@@ -592,5 +603,7 @@ void Environment::SetAmbientLight(const QVector<float>& vector)
 
     env->SetAmbientLightColor(Color(vector[0], vector[1], vector[2]));
 }
+
+#endif
 
 }

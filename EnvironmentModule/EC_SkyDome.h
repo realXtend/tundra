@@ -8,7 +8,9 @@
 #include "Declare_EC.h"
 #include "CoreTypes.h"
 #include "OgreModuleFwd.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
 #include "Quaternion.h"
 #include "AssetReference.h"
 

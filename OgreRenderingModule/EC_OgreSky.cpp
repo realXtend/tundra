@@ -56,7 +56,7 @@ void EC_OgreSky::CreateSky(bool show)
     
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     
-    /*RexTypes::Vector3 v = genericSkyParameters.angleAxis;
+    /*Vector3df v = genericSkyParameters.angleAxis;
     Ogre::Quaternion orientation(Ogre::Degree(genericSkyParameters.angle), Ogre::Vector3(v.x, v.y, v.z));*/
  
     ///\todo Get the sky type and other parameters from the config file.
@@ -68,7 +68,7 @@ void EC_OgreSky::CreateSky(bool show)
         skyMaterial->setReceiveShadows(false);
         try
         {
-            RexTypes::Vector3 v = skyBoxParameters.angleAxis;
+            Vector3df v = skyBoxParameters.angleAxis;
             Ogre::Quaternion orientation(Ogre::Degree(skyBoxParameters.angle), Ogre::Vector3(v.x, v.y, v.z));
 
             scene_mgr->setSkyBox(show, skyBoxParameters.material, skyBoxParameters.distance, skyBoxParameters.drawFirst, orientation);
@@ -85,7 +85,7 @@ void EC_OgreSky::CreateSky(bool show)
     case SKYTYPE_DOME:
         try
         {
-            RexTypes::Vector3 v = skyDomeParameters.angleAxis;
+            Vector3df v = skyDomeParameters.angleAxis;
             Ogre::Quaternion orientation(Ogre::Degree(skyDomeParameters.angle), Ogre::Vector3(v.x, v.y, v.z));
 
             scene_mgr->setSkyDome(show, skyDomeParameters.material, skyDomeParameters.curvature, skyDomeParameters.tiling,
@@ -367,6 +367,7 @@ void EC_OgreSky::SetSkyBoxParameters(const SkyBoxParameters &params, bool update
     }
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 RexTypes::RexAssetID EC_OgreSky::GetSkyDomeTextureID() const
 {
     RexTypes::RexAssetID textureID = "";
@@ -400,6 +401,7 @@ RexTypes::RexAssetID EC_OgreSky::GetSkyBoxTextureID(uint texuture_index) const
     }
     return textureID;
 }
+#endif
 
 SkyBoxParameters EC_OgreSky::GetBoxSkyParameters() const
 {

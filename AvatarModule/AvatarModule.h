@@ -8,7 +8,9 @@
 #include "AvatarModuleApi.h"
 #include "InputFwd.h"
 #include "SceneFwd.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "WorldStream.h"
+#endif
 
 #include <QObject>
 #include <QList>
@@ -25,7 +27,9 @@ namespace Avatar
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
 
+#ifdef ENABLE_TAIGA_SUPPORT
     typedef QMap<RexUUID, entity_id_t> UUID_map;
+#endif
             
     class AV_MODULE_API AvatarModule : public QObject, public IModule
     {
@@ -48,33 +52,38 @@ namespace Avatar
         MODULE_LOGGING_FUNCTIONS
     
     private slots:
+#ifdef ENABLE_TAIGA_SUPPORT
         //! Populate service_category_identifiers_
         void SubscribeToEventCategories();
+#endif
 
         //! Handle our key context input
         void KeyPressed(KeyEvent *key);
         void KeyReleased(KeyEvent *key);
 
     public slots:
+#ifdef ENABLE_TAIGA_SUPPORT
         Scene::EntityPtr GetAvatarEntity(const RexUUID &uuid);
         Scene::EntityPtr GetAvatarEntity(entity_id_t entity_id);
 
         ProtocolUtilities::WorldStreamPtr GetServerConnection() { return world_stream_; }
-
+#endif
         AvatarHandlerPtr GetAvatarHandler() { return avatar_handler_; }
         AvatarEditorPtr GetAvatarEditor() { return avatar_editor_; }
         AvatarControllablePtr GetAvatarControllable() { return avatar_controllable_; }
 
+#ifdef ENABLE_TAIGA_SUPPORT
         void RegisterFullId(const RexUUID &full_uuid, entity_id_t entity_id);
         void UnregisterFullId(const RexUUID &full_uuid);
-
+#endif
     private:
+#ifdef ENABLE_TAIGA_SUPPORT
         //! Current query categories
         QStringList event_query_categories_;
 
         //! Current subscribed category events
         QMap<QString, event_category_id_t> service_category_identifiers_;
-
+#endif
         //! AvatarModules input context
         InputContextPtr avatar_context_;
 
@@ -83,9 +92,12 @@ namespace Avatar
         AvatarEditorPtr avatar_editor_;
         AvatarSceneManager *scene_manager_;
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
         ProtocolUtilities::WorldStreamPtr world_stream_;
 
         UUID_map uuid_to_local_id_;
+#endif
     };
 }
 

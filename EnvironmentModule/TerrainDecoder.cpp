@@ -7,6 +7,7 @@
  */
 
 #include "StableHeaders.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 
@@ -279,3 +280,5 @@ void DecompressLand(std::vector<DecodedTerrainPatch> &patches, ProtocolUtilities
 }
 
 }
+
+#endif

@@ -4,7 +4,9 @@
 #include "InputAPI.h"
 
 #include "ServiceManager.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "InputEvents.h"
+#endif
 #include "Framework.h"
 #include "EventManager.h"
 #include "RenderServiceInterface.h"

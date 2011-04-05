@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "Avatar/AvatarControllable.h"
 
 #include "EntityComponent/EC_Controllable.h"
@@ -324,10 +327,10 @@ namespace Avatar
         Quaternion bodyrot = GetBodyRotation();
         Quaternion headrot = bodyrot;
 
-        RexTypes::Vector3 camcenter = Vector3::ZERO;
-        RexTypes::Vector3 camataxis = Vector3::ZERO;
-        RexTypes::Vector3 camleftaxis = Vector3::ZERO;
-        RexTypes::Vector3 camupaxis = Vector3::ZERO;  
+        Vector3df camcenter = Vector3::ZERO;
+        Vector3df camataxis = Vector3::ZERO;
+        Vector3df camleftaxis = Vector3::ZERO;
+        Vector3df camupaxis = Vector3::ZERO;  
         float fardist = 4000.0f;
         
         ProtocolUtilities::WorldStreamPtr conn = avatar_module_->GetServerConnection();
@@ -355,7 +358,7 @@ namespace Avatar
         return (checked_static_cast<EC_Controllable*>(component.get())->GetType() == RexTypes::CT_AVATAR);
     }
 
-    void AvatarControllable::HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat)
+    void AvatarControllable::HandleAgentMovementComplete(const Vector3df& position, const Vector3df& lookat)
     {
         //! \todo this is more or less where our user agent model design breaks. We can have multiple controllables, but this function can handle exactly one controllable. -cm
 
@@ -407,3 +410,4 @@ namespace Avatar
     }
 }
 
+#endif

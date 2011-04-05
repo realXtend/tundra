@@ -8,13 +8,15 @@
 #include "DebugStats.h"
 #include "HighPerfClock.h"
 #include "Framework.h"
+#include "SceneManager.h"
+#include "RenderServiceInterface.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetOutMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "WorldStream.h"
-#include "SceneManager.h"
-#include "RenderServiceInterface.h"
 #include "EC_OpenSimPrim.h"
+#endif
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
@@ -542,9 +544,11 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 2:
         RefreshOgreProfilingWindow();
         break;
+#ifdef ENABLE_TAIGA_SUPPORT
     case 3:
         RefreshNetworkProfilingData();
         break;
+#endif
     case 5:
         RefreshAssetProfilingData();
         break;
@@ -613,10 +617,12 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
     return 0;
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 void TimeProfilerWindow::SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream)
 {
     world_stream_ = worldStream;
 }
+#endif
 
 void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode)
 {
@@ -904,6 +910,7 @@ void TimeProfilerWindow::DoThresholdLogging()
 #endif
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
 void TimeProfilerWindow::LogNetInMessage(const ProtocolUtilities::NetInMessage *msg)
 {
     if (findChild<QCheckBox*>("checkBoxLogTraffic")->isChecked())
@@ -992,7 +999,7 @@ void TimeProfilerWindow::LogNetOutMessage(const ProtocolUtilities::NetOutMessage
          log << '\n';
     }
 }
-
+#endif
 void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode)
 {
     using namespace Foundation;
@@ -1483,6 +1490,8 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
     label->setPixmap(QPixmap::fromImage(image));
 }
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 void TimeProfilerWindow::RefreshNetworkProfilingData()
 {
 #ifdef PROFILING
@@ -1677,6 +1686,8 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
     label_pid_stat_->setText(QString("%1").arg(pidStat));
 }
 
+#endif
+
 void TimeProfilerWindow::RefreshAssetProfilingData()
 {
     if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 5)
@@ -1802,7 +1813,9 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     {
         Scene::Entity &entity = *iter->second;
         entities++;
+#ifdef ENABLE_TAIGA_SUPPORT
         EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
+#endif
         Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
         EC_Mesh* mesh = entity.GetComponent<EC_Mesh>().get();
         EC_OgreCustomObject* custom = entity.GetComponent<EC_OgreCustomObject>().get();
@@ -1863,10 +1876,10 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                 }
         }
         
+#ifdef ENABLE_TAIGA_SUPPORT
         // Check drawtype for prims
         if (prim)
-        {
-            
+        {            
             int drawtype = prim->getDrawType();
             if ((drawtype == RexTypes::DRAWTYPE_MESH) && (ogre_entity))
                 meshentities++;
@@ -1879,6 +1892,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
             }
         }
         else
+#endif
         {
             if (ogre_entity)
                 meshentities++;

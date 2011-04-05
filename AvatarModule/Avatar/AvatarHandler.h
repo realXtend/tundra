@@ -8,6 +8,8 @@
 #ifndef incl_Avatar_Avatarhandler_h
 #define incl_Avatar_Avatarhandler_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "Foundation.h"
 #include "ForwardDefines.h"
 #include "AvatarModule.h"
@@ -168,5 +170,7 @@ namespace Avatar
         AvatarAppearanceMap pending_appearances_;
     };
 }
+
+#endif
 
 #endif

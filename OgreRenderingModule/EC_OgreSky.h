@@ -4,10 +4,13 @@
 #define incl_OgreRenderer_EC_OgreSky_h
 
 #include "IComponent.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexUUID.h"
+#endif
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Declare_EC.h"
+#include "Vector3D.h"
 
 /// Sky type
 //! \ingroup EnvironmentModuleClient.
@@ -38,7 +41,7 @@ enum SkyBoxIndex
     float distance;
     bool drawFirst;
     float angle;
-    RexTypes::Vector3 angleAxis;
+    Vector3df angleAxis;
     
     SkyParameters() : 
     material("Rex/skybox"),
@@ -53,7 +56,7 @@ enum SkyBoxIndex
         distance = 0;
         drawFirst = true;
         angle = 90;
-        angleAxis = RexTypes::Vector3(1,0,0);
+        angleAxis = Vector3df(1,0,0);
     }
 };*/
 
@@ -65,7 +68,7 @@ struct SkyBoxParameters
     float distance;
     float angle;
     bool drawFirst;
-    RexTypes::Vector3 angleAxis;
+    Vector3df angleAxis;
 
     SkyBoxParameters() : 
     material("Rex/skybox"),
@@ -80,7 +83,7 @@ struct SkyBoxParameters
         distance = 0;
         drawFirst = true;
         angle = 90;
-        angleAxis = RexTypes::Vector3(1,0,0);
+        angleAxis = Vector3df(1,0,0);
     }
 };
 
@@ -97,7 +100,7 @@ struct SkyDomeParameters
     int ySegmentsKeep;
     bool drawFirst;
     float angle;
-    RexTypes::Vector3 angleAxis;
+    Vector3df angleAxis;
 
     SkyDomeParameters() :
     //Sky dome and plane are sharing same material cause they both only need single sky texture.
@@ -123,7 +126,7 @@ struct SkyDomeParameters
         ySegmentsKeep = 0;
         drawFirst = true;
         angle = 0;
-        angleAxis = RexTypes::Vector3(1,0,0);
+        angleAxis = Vector3df(1,0,0);
     }
 };
 
@@ -245,6 +248,7 @@ public:
     /// Set new sky generic parameters.
     void SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky = true);
 
+#ifdef ENABLE_TAIGA_SUPPORT
     /// Get sky dome material texture name as string switch is same as assetID.
     /// @return Texture name.
     RexTypes::RexAssetID GetSkyDomeTextureID() const;
@@ -257,7 +261,7 @@ public:
     /// @param sky_box texture index, where(0 = front, 1 = back, 2 = left, 3 = right, 4 = up, 5 = down).
     /// @return Texture name.
     RexTypes::RexAssetID GetSkyBoxTextureID(uint texuture_index) const;
-
+#endif
     /// Return sky generic sky parameters mostly used by sky box.
     SkyBoxParameters GetBoxSkyParameters() const;
 
@@ -283,7 +287,7 @@ public:
 private:
     /// Constructor
     /// @param module module pointer.
-    EC_OgreSky(IModule* module);
+    explicit EC_OgreSky(IModule* module);
     
     /// Renderer
     OgreRenderer::RendererWeakPtr renderer_;

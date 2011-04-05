@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "IModule.h"
@@ -44,3 +47,5 @@ EC_OpenSimAvatar::State EC_OpenSimAvatar::GetState() const
 {
     return state_;
 }
+
+#endif

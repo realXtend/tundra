@@ -7,7 +7,9 @@
 #include "Renderer.h"
 #include "EC_Placeable.h"
 #include "Entity.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexNetworkUtils.h"
+#endif
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>

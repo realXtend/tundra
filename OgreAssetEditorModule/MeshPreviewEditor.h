@@ -3,7 +3,9 @@
 #ifndef incl_OgreAssetEditorModule_MeshPreviewEditor_h
 #define incl_OgreAssetEditorModule_MeshPreviewEditor_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
+#endif
 #include "InputAPI.h"
 #include "MouseEvent.h"
 #include "OgreAssetEditorModuleApi.h"

@@ -27,6 +27,95 @@
 
 #include "MemoryLeakCheck.h"
 
+#include "EC_Name.h"
+
+#ifdef EC_OpenSimAvatar_ENABLED
+#include "EntityComponent/EC_OpenSimAvatar.h"
+#endif
+#ifdef EC_Controllable_ENABLED
+#include "EntityComponent/EC_Controllable.h"
+#endif
+
+#ifdef EC_NetworkPosition_ENABLED
+#include "EC_NetworkPosition.h"
+#endif
+
+#ifdef EC_AvatarAppearance_ENABLED
+#include "EntityComponent/EC_AvatarAppearance.h"
+#endif
+
+#ifdef EC_Highlight_ENABLED
+#include "EC_Highlight.h"
+#endif
+
+#ifdef EC_HoveringText_ENABLED
+#include "EC_HoveringText.h"
+#endif
+
+#ifdef EC_Clone_ENABLED
+#include "EC_Clone.h"
+#endif
+
+#ifdef EC_Light_ENABLED
+#include "EC_Light.h"
+#endif
+
+#ifdef EC_Touchable_ENABLED
+#include "EC_Touchable.h"
+#endif
+
+#ifdef EC_3DCanvas_ENABLED
+#include "EC_3DCanvas.h"
+#endif
+
+#ifdef EC_3DCanvasSource_ENABLED
+#include "EC_3DCanvasSource.h"
+#endif
+
+#ifdef EC_Ruler_ENABLED
+#include "EC_Ruler.h"
+#endif
+
+#ifdef EC_SoundListener_ENABLED
+#include "EC_SoundListener.h"
+#endif
+
+#ifdef EC_Sound_ENABLED
+#include "EC_Sound.h"
+#endif
+
+#ifdef EC_InputMapper_ENABLED
+#include "EC_InputMapper.h"
+#endif
+
+#ifdef EC_VideoSource_ENABLED
+#include "EC_VideoSource.h"
+#endif
+
+#ifdef EC_Gizmo_ENABLED
+#include "EC_Gizmo.h"
+#endif
+
+#ifdef EC_PlanarMirror_ENABLED
+#include "EC_PlanarMirror.h"
+#endif
+
+#ifdef EC_Selected_ENABLED
+#include "EC_Selected.h"
+#endif
+
+#ifdef EC_ProximityTrigger_ENABLED
+#include "EC_ProximityTrigger.h"
+#endif
+
+#include "EC_OgreCamera.h"
+#include "EC_Placeable.h"
+#include "EC_OgreMovableTextOverlay.h"
+#include "EC_AnimationController.h"
+#include "EC_Mesh.h"
+#include "EC_OgreMovableTextOverlay.h"
+#include "EC_OgreCustomObject.h"
+
 namespace TundraLogic
 {
 
@@ -46,6 +135,79 @@ TundraLogicModule::~TundraLogicModule()
 
 void TundraLogicModule::PreInitialize()
 {
+}
+
+void TundraLogicModule::Load()
+{
+    // External EC's
+#ifdef EC_Highlight_ENABLED
+    DECLARE_MODULE_EC(EC_Highlight);
+#endif
+#ifdef EC_HoveringText_ENABLED
+    DECLARE_MODULE_EC(EC_HoveringText);
+#endif
+#ifdef EC_Clone_ENABLED
+    DECLARE_MODULE_EC(EC_Clone);
+#endif
+#ifdef EC_Light_ENABLED
+    DECLARE_MODULE_EC(EC_Light);
+#endif
+#ifdef EC_OpenSimPresence_ENABLED
+    DECLARE_MODULE_EC(EC_OpenSimPresence);
+#endif
+#ifdef EC_OpenSimPrim_ENABLED
+    DECLARE_MODULE_EC(EC_OpenSimPrim);
+#endif
+#ifdef EC_Touchable_ENABLED
+    DECLARE_MODULE_EC(EC_Touchable);
+#endif
+#ifdef EC_3DCanvas_ENABLED
+    DECLARE_MODULE_EC(EC_3DCanvas);
+#endif
+#ifdef EC_3DCanvasSource_ENABLED
+    DECLARE_MODULE_EC(EC_3DCanvasSource);
+#endif
+#ifdef EC_Ruler_ENABLED
+    DECLARE_MODULE_EC(EC_Ruler);
+#endif
+#ifdef EC_SoundRuler_ENABLED
+    DECLARE_MODULE_EC(EC_SoundRuler);
+#endif
+//#ifdef EC_Name_ENABLED
+    DECLARE_MODULE_EC(EC_Name);
+//#endif
+#ifdef EC_Movable_ENABLED
+    DECLARE_MODULE_EC(EC_ParticleSystem);
+#endif
+#ifdef EC_SoundListener_ENABLED
+    DECLARE_MODULE_EC(EC_SoundListener);
+#endif
+#ifdef EC_Sound_ENABLED
+    DECLARE_MODULE_EC(EC_Sound);
+#endif
+#ifdef EC_InputMapper_ENABLED    
+    DECLARE_MODULE_EC(EC_InputMapper);
+#endif
+#ifdef EC_Movable_ENABLED
+    DECLARE_MODULE_EC(EC_Movable);
+#endif
+#ifdef EC_VideoSource_ENABLED
+    DECLARE_MODULE_EC(EC_VideoSource);
+#endif
+#ifdef EC_Gizmo_ENABLED
+    DECLARE_MODULE_EC(EC_Gizmo);
+#endif
+
+#ifdef EC_PlanarMirror_ENABLED
+    DECLARE_MODULE_EC(EC_PlanarMirror);
+#endif
+#ifdef EC_Selected_ENABLED
+    DECLARE_MODULE_EC(EC_Selected);
+#endif
+
+#ifdef EC_ProximityTrigger_ENABLED
+    DECLARE_MODULE_EC(EC_ProximityTrigger);
+#endif
 }
 
 void TundraLogicModule::Initialize()

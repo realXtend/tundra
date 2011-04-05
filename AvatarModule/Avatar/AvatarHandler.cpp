@@ -7,6 +7,8 @@
 
 #include "StableHeaders.h"
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "AvatarEvents.h"
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
@@ -30,7 +32,9 @@
 #ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
 #endif
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "EC_OpenSimPresence.h"
+#endif
 #ifdef EC_SoundListener_ENABLED
 #include "EC_SoundListener.h"
 #endif
@@ -870,3 +874,5 @@ namespace Avatar
         pending_appearances_.clear();
     }
     }
+
+#endif

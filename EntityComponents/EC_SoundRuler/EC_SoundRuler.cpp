@@ -17,9 +17,11 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "EC_OpenSimPrim.h"
-#include "LoggingFunctions.h"
 #include "RexUUID.h"
+#endif
+#include "LoggingFunctions.h"
 #include <Ogre.h>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundRuler")
@@ -38,9 +40,14 @@ EC_SoundRuler::EC_SoundRuler(IModule *module) :
     
     QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateSoundRuler()));
     
+#ifdef ENABLE_TAIGA_SUPPORT
     RexUUID uuid = RexUUID::CreateRandom();
     rulerName = uuid.ToString() + "ruler";
     nodeName = uuid.ToString() + "node";
+#else
+    rulerName = "ruler";
+    nodeName = "node";
+#endif
 }
 
 EC_SoundRuler::~EC_SoundRuler()

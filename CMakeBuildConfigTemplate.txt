@@ -30,6 +30,13 @@ SET(WINDOWS_APP 0)
 # Set login scene type: 1 = dynamic switchable ether + normal login, 0 = static classical login
 SET(DYNAMIC_LOGIN_SCENE 1)
 
+# If true, enable building old RealXtend platform support as part of the Tundra build (OpenSim-based Taiga/RexServer support)
+SET(ENABLE_TAIGA_SUPPORT 0)
+
+if (ENABLE_TAIGA_SUPPORT)
+   add_definitions(-DENABLE_TAIGA_SUPPORT)
+endif()
+
 # If the following flag is defined, Naali will be compiled with the built-in execution time profiler enabled.
 add_definitions(-DPROFILING)
 
@@ -54,14 +61,16 @@ if (MSVC)
     SET(OPENASSETIMPORT 1)
 endif()
 
-# Enables Ogre asset editor module
-SET(OGREASSETEDITOR 1)
+# Enables Ogre asset editor module. Requires ENABLE_TAIGA_SUPPORT == 1 to function.
+SET(OGREASSETEDITOR 0)
 
 # The following are the core modules that are required for the project to build. None of these can be omitted.
 add_subdirectory(Core)
 add_subdirectory(Foundation)
 add_subdirectory(Interfaces)
-add_subdirectory(RexCommon)
+if (ENABLE_TAIGA_SUPPORT)
+   add_subdirectory(RexCommon)
+endif()
 add_subdirectory(Scene)
 add_subdirectory(OgreRenderingModule)
 add_subdirectory(Viewer)
@@ -79,9 +88,11 @@ add_subdirectory(TundraLogicModule)
 # they will not be able to conditionally compile the EC.
 
 # The following ECs are required for Naali to build.
-AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)         # Required by ProtocolUtilities and RexLogicModule. Declared by RexLogicModule.
-AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence) # Declared by RexLogicModule.
-AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Required. Declared by AvatarModule.
+if (ENABLE_TAIGA_SUPPORT)
+   AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)         # Required by ProtocolUtilities and RexLogicModule. Declared by RexLogicModule.
+   AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence) # Declared by RexLogicModule.
+   AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Required. Declared by AvatarModule.
+endif()
 
 # The following EC's are declared by RexLogicModule and are optional. You may comment these lines out to disable any ECs you do not want to include.
 AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
@@ -96,7 +107,7 @@ AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
 AddEntityComponent(EntityComponents/EC_Light EC_Light)
 AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
 AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
-AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
+#AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler) # Requires ENABLE_TAIGA_SUPPORT
 AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
 AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
 AddEntityComponent(EntityComponents/EC_ProximityTrigger EC_ProximityTrigger)
@@ -113,20 +124,23 @@ AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)    
 AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
 # The following modules are required.
-add_subdirectory(RexLogicModule)        # Depends on OgreRenderingModule, EnvironmentModule, AvatarModule and Taiga subsystem.
+if (ENABLE_TAIGA_SUPPORT)
+   add_subdirectory(RexLogicModule)        # Depends on OgreRenderingModule, EnvironmentModule, AvatarModule and Taiga subsystem.
+   add_subdirectory(ProtocolUtilities)     # Depends on Taiga subsystem.
+   add_subdirectory(HttpUtilities)
+   add_subdirectory(RpcUtilities)
+
+   # The following are not core modules, but you cannot do anything practical without
+   # having them, so they are effectively required.
+   add_subdirectory(ProtocolModuleOpenSim) # Required with OpenSim.
+   add_subdirectory(ProtocolModuleTaiga)   # Required with OpenSim.
+endif()
+   
 add_subdirectory(SupportModules)
 add_subdirectory(AvatarModule)          # Depends on OgreRenderingModule.
 add_subdirectory(AssetModule)           # Depends on Taiga subsystem.
-add_subdirectory(HttpUtilities)
-add_subdirectory(RpcUtilities)
-add_subdirectory(ProtocolUtilities)     # Depends on Taiga subsystem.
 add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Taiga subsystem. 
 add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
-
-# The following are not core modules, but you cannot do anything practical without
-# having them, so they are effectively required.
-add_subdirectory(ProtocolModuleOpenSim) # Required with OpenSim.
-add_subdirectory(ProtocolModuleTaiga)   # Required with OpenSim.
 
 if (USE_UIMODULE)
     add_subdirectory(UiModule)          # Depends on OgreRenderingModule.
@@ -143,9 +157,9 @@ endif()
 add_subdirectory(DebugStatsModule)      # Enables a developer window for debugging. Depends on OgreRenderingModule, EnvironmentModule and Taiga subsystem.
 add_subdirectory(PythonScriptModule)    # Allows Python-created modules and scene script instances. Depends on OgreRenderingModule, RexLogicModule, AvatarModule and Taiga subsystem.
 add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script instances.
-add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
+#add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
 #add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
-add_subdirectory(CAVEStereoModule)     # Implements CAVE and Stereoscopy functionality
+#add_subdirectory(CAVEStereoModule)     # Implements CAVE and Stereoscopy functionality
 add_subdirectory(SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
 if (OPENASSETIMPORT)
     add_subdirectory(OpenAssetImport)        # Allows import of various mesh file formats

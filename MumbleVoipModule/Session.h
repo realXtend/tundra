@@ -77,9 +77,11 @@ namespace MumbleVoip
         static const double DEFAULT_AUDIO_QUALITY_; // 0 .. 1.0
 
         virtual void OpenConnection(ServerInfo info);
+#ifdef ENABLE_TAIGA_SUPPORT
         bool GetOwnAvatarPosition(Vector3df& position, Vector3df& direction);
         QString OwnAvatarId();
         QString GetAvatarFullName(QString uuid) const;
+#endif
         void SendRecordedAudio();
         void PlaybackReceivedAudio();
         void PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame);

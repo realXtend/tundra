@@ -33,28 +33,15 @@ class TUNDRALOGIC_MODULE_API TundraLogicModule : public QObject, public IModule
 Q_OBJECT
 
 public:
-    /// Default constructor.
     TundraLogicModule();
-
-    /// Destructor.
     ~TundraLogicModule();
 
-    /// IModule override.
     void PreInitialize();
-
-    /// IModule override.
+    void Load();
     void Initialize();
-
-    /// IModule override.
     void PostInitialize();
-
-    /// IModule override.
     void Uninitialize();
-
-    /// IModule override.
     void Update(f64 frametime);
-
-    /// IModule override.
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     MODULE_LOGGING_FUNCTIONS

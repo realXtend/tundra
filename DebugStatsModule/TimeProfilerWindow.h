@@ -56,9 +56,11 @@ namespace DebugStats
         explicit TimeProfilerWindow(Foundation::Framework *fw);
         void RedrawFrameTimeHistoryGraph(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
         void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
+        void DoThresholdLogging();
+
+#ifdef ENABLE_TAIGA_SUPPORT
         void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
         void RefreshSimStatsData(ProtocolUtilities::NetInMessage *simStats);
-        void DoThresholdLogging();
 
         /// Writes brief log entry about network message to log file, if logging is enabled.
         /// @param msg Inbound SLUDP message
@@ -67,12 +69,14 @@ namespace DebugStats
         /// Writes brief log entry about network message to log file, if logging is enabled.
         /// @param msg Outbound SLUDP message
         void LogNetOutMessage(const ProtocolUtilities::NetOutMessage *msg);
-
+#endif
     public slots:
         void RefreshProfilingData();
         void OnProfilerWindowTabChanged(int newPage);
         void RefreshOgreProfilingWindow();
+#ifdef ENABLE_TAIGA_SUPPORT
         void RefreshNetworkProfilingData();
+#endif
         void RefreshTextureProfilingData();
         void ToggleTreeButtonPressed();
         void CollapseAllButtonPressed();

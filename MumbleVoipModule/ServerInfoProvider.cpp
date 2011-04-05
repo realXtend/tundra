@@ -5,7 +5,10 @@
 
 #include "ServerInfoProvider.h"
 
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "WorldStream.h"
+#endif
+
 #include "MumbleVoipModule.h"
 #include "EventManager.h"
 
@@ -34,6 +37,7 @@ namespace MumbleVoip
 
     bool ServerInfoProvider::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
+#ifdef ENABLE_TAIGA_SUPPORT
         if (!framework_event_category_ && framework_)
            framework_event_category_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
@@ -78,7 +82,7 @@ namespace MumbleVoip
                 break;
             }
         }
-
+#endif
         return false;
     }
 

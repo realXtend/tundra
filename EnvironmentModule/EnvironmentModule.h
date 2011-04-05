@@ -10,7 +10,9 @@
 #include "EnvironmentModuleApi.h"
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "WorldStream.h"
+#endif
 #include "SceneFwd.h"
 
 #ifdef CAELUM
@@ -88,6 +90,7 @@ namespace Environment
         */
         bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
+#ifdef ENABLE_TAIGA_SUPPORT
         //! Get terrain texture ids, terrain height and water height values.
         /** @param network data pointer.
             @return Should return true if the event was handled and is not to be propagated further
@@ -132,7 +135,7 @@ namespace Environment
             @param previous height value for specific texture coordinate
         */
         void SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, float seconds, float height);
-
+#endif
         /// Creates a local environment entity.
         /** This is called if there does not exist outside environment entity (entity, which has EC_NAME component which attribute
             name is entity_name + Environment, f.ex. WaterEnviroment).
@@ -228,12 +231,14 @@ namespace Environment
         //! PostProcess dialog pointer
         PostProcessWidget *postprocess_dialog_;
 
+#ifdef ENABLE_TAIGA_SUPPORT
         //! WorldStream will handle those network messages that we are wishing to send.
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
 
         //! Wait for new terrain heightmap information.
         bool waiting_for_regioninfomessage_;
-
+#endif
+        ///\todo DELETE this kind of logic and replace with a proper fix. -jj.
         bool firstTime_;
     };
 }

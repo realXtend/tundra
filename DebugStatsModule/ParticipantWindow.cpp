@@ -7,6 +7,8 @@
 
 #include "StableHeaders.h"
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "DebugOperatorNew.h"
 #include "ParticipantWindow.h"
 
@@ -113,3 +115,5 @@ void ParticipantWindow::PopulateUserList()
 }
 
 }
+
+#endif

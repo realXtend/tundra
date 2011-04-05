@@ -3,6 +3,8 @@
 #ifndef incl_Avatar_AvatarControllable_h
 #define incl_Avatar_AvatarControllable_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "RexTypes.h"
 #include "InputEvents.h"
 
@@ -59,7 +61,7 @@ namespace Avatar
         void SetRotation(const Quaternion &newrot);
 
         //! Agent movement complete (network) event handling
-        void HandleAgentMovementComplete(const RexTypes::Vector3& position, const RexTypes::Vector3& lookat);
+        void HandleAgentMovementComplete(const Vector3df& position, const Vector3df& lookat);
 
     private:
         //! Returns avatar entity rotation
@@ -129,4 +131,6 @@ namespace Avatar
         InputEvents::Movement movement_;
     };
 }
+#endif
+
 #endif

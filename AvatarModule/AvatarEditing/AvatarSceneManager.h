@@ -3,6 +3,8 @@
 #ifndef incl_Avatar_AvatarSceneManager_h
 #define incl_Avatar_AvatarSceneManager_h
 
+#ifdef ENABLE_TAIGA_SUPPORT
+
 #include "Foundation.h"
 #include "AvatarModule.h"
 #include "UiHelper.h"
@@ -47,5 +49,7 @@ namespace Avatar
         Helpers::UiHelper *ui_helper_;
     };
 }
+
+#endif
 
 #endif

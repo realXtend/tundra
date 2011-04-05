@@ -8,9 +8,11 @@
 #include "PCMAudioFrame.h"
 #include "Vector3D.h"
 #include "EC_Placeable.h" // for avatar position
+#ifdef ENABLE_TAIGA_SUPPORT
 #include "EC_OpenSimPresence.h" // for avatar position
-#include "ModuleManager.h"    // for avatar info
 #include "WorldLogicInterface.h" // for avatar position
+#endif
+#include "ModuleManager.h"    // for avatar info
 #include "Entity.h" // for avatar position
 #include "SceneAPI.h"
 #include "SceneManager.h"
@@ -268,7 +270,11 @@ namespace MumbleVoip
 
         bool avatar_found = false;
         QString uuid = user->Comment();
+#ifdef ENABLE_TAIGA_SUPPORT
         QString avatar_name = GetAvatarFullName(uuid);
+#else
+        QString avatar_name = ""; ///\todo Reimplement. This logic has never actually worked in Tundra. -jj.
+#endif
 
         if (avatar_name.size() > 0)
             avatar_found = true;
@@ -335,7 +341,11 @@ namespace MumbleVoip
                 QString uuid = p->UserPtr()->Comment();
                 if (uuid.length() > 0)
                 {
+#ifdef ENABLE_TAIGA_SUPPORT
                     QString avatar_name = GetAvatarFullName(uuid);
+#else
+        QString avatar_name = ""; ///\todo Reimplement. This logic has never actually worked in Tundra. -jj.
+#endif
                     if (avatar_name.size() > 0)
                     {
                         p->SetAvatarUUID(uuid);
@@ -402,6 +412,7 @@ namespace MumbleVoip
             emit Communications::InWorldVoice::SessionInterface::SpeakerVoiceActivityChanged(activity);
     }
 
+#ifdef ENABLE_TAIGA_SUPPORT
     bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
     {
         using namespace Foundation;
@@ -465,6 +476,7 @@ namespace MumbleVoip
         }
         return "";
     }
+#endif
 
     void Session::SendRecordedAudio()
     {
@@ -476,7 +488,12 @@ namespace MumbleVoip
 
         Vector3df avatar_position;
         Vector3df avatar_direction;
+#ifdef ENABLE_TAIGA_SUPPORT
         GetOwnAvatarPosition(avatar_position, avatar_direction);
+#else
+        avatar_position = Vector3df(0,0,0);
+        avatar_direction = Vector3df(1,0,0);
+#endif
 
         while (framework_->Audio()->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
         {

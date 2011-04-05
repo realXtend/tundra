@@ -104,7 +104,7 @@ void EC_SkyBox::CreateSky()
 
     try
     {
-        //RexTypes::Vector3 v = angleAxisAttr.Get();
+        //Vector3df v = angleAxisAttr.Get();
         //Ogre::Quaternion rotation(Ogre::Degree(90.0), Ogre::Vector3(1, 0, 0));
         Quaternion o = orientation.Get();
         renderer_.lock()->GetSceneManager()->setSkyBox(true, currentMaterial.toStdString().c_str(), distance.Get(),
