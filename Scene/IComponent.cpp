@@ -298,9 +298,6 @@ void IComponent::ComponentChanged(AttributeChange::Type change)
 {
     for(uint i = 0; i < attributes_.size(); ++i)
         EmitAttributeChanged(attributes_[i], change);
-
-    //! \todo: this is deprecated and will be removed in the future. Do not rely on OnChanged() signal.
-    OnChanged();
 }
 
 void IComponent::SetTemporary(bool enable)

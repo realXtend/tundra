@@ -2455,13 +2455,10 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
         }
     }
     
-    // Finally trigger localonly change for the components we deserialized.
+    // Finally trigger LocalOnly change for the components we deserialized.
     //! \todo All attributes will reflect a change, even if they had the same value as before. Optimize this away.
-    //! \todo ComponentChanged() currently triggers deprecated OnChanged() signal. This will be removed. Do not rely on it!
     for (uint i = 0; i < deserialized.size(); ++i)
-    {
         deserialized[i]->ComponentChanged(AttributeChange::LocalOnly);
-    }
 }
 
 } // namespace RexLogic
