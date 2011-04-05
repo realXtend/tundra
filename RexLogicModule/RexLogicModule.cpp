@@ -162,6 +162,10 @@
 #include "EC_WebView.h"
 #endif
 
+#ifdef EC_ProximityTrigger_ENABLED
+#include "EC_ProximityTrigger.h"
+#endif
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
@@ -273,6 +277,10 @@ void RexLogicModule::Load()
 
 #ifdef EC_WebView_ENABLED
     DECLARE_MODULE_EC(EC_WebView);
+#endif
+
+#ifdef EC_ProximityTrigger_ENABLED
+    DECLARE_MODULE_EC(EC_ProximityTrigger);
 #endif
 }
 

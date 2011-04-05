@@ -37,6 +37,8 @@ public:
 
     void SetDefaultMaterial();
 
+    bool IsLoaded() const;
+
     /// This points to the loaded mesh asset, if it is present.
     Ogre::MeshPtr ogreMesh;
 

@@ -172,4 +172,3 @@ def loadurl(urlstring):
         instance.load_url(url)
     else:
         print "ERROR: loadurl handler wasn't there!"
-
