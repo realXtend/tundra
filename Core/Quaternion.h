@@ -149,6 +149,17 @@ class Quaternion
             return out;
         }
 
+        /// Returns true if the elements of this quaternion are valid (non-special) finite floats.
+        bool IsFinite() const
+        {
+            if (_isnan(x) || _isnan(y) || _isnan(z) || _isnan(w))
+                return false;
+            if (!_finite(x) || !_finite(y) || !_finite(z) || !_finite(w))
+                return false;
+
+            return true;
+        }
+
         static const Quaternion ZERO;
         static const Quaternion IDENTITY;
 
