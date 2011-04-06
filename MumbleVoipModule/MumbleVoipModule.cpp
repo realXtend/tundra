@@ -8,7 +8,7 @@
 #include "ServerInfoProvider.h"
 #include "ModuleManager.h"
 #include "EC_Placeable.h"
-#include "WorldLogicInterface.h"
+//#include "WorldLogicInterface.h"
 #include "Entity.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
@@ -154,6 +154,8 @@ namespace MumbleVoip
 
     bool MumbleVoipModule::GetAvatarPosition(Vector3df& position, Vector3df& direction)
     {
+        return false;
+/*
         using namespace Foundation;
         boost::shared_ptr<WorldLogicInterface> worldLogic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
         if (!worldLogic)
@@ -171,10 +173,13 @@ namespace MumbleVoip
         position = ogre_placeable->GetPosition(); 
         direction = q*Vector3df::UNIT_X;
         return true;
+*/
     }
 
     bool MumbleVoipModule::GetCameraPosition(Vector3df& position, Vector3df& direction)
     {
+        return false;
+/*
         using namespace Foundation;
         boost::shared_ptr<WorldLogicInterface> worldLogic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
         if (!worldLogic)
@@ -192,6 +197,7 @@ namespace MumbleVoip
         position = ogre_placeable->GetPosition(); 
         direction = q*Vector3df::UNIT_X;
         return true;
+*/
     }
 
     void MumbleVoipModule::InitializeConsoleCommands()
