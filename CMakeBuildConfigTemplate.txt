@@ -66,7 +66,6 @@ SET(OGREASSETEDITOR 0)
 
 # The following are the core modules that are required for the project to build. None of these can be omitted.
 add_subdirectory(Framework)
-add_subdirectory(Interfaces)
 if (ENABLE_TAIGA_SUPPORT)
    add_subdirectory(RexCommon)
 endif()

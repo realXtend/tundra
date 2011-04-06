@@ -14,12 +14,12 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules (Framework Interfaces Scene OgreRenderingModule)
+use_modules (Framework Scene OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_ogre()
-link_modules (Framework Interfaces Scene OgreRenderingModule)
+link_modules (Framework Scene OgreRenderingModule)
 
 SetupCompileFlagsWithPCH()
 

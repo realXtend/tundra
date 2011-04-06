@@ -25,7 +25,7 @@ endif(PYTHON_FORCE_RELEASE_VERSION)
 use_package (PYTHON)
 use_package (PYTHON_QT)
 
-use_modules (Framework Interfaces Scene OgreRenderingModule AvatarModule KristalliProtocolModule
+use_modules (Framework Scene OgreRenderingModule AvatarModule KristalliProtocolModule
     EntityComponents/EC_DynamicComponent EntityComponents/EC_Ruler EntityComponents/EC_Touchable
     EntityComponents/EC_3DCanvas EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui CommunicationsModule Audio)
 
@@ -36,7 +36,7 @@ endif()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Framework Interfaces Scene OgreRenderingModule KristalliProtocolModule
+link_modules (Framework Scene OgreRenderingModule KristalliProtocolModule
     EC_Touchable EC_DynamicComponent EC_Ruler EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui Audio)
 
 if (ENABLE_TAIGA_SUPPORT)

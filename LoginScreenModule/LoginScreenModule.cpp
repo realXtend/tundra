@@ -8,7 +8,7 @@
 
 #include "UiAPI.h"
 #include "InputAPI.h"
-#include "LoginServiceInterface.h"
+//#include "LoginServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
 
@@ -74,23 +74,23 @@ void LoginScreenModule::PostInitialize()
         ui->AddWidgetToScene(window_, Qt::Widget);
         ui->ShowWidget(window_);
 
-        Foundation::LoginServiceInterface *login = framework_->GetService<Foundation::LoginServiceInterface>();
-        if (login)
-        {
-            connect(window_, SIGNAL(Connect(const QMap<QString, QString> &)),
-                login, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
+//        Foundation::LoginServiceInterface *login = framework_->GetService<Foundation::LoginServiceInterface>();
+//        if (login)
+ //       {
+  //          connect(window_, SIGNAL(Connect(const QMap<QString, QString> &)),
+   //             login, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
 
             // Connect also to Tundra login
             connect(window_, SIGNAL(Connect(const QMap<QString, QString> &)),
                 this, SLOT(ProcessTundraLogin(const QMap<QString, QString> &)));
             
-            connect(login, SIGNAL(LoginStarted()), window_, SLOT(StartProgressBar()));
+ //           connect(login, SIGNAL(LoginStarted()), window_, SLOT(StartProgressBar()));
 
-            connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(StopProgressBar()));
-            connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(SetStatus(const QString &)));
+   //         connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(StopProgressBar()));
+   //         connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(SetStatus(const QString &)));
 
-            connect(login, SIGNAL(LoginSuccessful()), window_, SLOT(Connected()));
-        }
+   //         connect(login, SIGNAL(LoginSuccessful()), window_, SLOT(Connected()));
+//        }
     }
 
     framework_category_ = framework_->GetEventManager()->QueryEventCategory("Framework");
