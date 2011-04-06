@@ -31,14 +31,25 @@ namespace Camera
          * \param parent Parent Widget. Default 0
          */
         CameraWidget(QString title, QWidget* widget=0);
+        
+        //! Camera Widget Destructor
+        ~CameraWidget();
 
+        //! Get camera view renderer
         QLabel* GetRenderer() { return reinterpret_cast<QLabel*>(renderer);};
+
+    signals:
+        void WidgetHidden();
 
     public slots:
         /*! set parent widget title
          * \param name  name of parent widget title 
          */
         void SetWindowTitle(const QString &name);
+
+
+    protected:
+        void hideEvent(QHideEvent *event);
 
     private:
         //! Render QLabel

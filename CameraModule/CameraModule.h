@@ -74,14 +74,17 @@ namespace Camera
 
         void DefaultWorldSceneChanged(Scene::SceneManager *scene);
 
-        void DeleteCameraWidget();
+        void DeleteCameraWidget(QWidget *widget);
+               
+        void OnCameraWidgetHidden();
+        void OnNewButtonClicked();
+        void OnDeleteButtonClicked();
+        void OnWireframeCheckBoxChanged(int state);  
 
-        void SetCameraWireframe(int state);  
-
-        void NearPlusButtonClicked(bool checked);
-        void NearMinusButtonClicked(bool checked);
-        void FarPlusButtonClicked(bool checked);
-        void FarMinusButtonClicked(bool checked);
+        void OnNearPlusButtonClicked(bool checked);
+        void OnNearMinusButtonClicked(bool checked);
+        void OnFarPlusButtonClicked(bool checked);
+        void OnFarMinusButtonClicked(bool checked);
 
     private:
         Q_DISABLE_COPY(CameraModule);      
@@ -113,6 +116,9 @@ namespace Camera
 
         //! percent to add or to substract to near or far clip 
         int click_distance_percent_;
+
+        //! Widgets list to delete in the next update. Append widgets when delete button is clicked and when camera widgets is hidden
+        QList<CameraWidget*> dirty_widgets_;
     };
 }
 
