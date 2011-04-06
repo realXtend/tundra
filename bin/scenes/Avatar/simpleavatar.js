@@ -679,15 +679,8 @@ function ClientUpdateAvatarCamera() {
         cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
         // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
         if(!first_person)
-        {
             cameratransform.rot.x = 90;
-            cameratransform.rot.z = avatartransform.rot.z - 90;
-        }
-        else
-        {
-            avatartransform.rot.z = cameratransform.rot.z + 90;
-            me.placeable.transform = avatartransform;
-        }
+        cameratransform.rot.z = avatartransform.rot.z - 90;
         cameraplaceable.transform = cameratransform;
     }
 }
@@ -798,17 +791,6 @@ function ClientHandleMouseMove(mouseevent)
     var cameraplaceable = cameraentity.placeable;
     var cameratransform = cameraplaceable.transform;
 
-    if (mouseevent.relativeX != 0)
-        cameratransform.rot.z -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeX);
-    if (mouseevent.relativeY != 0)
-        cameratransform.rot.x -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeY);
-        
-    // Dont let the 1st person flip vertically, 180 deg view angle
-    if (cameratransform.rot.x < 0)
-        cameratransform.rot.x = 0;
-    if (cameratransform.rot.x > 180)
-        cameratransform.rot.x = 180;
-
     var view = ui.GraphicsView();
     var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2);
     input.lastMouseX = centeredCursorPosLocal.x;
@@ -818,6 +800,18 @@ function ClientHandleMouseMove(mouseevent)
     centeredCursorPosGlobal = view.mapToGlobal(centeredCursorPosLocal);
     if (centeredCursorPosGlobal.x() == QCursor.pos().x() && centeredCursorPosGlobal.y() == QCursor.pos().y())
         return;
+
+    if (mouseevent.relativeX != 0)
+        me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity * parseInt(mouseevent.relativeX)));
+    if (mouseevent.relativeY != 0)
+        cameratransform.rot.x -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeY);
+        
+    // Dont let the 1st person flip vertically, 180 deg view angle
+    if (cameratransform.rot.x < 0)
+        cameratransform.rot.x = 0;
+    if (cameratransform.rot.x > 180)
+        cameratransform.rot.x = 180;
+
     QCursor.setPos(centeredCursorPosGlobal);
     var mousePos = view.mapFromGlobal(QCursor.pos());
     input.lastMouseX = mousePos.x;
