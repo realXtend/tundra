@@ -26,7 +26,7 @@
 #include "SoundChannel.h"
 #include "InputContext.h"
 #include "RenderServiceInterface.h"
-#include "CommunicationsService.h"
+//#include "CommunicationsService.h"
 #include "NaaliMainWindow.h"
 #include "NaaliGraphicsView.h"
 #include "EntityAction.h"
@@ -96,8 +96,8 @@ Q_DECLARE_METATYPE(ConfigAPI*);
 Q_DECLARE_METATYPE(RaycastResult*);
 
 //! Communications metatype
-Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
-Q_DECLARE_METATYPE(Communications::InWorldVoice::ParticipantInterface*);
+//Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
+//Q_DECLARE_METATYPE(Communications::InWorldVoice::ParticipantInterface*);
 
 QScriptValue findChild(QScriptContext *ctx, QScriptEngine *eng)
 {
@@ -267,8 +267,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<RaycastResult*>(engine);
 
     // Communications metatypes
-    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::SessionInterface*>(engine);
-    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::ParticipantInterface*>(engine);
+//    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::SessionInterface*>(engine);
+//    qScriptRegisterQObjectMetaType<Communications::InWorldVoice::ParticipantInterface*>(engine);
 }
 
 

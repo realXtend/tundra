@@ -60,7 +60,7 @@
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
-#include "LoginServiceInterface.h"
+//#include "LoginServiceInterface.h"
 #include "FrameAPI.h"
 #include "SceneAPI.h"
 #include "ConsoleAPI.h"
@@ -117,9 +117,9 @@
 #include <QStringList>
 //#include <QDebug>
 
-#include <MediaPlayerService.h>
-#include <CommunicationsService.h>
-#include <WorldBuildingServiceInterface.h>
+//#include <MediaPlayerService.h>
+//#include <CommunicationsService.h>
+//#include <WorldBuildingServiceInterface.h>
 
 #include "PythonQtScriptingConsole.h"
 
@@ -542,7 +542,7 @@ namespace PythonScript
     // virtual 
     void PythonScriptModule::Uninitialize()
     {
-        framework_->GetServiceManager()->UnregisterService(engine_);
+//        framework_->GetServiceManager()->UnregisterService(engine_);
 
         if (pmmInstance != NULL) //sometimes when devving it can be, when there was a bug - this helps to be able to reload it
             PyObject_CallMethod(pmmInstance, "exit", "");
@@ -645,12 +645,12 @@ namespace PythonScript
     }
 
     void PythonScriptModule::RunJavascriptString(const QString &codestr, const QVariantMap &context)
-    {
+    {/*
         using namespace Foundation;
         boost::shared_ptr<ScriptServiceInterface> js = framework_->GetService<ScriptServiceInterface>(Service::ST_JavascriptScripting).lock();
         if (js)
             js->RunString(codestr, context);
-        else
+        else*/ ///\todo
             LogError("Javascript script service not available in py RunJavascriptString");
     }
 
@@ -675,11 +675,11 @@ namespace PythonScript
             PythonScriptModule::LogCritical("Framework object doesn't exist!");
             return 0;
         }
-
+/*
         MediaPlayer::ServiceInterface *player_service = framework_->GetService<MediaPlayer::ServiceInterface>();
         if (player_service)
             return player_service;
-
+*/
         PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
         return 0;
     }
@@ -692,11 +692,11 @@ namespace PythonScript
             PythonScriptModule::LogCritical("Framework object doesn't exist!");
             return 0;
         }
-
+/*
         Communications::ServiceInterface *service = framework_->GetService<Communications::ServiceInterface>();
         if (service)
             return service;
-
+*/
         PythonScriptModule::LogError("Cannot find CommunicationsServiceInterface implementation.");
         return 0;
     }
@@ -1877,7 +1877,7 @@ namespace PythonScript
 
         engine_->Initialize();
 
-        framework_->GetServiceManager()->RegisterService(Service::ST_PythonScripting, engine_);
+//        framework_->GetServiceManager()->RegisterService(Service::ST_PythonScripting, engine_);
 
         assert(!pythonScriptModuleInstance_);
         pythonScriptModuleInstance_ = this;
@@ -1902,7 +1902,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Foundation::WorldLogicInterface::staticMetaObject);
 #endif
             PythonQt::self()->registerClass(&Scene::SceneManager::staticMetaObject);
-            PythonQt::self()->registerClass(&MediaPlayer::ServiceInterface::staticMetaObject);
+//            PythonQt::self()->registerClass(&MediaPlayer::ServiceInterface::staticMetaObject);
             PythonQt::self()->registerClass(&PythonQtScriptingConsole::staticMetaObject);
 
             mainModule.addObject("_naali", GetFramework());

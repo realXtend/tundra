@@ -3,7 +3,7 @@
 #ifndef incl_PythonScriptModule_PythonEngine_h
 #define incl_PythonScriptModule_PythonEngine_h
 
-#include "ScriptServiceInterface.h"
+//#include "ScriptServiceInterface.h"
 
 namespace Foundation
 {
@@ -29,7 +29,7 @@ namespace PythonScript
     
     //! Python code runner
     //! created by PythonScriptModule.
-    class PythonEngine : public Foundation::ScriptServiceInterface
+    class PythonEngine// : public Foundation::ScriptServiceInterface
     {
     public:
         PythonEngine(Foundation::Framework* framework);
