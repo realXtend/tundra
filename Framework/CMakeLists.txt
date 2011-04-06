@@ -1,5 +1,5 @@
 # Define target name
-init_target (Foundation)
+init_target (Framework)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -18,7 +18,7 @@ use_modules (Foundation Core Interfaces Scene Ui Input Asset Audio)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Interfaces Scene Ui Input Asset Audio)
+link_modules (Framework Interfaces Scene Ui Input Asset Audio)
 
 SetupCompileFlagsWithPCH()
 

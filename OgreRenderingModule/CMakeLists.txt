@@ -37,7 +37,7 @@ add_definitions (-DOGRE_MODULE_EXPORTS)
 #add_definitions (-DUSE_NVIDIA_PERFHUD)
 
 use_package_assimp()
-use_modules (Core Foundation Interfaces Scene AssetModule Input Ui Asset)
+use_modules (Framework Interfaces Scene AssetModule Input Ui Asset)
 
 if (ENABLE_TAIGA_SUPPORT)
 use_modules (RexCommon ProtocolUtilities)
@@ -55,7 +55,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 GetOpenAssetImport()
 link_ogre()
-link_modules (Core Foundation Interfaces Scene Ui Asset)
+link_modules (Framework Interfaces Scene Ui Asset)
 
 if (ENABLE_TAIGA_SUPPORT)
 link_modules (RexCommon)

@@ -29,7 +29,7 @@ QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 add_definitions (-DAVATAR_MODULE_EXPORTS)
 
 # Includes
-use_modules(AvatarModule Core Foundation Interfaces Scene SupportModules
+use_modules(AvatarModule Framework Interfaces Scene SupportModules
     AssetModule OgreRenderingModule Input Asset)
 
 if (ENABLE_TAIGA_SUPPORT)
@@ -41,7 +41,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 # Linking
 link_ogre()
 
-link_modules(Core Foundation Interfaces Scene SupportModules 
+link_modules(Framework Interfaces Scene SupportModules 
     AssetModule OgreRenderingModule Input Asset)
 
 if (ENABLE_TAIGA_SUPPORT)

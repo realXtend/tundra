@@ -11,7 +11,7 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules (Core Foundation Interfaces Asset)
+use_modules (Framework Interfaces Asset)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -22,7 +22,7 @@ add_definitions (-DUI_API_EXPORTS)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation Interfaces Asset)
+link_modules (Framework Interfaces Asset)
 
 SetupCompileFlags()
 

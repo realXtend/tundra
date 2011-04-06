@@ -17,7 +17,7 @@ if (ENABLE_TAIGA_SUPPORT)
    use_modules (RexCommon)
 endif()
 
-use_modules (Core Foundation Interfaces Ui)
+use_modules (Framework Interfaces Ui)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -25,7 +25,7 @@ link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
 
-link_modules (Core Ui)
+link_modules (Framework Ui)
 
 SetupCompileFlags()
 

@@ -29,11 +29,11 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_modules (Core Foundation Interfaces SupportModules TestModule Scene)
+use_modules (Framework Interfaces SupportModules TestModule Scene)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES})
 
-link_modules (Core Foundation Interfaces Scene)
+link_modules (Framework Interfaces Scene)
 
 final_target ()
 
