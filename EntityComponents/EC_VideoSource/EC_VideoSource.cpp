@@ -73,7 +73,7 @@ EC_VideoSource::EC_VideoSource(IModule *module):
 
     connect(ready_poller_, SIGNAL(timeout()), SLOT(Play()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
     // Register as a event listener
     EventManager *event_manager = framework_->GetEventManager().get();
@@ -203,7 +203,7 @@ void EC_VideoSource::InitializePhonon()
     }
 }
 
-void EC_VideoSource::AttributeUpdated(IAttribute *attribute)
+void EC_VideoSource::OnAttributeUpdated(IAttribute *attribute)
 {
     if (!video_widget_ || !media_object_)
         return;

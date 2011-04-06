@@ -60,7 +60,7 @@ EC_Avatar::EC_Avatar(IModule* module) :
     }
     
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-        this, SLOT(AttributeUpdated(IAttribute*)));
+        this, SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Avatar::~EC_Avatar()
@@ -92,7 +92,7 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
     SetupAvatar(avatarAsset);
 }
 
-void EC_Avatar::AttributeUpdated(IAttribute *attribute)
+void EC_Avatar::OnAttributeUpdated(IAttribute *attribute)
 {
     if (attribute == &appearanceId)
     {

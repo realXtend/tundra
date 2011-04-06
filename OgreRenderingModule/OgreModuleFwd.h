@@ -8,6 +8,8 @@
 #ifndef incl_OgreRendereringModule_OgreModuleFwd_h
 #define incl_OgreRendereringModule_OgreModuleFwd_h
 
+#include <boost/smart_ptr.hpp>
+
 namespace Ogre
 {
     class Entity;

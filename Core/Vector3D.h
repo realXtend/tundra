@@ -392,6 +392,17 @@ public:
         return in;
     }
 
+    /// Returns true if the elements of this vector are valid (non-special) finite floats.
+    bool IsFinite() const
+    {
+        if (_isnan(x) || _isnan(y) || _isnan(z))
+            return false;
+        if (!_finite(x) || !_finite(y) || !_finite(z))
+            return false;
+
+        return true;
+    }
+
     static const Vector3D<f32> ZERO;
     static const Vector3D<f32> UNIT_SCALE_X;
     static const Vector3D<f32> UNIT_X;

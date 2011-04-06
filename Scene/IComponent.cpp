@@ -105,13 +105,12 @@ QVariant IComponent::GetAttributeQVariant(const QString &name) const
     return QVariant();
 }
 
-QStringList IComponent::GetAttributeNames()
+QStringList IComponent::GetAttributeNames() const
 {
-	QStringList attribute_list;
-	for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter) {
-		attribute_list.push_back(QString::fromStdString((*iter)->GetNameString()));
-	}
-	return attribute_list;
+    QStringList attribute_list;
+    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
+        attribute_list.push_back(QString::fromStdString((*iter)->GetNameString()));
+    return attribute_list;
 }
 
 IAttribute* IComponent::GetAttribute(const QString &name) const
@@ -196,7 +195,7 @@ QString IComponent::ReadAttributeType(QDomElement& comp_element, const QString &
     return QString();
 }
 
-void IComponent::AttributeChanged(IAttribute* attribute, AttributeChange::Type change)
+void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (change == AttributeChange::Default)
         change = updatemode_;
@@ -212,7 +211,7 @@ void IComponent::AttributeChanged(IAttribute* attribute, AttributeChange::Type c
     emit OnAttributeChanged(attribute, change);
 }
 
-void IComponent::AttributeChanged(const QString& attributeName, AttributeChange::Type change)
+void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return; // No signals
@@ -222,7 +221,7 @@ void IComponent::AttributeChanged(const QString& attributeName, AttributeChange:
     {
         if (attributes_[i]->GetName() == attributeName)
         {
-            AttributeChanged(attributes_[i], change);
+            EmitAttributeChanged(attributes_[i], change);
             break;
         }
     }
@@ -247,13 +246,11 @@ bool HasAttribute(QDomElement &comp_element, const QString &name)
     {
         if (attribute_element.attribute("name") == name)
             return true;
-        
         attribute_element = attribute_element.nextSiblingElement("attribute");
     }
-    
+
     return false;
 }
-
 
 void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type change)
 {
@@ -299,11 +296,8 @@ void IComponent::DeserializeFromBinary(kNet::DataDeserializer& source, Attribute
 
 void IComponent::ComponentChanged(AttributeChange::Type change)
 {
-    for (uint i = 0; i < attributes_.size(); ++i)
-        AttributeChanged(attributes_[i], change);
-    
-    //! \todo: this is deprecated and will be removed in the future. Do not rely on OnChanged() signal.
-    OnChanged();
+    for(uint i = 0; i < attributes_.size(); ++i)
+        EmitAttributeChanged(attributes_[i], change);
 }
 
 void IComponent::SetTemporary(bool enable)

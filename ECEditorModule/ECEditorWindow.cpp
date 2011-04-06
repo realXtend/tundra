@@ -19,7 +19,6 @@
 #include "ECEditorModule.h"
 
 #include "UiProxyWidget.h"
-#include "UiServiceInterface.h"
 #include "ModuleManager.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
@@ -258,7 +257,7 @@ void ECEditorWindow::CopyEntity()
             QDomElement entity_elem = temp_doc.createElement("entity");
             entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-            foreach(ComponentPtr component, entity->GetComponentVector())
+            foreach(ComponentPtr component, entity->Components())
                 if (component->IsSerializable())
                     component->SerializeTo(temp_doc, entity_elem);
 
@@ -304,7 +303,7 @@ void ECEditorWindow::PasteEntity()
             return;
 
         bool hasPlaceable = false;
-        Scene::Entity::ComponentVector components = originalEntity->GetComponentVector();
+        Scene::Entity::ComponentVector components = originalEntity->Components();
         for(uint i = 0; i < components.size(); i++)
         {
             // If the entity is holding placeable component we can place it into the scene.
@@ -561,7 +560,7 @@ void ECEditorWindow::ShowXmlEditorForEntity()
     {
         EntityComponentSelection entityComponent;
         entityComponent.entity = entities[i];
-        entityComponent.components = entities[i]->GetComponentVector();
+        entityComponent.components = entities[i]->Components();
         selection.push_back(entityComponent);
     }
 

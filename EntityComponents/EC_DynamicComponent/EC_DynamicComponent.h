@@ -15,6 +15,10 @@ namespace kNet
 
 #include <QVariant>
 
+struct DeserializeData;
+
+class QScriptValue;
+
 /// Component for which user can add and delete attributes at runtime.
 /**
 <table class="header">
@@ -23,7 +27,7 @@ namespace kNet
 <h2>DynamicComponent</h2>
 Component for which user can add and delete attributes at runtime.
 It's recommend to use attribute names when you set or get your attribute values because
-index can change while the dynamic componet's attributes are added or removed.
+index can change while the dynamic component's attributes are added or removed.
 
 If you want to create a new attribute you can use either AddQVariantAttribute or CreateAttribute methods.
 AddQVariantAttribute will create empty QVariant type of attribute and user need to set attribute value
@@ -31,16 +35,12 @@ after the attribute is added to component by using a SetAttribute method.
 
 All component's changes should be forwarded to all clients and therefore they should be on sync.
 When component is deserialized it will compare old and a new attribute values and will get difference
-between those two and use that infomation to remove attributes that are not in the new list and add those
+between those two and use that information to remove attributes that are not in the new list and add those
 that are only in new list and only update those values that are same in both lists.
 
-@todo Serialize is now done using a FreeData field that has character limit of 1000.
-If xml file will get larger than that client will not send a new attribute values to the server.
+Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
-
-Registered by PythonScript::PythonScriptModule.
-
-<b>No Attributes.</b>
+<b>No Static Attributes.</b>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
@@ -55,7 +55,7 @@ Registered by PythonScript::PythonScriptModule.
 <li>"ContainSameAttribute": Check if a given component is holding exactly same attributes as this component.
     @return Return true if component is holding same attributes as this component else return false.
 <li>"RemoveAttribute": Remove attribute from the component.
-<li>"ContainAttribute": Check if component is hodling attribute by that name.
+<li>"ContainAttribute": Check if component is holding attribute by that name.
     @param name Name of attribute that we are looking for.
 </ul>
 
@@ -72,12 +72,6 @@ Does not emit any actions.
 
 </table>
 */
-
-struct DeserializeData;
-
-
-class QScriptValue;
-
 class EC_DynamicComponent : public IComponent
 {
     DECLARE_EC(EC_DynamicComponent);
@@ -92,7 +86,7 @@ public:
 
     /// IComponent override. This component has dynamic attribute structure.
     virtual bool HasDynamicStructure() const { return true; }
-    
+
     /// IComponent override.
     void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
 
@@ -109,7 +103,7 @@ public:
         if (!ContainsAttribute(name))
         {
             IAttribute *attribute = new Attribute<T>(this, name.toStdString().c_str());
-            AttributeChanged(attribute, change);
+            EmitAttributeChanged(attribute, change);
             emit AttributeAdded(attribute);
         }
     }
@@ -121,8 +115,12 @@ public:
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
 public slots:
-    /// A factory method that constructs a new attribute given the typename. This factory is not extensible.
-    /// If attribute was already created the method will return it's pointer.
+    /// A factory method that constructs a new attribute of a given the type name.
+    /** @param typeName Type name of the attribute.
+        @param name Name of the attribute.
+        @param change Change type.
+        This factory is not extensible. If attribute was already created the method will return it's pointer.
+    */
     IAttribute *CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Create new attribute that type is QVariant.
@@ -143,13 +141,14 @@ public slots:
     */
     QVariant GetAttribute(const QString &name) const;
 
-    /// Inserts new attribute value to attribute. Note: this is only meant to be used through javascripts.
+    /// Inserts new attribute value to attribute. Note: this is only meant to be used from QtScript.
     /** @param name Name of the attribute.
-     *  @param value Value of the attribe.
-     *  @param change Change type.
-     *  @todo remove this from dynamic component when possible.
-     */
+        @param value Value of the attribute.
+        @param change Change type.
+        @todo remove this from dynamic component when possible.
+    */
     void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change = AttributeChange::Default);
+
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
         @param value Value of the attribute.
@@ -167,7 +166,7 @@ public slots:
     /// Returns number of attributes in this component.
     int GetNumAttributes() const { return attributes_.size(); }
 
-    /// Returns name of attribute with the spesific @c index
+    /// Returns name of attribute with the specific @c index
     /** @param index Index of the attribute.
     */
     QString GetAttributeName(int index) const;
@@ -179,7 +178,7 @@ public slots:
     bool ContainSameAttributes(const EC_DynamicComponent &comp) const;
 
     /// Remove attribute from the component.
-    /** @param name Name of the attirbute.
+    /** @param name Name of the attribute.
     */
     void RemoveAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
@@ -190,7 +189,7 @@ public slots:
 
     /// Removes all attributes from the component
     void RemoveAllAttributes(AttributeChange::Type change = AttributeChange::Default);
-    
+
 signals:
     /// Emitted when a new attribute is added to this component.
     /** @param attr New attribute.

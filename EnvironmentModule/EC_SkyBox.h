@@ -21,14 +21,14 @@ namespace Environment
 
 Registered by Enviroment::EnvironmentModule. 
 
-<h3> Using component to syncronize sky in Taiga </h3>
+<h3> Using component to synchronize sky in Taiga </h3>
 
-Currently (not in Tundra) EC_SkyBox component can be used to syncronize sky in Taiga worlds.
+Currently (not in Tundra) EC_SkyBox component can be used to synchronize sky in Taiga worlds.
 This can be done so that user creates entity and sets entity EC_Name-component.
 
 If this component name is set as "SkyEnvironment" our current implementation will create automatically
 a EC_SkyBox-component on it. This component is now usable for every user and all changes on it will be replicated.
-This syncronized sky plane component can also be edited by using environment editor (in world tools).
+This synchronized sky plane component can also be edited by using environment editor (in world tools).
 
 Currently Caelum must be disabled before these features can be used.
 
@@ -82,13 +82,13 @@ Currently Caelum must be disabled before these features can be used.
         /// View sky assets.
         void View(const QString &attributeName);
         /// Called If some of the attributes has been changed.
-        void AttributeUpdated(IAttribute* attribute);
+        void OnAttributeUpdated(IAttribute* attribute);
 
         /// Disables the sky box.
         void DisableSky();
 
     private:
-        /// Constuctor.
+        /// Constructor.
         /** @param module Module where component belongs.
         */
         explicit EC_SkyBox(IModule *module);

@@ -130,7 +130,7 @@ private slots:
     void UpdateSignals();
 
     //! Monitors own attribute changes.
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
 
     //! Handles asset loaded signal.
     void AudioAssetLoaded(AssetPtr asset);
