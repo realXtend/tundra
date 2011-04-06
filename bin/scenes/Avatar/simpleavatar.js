@@ -361,7 +361,7 @@ function ClientInitialize() {
         {
             var avatarAssetRef = new QByteArray(avatarurl);
             var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
-            avatar.OnAttributeChanged.connect(CommonHandleAvatarAttributeChange)
+            avatar.AttributeChanged.connect(CommonHandleAvatarAttributeChange)
             avatar.appearanceId = avatarAssetRef;
             print("Avatar from login parameters enabled:", avatarAssetRef);
         }
