@@ -20,11 +20,23 @@ namespace Camera
         verticalLayout_2->addWidget(renderer);
         connect(comboBoxCameras, SIGNAL(currentIndexChanged(const QString &)),this,  SLOT(SetWindowTitle(const QString &)));         
     }
+    
+    CameraWidget::~CameraWidget()
+    {
+        delete renderer;
+    }
 
     void CameraWidget::SetWindowTitle(const QString &name)
     {
-        if (this->parent())
-            dynamic_cast<QWidget*>(this->parent())->setWindowTitle(name + " Camera");
+        
+        if (this->parentWidget())                    
+            dynamic_cast<QWidget*>(this->parentWidget())->setWindowTitle(name + " Camera");        
+    }
+
+    void CameraWidget::hideEvent(QHideEvent * event)
+    {
+        if (isHidden())
+            emit WidgetHidden();
     }
 
     CameraView::CameraView(QWidget* widget) :

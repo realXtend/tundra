@@ -89,6 +89,9 @@ namespace Camera
 
 	void CameraModule::Update(f64 frametime)
 	{
+        //delete one widget from dirty widgets set
+        if(!dirty_widgets_.isEmpty())        
+            DeleteCameraWidget(dirty_widgets_.takeFirst());
 
 	}
 
@@ -175,8 +178,9 @@ namespace Camera
         //set qdoc features to flotable and movable, but not closable
         QDockWidget *doc = dynamic_cast<QDockWidget*>(camera_view->parent());           
         if (doc)
-			doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable); 
-
+            doc->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
+        
+        connect(camera_view, SIGNAL(WidgetHidden()), this, SLOT(OnCameraWidgetHidden()));
         //insert title to camera view titles
         camera_view_titles_.insert(title);
         return camera_view;
@@ -215,10 +219,10 @@ namespace Camera
 
         //connect signals
          //new camera signal
-        connect(camera_view->buttonNewCamera, SIGNAL(released()),this,  SLOT(CreateNewCamera())); 
+        connect(camera_view->buttonNewCamera, SIGNAL(released()),this,  SLOT(OnNewButtonClicked())); 
 
         //close camera signal
-		connect(camera_view->buttonDeleteCamera, SIGNAL(released()),this,  SLOT(DeleteCameraWidget())); 
+		connect(camera_view->buttonDeleteCamera, SIGNAL(released()),this,  SLOT(OnDeleteButtonClicked())); 
         
         //movement signals
         connect(camera_view->GetRenderer(), SIGNAL(Move(qreal, qreal)),camera_handler,  SLOT(Move(qreal, qreal))); 
@@ -230,26 +234,48 @@ namespace Camera
         //projection type signal
         connect(camera_view->comboBoxProjection, SIGNAL(currentIndexChanged(int)),camera_handler,  SLOT(SetCameraProjection(int))); 
         //wireframe signal
-        connect(camera_view->checkBoxWireframe, SIGNAL(stateChanged(int)),this, SLOT(SetCameraWireframe(int))); 
+        connect(camera_view->checkBoxWireframe, SIGNAL(stateChanged(int)),this, SLOT(OnWireframeCheckBoxChanged(int))); 
 
         //clip distance buttons
-        connect(camera_view->pushButtonNearPlus, SIGNAL(clicked(bool)), this, SLOT(NearPlusButtonClicked(bool)));
-        connect(camera_view->pushButtonNearMinus, SIGNAL(clicked(bool)), this, SLOT(NearMinusButtonClicked(bool)));
-        connect(camera_view->pushButtonFarPlus, SIGNAL(clicked(bool)), this, SLOT(FarPlusButtonClicked(bool)));
-        connect(camera_view->pushButtonFarMinus, SIGNAL(clicked(bool)), this, SLOT(FarMinusButtonClicked(bool)));
+        connect(camera_view->pushButtonNearPlus, SIGNAL(clicked(bool)), this, SLOT(OnNearPlusButtonClicked(bool)));
+        connect(camera_view->pushButtonNearMinus, SIGNAL(clicked(bool)), this, SLOT(OnNearMinusButtonClicked(bool)));
+        connect(camera_view->pushButtonFarPlus, SIGNAL(clicked(bool)), this, SLOT(OnFarPlusButtonClicked(bool)));
+        connect(camera_view->pushButtonFarMinus, SIGNAL(clicked(bool)), this, SLOT(OnFarMinusButtonClicked(bool)));
         
         //save in map
         controller_view_handlers_.insert(camera_view, camera_handler);       
 
     }
 
-    void CameraModule::DeleteCameraWidget()
+    void CameraModule::OnNewButtonClicked()
+    {
+        CreateNewCamera();
+    }
+
+    void CameraModule::OnDeleteButtonClicked()
     {
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent());
+		if (!camera_view)
+            return;
+        dirty_widgets_.append(camera_view);
+        //DeleteCameraWidget(camera_view);
+    }
+
+    void CameraModule::OnCameraWidgetHidden()
+    {
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender());
+		if (!camera_view)
+            return;
+        dirty_widgets_.append(camera_view);
+        //DeleteCameraWidget(camera_view);
+    }
+
+    void CameraModule::DeleteCameraWidget(QWidget *widget)
+    {
+        CameraWidget* camera_view = qobject_cast<CameraWidget*>(widget);
 
 		if (!camera_view)
             return;
-
         //remove widget from scene
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
         if (ui)        
@@ -265,6 +291,7 @@ namespace Camera
             delete camera;
             delete handler;            
         } 
+
     }
     void CameraModule::ReadConfig()
     {
@@ -306,7 +333,7 @@ namespace Camera
         }
     }
 
-    void CameraModule::SetCameraWireframe(int state)
+    void CameraModule::OnWireframeCheckBoxChanged(int state)
     {
         //capture checkbox state and call the handler
         //Qt::CheckState: 0: unchecked, 1: partial checked, 2: checked
@@ -341,7 +368,7 @@ namespace Camera
 
     }
 
-    void CameraModule::NearPlusButtonClicked(bool checked)
+    void CameraModule::OnNearPlusButtonClicked(bool checked)
     {
         //capture botton clicked widgetand call the handler
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
@@ -354,7 +381,7 @@ namespace Camera
         }
     }
 
-    void CameraModule::NearMinusButtonClicked(bool checked)
+    void CameraModule::OnNearMinusButtonClicked(bool checked)
     {
         //capture botton clicked widgetand call the handler        
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
@@ -367,7 +394,7 @@ namespace Camera
         }
     }
 
-    void CameraModule::FarPlusButtonClicked(bool checked)
+    void CameraModule::OnFarPlusButtonClicked(bool checked)
     {
         //capture botton clicked widgetand call the handler
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
@@ -380,7 +407,7 @@ namespace Camera
         }
     }
 
-    void CameraModule::FarMinusButtonClicked(bool checked)
+    void CameraModule::OnFarMinusButtonClicked(bool checked)
     {
         //capture botton clicked widgetand call the handler
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());

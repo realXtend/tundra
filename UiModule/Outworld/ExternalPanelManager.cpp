@@ -30,6 +30,9 @@ namespace UiServices
 		wid->setWidget(widget);
         if (!AddQDockWidget(wid))
         {
+            //to keep widget, removes widget parent and dock widget 
+            widget->setParent(0);
+            wid->setWidget(0);
             SAFE_DELETE(wid);
             return false;
         }        
@@ -62,19 +65,25 @@ namespace UiServices
     {
 		/*TODO: Check if it is in the menu bar also?*/
 		//The widget is passed, no the QDockWidget!
-		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget()))) {
-			qWin_->removeDockWidget(dynamic_cast<QDockWidget*>(widget->parentWidget()));
-			all_qdockwidgets_in_window_.removeOne(dynamic_cast<QDockWidget*>(widget->parentWidget()));
-			return true;
-		}
-		else if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget))){
-			//Someone has called the method with the dockwidget!
-			qWin_->removeDockWidget(dynamic_cast<QDockWidget*>(widget));
-			all_qdockwidgets_in_window_.removeOne(dynamic_cast<QDockWidget*>(widget));
-			return true;
-		}
-		else
-			return false;		
+        QDockWidget *doc_widget = dynamic_cast<QDockWidget*>(widget);
+        if (!doc_widget)
+        {
+            doc_widget = dynamic_cast<QDockWidget*>(widget->parentWidget());    
+            if (!doc_widget)
+                return false;
+        }
+
+        if (all_qdockwidgets_in_window_.contains(doc_widget)) {
+            qWin_->removeDockWidget(doc_widget);
+		    all_qdockwidgets_in_window_.removeOne(doc_widget);      
+            //to keep widget, removes widget parent and dock widget 
+            doc_widget->widget()->setParent(0);
+            doc_widget->setWidget(0);
+            SAFE_DELETE(doc_widget);
+            return true;
+        }
+        else
+			return false;	
     }
     
 	void ExternalPanelManager::ShowWidget(QWidget *widget){
@@ -92,7 +101,8 @@ namespace UiServices
 
 	void ExternalPanelManager::HideWidget(QWidget *widget){
 		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))
-			widget->parentWidget()->hide();		
+			//widget->parentWidget()->hide();
+            widget->hide();
 	}
 
 	void ExternalPanelManager::EnableDockWidgets(){
