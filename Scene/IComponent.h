@@ -25,9 +25,9 @@ class QDomElement;
 namespace Foundation { class Framework; }
 
 /// IComponent is the base class for all user-created components. Inherit your own components from this class.
-/** Each Component has a compile-time specified Typename that identifies the class-name of the Component.
+/** Each Component has a compile-time specified type name that identifies the class-name of the Component.
     This differentiates different derived implementations of the IComponent class. Each implemented Component
-    must have a unique Typename.
+    must have a unique type name.
 
     Additionally, each Component has a Name string, which identifies different instances of the same Component,
     if more than one is added to an Entity.
@@ -37,7 +37,8 @@ namespace Foundation { class Framework; }
 
     Every Component has a state variable 'UpdateMode' that specifies a default setting for managing which objects
     get notified whenever an Attribute change event occurs. This is used to create "Local Only"-objects as well
-    as when doing batch updates of Attributes (for performance or correctness). */
+    as when doing batch updates of Attributes (for performance or correctness).
+*/
 class IComponent : public QObject, public boost::enable_shared_from_this<IComponent>
 {
     friend class ::IAttribute;
@@ -49,7 +50,7 @@ class IComponent : public QObject, public boost::enable_shared_from_this<ICompon
     Q_PROPERTY(AttributeChange::Type UpdateMode READ GetUpdateMode WRITE SetUpdateMode)
 
 public:
-    /// Constuctor.
+    /// Constructor.
     explicit IComponent(Foundation::Framework* framework);
 
     /// Copy-constructor.
@@ -77,7 +78,7 @@ public:
 
     /// Sets the name of the component.
     /** This call will silently fail if there already exists a component with the
-        same (Typename, Name) pair in this entity. When this function changes the name of the component,
+        same (TypeName, Name) pair in this entity. When this function changes the name of the component,
         the signal ComponentNameChanged is emitted.
         @param name The new name for this component. This may be an empty string.
     */
@@ -98,7 +99,8 @@ public:
         @return If there exists an attribute of type 'Attribute<T>' which has the given name, a pointer to
                 that attribute is returned, otherwise returns null.
     */
-    template<typename T> Attribute<T> *GetAttribute(const std::string &name) const
+    template<typename T>
+    Attribute<T> *GetAttribute(const std::string &name) const
     {
         for(size_t i = 0; i < attributes_.size(); ++i)
             if (attributes_[i]->GetNameString() == name)
@@ -250,7 +252,7 @@ public slots:
 
 signals:
     /// This signal is emitted when an Attribute of this Component has changed. 
-    void OnAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+    void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     ///\todo In the future, provide a method of listening to a change of specific Attribute, instead of having to
     /// always connect to the above function and if(...)'ing if it was the change we were interested in.

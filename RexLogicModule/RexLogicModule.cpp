@@ -1328,7 +1328,7 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
     {
         LogDebug("Added new sound listener to the listener list.");
 //        EC_SoundListener *listener = entity->GetComponent<EC_SoundListener>().get();
-//        connect(listener, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), 
+//        connect(listener, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)), 
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
     }

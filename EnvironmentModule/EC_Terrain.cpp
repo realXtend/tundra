@@ -146,7 +146,7 @@ void EC_Terrain::UpdateSignals()
 {
     disconnect(this, SLOT(OnAttributeUpdated(IAttribute *)));
 
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)), Qt::UniqueConnection);
 
     Scene::Entity *parent = GetParentEntity();

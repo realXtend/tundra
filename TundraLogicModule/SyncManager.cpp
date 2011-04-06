@@ -222,11 +222,10 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
-            #ifndef ECHO_CHANGES_TO_SENDER
+#ifndef ECHO_CHANGES_TO_SENDER
             if ((*i)->connection == currentSender)
                 continue;
-            #endif
-            
+#endif
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
             {

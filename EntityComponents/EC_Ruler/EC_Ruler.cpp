@@ -47,7 +47,7 @@ EC_Ruler::EC_Ruler(IModule *module) :
     rulerMovingPartName = uuid.ToString() + "mover";
     movingNodeName = uuid.ToString() + "movingNode";
     
-    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateRuler()));
+    QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateRuler()));
 }
 
 EC_Ruler::~EC_Ruler()

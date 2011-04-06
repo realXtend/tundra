@@ -68,7 +68,7 @@ namespace Environment
             node_ = scene_mgr->createSceneNode(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_Root"));
         }
 
-        QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+        QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         lastXsize_ = xSize.Get();

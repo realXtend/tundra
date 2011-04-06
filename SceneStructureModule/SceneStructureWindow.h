@@ -102,10 +102,8 @@ private:
     SceneTreeWidget *treeWidget; ///< Scene tree widget.
     bool showComponents; ///< Do we show components also in the tree view.
     bool showAssets; ///< Do we show asset references also in the tree view.
-
-    QLineEdit *searchField;
-    QPushButton *expandAndCollapseButton;
-    bool expandingOrCollapsing;
+    QLineEdit *searchField; ///< Search field line edit.
+    QPushButton *expandAndCollapseButton; ///< Expand/collapse all button.
 
 private slots:
     /// Adds the entity to the tree widget.
@@ -148,7 +146,7 @@ private slots:
     void UpdateAssetReference(IAttribute *attr);
 
     /// Updates entity's name in the tree widget if entity's EC_Name component's "name" attribute has changed.
-    /** EC_Name component's OnAttributeChanged() signal is connected to this slot.
+    /** EC_Name component's AttributeChanged() signal is connected to this slot.
         @param attr EC_Name's attribute which was changed.
     */
     void UpdateEntityName(IAttribute *attr);

@@ -67,7 +67,7 @@ EC_Placeable::EC_Placeable(IModule* module) :
     link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
 
     // Hook the transform attribute change
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
