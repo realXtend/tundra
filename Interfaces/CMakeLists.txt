@@ -19,12 +19,12 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
 add_definitions (-DMODULE_EXPORTS)
 
-use_modules (Core Foundation Scene Interfaces Asset)
+use_modules (Framework Scene Interfaces Asset)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package_knet()
-link_modules (Core Foundation Scene Interfaces Asset)
+link_modules (Framework Scene Interfaces Asset)
 
 SetupCompileFlagsWithPCH()
 

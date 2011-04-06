@@ -15,11 +15,11 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
-use_modules (Core Foundation Interfaces Scene Asset)
+use_modules (Framework Interfaces Scene Asset)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
-link_modules (Core Foundation Interfaces Scene EC_Script Asset)
+link_modules (Framework Interfaces Scene EC_Script Asset)
 
 SetupCompileFlagsWithPCH()
 

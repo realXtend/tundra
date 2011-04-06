@@ -19,7 +19,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces Scene OgreRenderingModule)
+use_modules (Framework Interfaces Scene OgreRenderingModule)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
@@ -27,7 +27,7 @@ link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
 link_ogre()
-link_modules (Core Foundation Interfaces Scene OgreRenderingModule)
+link_modules (Framework Interfaces Scene OgreRenderingModule)
 
 SetupCompileFlagsWithPCH()
 
