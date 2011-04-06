@@ -344,7 +344,7 @@ function ClientInitialize() {
         own_avatar = true;
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
-        crosshair = new Crosshair();
+        crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
         var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
         soundlistener.active = true;
 
@@ -787,12 +787,17 @@ function ClientHandleMouseMove(mouseevent)
     // Dont move av rotation if we are not the active cam
     if (!cameraentity.ogrecamera.IsActive())
         return;
-               
+
     var cameraplaceable = cameraentity.placeable;
     var cameratransform = cameraplaceable.transform;
 
+    var cursorOffset = 0;
+    if (crosshair.isUsingLabel)
+    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair, 
+    //\      so that we get clicks on scene and not on the label
+        cursorOffset = 9;
     var view = ui.GraphicsView();
-    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2);
+    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2 + cursorOffset);
     input.lastMouseX = centeredCursorPosLocal.x;
     input.lastMouseY = centeredCursorPosLocal.y;
 
