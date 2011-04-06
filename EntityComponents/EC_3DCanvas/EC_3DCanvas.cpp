@@ -98,7 +98,7 @@ void EC_3DCanvas::Start()
         EC_Mesh* ec_mesh = entity->GetComponent<EC_Mesh>().get();
         if (ec_mesh)
         {
-            connect(ec_mesh, SIGNAL(OnMaterialChanged(uint, const QString)), SLOT(MeshMaterialsUpdated(uint, const QString)));
+            connect(ec_mesh, SIGNAL(MaterialChanged(uint, const QString)), SLOT(MeshMaterialsUpdated(uint, const QString)));
             mesh_hooked_ = true;
         }
     }

@@ -1,43 +1,52 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "CAVEView.h"
+#include "ExternalRenderWindow.h"
+
 #include "Renderer.h"
-#include "qdesktopwidget.h"
 
-
+#include <QDesktopWidget>
 #include <QResizeEvent>
 #include <QKeyEvent>
 #include <QDebug>
 #include <QApplication>
 
-#include "ExternalRenderWindow.h"
+#include "MemoryLeakCheck.h"
 
 namespace CAVEStereo
 {
-    CAVEView::CAVEView(OgreRenderer::Renderer* renderer)
-        :camera_(0),
+    CAVEView::CAVEView(const OgreRenderer::RendererPtr &renderer) :
+        renderer_(renderer),
+        camera_(0),
         render_window_(0)
     {
-        renderer_ = renderer;
     }
 
     CAVEView::~CAVEView()
     {
-        Ogre::Root::getSingleton().detachRenderTarget(render_window_->getRenderWindow()->getName());
-        renderer_->GetSceneManager()->destroyCamera(camera_);
+        if (!renderer_.expired())
+        {
+            Ogre::Root::getSingleton().detachRenderTarget(render_window_->getRenderWindow()->getName());
+            renderer_.lock()->GetSceneManager()->destroyCamera(camera_);
+        }
+        SAFE_DELETE(render_window_);
     }
 
     void CAVEView::Initialize(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
-        assert(renderer_);
-        Initialize(name, renderer_->GetWindowWidth(), renderer_->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos); 
+        assert(!renderer_.expired());
+        Initialize(name, renderer_.lock()->GetWindowWidth(), renderer_.lock()->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos); 
     }
+
     void CAVEView::InitializePanorama(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos,int n)
     {
-        assert(renderer_);
-        InitializePanorama(name, renderer_->GetWindowWidth(), renderer_->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos, n); 
+        assert(!renderer_.expired());
+        InitializePanorama(name, renderer_.lock()->GetWindowWidth(), renderer_.lock()->GetWindowHeight(),top_left, bottom_left, bottom_right, eye_pos, n); 
     }
+
     void CAVEView::GetProjectionParameters( Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
         top_left = tl;
@@ -53,11 +62,11 @@ namespace CAVEStereo
         tl = top_left;
         ep = eye_pos;
 
-        assert(renderer_);
+        assert(renderer_.lock());
         assert(camera_);
         assert(render_window_);
         bool openGL = false;
-        if(renderer_->GetRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+        if (renderer_.lock()->GetRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
             openGL = true;
 
         //Projection magic be happening here.
@@ -99,7 +108,7 @@ namespace CAVEStereo
         b = su.dotProduct(ebl)*n/distance_to_plane;
         t = su.dotProduct(etl)*n/distance_to_plane;
 
-        renderer_->GetRoot()->getRenderSystem()->_makeProjectionMatrix(l,r,b,t,n,f,proj_mat);
+        renderer_.lock()->GetRoot()->getRenderSystem()->_makeProjectionMatrix(l,r,b,t,n,f,proj_mat);
         change_base=Ogre::Matrix4(sr.x,sr.y,sr.z,0,
                                   su.x,su.y,su.z,0,
                                   sn.x,sn.y,sn.z,0,
@@ -112,13 +121,13 @@ namespace CAVEStereo
 
     void CAVEView::Initialize(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
-        assert(renderer_);
-        Ogre::Camera* original_cam = renderer_->GetCurrentCamera();
+        assert(renderer_.lock().get());
+        Ogre::Camera* original_cam = renderer_.lock()->GetCurrentCamera();
         std::string std_name = name.toStdString();
         render_window_ = new ExternalRenderWindow();
         render_window_->CreateRenderWindow(std_name, window_width, window_height,0,0,false);
         render_window_->setGeometry(20,20,window_width,window_height);
-        camera_ = renderer_->GetSceneManager()->createCamera(std_name + "_camera");
+        camera_ = renderer_.lock()->GetSceneManager()->createCamera(std_name + "_camera");
         render_window_->getRenderWindow()->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
         camera_->getViewport()->setShadowsEnabled(true);
@@ -135,10 +144,11 @@ namespace CAVEStereo
 
         ReCalculateProjection(top_left, bottom_left, bottom_right, eye_pos);
     }
+
     void CAVEView::InitializePanorama(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos, int window_number)
     {
-        assert(renderer_);
-        Ogre::Camera* original_cam = renderer_->GetCurrentCamera();
+        assert(renderer_.lock().get());
+        Ogre::Camera* original_cam = renderer_.lock()->GetCurrentCamera();
         std::string std_name = name.toStdString();
         render_window_ = new ExternalRenderWindow();
         QRect rect = QApplication::desktop()->screenGeometry();
@@ -170,7 +180,7 @@ namespace CAVEStereo
                 break;
         }
 
-        camera_ = renderer_->GetSceneManager()->createCamera(std_name + "_camera");
+        camera_ = renderer_.lock()->GetSceneManager()->createCamera(std_name + "_camera");
         render_window_->getRenderWindow()->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
         camera_->getViewport()->setShadowsEnabled(true);
@@ -186,5 +196,4 @@ namespace CAVEStereo
 
         ReCalculateProjection(top_left, bottom_left, bottom_right, eye_pos);
     }
-
 }

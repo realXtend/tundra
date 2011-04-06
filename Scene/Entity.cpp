@@ -114,7 +114,7 @@ namespace Scene
             }
             else
             {
-                LogWarning("Failed to remove component: " + component->TypeName().toStdString() + " from entity: " + ToString(GetId()));
+                LogWarning("Failed to remove component: " + component->TypeName() + " from entity: " + QString::number(GetId()));
             }
         }
     }
@@ -131,80 +131,94 @@ namespace Scene
 
     ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->TypeName() == type_name)
-                return components_[i];
-
-        // If component was not found, try to create
-        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
+        ComponentPtr new_comp = GetComponent(type_name);
         if (new_comp)
-        {
-            if (!syncEnabled)
-                new_comp->SetNetworkSyncEnabled(false);
-            AddComponent(new_comp, change);
             return new_comp;
-        }
 
-        // Could not be created
-        return ComponentPtr();
+        return CreateComponent(type_name, change, syncEnabled);
     }
 
     ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
-                return components_[i];
-
-        // If component was not found, try to create
-        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+        ComponentPtr new_comp = GetComponent(type_name, name);
         if (new_comp)
-        {
-            if (!syncEnabled)
-                new_comp->SetNetworkSyncEnabled(false);
-            AddComponent(new_comp, change);
             return new_comp;
-        }
 
-        // Could not be created
-        return ComponentPtr();
+        return CreateComponent(type_name, name, change, syncEnabled);
     }
 
     ComponentPtr Entity::GetOrCreateComponent(uint type_hash, AttributeChange::Type change)
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->TypeNameHash() == type_hash)
-                return components_[i];
-
-        // If component was not found, try to create
-        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash);
+        ComponentPtr new_comp = GetComponent(type_hash);
         if (new_comp)
-        {
-            AddComponent(new_comp, change);
             return new_comp;
-        }
 
-        // Could not be created
-        return ComponentPtr();
+        return CreateComponent(type_hash, change);
     }
 
     ComponentPtr Entity::GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            if (components_[i]->TypeNameHash() == type_hash && components_[i]->Name() == name)
-                return components_[i];
-
-        // If component was not found, try to create
-        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash, name);
+        ComponentPtr new_comp = GetComponent(type_hash, name);
         if (new_comp)
-        {
-            AddComponent(new_comp, change);
             return new_comp;
+
+        return CreateComponent(type_hash, name, change);
+    }
+
+    ComponentPtr Entity::CreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
+    {
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
+        if (!new_comp)
+        {
+            LogError("Failed to create a component of type \"" + type_name + "\" to " + ToString());
+            return ComponentPtr();
         }
 
-        // Could not be created
-        return ComponentPtr();
+        new_comp->SetNetworkSyncEnabled(syncEnabled);
+        AddComponent(new_comp, change);
+        return new_comp;
     }
-    
+
+    ComponentPtr Entity::CreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
+    {
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+        if (!new_comp)
+        {
+            LogError("Failed to create a component of type \"" + type_name + "\" and name \"" + name + "\" to " + ToString());
+            return ComponentPtr();
+        }
+
+        new_comp->SetNetworkSyncEnabled(syncEnabled);
+        AddComponent(new_comp, change);
+        return new_comp;
+    }
+
+    ComponentPtr Entity::CreateComponent(uint type_hash, AttributeChange::Type change)
+    {
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash);
+        if (!new_comp)
+        {
+            LogError("Failed to create a component of type hash " + QString::number(type_hash) + " to " + ToString());
+            return ComponentPtr();
+        }
+
+        AddComponent(new_comp, change);
+        return new_comp;
+    }
+
+    ComponentPtr Entity::CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
+    {
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash, name);
+        if (!new_comp)
+        {
+            LogError("Failed to create a component of type hash " + QString::number(type_hash) + " and name \"" + name + "\" to " + ToString());
+            return ComponentPtr();
+        }
+
+        AddComponent(new_comp, change);
+        return new_comp;
+    }
+
     
     ComponentPtr Entity::GetComponent(const QString &type_name) const
     {
@@ -528,5 +542,14 @@ namespace Scene
     void Entity::SetTemporary(bool enable)
     {
         temporary_ = enable;
+    }
+
+    QString Entity::ToString() const
+    {
+        QString name = GetName();
+        if (name.trimmed().isEmpty())
+            return QString("Entity ID ") + QString::number(GetId());
+        else
+            return QString("Entity \"") + name + "\" (ID: " + QString::number(GetId()) + ")";
     }
 }
