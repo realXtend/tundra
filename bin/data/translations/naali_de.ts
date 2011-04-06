@@ -2,32 +2,211 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="de_DE">
 <context>
+    <name>AddComponentDialog</name>
+    <message>
+        <source>Add new component</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> entities selected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Component:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NetworkSyncEnabled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Temporary</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AddContentWindow</name>
+    <message>
+        <source>Entity Creation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Deselect All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Asset Uploads</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Upload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source subname</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Destination name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Asset storage:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default storage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AssetTreeWidget</name>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete from source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete from cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forget asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reload from source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reload from cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open file location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Request new asset...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete From Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Are you sure want to delete the selected asset(s) permanently from the source?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Asset As</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AssetsWindow</name>
+    <message>
+        <source>Assets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expand All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No provider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recursive dependency to </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Collapse All</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AudioPreviewEditor</name>
-    <message>
-        <source>Frequency: %1Hz</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Bits: %1 bit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Format: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>
-Duration: %1 sec</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Stop</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Play</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Audio: </source>
         <translation type="unfinished"></translation>
@@ -48,187 +227,41 @@ Duration: %1 sec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New Avatar</source>
+        <source>Add New Attachment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>New Attach</source>
+        <source>Create New Avatar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Revert</source>
+        <source>Revert All Changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save</source>
+        <source>Save To Server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save Local Copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>BackdropWidget</name>
-    <message>
-        <source>BackdropWidget</source>
+        <source>Save To Disk</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>BindingWidget</name>
+    <name>AvatarInfoWidget</name>
     <message>
-        <source>BindingWidget</source>
+        <source>AvatarInfoWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>AvatarToolbar</name>
+    <message>
+        <source>AvatarToolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Actions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Restore Naali Defaults</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;MS Shell Dlg 2&apos;; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#00007f;&quot;&gt;Multiple binds&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    Separate values with a &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    comma and a space&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    A, B, C&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    Ctrl+A, Alt+B&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt; color:#000000;&quot;&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#000087;&quot;&gt;Combinations&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#000087;&quot;&gt;    &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;A+B&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    Ctrl+C&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    Space+Alt+D&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt; color:#000000;&quot;&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#00007f;&quot;&gt;Special keys&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    Enter, Shift, Ctrl, Alt, &lt;/span&gt;&lt;span style=&quot; font-family:&apos;monospace&apos;; font-size:8pt; color:#000000;&quot;&gt;AltGr, &lt;/span&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;PgUp, &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    PgDown, Home, End, Backspace, &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    Up, Down, Left, Right, Tab, Plus, &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;    Minus, Del, Forward, Ins, &lt;/span&gt;&lt;span style=&quot; font-family:&apos;monospace&apos;; font-size:8pt; color:#000000;&quot;&gt;Escape,&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;monospace&apos;; font-size:8pt; color:#000000;&quot;&gt;    F1 to F12, CapsLock, NumLock,&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:&apos;monospace&apos;; font-size:8pt; color:#000000;&quot;&gt;    ScrollLock, &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;Meta = Windows Key &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; color:#000000;&quot;&gt;    or Mac OS X Control/Command key&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Movement</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Forward</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Backward</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Strafe Left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Strafe Right</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Up / Jump</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Down</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle Flymode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Turn Left</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Turn Right</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>General</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Undo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Object Link</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Object Unlink</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle Console</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle Ether</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Focus Chat</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Camera</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Zoom in</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Zoom out</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Python</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Run</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Restart</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle Object Move</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Toggle Object Scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Duplicate Drag</source>
+        <source>Exit Avatar Editing</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -254,47 +287,66 @@ p, li { white-space: pre-wrap; }
         <source>Add new view (Advanced)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Presets:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>BNAVE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>V-CAVE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MiniCave</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Panorama</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom setup:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Views:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
-    <name>CacheSettingsWidget</name>
+    <name>CameraControl</name>
     <message>
-        <source>CacheSettingsWidget</source>
+        <source>CameraControl</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Asset Cache</source>
+        <source>button_frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Maximum size</source>
+        <source>free</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>mb</source>
+        <source>focus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Clear Asset Cache</source>
+        <source>tripod</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Asset cache will store all other resources but textures. Minimum size: 10 mb Maximum size: 9000 mb.</source>
+        <source>avatar</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>CanvasSourceWidget</name>
     <message>
-        <source>Texture Cache</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Clear Texture Cache</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cache only jpeg2000 textures</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Texture cache will store decoded textures to disc. This will speed up world loading. Default is to cache only j2p textures as they take the most time decoding. If above checkbox is unchecked youll cache also the more common fomats like jpg/png/bmp. Might be woth trying with slow PC. Minimum size: 20 mb Maximum size: 9000 mb.</source>
+        <source>CanvasSourceWidget</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -389,50 +441,6 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>ChangeTheme</name>
-    <message>
-        <source>Sound Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Change theme</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>ChatSessionWidget</name>
-    <message>
-        <source>ChatSessionWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>ClassicalLoginWidget</name>
-    <message>
-        <source>ClassicalLoginWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>CommunicationWidget</name>
-    <message>
-        <source>CommunicationWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Chat</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Voice</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>CompositionHandler</name>
     <message>
         <source>Bloom</source>
@@ -507,28 +515,6 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>ControlPanelButton</name>
-    <message>
-        <source>ControlPanelButton</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>CoreUi::Classical::TraditionalLoginWidget</name>
-    <message>
-        <source>Username is missing!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>World address is missing!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connecting to %1 with %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>DetachedWidget</name>
     <message>
         <source>Form</source>
@@ -536,22 +522,7 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>ECEditor</name>
-    <message>
-        <source>Entity-component Editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show entities</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Selected entities:</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>ECEditor::ECBrowser</name>
+    <name>ECBrowser</name>
     <message>
         <source>Copy</source>
         <translation type="unfinished"></translation>
@@ -569,11 +540,11 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add new attribute</source>
+        <source>Add new attribute...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add new component</source>
+        <source>Add new component ...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -594,22 +565,40 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>ECEditor::ECEditorModule</name>
+    <name>ECEditor</name>
     <message>
-        <source>Entity-component Editor</source>
+        <source>Entity-Component Editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QPushButton#but_show_entities {
+	border: 1px solid grey;
+	border-top: 0px;
+	min-height: 20px;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0.0113636 rgba(210, 210, 210, 255), stop:0.556818 rgba(243, 243, 243, 255), stop:1 rgba(227, 227, 227, 255));
+}
+
+QPushButton#but_show_entities::hover {
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0.0113636 rgba(205, 205, 205, 255), stop:0.556818 rgba(243, 243, 243, 255), stop:1 rgba(218, 218, 218, 255));
+}
+
+QPushButton#but_show_entities::pressed {
+	color: grey;
+}
+
+QListWidget#list_entities {
+	border: 1px solid grey;
+	border-left: 0px;
+}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Entities</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>ECEditor::ECEditorWindow</name>
-    <message>
-        <source>Create Component</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Component:</source>
-        <translation type="unfinished"></translation>
-    </message>
+    <name>ECEditorWindow</name>
     <message>
         <source>Edit XML...</source>
         <translation type="unfinished"></translation>
@@ -623,14 +612,6 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Show entities</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Hide entities</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -639,16 +620,24 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Set component name (optional)</source>
+        <source>Actions...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Name:</source>
+        <source>Functions...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show Entities</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide Entities</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>ECEditor::EcXmlEditorWidget</name>
+    <name>EcXmlEditorWidget</name>
     <message>
         <source>EC Attribute XML Editor</source>
         <translation type="unfinished"></translation>
@@ -659,6 +648,57 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Revert</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>EntityActionDialog</name>
+    <message>
+        <source>Trigger Entity Action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Targets: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Execution type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parameters (use comma as separator):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Local</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Peers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Execute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Execute and Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -677,6 +717,17 @@ p, li { white-space: pre-wrap; }
     <name>Environment::PostProcessWidget</name>
     <message>
         <source>Post-processing</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Environment::TerrainWeightEditor</name>
+    <message>
+        <source>Select Image</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Image Files (*.png)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -908,28 +959,6 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Terrain paint</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Ether::Logic::EtherSceneController</name>
-    <message>
-        <source>Naali&apos;s help system is still under development, sorry.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>EtherActionWidget</name>
-    <message>
-        <source>EtherActionWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Title is here</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Return</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1387,14 +1416,6 @@ QLabel {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1486,41 +1507,55 @@ QLabel {
         <source>More info</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>OgreScene</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
-    <name>FrienListWidget</name>
+    <name>FunctionDialog</name>
     <message>
-        <source>Friends List</source>
+        <source>Trigger Function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>QPushButton {
-	border: 0px;
-	background-color: rgba(255, 255, 255, 0);
-}
-
-QPushButton:hover {
-	border: 0px;
-	background-color: rgba(255, 255, 255, 0);
-	color: rgb(51, 98, 255);
-}
-
-QPushButton::pressed {
-	border: 0px;
-	background-color: rgba(255, 255, 255, 0);
-	color: rgb(74, 122, 255);
-}</source>
+        <source>Public</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>x new friend request</source>
+        <source>Protected and private</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>QListView::item {
-     min-height: 30px;
- }
-</source>
+        <source>Slots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signals</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Return value(s):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Execute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Execute and Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Target: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Targets: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1528,102 +1563,6 @@ QPushButton::pressed {
     <name>HoveringButtonsWidget</name>
     <message>
         <source>HoveringButtonsWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>HoveringName</name>
-    <message>
-        <source>HoveringWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>John Doe</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Inventory::InventoryWindow</name>
-    <message>
-        <source>&amp;Upload</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Upload file to your inventory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Download</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Download assets to your hard drive</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete this item</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Rename</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Rename this item</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;New folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Create new folder</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Open</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Open this item</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>View item properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Copy asset reference</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Inventory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copies asset reference to clipboard</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Inventory::ItemPropertiesWindow</name>
-    <message>
-        <source>Item Properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Inventory::UploadProgressWindow</name>
-    <message>
-        <source>Upload Progress Window</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1683,60 +1622,7 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
-    <name>Language</name>
-    <message>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>LoadingWidget</name>
-    <message>
-        <source>Connecting...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>LoginControllerWidget</name>
-    <message>
-        <source>Login Controller</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>background-color: rgb(0, 150, 255);</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Message</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Autohide in 5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Hide</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>temp</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>LoginWidget</name>
-    <message>
-        <source>IM Login</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Provide your IM credentials</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Username</source>
         <translation type="unfinished"></translation>
@@ -1746,27 +1632,59 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Server</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Presets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Last stored credentials</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Google account</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Facebook account</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Connect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tundra</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Log in to Tundra</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Start location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Protocol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TCP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>UDP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Username may not contain spaces.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Depending on the server, the password field may be left empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Username is missing!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>World address is missing!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connecting to %1 with %2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1867,13 +1785,6 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
-    <name>MenuNode</name>
-    <message>
-        <source>MenuNode</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MeshPreviewEditor</name>
     <message>
         <source>Mesh: </source>
@@ -1881,29 +1792,36 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
+    <name>MovementWidget</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RightFrame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>backward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>st_left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>st_right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>forward</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NoteCard</name>
     <message>
         <source>Notecard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>3DCanvas Controls</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;&lt;&lt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&gt;&gt;&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1927,152 +1845,6 @@ alpha layer of the diffuse map</source>
     </message>
     <message>
         <source>New</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NotificationBaseWidget</name>
-    <message>
-        <source>NotificationBaseWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> X</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NotificationBrowserWidget</name>
-    <message>
-        <source>NotificationBrowserWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Notifications</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Log</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Active</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NotificationLogWidget</name>
-    <message>
-        <source>NotificationLogWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Result</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>NotificationWidget</name>
-    <message>
-        <source>NotificationWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>X</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Msg</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>ObjectInfoWidget</name>
-    <message>
-        <source>ObjectInfoWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Hit Esc or Ctrl+B to exit build mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No Selected Objects</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Server ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Local ID</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Components</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Properties</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>ObjectManipulationsWidget</name>
-    <message>
-        <source>ObjectManipulationsWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Editing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>New Object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Clone Object</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Move To Trash</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>MOVE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ROTATE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>SCALE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>X</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message utf8="true">
-        <source>0 °</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Z</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2107,20 +1879,6 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
-    <name>OpenSimChatWidget</name>
-    <message>
-        <source>OpenSimChatWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>PersonalWidget</name>
-    <message>
-        <source>PersonalWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>PropertyTableWidget</name>
     <message>
         <source>Name</source>
@@ -2132,17 +1890,6 @@ alpha layer of the diffuse map</source>
     </message>
     <message>
         <source>Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QObject</name>
-    <message>
-        <source>Post-processing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>World Tools</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2186,16 +1933,265 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
-    <name>RequestManagerWidget</name>
+    <name>RequestNewAssetDialog</name>
     <message>
-        <source>Pending Friend Requests</source>
+        <source>Request New Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>RexLogic::AvatarEditor</name>
+    <name>RexLogic::CameraControl</name>
     <message>
-        <source>Avatar Editor</source>
+        <source>Camera Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>RotationWidget</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LeftFrame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>right</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SceneStructureWindow</name>
+    <message>
+        <source>Scene Structure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expand All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sort by</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Components</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Asset References</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Collapse All</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SceneTreeWidget</name>
+    <message>
+        <source>Scene entities</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save selected assets...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>as...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New entity...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open new scene...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save scene as...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit in new window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New component...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save as...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Actions...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Functions...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Synchronized</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Local</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose Entity Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open New Scene</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Asset As</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select Directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Failed to save asset.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please check the selected storage device can be written to.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OGRE scene (*.scene)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OGRE mesh (*.mesh)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mesh (*.txml *.3d *.b3d *.dae *.bvh *.3ds *.ase *.obj *.ply *.dxf *.nff *.smd *.vta *.mdl *.md2 *.md3 *.mdc *.md5mesh *.x *.q3o *.q3s *.raw *.ac *.stl *.irrmesh *.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tundra scene XML(*.txml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tundra Binary Format (*.tbin)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All supported types (*.scene *.mesh *.txml *.tbin *.xml *.dae *.bvh *.3ds *.ase *.obj *.ply *.dxf *.nff *.smd *.vta *.mdl *.md2 *.md3 *.mdc *.md5mesh *.x *.q3o *.q3s *.raw *.ac *.stl *.irrmesh *.irr *.off *.ter *.mdl *.hmp *.ms3d *.lwo *.lws *.lxo *.csm *.ply *.cob *.scn)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All supported types (*.scene *.mesh *.txml *.tbin)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All types (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2237,108 +2233,7 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
-    <name>SessionManagerWidget</name>
-    <message>
-        <source>IM</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Question label</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>username@server.com</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>status message</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>QWidget {
-	background-color: #f4f4f4;
-}
-
-QLabel {
-	color: rgb(0, 0, 0);
-}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>color: rgb(69, 159, 255);</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Hello and Welcome to Naali Communications Widget!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You can find all important functionality from the menu that is located at the top of this window.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>To start click the Show Friend List button. There you can start chat,  video or audio sessions with your friends.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>  Connected</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>SettingsWidget</name>
-    <message>
-        <source>Settings Widget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> User Interface</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>100 %</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show Animation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enabed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Duration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>ms</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Unfocused Window Opacity</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Setting will take effect after viewer restart.</source>
         <translation type="unfinished"></translation>
@@ -2364,29 +2259,6 @@ QLabel {
     </message>
     <message>
         <source>Voice Volume</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>SpatialVoiceConfigureWidget</name>
-    <message>
-        <source>3D Voice Configuration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select avatar and start tracking</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Update Avatar List</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Start Tracking</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Stop Tracking</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2454,25 +2326,49 @@ QLabel {
     </message>
 </context>
 <context>
-    <name>TeleportWidget</name>
+    <name>TerrainWeightWidget</name>
     <message>
-        <source>Settings Widget</source>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Teleport</source>
+        <source>Enable terrain texture weightmap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Teleport to region</source>
+        <source>Load weightmap from file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>or type region name</source>
+        <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Close</source>
+        <source>Texture 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>texture 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Texture 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Texture 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Brush size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>brush falloff percentage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modifier (Negative will decrease weight)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2480,90 +2376,6 @@ QLabel {
     <name>TexturePreviewEditor</name>
     <message>
         <source>Texture: </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Toolbar</name>
-    <message>
-        <source>Toolbar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Custom Lights</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Exit Building</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TraditionalLoginWidget</name>
-    <message>
-        <source>realXtend Naali Login</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Authentication Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OpenSim</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>realXtend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Login Credentials</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Username</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>World address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quick login to demo worlds</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Welcome to realXtend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connect</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Return to Ether</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Exit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Start location</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You are now using realXtend&apos;s virtual world viewer called Naali. The next step is to get you into a world and for this we provide three types of login methods. 
-
-OpenSim login requires you to have an existing account for the server you are joining. Just insert your first and last name to the Username field, both password and world address to the respective fields, and click Connect.
-
-RealXtend method brings you the ability to login to many worlds with the same avatar account. Again the account has to be created before doing a login. Next you need to know that the server supports realXtend login, in other words the OpenSim server must be running with the ModreX server component.
-
-Third option is to login into realXtend Taiga and ScienceSim servers that are based on CableBeach services. Select the WebLogin tab from the left top corner and you should see a wiki page that provides you a list of open Taiga servers from the realXtend project and the community. Naturally you can just type the login URL of the server to the Naali web browser manually. Web-based authentication gives you the possibility to login with your OpenID, Google and Yahoo accounts.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2591,20 +2403,6 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
     </message>
 </context>
 <context>
-    <name>UiHelpers::FriendHelper</name>
-    <message>
-        <source>Friend Requests</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>UiManagers::SessionManager</name>
-    <message>
-        <source>Friends List</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>UploadProgress</name>
     <message>
         <source>UploadProgressBarWidget</source>
@@ -2616,32 +2414,21 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
     </message>
 </context>
 <context>
-    <name>VideoSessionControlsWidget</name>
+    <name>ZoomWidget</name>
     <message>
-        <source>VideoSessionControlsWidget</source>
+        <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Video</source>
+        <source>ZoomFrame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Audio</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>VideoSessionWidget</name>
-    <message>
-        <source>VideoSessionWidget</source>
+        <source>+</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>color: rgb(0,0,0);</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection:</source>
+        <source>plus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2649,98 +2436,14 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Audio:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Video:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Close</source>
+        <source>minus</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>VoiceControl</name>
+    <name>hoveringName</name>
     <message>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transmission mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Transmission mode desription...t
-...
-...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Participants</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>0 participants</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mute all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Show List</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>VoiceUsersWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Voice users</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>hide</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>WebLogin</name>
-    <message>
-        <source>realXtend Naali Web Login</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Back</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Forward</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Stop</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Go to address</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>about:blank</source>
+        <source>HoveringWidget</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2786,21 +2489,6 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>voiceUserWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Avatar Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Mute</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
