@@ -141,11 +141,7 @@ add_subdirectory(AssetModule)           # Depends on Taiga subsystem.
 add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Taiga subsystem. 
 add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
 
-if (USE_UIMODULE)
-    add_subdirectory(UiModule)          # Depends on OgreRenderingModule.
-else()
-    add_subdirectory(LoginScreenModule)
-endif()
+add_subdirectory(LoginScreenModule)
 
 # The following are optional.
 add_subdirectory(ECEditorModule)        # Tool for editing Naali scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
@@ -167,18 +163,11 @@ endif()
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
 
-#add_subdirectory(LegacyAvatarModule)
-
 if (MSVC)
     add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
 endif()
 
 #add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
-if (USE_UIMODULE)
-    add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
-    add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (USE_UIMODULE defined). Depends on OgreRenderingModule and InventoryModule.
-    add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
-endif()
 
 # Only useful for msi installer builds
 #add_subdirectory(UpdateModule)

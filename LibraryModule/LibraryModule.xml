@@ -1,5 +1,0 @@
-<config>
-    <entry>LibraryModule</entry>
-    <dependency>UiModule</dependency>
-</config>
-
