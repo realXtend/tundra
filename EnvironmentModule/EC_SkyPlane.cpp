@@ -28,7 +28,7 @@ namespace Environment
         ySegmentsAttr(this, "Segments in y-axis",150),
         drawFirstAttr(this, "Draw first", true)
      {
-        QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+        QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
                          SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         static AttributeMetadata materialRefMetadata;

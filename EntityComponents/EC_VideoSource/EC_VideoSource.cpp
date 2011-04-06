@@ -73,7 +73,7 @@ EC_VideoSource::EC_VideoSource(IModule *module):
 
     connect(ready_poller_, SIGNAL(timeout()), SLOT(Play()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
     // Register as a event listener
     EventManager *event_manager = framework_->GetEventManager().get();

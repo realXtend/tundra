@@ -24,7 +24,7 @@ EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
     entities(this, "Entities"),
     owner_(checked_static_cast<Physics::PhysicsModule*>(module))
 {
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 

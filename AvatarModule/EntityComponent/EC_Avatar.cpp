@@ -61,7 +61,7 @@ EC_Avatar::EC_Avatar(IModule* module) :
         LogWarning("Event manager was not valid.");
     }
     
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)));
 }
 

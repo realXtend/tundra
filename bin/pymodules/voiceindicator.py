@@ -69,7 +69,7 @@ class PresenceMonitor:
         presence = ent.GetComponentRaw("EC_OpenSimPresence")
         if presence is None:
             return
-        presence.connect("OnAttributeChanged(IAttribute*, AttributeChange::Type)", self._onOpenSimPresenceChanged)
+        presence.connect("AttributeChanged(IAttribute*, AttributeChange::Type)", self._onOpenSimPresenceChanged)
 
     def _onOpenSimPresenceChanged(self):
         self._changeHandler(self._entity)
