@@ -190,7 +190,7 @@ public slots:
     void DetachEntity();
 
     /// Called If some of the attributes has been changed.
-    void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+    void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
 
     /// Called if parent entity has set.
     void SetParent();

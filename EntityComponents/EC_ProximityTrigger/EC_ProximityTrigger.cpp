@@ -16,22 +16,21 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_ProximityTrigger")
 
-EC_ProximityTrigger::EC_ProximityTrigger(IModule *module)
-    :IComponent(module->GetFramework()),
+EC_ProximityTrigger::EC_ProximityTrigger(IModule *module) :
+    IComponent(module->GetFramework()),
     active(this, "Is active", true),
     thresholdDistance(this, "Threshold distance", 0.0f),
     period(this, "Period", 0.0f)
 {
     SetUpdateMode();
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_ProximityTrigger::~EC_ProximityTrigger()
 {
 }
 
-void EC_ProximityTrigger::AttributeUpdated(IAttribute* attr)
+void EC_ProximityTrigger::OnAttributeUpdated(IAttribute* attr)
 {
     if (attr == &period)
         SetUpdateMode();

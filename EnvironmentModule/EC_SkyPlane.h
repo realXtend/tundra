@@ -18,16 +18,16 @@ namespace Environment
 <table class="header">
 <tr>
 <td>
-<h2>Skyplane</h2>
+<h2>SkyPlane</h2>
 
 Registered by Enviroment::EnvironmentModule. 
 
-<h3> Using component to syncronize sky in Taiga </h3>
+<h3> Using component to synchronize sky in Taiga </h3>
 
-Currently (not in Tundra) EC_SkyPlane component can be used to syncronize sky in Taiga worlds. This can be done
+Currently (not in Tundra) EC_SkyPlane component can be used to synchronize sky in Taiga worlds. This can be done
 so that user creates entity and sets entity EC_Name-component. If this component name is set as "SkyEnvironment" our current implementation
-will create automagically a EC_SkyPlane-component on it. This component is now usable for every users and all changes on it will be transfered 
-to all users. This syncronized sky plane component can also edit through environment editor (in world tools). Currently Caelum must be disabled 
+will create automatically a EC_SkyPlane-component on it. This component is now usable for every users and all changes on it will be transfered 
+to all users. This synchronized sky plane component can also edit through environment editor (in world tools). Currently Caelum must be disabled 
 before these features can be used.
 
 <b>Attributes</b>:
@@ -43,7 +43,7 @@ before these features can be used.
 <li> float : bowAttr.
 <div> If zero, the plane will be completely flat (like previous versions. If above zero, the plane will be curved,
 allowing the sky to appear below camera level. 
-      Curved sky planes are simular to skydomes, but are more compatable with fog.  </div>
+      Curved sky planes are similar to sky domes, but are more compatible with fog.  </div>
 <li> float : distanceAttr.
 <div> Plane distance in world coordinates from the camera </div>
 <li> int : xSegmentsAttr.
@@ -105,14 +105,13 @@ allowing the sky to appear below camera level.
     public slots: 
         void View(const QString &attributeName);
         /// Called If some of the attributes has been changed.
-        void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+        void OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
         void DisableSky();
 
     private:
-       /** 
-        * Constuctor.
-        * @param module Module where component belongs.
-        **/
+       /// Constructor.
+        /** @param module Module where component belongs.
+        */
         explicit EC_SkyPlane(IModule *module);
 
        /// Helper function which is used to update sky plane state. 

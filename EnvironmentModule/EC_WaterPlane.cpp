@@ -19,7 +19,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 #include <OgreColourValue.h>
 #include <OgreMath.h>
 #include <OgreConversionUtils.h>
-// NaN - check
 #include <RexNetworkUtils.h>
 
 #include "MemoryLeakCheck.h"
@@ -70,7 +69,7 @@ namespace Environment
         }
 
         QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
+            SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         lastXsize_ = xSize.Get();
         lastYsize_ = ySize.Get();
@@ -324,7 +323,7 @@ namespace Environment
         return Ogre::ColourValue(col.r, col.g, col.b, col.a);
     }
 
-    void EC_WaterPlane::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
+    void EC_WaterPlane::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
     {
         ChangeWaterPlane(attribute);
     }
@@ -347,7 +346,7 @@ namespace Environment
         node_->setPosition(tmp);
 #else
         Ogre::Vector3 pos(vec.x, vec.y, vec.z);
-        if ( !RexTypes::IsValidPositionVector(vec) )
+        if (!vec.IsFinite())
             return;
         //node_->_setDerivedPosition(pos);
         node_->setPosition(pos);

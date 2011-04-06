@@ -79,7 +79,7 @@ public slots:
     QStringList AvailableCompositors() const;
 
 private slots:
-    void AttributeUpdated(IAttribute* attribute);
+    void OnAttributeUpdated(IAttribute* attribute);
 
 private:
     //! Enables or disables and sets the priority of the specified compositor based on the attributes

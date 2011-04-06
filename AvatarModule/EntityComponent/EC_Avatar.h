@@ -62,7 +62,7 @@ public:
 
 private slots:
     //! Called when some of the attributes has been changed.
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
     
     void OnAvatarAppearanceLoaded(AssetPtr asset);
 

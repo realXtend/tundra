@@ -47,7 +47,7 @@ EC_Sound::EC_Sound(IModule *module):
     soundRef.SetMetadata(&soundRefMetadata);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_Sound::~EC_Sound()
@@ -55,7 +55,7 @@ EC_Sound::~EC_Sound()
     StopSound();
 }
 
-void EC_Sound::AttributeUpdated(IAttribute *attribute)
+void EC_Sound::OnAttributeUpdated(IAttribute *attribute)
 {
     if (framework_->IsHeadless())
         return;

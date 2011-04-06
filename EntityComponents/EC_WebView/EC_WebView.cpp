@@ -412,7 +412,7 @@ void EC_WebView::PrepareComponent()
         // Inspect if this mesh is ready for rendering. EC_Mesh being present != being loaded into Ogre and ready for rendering.
         if (!mesh->GetEntity())
         {
-            connect(mesh, SIGNAL(OnMeshChanged()), SLOT(TargetMeshReady()), Qt::UniqueConnection);
+            connect(mesh, SIGNAL(MeshChanged()), SLOT(TargetMeshReady()), Qt::UniqueConnection);
             return;
         }
     }
