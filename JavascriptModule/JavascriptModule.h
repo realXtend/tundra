@@ -11,16 +11,18 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "AttributeChangeType.h"
-#include "ScriptServiceInterface.h"
+//#include "ScriptServiceInterface.h"
 
 #include "AssetFwd.h"
 #include "SceneFwd.h"
 #include "JavascriptFwd.h"
 
 #include <QObject>
+#include <QString>
+#include <QVariantMap>
 
 /// Enables Javascript execution and scripting by using QtScript.
-class JavascriptModule : public QObject, public IModule, public Foundation::ScriptServiceInterface
+class JavascriptModule : public QObject, public IModule//, public Foundation::ScriptServiceInterface
 {
     Q_OBJECT
 

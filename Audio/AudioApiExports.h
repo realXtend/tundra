@@ -3,7 +3,7 @@
 #ifndef incl_AudioApi_h
 #define incl_AudioApi_h
 
-#if defined (_WINDOWS)
+#if defined (_WINDOWS) && defined(AUDIO_API_DLL)
 #if defined(AUDIO_API_EXPORTS)
 #define AUDIO_API __declspec(dllexport)
 #else
