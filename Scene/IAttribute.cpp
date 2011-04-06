@@ -41,7 +41,7 @@ IAttribute::IAttribute(IComponent* owner, const char* name) :
 void IAttribute::Changed(AttributeChange::Type change)
 {
     if (owner_)
-        owner_->AttributeChanged(this, change);
+        owner_->EmitAttributeChanged(this, change);
 }
 
 // TOSTRING TEMPLATE IMPLEMENTATIONS.

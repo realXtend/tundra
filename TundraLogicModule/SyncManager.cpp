@@ -470,7 +470,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         Scene::EntityPtr entity = scene->GetEntity(*i);
         if (!entity)
             continue;
-        const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+        const Scene::Entity::ComponentVector &components = entity->Components();
         EntitySyncState* entitystate = state->GetEntity(*i);
         // No record in entitystate -> newly created entity, send full state
         if (!entitystate)
@@ -776,7 +776,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
     scene->EmitEntityCreated(entity, change);
-    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+    const Scene::Entity::ComponentVector &components = entity->Components();
     for(uint i = 0; i < components.size(); ++i)
         components[i]->ComponentChanged(change);
 }
@@ -1069,7 +1069,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 if (i->second[j])
                 {
                     currentSender = source;
-                    compShared->AttributeChanged(attributes[j], change);
+                    compShared->EmitAttributeChanged(attributes[j], change);
                 }
         }
         ++i;
@@ -1089,7 +1089,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 if (attr)
                 {
                     currentSender = source;
-                    compShared->AttributeChanged(attr, change);
+                    compShared->EmitAttributeChanged(attr, change);
                 }
             }
         }

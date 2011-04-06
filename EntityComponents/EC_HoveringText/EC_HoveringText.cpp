@@ -442,17 +442,17 @@ QPixmap EC_HoveringText::GetTextPixmap()
 
 void EC_HoveringText::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
+    disconnect(this, SLOT(OnAttributeUpdated(IComponent *, IAttribute *)));
     if(GetParentEntity())
     {
         Scene::SceneManager *scene = GetParentEntity()->GetScene();
         if(scene)
         connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
+                this, SLOT(OnAttributeUpdated(IComponent*, IAttribute*))); 
     }
 }
 
-void EC_HoveringText::AttributeUpdated(IComponent *component, IAttribute *attribute)
+void EC_HoveringText::OnAttributeUpdated(IComponent *component, IAttribute *attribute)
 {
     if(component != this)
         return;

@@ -36,7 +36,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>AssetReference: skeletonRef
 <div>Skeleton asset reference (handles resource request automatically).</div>
 <li>AssetReferenceList: meshMaterial
-<div>Mesh material asset reference list, material requests are handled automaticly.</div> 
+<div>Mesh material asset reference list, material requests are handled automatically.</div> 
 <li>float: drawDistance
 <div>Distance where the mesh is shown from the camera.</div> 
 <li>bool: castShadows
@@ -148,7 +148,7 @@ public:
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
-    //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automaticly).
+    //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automatically).
     Q_PROPERTY(AssetReference meshRef READ getmeshRef WRITE setmeshRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, meshRef);
 
@@ -156,7 +156,7 @@ public:
     Q_PROPERTY(AssetReference skeletonRef READ getskeletonRef WRITE setskeletonRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, skeletonRef);
 
-    //! Mesh material asset reference list, material requests are handled automaticly.
+    //! Mesh material asset reference list, material requests are handled automatically.
     Q_PROPERTY(AssetReferenceList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, meshMaterial);
 
@@ -187,8 +187,10 @@ public slots:
         \param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
-    void SetPlaceable(EC_Placeable* placeable); //override for pythonqt & qtscript, the shared_ptr issue strikes again
-    
+
+    ///@todo override for pythonqt & qtscript, the shared_ptr issue strikes again
+    void SetPlaceable(EC_Placeable* placeable);
+
     //! sets draw distance
     /*! \param draw_distance New draw distance, 0.0 = draw always (default)
      */
@@ -251,7 +253,7 @@ public slots:
      */
     bool SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point = std::string(), bool share_skeleton = false);
     
-    //! sets position of attachment mesh, relative to attachment poiont
+    //! sets position of attachment mesh, relative to attachment point
     void SetAttachmentPosition(uint index, const Vector3df& position);
     
     //! sets orientation of attachment mesh, relative to attachment point
@@ -374,20 +376,20 @@ public slots:
     
 signals:
     //! Signal is emitted when mesh has successfully loaded and applied to entity.
-    void OnMeshChanged();
+    void MeshChanged();
 
-    //! Signal is emitted when material has succussfully applied to sub mesh.
-    void OnMaterialChanged(uint index, const QString &material_name);
+    //! Signal is emitted when material has successfully applied to sub mesh.
+    void MaterialChanged(uint index, const QString &material_name);
 
     //! Signal is emitted when skeleton has successfully applied to entity.
-    void OnSkeletonChanged(QString skeleton_name);
+    void SkeletonChanged(QString skeleton_name);
 
 private slots:
     //! Called when the parent entity has been set.
     void UpdateSignals();
 
     //! Called when some of the attributes has been changed.
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
 
     //! Called when component has been removed from the parent entity. Checks if the component removed was the placeable, and autodissociates it.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);

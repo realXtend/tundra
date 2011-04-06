@@ -72,7 +72,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     // Note: we cannot create the body yet because we are not in an entity/scene yet (and thus don't know what physics world we belong to)
     // We will create the body when the scene is known.
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_RigidBody::~EC_RigidBody()
@@ -462,7 +462,7 @@ void EC_RigidBody::OnCollisionMeshAssetLoaded(AssetPtr asset)
     }
 }
 
-void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
+void EC_RigidBody::OnAttributeUpdated(IAttribute* attribute)
 {
     if (disconnected_)
         return;
