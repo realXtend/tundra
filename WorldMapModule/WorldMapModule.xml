@@ -1,5 +1,0 @@
-<config>
-    <entry>WorldMapModule</entry>
-    <dependency>UiModule</dependency>
-</config>
-
