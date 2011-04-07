@@ -5,8 +5,8 @@
     <version>0.2</version>
     <base name="default_female" mesh="Jack.mesh" />
     <skeleton name="Jack.skeleton" />
-    <material name="male_Body" />
-    <material name="male_Face" />
+    <material name="Jack_body.material" />
+    <material name="Jack_face.material" />
     <texture_face name="" />
     <texture_body name="" />
     <appearance height="1.800000" weight="1" />

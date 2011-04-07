@@ -3,6 +3,8 @@
 #ifndef incl_Avatar_AvatarSceneManager_h
 #define incl_Avatar_AvatarSceneManager_h
 
+/// \todo Deprecated in Tundra. If needed, needs to be reimplemented using EC_Avatar and AvatarDescAsset.
+/*
 #include "Foundation.h"
 #include "AvatarModule.h"
 #include "UiHelper.h"
@@ -47,5 +49,7 @@ namespace Avatar
         Helpers::UiHelper *ui_helper_;
     };
 }
+
+*/
 
 #endif
