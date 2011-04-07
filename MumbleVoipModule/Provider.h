@@ -9,6 +9,7 @@
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
 #include "AttributeChangeType.h"
+#include "WorldStream.h"
 
 namespace TundraLogic
 {
@@ -17,6 +18,7 @@ namespace TundraLogic
 
 class UiProxyWidget;
 class IEventData;
+class QSignalMapper;
 class EC_VoiceChannel;
 
 namespace Foundation
@@ -83,7 +85,7 @@ namespace MumbleVoip
 
         void OnMumbleServerInfoReceived(ServerInfo info);
         void OnMicrophoneAdjustmentWidgetDestroyed();
-        void ECVoiceChannelChanged();
+        void ECVoiceChannelChanged(const QString &channelname);
     };
 
 } // MumbleVoip
