@@ -1,3 +1,0 @@
-This module is deprecated.
-
-see doc/deprecated.txt
