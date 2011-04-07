@@ -345,7 +345,7 @@ function ClientInitialize() {
         own_avatar = true;
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
-        crosshair = new Crosshair();
+        crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
         var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
         soundlistener.active = true;
 
@@ -362,7 +362,7 @@ function ClientInitialize() {
         {
             var avatarAssetRef = new QByteArray(avatarurl);
             var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
-            avatar.OnAttributeChanged.connect(CommonHandleAvatarAttributeChange)
+            avatar.AttributeChanged.connect(CommonHandleAvatarAttributeChange)
             avatar.appearanceId = avatarAssetRef;
             print("Avatar from login parameters enabled:", avatarAssetRef);
         }
@@ -680,15 +680,8 @@ function ClientUpdateAvatarCamera() {
         cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
         // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
         if(!first_person)
-        {
             cameratransform.rot.x = 90;
-            cameratransform.rot.z = avatartransform.rot.z - 90;
-        }
-        else
-        {
-            avatartransform.rot.z = cameratransform.rot.z + 90;
-            me.placeable.transform = avatartransform;
-        }
+        cameratransform.rot.z = avatartransform.rot.z - 90;
         cameraplaceable.transform = cameratransform;
     }
 }
@@ -795,12 +788,27 @@ function ClientHandleMouseMove(mouseevent)
     // Dont move av rotation if we are not the active cam
     if (!cameraentity.ogrecamera.IsActive())
         return;
-               
+
     var cameraplaceable = cameraentity.placeable;
     var cameratransform = cameraplaceable.transform;
 
+    var cursorOffset = 0;
+    if (crosshair.isUsingLabel)
+    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair, 
+    //\      so that we get clicks on scene and not on the label
+        cursorOffset = 9;
+    var view = ui.GraphicsView();
+    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2 + cursorOffset);
+    input.lastMouseX = centeredCursorPosLocal.x;
+    input.lastMouseY = centeredCursorPosLocal.y;
+
+    var centeredCursorPosGlobal = new QPoint()
+    centeredCursorPosGlobal = view.mapToGlobal(centeredCursorPosLocal);
+    if (centeredCursorPosGlobal.x() == QCursor.pos().x() && centeredCursorPosGlobal.y() == QCursor.pos().y())
+        return;
+
     if (mouseevent.relativeX != 0)
-        cameratransform.rot.z -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeX);
+        me.Exec(2, "MouseLookX", String(mouse_rotate_sensitivity * parseInt(mouseevent.relativeX)));
     if (mouseevent.relativeY != 0)
         cameratransform.rot.x -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeY);
         
@@ -810,15 +818,6 @@ function ClientHandleMouseMove(mouseevent)
     if (cameratransform.rot.x > 180)
         cameratransform.rot.x = 180;
 
-    var view = ui.GraphicsView();
-    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2);
-    input.lastMouseX = centeredCursorPosLocal.x;
-    input.lastMouseY = centeredCursorPosLocal.y;
-
-    var centeredCursorPosGlobal = new QPoint()
-    centeredCursorPosGlobal = view.mapToGlobal(centeredCursorPosLocal);
-    if (centeredCursorPosGlobal.x() == QCursor.pos().x() && centeredCursorPosGlobal.y() == QCursor.pos().y())
-        return;
     QCursor.setPos(centeredCursorPosGlobal);
     var mousePos = view.mapFromGlobal(QCursor.pos());
     input.lastMouseX = mousePos.x;

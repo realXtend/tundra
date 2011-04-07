@@ -39,7 +39,7 @@ animate = (dtime) ->
     print curpos + " - " + diff
 
 onAttributeChanged() #once at startup to init
-data.OnAttributeChanged.connect onAttributeChanged
+data.AttributeChanged.connect onAttributeChanged
 frame.Updated.connect animate
 
 open = ->

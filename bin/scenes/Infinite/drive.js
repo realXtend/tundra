@@ -74,7 +74,7 @@ function init(d) {
             car.placeable.transform = t;
             print("cam/car set to" + car.placeable.transform.rot.x);
 
-            car.placeable.OnAttributeChanged.connect(on_carmove);
+            car.placeable.AttributeChanged.connect(on_carmove);
         }
         else {
           print(cam);

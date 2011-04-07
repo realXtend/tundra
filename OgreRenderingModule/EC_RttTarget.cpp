@@ -19,7 +19,7 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
     size_x(this, "Texture size x", 400),
     size_y(this, "Texture size y", 300)
 {
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(OnAttributeUpdated(IAttribute*)));
 
     //can't do immediately here, 'cause getcomponent crashes

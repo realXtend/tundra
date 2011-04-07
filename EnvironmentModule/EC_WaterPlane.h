@@ -25,16 +25,17 @@ namespace Environment
 <td>
 <h2>Water plane</h2>
 
-Registered by Enviroment::EnvironmentModule. Water plane component defines into world actually water cube.
-Inside of that water cube scene fog is changed to correspond, given water plane underwater fog properties.
-Water plane cannot visualize outside as a water cube (it still looks just plane). 
+Water plane component creates a cubic water plane. Inside the water cube scene fog is overridden by underwater fog properties.
+Despite the cubic nature, water plane is visible for the outside viewer only as a plane.
 
 <h3> Using component to synchronize ocean in Taiga </h3>
 
 Currently (not in Tundra) EC_WaterPlane component can be used to synchronize Ocean in Taiga worlds. This can be done
 so that user creates entity and sets entity EC_Name-component. If this component name is set as "WaterEnvironment" our current implementation
 will create automatically a EC_WaterPlane-component on it. This component is now usable for every users and all changes on it will be transfered 
-to all users. This synchronized Water-plane component can also edit through environment editor (in world tools).
+to all users. This synchronized water plane component can also edit through environment editor (in world tools).
+
+Registered by Enviroment::EnvironmentModule.
 
 <b>Attributes</b>:
 <ul>
@@ -50,10 +51,10 @@ to all users. This synchronized Water-plane component can also edit through envi
 <div> Defines rotation of water plane in world coordinate system. </div>
 <li> float : scaleUfactor.
 <div> Water plane texture factor which defines how many times the texture should be repeated in the u direction. Note current default value 
- is so small 0.002, so it does not show up correctly in EC-editor. </div>
+ is so small 0.002, so it does not show up correctly in EC editor. </div>
 <li> float : scaleVfactor.
 <div> Water plane texture factor which defines how many times the texture should be repeated in the v direction. Note current default value 
- is so small 0.002, so it does not show up correctly in EC-editor. </div>
+ is so small 0.002, so it does not show up correctly in EC editor. </div>
 <li> int : xSegments.
 <div> The number of segments to the plane in the x direction.  </div>
 <li> int : ySegments.
@@ -69,12 +70,12 @@ to all users. This synchronized Water-plane component can also edit through envi
 <li> float : fogEndDistance.
 <div> Underwater fog end distance (meters) </div>
 <li> enum :  fogMode.
-<div> UnderWater fog mode, defines how Fog density increases. </div>
+<div> UnderWater fog mode, defines how Fog density increases.</div>
 </ul>
 
 Does not emit any actions.
 
-<b>Can use component Placeable</b>. If entity has the position defined by the Placeable component then it also specifies the position
+<b>Can use component EC_Placeable</b>. If entity has the position defined by the EC_Placeable component then it also specifies the position
 in the world space where this water plane is by default is placed at. Note component does not need Placeable component.
 </table>
 */
@@ -89,68 +90,69 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     /// Water plane x-size
-    DEFINE_QPROPERTY_ATTRIBUTE(int, xSizeAttr);
-    Q_PROPERTY(int xSizeAttr READ getxSizeAttr WRITE setxSizeAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, xSize);
+    Q_PROPERTY(int xSize READ getxSize WRITE setxSize);
 
     /// Water plane y-size
-    DEFINE_QPROPERTY_ATTRIBUTE(int, ySizeAttr);
-    Q_PROPERTY(int ySizeAttr READ getySizeAttr WRITE setySizeAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, ySize);
+    Q_PROPERTY(int ySize READ getySize WRITE setySize);
 
     /// Water plane "depth". This is used to define when we are below water and inside of water cube.
-    DEFINE_QPROPERTY_ATTRIBUTE(int, depthAttr);
-    Q_PROPERTY(int depthAttr READ getdepthAttr WRITE setdepthAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, depth);
+    Q_PROPERTY(int depth READ getdepth WRITE setdepth);
 
     /// Water plane position (this is used if there is not EC_Placeable)
-    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, positionAttr);
-    Q_PROPERTY(Vector3df positionAttr READ getpositionAttr WRITE setpositionAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, position);
+    Q_PROPERTY(Vector3df position READ getposition WRITE setposition);
 
     /// Water plane rotation
-    DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, rotationAttr);
-    Q_PROPERTY(Quaternion rotationAttr READ getrotationAttr WRITE setrotationAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, rotation);
+    Q_PROPERTY(Quaternion rotation READ getrotation WRITE setrotation);
 
     ///U Scale, factor which defines how many times the texture should be repeated in the u direction.
-    DEFINE_QPROPERTY_ATTRIBUTE(float, scaleUfactorAttr);
-    Q_PROPERTY(float scaleUfactorAttr READ getscaleUfactorAttr WRITE setscaleUfactorAttr); 
+    DEFINE_QPROPERTY_ATTRIBUTE(float, scaleUfactor);
+    Q_PROPERTY(float scaleUfactor READ getscaleUfactor WRITE setscaleUfactor);
 
     ///V Scale, factor which defines how many times the texture should be repeated in the v direction.
-    DEFINE_QPROPERTY_ATTRIBUTE(float, scaleVfactorAttr);
-    Q_PROPERTY(float scaleVfactorAttr READ getscaleVfactorAttr WRITE setscaleVfactorAttr); 
+    DEFINE_QPROPERTY_ATTRIBUTE(float, scaleVfactor);
+    Q_PROPERTY(float scaleVfactor READ getscaleVfactor WRITE setscaleVfactor);
 
     /// The number of segments to the plane in the x direction 
-    DEFINE_QPROPERTY_ATTRIBUTE(int, xSegmentsAttr);
-    Q_PROPERTY(int xSegmentsAttr READ getxSegmentsAttr WRITE setxSegmentsAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, xSegments);
+    Q_PROPERTY(int xSegments READ getxSegments WRITE setxSegments);
 
     /// The number of segments to the plane in the y direction 
-    DEFINE_QPROPERTY_ATTRIBUTE(int, ySegmentsAttr);
-    Q_PROPERTY(int ySegmentsAttr READ getySegmentsAttr WRITE setySegmentsAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, ySegments);
+    Q_PROPERTY(int ySegments READ getySegments WRITE setySegments);
 
     /// Material name
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, materialNameAttr);
-    Q_PROPERTY(QString materialNameAttr READ getmaterialNameAttr WRITE setmaterialNameAttr);
+    /// @todo Remove! Use only materialRef.
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, materialName);
+    Q_PROPERTY(QString materialName READ getmaterialName WRITE setmaterialName);
 
     /// Material asset reference.
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, materialRef);
-    Q_PROPERTY(QString materialNameAttr READ getmaterialRef WRITE setmaterialRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, materialRef);
+    Q_PROPERTY(AssetReference materialRef READ getmaterialRef WRITE setmaterialRef);
 
     // Material texture, currently commented out, working feature.
     //DEFINE_QPROPERTY_ATTRIBUTE(QString, textureNameAttr);
     //Q_PROPERTY(QString textureNameAttr READ gettextureNameAttr WRITE settextureNameAttr);
 
     /// Underwater fog color
-    DEFINE_QPROPERTY_ATTRIBUTE(Color, fogColorAttr);
-    Q_PROPERTY(Color fogColorAttr READ getfogColorAttr WRITE setfogColorAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, fogColor);
+    Q_PROPERTY(Color fogColor READ getfogColor WRITE setfogColor);
 
     /// Underwater fog start distance (meters)
-    DEFINE_QPROPERTY_ATTRIBUTE(float, fogStartAttr);
-    Q_PROPERTY(float fogStartAttr READ getfogStartAttr WRITE setfogStartAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, fogStartDistance);
+    Q_PROPERTY(float fogStartDistance READ getfogStartDistance WRITE setfogStartDistance);
 
     /// Underwater fog end distance (meters)
-    DEFINE_QPROPERTY_ATTRIBUTE(float, fogEndAttr);
-    Q_PROPERTY(float fogEndAttr READ getfogEndAttr WRITE setfogEndAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, fogEndDistance);
+    Q_PROPERTY(float fogEndDistance READ getfogEndDistance WRITE setfogEndDistance);
 
     /// UnderWater fog mode, defines how Fog density increases.
-    DEFINE_QPROPERTY_ATTRIBUTE(int, fogModeAttr);
-    Q_PROPERTY(int fogModeAttr READ getfogModeAttr WRITE setfogModeAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, fogMode);
+    Q_PROPERTY(int fogMode READ getfogMode WRITE setfogMode);
 
     /// Returns color value in Ogre format.
     Ogre::ColourValue GetFogColorAsOgreValue() const;
@@ -165,13 +167,13 @@ public slots:
 
     /// Returns the point on the water plane in world space that lies on top of the given world space coordinate.
     /// @param point The point in world space to get the corresponding map point (in world space) for.
-    Vector3df GetPointOnPlane(const Vector3df &point) const; 
+    Vector3df GetPointOnPlane(const Vector3df &point) const;
 
     /// Returns distance from plane (note, here is assumption that point is top/or below plane), distance in here is distance from water plane surface.
     /// @param point is point in world coordinate system.
     float GetDistanceToWaterPlane(const Vector3df& point) const;
 
-    /// Returns true if given point is top or below water plane. 
+    /// Returns true if given point is top or below water plane.
     /// @param point is in world coordinate system.
     bool IsTopOrBelowWaterPlane(const Vector3df& point) const;
 
@@ -210,18 +212,18 @@ private:
     */
     ComponentPtr FindPlaceable() const;
 
-    /// Helper function which is used to update water plane state. 
+    /// Helper function which is used to update water plane state.
     void ChangeWaterPlane(IAttribute* attribute);
 
-    /// Changes water plane position, this function should be called only if 
-    /** entity where water plane is connected has not a EC_Placeable component. 
-        @note uses attribute @p positionAttr_ to for water plane defining water plane position 
+    /// Changes water plane position.
+    /** This function should be called only if the parent entity of this component has no EC_Placeable component.
+        @note Uses attribute @p position to for water plane defining water plane position 
     */
     void SetPosition();
 
-    /// Changes water plane rotation, this function should be called only if 
-    /** entity where water plane is connected has not a EC_Placeable component. 
-        @note uses attribute @p rotationAttr_ to for water plane defining water plane rotation
+    /// Changes water plane rotation
+    /** This function should be called only if the parent entity of this component has no EC_Placeable component.
+        @note Uses attribute @p rotation to for water plane defining water plane rotation
     */
     void SetOrientation();
 

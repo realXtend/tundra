@@ -96,7 +96,7 @@ EC_WebView::EC_WebView(IModule *module) :
 
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
     
     // Prepare render timer
     renderTimer_ = new QTimer(this);
@@ -174,7 +174,7 @@ void EC_WebView::ServerInitialize(TundraLogic::Server *server)
     if (!server || !server->IsRunning())
         return;
     connect(server, SIGNAL(UserDisconnected(int, UserConnection*)), SLOT(ServerHandleDisconnect(int, UserConnection*)));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(ServerHandleAttributeChange(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(ServerHandleAttributeChange(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
 void EC_WebView::ServerHandleDisconnect(int connectionID, UserConnection* connection)

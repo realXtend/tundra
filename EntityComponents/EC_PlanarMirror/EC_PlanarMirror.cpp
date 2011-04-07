@@ -33,7 +33,7 @@ EC_PlanarMirror::EC_PlanarMirror(IModule *module)
     mirror_plane_(0)
 {
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(Initialize()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(OnAttributeUpdated(IAttribute*)));
 }
 

@@ -23,7 +23,7 @@ EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
     handler_(owner_->GetRenderer()->GetCompositionHandler())
 {
     assert (handler_ && "No CompositionHandler.");
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_OgreCompositor::~EC_OgreCompositor()
