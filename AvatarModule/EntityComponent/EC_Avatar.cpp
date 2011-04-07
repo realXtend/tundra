@@ -73,7 +73,7 @@ void EC_Avatar::OnAttributeUpdated(IAttribute *attribute)
 {
     if (attribute == &appearanceId)
     {
-        QString ref = appearanceId.Get().trimmed();
+        QString ref = appearanceId.Get().ref.trimmed();
         if (ref.isEmpty())
             return;
 

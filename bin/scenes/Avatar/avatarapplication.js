@@ -84,7 +84,7 @@ function ServerHandleUserConnected(connectionID, user) {
     script.type = "js";
     script.runOnLoad = true;
     var r = script.scriptRef;
-    r.ref = "local://simpleavatar.js";
+    r.ref = "simpleavatar.js";
     script.scriptRef = r;
 
     // Set random starting position for avatar

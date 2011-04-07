@@ -4,6 +4,7 @@
 #define incl_Avatar_EC_Avatar_h
 
 #include "IComponent.h"
+#include "IAsset.h"
 #include "RexUUID.h"
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
@@ -52,8 +53,8 @@ class AV_MODULE_API EC_Avatar : public IComponent
 
 public:
     //! Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
-    Q_PROPERTY(QString appearanceId READ getappearanceId WRITE setappearanceId);
-    DEFINE_QPROPERTY_ATTRIBUTE(QString, appearanceId);
+    Q_PROPERTY(AssetReference appearanceId READ getappearanceId WRITE setappearanceId);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceId);
 
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }
