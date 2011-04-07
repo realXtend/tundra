@@ -84,6 +84,13 @@ signals:
 	void AboutToDisconnect();
     
 public slots:
+    /// Connect and login. The QUrls query parameters will be evaluated for the login data.
+    /// Minimum information needed to try a connection in the url are host and username.
+    /// Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]
+    /// Url examples: tundra://server.com/?username=John tundra://server.com:5432/?username=John&password=pWd123&protocol=udp 
+    /// \param QUrl the login url.
+    /// \note The port where we perform the login will be gotten from urls port, not from a query parameter. If port is not present we default to tundras default 2345.
+    void Login(const QUrl& loginUrl);
 
     /// Connect and login. Username and password will be encoded to xml key-value data
     /// \note This function will be deleted in the future.

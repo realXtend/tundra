@@ -131,4 +131,3 @@ void NaaliMainWindow::ToggleFullScreen()
         parentWin_->showFullScreen();
 }
 //$ END_MOD $
-

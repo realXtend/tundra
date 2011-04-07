@@ -4,10 +4,13 @@
 #define incl_EC_3DCanvas_EC_3DCanvas_h
 
 #include "IComponent.h"
+#include "IAttribute.h"
 #include "Declare_EC.h"
 
 #include <QMap>
 #include <QImage>
+#include <QPointer>
+#include <QWidget>
 
 namespace Scene
 {
@@ -25,8 +28,6 @@ namespace Ogre
     class MaterialManager;
 }
 
-
-class QWidget;
 class QTimer;
 
 /**
@@ -80,6 +81,7 @@ public slots:
     void Stop();
     void Update();
     void Setup(QWidget *widget, const QList<uint> &submeshes, int refresh_per_second);
+    void RestoreOriginalMeshMaterials();
 
     void SetWidget(QWidget *widget);
     void SetRefreshRate(int refresh_per_second);
@@ -98,8 +100,14 @@ private slots:
     void WidgetDestroyed(QObject *obj);
     void MeshMaterialsUpdated(uint index, const QString &material_name);
 
+    //! Monitors when parent entity is set.
+    void ParentEntitySet();
+
+    //! Monitors this entitys removed components.
+    void ComponentRemoved(IComponent *component, AttributeChange::Type change);
+
 private:
-    QWidget *widget_;
+    QPointer<QWidget> widget_;
     QList<uint> submeshes_;
     QTimer *refresh_timer_;
 

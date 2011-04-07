@@ -16,8 +16,9 @@
 #include "EC_Placeable.h"
 #include "SceneManager.h"
 #include "LoggingFunctions.h"
-#include "Audio.h"
-#include "Frame.h"
+#include "AudioAPI.h"
+#include "SceneAPI.h"
+#include "FrameAPI.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
@@ -29,7 +30,7 @@ EC_SoundListener::EC_SoundListener(IModule *module):
     SetNetworkSyncEnabled(false);
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
+    connect(GetFramework()->Frame(), SIGNAL(Updated(float)), SLOT(Update()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
@@ -56,7 +57,7 @@ void EC_SoundListener::Update()
 
 void EC_SoundListener::OnActiveChanged()
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     if (!scene)
     {
         LogError("Failed on OnActiveChanged method cause default world scene wasn't set.");

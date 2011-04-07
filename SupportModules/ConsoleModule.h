@@ -8,7 +8,7 @@
 #include "ModuleLoggingFunctions.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleModuleApi.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "KeyEvent.h"
 #include "InputContext.h"
 

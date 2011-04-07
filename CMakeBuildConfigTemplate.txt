@@ -12,7 +12,7 @@
 # file, without having to fear about an accidental commit of these changes.
 
 # Configure the use of Caelum. http://www.ogre3d.org/tikiwiki/Caelum
-if (MSVC)
+if (MSVC OR APPLE)
   SET(CAELUM 1)
   configure_caelum ()
 endif()
@@ -48,6 +48,9 @@ SET(UISERVICE_TEST 0)
 # Enables Open Asset Import Library, which can be used to import various
 # mesh formats.
 SET(OPENASSETIMPORT 0)
+if (MSVC)
+    SET(OPENASSETIMPORT 1)
+endif()
 
 # Enables Ogre asset editor module
 SET(OGREASSETEDITOR 1)
@@ -98,6 +101,7 @@ AddEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
 AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
 AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
+AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
 
 # The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
@@ -157,7 +161,7 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by
 #add_subdirectory(LegacyAvatarModule)
 
 if (MSVC)
-#   add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+    add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
    add_subdirectory (TtsModule)
 #   add_subdirectory (NotificationTTS)
 endif()
@@ -171,4 +175,4 @@ if (NOT UISERVICE_TEST)
 endif()
 
 # Only useful for msi installer builds
-#add_subdirectory(UpdateModule);
+#add_subdirectory(UpdateModule)

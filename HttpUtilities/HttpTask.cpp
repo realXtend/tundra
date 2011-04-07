@@ -43,7 +43,7 @@ namespace HttpUtilities
                 http.Perform();
                 
                 boost::shared_ptr<HttpTaskResult> result(new HttpTaskResult());
-                result->tag_ = request->tag_;
+//                result->tag_ = request->tag_;
                 result->success_ = http.GetSuccess();
                 result->reason_ = http.GetReason();
                 result->data_ = http.GetResponseData();

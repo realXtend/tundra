@@ -497,17 +497,13 @@ AssetTransferPtr AssetAPI::GetPendingTransfer(QString assetRef)
 AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 {
     if (assetRef.isEmpty())
-    {
-        LogError("AssetAPI::RequestAsset: Requested asset reference is an empty string!");
         return AssetTransferPtr();
-    }
 
     assetType = assetType.trimmed();
     if (assetType.isEmpty())
         assetType = GetResourceTypeFromResourceFileName(assetRef.toLower().toStdString().c_str());
 
-    // Turn named storage (and default storage) specifiers to absolute specifiers.
-    assetRef = LookupAssetRefToStorage(assetRef);
+    assetRef = assetRef.trimmed();
 
     if (assetRef.isEmpty())
     {
@@ -516,6 +512,9 @@ AssetTransferPtr AssetAPI::RequestAsset(QString assetRef, QString assetType)
 //        LogError("AssetAPI::RequestAsset: Request by empty url \"\" of type \"" + assetType.toStdString() + " received!");
         return AssetTransferPtr();
     }
+
+    // Turn named storage (and default storage) specifiers to absolute specifiers.
+    assetRef = LookupAssetRefToStorage(assetRef);
 
     // To optimize, we first check if there is an outstanding request to the given asset. If so, we return that request. In effect, we never
     // have multiple transfers running to the same asset. (Important: This must occur before checking the assets map for whether we already have the asset in memory, since
@@ -836,16 +835,18 @@ void AssetAPI::AssetTransferCompleted(IAssetTransfer *transfer_)
 
     assert(transfer_);
     AssetTransferPtr transfer = transfer_->shared_from_this(); // Elevate to a SharedPtr immediately to keep at least one ref alive of this transfer for the duration of this function call.
-    //LogDebug("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" succeeded.");
+//    LogDebug("Transfer of asset \"" + transfer->assetType.toStdString() + "\", name \"" + transfer->source.ref.toStdString() + "\" succeeded.");
 
     if (transfer->asset) // This is a duplicated transfer to an asset that has already been previously loaded. Only signal that the asset's been loaded and finish.
     {
         transfer->EmitAssetDownloaded();
-        //transfer->asset->EmitDecoded
+//        transfer->asset->EmitDecoded
         transfer->EmitAssetDecoded();
         transfer->asset->EmitLoaded();
+        transfer->EmitAssetLoaded();
         pendingDownloadRequests.erase(transfer->source.ref);
         currentTransfers.erase(transfer->source.ref);
+
         return;
     }
 

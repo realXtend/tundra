@@ -12,7 +12,7 @@
 #include "LoginWidget.h"
 
 #include "UiServiceInterface.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "LoginServiceInterface.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
@@ -75,7 +75,7 @@ void LoginScreenModule::Initialize()
 
 void LoginScreenModule::PostInitialize()
 {
-    input_ = framework_->GetInput()->RegisterInputContext("LoginScreenInput", 101);
+    input_ = framework_->Input()->RegisterInputContext("LoginScreenInput", 101);
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
@@ -186,7 +186,7 @@ void LoginScreenModule::HandleKeyEvent(KeyEvent *key)
     if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
         return;
 
-    const QKeySequence &toggleMenu = framework_->GetInput()->KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
+    const QKeySequence &toggleMenu = framework_->Input()->KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
     if (key->keyCode == toggleMenu)
     {
         UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();

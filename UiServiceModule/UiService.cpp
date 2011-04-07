@@ -10,21 +10,18 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "UiService.h"
+#include "BinaryAsset.h"
+#include "UiProxyWidget.h"
 #include "AssetAPI.h"
 #include "QtUiAsset.h"
-
-#include "UiService.h"
-#include "UiProxyWidget.h"
-
-#include "MemoryLeakCheck.h"
 #include "LoggingFunctions.h"
-#include "BinaryAsset.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("UiService")
+
 #include <QDomDocument>
 #include <QUiLoader>
 
-#include <QDebug>
-
-DEFINE_POCO_LOGGING_FUNCTIONS("UiService")
+#include "MemoryLeakCheck.h"
 
 UiService::UiService(Foundation::Framework *framework, QGraphicsView *view)
 :view_(view), 
@@ -186,9 +183,8 @@ QWidget *UiService::LoadFromFile(const QString &file_path, bool add_to_scene, QW
             return 0;
         }
 
-        // Get original data and replace refs
-        QByteArray data = uiAsset->GetRawData();
-        uiAsset->ReplaceAssetReferences(data);
+        // Get the asset data with the assetrefs replaced to point to the disk sources on the current local system.
+        QByteArray data = uiAsset->GetRefReplacedAssetData();
         
         QUiLoader loader;
         QDataStream dataStream(&data, QIODevice::ReadOnly);

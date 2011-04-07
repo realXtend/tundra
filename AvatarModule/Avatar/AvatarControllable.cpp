@@ -11,7 +11,7 @@
 #include "Entity.h"
 #include "SceneManager.h"
 #include "EC_Placeable.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "EventManager.h"
 #include "ConfigurationManager.h"
 #include "WorldStream.h"

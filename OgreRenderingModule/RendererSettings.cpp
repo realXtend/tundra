@@ -3,14 +3,15 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "RendererSettings.h"
+#include "Renderer.h"
 #include "OgreRenderingModule.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Framework.h"
 #include "UiServiceInterface.h"
-#include "../Input/Input.h"
+#include "InputAPI.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -20,6 +21,8 @@
 #include <QLabel>
 #include <QKeyEvent>
 #include <QApplication>
+
+#include "MemoryLeakCheck.h"
 
 namespace OgreRenderer
 {
@@ -84,7 +87,7 @@ namespace OgreRenderer
         }
         
         //fullscreen shortcut key
-        input_context_ = framework_->GetInput()->RegisterInputContext("Renderer", 90);
+        input_context_ = framework_->Input()->RegisterInputContext("Renderer", 90);
         if (input_context_)
             connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
     }

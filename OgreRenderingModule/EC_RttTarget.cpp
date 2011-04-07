@@ -7,7 +7,7 @@
 #include "OgreRenderingModule.h"
 #include "EC_OgreCamera.h"
 #include "OgreMaterialUtils.h"
-#include "Frame.h"
+#include "FrameAPI.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RttTarget");
@@ -24,11 +24,8 @@ EC_RttTarget::EC_RttTarget(IModule* module) :
 
     //can't do immediately here, 'cause getcomponent crashes
     //.. is not allowed to get other components in the creation of a component. ok?
-    if (ViewEnabled())
-    {
-         framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(SetupRtt()));
-        //ScheduleRender();
-    }
+    //framework_->Frame()->DelayedExecute(0.1f, this, SLOT(PrepareRtt()));
+    //.. resorting to manual call to PrepareRtt now
 }
 
 EC_RttTarget::~EC_RttTarget()
@@ -118,7 +115,7 @@ void EC_RttTarget::SetAutoUpdated(bool val)
 
 /*void EC_RttTarget::ScheduleRender()
 {
-    framework_->GetFrame()->DelayedExecute(0.1f, this, SLOT(UpdateRtt()));
+    framework_->Frame()->DelayedExecute(0.1f, this, SLOT(UpdateRtt()));
 }
 */
 

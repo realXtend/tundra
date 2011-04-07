@@ -8,7 +8,7 @@
 //#include "UiSettingsService.h"
 #include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
-#include "Input.h"
+#include "InputAPI.h"
 
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"

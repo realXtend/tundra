@@ -12,6 +12,7 @@
 #include "IEventData.h"
 #include "Vector3D.h"
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 
 namespace Scene
 {

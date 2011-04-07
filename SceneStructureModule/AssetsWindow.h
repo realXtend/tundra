@@ -14,6 +14,8 @@
 #include "AssetFwd.h"
 
 #include <QWidget>
+#include <QLineEdit>
+#include <QPushButton>
 
 #include <set>
 
@@ -38,6 +40,9 @@ public:
     /// Destructor.
     ~AssetsWindow();
 
+    /// Event filter to catch and react to child widget events
+    virtual bool eventFilter(QObject *obj, QEvent *e);
+
 private:
     /// Populates the tree widget with all assets from all asset storages.
     void PopulateTreeWidget();
@@ -52,6 +57,10 @@ private:
     AssetTreeWidget *treeWidget; ///< Tree widget showing the assets.
     QTreeWidgetItem *noProviderItem; ///< "No provider" parent item for assets without storage.'
     std::set<AssetWeakPtr> alreadyAdded; ///< Set of already added assets.
+
+    QLineEdit *searchField;
+    QPushButton *expandAndCollapseButton;
+    bool expandingOrCollapsing;
 
 private slots:
     /// Adds new asset to the tree widget.
@@ -72,6 +81,9 @@ private slots:
 
     /// Expands or collapses the whole tree view, depending on the previous action.
     void ExpandOrCollapseAll();
+
+    /// Checks the expand status to mark it to the expand/collapse button
+    void CheckTreeExpandStatus(QTreeWidgetItem *item);
 };
 
 #endif

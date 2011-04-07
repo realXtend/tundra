@@ -6,32 +6,23 @@
 // Application name is statically defined here
 #define APPLICATION_NAME "realXtend"
 
-#include "IEventData.h"
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "NaaliUiFwd.h"
-#include "SceneFwd.h"
 
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
-#include <boost/timer.hpp>
 
-class QApplication;
-class QGraphicsView;
-class QWidget;
-class QObject;
-
+class UiAPI;
 class UiServiceInterface;
-class Frame;
-class Input;
+class FrameAPI;
+class InputAPI;
 class AudioAPI;
 class AssetAPI;
 class ConsoleAPI;
 class DebugAPI;
-
-class Input;
-class FrameworkImpl;
+class SceneAPI;
+class ConfigAPI;
 
 namespace Poco
 {
@@ -43,12 +34,9 @@ namespace Poco
 namespace Foundation
 {
     class NaaliApplication;
-    class FrameworkQtApplication;
-    class KeyStateListener;
-    class MainWindow;
 
     /// Contains entry point for the framework.
-    /*! Allows access to various managers and services. The standard way of using
+    /*! Allows access to the core API objects, various managers and services. The standard way of using
         the framework is by first creating the framework and then calling Framework::Go()
         which will then load / initialize all modules and enters the main loop which
         automatically updates all loaded modules.
@@ -56,7 +44,7 @@ namespace Foundation
         There are other ways of using the framework. To f.ex. run without the main loop,
         see Framework::PostInitialize(). All the modules need to be updated manually then.
 
-        The constructor initalizes the framework. Config or logging should not be used
+        The constructor initializes the framework. Config or logging should not be used
         usually without first initializing the framework.
 
         \ingroup Foundation_group
@@ -66,8 +54,6 @@ namespace Foundation
         Q_OBJECT
 
     public:
-        typedef std::map<QString, Scene::ScenePtr> SceneMap;
-
         /// Constructs and initializes the framework.
         /** @param arc Command line argument count as provided by the operating system.
             @param arcv Command line arguments as provided by the operating system.
@@ -78,7 +64,7 @@ namespace Foundation
         ~Framework();
 
         /// Parse program options from command line arguments
-        /*! For internal use. Should be called immediatelly after creating the framework,
+        /*! For internal use. Should be called immediately after creating the framework,
             so all options will be taken in effect properly.
         */
         void ParseProgramOptions();
@@ -92,7 +78,7 @@ namespace Foundation
             In that case the correct order is:
                 Foundation::Framework fw;                  // create the framework
                 fw.GetModuleManager()->ExcludeModule(...)  // optional step for excluding certain modules
-                ...                                        // other initalization steps
+                ...                                        // other initialization steps
                 fw.PostInitialize()
                 ...                                        // continue program execution without framework's main loop
         */
@@ -151,52 +137,8 @@ namespace Foundation
         template <class T>
         __inline const boost::weak_ptr<T> GetService(service_type_t type) const { return service_manager_->GetService<T>(type); }
 
-        /// Creates new empty scene.
-        /*! 
-            \param name name of the new scene
-            \param viewenabled Whether the scene is view enabled
-            \return The new scene, or empty pointer if scene with the specified name already exists.
-        */
-        Scene::ScenePtr CreateScene(const QString &name, bool viewenabled);
-
-        /// Removes a scene with the specified name.
-        /*! The scene may not get deleted since there may be dangling references to it.
-            If the scene does get deleted, removes all entities which are not shared with
-            another existing scene.
-
-            Does nothing if scene with the specified name doesn't exist.
-
-            \param name name of the scene to delete
-        */
-        void RemoveScene(const QString &name);
-
-        /// Returns a pointer to a scene
-        /*! Manage the pointer carefully, as scenes may not get deleted properly if
-            references to the pointer are left alive.
-
-            \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::SceneWeakPtr,
-                  to avoid dangling references that prevent scenes from being properly destroyed.
-
-            \param name Name of the scene to return
-            \return The scene, or empty pointer if the scene with the specified name could not be found
-        */
-        Scene::ScenePtr GetScene(const QString &name) const;
-
-        /// Returns true if specified scene exists, false otherwise
-        bool HasScene(const QString &name) const;
-
-        /// Returns the currently set default world scene, for convinience
-        const Scene::ScenePtr &GetDefaultWorldScene() const;
-
-        /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
-        void SetDefaultWorldScene(const Scene::ScenePtr &scene);
-
-        /// Returns the scene map for self reflection / introspection.
-        const SceneMap &GetSceneMap() const;
-
 #ifdef PROFILING
         /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
-        /// Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
         Profiler &GetProfiler();
 #endif
         /// Add a new log listener for poco log
@@ -245,8 +187,8 @@ namespace Foundation
         /// Get main QApplication
         NaaliApplication *GetNaaliApplication() const;
 
-        /** Returns module by class T.
-            @param T class type of the module.
+        /// Returns module by class T.
+        /** @param T class type of the module.
             @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
             @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
          */
@@ -255,8 +197,8 @@ namespace Foundation
             return GetModuleManager()->GetModule<T>().lock().get();
         }
 
-        /** Returns service by class T.
-            @param T class type of the service.
+        /// Returns service by class T.
+        /** @param T class type of the service.
             @return The service, or null if the service doesn't exist. Always remember to check for null pointer.
             @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
          */
@@ -267,16 +209,16 @@ namespace Foundation
 
     public slots:
         /// Returns the Naali core API UI object.
-        NaaliUi *Ui() const;
+        UiAPI *Ui() const;
 
         /// Returns the old UiServiceInterface impl, which is not merged to the core UI object yet
         UiServiceInterface *UiService();
 
         /// Returns the Naali core API Input object.
-        Input *GetInput() const;
+        InputAPI *Input() const;
 
         /// Returns the Naali core API Frame object.
-        Frame *GetFrame() const;
+        FrameAPI *Frame() const;
 
         /// Returns the Naali core API Console object.
         ConsoleAPI *Console() const;
@@ -290,6 +232,12 @@ namespace Foundation
         /// Returns Naali core API Debug object.
         DebugAPI *Debug() const;
 
+        /// Returns Naali core API Scene object.
+        SceneAPI *Scene() const;
+
+        /// Returns Naali core API Config object.
+        ConfigAPI *Config() const;
+
         /// Returns if Naali is headless
         bool IsHeadless() const { return headless_; }
 
@@ -297,13 +245,6 @@ namespace Foundation
         /// Returns if Naali is editionless
         bool IsEditionless() const { return editionless_; }
 // $ END_MOD $
-
-        /// Returns the default scene.
-        Scene::SceneManager* DefaultScene() const;
-
-        /// Returns a scene by name
-        Scene::SceneManager* Scene(const QString& name) const;
-
         /// Returns the given module, if it is loaded into the system, and if it derives from QObject.
         QObject *GetModuleQObj(const QString &name);
 
@@ -318,27 +259,12 @@ namespace Foundation
         */
         bool RegisterDynamicObject(QString name, QObject *object);
 
-    signals:
-        /// Emitted after new scene has been added to framework.
-        /**@param name new scene name.
-        */
-        void SceneAdded(const QString &name);
-
-        /// Emitted after scene has been removed from the framework.
-        /** @param name removed scene name.
-        */
-        void SceneRemoved(const QString &name);
-
-        /// Emmitted when default world scene changes.
-        /** @param scene new default world scene object.
-        */
-        void DefaultWorldSceneChanged(Scene::SceneManager *scene);
-
-    public slots:
-        /// Signal the framework to exit
+        /// Signals the framework to exit
         void Exit();
 
     private:
+        Q_DISABLE_COPY(Framework)
+
         /// Registers framework specific console commands
         /// Should be called after modules are loaded and initialized
         void RegisterConsoleCommands();
@@ -357,28 +283,29 @@ namespace Foundation
         bool exit_signal_; ///< If true, exit application.
         std::vector<Poco::Channel*> log_channels_; ///< Logger channels
         Poco::Formatter *log_formatter_; ///< Logger default formatter
-        SceneMap scenes_; ///< Map of scenes.
-        Scene::ScenePtr default_scene_; ///< Current 'default' scene
 #ifdef PROFILING
         Profiler profiler_; ///< Profiler.
 #endif
         boost::program_options::variables_map commandLineVariables; ///< program options
         boost::program_options::options_description commandLineDescriptions; ///< program option descriptions
-        boost::timer timer; ///< The Naali Frame API.
         bool initialized_; ///< Is the framework is properly initialized.
         bool headless_; ///< Are we running in the headless mode.
 // $ BEGIN_MOD $
         bool editionless_;
 // $ END_MOD $
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.
+        
         NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
-        Frame *frame; ///< The Naali Frame API.
+        FrameAPI *frame; ///< The Naali Frame API.
         ConsoleAPI *console; ///< The Naali console API.
-        NaaliUi *ui; ///< The Naali UI API.
-        Input *input; ///< The Naali Input API.
+        UiAPI *ui; ///< The Naali UI API.
+        InputAPI *input; ///< The Naali Input API.
         AssetAPI *asset; ///< The Naali Asset API.
         AudioAPI *audio; ///< The Naali Audio API.
         DebugAPI *debug; ///< The Naali Debug API.
+        SceneAPI *scene; ///< The Naali Scene API.
+        ConfigAPI *config; ///< The Naali Config API.
+
         int argc_; ///< Command line argument count as supplied by the operating system.
         char **argv_; ///< Command line arguments as supplied by the operating system.
     };
@@ -388,11 +315,11 @@ namespace Foundation
     {
         const event_id_t NETWORKING_REGISTERED = 2;
         const event_id_t WORLD_STREAM_READY = 3;
-        const event_id_t WEB_LOGIN_DATA_RECEIVED = 4;
+//        const event_id_t WEB_LOGIN_DATA_RECEIVED = 4;
     }
 
     ///\todo (Re)move, doesn't belong to framework.
-    class WebLoginDataEvent : public IEventData
+/*    class WebLoginDataEvent : public IEventData
     {
         WebLoginDataEvent();
     public:
@@ -403,6 +330,7 @@ namespace Foundation
         QString avatar_address_;
         QString world_address_;
     };
+*/
 }
 
 #endif

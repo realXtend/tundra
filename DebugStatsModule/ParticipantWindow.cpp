@@ -11,6 +11,7 @@
 #include "ParticipantWindow.h"
 
 #include "Framework.h"
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "Entity.h"
 //#include "EntityComponent/EC_OpenSimPresence.h"
@@ -98,7 +99,7 @@ void ParticipantWindow::AddInfoField(const RexUUID &user_id, QWidget *widget)
 
 void ParticipantWindow::PopulateUserList()
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = *iter->second;

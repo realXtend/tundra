@@ -13,6 +13,7 @@
 #include "SupportedFileTypes.h"
 #include "RequestNewAssetDialog.h"
 
+#include "SceneAPI.h"
 #include "AssetAPI.h"
 #include "IAsset.h"
 #include "AssetCache.h"
@@ -373,7 +374,7 @@ void AssetTreeWidget::SaveAssetDialogClosed(int result)
 
 void AssetTreeWidget::Upload(const QStringList &files)
 {
-    AddContentWindow *addContent = new AddContentWindow(framework, framework->GetDefaultWorldScene());
+    AddContentWindow *addContent = new AddContentWindow(framework, framework->Scene()->GetDefaultScene());
     addContent->AddFiles(files);
     addContent->show();
 }

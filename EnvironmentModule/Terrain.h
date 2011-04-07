@@ -14,14 +14,6 @@
 
 #include <QObject>
 
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
-}
-
 namespace ProtocolUtilities
 {
     class NetworkEventInboundData;
@@ -80,7 +72,7 @@ namespace Environment
         EC_Terrain *GetTerrainComponent();
 
         //! Called whenever a texture is loaded so it can be attached to the terrain.
-        void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
+//        void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
 
         //! Get terrain texture ids
         //! @param index index of texture id range[0-3].
@@ -118,7 +110,7 @@ namespace Environment
         EnvironmentModule *owner_;
 
         /// Request tags for new terrain textures.
-        request_tag_t terrain_texture_requests_[num_terrain_textures];
+//        request_tag_t terrain_texture_requests_[num_terrain_textures];
 
         /// UUID's of the texture assets the terrain uses for rendering. Should be stored per-scene.
         RexTypes::RexAssetID terrain_textures_[num_terrain_textures];

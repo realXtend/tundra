@@ -4,7 +4,7 @@
 #define incl_OgreAssetEditorModule_MeshPreviewEditor_h
 
 #include "RexTypes.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "MouseEvent.h"
 #include "OgreAssetEditorModuleApi.h"
 #include "AssetFwd.h"
@@ -26,14 +26,6 @@ class UiProxyWidget;
 namespace Foundation
 {
     class Framework;
-}
-
-namespace Resource
-{
-    namespace Events
-    {
-        class ResourceReady;
-    }
 }
 
 namespace OgreRenderer
@@ -77,7 +69,7 @@ public:
 
     virtual ~MeshPreviewEditor();
 
-    void HandleResouceReady(Resource::Events::ResourceReady *res);
+//    void HandleResouceReady(Resource::Events::ResourceReady *res);
     void RequestMeshAsset(const QString &asset_id);
     QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels);
     void Open(const QString& asset_id, const QString& type);
@@ -114,7 +106,7 @@ private:
     QWidget     *mainWidget_;
     QPushButton *okButton_;
     QString assetId_;
-    request_tag_t request_tag_;
+    //request_tag_t request_tag_;
     UiProxyWidget *proxy_; 
     QPointF lastPos_;
     int camAlphaAngle_;

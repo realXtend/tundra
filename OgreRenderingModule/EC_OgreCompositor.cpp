@@ -2,14 +2,16 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
+
 #include "EC_OgreCompositor.h"
+#include "Renderer.h"
 #include "OgreRenderingModule.h"
 #include "CompositionHandler.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_OgreCompositor");
 
+#include "MemoryLeakCheck.h"
 
 EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
     IComponent(module->GetFramework()),
@@ -21,9 +23,7 @@ EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
     handler_(owner_->GetRenderer()->GetCompositionHandler())
 {
     assert (handler_ && "No CompositionHandler.");
-
-    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_OgreCompositor::~EC_OgreCompositor()
@@ -40,7 +40,7 @@ void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
 {
     if (attribute == &enabled)
     {
-        handler_->SetEnableCompositor(compositorref.Get().toStdString(), enabled.Get());
+        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), enabled.Get());
         UpdateCompositor(compositorref.Get());
         UpdateCompositorParams(compositorref.Get());
     }
@@ -102,12 +102,13 @@ void EC_OgreCompositor::UpdateCompositorParams(const QString &compositor)
                     std::string name = sepParams[0].toStdString();
 
                     programParams.push_back(std::make_pair(name, value));
-                } catch(boost::bad_lexical_cast &) {}
+                }
+                catch(boost::bad_lexical_cast &) {}
             }
         }
         handler_->SetCompositorParameter(compositorref.Get().toStdString(), programParams);
-        handler_->SetEnableCompositor(compositorref.Get().toStdString(), false);
-        handler_->SetEnableCompositor(compositorref.Get().toStdString(), true);
+        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), false);
+        handler_->SetCompositorEnabled(compositorref.Get().toStdString(), true);
     }
 }
 

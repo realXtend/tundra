@@ -37,7 +37,7 @@ public:
     }
     
     /// Message connection
-    kNet::MessageConnection* connection;
+    Ptr(kNet::MessageConnection) connection;
     /// Connection ID
     u8 userID;
     /// Raw xml login data

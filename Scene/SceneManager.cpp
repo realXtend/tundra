@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "SceneAPI.h"
 #include "SceneManager.h"
 #include "Entity.h"
 #include "SceneEvents.h"
@@ -28,6 +29,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 
 #include <kNet/DataDeserializer.h>
 #include <kNet/DataSerializer.h>
+
+#include <boost/regex.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -147,21 +150,49 @@ namespace Scene
 
     entity_id_t SceneManager::GetNextFreeId()
     {
+        // Find the largest non-local entity ID in the scene.
+        entity_id_t largestEntityId = 0;
+        for(EntityMap::const_reverse_iterator iter = entities_.rbegin(); iter != entities_.rend(); ++iter)
+            if ((iter->first & LocalEntity) == 0)
+            {
+                largestEntityId = iter->first;
+                break;
+            }
+
+        // Ensure that the entity id we give out is always larger than the largest entity id currently existing in the scene.
+        gid_ = std::max(gid_, largestEntityId+1);
+
         while(entities_.find(gid_) != entities_.end())
         {
             gid_ = (gid_ + 1) & (LocalEntity - 1);
             if (!gid_) ++gid_;
         }
+
+        assert(!HasEntity(gid_));
         return gid_;
     }
 
     entity_id_t SceneManager::GetNextFreeIdLocal()
     {
+        // Find the largest local entity ID in the scene.
+        entity_id_t largestEntityId = 0;
+        for(EntityMap::const_reverse_iterator iter = entities_.rbegin(); iter != entities_.rend(); ++iter)
+            if ((iter->first & LocalEntity) != 0)
+            {
+                largestEntityId = iter->first;
+                break;
+            }
+
+        // Ensure that the entity id we give out is always larger than the largest entity id currently existing in the scene.
+        gid_local_ = std::max(gid_local_, (largestEntityId+1) | LocalEntity);
+
         while(entities_.find(gid_local_) != entities_.end())
         {
             gid_local_ = (gid_local_ + 1) | LocalEntity;
             if (gid_local_ == LocalEntity) ++gid_local_;
         }
+
+        assert(!HasEntity(gid_local_));
         return gid_local_;
     }
     
@@ -355,7 +386,7 @@ namespace Scene
         return ret;
     }
 
-    QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
 
@@ -381,7 +412,7 @@ namespace Scene
         if (clearScene)
             RemoveAllEntities(true, change);
 
-        return CreateContentFromXml(scene_doc, replaceOnConflict, change);
+        return CreateContentFromXml(scene_doc, useEntityIDsFromFile, change);
     }
 
     QByteArray SceneManager::GetSceneXML(bool gettemporary, bool getlocal) const
@@ -442,7 +473,7 @@ namespace Scene
         }
     }
     
-    QList<Entity *> SceneManager::LoadSceneBinary(const std::string& filename, bool clearScene, bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::LoadSceneBinary(const std::string& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
         QFile file(filename.c_str());
@@ -465,7 +496,7 @@ namespace Scene
         if (clearScene)
             RemoveAllEntities(true, change);
 
-        return CreateContentFromBinary(bytes.data(), bytes.size(), replaceOnConflict, change);
+        return CreateContentFromBinary(bytes.data(), bytes.size(), useEntityIDsFromFile, change);
     }
 
     bool SceneManager::SaveSceneBinary(const std::string& filename)
@@ -502,7 +533,7 @@ namespace Scene
         }
     }
 
-    QList<Entity *> SceneManager::CreateContentFromXml(const QString &xml,  bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromXml(const QString &xml,  bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
         QString errorMsg;
@@ -513,10 +544,10 @@ namespace Scene
             return ret;
         }
 
-        return CreateContentFromXml(scene_doc, replaceOnConflict, change);
+        return CreateContentFromXml(scene_doc, useEntityIDsFromFile, change);
     }
 
-    QList<Entity *> SceneManager::CreateContentFromXml(const QDomDocument &xml,  bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromXml(const QDomDocument &xml, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
         // Check for existence of the scene element before we begin
@@ -531,45 +562,44 @@ namespace Scene
         while (!ent_elem.isNull())
         {
             QString id_str = ent_elem.attribute("id");
-            if (!id_str.isEmpty())
+            entity_id_t id = !id_str.isEmpty() ? ParseString<entity_id_t>(id_str.toStdString()) : 0;
+            if (!useEntityIDsFromFile || id == 0) // If we don't want to use entity IDs from file, or if file doesn't contain one, generate a new one.
+                id = ((id & LocalEntity) != 0) ? GetNextFreeIdLocal() : GetNextFreeId();
+
+            if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene, delete the old entity.
             {
-                entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
-                if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
-                {
-                    if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
-                        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-                    else // Create a new ID for the new entity.
-                    {
-                        if ((id & LocalEntity) != 0) // Check if the ID is local
-                            id = GetNextFreeIdLocal();
-                        else
-                            id = GetNextFreeId();
-                    }
-                }
-
-                EntityPtr entity = CreateEntity(id);
-                if (entity)
-                {
-                    QDomElement comp_elem = ent_elem.firstChildElement("component");
-                    while (!comp_elem.isNull())
-                    {
-                        QString type_name = comp_elem.attribute("type");
-                        QString name = comp_elem.attribute("name");
-                        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
-                        if (new_comp)
-                            // Trigger no signal yet when scene is in incoherent state
-                            new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
-
-                        comp_elem = comp_elem.nextSiblingElement("component");
-                    }
-
-                    ret.append(entity.get());
-                }
+                LogDebug("SceneManager::CreateContentFromXml: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
+                LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id).toStdString() + "might not replicate properly!");
+                RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
             }
+
+            EntityPtr entity = CreateEntity(id);
+            if (entity)
+            {
+                QDomElement comp_elem = ent_elem.firstChildElement("component");
+                while (!comp_elem.isNull())
+                {
+                    QString type_name = comp_elem.attribute("type");
+                    QString name = comp_elem.attribute("name");
+                    ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+                    if (new_comp)
+                        // Trigger no signal yet when scene is in incoherent state
+                        new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+
+                    comp_elem = comp_elem.nextSiblingElement("component");
+                }
+                ret.append(entity.get());
+            }
+            else
+            {
+                LogError("SceneManager::CreateContentFromXml: Failed to create entity with id " + QString::number(id).toStdString() + "!");
+            }
+
             ent_elem = ent_elem.nextSiblingElement("entity");
         }
 
-        for (uint i = 0; i < ret.size(); ++i)
+        // Now that we have each entity spawned to the scene, trigger all the signals for EntityCreated/ComponentChanged messages.
+        for (int i = 0; i < ret.size(); ++i)
         {
             Entity* entity = ret[i];
             EmitEntityCreated(entity, change);
@@ -582,7 +612,7 @@ namespace Scene
         return ret;
     }
 
-    QList<Entity *> SceneManager::CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromBinary(const QString &filename, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
         QFile file(filename);
@@ -601,10 +631,10 @@ namespace Scene
             return ret;
         }
 
-        return CreateContentFromBinary(bytes.data(), bytes.size(), replaceOnConflict, change);
+        return CreateContentFromBinary(bytes.data(), bytes.size(), useEntityIDsFromFile, change);
     }
 
-    QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numBytes, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
         assert(data);
@@ -617,17 +647,14 @@ namespace Scene
             for (uint i = 0; i < num_entities; ++i)
             {
                 entity_id_t id = source.Read<u32>();
+                if (!useEntityIDsFromFile || id == 0)
+                    id = ((id & LocalEntity) != 0) ? GetNextFreeIdLocal() : GetNextFreeId();
+
                 if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
                 {
-                    if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
-                        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-                    else // Create a new ID for the new entity.
-                    {
-                        if ((id & LocalEntity) != 0) // Check if the ID is local
-                            id = GetNextFreeIdLocal();
-                        else
-                            id = GetNextFreeId();
-                    }
+                    LogDebug("SceneManager::CreateContentFromBinary: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
+                    LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id).toStdString() + "might not replicate properly!");
+                    RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
                 }
 
                 EntityPtr entity = CreateEntity(id);
@@ -695,38 +722,29 @@ namespace Scene
         return ret;
     }
 
-    QList<Entity *> SceneManager::CreateContentFromSceneDesc(const SceneDesc &desc, bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromSceneDesc(const SceneDesc &desc, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
 
         if (desc.entities.empty())
         {
-            LogError("Empty scene descrition.");
+            LogError("Empty scene description.");
             return ret;
         }
 
         foreach(EntityDesc e, desc.entities)
         {
             entity_id_t id;
-            if (e.id.isEmpty())
-                if (e.local)
-                    id = GetNextFreeIdLocal();
-                else
-                    id = GetNextFreeId();
-            else
+            if (!e.id.isEmpty() && useEntityIDsFromFile)
                 id = ParseString<entity_id_t>(e.id.toStdString());
+            else
+                id = e.local ? GetNextFreeIdLocal() : GetNextFreeId();
 
             if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
             {
-                if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
-                    RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-                else // Create a new ID for the new entity.
-                {
-                    if ((id & LocalEntity) != 0) // Check if the ID is local
-                        id = GetNextFreeIdLocal();
-                    else
-                        id = GetNextFreeId();
-                }
+                LogDebug("SceneManager::CreateContentFromSceneDescription: Destroying previous entity with id " + QString::number(id).toStdString() + " to avoid conflict with new created entity with the same id.");
+                LogError("Warning: Invoking buggy behavior: Object with id " + QString::number(id).toStdString() + " might not replicate properly!");
+                RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
             }
 
             EntityPtr entity = CreateEntity(id);
@@ -890,6 +908,10 @@ namespace Scene
                                 ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
 
                                 sceneDesc.assets[qMakePair(ad.source, ad.subname)] = ad;
+
+                                // If this is a script, look for dependecies
+                                if (ad.source.toLower().endsWith(".js"))
+                                    SearchScriptAssetDependencies(ad.source, sceneDesc);                          
                             }
                         }
                     }
@@ -907,6 +929,64 @@ namespace Scene
         }
 
         return sceneDesc;
+    }
+
+    void SceneManager::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const
+    {
+        if (!filePath.toLower().endsWith(".js"))
+            return;
+
+        if (QFile::exists(filePath))
+        {
+            QFile script(filePath);
+            if (script.open(QIODevice::ReadOnly))
+            {
+                QString scriptData = script.readAll();
+                std::string content = scriptData.toStdString();
+                QStringList foundRefs;
+                boost::sregex_iterator searchEnd;
+
+                boost::regex expression("!ref:\\s*(.*?)\\s*(\\n|$)");
+                for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
+                {
+                    QString ref = QString::fromStdString((*iter)[1].str());
+                    if (!foundRefs.contains(ref, Qt::CaseInsensitive))
+                        foundRefs << ref;
+                }
+
+                expression = boost::regex("engine.IncludeFile\\(\\s*\"\\s*(.*?)\\s*\"\\s*\\)");
+                for(boost::sregex_iterator iter(content.begin(), content.end(), expression); iter != searchEnd; ++iter)
+                {
+                    QString ref = QString::fromStdString((*iter)[1].str());
+                    if (!foundRefs.contains(ref, Qt::CaseInsensitive))
+                        foundRefs << ref;
+                }
+
+                foreach(QString scriptDependency, foundRefs)
+                {
+                    AssetDesc ad;
+                    ad.typeName = "Script dependency";
+                    ad.dataInMemory = false;
+
+                    QString basePath(boost::filesystem::path(sceneDesc.filename.toStdString()).branch_path().string().c_str());
+                    framework_->Asset()->QueryFileLocation(scriptDependency, basePath, ad.source);
+                    ad.destinationName = AssetAPI::ExtractFilenameFromAssetRef(ad.source);
+                    
+                    // We have to check if the asset is already added. As we do this recursively there is a danger of a infinite loop.
+                    // This check wont let that happen. Situation when infinite loop would happen: A.js depends on B.js and B.js depends on A.js
+                    // Other than .js depedency assets cannot cause this.
+                    SceneDesc::AssetMapKey key = qMakePair(ad.source, ad.subname);
+                    if (!sceneDesc.assets.contains(key))
+                    {
+                        sceneDesc.assets[key] = ad;
+
+                        // Go deeper if dep file is .js
+                        if (ad.source.toLower().endsWith(".js"))
+                            SearchScriptAssetDependencies(ad.source, sceneDesc);
+                    }
+                }
+            }
+        }
     }
 
     SceneDesc SceneManager::GetSceneDescFromBinary(const QString &filename) const

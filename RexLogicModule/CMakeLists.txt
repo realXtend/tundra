@@ -10,7 +10,7 @@ file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES ui/*.ui)
 file (GLOB MOC_FILES RexLogicModule.h EventHandlers/LoginHandler.h RexMovementInput.h
     EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Environment/Primitive.h Communications/*.h
-    Communications/InWorldChat/*.h Camera/ObjectCameraController.h Camera/CameraControl.h SceneInteract.h NotificationWidget.h)
+    Communications/InWorldChat/*.h Camera/ObjectCameraController.h Camera/CameraControl.h NotificationWidget.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
@@ -73,6 +73,7 @@ LinkEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
 LinkEntityComponent(EntityComponents/EC_Light EC_Light)
 LinkEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 LinkEntityComponent(EntityComponents/EC_PlanarMirror EC_PlanarMirror)
+LinkEntityComponent(EntityComponents/EC_WebView EC_WebView)
 
 link_modules (Core Foundation Interfaces Scene OgreRenderingModule AssetModule AvatarModule RexCommon
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Asset Audio)

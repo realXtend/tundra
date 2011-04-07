@@ -14,6 +14,8 @@
 #include "TundraMessages.h"
 #include "TundraEvents.h"
 #include "PhysicsModule.h"
+
+#include "SceneAPI.h"
 #include "SceneManager.h"
 
 #include "MsgLogin.h"
@@ -50,6 +52,44 @@ void Client::Update(f64 frametime)
     // If we aren't a server, check pending login
     if (!owner_->IsServer())
         CheckLogin();
+}
+
+void Client::Login(const QUrl& loginUrl)
+{
+    // We support tundra, http and https scheme login urls
+    QString urlScheme = loginUrl.scheme().toLower();
+    if (urlScheme.isEmpty())
+        return;
+    if (urlScheme != "tundra" && 
+        urlScheme != "http" && 
+        urlScheme != "https")
+        return;
+
+    // Parse values from url
+    QString username = loginUrl.queryItemValue("username").trimmed();
+    QString password = loginUrl.queryItemValue("password");
+    QString avatarurl = loginUrl.queryItemValue("avatarurl").trimmed();
+    QString protocol = loginUrl.queryItemValue("protocol").trimmed().toLower();
+    QString address = loginUrl.host();
+    int port = loginUrl.port();
+
+    // Validation: Username and address is the minimal set that with we can login with
+    if (username.isEmpty() || address.isEmpty())
+        return;
+    if (username.count(" ") > 0)
+        username = username.replace(" ", "-");
+    if (port < 0)
+        port = 2345;
+
+    // Set login parameters and login
+    SetLoginProperty("username", username);
+    SetLoginProperty("password", "");
+    SetLoginProperty("protocol", protocol);
+    SetLoginProperty("port", QString::number(port));
+    if (!avatarurl.isEmpty())
+        SetLoginProperty("avatarurl", avatarurl);
+
+    Login(address, port, username, password, protocol);
 }
 
 void Client::Login(const QString& address, unsigned short port, const QString& username, const QString& password, const QString &protocol)
@@ -99,7 +139,7 @@ void Client::Logout(bool fail)
         client_id_ = 0;
         
         framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_DISCONNECTED, 0);
-        framework_->RemoveScene("TundraClient");
+        framework_->Scene()->RemoveScene("TundraClient");
         
         emit Disconnected();
     }
@@ -238,12 +278,12 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)
         {
-            Scene::ScenePtr scene = framework_->CreateScene("TundraClient", true);
+            Scene::ScenePtr scene = framework_->Scene()->CreateScene("TundraClient", true);
             // Create physics world in client (non-authoritative) mode
             Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
             physics->CreatePhysicsWorldForScene(scene, true);
             
-            framework_->SetDefaultWorldScene(scene);
+            framework_->Scene()->SetDefaultScene(scene);
             owner_->GetSyncManager()->RegisterToScene(scene);
             
             Events::TundraConnectedEventData event_data;
@@ -258,10 +298,9 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
             // Note: when we move to unordered communication, we must guarantee that the server does not send
             // any scene data before the login reply
 
-	    // XXX actually this seems to empty the scene on the server? disabled for now
-            // Scene::ScenePtr scene = framework_->GetScene("TundraClient");
-            // if (scene)
-            //     scene->RemoveAllEntities();
+            Scene::ScenePtr scene = framework_->Scene()->GetScene("TundraClient");
+            if (scene)
+                scene->RemoveAllEntities(true, AttributeChange::LocalOnly);
         }
         reconnect_ = true;
     }

@@ -4,6 +4,7 @@
 #define incl_Foundation_ComponentManager_h
 
 #include "ForwardDefines.h"
+#include "SceneFwd.h"
 
 #include <map>
 
@@ -12,7 +13,7 @@
 
     \defgroup Scene_group Scene Model Client Interface
 */
-        typedef std::map<uint, ComponentFactoryPtr> ComponentFactoryHashMap;
+typedef std::map<uint, ComponentFactoryPtr> ComponentFactoryHashMap;
 
 //! Manages components. Also works as a component factory.
 /*! \ingroup Foundation_group

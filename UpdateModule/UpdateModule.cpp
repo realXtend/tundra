@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "UpdateModule.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
 #include <QFile>

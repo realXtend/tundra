@@ -18,7 +18,7 @@
 #include "EC_Mesh.h"
 
 #include "InputEvents.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "EC_Terrain.h"

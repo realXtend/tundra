@@ -18,16 +18,18 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "NaaliApplication.h"
 #include "CoreException.h"
-#include "Input.h"
-#include "Frame.h"
+#include "InputAPI.h"
+#include "FrameAPI.h"
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
-#include "Audio.h"
+#include "AudioAPI.h"
 #include "ConsoleAPI.h"
 #include "UiServiceInterface.h"
 #include "DebugAPI.h"
+#include "SceneAPI.h"
+#include "ConfigAPI.h"
 
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
 #include "SceneManager.h"
@@ -73,15 +75,17 @@ namespace Foundation
         log_formatter_(0),
         splitterchannel(0),
         naaliApplication(0),
-        frame(new Frame(this)),
+        frame(new FrameAPI(this)),
         console(new ConsoleAPI(this)),
         ui(0),
         input(0),
         asset(0),
-        debug(new DebugAPI(this))
+        audio(0),
+        debug(new DebugAPI(this)),
+        scene(new SceneAPI(this))
     {
         ParseProgramOptions();
-        
+
         if (commandLineVariables.count("help")) 
         {
             std::cout << "Supported command line arguments: " << std::endl;
@@ -102,18 +106,18 @@ namespace Foundation
 #endif
             PROFILE(FW_Startup);
             platform_ = PlatformPtr(new Platform(this));
-        
+
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
-
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
-            
+
             platform_->PrepareApplicationDataDirectory(); // depends on config
 
-            // Force install directory as the current working directory. Todo: we may not want to do this in all cases,
-            // but there is a huge load of places that depend on being able to refer to the install dir with .
+            // Force install directory as the current working directory.
+            /** \Todo: we may not want to do this in all cases, but there is a huge load of places
+                that depend on being able to refer to the install dir with .*/
             boost::filesystem::current_path(platform_->GetInstallDirectory());
             
             // Now set proper path for config (one that also non-privileged users can write to)
@@ -125,8 +129,13 @@ namespace Foundation
                 if (boost::filesystem::exists(config_path) == false)
                     boost::filesystem::create_directory(config_path);
 
+                // Old XML based config manager
                 config_manager_->SetPath(config_path);
+
+                // New INI based config api using QSettings
+                config = new ConfigAPI(this, QString::fromStdString(config_path));
             }
+
             config_manager_->Load();
 
             // Set config values we explicitly always want to override
@@ -151,24 +160,30 @@ namespace Foundation
             event_manager_ = EventManagerPtr(new EventManager(this));
             thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
-            Scene::Events::RegisterSceneEvents(event_manager_);
+            // Register task and scene events
             Task::Events::RegisterTaskEvents(event_manager_);
+            scene->RegisterSceneEvents();
 
             naaliApplication = new NaaliApplication(this, argc_, argv_);
-
             initialized_ = true;
-
-            ui = new NaaliUi(this);
-            connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
             asset = new AssetAPI(headless_);
             const char cDefaultAssetCachePath[] = "/assetcache";
             asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
 
+            ui = new UiAPI(this);
+
+            // Connect signal if main window was created. Not in headless mode.
+            if (ui->MainWindow())
+                connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+
             audio = new AudioAPI(asset); // Audio API depends on the Asset API, so must be loaded after Asset API is.
             asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
 
-            input = new Input(this);
+            input = new InputAPI(this);
+
+            // Initialize SceneAPI.
+            scene->Initialise();
 
             RegisterDynamicObject("ui", ui);
             RegisterDynamicObject("frame", frame);
@@ -177,6 +192,11 @@ namespace Foundation
             RegisterDynamicObject("asset", asset);
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
+            RegisterDynamicObject("application", naaliApplication);
+
+            /*! \todo JS now registers 'scene' manually to the default scene. Add this maybe later
+                or register additiona 'sceneapi' */
+            //RegisterDynamicObject("sceneapi", scene);
         }
     }
 
@@ -202,9 +222,9 @@ namespace Foundation
 
         delete frame;
         delete console;
-        delete ui;
         delete input;
         delete asset;
+        delete ui;
         delete audio;
 
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
@@ -262,13 +282,11 @@ namespace Foundation
             splitterchannel->removeChannel(filechannel);
             RootLogInfo("Poco::OpenFileException. Log file not created.");
         }
-
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
         std::string log_level = config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
         Poco::Logger::get("Foundation").setLevel(log_level);
 #endif
-
         if (consolechannel)
             log_channels_.push_back(consolechannel);
         log_channels_.push_back(filechannel);
@@ -305,13 +323,13 @@ namespace Foundation
             ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
             ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
             ("storage", po::value<std::string>(), "Adds the given directory as a local storage directory on startup") // AssetModule
-            // The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
+            ("login", po::value<std::string>(), "Automatically login to server using provided data. Url syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]. Minimum information needed to try a connection in the url are host and username")
+            ///\todo The following options seem to be unused in the system. These should be removed or reimplemented. -jj.
             ("user", po::value<std::string>(), "OpenSim login name")
             ("passwd", po::value<std::string>(), "OpenSim login password")
             ("server", po::value<std::string>(), "World server and port")
             ("auth_server", po::value<std::string>(), "RealXtend authentication server address and port")
-            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name")
-            ("login", "Automatically login to server using provided credentials")
+            ("auth_login", po::value<std::string>(), "RealXtend authentication server user name");
 // $ BEGIN_MOD $
             ("editionless", "Run in editionless mode without external widgets");
 // $ END_MOD $
@@ -329,12 +347,14 @@ namespace Foundation
     void Framework::PostInitialize()
     {
         PROFILE(FW_PostInitialize);
+        event_manager_->RegisterEventCategory("Framework");
 
-        event_category_id_t framework_events = event_manager_->RegisterEventCategory("Framework");
-        UNREFERENCED_PARAM(framework_events);
         srand(time(0));
 
         LoadModules();
+
+        // PostInitialize SceneAPI.
+        scene->PostInitialize();
 
         // commands must be registered after modules are loaded and initialized
         RegisterConsoleCommands();
@@ -342,16 +362,25 @@ namespace Foundation
 
     void Framework::ProcessOneFrame()
     {
+        static tick_t clock_freq;
+        static tick_t last_clocktime;
+
+        if (!last_clocktime)
+            last_clocktime = GetCurrentClockTime();
+
+        if (!clock_freq)
+            clock_freq = GetCurrentClockFreq();
+
         if (exit_signal_ == true)
             return; // We've accidentally ended up to update a frame, but we're actually quitting.
 
         {
             PROFILE(FW_MainLoop);
 
-            double frametime = timer.elapsed();
-            
-            timer.restart();
-            // do synchronized update for modules
+            tick_t curr_clocktime = GetCurrentClockTime();
+            double frametime = ((double)curr_clocktime - (double)last_clocktime) / (double) clock_freq;
+            last_clocktime = curr_clocktime;
+
             {
                 PROFILE(FW_UpdateModules);
                 module_manager_->UpdateModules(frametime);
@@ -413,9 +442,16 @@ namespace Foundation
             PostInitialize();
         }
         
+        // Run our QApplication subclass NaaliApplication.
         naaliApplication->Go();
+
+        // Qt main loop execution has ended, we are existing.
         exit_signal_ = true;
 
+        // Reset SceneAPI.
+        scene->Reset();
+
+        // Unload modules
         UnloadModules();
     }
 
@@ -454,45 +490,14 @@ namespace Foundation
 
     void Framework::UnloadModules()
     {
-        default_scene_.reset();
-        scenes_.clear();
-
         event_manager_->ClearDelayedEvents();
         module_manager_->UninitializeModules();
         module_manager_->UnloadModules();
     }
 
     NaaliApplication *Framework::GetNaaliApplication() const
-    { 
+    {
         return naaliApplication;
-    }
-
-    Scene::ScenePtr Framework::CreateScene(const QString &name, bool viewenabled)
-    {
-        if (HasScene(name))
-            return Scene::ScenePtr();
-
-        Scene::ScenePtr new_scene = Scene::ScenePtr(new Scene::SceneManager(name, this, viewenabled));
-        scenes_[name] = new_scene;
-
-        Scene::Events::SceneEventData event_data(name.toStdString());
-        event_category_id_t cat_id = GetEventManager()->QueryEventCategory("Scene");
-        GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_SCENE_ADDED, &event_data);
-
-        emit SceneAdded(name);
-        return new_scene;
-    }
-
-    void Framework::RemoveScene(const QString &name)
-    {
-        SceneMap::iterator scene = scenes_.find(name);
-        if (scene != scenes_.end())
-        {
-            if (default_scene_ == scene->second)
-                default_scene_.reset();
-            scenes_.erase(scene);
-            emit SceneRemoved(name);
-        }
     }
 
     Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
@@ -735,28 +740,28 @@ namespace Foundation
         return config_manager_.get();
     }
 
-    Frame *Framework::GetFrame() const
+    FrameAPI *Framework::Frame() const
     {
         return frame;
     }
 
-    Input *Framework::GetInput() const
+    InputAPI *Framework::Input() const
     {
         return input;
     }
 
-    NaaliUi *Framework::Ui() const
+    UiAPI *Framework::Ui() const
     {
         return ui;
     }
 
-    UiServiceInterface *Framework::UiService() 
-    { 
-        return GetService<UiServiceInterface>(); 
+    UiServiceInterface *Framework::UiService()
+    {
+        return GetService<UiServiceInterface>();
     }
 
     ConsoleAPI *Framework::Console() const
-    { 
+    {
         return console;
     }
 
@@ -773,6 +778,16 @@ namespace Foundation
     DebugAPI *Framework::Debug() const
     {
         return debug;
+    }
+
+    SceneAPI *Framework::Scene() const
+    {
+        return scene;
+    }
+
+    ConfigAPI *Framework::Config() const
+    {
+        return config;
     }
 
     QObject *Framework::GetModuleQObj(const QString &name)
@@ -793,49 +808,5 @@ namespace Foundation
         setProperty(name.toStdString().c_str(), QVariant::fromValue<QObject*>(object));
 
         return true;
-
-    }
-
-    Scene::ScenePtr Framework::GetScene(const QString &name) const
-    {
-        SceneMap::const_iterator scene = scenes_.find(name);
-        if (scene != scenes_.end())
-            return scene->second;
-
-        return Scene::ScenePtr();
-    }
-
-    bool Framework::HasScene(const QString &name) const
-    {
-        return scenes_.find(name) != scenes_.end();
-    }
-
-    const Scene::ScenePtr &Framework::GetDefaultWorldScene() const
-    {
-        return default_scene_;
-    }
-    
-    Scene::SceneManager* Framework::DefaultScene() const
-    {
-        return default_scene_.get();
-    }
-    
-    Scene::SceneManager* Framework::Scene(const QString& name) const
-    {
-        return GetScene(name).get();
-    }
-
-    void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
-    {
-        if(scene != default_scene_)
-        {
-            default_scene_ = scene;
-            emit DefaultWorldSceneChanged(default_scene_.get());
-        }
-    }
-
-    const Framework::SceneMap &Framework::GetSceneMap() const
-    {
-        return scenes_;
     }
 }

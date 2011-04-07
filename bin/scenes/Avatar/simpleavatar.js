@@ -1,4 +1,8 @@
+// !ref: local://crosshair.js
+// !ref: local://default_avatar.xml
+
 // A simple walking avatar with physics & third person camera
+engine.IncludeFile("local://crosshair.js");
 var rotate_speed = 150.0;
 var mouse_rotate_sensitivity = 0.3;
 var move_force = 15.0;
@@ -22,6 +26,8 @@ var flying = false;
 var falling = false;
 var fish_created = false;
 var tripod = false;
+var first_person = false;
+var crosshair = null;
 
 // Animation detection
 var standAnimName = "Stand";
@@ -101,7 +107,7 @@ function ServerHandleCollision(ent, pos, normal, distance, impulse, newCollision
 }
 
 function ServerUpdatePhysics(frametime) {
-    var placeable = me.placeable;
+     var placeable = me.placeable;
     var rigidbody = me.rigidbody;
 
     if (!flying) {
@@ -157,23 +163,23 @@ function ServerUpdatePhysics(frametime) {
         if (motion_x != 0) {
             if (motion_y > 0 && av_transform.rot.x <= 5) {
                 av_transform.rot.x = av_transform.rot.x + motion_y/2;
-	    }
+        }
             if (motion_y < 0 && av_transform.rot.x >= -5) {
                 av_transform.rot.x = av_transform.rot.x + motion_y/2;
-	    }
+        }
             if (motion_y != 0 && av_transform.rot.x > 0) {
                 av_transform.pos.z = av_transform.pos.z + (av_transform.rot.x * 0.0045); // magic number
-	    }
-	    if (motion_y != 0 && av_transform.rot.x < 0) {
+        }
+        if (motion_y != 0 && av_transform.rot.x < 0) {
                 av_transform.pos.z = av_transform.pos.z + (-av_transform.rot.x * 0.0045); // magic number
-	    }
+        }
         }
         if (motion_y == 0 && av_transform.rot.x > 0) {
             av_transform.rot.x = av_transform.rot.x - 0.5;
-	}
-	if (motion_y == 0 && av_transform.rot.x < 0) {
+    }
+    if (motion_y == 0 && av_transform.rot.x < 0) {
             av_transform.rot.x = av_transform.rot.x + 0.5;
-	}
+    }
 
         av_placeable.transform = av_transform;
     }
@@ -298,7 +304,7 @@ function ServerHandleGesture(gestureName) {
     if (animcontroller != null) {
         if (animcontroller.animationState != animName) {
             animcontroller.animationState = animName;
-	}
+        }
     }
 }
 
@@ -327,7 +333,7 @@ function ServerSetAnimationState() {
     if (animcontroller != null) {
         if (animcontroller.animationState != animName) {
             animcontroller.animationState = animName;
-	}
+        }
     }
 }
 
@@ -339,12 +345,27 @@ function ClientInitialize() {
         own_avatar = true;
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
+        crosshair = new Crosshair();
+        var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
+        soundlistener.active = true;
 
         me.Action("MouseScroll").Triggered.connect(ClientHandleMouseScroll);
         me.Action("Zoom").Triggered.connect(ClientHandleKeyboardZoom);
         me.Action("ToggleTripod").Triggered.connect(ClientHandleToggleTripod);
         me.Action("MouseLookX").Triggered.connect(ClientHandleTripodLookX);
         me.Action("MouseLookY").Triggered.connect(ClientHandleTripodLookY);
+        me.Action("CheckState").Triggered.connect(ClientCheckState);
+        
+        // Inspect the login avatar url property
+        var avatarurl = client.GetLoginProperty("avatarurl");
+        if (avatarurl && avatarurl.length > 0)
+        {
+            var avatarAssetRef = new QByteArray(avatarurl);
+            var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
+            avatar.OnAttributeChanged.connect(CommonHandleAvatarAttributeChange)
+            avatar.appearanceId = avatarAssetRef;
+            print("Avatar from login parameters enabled:", avatarAssetRef);
+        }
     }
     else
     {
@@ -390,6 +411,8 @@ function ClientHandleToggleTripod()
     var camera = cameraentity.ogrecamera;
     if (camera.IsActive() == false)
     {
+        first_person = false;
+        crosshair.hide();
         tripod = false;
         return;
     }
@@ -442,7 +465,7 @@ function ClientUpdate(frametime)
             var active = avatarcameraentity.ogrecamera.IsActive();
             if (inputmapper.enabled != active) {
                 inputmapper.enabled = active;
-	    }
+        }
         }
         ClientUpdateAvatarCamera(frametime);
     }
@@ -493,6 +516,7 @@ function ClientCreateInputMapper() {
     var inputContext = inputmapper.GetInputContext();
     inputContext.GestureStarted.connect(GestureStarted);
     inputContext.GestureUpdated.connect(GestureUpdated);
+    inputContext.MouseMove.connect(ClientHandleMouseMove);
 
     // Local camera matter for mouse scroll
     var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper", "CameraMapper", 2, false);
@@ -598,13 +622,14 @@ function ClientHandleMouseScroll(relativeScroll)
 {
     if (!IsCameraActive())
         return;
+
     var moveAmount = 0;
     if (relativeScroll < 0 && avatar_camera_distance < 500) {
         if (relativeScroll < -50)
             moveAmount = 2;
         else
             moveAmount = 1;
-    } else if (relativeScroll > 0 && avatar_camera_distance > 1) {
+    } else if (relativeScroll > 0 && avatar_camera_distance > 0) {
         if (relativeScroll > 50)
             moveAmount = -2
         else
@@ -615,10 +640,23 @@ function ClientHandleMouseScroll(relativeScroll)
         // Add movement
         avatar_camera_distance = avatar_camera_distance + moveAmount;
         // Clamp distance  to be between 1 and 500
-        if (avatar_camera_distance < 1)
-            avatar_camera_distance = 1;
+        if (avatar_camera_distance < -0.5)
+            avatar_camera_distance = -0.5;
         else if (avatar_camera_distance > 500)
             avatar_camera_distance = 500;
+            
+        if (avatar_camera_distance <= 0)
+        {
+            first_person = true;
+            crosshair.show();
+        }
+        else
+        {
+            first_person = false;
+            crosshair.hide();
+        }
+        
+        ClientCheckState();
     }
 }
 
@@ -641,11 +679,151 @@ function ClientUpdateAvatarCamera() {
         cameratransform.pos.y = avatartransform.pos.y + offsetVec.y;
         cameratransform.pos.z = avatartransform.pos.z + offsetVec.z;
         // Note: this is not nice how we have to fudge the camera rotation to get it to show the right things
-        cameratransform.rot.x = 90;
-        cameratransform.rot.z = avatartransform.rot.z - 90;
-
+        if(!first_person)
+        {
+            cameratransform.rot.x = 90;
+            cameratransform.rot.z = avatartransform.rot.z - 90;
+        }
+        else
+        {
+            avatartransform.rot.z = cameratransform.rot.z + 90;
+            me.placeable.transform = avatartransform;
+        }
         cameraplaceable.transform = cameratransform;
     }
+}
+
+function ClientCheckState()
+{    
+    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var avatar_placeable = me.GetComponentRaw("EC_Placeable");
+    
+    // If ent got destroyed or something fatal, return cursor
+    if (cameraentity == null || avatar_placeable == null)
+    {
+        if (crosshair.isActive())
+            crosshair.hide();
+        return;
+    }
+        
+    if (!first_person)
+    {
+        if (crosshair.isActive())
+            crosshair.hide();
+        
+        /* 
+        This wont work, would be nice to hide the mesh
+        but it sync to other clients. Seems not doable to make
+        this kind of local change in js?!
+        
+        if (!avatar_placeable.visible)
+        {
+            avatar_placeable.SetUpdateMode(2);
+            avatar_placeable.visible = true;
+            avatar_placeable.SetUpdateMode(0);
+        }
+        */
+        return;
+    }
+    else
+    {
+        // We might be in 1st person mode but camera might not be active
+        // hide curson and show av
+        if (!cameraentity.ogrecamera.IsActive())
+        {
+            if (crosshair.isActive())
+                crosshair.hide();
+                
+            /* 
+            This wont work, would be nice to hide/show the mesh
+            but it sync to other clients. Seems not doable to make
+            this kind of local change in js?!
+            
+            if (!avatar_placeable.visible)
+            {
+                avatar_placeable.SetUpdateMode(2);
+                avatar_placeable.visible = true;
+                avatar_placeable.SetUpdateMode(0);
+            }
+            */
+        }
+        else
+        {
+            // 1st person mode and camera is active
+            // show curson and av
+            if (!crosshair.isActive())
+                crosshair.show();
+            
+            /* 
+            This wont work, would be nice to hide/show the mesh
+            but it sync to other clients. Seems not doable to make
+            this kind of local change in js?!
+            
+            if (avatar_placeable.visible)
+            {
+                avatar_placeable.SetUpdateMode(2);
+                avatar_placeable.visible = false;
+                avatar_placeable.SetUpdateMode(0);
+            }
+            */
+        }
+    }
+}
+
+function ClientHandleMouseMove(mouseevent)
+{
+    ClientCheckState();
+    
+    if (mouseevent.IsItemUnderMouse())
+    {
+        // If there is a graphics widget here disable first person mode
+        if (first_person)
+        {
+            ClientHandleMouseScroll(-1); 
+            ClientCheckState();
+            return;
+        }
+    }
+    
+    if (!first_person)
+        return;
+
+    var cameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    if (cameraentity == null)
+        return;
+        
+    // Dont move av rotation if we are not the active cam
+    if (!cameraentity.ogrecamera.IsActive())
+        return;
+               
+    var cameraplaceable = cameraentity.placeable;
+    var cameratransform = cameraplaceable.transform;
+
+    if (mouseevent.relativeX != 0)
+        cameratransform.rot.z -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeX);
+    if (mouseevent.relativeY != 0)
+        cameratransform.rot.x -= (mouse_rotate_sensitivity/3) * parseInt(mouseevent.relativeY);
+        
+    // Dont let the 1st person flip vertically, 180 deg view angle
+    if (cameratransform.rot.x < 0)
+        cameratransform.rot.x = 0;
+    if (cameratransform.rot.x > 180)
+        cameratransform.rot.x = 180;
+
+    var view = ui.GraphicsView();
+    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2);
+    input.lastMouseX = centeredCursorPosLocal.x;
+    input.lastMouseY = centeredCursorPosLocal.y;
+
+    var centeredCursorPosGlobal = new QPoint()
+    centeredCursorPosGlobal = view.mapToGlobal(centeredCursorPosLocal);
+    if (centeredCursorPosGlobal.x() == QCursor.pos().x() && centeredCursorPosGlobal.y() == QCursor.pos().y())
+        return;
+    QCursor.setPos(centeredCursorPosGlobal);
+    var mousePos = view.mapFromGlobal(QCursor.pos());
+    input.lastMouseX = mousePos.x;
+    input.lastMouseY = mousePos.y;
+    cameraplaceable.transform = cameratransform;
 }
 
 function CommonFindAnimations() {
@@ -693,22 +871,22 @@ function CommonUpdateAnimation(frametime) {
         // Do custom speeds for certain anims
         if (animName == hoverAnimName) {
             animcontroller.SetAnimationSpeed(animName, 0.25);
-	}
+    }
         if (animName == sitAnimName) { // Does not affect the anim speed on jack at least?!
             animcontroller.SetAnimationSpeed(animName, 0.5);
-	}
+    }
         if (animName == waveAnimName) {
             animcontroller.SetAnimationSpeed(animName, 0.75);
-	}
+    }
         // Enable animation
         if (!animcontroller.IsAnimationActive(animName)) {
             // Gestures with non exclusive
             if (animName == waveAnimName) {
                 animcontroller.EnableAnimation(animName, false, 0.25, 0.25, false);
             // Normal anims exclude others
-	    } else {
+        } else {
                 animcontroller.EnableExclusiveAnimation(animName, true, 0.25, 0.25, false);
-	    }
+        }
         }
     }
 
