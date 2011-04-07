@@ -57,7 +57,7 @@ private:
     /// Read a bone modifier
     void ReadBoneModifierSet(const QDomElement& source);
     /// Read the weight value (0 - 1) for an already existing bone modifier
-    void AvatarDescAsset::ReadBoneModifierParameter(const QDomElement& source);
+    void ReadBoneModifierParameter(const QDomElement& source);
     /// Read a morph modifier
     void ReadMorphModifier(const QDomElement& source);
     /// Read a master modifier
@@ -67,7 +67,7 @@ private:
     /// Read one animation definition
     void ReadAnimationDefinition(const QDomElement& elem);
     /// Read attachment mesh definition
-    void AvatarDescAsset::ReadAttachment(const QDomElement& elem);
+    void ReadAttachment(const QDomElement& elem);
     /// Recalculate master modifier values
     void CalculateMasterModifiers();
     /// Find modifier by name and type
