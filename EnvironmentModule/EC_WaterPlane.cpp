@@ -27,22 +27,22 @@ namespace Environment
 {
     EC_WaterPlane::EC_WaterPlane(IModule *module) :
         IComponent(module->GetFramework()),
-        xSizeAttr(this, "x-size", 5000),
-        ySizeAttr(this, "y-size", 5000),
-        depthAttr(this, "Depth", 20),
-        positionAttr(this, "Position", Vector3df()),
-        rotationAttr(this, "Rotation", Quaternion()),
-        scaleUfactorAttr(this, "U factor", 0.0002f),
-        scaleVfactorAttr(this, "V factor", 0.0002f),
-        xSegmentsAttr(this, "Segments in x", 10),
-        ySegmentsAttr(this, "Segments in y", 10),
-        materialNameAttr(this, "Material", QString("Ocean")),
+        xSize(this, "x-size", 5000),
+        ySize(this, "y-size", 5000),
+        depth(this, "Depth", 20),
+        position(this, "Position", Vector3df()),
+        rotation(this, "Rotation", Quaternion()),
+        scaleUfactor(this, "U factor", 0.0002f),
+        scaleVfactor(this, "V factor", 0.0002f),
+        xSegments(this, "Segments in x", 10),
+        ySegments(this, "Segments in y", 10),
+        materialName(this, "Material", QString("Ocean")),
         materialRef(this, "Material ref"),
        //textureNameAttr(this, "Texture", QString("DefaultOceanSkyCube.dds")),
-        fogColorAttr(this, "Fog color", Color(0.2f,0.4f,0.35f,1.0f)),
-        fogStartAttr(this, "Fog start dist.", 100.f),
-        fogEndAttr(this, "Fog end dist.", 2000.f),
-        fogModeAttr(this, "Fog mode", 3),
+        fogColor(this, "Fog color", Color(0.2f,0.4f,0.35f,1.0f)),
+        fogStartDistance(this, "Fog start dist.", 100.f),
+        fogEndDistance(this, "Fog end dist.", 2000.f),
+        fogMode(this, "Fog mode", 3),
         entity_(0),
         node_(0),
         attached_(false),
@@ -50,18 +50,16 @@ namespace Environment
     {
         static AttributeMetadata metadata;
         static bool metadataInitialized = false;
-    
         if(!metadataInitialized)
         {
             metadata.enums[Ogre::FOG_NONE] = "NoFog";
             metadata.enums[Ogre::FOG_EXP] = "Exponential";
             metadata.enums[Ogre::FOG_EXP2] = "ExponentiallySquare";
             metadata.enums[Ogre::FOG_LINEAR] = "Linear";
-         
             metadataInitialized = true;
         }
 
-        fogModeAttr.SetMetadata(&metadata);
+        fogMode.SetMetadata(&metadata);
 
         renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>();
         if(!renderer_.expired())
@@ -70,14 +68,14 @@ namespace Environment
             node_ = scene_mgr->createSceneNode(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_Root"));
         }
 
-        QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+        QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
             SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
-        lastXsize_ = xSizeAttr.Get();
-        lastYsize_ = ySizeAttr.Get();
-        
-        QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(SetParent()));
-        
+        lastXsize_ = xSize.Get();
+        lastYsize_ = ySize.Get();
+
+        connect(this, SIGNAL(ParentEntitySet()), this, SLOT(SetParent()));
+
         // If there exist placeable copy its position for default position and rotation.
        
         /*
@@ -85,15 +83,15 @@ namespace Environment
         if ( placeable != 0)
         {
             Vector3df vec = placeable->GetPosition();
-            positionAttr.Set(vec,AttributeChange::Default);
+            position.Set(vec,AttributeChange::Default);
        
             Quaternion rot =placeable->GetOrientation();
-            rotationAttr.Set(rot, AttributeChange::Default);
+            rotation.Set(rot, AttributeChange::Default);
             ComponentChanged(AttributeChange::Default);
         }
         */
     }
-    
+
     EC_WaterPlane::~EC_WaterPlane()
     {
        if (renderer_.expired())
@@ -101,7 +99,7 @@ namespace Environment
         
        OgreRenderer::RendererPtr renderer = renderer_.lock();
        RemoveWaterPlane();
-    
+
         if (node_ != 0)
         {
             Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
@@ -139,15 +137,14 @@ namespace Environment
 
     void EC_WaterPlane::ComponentAdded(IComponent* component, AttributeChange::Type type)
     {
-        if ( component->TypeName() == EC_Placeable::TypeNameStatic() )
+        if (component->TypeName() == EC_Placeable::TypeNameStatic())
         {
             DetachEntity();
-            
-            EC_Placeable* placeable = static_cast<EC_Placeable* >(component);
-            if ( placeable == 0)
-                return;
 
-            if ( entity_ == 0)
+            EC_Placeable* placeable = static_cast<EC_Placeable* >(component);
+            if (placeable == 0)
+                return;
+            if (entity_ == 0)
                 return;
 
             Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -155,20 +152,18 @@ namespace Environment
             node->addChild(node_);
             node_->attachObject(entity_);
             node_->setVisible(true);
-      
+
             attached_ = true;
-            
         }
     }
 
     void EC_WaterPlane::ComponentRemoved(IComponent* component, AttributeChange::Type type)
     {
-        if ( component->TypeName() == EC_Placeable::TypeNameStatic() )
+        if (component->TypeName() == EC_Placeable::TypeNameStatic() )
         {
             DetachEntity();
-        
-            // Attacht entity directly to Ogre root.
-            
+
+            // Attach entity directly to Ogre root.
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             if ( scene_mgr == 0)
                 return;
@@ -178,14 +173,12 @@ namespace Environment
             node_->setVisible(true);
             attachedToRoot_ = true;
             attached_ = true;
-            
-          
         }
     }
 
     Vector3df EC_WaterPlane::GetPointOnPlane(const Vector3df &point) const 
     {
-        if  ( node_ == 0 )
+        if (node_ == 0)
             return Vector3df();
 
         Ogre::Quaternion rot = node_->_getDerivedOrientation();
@@ -211,10 +204,9 @@ namespace Environment
     {
          if ( node_ == 0)
             return 0;
-    
-       
-        Vector3df pointOnPlane = GetPointOnPlane(point);        
-   
+
+        Vector3df pointOnPlane = GetPointOnPlane(point);
+
         //Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
       
         return point.z - pointOnPlane.z;
@@ -227,12 +219,12 @@ namespace Environment
          
         Ogre::Vector3 local = node_->_getDerivedOrientation().Inverse() * ( OgreRenderer::ToOgreVector3(point) - node_->_getDerivedPosition() ) / node_->_getDerivedScale();
      
-        int xSize = xSizeAttr.Get(), ySize = ySizeAttr.Get();
-    
-        float xMax = xSize*0.5;
-        float yMax = ySize*0.5;
-        float xMin = -xSize*0.5;
-        float yMin = -ySize*0.5;
+        int x = xSize.Get(), y = ySize.Get();
+
+        float xMax = x*0.5;
+        float yMax = y*0.5;
+        float xMin = -x*0.5;
+        float yMin = -y*0.5;
         
         if ( local.x > xMin && local.x < xMax && local.y > yMin && local.y < yMax)
             return true;
@@ -242,16 +234,14 @@ namespace Environment
 
     bool EC_WaterPlane::IsPointInsideWaterCube(const Vector3df& point) const
     {
-        if ( entity_ == 0)
+        if (entity_ == 0)
             return false;
-     
-      if ( IsTopOrBelowWaterPlane(point))
-      {
-            float depth = depthAttr.Get();
-            float d = GetDistanceToWaterPlane(point);
-            if ( d < 0 && depth >= fabs(d) )
-                return true;
 
+      if (IsTopOrBelowWaterPlane(point))
+      {
+            float d = GetDistanceToWaterPlane(point);
+            if (d < 0 && depth.Get() >= fabs(d) )
+                return true;
       }
 
       return false; 
@@ -259,22 +249,21 @@ namespace Environment
 
     bool EC_WaterPlane::IsCameraInsideWaterCube()
     {
-      // Check that is camera inside of defined waterplane. 
-      if ( entity_ == 0)
-        return false;
+        // Check that is camera inside of defined water plane.
+        if (entity_ == 0)
+            return false;
 
-      Ogre::Camera *camera = renderer_.lock()->GetCurrentCamera();
-      Ogre::Vector3 posCamera = camera->getDerivedPosition();
+        Ogre::Camera *camera = renderer_.lock()->GetCurrentCamera();
+        Ogre::Vector3 posCamera = camera->getDerivedPosition();
 
-      if ( IsTopOrBelowWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z)))
-      {
-            float depth = depthAttr.Get();
+        if (IsTopOrBelowWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z)))
+        {
             float d = GetDistanceToWaterPlane(Vector3df(posCamera.x, posCamera.y, posCamera.z));
-            if ( d < 0 && depth >= fabs(d) )
+            if (d < 0 && depth.Get() >= fabs(d))
                 return true;
-      }
+        }
 
-      return false;
+        return false;
     }
 
     void EC_WaterPlane::CreateWaterPlane()
@@ -285,7 +274,7 @@ namespace Environment
         if (entity_)
             RemoveWaterPlane();
         
-        // Create waterplane 
+        // Create water plane
         if (renderer_.lock() != 0) 
         {
             Ogre::SceneManager *sceneMgr = renderer_.lock()->GetSceneManager();
@@ -293,17 +282,17 @@ namespace Environment
 
             if (node_ != 0)
             {
-                int xSize = xSizeAttr.Get();
-                int ySize = ySizeAttr.Get();
-                float uTile =  scaleUfactorAttr.Get() * xSize; /// Default x-size 5000 --> uTile 1.0
-                float vTile =  scaleVfactorAttr.Get() * ySize;
+                int x = xSize.Get();
+                int y = ySize.Get();
+                float uTile =  scaleUfactor.Get() * x; /// Default x-size 5000 --> uTile 1.0
+                float vTile =  scaleVfactor.Get() * y;
                 
                 Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(name_.toStdString().c_str(),
                     Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::Plane(Ogre::Vector3::UNIT_Z, 0),
-                    xSize, ySize, xSegmentsAttr.Get(), ySegmentsAttr.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
+                    x, y, xSegments.Get(), ySegments.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
                 
                 entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName("EC_WaterPlane_entity"), name_.toStdString().c_str());
-                entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
+                entity_->setMaterialName(materialName.Get().toStdString().c_str());
                 entity_->setCastShadows(false);
                 // Tries to attach entity, if there is not EC_Placeable availible, it will not attach object
                 AttachEntity();
@@ -330,7 +319,7 @@ namespace Environment
 
     Ogre::ColourValue EC_WaterPlane::GetFogColorAsOgreValue() const
     {
-        Color col = fogColorAttr.Get();
+        Color col = fogColor.Get();
         return Ogre::ColourValue(col.r, col.g, col.b, col.a);
     }
 
@@ -344,12 +333,12 @@ namespace Environment
         if ((!node_) || (!ViewEnabled()))
             return;
         
-        Vector3df vec = positionAttr.Get();
+        Vector3df vec = position.Get();
         //node_->setPosition(vec.x, vec.y, vec.z);
 
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
         //Ogre::Vector3 current_pos = node_->_getDerivedPosition();
-        Ogre::Vector3 tmp(vec.x,vec.y,vec.z);      
+        Ogre::Vector3 tmp(vec.x,vec.y,vec.z);
       
         if ( !RexTypes::IsValidPositionVector(vec) )
             return;
@@ -370,14 +359,13 @@ namespace Environment
             return;
         
         // Set orientation
-        Quaternion rot = rotationAttr.Get();
+        Quaternion rot = rotation.Get();
 
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
         Ogre::Quaternion current_rot = node_->_getDerivedOrientation();
         Ogre::Quaternion tmp(rot.w, rot.x, rot.y, rot.z);
         Ogre::Quaternion rota = current_rot +  tmp;
         node_->setOrientation(rota);
-        
 #else
         node_->_setDerivedOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
 #endif
@@ -386,29 +374,25 @@ namespace Environment
     void EC_WaterPlane::ChangeWaterPlane(IAttribute* attribute)
     {
         std::string name = attribute->GetNameString();
-        if ( ( name == xSizeAttr.GetNameString() 
-          || name == ySizeAttr.GetNameString()
-          || name == scaleUfactorAttr.GetNameString()
-          || name == scaleVfactorAttr.GetNameString() ) && 
-          ( lastXsize_ != xSizeAttr.Get() || lastYsize_ != ySizeAttr.Get() ) )
+        if ((name == xSize.GetNameString() || name == ySize.GetNameString() || name == scaleUfactor.GetNameString() || name == scaleVfactor.GetNameString()) &&
+            (lastXsize_ != xSize.Get() || lastYsize_ != ySize.Get()))
         {
             CreateWaterPlane();
-            
-            lastXsize_ = xSizeAttr.Get();
-            lastYsize_ = ySizeAttr.Get();
 
+            lastXsize_ = xSize.Get();
+            lastYsize_ = ySize.Get();
         }
-        else if ( name == xSegmentsAttr.GetNameString() || name == ySegmentsAttr.GetNameString() )
+        else if ( name == xSegments.GetNameString() || name == ySegments.GetNameString() )
         {
             CreateWaterPlane();
         }
-        else if ( name == positionAttr.GetNameString() )
+        else if ( name == position.GetNameString() )
         {
             // Change position
             SetPosition();
            
         }
-        else if ( name == rotationAttr.GetNameString() )
+        else if ( name == rotation.GetNameString() )
         {
             // Change rotation
 
@@ -417,20 +401,19 @@ namespace Environment
             //{
                SetOrientation();
             //}
-            
         }
-        else if ( name == depthAttr.GetNameString() )
+        else if ( name == depth.GetNameString() )
         {
             // Change depth
             // Currently do nothing..
            
         }
-        else if ( name ==  materialNameAttr.GetNameString())
+        else if ( name ==  materialName.GetNameString())
         {
             //Change material
             if ( entity_ != 0)
             {
-                entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
+                entity_->setMaterialName(materialName.Get().toStdString().c_str());
             }
         }
         /*
@@ -438,7 +421,7 @@ namespace Environment
         else if (name == textureNameAttr.GetNameString() )
         {
 
-            QString currentMaterial = materialNameAttr.Get();
+            QString currentMaterial = materialName.Get();
             
             // Check that has texture really changed. 
             
@@ -461,11 +444,8 @@ namespace Environment
 
             // So texture has really changed, let's change it. 
             OgreRenderer::SetTextureUnitOnMaterial(materialPtr, textureName.toStdString(), 0);
-
         }
         */
-        
-        
     }
 
     ComponentPtr EC_WaterPlane::FindPlaceable() const
@@ -480,7 +460,7 @@ namespace Environment
 
     void EC_WaterPlane::AttachEntity()
     {
-        if ( attached_ || entity_ == 0)
+        if (attached_ || entity_ == 0)
             return;
 
         EC_Placeable* placeable = dynamic_cast<EC_Placeable* >(FindPlaceable().get());
@@ -501,7 +481,6 @@ namespace Environment
             scene_mgr->getRootSceneNode()->addChild(node_);
             node_->setVisible(true);
             attachedToRoot_ = true;
-
         }
 
         attached_ = true;
@@ -509,13 +488,11 @@ namespace Environment
 
     void EC_WaterPlane::DetachEntity()
     {
-
-        if ( !attached_ || entity_ == 0 )
+        if (!attached_ || entity_ == 0)
             return;
 
         EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
-        
-        if ( placeable != 0 && !attachedToRoot_)
+        if (placeable != 0 && !attachedToRoot_)
         {
             Ogre::SceneNode* node = placeable->GetSceneNode();
             node_->detachObject(entity_);

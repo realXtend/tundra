@@ -87,7 +87,7 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     }
     executionType.SetMetadata(&executionAttrData);
     
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)),
         SLOT(HandleAttributeUpdated(IAttribute *, AttributeChange::Type)));
 
     input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());

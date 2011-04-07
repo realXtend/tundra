@@ -15,10 +15,7 @@
 
 #include <QObject>
 
-namespace Foundation
-{
-    class UiServiceInterface;
-}
+class QMenu;
 
 namespace Inventory
 {
@@ -34,13 +31,10 @@ class ASSET_EDITOR_MODULE_API OgreAssetEditorModule : public QObject, public IMo
     Q_OBJECT
 
 public:
-    /// Default constructor.
     OgreAssetEditorModule();
-
-    /// Destructor.
     ~OgreAssetEditorModule();
 
-    /// IModuleImpl overrides.
+    // IModule overrides.
     void Initialize();
     void PostInitialize();
     void Uninitialize();
@@ -50,7 +44,7 @@ public:
     MODULE_LOGGING_FUNCTIONS
 
     /// Returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return type_name_static_; }
+    static const std::string &NameStatic() { return typeNameStatic; }
 
 public slots:
     /// Uploads new asset from file.
@@ -64,35 +58,15 @@ public slots:
 private:
     Q_DISABLE_COPY(OgreAssetEditorModule);
 
-    /// Type name of this module.
-    static std::string type_name_static_;
+    static std::string typeNameStatic; ///< Type name of this module.
+    event_category_id_t frameworkEventCategory; ///< Framework event category.
+    event_category_id_t inventoryEventCategory; ///< Inventory event category.
+    event_category_id_t networkStateEventCategory; ///< NetworkState event category.
+    EditorManager *editorManager; ///< Editor manager.
+    MaterialWizard *materialWizard; ///< Material wizard.
 
-    /// UI service.
-    boost::weak_ptr<UiServiceInterface> uiService_;
-
-    /// Event manager pointer.
-    EventManagerPtr eventManager_;
-
-    /// Inventory event category.
-    event_category_id_t frameworkEventCategory_;
-
-    /// Inventory event category.
-    event_category_id_t inventoryEventCategory_;
-
-    /// Asset event category.
-    event_category_id_t assetEventCategory_ ;
-
-    /// Resource event category.
-    event_category_id_t resourceEventCategory_;
-
-    /// NetworkState event category.
-    event_category_id_t networkStateEventCategory_;
-
-    /// Editor manager.
-    EditorManager *editorManager_;
-
-    /// Material wizard.
-    MaterialWizard *materialWizard_;
+private slots:
+    void OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
 };
 
 #endif

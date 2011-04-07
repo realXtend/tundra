@@ -38,7 +38,7 @@ class DoorHandler(circuits.BaseComponent):
         self.comp = comp
         circuits.BaseComponent.__init__(self)
 
-        comp.connect("OnAttributeChanged(IAttribute*, AttributeChange::Type)", self.onAttributeChanged)
+        comp.connect("AttributeChanged(IAttribute*, AttributeChange::Type)", self.onAttributeChanged)
         self.inworld_inited = False #a cheap hackish substitute for some initing system
         self.initgui()
 

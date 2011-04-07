@@ -36,7 +36,7 @@ EC_Avatar::EC_Avatar(IModule* module) :
     IComponent(module->GetFramework()),
     appearanceId(this, "Appearance ref", "")
 {
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)));
 }
 

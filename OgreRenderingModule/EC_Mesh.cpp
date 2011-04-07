@@ -59,7 +59,7 @@ EC_Mesh::EC_Mesh(IModule* module) :
     adjustment_node_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Mesh_adjustment_node"));
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
     meshAsset = AssetRefListenerPtr(new AssetRefListener());
     connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);

@@ -28,7 +28,7 @@ EC_SkyBox::EC_SkyBox(IModule *module) :
     distance(this, "Distance",50.0),
     drawFirst(this, "Draw first", true)
 {
-     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
+     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
      static AttributeMetadata materialRefMetadata;
      AttributeMetadata::ButtonInfoList materialRefButtons;

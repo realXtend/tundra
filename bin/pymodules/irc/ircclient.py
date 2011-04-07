@@ -4,7 +4,7 @@
 
 """(Example) IRC Client
 
-A basic IRC client with a very basic qt interface
+A basic IRC client.
 """
 
 import os

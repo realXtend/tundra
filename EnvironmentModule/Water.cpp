@@ -52,9 +52,9 @@ void Water::CreateWaterGeometry(float height, AttributeChange::Type change)
              return;
     }
 
-    Vector3df vec = plane->positionAttr.Get();
+    Vector3df vec = plane->position.Get();
     vec.z = height;
-    plane->positionAttr.Set(vec, change);
+    plane->position.Set(vec, change);
 }
 
 void Water::RemoveWaterGeometry()
@@ -73,8 +73,8 @@ void Water::RemoveWaterGeometry()
 
 void Water::Update()
 {
-    // This is a hack, because of enviroment entity comes after then RexWater- package. We create LocalEnviroment-entity. 
-    // Now we need to update scene, if there exist a real enviroment entity, so that we do not get two ocean water planes. 
+    // This is a hack, because of environment entity comes after then RexWater- package. We create LocalEnviroment-entity. 
+    // Now we need to update scene, if there exist a real environment entity, so that we do not get two ocean water planes. 
     EC_WaterPlane* plane = GetEnvironmentWaterComponent();
     UNREFERENCED_PARAM(plane);
 
@@ -90,9 +90,9 @@ void Water::SetWaterHeight(float height, AttributeChange::Type type)
     if ( plane == 0)
         return;
 
-    Vector3df vec = plane->positionAttr.Get();
+    Vector3df vec = plane->position.Get();
     vec.z = height;
-    plane->positionAttr.Set(vec, type);
+    plane->position.Set(vec, type);
     //plane->ComponentChanged(type);
     emit HeightChanged(static_cast<double>(height));
 }
@@ -136,7 +136,7 @@ float Water::GetWaterHeight()
     if (plane == 0)
         return 0.0;
 
-    return plane->positionAttr.Get().z;
+    return plane->position.Get().z;
 }
 
 void Water::SetWaterFog(float fogStart, float fogEnd, const QVector<float>& color)
@@ -145,9 +145,9 @@ void Water::SetWaterFog(float fogStart, float fogEnd, const QVector<float>& colo
     if (plane == 0)
         return;
 
-    plane->fogStartAttr.Set(fogStart,AttributeChange::Default);
-    plane->fogEndAttr.Set(fogEnd, AttributeChange::Default);
-    plane->fogColorAttr.Set(Color(color[0], color[1], color[2],1.0), AttributeChange::Default);
+    plane->fogStartDistance.Set(fogStart,AttributeChange::Default);
+    plane->fogEndDistance.Set(fogEnd, AttributeChange::Default);
+    plane->fogColor.Set(Color(color[0], color[1], color[2],1.0), AttributeChange::Default);
     //plane->ComponentChanged(AttributeChange::Default);
 
     emit WaterFogAdjusted(fogStart, fogEnd, color);
@@ -172,7 +172,7 @@ void Water::SetWaterFogColor(const QVector<float>& color)
         return;
 
    Color col(color[0], color[1], color[2],1.0);
-   plane->fogColorAttr.Set(col, AttributeChange::Default); 
+   plane->fogColor.Set(col, AttributeChange::Default); 
    //plane->ComponentChanged(AttributeChange::Default);
 }
 
@@ -182,21 +182,21 @@ void Water::SetWaterFogDistance(float fogStart, float fogEnd)
     if (plane == 0)
         return;
 
-    plane->fogStartAttr.Set(fogStart, AttributeChange::Default);
-    plane->fogEndAttr.Set(fogEnd, AttributeChange::Default);
+    plane->fogStartDistance.Set(fogStart, AttributeChange::Default);
+    plane->fogEndDistance.Set(fogEnd, AttributeChange::Default);
     //plane->ComponentChanged(AttributeChange::Default);
 }
 
 float Water::GetWaterFogStartDistance() 
 {
     EC_WaterPlane* plane = GetEnvironmentWaterComponent();
-    return plane->fogStartAttr.Get();
+    return plane->fogStartDistance.Get();
 }
 
 float Water::GetWaterFogEndDistance() 
 {
     EC_WaterPlane* plane = GetEnvironmentWaterComponent();
-    return plane->fogEndAttr.Get();   
+    return plane->fogEndDistance.Get();
 }
 
 }

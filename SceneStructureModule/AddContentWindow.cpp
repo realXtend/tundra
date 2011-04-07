@@ -303,6 +303,12 @@ AddContentWindow::AddContentWindow(Foundation::Framework *fw, const Scene::Scene
     failedUploads_ = 0;
     successfullUploads_ = 0;
     totalUploads_ = 0;
+/*
+    QPrinter printer;
+    QPainter painter;
+    painter.begin(&printer);
+    painter.drawImage()
+*/
 }
 
 AddContentWindow::~AddContentWindow()
