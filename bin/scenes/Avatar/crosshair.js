@@ -45,7 +45,7 @@ if (!server.IsRunning() && !framework.IsHeadless())
             this.proxy.focusPolicy = Qt.NoFocus;
             //\todo: It would be nice to find a way in js to ignore mouse clicks on crosshair label.
             //\      This is for now fixed with moving the cursor a little to the top (see simpleavatar.js:795)
-            uiservice.AddProxyWidgetToScene(this.proxy);
+            ui.AddProxyWidgetToScene(this.proxy);
             this.proxy.x = ui.GraphicsView().scene().width()/2 - this.sideLength/2;
             this.proxy.y = ui.GraphicsView().scene().height()/2 - this.sideLength/2;
             this.proxy.windowFlags = 0;
