@@ -12,7 +12,6 @@
 #include "ModuleManager.h"
 #include "ComponentManager.h"
 #include "ServiceManager.h"
-#include "ThreadTaskManager.h"
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -48,18 +47,6 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace Task
-{
-    namespace Events
-    {
-        void RegisterTaskEvents(const EventManagerPtr &event_manager)
-        {
-            event_category_id_t resource_event_category = event_manager->RegisterEventCategory("Task");
-            event_manager->RegisterEvent(resource_event_category, Task::Events::REQUEST_COMPLETED, "RequestCompleted");
-        }
-    }
-}
-
 namespace Foundation
 {
     Framework::Framework(int argc, char** argv) :
@@ -68,8 +55,6 @@ namespace Foundation
         argv_(argv),
         initialized_(false),
         headless_(false),
-//        log_formatter_(0),
-//        splitterchannel(0),
         naaliApplication(0),
         frame(new FrameAPI(this)),
         console(new ConsoleAPI(this)),
@@ -139,10 +124,8 @@ namespace Foundation
             component_manager_ = ComponentManagerPtr(new ComponentManager(this));
             service_manager_ = ServiceManagerPtr(new ServiceManager());
             event_manager_ = EventManagerPtr(new EventManager(this));
-            thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
             // Register task and scene events
-            Task::Events::RegisterTaskEvents(event_manager_);
             scene->RegisterSceneEvents();
 
             naaliApplication = new NaaliApplication(this, argc_, argv_);
@@ -183,7 +166,6 @@ namespace Foundation
 
     Framework::~Framework()
     {
-        thread_task_manager_.reset();
         event_manager_.reset();
         service_manager_.reset();
         component_manager_.reset();
@@ -370,12 +352,6 @@ namespace Foundation
             {
                 PROFILE(FW_UpdateModules);
                 module_manager_->UpdateModules(frametime);
-            }
-
-            // check framework's thread task manager for completed requests, send as events
-            {
-                PROFILE(FW_ProcessThreadTaskResults)
-                thread_task_manager_->SendResultEvents();
             }
 
             // process delayed events
@@ -709,11 +685,6 @@ namespace Foundation
     ConfigurationManagerPtr Framework::GetConfigManager()
     {
         return config_manager_;
-    }
-
-    ThreadTaskManagerPtr Framework::GetThreadTaskManager()
-    {
-        return thread_task_manager_;
     }
 
     ConfigurationManager &Framework::GetDefaultConfig()

@@ -107,9 +107,6 @@ namespace Foundation
         /// Returns config manager.
         ConfigurationManagerPtr GetConfigManager();
 
-        /// Returns thread task manager.
-        ThreadTaskManagerPtr GetThreadTaskManager();
-
         /// Cancel a pending exit
         void CancelExit();
 
@@ -269,7 +266,6 @@ namespace Foundation
         ServiceManagerPtr service_manager_; ///< Service manager.
         EventManagerPtr event_manager_; ///< Event manager.
         PlatformPtr platform_; ///< Platform.
-        ThreadTaskManagerPtr thread_task_manager_; ///< Thread task manager.
         ConfigurationManagerPtr config_manager_; ///< Default configuration
         ApplicationPtr application_; ///< Application data.
         bool exit_signal_; ///< If true, exit application.
