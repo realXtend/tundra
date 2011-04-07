@@ -134,7 +134,7 @@ namespace Environment
         sunLight_->setDirection(OgreRenderer::ToOgreVector3(sunDirectionAttr.Get()));
         sunLight_->setCastShadows(sunCastShadowsAttr.Get());
         sunLight_->setDiffuseColour(OgreRenderer::ToOgreColor(sunDiffuseColorAttr.Get()));
-            
+        sunLight_->setSpecularColour(0.0,0.0,0.0);
         ///\todo Read parameters from config file?
         //sunLight_->setDiffuseColour(0.93f, 1, 0.13f);
         //sunLight_->setDirection(-1, -1, -1);

@@ -13,7 +13,7 @@
 
 # Configure the use of Caelum. http://www.ogre3d.org/tikiwiki/Caelum
 if (MSVC)
-  SET(CAELUM 1)
+  SET(CAELUM 0)
   configure_caelum ()
 endif()
 
