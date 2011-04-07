@@ -3,7 +3,7 @@
 #define incl_UiModule_ViewManager_h
 
 #include "UiModule.h"
-#include "UiSceneService.h"
+#include "UiServiceInterface.h"
 #include "NaaliUi.h"
 #include "ViewDialog.h"
 
@@ -13,7 +13,6 @@ namespace UiServices
 {
 	
 	class UiModule;
-	class UiSceneService;
 
 	class UI_MODULE_API ViewManager : public QObject
 	{
@@ -21,29 +20,58 @@ namespace UiServices
 		Q_OBJECT
 
 	public:
-			ViewManager(UiModule *owner,UiSceneService* uiservice);
 
-			~ViewManager();
+        /*! Constructor.
+         * \param owner uiModule
+         */
+		ViewManager(UiModule *owner);
+
+        /*! Destructor.
+         */
+		~ViewManager();
 
 	public slots:
-			void NewViewWindow();
 
-			void HideView();
+		/*! Create the New View Window.
+		 */
+		void NewViewWindow();
 
-			void ShowView(const QString &name);
+        /*! Hide view: hide all widgets.
+         */
+		void HideView();
 
-			void SaveView(const QString &name);
+        /*! Show the selected view.
+         * \param name Name of view to show
+         */
+		void ShowView(const QString &name);
 
-			void DeleteView(const QString &name);
+        /*! Save a view with the selected name.
+         * \param name Name of view to save
+         */
+		void SaveView(const QString &name);
 
-			void RenameView(const QString &oldName,const QString &newName);
+        /*! Delete the view with the selected name.
+         * \param name Name of view to delete
+         */
+		void DeleteView(const QString &name);
 
-			void ActionChanged(QAction* action);
+        /*! Rename a view.
+         * \param oldName Name of view to rename
+         * \param newName New name of view
+         */
+		void RenameView(const QString &oldName,const QString &newName);
+
+        /*! Call to show view when an action is checked
+         * \param action Action checked
+         */
+		void ActionChanged(QAction* action);
 
 	private:
 
+		//void SendToCreateDynamicWidget(const QString &name,const QString &module,const QVariantList properties);
+
 		UiModule* owner_;
-		UiSceneService* uiService_;
+		UiServiceInterface* uiService_;
 		QMainWindow* qWin_;
 		QMenu* menu_;
 		ViewDialog* configWindow_;

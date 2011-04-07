@@ -97,7 +97,7 @@ namespace UiServices
 
 	bool UiSceneService::AddProxyWidgetToScene(UiProxyWidget *proxy) { return AddWidgetToScene(proxy); }
 
-    void UiSceneService::AddWidgetToMenu(QWidget *widget)
+	void UiSceneService::AddWidgetToMenu(QWidget *widget)
     {
 		//Save initial values
 		if (!panels_menus_list_.contains(widget->windowTitle()))
@@ -202,6 +202,16 @@ namespace UiServices
 			widget->show();
     }
 
+    void UiSceneService::ShowWidget(const QString &name) const
+    {
+		if (internal_widgets_.contains(name))
+			owner_->GetInworldSceneController()->ShowProxyForWidget(dynamic_cast<QWidget*>(internal_widgets_.value(name)));
+		else if (external_dockeable_widgets_.contains(name))
+			owner_->GetExternalPanelManager()->ShowWidget(dynamic_cast<QWidget*>(external_dockeable_widgets_.value(name)));
+		else if (external_nondockeable_widgets_.contains(name))
+			external_nondockeable_widgets_.value(name)->show();
+    }
+
     void UiSceneService::HideWidget(QWidget *widget) const
     {
 		if (internal_widgets_.contains(widget->windowTitle()))
@@ -210,6 +220,16 @@ namespace UiServices
 			owner_->GetExternalPanelManager()->HideWidget(widget);
 		else if (external_nondockeable_widgets_.contains(widget->windowTitle()))
 			widget->hide();
+    }
+
+    void UiSceneService::HideWidget(const QString &name) const
+    {
+		if (internal_widgets_.contains(name))
+			owner_->GetInworldSceneController()->HideProxyForWidget(GetWidget(name));
+		else if (external_dockeable_widgets_.contains(name))
+			owner_->GetExternalPanelManager()->HideWidget(GetWidget(name));
+		else if (external_nondockeable_widgets_.contains(name))
+			GetWidget(name)->hide();
     }
 
     void UiSceneService::BringWidgetToFront(QWidget *widget) const
@@ -242,27 +262,38 @@ namespace UiServices
 			external_nondockeable_widgets_[widget->windowTitle()]->show();
     }
 
-	QList<QWidget*> UiSceneService::GetAllWidgets() const
+	QWidget *UiSceneService::GetWidget(const QString &name) const
 	{
-		QList<QWidget*> list;
+		if (internal_widgets_.contains(name))
+			return dynamic_cast<QWidget*>(internal_widgets_.value(name));
+		else if (external_dockeable_widgets_.contains(name))
+			return external_dockeable_widgets_.value(name)->widget();
+		else if (external_nondockeable_widgets_.contains(name))
+			return external_nondockeable_widgets_.value(name);
+		else
+			return 0;
+	}
+	QList<QString> UiSceneService::GetAllWidgetsNames() const
+	{
+		QList<QString> list;
 		QMap<QString, QWidget*>::const_iterator j = external_nondockeable_widgets_.constBegin();
 		while (j != external_nondockeable_widgets_.constEnd()) {
-			list.push_back(j.value());
+			list.push_back(j.key());
 			++j;
 		}
-		return list;
-	}
-	QList<QDockWidget*> UiSceneService::GetAllQDockWidgets() const
-	{
-		QList<QDockWidget*> list;
 		QMap<QString, QDockWidget*>::const_iterator i = external_dockeable_widgets_.constBegin();
 		while (i != external_dockeable_widgets_.constEnd()) {
-			list.push_back(i.value());
+			list.push_back(i.key());
 			++i;
 		}
 		return list;
 	}
-//$ END_MOD $
+
+	void UiSceneService::SendToCreateDynamicWidget(const QString &name,const QString &module,const QVariantList properties)
+	{
+		emit CreateDynamicWidget(name,module,properties);
+	}
+	//$ END_MOD $
     bool UiSceneService::AddSettingsWidget(QWidget *widget, const QString &name) const
     {
         return owner_->GetInworldSceneController()->AddSettingsWidget(widget, name);

@@ -16,6 +16,7 @@
 #include <QObject>
 //$ BEGIN_MOD $
 #include <QToolBar>
+#include <QVariantList>
 //$ END_MOD $
 
 class QWidget;
@@ -108,15 +109,29 @@ public slots:
      */
     virtual void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget) = 0;
 
+	/*! Return the widget which has this name.
+	 *	\note The names is the key of qmap and return the QWidget, not the QDockWidget
+	 *	\return QWidget with the name
+	 */
+	virtual QWidget* GetWidget(const QString &name) const = 0;
+
     /** Shows the widget's proxy widget in the scene.
      *  @param widget Widget.
      */
     virtual void ShowWidget(QWidget *widget) const = 0;
+    /** Shows the widget's proxy widget in the scene.
+     *  @param name Name of the widget.
+     */
+	virtual void ShowWidget(const QString &name) const = 0;
 
     /** Hides the widget's proxy widget in the scene.
      *  @param widget Widget.
      */
     virtual void HideWidget(QWidget *widget) const = 0;
+    /** Hides the widget's proxy widget in the scene.
+     *  @param name Name of the widget.
+     */
+	virtual void HideWidget(const QString &name) const = 0;
 
     /** Brings the widget's proxy widget to front in the and sets focus to it.
      *  @param widget Widget.
@@ -214,6 +229,19 @@ public slots:
      */
 	virtual void BringWidgetToFront(QString widget) = 0;
 
+	/*! Return the name of all external widgets registered in ui.
+	 *	\note The names are the keys of qmaps
+	 *	\return QList with the name of all external widgets
+	 */
+	virtual QList<QString> GetAllWidgetsNames() const = 0;
+
+	/*! Sends a signal to create a dynamic widget
+     *	\param widget Name of the widget to create
+     *	\param module Name of the module which is owner of widget
+     *	\param properties List of dynamic properties of widget
+	 */
+	virtual void SendToCreateDynamicWidget(const QString &name,const QString &module,const QVariantList properties) = 0;
+
     /*! Transfer the selected widget in/out of scene (without menu)
      *	\param widgetToChange name of the widget to change
 	 *	\param out true if the widget goes out or false if it goes in the scene
@@ -303,6 +331,8 @@ signals:
         @param message The textual message of NotificationBaseWidget showed
      */  
     void Notification(const QString &message);
+
+	void CreateDynamicWidget(const QString &name,const QString &module,const QVariantList properties);
 };
 
 #endif

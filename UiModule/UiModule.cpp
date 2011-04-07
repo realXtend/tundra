@@ -165,7 +165,7 @@ namespace UiServices
 				qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());
 
 			//Create the view manager
-			viewManager_=new ViewManager(this,ui_scene_service_.get());
+			viewManager_=new ViewManager(this);
 			//Notify that the restore of the main window has been done
 			postInitialize_ = true;
 		}
@@ -190,7 +190,15 @@ namespace UiServices
     void UiModule::Update(f64 frametime)
     {
     }
+	//void UiModule::RegisterUiEvents()
+	//{
+	//	eventManager_ = framework_->GetEventManager();
 
+	//	uiEventCategory_ = eventManager_->RegisterEventCategory("Ui");
+	//	eventManager_->RegisterEvent(uiEventCategory_, Events::DYNAMIC_WIDGET_ADD, "DynamicWidget Added");
+	//	eventManager_->RegisterEvent(uiEventCategory_, Events::DYNAMIC_WIDGET_DEL, "DynamicWidget Deleted");
+
+	// }
     bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(UiModule_HandleEvent);
@@ -220,25 +228,24 @@ namespace UiServices
         }
         else if (category == "NetworkState")
         {
-            using namespace ProtocolUtilities;
             switch (event_id)
             {
-                case Events::EVENT_CONNECTION_FAILED:
+			case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 {
-                    ConnectionFailedEvent *in_data = static_cast<ConnectionFailedEvent *>(data);
+					ProtocolUtilities::ConnectionFailedEvent *in_data = static_cast<ProtocolUtilities::ConnectionFailedEvent *>(data);
                     if (in_data)
                         PublishConnectionState(Failed, in_data->message);
                     else
                         PublishConnectionState(Failed, "Unknown connection error");
                     break;
                 }
-                case Events::EVENT_SERVER_DISCONNECTED:
+			case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                     PublishConnectionState(Disconnected);
                     break;
-                case Events::EVENT_USER_KICKED_OUT:
+                case ProtocolUtilities::Events::EVENT_USER_KICKED_OUT:
                     PublishConnectionState(Disconnected);
                     break;
-                case Events::EVENT_SERVER_CONNECTED:
+                case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
                     break;
                 default:
                     break;

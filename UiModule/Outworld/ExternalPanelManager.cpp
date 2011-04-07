@@ -101,8 +101,8 @@ namespace UiServices
 
 	void ExternalPanelManager::HideWidget(QWidget *widget){
 		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))
-			//widget->parentWidget()->hide();
-            widget->hide();
+			widget->parentWidget()->hide();
+            //widget->hide();
 	}
 
 	void ExternalPanelManager::EnableDockWidgets(){

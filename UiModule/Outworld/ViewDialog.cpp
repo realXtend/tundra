@@ -32,10 +32,7 @@ namespace UiServices
 		//Create Objects
 		QLabel* title_label= new QLabel(tr("Configuration Views"),this);
 		QLabel* name_label= new QLabel(tr("New name"),this);
-		//QLabel* icon_label= new QLabel(tr("Icon"),this);
-		//QLabel* toolbar_label= new QLabel(tr("Show in toolbar"),this);
 		name_line_edit_ = new QLineEdit(this);
-		//icon_line_edit_ = new QLineEdit(this);
 		view_combo_box_ = new QComboBox(this);
 		rename_button_ = new QPushButton(tr("Rename"), this);
 		save_button_ = new QPushButton(tr("Save"), this);
@@ -50,7 +47,6 @@ namespace UiServices
 		font.setWeight(50);
 		title_label->setFont(font);
 		view_combo_box_->addItems(views_);
-		//view_combo_box_->setFixedSize(name_line_edit_->size());
 		view_combo_box_->setFixedSize(150,30);
 
 		layout->addWidget(title_label,0,0,1,3,Qt::AlignCenter);
@@ -61,14 +57,9 @@ namespace UiServices
 		layout->addWidget(name_line_edit_,2,1,Qt::AlignLeft);
 		layout->addWidget(rename_button_,2,2,Qt::AlignLeft);
 
-		//layout->addWidget(icon_label,3,0,Qt::AlignRight);
-		//layout->addWidget(icon_line_edit_,3,1,Qt::AlignLeft);
-
-		//layout->addWidget(toolbar_label,4,0,Qt::AlignRight);
-
-		layout->addWidget(save_button_,5,0,Qt::AlignRight);
-		layout->addWidget(delete_button_,5,1,Qt::AlignCenter);
-		layout->addWidget(cancel_button_,5,2,Qt::AlignLeft);
+		layout->addWidget(save_button_,3,0,Qt::AlignRight);
+		layout->addWidget(delete_button_,3,1,Qt::AlignCenter);
+		layout->addWidget(cancel_button_,3,2,Qt::AlignLeft);
 
 		connect(rename_button_, SIGNAL(clicked()), this, SLOT(OnRenameButtonClicked()));
 		connect(save_button_, SIGNAL(clicked()), this, SLOT(OnSaveButtonClicked()));

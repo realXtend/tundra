@@ -86,6 +86,8 @@ namespace Camera
         void OnFarPlusButtonClicked(bool checked);
         void OnFarMinusButtonClicked(bool checked);
 
+		void OnCreateNewCamera(const QString &name,const QString &module,const QVariantList properties);
+
     private:
         Q_DISABLE_COPY(CameraModule);      
 

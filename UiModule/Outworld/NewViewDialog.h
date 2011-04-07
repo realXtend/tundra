@@ -10,34 +10,36 @@ class QPushButton;
 
 namespace UiServices
 {
-	//! Dialog for adding new component to entity.
 	class NewViewDialog: public QDialog
 	{
 		Q_OBJECT
 
 	public:
-		//! Constructs the dialog.
-		/*! \param views Names of available views.
-			\param parent Parent widget.
-			\param f Window flags.
-		*/
+		/*! Constructs the dialog.
+		 * \param views Names of available views.
+		 * \param parent Parent widget.
+		 * \param f Window flags.
+		 */
 		NewViewDialog(QStringList views, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
-		//! Destroyes the dialog.
+		/*! Destroyes the dialog.
+		 */
 		~NewViewDialog();
 
 
 	private slots:
-
+		/*! Check if the name is a valid name and send the signal
+		 */
 		void OnSaveButtonClicked();
 
 	signals:
 
+		/*! Signal to save a view
+		 * \param name Name of view to save
+		 */
 		void Save(const QString &name);
 
 	private:
-
-		void save();
 
 		QLineEdit *name_line_edit_;
 		QPushButton *save_button_;

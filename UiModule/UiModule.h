@@ -10,6 +10,7 @@
 #include "UiModuleApi.h"
 #include "UiModuleFwd.h"
 #include "UiTypes.h"
+#include "IEventData.h"
 
 #include <QObject>
 #include <QMap>
@@ -70,7 +71,7 @@ namespace UiServices
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         /*************** UiModule Services ***************/
-
+	
         //! InworldSceneController will give you a QObject derived class that will give you all
         //! the UI related services like adding your own QWidgets into the 2D scene 
         //! \return InworldSceneController The scene manager with scene services
@@ -108,6 +109,11 @@ namespace UiServices
 		ExternalMenuManager *external_menu_manager_;
 		ExternalPanelManager *external_panel_manager_;
 		ExternalToolBarManager *external_toolbar_manager_;
+
+        /// Event manager.
+        EventManagerPtr eventManager_;
+		
+		event_category_id_t uiEventCategory_;
 
         //! Current query categories
         QStringList event_query_categories_;
@@ -148,6 +154,34 @@ namespace UiServices
 		bool postInitialize_;
 
     };
+
+	//namespace Events
+ //   {
+	///*	class DynamicWidgetData : public IEventData
+ //       {
+ //       public:
+ //           DynamicWidgetData(QString name,QString module,QVariantList properties) : name_(width), module_(height),properties_(properties) {}
+ //           virtual ~DynamicWidgetData() {}
+	//		
+	//		QString name_;
+	//		QString module_;
+	//		QVariantList properties_;
+ //       };*/
+
+ //       class DynamicWidgetEventData : public IEventData
+ //       {
+	//		public:
+	//			QString name;
+	//			QString module;
+	//			QVariantList properties;
+ //       };
+
+ //       //! Sent when a work result has arrived. Uses the event data structure ThreadTaskResult and its subclasses
+ //       static const event_id_t DYNAMIC_WIDGET_ADD = 1;
+ //       static const event_id_t DYNAMIC_WIDGET_DEL = 2;
+ //   }
 }
+
+
 
 #endif // incl_UiModule_UiModule_h

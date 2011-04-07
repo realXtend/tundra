@@ -85,8 +85,12 @@ namespace UiServices
         /// UiServiceInterface override.
         void ShowWidget(QWidget *widget) const;
 
+        void ShowWidget(const QString &name) const;
+
         /// UiServiceInterface override.
         void HideWidget(QWidget *widget) const;
+
+        void HideWidget(const QString &name) const;
 
         /// UiServiceInterface override.
         void BringWidgetToFront(QWidget *widget) const;
@@ -94,17 +98,14 @@ namespace UiServices
         /// UiServiceInterface override.
         void BringWidgetToFront(QGraphicsProxyWidget *widget) const;
 
-		/*! Return all not dockable widgets registered in ui.
-		 *	This method is for internal use of Ui, is not accesible from interface 
-		 *	\return QList with the reference to all not dockable widgets
-		 */
-		QList<QWidget*> GetAllWidgets() const;
+        /// UiServiceInterface override.
+		QList<QString> GetAllWidgetsNames() const;
 
-		/*! Return all dockable widgets registered in ui.
-		 *	This method is for internal use of Ui, is not accesible from interface 
-		 *	\return QList with the reference to all dockable widgets
-		 */
-		QList<QDockWidget*> GetAllQDockWidgets() const;
+        /// UiServiceInterface override.
+		QWidget* GetWidget(const QString &name) const;
+
+        /// UiServiceInterface override.
+		void SendToCreateDynamicWidget(const QString &name,const QString &module,const QVariantList properties);
 
         /// UiServiceInterface override.
         bool AddSettingsWidget(QWidget *widget, const QString &name) const;
@@ -194,7 +195,6 @@ namespace UiServices
 		*/
 
 //$ END_MOD $
-
     private slots:
 		/// UiServiceInterface override.
         void TranferWidgets();
@@ -214,6 +214,7 @@ namespace UiServices
 		QMap<QString, QDockWidget*> external_dockeable_widgets_;
 		QMap<QString, UiProxyWidget*> internal_widgets_;
 		QMap<QString, QWidget*> external_nondockeable_widgets_;
+		QMap<QString, QWidget*> dynamic_widgets_;
 //$ END_MOD $
     };
 }
