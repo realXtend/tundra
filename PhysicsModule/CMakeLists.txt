@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (PhysicsModule OUTPUT modules/core)
+init_target (PhysicsModule OUTPUT plugins)
 
 MocFolder ()
 

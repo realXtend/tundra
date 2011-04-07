@@ -29,8 +29,6 @@
 
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructureWindow")
-
 #include "MemoryLeakCheck.h"
 
 using namespace Scene;

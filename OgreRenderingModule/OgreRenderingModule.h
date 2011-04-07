@@ -4,7 +4,7 @@
 #define incl_OgreRenderingModule_OgreRenderingModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "OgreModuleApi.h"
 
 namespace Foundation

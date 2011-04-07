@@ -15,8 +15,6 @@
 #include <OgreAxisAlignedBox.h>
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_VolumeTrigger");
-
 
 EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
     IComponent(module->GetFramework()),

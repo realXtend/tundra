@@ -21,8 +21,6 @@
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("SceneImporter")
-
 #include <Ogre.h>
 
 #include <QDomDocument>

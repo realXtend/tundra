@@ -14,7 +14,6 @@
 #include "EventManager.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_EnvironmentLight")
 
 #include <Ogre.h>
 #include <OgreQuaternion.h>

@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (PythonScriptModule OUTPUT modules/core)
+init_target (PythonScriptModule OUTPUT plugins)
 
 set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of python when building debug version of viewer
 #doesn't work anymore now that PythonQt was introduced - attempts to build viewer in debugmode with release mode pythonqt have failed so far
@@ -49,6 +49,6 @@ link_package (PYTHON_QT)
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

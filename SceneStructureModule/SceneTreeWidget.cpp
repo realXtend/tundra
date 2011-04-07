@@ -43,8 +43,6 @@
 #include "OgreScriptEditor.h"
 #endif
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
-
 #include <QDomDocument>
 #include <QDomElement>
 #include <QDebug>

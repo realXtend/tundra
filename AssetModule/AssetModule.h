@@ -4,7 +4,7 @@
 #define incl_AssetModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 
 #include "ConsoleCommandServiceInterface.h"
 #include "IAssetProvider.h"

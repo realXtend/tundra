@@ -5,7 +5,6 @@
 #include "PythonScriptModule.h"
 #include "PythonEngine.h"
 //#include <stdlib.h> //_putenv for PYTHONHOME on windows
-//#include <Poco/Environment.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -28,7 +27,8 @@ namespace PythonScript
         if (!Py_IsInitialized())
         {
 #ifdef _WIN32
-            Poco::Environment::set("PYTHONHOME", ".\\pymodules");
+            ///\todo Find a replacement for this.
+//            Poco::Environment::set("PYTHONHOME", ".\\pymodules");
             //_putenv("PYTHONHOME = .\\pymodules");
             //loads pymodules/lib/site.py which is the windows 
             //std::cout << "PYTHONHOME SET";
@@ -103,7 +103,7 @@ namespace PythonScript
         FILE *fp = fopen(scriptname.toAscii().data(), "r");
         if (!fp)
         {
-            PythonScriptModule::LogInfo("Failed to open script " + scriptname.toStdString());
+            LogInfo("Failed to open script " + scriptname.toStdString());
             return;
         }
 

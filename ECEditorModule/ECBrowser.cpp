@@ -16,7 +16,6 @@
 #include "CoreTypes.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
 #include <QtBrowserItem>
 #include <QLayout>
 #include <QShortcut>

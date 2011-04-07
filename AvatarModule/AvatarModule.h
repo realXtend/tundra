@@ -4,7 +4,7 @@
 #define incl_AvatarModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "AvatarModuleApi.h"
 #include "InputFwd.h"
 #include "SceneFwd.h"

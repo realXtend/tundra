@@ -4,7 +4,7 @@
 #define incl_TestStaticModuleTest_h
 
 #include "ModuleInterface.h"
-#include "ModuleLoggingFunctions.h"
+
 
 namespace Test
 {

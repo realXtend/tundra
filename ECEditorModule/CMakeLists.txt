@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (ECEditorModule OUTPUT modules/core)
+init_target (ECEditorModule OUTPUT plugins)
 
 GetEntityComponents()
 
@@ -37,6 +37,6 @@ link_modules (Framework Scene OgreRenderingModule SupportModules Input)
 LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

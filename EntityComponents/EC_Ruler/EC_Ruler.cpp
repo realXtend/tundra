@@ -24,8 +24,6 @@
 #include "CoreMath.h"
 #include <Ogre.h>
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Ruler")
-
 #include "MemoryLeakCheck.h"
 
 EC_Ruler::EC_Ruler(IModule *module) :

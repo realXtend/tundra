@@ -4,7 +4,7 @@
 #define incl_LoginScreenModule_LoginScreenModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 
 #include <QObject>
 #include <QMap>

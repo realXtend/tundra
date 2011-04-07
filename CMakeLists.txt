@@ -99,22 +99,6 @@ macro(SetupCompileFlags)
     endif()
 endmacro()
 
-# Adds a compilation step that copies the module entry & dependency XML file to the runtime /bin/modules/core directory.
-# Before calling this, define the XML_FILES list in your module.
-macro(CopyModuleXMLFile)
-    # Recreate the /bin/modules/core folder if it does not exist.
-    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/bin/modules)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/bin/modules)
-    endif ()    
-    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/bin/modules/core)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/bin/modules/core)
-    endif ()
-
-    foreach(XML_FILE ${XML_FILES})
-        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
-    endforeach()
-endmacro()
-
 # Moves all Qt ui copmiler-generated .h files into their own folder in the Visual Studio project. Call this once after having added all source files in the build in your module.
 # This macro is optional and for "conveniency" only. If you omit this call, you will have all the generated moc files in the Visual Studio project root.
 macro(UiFolder)

@@ -40,8 +40,6 @@
 #include <OgreEntity.h>
 #include <OgreMesh.h>
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
-
 #ifdef ASSIMP_ENABLED
 #include <OpenAssetImport.h>
 #endif
@@ -815,12 +813,16 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
         urlToDropPos.remove(transfer->GetSourceUrl());
 }
 
-//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-POCO_BEGIN_MANIFEST(IModule)
-   POCO_EXPORT_CLASS(SceneStructureModule)
-POCO_END_MANIFEST
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new SceneStructureModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}

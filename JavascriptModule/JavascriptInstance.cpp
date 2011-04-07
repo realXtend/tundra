@@ -19,7 +19,6 @@
 #include "IAssetProvider.h" //to check if the code was loaded from a local or remote storage
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 
 #include <QFile>
 #include <sstream>

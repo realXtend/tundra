@@ -12,7 +12,6 @@
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("UiAPI")
 
 #include <QEvent>
 #include <QLayout>

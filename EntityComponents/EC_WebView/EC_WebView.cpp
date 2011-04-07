@@ -36,7 +36,6 @@
 #include <QApplication>
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_WebView")
 
 #include "MemoryLeakCheck.h"
 

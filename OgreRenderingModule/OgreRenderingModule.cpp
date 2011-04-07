@@ -214,15 +214,18 @@ namespace OgreRenderer
     }
 }
 
-//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace OgreRenderer;
-/*
-POCO_BEGIN_MANIFEST(IModule)
-   POCO_EXPORT_CLASS(OgreRenderingModule)
-POCO_END_MANIFEST
-*/
+
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new OgreRenderer::OgreRenderingModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}

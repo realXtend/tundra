@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (KristalliProtocolModule OUTPUT modules/core)
+init_target (KristalliProtocolModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)

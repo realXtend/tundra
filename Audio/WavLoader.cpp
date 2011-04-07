@@ -8,8 +8,6 @@
 #include <iostream>
 #include <sstream>
  
-//DEFINE_POCO_LOGGING_FUNCTIONS("WavLoader")
-
 using namespace std;
 
 static void ReadBytes(u8* dest, const u8* src, uint& index, unsigned int numBytes)

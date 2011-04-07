@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (OgreRenderingModule OUTPUT modules/core)
+init_target (OgreRenderingModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -70,6 +70,6 @@ if (HYDRAX)
 endif (HYDRAX)
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

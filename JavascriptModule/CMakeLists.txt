@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (JavascriptModule OUTPUT modules/core)
+init_target (JavascriptModule OUTPUT plugins)
 
 GetEntityComponents()
 
@@ -30,6 +30,6 @@ link_modules (Framework EC_Script Input Audio)
 link_ogre()
 
 SetupCompileFlags()
-CopyModuleXMLFile()
+
 
 final_target ()

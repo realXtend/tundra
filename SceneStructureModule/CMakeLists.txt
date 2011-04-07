@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (SceneStructureModule OUTPUT modules/core)
+init_target (SceneStructureModule OUTPUT plugins)
 
 MocFolder ()
 
@@ -44,6 +44,6 @@ endif()
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

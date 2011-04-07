@@ -18,8 +18,6 @@
 #include "LoggingFunctions.h"
 #include "SceneManager.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_HoveringText");
-
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
 #include <OgreTextureManager.h>

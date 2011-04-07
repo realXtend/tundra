@@ -14,7 +14,6 @@
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 #include <QWebView>
 #include <QLineEdit>

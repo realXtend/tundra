@@ -3,8 +3,6 @@
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
 
-//#include <Poco/LocalDateTime.h>
-
 std::wstring ToWString(const std::string &str)
 {
     std::wstring w_str(str.length(), L' ');

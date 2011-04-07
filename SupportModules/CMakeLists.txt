@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (SupportModules OUTPUT modules/core)
+init_target (SupportModules OUTPUT plugins)
 
 MocFolder ()
 
@@ -27,6 +27,6 @@ link_modules (Framework Ui)
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

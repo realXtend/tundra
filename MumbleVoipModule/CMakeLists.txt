@@ -4,7 +4,7 @@ configure_mumbleclient ()
 configure_celt ()
 
 # Define target name and output directory
-init_target (MumbleVoipModule OUTPUT modules/core)
+init_target (MumbleVoipModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -52,6 +52,6 @@ link_package (MUMBLECLIENT)
 link_package (CELT)
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

@@ -14,8 +14,6 @@
 
 #include <Ogre.h>
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Placeable")
-
 using namespace OgreRenderer;
 
 void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)

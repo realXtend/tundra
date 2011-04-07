@@ -18,8 +18,6 @@
 #include <kNet/DataSerializer.h>
 #include <kNet/DataDeserializer.h>
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("Entity")
-
 #include "MemoryLeakCheck.h"
 
 namespace Scene

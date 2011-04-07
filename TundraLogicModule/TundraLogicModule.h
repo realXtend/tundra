@@ -5,7 +5,7 @@
 
 #include "IModule.h"
 #include "TundraLogicModuleApi.h"
-#include "ModuleLoggingFunctions.h"
+
 
 #include "AssetFwd.h"
 

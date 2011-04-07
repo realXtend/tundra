@@ -609,15 +609,18 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
 
 }
 
-//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace TundraLogic;
-/*
-POCO_BEGIN_MANIFEST(IModule)
-   POCO_EXPORT_CLASS(TundraLogicModule)
-POCO_END_MANIFEST
-*/
+
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new TundraLogic::TundraLogicModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}

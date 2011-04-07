@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (AvatarModule OUTPUT modules/core)
+init_target (AvatarModule OUTPUT plugins)
 
 GetEntityComponents()
 
@@ -62,7 +62,7 @@ LinkEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
 LinkEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition)
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()
 

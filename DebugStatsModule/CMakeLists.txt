@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (DebugStatsModule OUTPUT modules/core)
+init_target (DebugStatsModule OUTPUT plugins)
 
 GetEntityComponents()
 
@@ -47,7 +47,7 @@ LinkEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)
 LinkEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 if (MSVC)
 	target_link_libraries (${TARGET_NAME} pdh.lib)

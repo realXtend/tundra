@@ -24,7 +24,6 @@
 #include <QStringList>
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
 
 #include "MemoryLeakCheck.h"
 

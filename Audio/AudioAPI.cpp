@@ -19,8 +19,6 @@
 #include <alc.h>
 #endif
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("Audio")
-
 //#include <boost/thread/mutex.hpp>
 
 using namespace std;

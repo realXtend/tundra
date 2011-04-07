@@ -673,7 +673,7 @@ namespace PythonScript
         Foundation::Framework* framework = PythonScript::self()->GetFramework();
         if (!framework)
         {
-            PythonScriptModule::LogCritical("Framework object doesn't exist!");
+            LogCritical("Framework object doesn't exist!");
             return 0;
         }
 /*
@@ -681,7 +681,7 @@ namespace PythonScript
         if (player_service)
             return player_service;
 */
-        PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
+        LogError("Cannot find PlayerServiceInterface implementation.");
         return 0;
     }
 
@@ -690,7 +690,7 @@ namespace PythonScript
         Foundation::Framework* framework = PythonScript::self()->GetFramework();
         if (!framework)
         {
-            PythonScriptModule::LogCritical("Framework object doesn't exist!");
+            LogCritical("Framework object doesn't exist!");
             return 0;
         }
 /*
@@ -698,7 +698,7 @@ namespace PythonScript
         if (service)
             return service;
 */
-        PythonScriptModule::LogError("Cannot find CommunicationsServiceInterface implementation.");
+        LogError("Cannot find CommunicationsServiceInterface implementation.");
         return 0;
     }
 
@@ -859,18 +859,22 @@ namespace PythonScript
     }
 }
 
-//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new PythonScript::PythonScriptModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}
+
 using namespace PythonScript;
-/*
-POCO_BEGIN_MANIFEST(IModule)
-    POCO_EXPORT_CLASS(PythonScriptModule)
-POCO_END_MANIFEST
-*/
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1462,8 +1466,7 @@ PyObject* PyLogInfo(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
         return NULL;
     }
-    if (PythonScript::self())
-        PythonScript::self()->LogInfo(message);
+    LogInfo(message);
     Py_RETURN_NONE;
 }
 
@@ -1475,8 +1478,7 @@ PyObject* PyLogDebug(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
         return NULL;
     }
-    if (PythonScript::self())
-        PythonScript::self()->LogDebug(message);
+    LogDebug(message);
     Py_RETURN_NONE;
 }
 
@@ -1488,8 +1490,7 @@ PyObject* PyLogWarning(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
         return NULL;
     }
-    if (PythonScript::self())
-        PythonScript::self()->LogWarning(message);
+    LogWarning(message);
     Py_RETURN_NONE;
 }
 
@@ -1501,8 +1502,7 @@ PyObject* PyLogError(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_ValueError, "Needs a string.");
         return NULL;
     }
-    if (PythonScript::self())
-        PythonScript::self()->LogError(message);
+    LogError(message);
     Py_RETURN_NONE;
 }
 

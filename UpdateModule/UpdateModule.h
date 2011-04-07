@@ -4,7 +4,7 @@
 #define incl_UpdateModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 
 #include <QObject>
 

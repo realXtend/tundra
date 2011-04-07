@@ -9,7 +9,7 @@
 
 #include "EnvironmentModuleApi.h"
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #ifdef ENABLE_TAIGA_SUPPORT
 #include "WorldStream.h"
 #endif

@@ -790,15 +790,16 @@ namespace Environment
     }
 }
 
-//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-using namespace Environment;
-/*
-POCO_BEGIN_MANIFEST(IModule)
-    POCO_EXPORT_CLASS(EnvironmentModule)
-POCO_END_MANIFEST
-*/
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new Environment::EnvironmentModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}

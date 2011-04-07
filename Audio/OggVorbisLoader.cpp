@@ -7,8 +7,6 @@
 
 #include <vorbis/vorbisfile.h>
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("OggVorbisLoader")
-
 namespace
 {
 

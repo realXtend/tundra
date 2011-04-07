@@ -20,8 +20,6 @@
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
-
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
 using namespace Physics;

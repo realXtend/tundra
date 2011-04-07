@@ -19,13 +19,10 @@
 #include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
-//#include "OgreMaterialUtils.h"
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
-
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
 #include <QApplication>
 #include <QTimer>

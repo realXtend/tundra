@@ -9,7 +9,6 @@
 #include "AssetAPI.h"
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("OgreMaterialAsset")
 
 using namespace OgreRenderer;
 

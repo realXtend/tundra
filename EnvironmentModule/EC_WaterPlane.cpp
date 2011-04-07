@@ -12,7 +12,6 @@
 #include "SceneManager.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 
 #include <Ogre.h>
 #include <OgreQuaternion.h>

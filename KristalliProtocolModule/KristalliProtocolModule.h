@@ -6,7 +6,7 @@
 #include "Foundation.h"
 #include "IModule.h"
 #include "KristalliProtocolModuleApi.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "UserConnection.h"
 
 #include "kNet.h"

@@ -19,7 +19,6 @@
 #include <QScriptValueIterator>
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
 
 Q_DECLARE_METATYPE(IAttribute*);
 Q_DECLARE_METATYPE(Scene::EntityPtr);

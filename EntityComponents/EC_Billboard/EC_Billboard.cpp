@@ -15,8 +15,6 @@
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Billboard");
-
 #include <OgreBillboardSet.h>
 #include <OgreTextureManager.h>
 #include <OgreResource.h>

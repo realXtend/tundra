@@ -26,20 +26,14 @@
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
+#include "PluginAPI.h"
 
 #include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
-/*
-#include <Poco/Logger.h>
-#include <Poco/LoggingFactory.h>
-#include <Poco/FormattingChannel.h>
-#include <Poco/SplitterChannel.h>
-#include <Poco/Path.h>
-#include <Poco/UnicodeConverter.h>
-*/
+
 #include <QApplication>
 #include <QGraphicsView>
 #include <QIcon>
@@ -93,7 +87,7 @@ namespace Foundation
             // Force install directory as the current working directory.
             /** \Todo: we may not want to do this in all cases, but there is a huge load of places
                 that depend on being able to refer to the install dir with .*/
-            boost::filesystem::current_path(platform_->GetInstallDirectory());
+//            boost::filesystem::current_path(platform_->GetInstallDirectory());
             
             // Now set proper path for config (one that also non-privileged users can write to)
             {
@@ -116,8 +110,6 @@ namespace Foundation
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.4.1"));
-
-            CreateLoggingSystem(); // depends on config and platform
 
             // create managers
             module_manager_ = ModuleManagerPtr(new ModuleManager(this));
@@ -146,6 +138,8 @@ namespace Foundation
 
             input = new InputAPI(this);
 
+            plugin = new PluginAPI(this);
+
             // Initialize SceneAPI.
             scene->Initialise();
 
@@ -173,110 +167,19 @@ namespace Foundation
         config_manager_.reset();
         platform_.reset();
         application_.reset();
-/*
-        Poco::Logger::shutdown();
 
-        for(size_t i=0 ; i<log_channels_.size() ; ++i)
-            log_channels_[i]->release();
-
-        log_channels_.clear();
-        if (log_formatter_)
-            log_formatter_->release();
-*/
         delete frame;
         delete console;
         delete input;
         delete asset;
         delete ui;
         delete audio;
+        delete plugin;
 
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
         // When we delete QApplication, we must have ensured that all QObjects have been deleted.
         ///\bug Framework is itself a QObject and we should delete naaliApplication only after Framework has been deleted. A refactor is required.
         delete naaliApplication;
-    }
-
-    void Framework::CreateLoggingSystem()
-    {
-        /*
-        PROFILE(FW_CreateLoggingSystem);
-        Poco::LoggingFactory *loggingfactory = new Poco::LoggingFactory();
-
-        Poco::Channel *consolechannel = 0;
-        if (config_manager_->GetSetting<bool>(Framework::ConfigurationGroup(), "log_console"))
-            consolechannel = loggingfactory->createChannel("ConsoleChannel");
-
-        Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
-        
-        std::string logfilepath = platform_->GetUserDocumentsDirectory();
-        logfilepath += "/" + std::string(APPLICATION_NAME) + ".log";
-
-        filechannel->setProperty("path",logfilepath);
-        filechannel->setProperty("rotation","3M");
-        filechannel->setProperty("archive","number");
-        filechannel->setProperty("compress","false");
-
-        splitterchannel = new Poco::SplitterChannel();
-        if (consolechannel)
-            splitterchannel->addChannel(consolechannel);
-        splitterchannel->addChannel(filechannel); 
-
-        log_formatter_ = loggingfactory->createFormatter("PatternFormatter");
-        log_formatter_->setProperty("pattern","%H:%M:%S [%s] %t");
-        log_formatter_->setProperty("times","local");
-        Poco::Channel *formatchannel = new Poco::FormattingChannel(log_formatter_,splitterchannel);
-
-        try
-        {
-#ifdef _DEBUG
-            int loggingLevel = Poco::Message::PRIO_TRACE;
-#else
-            int loggingLevel = Poco::Message::PRIO_INFORMATION;
-#endif            
-
-            Poco::Logger::create("",formatchannel,loggingLevel);
-            Poco::Logger::create("Foundation",Poco::Logger::root().getChannel(), loggingLevel);
-        }
-        catch(Poco::ExistsException &)
-        {
-            assert (false && "Somewhere, a message is pushed to log before the logger is initialized.");
-        }
-
-        try
-        {
-            LogInfo("Log file opened on " + GetLocalDateTimeString());
-        }
-        catch(Poco::OpenFileException &)
-        {
-            // Do not create the log file.
-            splitterchannel->removeChannel(filechannel);
-            LogInfo("Poco::OpenFileException. Log file not created.");
-        }
-#ifndef _DEBUG
-        // make it so debug messages are not logged in release mode
-        std::string log_level = config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "log_level");
-        Poco::Logger::get("Foundation").setLevel(log_level);
-#endif
-        if (consolechannel)
-            log_channels_.push_back(consolechannel);
-        log_channels_.push_back(filechannel);
-        log_channels_.push_back(splitterchannel);
-        log_channels_.push_back(formatchannel);
-
-        SAFE_DELETE(loggingfactory);
-        */
-    }
-
-    void Framework::AddLogChannel(Poco::Channel *channel)
-    {
-//        assert (channel);
- //       splitterchannel->addChannel(channel);
-    }
-
-    void Framework::RemoveLogChannel(Poco::Channel *channel)
-    {
- //       assert (channel);
- //       splitterchannel->removeChannel(channel);
     }
 
     void Framework::ParseProgramOptions()
@@ -441,7 +344,9 @@ namespace Foundation
         {
             PROFILE(FW_LoadModules);
             LogDebug("\n\nLOADING MODULES\n================================================================\n");
-            module_manager_->LoadAvailableModules();
+//            module_manager_->LoadAvailableModules();
+
+            plugin->LoadPluginsFromXML("plugins.xml");
         }
         {
             PROFILE(FW_InitializeModules);
@@ -460,39 +365,6 @@ namespace Foundation
     NaaliApplication *Framework::GetNaaliApplication() const
     {
         return naaliApplication;
-    }
-
-    Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
-    {
-        if (params.size() != 2 && params.size() != 1)
-            return Console::ResultInvalidParameters();
-
-        std::string lib = params[0];
-        std::string entry = params[0];
-        if (params.size() == 2)
-            entry = params[1];
-
-        bool result = module_manager_->LoadModuleByName(lib, entry);
-
-        if (!result)
-            return Console::ResultFailure("Library or module not found.");
-
-        return Console::ResultSuccess("Module " + entry + " loaded.");
-    }
-
-    Console::CommandResult Framework::ConsoleUnloadModule(const StringVector &params)
-    {
-        if (params.size() != 1)
-            return Console::ResultInvalidParameters();
-
-        bool result = false;
-        if (module_manager_->HasModule(params[0]))
-            result = module_manager_->UnloadModuleByName(params[0]);
-
-        if (!result)
-            return Console::ResultFailure("Module not found.");
-
-        return Console::ResultSuccess("Module " + params[0] + " unloaded.");
     }
 
     Console::CommandResult Framework::ConsoleListModules(const StringVector &params)
@@ -626,14 +498,6 @@ namespace Foundation
         boost::shared_ptr<Console::CommandService> console = GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
         if (console)
         {
-            console->RegisterCommand(Console::CreateCommand("LoadModule", 
-                "Loads a module from shared library. Usage: LoadModule(lib, entry)", 
-                Console::Bind(this, &Framework::ConsoleLoadModule)));
-
-            console->RegisterCommand(Console::CreateCommand("UnloadModule", 
-                "Unloads a module. Usage: UnloadModule(name)", 
-                Console::Bind(this, &Framework::ConsoleUnloadModule)));
-
             console->RegisterCommand(Console::CreateCommand("ListModules", 
                 "Lists all loaded modules.", 
                 Console::Bind(this, &Framework::ConsoleListModules)));

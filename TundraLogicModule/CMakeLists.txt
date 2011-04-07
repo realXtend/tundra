@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (TundraLogicModule OUTPUT modules/core)
+init_target (TundraLogicModule OUTPUT plugins)
 
 GetEntityComponents()
 
@@ -58,7 +58,7 @@ link_ogre()
 
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 if (WIN32)
     target_link_libraries (${TARGET_NAME} ws2_32.lib)

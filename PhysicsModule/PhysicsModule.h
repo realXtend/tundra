@@ -5,7 +5,7 @@
 
 #include "PhysicsModuleApi.h"
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "ForwardDefines.h"
 #include "SceneFwd.h"
 

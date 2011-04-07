@@ -24,8 +24,6 @@
 #include "Transform.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
-
 #include "MemoryLeakCheck.h"
 
 namespace fs = boost::filesystem;
