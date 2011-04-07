@@ -84,7 +84,7 @@ namespace Avatar
         AvatarHandlerPtr avatar_handler_;
         AvatarControllablePtr avatar_controllable_;
         AvatarEditorPtr avatar_editor_;
-        AvatarSceneManager *scene_manager_;
+        //AvatarSceneManager *scene_manager_;
 
         ProtocolUtilities::WorldStreamPtr world_stream_;
 

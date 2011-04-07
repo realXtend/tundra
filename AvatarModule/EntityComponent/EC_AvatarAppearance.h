@@ -4,6 +4,7 @@
 #define incl_RexLogic_EC_AvatarAppearance_h
 
 #include "IComponent.h"
+#include "IAsset.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
 #include "AvatarModuleApi.h"
@@ -14,7 +15,9 @@
 //! Avatar asset name map (key: human-readable name, value: resource id)
 typedef std::map<std::string, std::string> AvatarAssetMap;
 
+// Deprecated. Replaced with Tundra Asset API.
 //! Defines an asset for an avatar
+/*
 class AV_MODULE_API AvatarAsset
 {
 public:
@@ -27,256 +30,25 @@ public:
 };
 
 typedef std::vector<AvatarAsset> AvatarAssetVector;
+*/
 
+// Deprecated. Materials are always used. For texture overrides, a new material needs to be generated.
+/*
 //! Defines a material for an avatar, with n textures
 struct AV_MODULE_API AvatarMaterial
 {
     //! Material script asset
     AvatarAsset asset_;
     //! Textures used by material
-    /*! Note: a good asset reference system would take care of them automatically, but can't rely on that at least with the old avatarstorage.
-        Also, we have the case of using a material, but with custom textures. In this case the material resource has to be cloned and modified.
-     */
     AvatarAssetVector textures_;
 };
 
 //! Material vector. Materials are to be stored in submesh order (ie. index 0 is submesh 0)
 typedef std::vector<AvatarMaterial> AvatarMaterialVector;
+*/
 
-//! Defines a transform for an avatar, attachment or bone
-struct AV_MODULE_API AvatarTransform
-{
-    Vector3df position_;
-    Quaternion orientation_;
-    Vector3df scale_;
-    
-    AvatarTransform() : position_(Vector3df::ZERO),
-        scale_(1.0f, 1.0f, 1.0f)
-    {
-    }
-};
-            
-//! Defines an appearance modifier, possibly under control of a master modifier through position mapping
-struct AV_MODULE_API AppearanceModifier
-{             
-    enum ModifierType
-    {
-        Undefined = 0,
-        Morph,
-        Bone
-    };
-
-    //! Modifier name
-    std::string name_;
-    //! Modifier type
-    ModifierType type_;
-    //! Manual state. If true, master modifiers have no effect
-    bool manual_;
-    //! Modifier influence value (0.0 - 1.0)
-    float value_;
-
-    //! Sum of data accumulated so far
-    float sum_;
-    //! Number of samples accumulated
-    int samples_;
-
-    void ResetAccumulation();
-    void AccumulateValue(float value, bool use_average);
-            
-    AppearanceModifier(ModifierType type = Undefined) : 
-        manual_(false),
-        type_(type),
-        value_(0.0)
-    {
-        ResetAccumulation();
-    }
-};  
-        
-//! Defines a bone modifier
-struct AV_MODULE_API BoneModifier
-{
-    //! Possible modes for a bone modification
-    enum BoneModifierMode
-    {
-        //! Relative to the bone's initial transform
-        Relative = 0,
-        //! Absolute, overrides the bone's initial transform
-        Absolute,
-        //! Cumulative, adds to a previous modifier
-        Cumulative
-    };    
-    
-    //! Name of bone in avatar skeleton
-    std::string bone_name_;
-    //! Start transform
-    AvatarTransform start_;
-    //! End transform
-    AvatarTransform end_;
-    //! Mode of applying position modification
-    BoneModifierMode position_mode_;
-    //! Mode of applying rotation modification
-    BoneModifierMode orientation_mode_;
-
-    BoneModifier() : 
-        position_mode_(Relative),
-        orientation_mode_(Relative)
-    {
-    }
-};
-
-typedef std::vector<BoneModifier> BoneModifierVector;
-
-//! Defines a set of bone modifiers (also called a dynamic animation)
-struct AV_MODULE_API BoneModifierSet : public AppearanceModifier
-{
-    //! Individual bone modifiers
-    BoneModifierVector modifiers_;
-    
-    BoneModifierSet() :
-        AppearanceModifier(Bone)
-    {
-    }
-};
-
-typedef std::vector<BoneModifierSet> BoneModifierSetVector;
-
-//! Defines a morph modifier
-struct AV_MODULE_API MorphModifier : public AppearanceModifier
-{
-    //! Name of morph animation
-    std::string morph_name_;
-    
-    MorphModifier() :
-        AppearanceModifier(Morph)
-    {
-    }
-};
-
-typedef std::vector<MorphModifier> MorphModifierVector;
-       
-//! Describes a modifier driven by a master modifier
-struct AV_MODULE_API SlaveModifier
-{
-    //! Master value accumulation mode
-    enum AccumulationMode
-    {
-        Average = 0,
-        Cumulative
-    };
-    //! Defines a point in master-slaver modifier value mapping
-    struct ValueMapping
-    {
-        float master_;
-        float slave_;
-        
-        bool operator < (const ValueMapping &rhs) const
-        {
-            return (master_ < rhs.master_);
-        }
-    };
-
-    float GetMappedValue(float master_value);
-    
-    //! Value accumulation mode
-    AccumulationMode mode_;
-    //! Value mapping table. If empty, identity mapping
-    std::vector<ValueMapping> mapping_;
-    //! Name 
-    std::string name_;
-    //! Type
-    AppearanceModifier::ModifierType type_;
-    
-    SlaveModifier() : mode_(Average)
-    {
-    }
-};
-
-typedef std::vector<SlaveModifier> SlaveModifierVector;
-              
-//! Defines a master modifier that controls several appearance (slave) modifiers
-struct AV_MODULE_API MasterModifier
-{
-    //! Current position value (0.0 - 1.0)
-    float value_;
-    //! Name
-    std::string name_;
-    //! Category description
-    std::string category_;
-    //! Modifiers controlled 
-    SlaveModifierVector modifiers_;
-};
-
-typedef std::vector<MasterModifier> MasterModifierVector;
-
-//! Defines an animation for an avatar
-struct AV_MODULE_API AnimationDefinition
-{
-    //! Most likely a UUID
-    std::string id_;
-    //! Identifying human-readable name, not mandatory and not used directly in code
-    std::string name_;
-    //! Actual animation name in the mesh/skeleton
-    std::string animation_name_;
-    //! Should play looped?
-    bool looped_;
-    //! Exclusive; override (stop) other animations
-    bool exclusive_;
-    //! Speed scaled with avatar movement speed?
-    bool use_velocity_;
-    //! Always restart animation when it starts playing?
-    bool always_restart_;
-    //! Blend-in period in seconds
-    float fadein_;
-    //! Blend-out period in seconds
-    float fadeout_;
-    //! Speed modification (1.0 original)
-    float speedfactor_;
-    //! Weight modification (1.0 full)
-    float weightfactor_;
-    
-    AnimationDefinition() :
-        looped_(true),
-        exclusive_(false),
-        use_velocity_(false),
-        always_restart_(false),
-        fadein_(0.0),
-        fadeout_(0.0),
-        speedfactor_(1.0),
-        weightfactor_(1.0)
-    {
-    }
-};
-
-typedef std::map<RexUUID, AnimationDefinition> AnimationDefinitionMap;
-
-typedef std::map<std::string, std::string> AvatarPropertyMap;
-
-//! Defines an attachment for an avatar
-struct AV_MODULE_API AvatarAttachment
-{
-    //! Name of attachment
-    std::string name_;
-    //! Mesh 
-    AvatarAsset mesh_;
-    //! Whether skeleton should be linked (for animations)
-    bool link_skeleton_;
-    //! Materials used by the attachment mesh
-    AvatarMaterialVector materials_;
-    //! Transform 
-    AvatarTransform transform_;
-    //! Category of attachment
-    std::string category_;
-    //! Base bone of attachment. Empty if attached directly to avatar scene node
-    std::string bone_name_;
-    //! Polygons indices to hide from avatar when using this attachment
-    std::vector<uint> vertices_to_hide_;
-};
-
-typedef std::vector<AvatarAttachment> AvatarAttachmentVector;
-
-const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name);
-const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const QString& name);
-
+// Deprecated. Functionality replaced by AvatarDescAsset.
+/*
 //! Entity component that stores an avatar's appearance parameters
 class AV_MODULE_API EC_AvatarAppearance : public IComponent
 {
@@ -318,8 +90,6 @@ public:
     void SetAssetMap(const AvatarAssetMap& map) { asset_map_ = map; }
     
     //! Recalculate effect of master modifiers
-    /*! Note: modifiers set for manual control will be skipped
-     */ 
     void CalculateMasterModifiers();
     
 private:
@@ -349,5 +119,6 @@ private:
     //! Miscellaneous properties
     AvatarPropertyMap properties_;
 };
+*/
 
 #endif

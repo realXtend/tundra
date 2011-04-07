@@ -8,8 +8,9 @@
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
 #include "AssetFwd.h"
+#include "SceneFwd.h"
 
-
+struct BoneModifier;
 class AvatarDescAsset;
 typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
@@ -63,9 +64,10 @@ public:
 public slots:
     //! Refresh appearance completely
     void SetupAppearance();
-    
     //! Refresh dynamic parts of the appearance (morphs, bone modifiers)
     void SetupDynamicAppearance();
+    //! Get a generic property from the avatar description, or empty string if not found
+    QString GetAvatarProperty(const QString& name);
 
 private slots:
     //! Called when some of the attributes has been changed.
@@ -79,11 +81,21 @@ private:
      */
     EC_Avatar(IModule* module);
 
-    //! Setup avatar from ready avatar description asset
-    void SetupAvatar(AvatarDescAssetPtr avatarAsset);
+    //! Adjust avatar's height offset dynamically
+    void AdjustHeightOffset();
+    //! Rebuild mesh and set materials
+    void SetupMeshAndMaterials();
+    //! Set morphs to values in avatar desc asset
+    void SetupMorphs();
+    //! Set bone modifiers to values in avatar desc asset
+    void SetupBoneModifiers();
+    //! Rebuild attachment meshes
+    void SetupAttachments();
+    //! Lookup absolute asset reference
+    QString LookupAsset(const QString& ref);
 
-    //! Category for Asset events
-    event_category_id_t asset_event_category_;
+    //! The current avatar description asset
+    AvatarDescAssetPtr avatarAsset_;
 };
 
 #endif

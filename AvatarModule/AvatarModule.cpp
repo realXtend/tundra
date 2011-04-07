@@ -36,8 +36,8 @@ namespace Avatar
 
     AvatarModule::AvatarModule() :
         QObject(),
-        IModule(module_name),
-        scene_manager_(0)
+        IModule(module_name)
+        //scene_manager_(0)
     {
         world_stream_.reset();
         uuid_to_local_id_.clear();
@@ -49,7 +49,7 @@ namespace Avatar
 
     void AvatarModule::Load()
     {
-        DECLARE_MODULE_EC(EC_AvatarAppearance);
+        //DECLARE_MODULE_EC(EC_AvatarAppearance);
         DECLARE_MODULE_EC(EC_OpenSimAvatar);
         DECLARE_MODULE_EC(EC_NetworkPosition);
         DECLARE_MODULE_EC(EC_Controllable);
@@ -74,8 +74,8 @@ namespace Avatar
     void AvatarModule::PostInitialize()
     {
         SubscribeToEventCategories();
-        if (scene_manager_)
-            scene_manager_->InitScene();
+        //if (scene_manager_)
+        //    scene_manager_->InitScene();
 
         avatar_context_ = GetFramework()->Input()->RegisterInputContext("Avatar", 100);
         if (avatar_context_)
@@ -99,7 +99,7 @@ namespace Avatar
         world_stream_.reset();
         uuid_to_local_id_.clear();
 
-        SAFE_DELETE(scene_manager_);
+        //SAFE_DELETE(scene_manager_);
     }
 
     Scene::EntityPtr AvatarModule::GetAvatarEntity(const RexUUID &uuid)
@@ -238,8 +238,8 @@ namespace Avatar
 
         if (key->HasCtrlModifier() && key->keyCode == Qt::Key_A)
         {
-            if (scene_manager_)
-                scene_manager_->ToggleScene();
+            //if (scene_manager_)
+            //    scene_manager_->ToggleScene();
             return;
         }
     }
