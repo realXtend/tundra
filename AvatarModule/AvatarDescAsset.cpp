@@ -9,9 +9,16 @@
 #include "XMLUtilities.h"
 
 #include <QDomDocument>
+#include <cstring>
 
 using namespace Avatar;
 using namespace RexTypes;
+
+std::string modifierMode[] = {
+    "relative",
+    "absolute",
+    "cumulative"
+};
 
 AvatarDescAsset::~AvatarDescAsset()
 {
@@ -48,8 +55,17 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 
 bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
 {
-    ///\todo Implement.
-    return false;
+    QDomDocument avatarDoc("Avatar");
+    WriteAvatarAppearance(avatarDoc);
+    avatarAppearanceXML_ = avatarDoc.toString();
+    
+    if (!avatarAppearanceXML_.length())
+        return false;
+    
+    std::string avatarDocStd = avatarAppearanceXML_.toStdString();
+    dst.resize(avatarDocStd.length());
+    memcpy(&dst[0], avatarDocStd.c_str(), avatarDocStd.length());
+    return true;
 }
 
 bool AvatarDescAsset::IsLoaded() const
@@ -532,4 +548,262 @@ void AvatarDescAsset::AddReference(std::vector<AssetReference>& refs, const QStr
         AssetReference newRef(assetAPI->LookupAssetRefToStorage(ref));
         refs.push_back(newRef);
     }
+}
+
+void AvatarDescAsset::WriteAvatarAppearance(QDomDocument& dest)
+{
+    // Avatar element
+    QDomElement avatar = dest.createElement("avatar");
+    
+    // Version element
+    {
+        QDomElement version = dest.createElement("version");
+        QDomText text = dest.createTextNode("0.2");
+        version.appendChild(text);
+        avatar.appendChild(version);
+    }
+    
+    // Mesh element
+    {
+        QDomElement mesh = dest.createElement("base");
+        mesh.setAttribute("name", "default");
+        mesh.setAttribute("mesh", mesh_);
+        avatar.appendChild(mesh);
+    }
+    
+    // Skeleton element
+    if (skeleton_.length())
+    {
+        QDomElement skeleton = dest.createElement("skeleton");
+        skeleton.setAttribute("name", skeleton_);
+        avatar.appendChild(skeleton);
+    }
+    
+    // Material elements
+    for (uint i = 0; i < materials_.size(); ++i)
+    {
+        // Append elements in submesh order
+        QDomElement material = dest.createElement("material");
+        material.setAttribute("name", materials_[i]);
+        
+        avatar.appendChild(material);
+    }
+    
+    // Attachments
+    for (uint i = 0; i < attachments_.size(); ++i)
+    {
+        QDomElement attachment = WriteAttachment(dest, attachments_[i], mesh_);
+        avatar.appendChild(attachment);
+    }
+    
+    // Bone modifiers
+    for (uint i = 0; i < boneModifiers_.size(); ++i)
+        WriteBoneModifierSet(dest, avatar, boneModifiers_[i]);
+    
+    // Morph modifiers
+    for (uint i = 0; i < morphModifiers_.size(); ++i)
+    {
+        QDomElement morph = WriteMorphModifier(dest, morphModifiers_[i]);
+        avatar.appendChild(morph);
+    }
+    
+    // Master modifiers
+    for (uint i = 0; i < masterModifiers_.size(); ++i)
+    {
+        QDomElement master = WriteMasterModifier(dest, masterModifiers_[i]);
+        avatar.appendChild(master);
+    }
+    
+    // Animations
+    for (uint i = 0; i < animations_.size(); ++i)
+    {
+        QDomElement anim = WriteAnimationDefinition(dest, animations_[i]);
+        avatar.appendChild(anim);
+        ++i;
+    }
+    
+    // Properties
+    QMap<QString, QString>::const_iterator i = properties_.begin();
+    while (i != properties_.end())
+    {
+        QDomElement prop = dest.createElement("property");
+        prop.setAttribute("name", i.key());
+        prop.setAttribute("value", i.value());
+        avatar.appendChild(prop);
+        ++i;
+    }
+
+    dest.appendChild(avatar);
+}
+
+QDomElement AvatarDescAsset::WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim)
+{
+    QDomElement elem = dest.createElement("animation");
+    
+    SetAttribute(elem, "name", anim.name_);
+    SetAttribute(elem, "id", anim.id_);
+    SetAttribute(elem, "internal_name", anim.animation_name_);
+    SetAttribute(elem, "looped", anim.looped_);
+    SetAttribute(elem, "usevelocity", anim.use_velocity_);
+    SetAttribute(elem, "alwaysrestart", anim.always_restart_);
+    SetAttribute(elem, "fadein", anim.fadein_);
+    SetAttribute(elem, "fadeout", anim.fadeout_);
+    SetAttribute(elem, "speedfactor", anim.speedfactor_);
+    SetAttribute(elem, "weightfactor", anim.weightfactor_);
+    
+    return elem;
+}
+
+void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones)
+{
+    QDomElement parameter = dest.createElement("dynamic_animation_parameter");
+    QDomElement modifier = dest.createElement("dynamic_animation");
+    
+    SetAttribute(parameter, "name", bones.name_);
+    SetAttribute(parameter, "position", bones.value_);
+    SetAttribute(modifier, "name", bones.name_);
+
+    QDomElement base_animations = dest.createElement("base_animations");
+    modifier.appendChild(base_animations);
+    
+    QDomElement bonelist = dest.createElement("bones");
+    for (uint i = 0; i < bones.modifiers_.size(); ++i)
+    {
+        QDomElement bone = WriteBone(dest, bones.modifiers_[i]);
+        bonelist.appendChild(bone);
+    }
+    modifier.appendChild(bonelist);
+    
+    if (!dest_elem.isNull())
+    {
+        dest_elem.appendChild(parameter);
+        dest_elem.appendChild(modifier);
+    }
+    else
+    {
+        dest.appendChild(parameter);
+        dest.appendChild(modifier);
+    }
+}
+
+QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& bone)
+{
+    QDomElement elem = dest.createElement("bone");
+    SetAttribute(elem, "name", bone.bone_name_);
+    
+    QDomElement rotation = dest.createElement("rotation");
+    SetAttribute(rotation, "start", WriteEulerAngles(bone.start_.orientation_));
+    SetAttribute(rotation, "end", WriteEulerAngles(bone.end_.orientation_));
+    SetAttribute(rotation, "mode", modifierMode[bone.orientation_mode_]);
+    
+    QDomElement translation = dest.createElement("translation");
+    SetAttribute(translation, "start", WriteVector3(bone.start_.position_));
+    SetAttribute(translation, "end", WriteVector3(bone.end_.position_));
+    SetAttribute(translation, "mode", modifierMode[bone.position_mode_]);
+
+    QDomElement scale = dest.createElement("scale");
+    SetAttribute(scale, "start", WriteVector3(bone.start_.scale_));
+    SetAttribute(scale, "end", WriteVector3(bone.end_.scale_));
+    
+    elem.appendChild(rotation);
+    elem.appendChild(translation);
+    elem.appendChild(scale);
+
+    return elem;
+}
+
+QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph)
+{
+    QDomElement elem = dest.createElement("morph_modifier");
+    SetAttribute(elem, "name", morph.name_);
+    SetAttribute(elem, "internal_name", morph.morph_name_);
+    SetAttribute(elem, "influence", morph.value_);
+    
+    return elem;
+}
+
+QDomElement AvatarDescAsset::WriteMasterModifier(QDomDocument& dest, const MasterModifier& master)
+{
+    QDomElement elem = dest.createElement("master_modifier");
+    SetAttribute(elem, "name", master.name_);
+    SetAttribute(elem, "position", master.value_);
+    SetAttribute(elem, "category", master.category_);
+    for (uint i = 0; i < master.modifiers_.size(); ++i)
+    {
+        QDomElement target_elem = dest.createElement("target_modifier");
+        SetAttribute(target_elem, "name", master.modifiers_[i].name_);
+        if (master.modifiers_[i].type_ == AppearanceModifier::Morph)
+            SetAttribute(target_elem, "type", "morph");
+        else
+            SetAttribute(target_elem, "type", "dynamic_animation");
+        if (master.modifiers_[i].mode_ == SlaveModifier::Cumulative)
+            SetAttribute(target_elem, "mode", "cumulative");
+        else
+            SetAttribute(target_elem, "mode", "average");
+        for (uint j = 0; j < master.modifiers_[i].mapping_.size(); ++j)
+        {
+            QDomElement mapping_elem = dest.createElement("position_mapping");
+            SetAttribute(mapping_elem, "master", master.modifiers_[i].mapping_[j].master_);
+            SetAttribute(mapping_elem, "target", master.modifiers_[i].mapping_[j].slave_);
+            target_elem.appendChild(mapping_elem);
+        }            
+        elem.appendChild(target_elem);
+    }
+    
+    return elem;
+}    
+    
+QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const QString& mesh)
+{
+    QDomElement elem = dest.createElement("attachment");
+    
+    QDomElement name_elem = dest.createElement("name");
+    SetAttribute(name_elem, "value", attachment.name_);
+    elem.appendChild(name_elem);
+    
+    QDomElement mesh_elem = dest.createElement("mesh");
+    mesh_elem.setAttribute("name", mesh);
+    int link = 0;
+    if (attachment.link_skeleton_) 
+        link = 1;
+    SetAttribute(mesh_elem, "linkskeleton", link);
+    elem.appendChild(mesh_elem);
+    
+    for (unsigned i = 0; i < attachment.materials_.size(); ++i)
+    {
+        QDomElement material_elem = dest.createElement("material");
+        material_elem.setAttribute("name", attachment.materials_[i]);
+        elem.appendChild(material_elem);
+    }
+    
+    QDomElement category_elem = dest.createElement("category");
+    SetAttribute(category_elem, "name", attachment.category_);
+    elem.appendChild(category_elem);
+    
+    QDomElement avatar_elem = dest.createElement("avatar");
+    avatar_elem.setAttribute("name", mesh);
+    
+    {
+        std::string bonename = attachment.bone_name_;
+        if (bonename.empty())
+            bonename = "None";
+        
+        QDomElement bone_elem = dest.createElement("bone");
+        SetAttribute(bone_elem, "name", bonename);
+        SetAttribute(bone_elem, "offset", WriteVector3(attachment.transform_.position_));
+        SetAttribute(bone_elem, "rotation", WriteQuaternion(attachment.transform_.orientation_));
+        SetAttribute(bone_elem, "scale", WriteVector3(attachment.transform_.scale_));
+        
+        avatar_elem.appendChild(bone_elem);
+        
+        for (uint i = 0; i < attachment.vertices_to_hide_.size(); ++i)
+        {
+            QDomElement polygon_elem = dest.createElement("avatar_polygon");
+            SetAttribute(polygon_elem, "idx", (int)attachment.vertices_to_hide_[i]);
+            avatar_elem.appendChild(polygon_elem);
+        }
+    }
+    elem.appendChild(avatar_elem);
+    
+    return elem;
 }
