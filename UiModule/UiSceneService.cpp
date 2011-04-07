@@ -67,7 +67,6 @@ namespace UiServices
 			if (outside && dockable && !external_dockeable_widgets_.contains(widget->windowTitle())) 
 			{
 				external_dockeable_widgets_[widget->windowTitle()] = owner_->GetExternalPanelManager()->AddExternalPanel(widget,widget->windowTitle());
-				settings.setValue(widget->windowTitle()+"/position", "outside");
 			}
 
 			else if (outside && !dockable && !external_nondockeable_widgets_.contains(widget->windowTitle()))
@@ -75,7 +74,6 @@ namespace UiServices
 			else if (!outside && !internal_widgets_.contains(widget->windowTitle()))
 			{
 				internal_widgets_[widget->windowTitle()] = owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
-				settings.setValue(widget->windowTitle()+"/position", "inside");
 				return internal_widgets_[widget->windowTitle()];
 			}
 		}
@@ -171,8 +169,6 @@ namespace UiServices
 		}
 		else
 			return;
-		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");
-		settings.remove(widget->windowTitle());
     }
 
     void UiSceneService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
@@ -406,6 +402,29 @@ namespace UiServices
 			AddWidgetToScene(widget);
 		return widget;
  }
+
+	void UiSceneService::SaveViewConfiguration()
+	{
+		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/UiExternalSettings");	
+		
+		settings.clear();
+
+		QMap<QString, QWidget*>::const_iterator i = external_nondockeable_widgets_.constBegin();
+		while (i != external_nondockeable_widgets_.constEnd()) {
+			settings.setValue(i.key()+"/position", "outside");
+			++i;
+		}
+		QMap<QString, QDockWidget*>::const_iterator j = external_dockeable_widgets_.constBegin();
+		while (j != external_dockeable_widgets_.constEnd()) {
+			settings.setValue(j.key()+"/position", "outside");
+			++j;
+		}
+		QMap<QString, UiProxyWidget*>::const_iterator k = internal_widgets_.constBegin();
+		while (k != internal_widgets_.constEnd()) {
+			settings.setValue(k.key()+"/position", "inside");
+			++k;
+		}
+	}
 
     void UiSceneService::TranferWidgets()
     {

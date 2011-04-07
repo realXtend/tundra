@@ -264,9 +264,7 @@ namespace Camera
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent());
 		if (!camera_view)
             return;
-		//dirty_widgets_.append(camera_view);
 		camera_view->hide();
-        //DeleteCameraWidget(camera_view);
     }
 
     void CameraModule::OnCameraWidgetHidden()
@@ -274,21 +272,18 @@ namespace Camera
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender());
 		if (!camera_view)
             return;
-		if(!dirty_widgets_.contains(camera_view))
-			dirty_widgets_.append(camera_view);
-        //DeleteCameraWidget(camera_view);
+		dirty_widgets_.append(camera_view);
     }
 
     void CameraModule::DeleteCameraWidget(QWidget *widget)
     {
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(widget);
-
 		if (!camera_view)
             return;
+
         //remove widget from scene
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
 		if (ui){
-			//ui->HideWidget(camera_view);
 			ui->RemoveWidgetFromScene(camera_view);
 		}
 
