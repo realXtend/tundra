@@ -12,7 +12,6 @@
 //#include "ConfigurationManager.h"
 //#include "ServiceManager.h"
 //#include "EventManager.h"
-//#include "ThreadTaskManager.h"
 #include "Platform.h"
 #include "Profiler.h"
 
@@ -41,9 +40,6 @@
       you create yourself.
     For creating new components, see ComponentManager.
 
-    - ThreadTaskManager handles threaded background tasks. For usage information, see
-      \ref ThreadTask "Threaded task system"
-      
     - ConfigurationManager provides access to name-value pairs defined
       in an external file suitable for defining various settings.
 

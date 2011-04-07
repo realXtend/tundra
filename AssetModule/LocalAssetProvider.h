@@ -4,7 +4,6 @@
 #define incl_Asset_LocalAssetProvider_h
 
 #include <boost/enable_shared_from_this.hpp>
-#include "ThreadTaskManager.h"
 #include "AssetModuleApi.h"
 #include "IAssetProvider.h"
 #include "AssetFwd.h"

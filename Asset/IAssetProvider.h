@@ -4,26 +4,9 @@
 #define incl_Interfaces_AssetProviderInterface_h
 
 #include "AssetFwd.h"
+#include "CoreTypes.h"
 
 #include <QString>
-
-namespace Foundation
-{
-    /// Asset transfer info
-    /// \deprecated -jj.
-    struct AssetTransferInfo
-    {
-        std::string id_;
-        std::string type_;
-        std::string provider_;
-        uint size_;
-        uint received_;
-        uint received_continuous_;
-    };
-   
-    /// \deprecated -jj.
-    typedef std::vector<AssetTransferInfo> AssetTransferInfoVector;        
-}
 
 /** Asset provider. Can be registered to the AssetService to add possibility of downloading assets by different
     means (legacy UDP, http etc.)
