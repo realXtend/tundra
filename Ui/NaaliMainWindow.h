@@ -28,8 +28,6 @@ public:
     /// Saves the currently applied window settings to file.
     void SaveWindowSettingsToFile();
 
-	void ToggleFullScreen();
-
     /// Returns the whole desktop width. \note This function takes into account multiple displays and assumes the displays are
     /// side-by-side. Perhaps if someone stacked their displays, that assumption would be wrong.
     static int DesktopWidth();

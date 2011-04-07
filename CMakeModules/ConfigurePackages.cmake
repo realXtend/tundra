@@ -59,7 +59,7 @@ endmacro (configure_poco)
 
 macro (configure_qt4)
     sagase_configure_package (QT4 
-        NAMES Qt4 4.6.1
+        NAMES Qt4
         COMPONENTS QtCore QtGui QtWebkit QtScript QtScriptTools QtXml QtNetwork QtUiTools
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 

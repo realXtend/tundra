@@ -568,7 +568,7 @@ void SceneTreeWidget::Edit()
         {
             editor = new ECEditorWindow(framework);
             editor->setAttribute(Qt::WA_DeleteOnClose);
-			NaaliUi *ui = framework->Ui();
+			UiAPI *ui = framework->Ui();
 			if (ui)
 				editor->setParent(ui->MainWindow());
             ecEditors.push_back(editor);
@@ -641,7 +641,7 @@ void SceneTreeWidget::EditInNew()
 	disconnect(scene.lock().get(), SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)), editor, 
             SLOT(ActionTriggered(Scene::Entity *, const QString &, const QStringList &)));
 
-    NaaliUi *ui = framework->Ui();
+    UiAPI *ui = framework->Ui();
     if (!ui)
         return;
     editor->setParent(ui->MainWindow());

@@ -13,7 +13,7 @@
 #include "EtherLogic.h"
 
 #include "UiServiceInterface.h"
-#include "Input.h"
+#include "InputAPI.h"
 #include "LoginServiceInterface.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
@@ -29,6 +29,7 @@
 #include "TundraLogicModule.h"
 #include "Client.h"
 #include "SceneManager.h"
+#include "SceneAPI.h"
 
 #include <Ogre.h>
 
@@ -72,7 +73,7 @@ namespace Ether
 
 	void EtherModule::PostInitialize()
 	{
-		input_ = framework_->GetInput()->RegisterInputContext("EtherInput", 101);
+		input_ = framework_->Input()->RegisterInputContext("EtherInput", 101);
 		input_->SetTakeKeyboardEventsOverQt(true);
 		connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
@@ -214,7 +215,7 @@ namespace Ether
 		if (framework_->IsEditionless())
 			return;
 
-		const QKeySequence &toggleMenu = framework_->GetInput()->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
+		const QKeySequence &toggleMenu = framework_->Input()->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
 		if (key->keyCode == toggleMenu)
 		{
 			UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
@@ -294,7 +295,7 @@ namespace Ether
 		
 		boost::shared_ptr<TundraLogic::Client> client=framework_->GetModule<TundraLogic::TundraLogicModule>()->GetClient();
 		QString name= "Avatar" + QString::number(client->GetConnectionID());
-		Scene::EntityPtr avatar_entity = framework_->GetDefaultWorldScene()->GetEntityByName(name);
+		Scene::EntityPtr avatar_entity = framework_->Scene()->GetDefaultSceneRaw()->GetEntityByName(name);
 
 		if (!avatar_entity)
 			return;

@@ -8,6 +8,7 @@
 #include <QList>
 #include <QListIterator>
 #include <QMessageBox>
+#include <QMainWindow>
 
 namespace UiServices
 {
@@ -15,7 +16,7 @@ namespace UiServices
 		owner_(owner),
 		uiService_(uiservice)
 	{
-		qWin_ = dynamic_cast<QMainWindow*>(owner_->GetFramework()->Ui()->MainWindow());
+		qWin_ = owner_->GetFramework()->Ui()->MainWindow();
 		QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/ConfigurationViews");
 		
 		if(!settings.childGroups().contains("Building")){

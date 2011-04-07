@@ -172,8 +172,8 @@ namespace OgreRenderer
                 OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
             }
 
-        if (framework_->Ui() && framework_->Ui()->CentralWindow())
-            framework_->Ui()->CentralWindow()->SaveWindowSettingsToFile();
+       /* if (framework_->Ui() && framework_->Ui()->MainWindow())
+            framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();*/
 
         framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
 

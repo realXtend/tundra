@@ -9,6 +9,7 @@
 
 #include "UiFwd.h"
 #include "UiApiExport.h"
+#include <QMainWindow>
 
 /// UiAPI is the core API object exposed for all UI-related functionality.
 class UI_API UiAPI : public QObject
@@ -21,7 +22,7 @@ public:
 
 public slots:
     /// Returns the widget that is the main window of Naali.
-    NaaliMainWindow *MainWindow() const;
+    QMainWindow *MainWindow() const;
 
     /// This widget shows all the user-added UI that has been added to the screen. It is contained as a child of NaaliMainWindow.
     NaaliGraphicsView *GraphicsView() const;

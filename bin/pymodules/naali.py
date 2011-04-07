@@ -97,9 +97,9 @@ worldlogic = _pythonscriptmodule.GetWorldLogic()
 inputcontext = _pythonscriptmodule.GetInputContext()
 mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
 
-frame = _naali.GetFrame()
+frame = _naali.Frame()
 console = _naali.Console()
-input = _naali.GetInput()
+input = _naali.Input()
 audio = _naali.Audio()
 ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
 try:

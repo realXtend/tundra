@@ -377,8 +377,7 @@ namespace UiServices
 			}
 
 			// Get original data and replace refs
-			QByteArray data = uiAsset->GetRawData();
-			uiAsset->ReplaceAssetReferences(data);
+			QByteArray data = uiAsset->GetRefReplacedAssetData();
 	        
 			QUiLoader loader;
 			QDataStream dataStream(&data, QIODevice::ReadOnly);

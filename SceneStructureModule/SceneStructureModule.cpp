@@ -83,13 +83,14 @@ void SceneStructureModule::PostInitialize()
 	//Scene panel
 	sceneWindow = new SceneStructureWindow(framework_, framework_->Ui()->MainWindow());
     sceneWindow->setWindowFlags(Qt::Tool);
-	sceneWindow->SetScene(framework_->GetDefaultWorldScene());
-	connect(framework_, SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
+	sceneWindow->SetScene(framework_->Scene()->GetDefaultScene());
+	connect(framework_->Scene(), SIGNAL(DefaultWorldSceneChanged(Scene::SceneManager *)),sceneWindow, SLOT(SetNewScene()));
     ui->AddWidgetToScene(sceneWindow, true, true);
 	ui->AddWidgetToMenu(sceneWindow, "Scene", "View");
 
-    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window.", this, SLOT(ShowSceneStructureWindow()));
-    framework_->Console()->RegisterCommand("assets", "Shows the Assets window.", this, SLOT(ShowAssetsWindow()));
+    framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window, hides it if it's visible.", this, SLOT(ToggleSceneStructureWindow()));
+    framework_->Console()->RegisterCommand("assets", "Shows the Assets window, hides it if it's visible.", this, SLOT(ToggleAssetsWindow()));
+
 
     // Don't allocate the widget memory for nothing if we are headless.
     if (!framework_->IsHeadless())

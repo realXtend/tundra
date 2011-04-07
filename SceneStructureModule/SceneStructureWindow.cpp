@@ -15,6 +15,7 @@
 #include "SceneTreeWidget.h"
 #include "SceneTreeWidgetItems.h"
 #include "TreeWidgetUtils.h"
+#include "SceneAPI.h"
 
 #include "Framework.h"
 #include "SceneManager.h"
@@ -105,7 +106,7 @@ SceneStructureWindow::~SceneStructureWindow()
 
 void SceneStructureWindow::SetNewScene()
 {
-	SetScene(framework->GetDefaultWorldScene());
+	SetScene(framework->Scene()->GetDefaultScene());
 }
 
 void SceneStructureWindow::SetScene(const Scene::ScenePtr &s)

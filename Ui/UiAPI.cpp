@@ -75,7 +75,8 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
         return;
     
     mainWindow = new NaaliMainWindow(owner);
-    mainWindow->setAutoFillBackground(false);
+	mainWindow->setCentralWidget(new QWidget(mainWindow));
+	mainWindow->centralWidget()->setAutoFillBackground(false);
     //mainWindow->setUpdatesEnabled(false);
 
     // Apply the Naali main window icon. 
@@ -85,17 +86,18 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
     mainWindow->setWindowIcon(icon);
 
-    graphicsView = new NaaliGraphicsView(mainWindow);
+	
+	graphicsView = new NaaliGraphicsView(mainWindow->centralWidget());
 
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
 
     // QMainWindow has a layout by default. It will not let you set another.
     // Leave this check here if the window type changes to for example QWidget so we dont crash then.
-    if (!mainWindow->layout())
-        mainWindow->setLayout(new QVBoxLayout());
-    mainWindow->layout()->setMargin(0);
-    mainWindow->layout()->setContentsMargins(0,0,0,0);
-    mainWindow->layout()->addWidget(graphicsView);
+    if (!mainWindow->centralWidget()->layout())
+        mainWindow->centralWidget()->setLayout(new QVBoxLayout());
+    mainWindow->centralWidget()->layout()->setMargin(0);
+    mainWindow->centralWidget()->layout()->setContentsMargins(0,0,0,0);
+    mainWindow->centralWidget()->layout()->addWidget(graphicsView);
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
@@ -103,7 +105,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     viewportWidget->setGeometry(0, 0, graphicsView->width(), graphicsView->height());
     viewportWidget->setContentsMargins(0,0,0,0);
 
-    mainWindow->setContentsMargins(0,0,0,0);
+    mainWindow->centralWidget()->setContentsMargins(0,0,0,0);
     graphicsView->setContentsMargins(0,0,0,0);
     
     graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -127,13 +129,13 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     connect(graphicsScene, SIGNAL(changed(const QList<QRectF> &)), graphicsView, SLOT(HandleSceneChanged(const QList<QRectF> &))); 
 //    connect(graphicsScene, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(OnSceneRectChanged(const QRectF &)));
 
-    connect(mainWindow, SIGNAL(WindowResizeEvent(int,int)), graphicsView, SLOT(Resize(int,int))); 
+    connect(mainWindow, SIGNAL(WindowResizeEvent(int,int)), graphicsView, SLOT(Resize(int,int)));
 
     mainWindow->LoadWindowSettingsFromFile();
-    graphicsView->Resize(mainWindow->width(), mainWindow->height());
+    graphicsView->Resize(mainWindow->centralWidget()->width(), mainWindow->centralWidget()->height());
 
     graphicsView->show();
-    mainWindow->show();
+	mainWindow->parentWidget()->show();
     viewportWidget->show();
 
     /// Do a full repaint of the view now that we've shown it.
@@ -148,9 +150,12 @@ UiAPI::~UiAPI()
     delete viewportWidget;
 }
 
-NaaliMainWindow *UiAPI::MainWindow() const
+QMainWindow *UiAPI::MainWindow() const
 {
-    return mainWindow;
+	if (owner->IsHeadless())
+        return 0;
+	else
+		return dynamic_cast<QMainWindow *>(mainWindow->parentWidget());
 }
 
 NaaliGraphicsView *UiAPI::GraphicsView() const

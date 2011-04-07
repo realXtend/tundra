@@ -11,7 +11,7 @@
 #include "EC_TtsVoice.h"
 #include "IModule.h"
 #include "Entity.h"
-#include "input.h"
+#include "InputAPI.h"
 #include "TundraLogicModule.h"
 #include "Client.h"
 #include <QToolTip>
@@ -83,7 +83,7 @@ void EC_TtsVoice::Help(const QString v){
 	for(int i=0;i<voices.length();i++)
 		s=s+voices.at(i)+"\n";
 	
-	QToolTip::showText(framework_->GetInput()->MousePressedPos(Qt::MouseButton::LeftButton),s);
+	QToolTip::showText(framework_->Input()->MousePressedPos(Qt::MouseButton::LeftButton),s);
 }
 
 void EC_TtsVoice::UpdateVoice()

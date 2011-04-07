@@ -147,8 +147,8 @@ void DebugStatsModule::AddProfilerWidgetToUi()
         return;
     }
 
-    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
-    if (!ui)
+    UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
+    if (!ui_service)
         return;
     /*NaaliUi *ui = GetFramework()->Ui();
     if (!ui)
@@ -163,11 +163,11 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);
 //$ BEGIN_MOD $
-	UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, true, true);
+	UiProxyWidget *proxy = ui_service->AddWidgetToScene(profilerWindow_, true, true);
     //connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 	//$ END_MOD $
 
-	ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("View"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+	ui_service->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("View"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }
 
 void DebugStatsModule::StartProfiling(bool visible)

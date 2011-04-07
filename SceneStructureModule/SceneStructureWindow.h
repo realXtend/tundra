@@ -61,7 +61,7 @@ public slots:
     /** @param show Visibility of asset references in the tree view.
     */
     void ShowAssetReferences(bool show);
-	void SetNewScene();
+	//void SetNewScene();
 
 protected:
     /// QWidget override.
@@ -113,6 +113,8 @@ private slots:
     /** @param entity Entity to be added.
     */
     void AddEntity(Scene::Entity *entity);
+
+	void SetNewScene();
 
     /// Removes entity from the tree widget.
     /** @param entity Entity to be removed.

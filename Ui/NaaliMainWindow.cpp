@@ -19,6 +19,7 @@
 
 using namespace std;
 
+
 NaaliMainWindow::NaaliMainWindow(Foundation::Framework *owner_)
 :owner(owner_)
 {
@@ -119,15 +120,5 @@ void NaaliMainWindow::closeEvent(QCloseEvent *e)
 
 void NaaliMainWindow::resizeEvent(QResizeEvent *e)
 {
-    emit WindowResizeEvent(width(), height());
+    emit WindowResizeEvent(centralWidget()->width(), centralWidget()->height());
 }
-
-//$ BEGIN_MOD $
-void NaaliMainWindow::ToggleFullScreen()
-{
-    if (parentWin_->isFullScreen())
-        parentWin_->showNormal();
-    else
-        parentWin_->showFullScreen();
-}
-//$ END_MOD $

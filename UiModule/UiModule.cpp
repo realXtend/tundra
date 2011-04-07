@@ -26,7 +26,7 @@
 
 #include "Common/UiAction.h"
 #include "UiSceneService.h"
-#include "NaaliUi.h"
+#include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 
 #include "EventManager.h"
@@ -95,7 +95,7 @@ namespace UiServices
 
     void UiModule::Initialize()
     {
-		framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
+		//framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QtUiAsset>("QtUiFile")));
 
 		if (GetFramework()->IsHeadless())
 			return;
@@ -208,6 +208,7 @@ namespace UiServices
 				{
 					settings.setValue("win_width", qWin_->width());
 					settings.setValue("win_height", qWin_->height());
+					settings.setValue("win_pos", qWin_->pos());
 				}
 				settings.setValue("win_fullscreen", qWin_->isFullScreen());
 			}
@@ -219,6 +220,7 @@ namespace UiServices
 				{
 					settings.setValue("win_width", qWin_->width());
 					settings.setValue("win_height", qWin_->height());
+					settings.setValue("win_pos", qWin_->pos());
 				}
 				settings.setValue("win_fullscreen", qWin_->isFullScreen());
 			}
