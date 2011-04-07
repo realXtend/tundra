@@ -52,7 +52,7 @@ function ServerInitialize() {
 
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
     var r = avatar.appearanceRef;
-    r.ref = "default_avatar.xml";
+    r.ref = "local://default_avatar.xml";
     avatar.appearanceRef = r;
 
     // Set physics properties
