@@ -29,7 +29,7 @@ Registered by Avatar::AvatarModule.
 
 <b>Attributes</b>:
 <ul>
-<li>QString: appearanceId
+<li>QString: appearanceRef
 <div>Asset id for the avatar appearance file that will be used to generate the visible avatar.</div>
 </ul>
 
@@ -53,8 +53,8 @@ class AV_MODULE_API EC_Avatar : public IComponent
 
 public:
     //! Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
-    Q_PROPERTY(AssetReference appearanceId READ getappearanceId WRITE setappearanceId);
-    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceId);
+    Q_PROPERTY(AssetReference appearanceRef READ getappearanceRef WRITE setappearanceRef);
+    DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceRef);
 
     //! Set component as serializable.
     virtual bool IsSerializable() const { return true; }

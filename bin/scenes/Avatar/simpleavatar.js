@@ -51,9 +51,9 @@ function ServerInitialize() {
     var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
 
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
-    var r = avatar.appearanceId;
+    var r = avatar.appearanceRef;
     r.ref = "default_avatar.xml";
-    avatar.appearanceId = r;
+    avatar.appearanceRef = r;
 
     // Set physics properties
     var sizeVec = new Vector3df();
