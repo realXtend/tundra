@@ -25,8 +25,7 @@ namespace UiServices
 		 */
 		ViewDialog(QStringList views, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
-		/*! Destroyes the dialog.
-		 */
+		//! Destroyes the dialog.
 		~ViewDialog();
 
 		/*! Update the comboBox with the available views.
@@ -36,14 +35,11 @@ namespace UiServices
 
 	private slots:
 
-		/*! Check if the can be renamed and send the signal
-		 */
+		//! Check if the can be renamed and send the signal
 		void OnRenameButtonClicked();
-		/*! Check if the can be saved and send the signal
-		 */
+		//! Check if the can be saved and send the signal
 		void OnSaveButtonClicked();
-		/*! Check if the can be deleted and send the signal
-		 */
+		//! heck if the can be deleted and send the signal
 		void OnDeleteButtonClicked();
 
 	signals:
@@ -53,10 +49,12 @@ namespace UiServices
          * \param newName New name of view
 		 */
 		void Rename(const QString &oldName,const QString &nnewName);
+
 		/*! Signal to save a view
          * \param name Name of view to save
          */
 		void Save(const QString &name);
+
 		/*! Signal to delete a view
          * \param name Name of view to delete
          */

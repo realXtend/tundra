@@ -1,0 +1,28 @@
+/**
+
+\page CameraModule Camera Module
+
+This module integrates the functionality to manage different types of cameras and display them in a widget. 
+At the moment, the module manage the creation and deletion of camera widgets, in the future can be interesting implement a service to extend the functionality.
+
+The module adds an entry in the menu panel to create camera widgets
+
+There are 3 configuration parameters for the camera. This parameters are:
+
+Types of cameras:
+Perspective
+Front
+Back
+Left
+Right
+Top
+Bottom
+
+Types of projections:
+Perspective
+Orthographic
+
+Types of rendering:
+With or without wireframe
+
+*/

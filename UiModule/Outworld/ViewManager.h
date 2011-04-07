@@ -26,18 +26,15 @@ namespace UiServices
          */
 		ViewManager(UiModule *owner);
 
-        /*! Destructor.
-         */
+        //! Destructor.
 		~ViewManager();
 
 	public slots:
 
-		/*! Create the New View Window.
-		 */
+		//! Create the New View Window.
 		void NewViewWindow();
 
-        /*! Hide view: hide all widgets.
-         */
+        //! Hide view: hide all widgets.
 		void HideView();
 
         /*! Show the selected view.
@@ -67,8 +64,6 @@ namespace UiServices
 		void ActionChanged(QAction* action);
 
 	private:
-
-		//void SendToCreateDynamicWidget(const QString &name,const QString &module,const QVariantList properties);
 
 		UiModule* owner_;
 		UiServiceInterface* uiService_;

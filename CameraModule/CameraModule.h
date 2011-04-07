@@ -56,45 +56,86 @@ namespace Camera
         //!Slots used to update widget viewport
         void UpdateObjectViewport();
 
+        /*!Create a camera widget and a camaera handler and connect them
+         * \param title The Name of the camera widget
+         * \param restored Widget restored
+         * \param camera_type Type of camera
+         * \param projection_type Type of projection
+         * \param wireframe Wireframe enable/disable
+         */
         void CreateNewCamera(QString title = 0, bool restored = false, int camera_type = 0, int projection_type = 1, bool wireframe = 0);
 
         /*!Create camera view 
+         * \param title The name of the camera widget
+         * \param restored Widget restored
          */
         CameraWidget* CreateCameraWidget(QString title = 0, bool restored=false);
 
-        /*!Create camera handler         
+        /*!Create camera handler
          */
         CameraHandler* CreateCameraHandler();
 
         /*!Connect camera view signals to camera handlers slots
          * \param view_name The ame of the camera view
          * \param handler_name The name of the camera handler
+         * \param camera_type Type of camera
+         * \param projection_type Type of projection
+         * \param wireframe Wireframe enable/disable
          */
         void ConnectViewToHandler(CameraWidget *camera_view, CameraHandler *camera_handler, int camera_type = 0, int projection_type = 1, bool wireframe = 0);
 
+        /*!Create the camera view when the world scene is changed
+         * \param view_name The ame of the camera view
+         * \param handler_name The name of the camera handler
+		 */
         void DefaultWorldSceneChanged(Scene::SceneManager *scene);
 
-        void DeleteCameraWidget(QWidget *widget);
-               
-        void OnCameraWidgetHidden();
-        void OnNewButtonClicked();
-        void OnDeleteButtonClicked();
-        void OnWireframeCheckBoxChanged(int state);  
+        /*!Delete camera widget
+         * \param widget camera widget
+		 */
+		void DeleteCameraWidget(QWidget *widget);
 
+        /*!Delete the camera widget when it is hidden
+		 */
+        void OnCameraWidgetHidden();
+        /*!Create a new camera widget when new button is clicked
+		 */
+        void OnNewButtonClicked();
+        /*!Delete the camera widget when delete button is clicked
+		 */
+        void OnDeleteButtonClicked();
+        /*!Change the state of wireframe
+         * \param state State of wireframe
+		 */
+        void OnWireframeCheckBoxChanged(int state);  
+        /*!Zoom in the camera
+         * \param checked Zoom in is checked
+		 */
         void OnNearPlusButtonClicked(bool checked);
+        /*!Zoom out the camera
+         * \param checked Zoom out is checked
+		 */
         void OnNearMinusButtonClicked(bool checked);
         void OnFarPlusButtonClicked(bool checked);
         void OnFarMinusButtonClicked(bool checked);
 
+        /*!Create a new camera (dynamic widget)
+         * \param name Name of dynamic widhet
+         * \param module Name of module
+         * \param properties Properties of dynamic widget
+		 */
 		void OnCreateNewCamera(const QString &name,const QString &module,const QVariantList properties);
 
     private:
         Q_DISABLE_COPY(CameraModule);      
-
+        /*!Save the camera widgets in initial configuration file
+		 */
         void SaveConfig();
-
+        /*!Read the configuration of camera widgets of initial configuration file
+		 */
         void ReadConfig();
-
+        /*!Generate a valid widget title
+		 */
         void GenerateValidWidgetTitle(QString &title);
 
 		Scene::SceneManager *scene_;

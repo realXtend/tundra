@@ -39,6 +39,7 @@ namespace Camera
         QLabel* GetRenderer() { return reinterpret_cast<QLabel*>(renderer);};
 
 	signals:
+        //! Emit when the widget is hidden
         void WidgetHidden();
 
     public slots:
@@ -46,8 +47,17 @@ namespace Camera
          * \param name  name of parent widget title 
          */
         void SetWindowTitle(const QString &name);
+        /*! Update the dynamic property DP_Camera
+         * \param camera_type  type of camera
+         */
 		void UpdateCameraType(const int camera_type);
+        /*! Update the dynamic property DP_Projection
+         * \param projection_type  type of projection
+         */
 		void UpdateCameraProjection(const int projection_type);
+        /*! Update the dynamic property DP_Wireframe
+         * \param wireframe  Wireframe enable/disable
+         */
 		void UpdateWireframe(const int wireframe);
 
     protected:

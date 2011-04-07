@@ -157,8 +157,7 @@ public slots:
      */
     virtual QGraphicsScene *GetScene(const QString &name) const = 0;
 	
-	/** Returns main scene 
-	*/
+	//! Returns main scene 
 	virtual QGraphicsScene *GetMainScene() const = 0;
 
 	/** Registers main scene.
@@ -190,8 +189,7 @@ public slots:
      */
     virtual bool SwitchToScene(const QString &name) = 0;
 	
-	/** Switches the main scene.
-	*/
+	//! Switches the main scene.
 	virtual bool SwitchToMainScene() = 0;
 
     /** Registers a universal widget. This means when scene is changed all interested will get
@@ -332,6 +330,11 @@ signals:
      */  
     void Notification(const QString &message);
 
+    /*! Emitted when a dynamic widget is requested
+     * \param name Name of dynamic widhet
+     * \param module Name of module
+     * \param properties Properties of dynamic widget
+     */
 	void CreateDynamicWidget(const QString &name,const QString &module,const QVariantList properties);
 };
 

@@ -140,8 +140,7 @@ namespace UiServices
         /// UiServiceInterface override.
         QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
 
-		/*! Save the position of widgets in a configuration file
-		 */
+		//! Save the position of widgets in a configuration file
 		void SaveViewConfiguration();
 
 //$ BEGIN_MOD $

@@ -56,8 +56,7 @@ namespace Camera
         virtual ~CameraHandler();
 
     public slots:
-        /*! Destroys ogre texture.         
-         */
+        //! Destroys ogre texture.         
         void DestroyCamera();
 
         /*! Creates new world entity with ec_ogrecamera and ec_placeable components

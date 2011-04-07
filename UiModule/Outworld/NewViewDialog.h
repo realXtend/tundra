@@ -22,14 +22,12 @@ namespace UiServices
 		 */
 		NewViewDialog(QStringList views, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
-		/*! Destroyes the dialog.
-		 */
+		//! Destroyes the dialog.
 		~NewViewDialog();
 
 
 	private slots:
-		/*! Check if the name is a valid name and send the signal
-		 */
+		//! Check if the name is a valid name and send the signal
 		void OnSaveButtonClicked();
 
 	signals:

@@ -376,7 +376,7 @@ namespace Camera
 
     void CameraModule::OnNearPlusButtonClicked(bool checked)
     {
-        //capture botton clicked widgetand call the handler
+        //capture botton clicked widget and call the handler
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
         if (!camera_view)
             return;
@@ -389,7 +389,7 @@ namespace Camera
 
     void CameraModule::OnNearMinusButtonClicked(bool checked)
     {
-        //capture botton clicked widgetand call the handler        
+        //capture botton clicked widget and call the handler        
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
         if (!camera_view)
             return;
@@ -402,7 +402,7 @@ namespace Camera
 
     void CameraModule::OnFarPlusButtonClicked(bool checked)
     {
-        //capture botton clicked widgetand call the handler
+        //capture botton clicked widget and call the handler
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(sender()->parent()->parent()->parent());
         if (!camera_view)
             return;
