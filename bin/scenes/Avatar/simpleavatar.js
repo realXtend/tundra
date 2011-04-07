@@ -360,10 +360,10 @@ function ClientInitialize() {
         var avatarurl = client.GetLoginProperty("avatarurl");
         if (avatarurl && avatarurl.length > 0)
         {
-            var avatarAssetRef = new QByteArray(avatarurl);
             var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
-            avatar.AttributeChanged.connect(CommonHandleAvatarAttributeChange)
-            avatar.appearanceId = avatarAssetRef;
+            var r = avatar.appearanceRef;
+            r.ref = "local://default_avatar.xml";
+            avatar.appearanceRef = r;
             print("Avatar from login parameters enabled:", avatarAssetRef);
         }
     }
