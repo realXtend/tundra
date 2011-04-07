@@ -228,6 +228,11 @@ namespace Foundation
     
     void NaaliApplication::UpdateFrame()
     {
+        // Don't pump the QEvents to QApplication if we are exiting
+        // also don't process our mainloop frames.
+        if (framework->IsExiting())
+            return;
+
         try
         {
             QApplication::processEvents(QEventLoop::AllEvents, 1);
@@ -235,11 +240,14 @@ namespace Foundation
 
             framework->ProcessOneFrame();
 
-            // Reduce framerate when unfocused
-            if (appActivated)
-                frameUpdateTimer.start(0); 
-            else 
-                frameUpdateTimer.start(5);
+            // Reduce frame rate when unfocused
+            if (!frameUpdateTimer.isActive())
+            {
+                if (appActivated)
+                    frameUpdateTimer.start(0); 
+                else 
+                    frameUpdateTimer.start(5);
+            }
         }
         catch(const std::exception &e)
         {

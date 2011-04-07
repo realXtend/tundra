@@ -201,11 +201,16 @@ namespace Foundation
         if (log_formatter_)
             log_formatter_->release();
 
-        delete frame;
-        delete console;
+        // We don't want to delete QObjects that have framework as parent
+        // Qt will perform that child cleanup after this destructor. In certain QWidget/QObject cases
+        // if we delete them here seems to be quite crash prone, core dumps at exit in QApplication::notify.
+        //delete frame;
+        //delete console;
+        //delete ui;
+
+        // Delete the QObjects that don't have a parent.
         delete input;
         delete asset;
-        delete ui;
         delete audio;
 
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
@@ -456,6 +461,11 @@ namespace Foundation
     void Framework::CancelExit()
     {
         exit_signal_ = false;
+
+        // Our main loop is stopped when we are exiting,
+        // we need to start it back up again if something canceled the exit.
+        if (naaliApplication)
+            naaliApplication->UpdateFrame();
     }
 
     void Framework::LoadModules()
