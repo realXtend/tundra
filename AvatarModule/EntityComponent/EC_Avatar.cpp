@@ -23,7 +23,6 @@
 #include <QDomDocument>
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Avatar")
 
 #include "MemoryLeakCheck.h"
 

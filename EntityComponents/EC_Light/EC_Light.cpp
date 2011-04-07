@@ -17,8 +17,6 @@
 #endif
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Light")
-
 #include <Ogre.h>
 
 #include <QDomDocument>

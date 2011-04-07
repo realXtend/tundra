@@ -5,8 +5,6 @@
 
 #include <set>
 #include <boost/filesystem.hpp>
-//#include <Poco/SharedLibrary.h>
-//#include <Poco/ClassLoader.h>
 
 #include "IModule.h"
 #include "ModuleReference.h"
@@ -41,10 +39,6 @@ namespace Module
 
         /// path to the shared library
         std::string path_;
-        /// shared library
-  //      Poco::SharedLibrary sl_;
-        /// class loader
-  //      Poco::ClassLoader<IModule> cl_;
     };
     typedef boost::shared_ptr<SharedLibrary> SharedLibraryPtr;
 
@@ -87,7 +81,7 @@ class ModuleManager
 public:
     typedef std::vector<Module::Entry> ModuleVector;
 
-    ModuleManager(Foundation::Framework *framework);
+    explicit ModuleManager(Foundation::Framework *framework);
     ~ModuleManager();
 
     /// Declare a module from static library
@@ -116,9 +110,6 @@ public:
     {
         return (exclude_list_.find(module) != exclude_list_.end());
     }
-
-    /// loads all available modules. Does not initialize them.
-    void LoadAvailableModules();
 
     /// unloads all available modules. Modules does not get unloaded as such, only the module's unload() function will be called
     /** Assumptions is that modules only get unloaded once the program exits.
@@ -173,25 +164,6 @@ public:
 
     /// @return True if the given module library entry is present, false otherwise.
     bool HasModuleEntry(const std::string &entry) const;
-
-    /// Loads and initializes a module with specified name
-    /** For internal use only!
-
-        \note currently works only if one module is contained in the lib!
-
-        \param lib name of the shared library to load from, without extension or d postfix
-        \param module name of the module to load from the lib
-        \return True if the module was loaded succesfully or if it already has been loaded, false otherwise
-    */
-    bool LoadModuleByName(const std::string &lib, const std::string &module);
-
-    /// Unloads a specific module by name
-    /** Precondition: HasModule(module)
-        Postcondition: HasModule(module) == false
-
-        \param module name of the module
-    */
-    bool UnloadModuleByName(const std::string &module);
 
     /// Pre-initialize the specified module
     void PreInitializeModule(IModule *module);
@@ -254,8 +226,6 @@ private:
 
     /// adds needed dependency paths to process path
     void AddDependenciesToPath(const StringVector &all_additions);
-
-    const std::string DEFAULT_MODULES_PATH;
 
     typedef std::set<std::string> ModuleTypeSet;
 

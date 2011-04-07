@@ -348,15 +348,18 @@ boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogr
 
 }
 
-//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace Physics;
-/*
-POCO_BEGIN_MANIFEST(IModule)
-    POCO_EXPORT_CLASS(PhysicsModule)
-POCO_END_MANIFEST 
-*/
+
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new Physics::PhysicsModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}

@@ -17,8 +17,6 @@
 #include "LoggingFunctions.h"
 #include "ConsoleCommandServiceInterface.h"
 
-//#include <Poco/Logger.h>
-
 static const int DEFAULT_EVENT_PRIORITY = 100;
 
 using namespace Foundation;
@@ -26,26 +24,10 @@ using namespace Foundation;
 IModule::IModule(const std::string &name) :
     name_(name), state_(MS_Unloaded), framework_(0)
 {
-/*
-    try
-    {
-#ifdef _DEBUG
-            int loggingLevel = Poco::Message::PRIO_TRACE;
-#else
-            int loggingLevel = Poco::Message::PRIO_INFORMATION;
-#endif            
-        Poco::Logger::create(Name(),Poco::Logger::root().getChannel(), loggingLevel);
-    }
-    catch(const std::exception &e)
-    {
-        LogError("Failed to create logger " + Name() + ":" + std::string(e.what()));
-    }
-*/
 }
 
 IModule::~IModule()
 {
- //   Poco::Logger::destroy(Name());
 }
 
 Framework *IModule::GetFramework() const

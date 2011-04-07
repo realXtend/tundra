@@ -218,13 +218,16 @@ void LoginScreenModule::Exit()
     framework_->Exit();
 }
 
-//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
-/*
-POCO_BEGIN_MANIFEST(IModule)
-   POCO_EXPORT_CLASS(LoginScreenModule)
-POCO_END_MANIFEST
-*/
+
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new LoginScreenModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}

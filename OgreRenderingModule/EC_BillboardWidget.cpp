@@ -17,7 +17,6 @@
 #include "Entity.h"
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_BillboardWidget")
 
 #include "MemoryLeakCheck.h"
 

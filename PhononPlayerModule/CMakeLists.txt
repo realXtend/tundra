@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (PhononPlayerModule OUTPUT modules/core)
+init_target (PhononPlayerModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -26,6 +26,6 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 link_modules (Core Foundation Interfaces RexCommon )
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

@@ -10,7 +10,7 @@
 
 #include "ScenePersistenceModuleApi.h"
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "RexTypes.h"
 #include "AttributeChangeType.h"
 

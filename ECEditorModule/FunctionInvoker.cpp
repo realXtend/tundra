@@ -14,8 +14,6 @@
 
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("FunctionInvoker");
-
 #include "MemoryLeakCheck.h"
 
 void FunctionInvoker::Invoke(QObject *obj, const QString &function, QVariant *ret, const QVariantList &params, QString *errorMsg)

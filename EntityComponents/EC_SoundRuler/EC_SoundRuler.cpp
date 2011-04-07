@@ -24,8 +24,6 @@
 #include "LoggingFunctions.h"
 #include <Ogre.h>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundRuler")
-
 #include "MemoryLeakCheck.h"
 
 EC_SoundRuler::EC_SoundRuler(IModule *module) :

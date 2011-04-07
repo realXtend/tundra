@@ -4,7 +4,7 @@
 #define incl_CAVEStereoModule_CAVEStereoModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "CAVEStereoModuleApi.h"
 #include <QVector>
 #include <QObject>

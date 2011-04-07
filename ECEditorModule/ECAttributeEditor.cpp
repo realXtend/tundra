@@ -20,7 +20,6 @@
 #include <qteditorfactory.h>
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditor")
 
 #include "MemoryLeakCheck.h"
 

@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (LoginScreenModule OUTPUT modules/core)
+init_target (LoginScreenModule OUTPUT plugins)
 
 MocFolder ()
 
@@ -29,6 +29,6 @@ link_modules (Framework Input)
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

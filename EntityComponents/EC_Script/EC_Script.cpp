@@ -14,7 +14,6 @@
 #include "AssetRefListener.h"
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Script")
 
 EC_Script::~EC_Script()
 {

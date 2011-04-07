@@ -4,7 +4,7 @@
 #define incl_MumbleVoipModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "MumbleVoipModuleApi.h"
 #include "CommunicationsService.h"
 #include "Core.h"

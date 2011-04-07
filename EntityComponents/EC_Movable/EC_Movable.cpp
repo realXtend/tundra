@@ -17,8 +17,6 @@
 #include "EC_Placeable.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Movable")
-
 EC_Movable::~EC_Movable()
 {
 }

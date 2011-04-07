@@ -20,7 +20,6 @@
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 #include "TextureAsset.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Terrain")
 
 #include <Ogre.h>
 #include <utility>

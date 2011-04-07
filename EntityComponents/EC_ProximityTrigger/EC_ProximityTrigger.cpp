@@ -14,8 +14,6 @@
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_ProximityTrigger")
-
 EC_ProximityTrigger::EC_ProximityTrigger(IModule *module)
     :IComponent(module->GetFramework()),
     active(this, "Is active", true),

@@ -15,8 +15,6 @@
 
 #include <kNet.h>
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
-
 #include <QDomDocument>
 
 #include "MemoryLeakCheck.h"

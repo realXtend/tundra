@@ -22,13 +22,7 @@ class ConsoleAPI;
 class DebugAPI;
 class SceneAPI;
 class ConfigAPI;
-
-namespace Poco
-{
-    class SplitterChannel;
-    class Channel;
-    class Formatter;
-}
+class PluginAPI;
 
 namespace Foundation
 {
@@ -137,18 +131,6 @@ namespace Foundation
         /// Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
         Profiler &GetProfiler();
 #endif
-        /// Add a new log listener for poco log
-        void AddLogChannel(Poco::Channel *channel);
-
-        /// Remove existing log listener from poco log
-        void RemoveLogChannel(Poco::Channel *channel);
-
-        /// load and init module
-        Console::CommandResult ConsoleLoadModule(const StringVector &params);
-
-        /// uninit and unload a module
-        Console::CommandResult ConsoleUnloadModule(const StringVector &params);
-
         /// List all loaded modules
         Console::CommandResult ConsoleListModules(const StringVector &params);
 
@@ -258,9 +240,6 @@ namespace Foundation
         /// Should be called after modules are loaded and initialized
         void RegisterConsoleCommands();
 
-        /// Creates logging system.
-        void CreateLoggingSystem();
-
         ModuleManagerPtr module_manager_; ///< Module manager.
         ComponentManagerPtr component_manager_; ///< Component manager.
         ServiceManagerPtr service_manager_; ///< Service manager.
@@ -269,8 +248,6 @@ namespace Foundation
         ConfigurationManagerPtr config_manager_; ///< Default configuration
         ApplicationPtr application_; ///< Application data.
         bool exit_signal_; ///< If true, exit application.
-//        std::vector<Poco::Channel*> log_channels_; ///< Logger channels
-//        Poco::Formatter *log_formatter_; ///< Logger default formatter
 #ifdef PROFILING
         Profiler profiler_; ///< Profiler.
 #endif
@@ -278,7 +255,6 @@ namespace Foundation
         boost::program_options::options_description commandLineDescriptions; ///< program option descriptions
         bool initialized_; ///< Is the framework is properly initialized.
         bool headless_; ///< Are we running in the headless mode.
-        Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.
         
         NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
         FrameAPI *frame; ///< The Naali Frame API.
@@ -290,6 +266,7 @@ namespace Foundation
         DebugAPI *debug; ///< The Naali Debug API.
         SceneAPI *scene; ///< The Naali Scene API.
         ConfigAPI *config; ///< The Naali Config API.
+        PluginAPI *plugin;
 
         int argc_; ///< Command line argument count as supplied by the operating system.
         char **argv_; ///< Command line arguments as supplied by the operating system.

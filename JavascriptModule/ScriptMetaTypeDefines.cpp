@@ -37,8 +37,6 @@
 #include <QUiLoader>
 #include <QFile>
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("Script")
-
 /// Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)

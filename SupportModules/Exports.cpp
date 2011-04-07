@@ -7,14 +7,7 @@
 
 using namespace Console;
 
-//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
-/*
-// Add here any other modules in this project
-POCO_BEGIN_MANIFEST(IModule)
-   POCO_EXPORT_CLASS(ConsoleModule)
-POCO_END_MANIFEST
-*/

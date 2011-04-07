@@ -10,8 +10,6 @@
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyDome")
-
 #include <Ogre.h>
 
 #include "MemoryLeakCheck.h"

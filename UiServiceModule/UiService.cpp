@@ -16,7 +16,6 @@
 #include "AssetAPI.h"
 #include "QtUiAsset.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("UiService")
 
 #include <QDomDocument>
 #include <QUiLoader>

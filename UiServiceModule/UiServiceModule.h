@@ -4,7 +4,7 @@
 #define incl_UiServiceModule_UiServiceModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 
 class UiService;
 

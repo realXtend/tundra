@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (UpdateModule OUTPUT modules/core)
+init_target (UpdateModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -22,7 +22,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 link_modules(Core Foundation Interfaces Ui)
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()
 

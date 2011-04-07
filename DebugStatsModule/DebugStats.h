@@ -12,13 +12,15 @@
 #include "DebugStatsModuleApi.h"
 #include "IModule.h"
 #include "InputFwd.h"
-#include "ModuleLoggingFunctions.h"
+
 #ifdef ENABLE_TAIGA_SUPPORT
 #include "RexTypes.h"
 #endif
 
 #include <QObject>
 #include <QPointer>
+
+#include <Windows.h>
 
 class EC_Placeable;
 

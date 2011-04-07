@@ -396,12 +396,16 @@ void OgreAssetEditorModule::UploadBuffer(Inventory::InventoryUploadBufferEventDa
     framework_->GetEventManager()->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, data);
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-POCO_BEGIN_MANIFEST(IModule)
-    POCO_EXPORT_CLASS(OgreAssetEditorModule)
-POCO_END_MANIFEST
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new OgreAssetEditorModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}

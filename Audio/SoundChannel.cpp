@@ -15,8 +15,6 @@
 #include <alc.h>
 #endif
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("SoundChannel")
-
 static const float MINIMUM_ROLLOFF = 0.1f;
 static const float DEFAULT_ROLLOFF = 2.0f;
 static const float DEFAULT_INNER_RADIUS = 1.0f;

@@ -9,7 +9,6 @@
 #include "CompositionHandler.h"
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_OgreCompositor");
 
 #include "MemoryLeakCheck.h"
 

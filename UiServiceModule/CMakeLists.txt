@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (UiServiceModule OUTPUT modules/core)
+init_target (UiServiceModule OUTPUT plugins)
 
 MocFolder ()
 
@@ -23,6 +23,6 @@ link_modules (Core Foundation Interfaces Ui Asset)
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

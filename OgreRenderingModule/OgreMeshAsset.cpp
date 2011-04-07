@@ -10,7 +10,6 @@
 #include <Ogre.h>
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("OgreMeshAsset")
 
 OgreMeshAsset::~OgreMeshAsset()
 {

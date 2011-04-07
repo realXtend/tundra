@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<Tundra>
+	<plugin path="SupportModules" />
+	<plugin path="AssetModule" />	
+	<plugin path="OgreRenderingModule" />	
+	<plugin path="EnvironmentModule" />
+	<plugin path="PhysicsModule" />
+	<plugin path="KristalliProtocolModule" />
+	<plugin path="LoginScreenModule" />
+	<plugin path="TundraLogicModule" />
+	<plugin path="ECEditorModule" />
+	<plugin path="JavascriptModule" />
+	<plugin path="SceneStructureModule" />
+	<plugin path="DebugStatsModule" />
+</Tundra>

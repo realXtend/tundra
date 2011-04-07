@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (CAVEStereoModule OUTPUT modules/core)
+init_target (CAVEStereoModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -31,7 +31,7 @@ link_modules (Core Foundation Interfaces RexCommon SupportModules OgreRenderingM
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()
 

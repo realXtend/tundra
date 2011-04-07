@@ -13,7 +13,6 @@
 #include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>

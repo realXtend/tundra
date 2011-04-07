@@ -5,7 +5,6 @@
 #include "OpenAssetImport.h"
 #include "SceneDesc.h"
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport")
 
 #include <assimp.hpp>      // C++ importer interface
 #include <aiScene.h>       // Output data structure

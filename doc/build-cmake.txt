@@ -33,7 +33,7 @@ LINK_LIBRARYNAME() - actually adds the needed libraries to a build target called
 
 These macros can do platform-specific magic as needed. On Windows / Visual Studio ( if (MSVC) ... ) it should be assumed that lib/include files will be installed to the external_libs directory; find_package may not necessarily work as expected.
 
-Check the existing modules (Boost, PoCo, Curl...) for examples.
+Check the existing modules (Boost, Curl...) for examples.
 
 
 For further reference

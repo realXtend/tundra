@@ -17,8 +17,6 @@
 
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_InputMapper")
-
 EC_InputMapper::~EC_InputMapper()
 {
     input_.reset();

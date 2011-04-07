@@ -10,7 +10,6 @@
 #include "Inventory/InventoryEvents.h"
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("TexturePreviewEditor")
 
 #include <Renderer.h>
 #include <NaaliRenderWindow.h>

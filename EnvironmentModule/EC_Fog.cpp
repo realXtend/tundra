@@ -5,7 +5,6 @@
 #include "EC_Fog.h"
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Fog")
 
 #include <QDebug>
 #include <Ogre.h>

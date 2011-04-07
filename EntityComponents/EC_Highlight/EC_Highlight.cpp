@@ -19,8 +19,6 @@
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Highlight")
-
 #include "MemoryLeakCheck.h"
 
 EC_Highlight::~EC_Highlight()

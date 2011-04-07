@@ -11,7 +11,6 @@
 #include <Ogre.h>
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_AnimationController")
 
 #include "MemoryLeakCheck.h"
 

@@ -4,7 +4,7 @@
 #define incl_CommunicationsModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include <QObject>
 
 namespace Communications

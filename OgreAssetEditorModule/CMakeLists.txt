@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (OgreAssetEditorModule OUTPUT modules/core)
+init_target (OgreAssetEditorModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -40,6 +40,6 @@ endif()
 link_ogre()
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

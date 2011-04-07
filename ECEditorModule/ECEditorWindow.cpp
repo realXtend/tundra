@@ -30,8 +30,6 @@
 #include "InputAPI.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("ECEditorWindow");
-
 #include <QUiLoader>
 #include <QDomDocument>
 

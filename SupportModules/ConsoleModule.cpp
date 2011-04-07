@@ -126,3 +126,15 @@ namespace Console
         return false;
     }
 }
+
+extern "C"
+{
+
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    LogInfo("Loading ConsoleModule.");
+    IModule *module = new Console::ConsoleModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+
+}

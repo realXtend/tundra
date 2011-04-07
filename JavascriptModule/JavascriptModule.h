@@ -9,7 +9,7 @@
 #define incl_JavascriptModule_JavascriptModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "AttributeChangeType.h"
 //#include "ScriptServiceInterface.h"
 

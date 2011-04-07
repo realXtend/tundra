@@ -3,9 +3,6 @@
 #ifndef incl_ConsoleConsoleManager_h
 #define incl_ConsoleConsoleManager_h
 
-//#include <Poco/Channel.h>
-//#include <Poco/Message.h>
-
 #include "ConsoleServiceInterface.h"
 #include "CommandManager.h"
 #include "LogListenerInterface.h"

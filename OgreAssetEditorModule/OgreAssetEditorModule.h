@@ -10,7 +10,7 @@
 #define incl_OgreAssetEditorModule_OgreAssetEditorModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "OgreAssetEditorModuleApi.h"
 
 #include <QObject>

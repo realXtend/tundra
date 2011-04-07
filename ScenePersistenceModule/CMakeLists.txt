@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target(ScenePersistenceModule OUTPUT modules/core)
+init_target(ScenePersistenceModule OUTPUT plugins)
 
 GetEntityComponents()
 
@@ -26,6 +26,6 @@ link_ogre()
 link_modules(Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities)
 
 SetupCompileFlags()
-CopyModuleXMLFile()
+
 
 final_target()

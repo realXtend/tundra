@@ -19,8 +19,6 @@
 
 #include <QTimer>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_OpenSimPrim");
-
 EC_OpenSimPrim::EC_OpenSimPrim(IModule* module) :
     IComponent(module->GetFramework()),
     editor_(0),

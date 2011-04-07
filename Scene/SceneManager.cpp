@@ -19,8 +19,6 @@
 #include "Profiler.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
-
 #include <QString>
 #include <QDomDocument>
 #include <QFile>

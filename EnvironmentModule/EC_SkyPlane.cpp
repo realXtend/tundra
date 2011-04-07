@@ -7,7 +7,6 @@
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyPlane")
 
 #include <Ogre.h>
 

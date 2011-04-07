@@ -13,8 +13,6 @@
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Selected")
-
 #include "MemoryLeakCheck.h"
 
 EC_Selected::EC_Selected(IModule *module) :

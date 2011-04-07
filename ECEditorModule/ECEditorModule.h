@@ -4,7 +4,7 @@
 #define incl_ECEditorModule_ECEditorModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
+
 #include "ECEditorModuleApi.h"
 #include "SceneFwd.h"
 #include "InputFwd.h"

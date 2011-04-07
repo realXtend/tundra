@@ -10,8 +10,6 @@
 #include "FrameAPI.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_RttTarget");
-
 
 EC_RttTarget::EC_RttTarget(IModule* module) :
   IComponent(module->GetFramework()),

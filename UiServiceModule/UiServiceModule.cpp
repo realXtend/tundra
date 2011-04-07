@@ -58,12 +58,16 @@ bool UiServiceModule::HandleEvent(event_category_id_t category_id, event_id_t ev
     return false;
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-POCO_BEGIN_MANIFEST(IModule)
-   POCO_EXPORT_CLASS(UiServiceModule)
-POCO_END_MANIFEST
+extern "C"
+{
+__declspec(dllexport) void TundraPluginMain(Foundation::Framework *fw)
+{
+    IModule *module = new UiServiceModule();
+    fw->GetModuleManager()->DeclareStaticModule(module);
+}
+}

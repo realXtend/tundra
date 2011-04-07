@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (AssetModule OUTPUT modules/core)
+init_target (AssetModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -21,6 +21,6 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 link_modules(Framework Asset)
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

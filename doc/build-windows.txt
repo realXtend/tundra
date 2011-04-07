@@ -39,7 +39,6 @@ To build Naali using the dependency repository, perform the following:
 # Download, install and build Boost from http://www.boost.org/. Version v1.36.0 or newer is required.
 # Download, install and build Qt from http://www.qtsoftware.com/, or obtain Qt from the precompiled dependency package. Check that the environment variable QTDIR is correct. See \viewer\doc\build-qt-windows.txt for more details.
 # Download, install and build Ogre from http://www.ogre3d.org/. Alternatively complete this dependency using the precompiled dependency package. Ogre version v1.6.1 or newer is required. Check that OGRE_HOME environment variable points to the installation root folder.
-# Download, install and build PoCo from http://pocoproject.org/. Version v1.3.4 or newer is required. It seems that Visual Studio 2008 Express cannot be used to compile PoCo, so in that case, you just have to get the precompiled version from the dependency package.
 # See viewerdeps\src\expat\ReadmeRex.txt. Build Expat from C:\viewerdeps\src\expat\expat.sln. Copy the outputted DLLs to viewer\bin.
 # See viewerdeps\src\GnuWin32\ReadmeRex.txt. LibIconv doesn't require building. Copy the DLLs in viewerdeps\src\GnuWin32\bin\ to viewer\bin.
 # See viewerdeps\src\libcurl\ReadmeRex.txt. Build LibCurl from the file vc9curl.sln. Copy the resulting outputted DDLs to viewer\bin.

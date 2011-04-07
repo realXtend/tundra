@@ -28,7 +28,6 @@
 #endif
 
 #include "LoggingFunctions.h"
-//DEFINE_POCO_LOGGING_FUNCTIONS("EC_VideoSource")
 
 #include "MemoryLeakCheck.h"
 

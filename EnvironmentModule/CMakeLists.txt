@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (EnvironmentModule OUTPUT modules/core)
+init_target (EnvironmentModule OUTPUT plugins)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -51,6 +51,6 @@ if (CAELUM)
 endif (CAELUM)
 
 SetupCompileFlagsWithPCH()
-CopyModuleXMLFile()
+
 
 final_target ()

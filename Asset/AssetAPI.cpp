@@ -23,8 +23,6 @@
 #include <QDir>
 #include <QFileSystemWatcher>
 
-//DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
-
 using namespace Foundation;
 
 AssetAPI::AssetAPI(bool isHeadless)
