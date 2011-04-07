@@ -1,6 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+/// \todo Deprecated. Reimplemented in AvatarDescAsset.
+
+/*
 #include "LegacyAvatarSerializer.h"
 #include "RexTypes.h"
 #include "RexNetworkUtils.h"
@@ -887,3 +891,4 @@ namespace Avatar
     }
 }
 
+*/

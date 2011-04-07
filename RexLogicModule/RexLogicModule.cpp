@@ -54,9 +54,9 @@
 #include "Avatar/AvatarControllable.h"
 #include "AvatarEditing/AvatarEditor.h"
 
-#ifdef EC_AvatarAppearance_ENABLED
-#include "EntityComponent/EC_AvatarAppearance.h"
-#endif
+//#ifdef EC_AvatarAppearance_ENABLED
+//#include "EntityComponent/EC_AvatarAppearance.h"
+//#endif
 
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
@@ -650,8 +650,12 @@ Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QS
 
 const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) const
 {
+    /// \todo Deprecated. Reimplement using EC_Avatar if needed.
+    /*
     static const QString prop = GetUserAvatarEntity()->GetComponent<EC_AvatarAppearance>()->GetProperty(name.toStdString()).c_str();
     return prop;
+    */
+    return QString();
 }
 
 float RexLogicModule::GetCameraControllablePitch() const

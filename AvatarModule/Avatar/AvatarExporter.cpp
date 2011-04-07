@@ -1,6 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+
+/// Deprecated and not used in Tundra
+/*
 #include "AvatarModule.h"
 #include "Avatar/AvatarExporter.h"
 
@@ -288,3 +291,4 @@ namespace Avatar
         hash_ = std::string(encoded.constData());
     }
 }
+*/
