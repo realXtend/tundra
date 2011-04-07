@@ -69,6 +69,9 @@ namespace Avatar
         void UnregisterFullId(const RexUUID &full_uuid);
 
     private:
+        //! Console command: start editing a specific entity's avatar
+        Console::CommandResult EditAvatar(const StringVector &params);
+
         //! Current query categories
         QStringList event_query_categories_;
 
@@ -81,7 +84,7 @@ namespace Avatar
         AvatarHandlerPtr avatar_handler_;
         AvatarControllablePtr avatar_controllable_;
         AvatarEditorPtr avatar_editor_;
-        AvatarSceneManager *scene_manager_;
+        //AvatarSceneManager *scene_manager_;
 
         ProtocolUtilities::WorldStreamPtr world_stream_;
 

@@ -51,8 +51,9 @@ function ServerInitialize() {
     var rigidbody = me.GetOrCreateComponentRaw("EC_RigidBody");
 
     // Set the avatar appearance. This creates the mesh & animationcontroller, once the avatar asset has loaded
-    // Note: for now, you need the default_avatar.xml in your bin/data/assets folder
-    avatar.appearanceId = "local://default_avatar.xml"
+    var r = avatar.appearanceRef;
+    r.ref = "local://default_avatar.xml";
+    avatar.appearanceRef = r;
 
     // Set physics properties
     var sizeVec = new Vector3df();
@@ -344,7 +345,7 @@ function ClientInitialize() {
         own_avatar = true;
         ClientCreateInputMapper();
         ClientCreateAvatarCamera();
-        crosshair = new Crosshair();
+        crosshair = new Crosshair(/*bool useLabelInsteadOfCursor*/ true);
         var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
         soundlistener.active = true;
 
@@ -359,10 +360,10 @@ function ClientInitialize() {
         var avatarurl = client.GetLoginProperty("avatarurl");
         if (avatarurl && avatarurl.length > 0)
         {
-            var avatarAssetRef = new QByteArray(avatarurl);
             var avatar = me.GetOrCreateComponentRaw("EC_Avatar");
-            avatar.OnAttributeChanged.connect(CommonHandleAvatarAttributeChange)
-            avatar.appearanceId = avatarAssetRef;
+            var r = avatar.appearanceRef;
+            r.ref = "local://default_avatar.xml";
+            avatar.appearanceRef = r;
             print("Avatar from login parameters enabled:", avatarAssetRef);
         }
     }
@@ -787,12 +788,17 @@ function ClientHandleMouseMove(mouseevent)
     // Dont move av rotation if we are not the active cam
     if (!cameraentity.ogrecamera.IsActive())
         return;
-               
+
     var cameraplaceable = cameraentity.placeable;
     var cameratransform = cameraplaceable.transform;
 
+    var cursorOffset = 0;
+    if (crosshair.isUsingLabel)
+    //\note: An arbitrary value to move the cursor a little bit up when using label for a crosshair, 
+    //\      so that we get clicks on scene and not on the label
+        cursorOffset = 9;
     var view = ui.GraphicsView();
-    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2);
+    var centeredCursorPosLocal = new QPoint(view.size.width()/2, view.size.height()/2 + cursorOffset);
     input.lastMouseX = centeredCursorPosLocal.x;
     input.lastMouseY = centeredCursorPosLocal.y;
 

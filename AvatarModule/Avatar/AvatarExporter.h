@@ -3,14 +3,15 @@
 #ifndef incl_Avatar_AvatarExporter_h
 #define incl_Avatar_AvatarExporter_h
 
+/// Deprecated and not used in Tundra.
+
+/*
+
 #include "ThreadTask.h"
 
 namespace Avatar
 {
     //! An asset to export.
-    /*! Note: hash has to be calculated before submitting for export, and many assets
-        with duplicate same hash should not exist!
-     */
     class ExportAsset
     {
     public:
@@ -55,8 +56,6 @@ namespace Avatar
     typedef boost::shared_ptr<AvatarExporterResult> AvatarExporterResultPtr;
     
     //! Threadtask that handles avatar export to legacy avatar storage.
-    /*! Also handles periodically refreshing the authentication session hash, so that export stays legal.
-     */
     class AvatarExporter : public Foundation::ThreadTask
     {
     public:
@@ -74,5 +73,6 @@ namespace Avatar
     
     typedef boost::shared_ptr<AvatarExporter> AvatarExporterPtr;
 }
+*/
 
 #endif

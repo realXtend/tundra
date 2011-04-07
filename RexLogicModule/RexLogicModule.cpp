@@ -9,11 +9,11 @@
  *          scene creation and deletion, avatars, prims, and camera.
  *
  *  @note   Avoid direct module dependency to RexLogicModule at all costs because
- *          it's likely to cause cyclic dependy which fails the whole application.
+ *          it's likely to cause cyclic dependency which fails the whole application.
  *          Instead use the WorldLogicInterface or different entity-components which
  *          are not within RexLogicModule. 
  *
- *          Currenly e.g. PythonScriptModule is highly dependant of RexLogicModule,
+ *          Currently e.g. PythonScriptModule is highly dependent of RexLogicModule,
  *          but work is made to overcome this. If some feature you need from RexLogicModule
  *          is missing, please try to find a delicate abstraction/mechanism/design for retrieving it,
  *          instead of just hacking it to RexLogicModule directly.
@@ -54,9 +54,9 @@
 #include "Avatar/AvatarControllable.h"
 #include "AvatarEditing/AvatarEditor.h"
 
-#ifdef EC_AvatarAppearance_ENABLED
-#include "EntityComponent/EC_AvatarAppearance.h"
-#endif
+//#ifdef EC_AvatarAppearance_ENABLED
+//#include "EntityComponent/EC_AvatarAppearance.h"
+//#endif
 
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
@@ -140,9 +140,6 @@
 #endif
 #ifdef EC_InputMapper_ENABLED
 #include "EC_InputMapper.h"
-#endif
-#ifdef EC_Movable_ENABLED
-#include "EC_Movable.h"
 #endif
 #ifdef EC_VideoSource_ENABLED
 #include "EC_VideoSource.h"
@@ -255,11 +252,8 @@ void RexLogicModule::Load()
 #ifdef EC_Sound_ENABLED
     DECLARE_MODULE_EC(EC_Sound);
 #endif
-#ifdef EC_InputMapper_ENABLED    
+#ifdef EC_InputMapper_ENABLED
     DECLARE_MODULE_EC(EC_InputMapper);
-#endif
-#ifdef EC_Movable_ENABLED
-    DECLARE_MODULE_EC(EC_Movable);
 #endif
 #ifdef EC_VideoSource_ENABLED
     DECLARE_MODULE_EC(EC_VideoSource);
@@ -650,8 +644,12 @@ Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QS
 
 const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) const
 {
+    /// \todo Deprecated. Reimplement using EC_Avatar if needed.
+    /*
     static const QString prop = GetUserAvatarEntity()->GetComponent<EC_AvatarAppearance>()->GetProperty(name.toStdString()).c_str();
     return prop;
+    */
+    return QString();
 }
 
 float RexLogicModule::GetCameraControllablePitch() const
@@ -1331,13 +1329,6 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
 //        connect(listener, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)), 
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
-    }
-#endif
-
-#ifdef EC_Movable_ENABLED ///\todo When the Connection API is complete, remove this altogether. The EC_Movable can access the connection via that. -jj.
-    if (component->TypeName() == EC_Movable::TypeNameStatic())
-    {
-        entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }
 #endif
 }

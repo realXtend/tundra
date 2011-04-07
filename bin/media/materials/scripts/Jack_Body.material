@@ -1,0 +1,49 @@
+// Renders primitives with a single lit texture, includes shadowing
+material Jack_Body
+{
+	technique
+	{
+		pass
+		{
+			vertex_program_ref rex/DiffShadowVP
+			{
+			}
+			fragment_program_ref rex/DiffShadowFP
+			{
+			}
+
+			texture_unit baseMap
+			{
+				texture Jack_body_yellow1.jpg
+			}
+
+			texture_unit shadowMap0
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap1
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap2
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+		}
+	}
+
+	// fallback
+	technique
+	{
+	    pass
+	    {
+	        texture_unit baseMap
+	        {
+	            texture Jack_body_yellow1.jpg
+	        }
+        }
+	}
+}
