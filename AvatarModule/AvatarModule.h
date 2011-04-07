@@ -70,7 +70,7 @@ namespace Avatar
 
     private:
         //! Console command: start editing a specific entity's avatar
-        Console::CommandResult AvatarModule::EditAvatar(const StringVector &params);
+        Console::CommandResult EditAvatar(const StringVector &params);
 
         //! Current query categories
         QStringList event_query_categories_;
