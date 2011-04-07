@@ -70,7 +70,7 @@ public:
     Q_PROPERTY(bool runOnLoad READ getrunOnLoad WRITE setrunOnLoad);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, runOnLoad);
 
-    //! Script asset reference
+    /// Script asset reference
     Q_PROPERTY(AssetReference scriptRef READ getscriptRef WRITE setscriptRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, scriptRef);
 

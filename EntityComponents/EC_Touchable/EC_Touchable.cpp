@@ -25,7 +25,7 @@
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
 #include <QApplication>
 #include <QTimer>
@@ -196,7 +196,7 @@ void EC_Touchable::Create()
             {
                 entityClone_->getMesh()->_notifySkeleton(entity_skel);
             }
-            catch (Ogre::Exception &e)
+            catch(Ogre::Exception &e)
             {
                 LogError("Could not set shared skeleton for attachment: " + std::string(e.what()));
             }
@@ -209,7 +209,7 @@ void EC_Touchable::Create()
         //OgreRenderer::CloneMaterial("Touchable", materialName.Get());
         entityClone_->setMaterialName(materialName.Get().toStdString());
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
         LogError("Could not set material \"" + materialName.Get().toStdString() + "\": " + std::string(e.what()));
         return;
@@ -227,7 +227,7 @@ void EC_Touchable::UpdateMaterial()
     {
         entityClone_->setMaterialName(materialName.Get().toStdString());
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
         LogError("Could not set material \"" + materialName.Get().toStdString() + "\": " + std::string(e.what()));
         return;
@@ -235,7 +235,7 @@ void EC_Touchable::UpdateMaterial()
 
     // Remove current cursors when attributes change
     QCursor *current_cursor = QApplication::overrideCursor();
-    while (current_cursor)
+    while(current_cursor)
     {
         QApplication::restoreOverrideCursor();
         current_cursor = QApplication::overrideCursor();
@@ -262,7 +262,7 @@ void EC_Touchable::SetCursorVisible(bool visible)
         }
         else
         {
-            while (current_cursor)
+            while(current_cursor)
             {
                 QApplication::restoreOverrideCursor();
                 current_cursor = QApplication::overrideCursor();

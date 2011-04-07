@@ -17,7 +17,7 @@
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("FunctionDialog");
+//DEFINE_POCO_LOGGING_FUNCTIONS("FunctionDialog");
 
 //#include <QWebView>
 

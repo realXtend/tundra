@@ -18,7 +18,7 @@
 #include <kNet/DataSerializer.h>
 #include <kNet/DataDeserializer.h>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("Entity")
+//DEFINE_POCO_LOGGING_FUNCTIONS("Entity")
 
 #include "MemoryLeakCheck.h"
 
@@ -42,7 +42,7 @@ namespace Scene
     Entity::~Entity()
     {
         // If components still alive, they become free-floating
-        for (size_t i=0 ; i<components_.size() ; ++i)
+        for(size_t i=0 ; i<components_.size() ; ++i)
         {
             components_[i]->SetParentEntity(0);
             // Remove component dynamic properties in case scripts still try to access them
@@ -222,7 +222,7 @@ namespace Scene
     
     ComponentPtr Entity::GetComponent(const QString &type_name) const
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
+        for(size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
                 return components_[i];
 
@@ -231,7 +231,7 @@ namespace Scene
 
     ComponentPtr Entity::GetComponent(uint type_hash) const
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
+        for(size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeNameHash() == type_hash)
                 return components_[i];
 
@@ -240,7 +240,7 @@ namespace Scene
 
     ComponentPtr Entity::GetComponent(const IComponent *component) const
     {
-        for (size_t i = 0; i < components_.size(); i++)
+        for(size_t i = 0; i < components_.size(); i++)
             if(component->TypeName() == components_[i]->TypeName() &&
                component->Name() == components_[i]->Name())
                return components_[i];
@@ -258,7 +258,7 @@ namespace Scene
 
     ComponentPtr Entity::GetComponent(const QString &type_name, const QString& name) const
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
+        for(size_t i=0 ; i<components_.size() ; ++i)
             if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
                 return components_[i];
 
@@ -267,7 +267,7 @@ namespace Scene
 
     ComponentPtr Entity::GetComponent(uint type_hash, const QString& name) const
     {
-        for (size_t i=0 ; i<components_.size() ; ++i)
+        for(size_t i=0 ; i<components_.size() ; ++i)
             if ((components_[i]->TypeNameHash() == type_hash) && (components_[i]->Name() == name))
                 return components_[i];
 

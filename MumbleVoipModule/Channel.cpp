@@ -40,7 +40,7 @@ namespace MumbleLib
     {
         QString full_name = Name();
         boost::shared_ptr<MumbleClient::Channel> c = channel_->parent.lock();
-        while (c)
+        while(c)
         {
             full_name.push_front("/");
             full_name.push_front(c->name.c_str());

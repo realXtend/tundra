@@ -9,7 +9,7 @@ namespace Foundation
 class KeyEvent;
 namespace OgreRenderer
 {
-    //! Widget for rendering settings
+    /// Widget for rendering settings
     class RendererSettings : public QObject
     {
         Q_OBJECT
@@ -23,7 +23,7 @@ namespace OgreRenderer
         void ShadowQualityChanged(int quality);
         void TextureQualityChanged(int quality);
         
-        //! toggles fullscreen mode
+        /// toggles fullscreen mode
         void SetFullScreenMode(bool value);
 
         void KeyPressed(KeyEvent* e);
@@ -35,7 +35,7 @@ namespace OgreRenderer
 
         Foundation::Framework* framework_;
 
-        //! Widget for renderer settings
+        /// Widget for renderer settings
         QWidget *settings_widget_;
 
     };

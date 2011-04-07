@@ -53,7 +53,7 @@ namespace Foundation
         }
         else
         {
-            RootLogError("Null work request passed to AddRequest");
+            LogError("Null work request passed to AddRequest");
         }
     }
 
@@ -75,7 +75,7 @@ namespace Foundation
     bool ThreadTask::WaitForRequests()
     {
         ScopedLock lock(request_mutex_);
-        while (requests_.empty() && keep_running_)
+        while(requests_.empty() && keep_running_)
         {
             request_condition_.wait(lock);
         }
@@ -107,7 +107,7 @@ namespace Foundation
         }
         else
         {
-            RootLogError("Null result passed to SetResult");
+            LogError("Null result passed to SetResult");
         }
     }
     
@@ -123,12 +123,12 @@ namespace Foundation
             }
             else
             {
-                RootLogError("Thread task manager not set, can not queue result");
+                LogError("Thread task manager not set, can not queue result");
             }
         }
         else
         {
-            RootLogError("Null result passed to QueueResult");
+            LogError("Null result passed to QueueResult");
         }
         
         return false;

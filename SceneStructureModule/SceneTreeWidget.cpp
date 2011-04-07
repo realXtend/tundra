@@ -43,7 +43,7 @@
 #include "OgreScriptEditor.h"
 #endif
 
-DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
+//DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
 #include <QDomDocument>
 #include <QDomElement>
@@ -1296,11 +1296,11 @@ void SceneTreeWidget::ExportAllDialogClosed(int result)
 
     saved_assets_.clear();
     fetch_references_ = true;
-    //! \todo This is in theory a better way to get all assets in a sceene, but not all assets are currently available with this method
-    //!       Once all assets are properly shown in this widget, it would be better to do it this way -cm
+    /// \todo This is in theory a better way to get all assets in a sceene, but not all assets are currently available with this method
+    ///       Once all assets are properly shown in this widget, it would be better to do it this way -cm
 /*
     QTreeWidgetItemIterator it(this);
-    while (*it)
+    while(*it)
     {
         AssetItem *aItem = dynamic_cast<AssetItem*>((*it));
         if (aItem)

@@ -60,16 +60,16 @@ Profiler::~Profiler()
     out << "events: microseconds" << endl;
     out << endl;
     QHashIterator<int, Object> i(objects);
-    while (i.hasNext()) {
+    while(i.hasNext()) {
         i.next();
         Object *object = &objects[i.key()];
-        for (int j = 0; j < object->functions.count(); ++j) {
+        for(int j = 0; j < object->functions.count(); ++j) {
             out << "fl=" << (object->fileName.isEmpty() ? "native" : object->fileName) << endl;
             out << "fn=" << (object->functions[j].functionName.isEmpty()
                              ? (QString("native_") + object->functions[j].startLine)
                              : object->functions[j].functionName) << endl;
             int curLine = -1;
-            for (int k = 0; k < objects[i.key()].functions[j].actions.count(); ++k) {
+            for(int k = 0; k < objects[i.key()].functions[j].actions.count(); ++k) {
                 const Action *action = &(objects[i.key()].functions.at(j).actions[k]);
                 if (action->called != 0) {
                     out << "cfl=" << objects[action->callObject].fileName << endl;

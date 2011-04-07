@@ -3,8 +3,8 @@
 #ifndef incl_ConsoleConsoleManager_h
 #define incl_ConsoleConsoleManager_h
 
-#include <Poco/Channel.h>
-#include <Poco/Message.h>
+//#include <Poco/Channel.h>
+//#include <Poco/Message.h>
 
 #include "ConsoleServiceInterface.h"
 #include "CommandManager.h"
@@ -23,8 +23,8 @@ namespace Console
     typedef boost::shared_ptr<LogListener> LogListenerPtr;
     typedef boost::shared_ptr<ConsoleChannel> PocoLogChannelPtr;
 
-    //! Generic debug console manager, directs input and output to available consoles.
-    /*!
+    /// Generic debug console manager, directs input and output to available consoles.
+    /**
         See \ref DebugConsole "Using the debug console".
     */
     class ConsoleManager :  public Console::ConsoleServiceInterface
@@ -34,34 +34,34 @@ namespace Console
         ConsoleManager();
         ConsoleManager(const ConsoleManager &other);
 
-        //! constructor that takes a parent module
+        /// constructor that takes a parent module
         explicit ConsoleManager(IModule *parent);
 
     public:
-        //! destructor
+        /// destructor
         virtual ~ConsoleManager();
 
         __inline virtual void Update(f64 frametime);
 
-        //! Print text in parameter
+        /// Print text in parameter
         __inline virtual void Print(const std::string &text);
 
-        //! Execute command in parameter
+        /// Execute command in parameter
         virtual void ExecuteCommand(const std::string &command);
 
-        //! Toggle console on/off
+        /// Toggle console on/off
         virtual void ToggleConsole() {}
 
-        //! Sets Ui initialized/uninitialized
+        /// Sets Ui initialized/uninitialized
         virtual void SetUiInitialized(bool initialized);
 
-        //! Returns false if UI is not initialized, true otherwise
+        /// Returns false if UI is not initialized, true otherwise
         virtual bool IsUiInitialized() const { return ui_initialized_; }
 
-        //! Returns command manager
+        /// Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
 
-        //! Removes the Console from the list of Ogre log listeners.
+        /// Removes the Console from the list of Ogre log listeners.
         void UnsubscribeLogListener();
 
     private:
@@ -69,26 +69,26 @@ namespace Console
         //Console event category
         event_category_id_t console_category_id_;
 
-        //! command manager
+        /// command manager
         CommandManagerPtr command_manager_;
 
-        //! parent module
+        /// parent module
         IModule *parent_;
 
-        //! Custom logger to get logmessages from Pogo
+        /// Custom logger to get logmessages from Pogo
         PocoLogChannelPtr console_channel_;
 
-        //! Listener to get logs from renderer 
+        /// Listener to get logs from renderer 
         LogListenerPtr log_listener_;
 
-        //! This is a buffer for messages generated before actual console UI
+        /// This is a buffer for messages generated before actual console UI
         std::vector<std::string> early_messages_;
 
-        //!indicates whether the UI is initialized
+        ///indicates whether the UI is initialized
         bool ui_initialized_;
     };
 
-    //! loglistener is used to listen log messages from renderer
+    /// loglistener is used to listen log messages from renderer
     class LogListener : public Foundation::LogListenerInterface
     {
         LogListener();
@@ -101,12 +101,12 @@ namespace Console
         ConsoleManager* mngr_;
     };
 
-    //! Class to get messages from poco logger
-    class ConsoleChannel: public Poco::Channel
+    /// Class to get messages from poco logger
+    class ConsoleChannel//: public Poco::Channel
     {
     public:
         explicit ConsoleChannel(ConsoleManager* mngr){ mngr_ = mngr; }
-        void log(const Poco::Message & msg){ if (mngr_) mngr_->Print(msg.getText()); }
+//        void log(const Poco::Message & msg){ if (mngr_) mngr_->Print(msg.getText()); }
     private:
         ConsoleManager* mngr_;
     };

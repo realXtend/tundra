@@ -19,7 +19,7 @@
 #include "Profiler.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
+//DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 
 #include <QString>
 #include <QDomDocument>
@@ -86,7 +86,7 @@ namespace Scene
         }
 
         Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(framework_, newentityid, this));
-        for (size_t i=0 ; i<components.size() ; ++i)
+        for(size_t i=0 ; i<components.size() ; ++i)
         {
             ComponentPtr newComp = framework_->GetComponentManager()->CreateComponent(components[i]);
             if (newComp)
@@ -118,7 +118,7 @@ namespace Scene
     Scene::EntityPtr SceneManager::GetEntity(const QString& name) const
     {
         EntityMap::const_iterator it = entities_.begin();
-        while (it != entities_.end())
+        while(it != entities_.end())
         {
             if (it->second->GetName() == name)
                 return it->second;
@@ -241,7 +241,7 @@ namespace Scene
     {
         event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
         EntityMap::iterator it = entities_.begin();
-        while (it != entities_.end())
+        while(it != entities_.end())
         {
             // If entity somehow manages to live, at least it doesn't belong to the scene anymore
             if (send_events)
@@ -343,7 +343,7 @@ namespace Scene
             change = AttributeChange::Replicate;
         
         //@note This is not enough, it might be that entity is deleted after this call so we have dangling pointer in queue. 
-        if ( entity.get() != 0 )
+        if (entity.get() != 0 )
             emit EntityCreated(entity.get(), change);
     }
 
@@ -562,7 +562,7 @@ namespace Scene
         }
 
         QDomElement ent_elem = scene_elem.firstChildElement("entity");
-        while (!ent_elem.isNull())
+        while(!ent_elem.isNull())
         {
             QString id_str = ent_elem.attribute("id");
             entity_id_t id = !id_str.isEmpty() ? ParseString<entity_id_t>(id_str.toStdString()) : 0;
@@ -580,7 +580,7 @@ namespace Scene
             if (entity)
             {
                 QDomElement comp_elem = ent_elem.firstChildElement("component");
-                while (!comp_elem.isNull())
+                while(!comp_elem.isNull())
                 {
                     QString type_name = comp_elem.attribute("type");
                     QString name = comp_elem.attribute("name");
@@ -602,7 +602,7 @@ namespace Scene
         }
 
         // Now that we have each entity spawned to the scene, trigger all the signals for EntityCreated/ComponentChanged messages.
-        for (int i = 0; i < ret.size(); ++i)
+        for(int i = 0; i < ret.size(); ++i)
         {
             Entity* entity = ret[i];
             EmitEntityCreated(entity, change);
@@ -647,7 +647,7 @@ namespace Scene
             DataDeserializer source(data, numBytes);
             
             uint num_entities = source.Read<u32>();
-            for (uint i = 0; i < num_entities; ++i)
+            for(uint i = 0; i < num_entities; ++i)
             {
                 entity_id_t id = source.Read<u32>();
                 if (!useEntityIDsFromFile || id == 0)
@@ -668,7 +668,7 @@ namespace Scene
                 }
                 
                 uint num_components = source.Read<u32>();
-                for (uint i = 0; i < num_components; ++i)
+                for(uint i = 0; i < num_components; ++i)
                 {
                     uint type_hash = source.Read<u32>();
                     QString name = QString::fromStdString(source.ReadString());
@@ -698,7 +698,7 @@ namespace Scene
                         else
                             LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                     }
-                    catch (...)
+                    catch(...)
                     {
                         LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                     }
@@ -707,13 +707,13 @@ namespace Scene
                 ret.append(entity.get());
             }
         }
-        catch (...)
+        catch(...)
         {
             // Note: if exception happens, no change signals are emitted
             return QList<Entity *>();
         }
 
-        for (uint i = 0; i < ret.size(); ++i)
+        for(uint i = 0; i < ret.size(); ++i)
         {
             Entity* entity = ret[i];
             EmitEntityCreated(entity, change);
@@ -855,7 +855,7 @@ namespace Scene
         }
 
         QDomElement ent_elem = scene_elem.firstChildElement("entity");
-        while (!ent_elem.isNull())
+        while(!ent_elem.isNull())
         {
             QString id_str = ent_elem.attribute("id");
             if (!id_str.isEmpty())
@@ -1036,14 +1036,14 @@ namespace Scene
             DataDeserializer source(bytes.data(), bytes.size());
             
             uint num_entities = source.Read<u32>();
-            for (uint i = 0; i < num_entities; ++i)
+            for(uint i = 0; i < num_entities; ++i)
             {
                 EntityDesc entityDesc;
                 entity_id_t id = source.Read<u32>();
                 entityDesc.id = QString::number((int)id);
 
                 uint num_components = source.Read<u32>();
-                for (uint i = 0; i < num_components; ++i)
+                for(uint i = 0; i < num_components; ++i)
                 {
                     ComponentManagerPtr compMgr = framework_->GetComponentManager();
 
@@ -1106,7 +1106,7 @@ namespace Scene
                         else
                             LogError("Failed to load component " + compDesc.typeName.toStdString());
                     }
-                    catch (...)
+                    catch(...)
                     {
                         LogError("Failed to load component " + compDesc.typeName.toStdString());
                     }
@@ -1115,7 +1115,7 @@ namespace Scene
                 sceneDesc.entities.append(entityDesc);
             }
         }
-        catch (...)
+        catch(...)
         {
             // Note: if exception happens, no change signals are emitted
             return SceneDesc();
@@ -1190,7 +1190,7 @@ namespace Scene
     
     bool SceneManager::EndAttributeInterpolation(IAttribute* attr)
     {
-        for (uint i = 0; i < interpolations_.size(); ++i)
+        for(uint i = 0; i < interpolations_.size(); ++i)
         {
             AttributeInterpolation& interp = interpolations_[i];
             if (interp.dest == attr)
@@ -1206,7 +1206,7 @@ namespace Scene
 
     void SceneManager::EndAllAttributeInterpolations()
     {
-        for (uint i = 0; i < interpolations_.size(); ++i)
+        for(uint i = 0; i < interpolations_.size(); ++i)
         {
             AttributeInterpolation& interp = interpolations_[i];
             delete interp.start;
@@ -1222,7 +1222,7 @@ namespace Scene
         
         interpolating_ = true;
         
-        for (uint i = interpolations_.size() - 1; i < interpolations_.size(); --i)
+        for(uint i = interpolations_.size() - 1; i < interpolations_.size(); --i)
         {
             AttributeInterpolation& interp = interpolations_[i];
             bool finished = false;

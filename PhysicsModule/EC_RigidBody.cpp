@@ -20,7 +20,7 @@
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
 
 #include <BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h>
 
@@ -661,7 +661,7 @@ void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
     Environment::EC_Terrain* terrain = terrain_.lock().get();
     if (!terrain)
         return;
-    //! \todo It is suboptimal to regenerate the whole heightfield when just the terrain's transform changes
+    /// \todo It is suboptimal to regenerate the whole heightfield when just the terrain's transform changes
     if ((attribute == &terrain->nodeTransformation) && (shapeType.Get() == Shape_HeightField))
         CreateCollisionShape();
 }
@@ -700,7 +700,7 @@ void EC_RigidBody::UpdateScale()
         sizeVec.z = 0;
     
     // If placeable exists, set local scaling from its scale
-    /*! \todo Evil hack: we currently have an adjustment node for Ogre->OpenSim coordinate space conversion,
+    /** \todo Evil hack: we currently have an adjustment node for Ogre->OpenSim coordinate space conversion,
         but Ogre scaling of child nodes disregards the rotation,
         so have to swap y/z axes here to have meaningful controls. Hopefully removed in the future.
     */
@@ -736,9 +736,9 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
     float zSpacing = 1.0f;
     float minZ = 1000000000;
     float maxZ = -1000000000;
-    for (uint y = 0; y < height; ++y)
+    for(uint y = 0; y < height; ++y)
     {
-        for (uint x = 0; x < width; ++x)
+        for(uint x = 0; x < width; ++x)
         {
             float value = terrain->GetPoint(x, y);
             if (value < minZ)
@@ -756,7 +756,7 @@ void EC_RigidBody::CreateHeightFieldFromTerrain()
     
     heightField_ = new btHeightfieldTerrainShape(width, height, &heightValues_[0], zSpacing, minZ, maxZ, 2, PHY_FLOAT, false);
     
-    /*! \todo EC_Terrain uses its own transform that is independent of the placeable. It is not nice to support, since rest of EC_RigidBody assumes
+    /** \todo EC_Terrain uses its own transform that is independent of the placeable. It is not nice to support, since rest of EC_RigidBody assumes
         the transform is in the placeable. Right now, we only support position & scaling. Here, we also counteract Bullet's nasty habit to center 
         the heightfield on its own. Also, Bullet's collisionshapes generally do not support arbitrary transforms, so we must construct a "compound shape"
         and add the heightfield as its child, to be able to specify the transform.
@@ -777,7 +777,7 @@ void EC_RigidBody::CreateConvexHullSetShape()
         return;
     btCompoundShape* compound = new btCompoundShape();
     shape_ = compound;
-    for (uint i = 0; i < convexHullSet_->hulls_.size(); ++i)
+    for(uint i = 0; i < convexHullSet_->hulls_.size(); ++i)
         compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(convexHullSet_->hulls_[i].position_)), convexHullSet_->hulls_[i].hull_.get());
 }
 

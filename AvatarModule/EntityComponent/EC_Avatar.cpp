@@ -23,7 +23,7 @@
 #include <QDomDocument>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Avatar")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Avatar")
 
 #include "MemoryLeakCheck.h"
 
@@ -239,12 +239,12 @@ void SetupMeshAndMaterials(Scene::Entity* entity)
     
     const AvatarAttachmentVector& attachments = appearance->GetAttachments();
     std::set<uint> vertices_to_hide;
-    for (uint i = 0; i < attachments.size(); ++i)
+    for(uint i = 0; i < attachments.size(); ++i)
     {
         if (attachments[i].vertices_to_hide_.size())
         {
             need_mesh_clone = true;
-            for (uint j = 0; j < attachments[i].vertices_to_hide_.size(); ++j)
+            for(uint j = 0; j < attachments[i].vertices_to_hide_.size(); ++j)
                 vertices_to_hide.insert(attachments[i].vertices_to_hide_[j]);
         }
     }
@@ -265,7 +265,7 @@ void SetupMeshAndMaterials(Scene::Entity* entity)
     
     const AvatarMaterialVector& materials = appearance->GetMaterials();
     
-    for (uint i = 0; i < materials.size(); ++i)
+    for(uint i = 0; i < materials.size(); ++i)
     {
         mesh->SetMaterial(i, LookupMaterial(materials[i], assetMap));
     }
@@ -289,12 +289,12 @@ void SetupAttachments(Scene::Entity* entity)
     
     const AvatarAttachmentVector& attachments = appearance->GetAttachments();
     
-    for (uint i = 0; i < attachments.size(); ++i)
+    for(uint i = 0; i < attachments.size(); ++i)
     {
         // Setup attachment meshes
         mesh->SetAttachmentMesh(i, LookupAsset(attachments[i].mesh_, assetMap), attachments[i].bone_name_, attachments[i].link_skeleton_);
         // Setup attachment mesh materials
-        for (uint j = 0; j < attachments[i].materials_.size(); ++j)
+        for(uint j = 0; j < attachments[i].materials_.size(); ++j)
         {
             mesh->SetAttachmentMaterial(i, j, LookupMaterial(attachments[i].materials_[j], assetMap));
         }
@@ -317,7 +317,7 @@ void SetupMorphs(Scene::Entity* entity)
         return;
         
     const MorphModifierVector& morphs = appearance->GetMorphModifiers();
-    for (uint i = 0; i < morphs.size(); ++i)
+    for(uint i = 0; i < morphs.size(); ++i)
     {
         if (anims->hasAnimationState(morphs[i].morph_name_))
         {
@@ -333,7 +333,7 @@ void SetupMorphs(Scene::Entity* entity)
             anim->setEnabled(timePos > 0.0f);
             
             // Also set position in attachment entities, if have the same morph
-            for (uint j = 0; j < mesh->GetNumAttachments(); ++j)
+            for(uint j = 0; j < mesh->GetNumAttachments(); ++j)
             {
                 Ogre::Entity* attachment = mesh->GetAttachmentEntity(j);
                 if (!attachment)
@@ -358,9 +358,9 @@ void SetupBoneModifiers(Scene::Entity* entity)
     ResetBones(entity);
     
     const BoneModifierSetVector& bone_modifiers = appearance->GetBoneModifiers();
-    for (uint i = 0; i < bone_modifiers.size(); ++i)
+    for(uint i = 0; i < bone_modifiers.size(); ++i)
     {
-        for (uint j = 0; j < bone_modifiers[i].modifiers_.size(); ++j)
+        for(uint j = 0; j < bone_modifiers[i].modifiers_.size(); ++j)
         {
             ApplyBoneModifier(entity, bone_modifiers[i].modifiers_[j], bone_modifiers[i].value_);
         }
@@ -385,7 +385,7 @@ void ResetBones(Scene::Entity* entity)
     if (skeleton->getNumBones() != orig_skeleton->getNumBones())
         return;
     
-    for (uint i = 0; i < orig_skeleton->getNumBones(); ++i)
+    for(uint i = 0; i < orig_skeleton->getNumBones(); ++i)
     {
         Ogre::Bone* bone = skeleton->getBone(i);
         Ogre::Bone* orig_bone = orig_skeleton->getBone(i);
@@ -529,7 +529,7 @@ void GetInitialDerivedBonePosition(Ogre::Node* bone, Ogre::Vector3& position)
     Ogre::Vector3 scale = bone->getInitialScale();
     Ogre::Quaternion orient = bone->getInitialOrientation();
 
-    while (bone->getParent())
+    while(bone->getParent())
     {
        Ogre::Node* parent = bone->getParent();
 
@@ -577,7 +577,7 @@ void HideVertices(Ogre::Entity* entity, std::set<uint> vertices_to_hide)
         return;
     if (!mesh->getNumSubMeshes())
         return;
-    for (uint m = 0; m < 1; ++m)
+    for(uint m = 0; m < 1; ++m)
     {
         // Under current system, it seems vertices should only be hidden from first submesh
         Ogre::SubMesh *submesh = mesh->getSubMesh(m);
@@ -594,7 +594,7 @@ void HideVertices(Ogre::Entity* entity, std::set<uint> vertices_to_hide)
         unsigned short* pIdx = reinterpret_cast<unsigned short*>(lIdx);
         bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
 
-        for (uint n = 0; n < data->indexCount; n += 3)
+        for(uint n = 0; n < data->indexCount; n += 3)
         {
             if (!use32bitindexes)
             {
@@ -604,7 +604,7 @@ void HideVertices(Ogre::Entity* entity, std::set<uint> vertices_to_hide)
                 {
                     if (n + 3 < data->indexCount)
                     {
-                        for (size_t i = n ; i<data->indexCount-3 ; ++i)
+                        for(size_t i = n ; i<data->indexCount-3 ; ++i)
                         {
                             pIdx[i] = pIdx[i+3];
                         }
@@ -621,7 +621,7 @@ void HideVertices(Ogre::Entity* entity, std::set<uint> vertices_to_hide)
                 {
                     if (n + 3 < data->indexCount)
                     {
-                        for (size_t i = n ; i<data->indexCount-3 ; ++i)
+                        for(size_t i = n ; i<data->indexCount-3 ; ++i)
                         {
                             lIdx[i] = lIdx[i+3];
                         }

@@ -17,7 +17,7 @@ float ParseReal(const std::string& text, float default_value)
     {
         ret_value = ParseString<float>(text);
     }
-    catch (boost::bad_lexical_cast)
+    catch(boost::bad_lexical_cast)
     {
     }        
     return ret_value;
@@ -30,7 +30,7 @@ int ParseInt(const std::string& text, int default_value)
     {
         ret_value = ParseString<int>(text);
     }
-    catch (boost::bad_lexical_cast)
+    catch(boost::bad_lexical_cast)
     {
     }        
     return ret_value;
@@ -49,7 +49,7 @@ Vector3df ParseVector3(const std::string& text)
             vec.y = ParseString<float>(components[1]);
             vec.z = ParseString<float>(components[2]);
         }
-        catch (boost::bad_lexical_cast)
+        catch(boost::bad_lexical_cast)
         {
         }
     }
@@ -69,7 +69,7 @@ Color ParseColor(const std::string& text)
             color.g = ParseString<float>(components[1]);
             color.b = ParseString<float>(components[2]);
         }
-        catch (boost::bad_lexical_cast)
+        catch(boost::bad_lexical_cast)
         {
         }
     }
@@ -82,7 +82,7 @@ Color ParseColor(const std::string& text)
             color.b = ParseString<float>(components[2]);
             color.a = ParseString<float>(components[3]);
         }
-        catch (boost::bad_lexical_cast)
+        catch(boost::bad_lexical_cast)
         {
         }
     }
@@ -103,7 +103,7 @@ Quaternion ParseQuaternion(const std::string& text)
             quat.y = ParseString<float>(components[2]);
             quat.z = ParseString<float>(components[3]);
         }
-        catch (boost::bad_lexical_cast)
+        catch(boost::bad_lexical_cast)
         {
         }
     }
@@ -142,7 +142,7 @@ Quaternion ParseEulerAngles(const std::string& text)
             
             quat.normalize();
         }
-        catch (boost::bad_lexical_cast)
+        catch(boost::bad_lexical_cast)
         {
         }
     }

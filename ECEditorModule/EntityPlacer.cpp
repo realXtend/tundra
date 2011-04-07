@@ -89,7 +89,7 @@ void EntityPlacer::OnMouseEvent(MouseEvent *mouse)
     }
     else if(mouse->eventType == MouseEvent::MouseScroll)
     {
-        //! @Todo add scele code inside.
+        /// @Todo add scele code inside.
     }
 }
 

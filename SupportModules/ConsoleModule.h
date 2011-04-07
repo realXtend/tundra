@@ -12,19 +12,19 @@
 #include "KeyEvent.h"
 #include "InputContext.h"
 
-/*! \defgroup DebugConsole_group Debug Console Client Interface
+/** \defgroup DebugConsole_group Debug Console Client Interface
     \copydoc Console
 */
 
-//! Provides services related to a debug console.
-/*! See \ref DebugConsole "Using the debug console".
+/// Provides services related to a debug console.
+/** See \ref DebugConsole "Using the debug console".
 */
 namespace Console
 {
     class UiConsoleManager;
 
-    //! Debug console module
-    /*! See \ref DebugConsole "Using the debug console".
+    /// Debug console module
+    /** See \ref DebugConsole "Using the debug console".
     */
     class CONSOLE_MODULE_API ConsoleModule : public QObject, public IModule
     {
@@ -41,31 +41,31 @@ namespace Console
         virtual void Update(f64 frametime);
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-        //! Returns default console
+        /// Returns default console
         ConsolePtr GetConsole() const { return manager_; }
 
-        MODULE_LOGGING_FUNCTIONS
+        //MODULE_LOGGING_FUNCTIONS
 
-        //! returns name of this module. Needed for logging.
+        /// returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
     public slots:
         void ToggleConsole();
 
     private:
-        //! Type name of the module.
+        /// Type name of the module.
         static std::string type_name_static_;
 
-        //! debug console manager
+        /// debug console manager
         ConsolePtr manager_;
 
-        //! Console event category id.
+        /// Console event category id.
         event_category_id_t consoleEventCategory_;
 
-        //! Console UI manager
+        /// Console UI manager
         UiConsoleManager *ui_console_manager_;
 
-        InputContextPtr inputContext;
+            InputContextPtr inputContext;
 
     private slots:
         void HandleKeyEvent(KeyEvent *keyEvent);

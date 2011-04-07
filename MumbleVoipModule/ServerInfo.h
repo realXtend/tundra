@@ -17,18 +17,18 @@ namespace MumbleVoip
         //ServerInfo();
         //ServerInfo(EC_VoiceChannel* channel);
 
-        //! For connecting to server
+        /// For connecting to server
         QString server;
         QString channel_id;
         QString user_name; // Value from server/EC is not user since we use avatar's name 
         QString password;
         QString version;
 
-        //! For positional audio
+        /// For positional audio
         QString avatar_id; // entity uuid presenting the avatar
         QString context_id;
 
-        //! For UI
+        /// For UI
         QString channel_name;
     };
 

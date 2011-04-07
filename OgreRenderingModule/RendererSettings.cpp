@@ -48,7 +48,7 @@ namespace OgreRenderer
 
         if (!file.exists())
         {
-            OgreRenderingModule::LogError("Cannot find renderer settings .ui file.");
+            LogError("Cannot find renderer settings .ui file.");
             return;
         }
 

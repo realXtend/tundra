@@ -25,7 +25,7 @@ class EC_VideoSource : public IComponent
     DECLARE_EC(EC_VideoSource);
     Q_OBJECT
 public:
-    //! playback state enumeration
+    /// playback state enumeration
     enum PlaybackState
     {
         PS_Play,
@@ -61,7 +61,7 @@ public slots:
     void Play();
     void Stop();
     void Pause();
-    //! Get each attribute value and send them over to sound service.
+    /// Get each attribute value and send them over to sound service.
     void PlaybackFinished();
 
     virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);

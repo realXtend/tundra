@@ -17,7 +17,7 @@
 #include "Entity.h"
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_BillboardWidget")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_BillboardWidget")
 
 #include "MemoryLeakCheck.h"
 
@@ -230,7 +230,7 @@ void EC_BillboardWidget::Refresh()
         if (!texture->getBuffer().isNull())
             texture->getBuffer()->blitFromMemory(pixel_box);
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
         std::cout << "Failed to create textures: " << std::string(e.what()) << std::endl;
         return;

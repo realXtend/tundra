@@ -17,23 +17,23 @@
 #pragma warning( pop )
 
 #if (defined(_POSIX_C_SOURCE) || defined(_WINDOWS)) && defined(PROFILING)
-//! Profiles a block of code in current scope. Ends the profiling when it goes out of scope
-/*! Name of the profiling block must be unique in the scope, so do not use the name of the function
+/// Profiles a block of code in current scope. Ends the profiling when it goes out of scope
+/** Name of the profiling block must be unique in the scope, so do not use the name of the function
     as the name of the profiling block!
 
     \param x Unique name for the profiling block, use without quotes, f.ex. PROFILE(name_of_the_block)
 */
 #   define PROFILE(x) Foundation::ProfilerSection x ## __profiler__(#x);
 
-//! Optionally ends the current profiling block
-/*! Use when you wish to end a profiling block before it goes out of scope
+/// Optionally ends the current profiling block
+/** Use when you wish to end a profiling block before it goes out of scope
 */
 #   define ELIFORP(x) x ## __profiler__.Destruct();
 
-//! Resets profiling data per frame. Must be called at end of each frame in each thread, otherwise profiling data may be inaccurate or unavailable.
-//! \todo Currently RESETPROFILER is called in modules at end of Update(), but that will probably cause mismatched timing data if things are profiled
-//!       after the Update() call but still in the same frame, f.ex. when handling events. All profiling data in the main thread should be reset
-//!       at the same time, at the end of the main loop. Threads are free to reset whenever they choose, as they have their own frame. -cm
+/// Resets profiling data per frame. Must be called at end of each frame in each thread, otherwise profiling data may be inaccurate or unavailable.
+/// \todo Currently RESETPROFILER is called in modules at end of Update(), but that will probably cause mismatched timing data if things are profiled
+///       after the Update() call but still in the same frame, f.ex. when handling events. All profiling data in the main thread should be reset
+///       at the same time, at the end of the main loop. Threads are free to reset whenever they choose, as they have their own frame. -cm
 #define RESETPROFILER { Foundation::ProfilerSection::GetProfiler()->ThreadedReset(); }
 
 #else
@@ -46,19 +46,19 @@ namespace Foundation
 {
     class ProfilerNodeTree;
 
-    //! Profiles a block of code
+    /// Profiles a block of code
     class ProfilerBlock
     {
         friend class ProfilerNode;
-        //! default constructor
+        /// default constructor
         ProfilerBlock() {}
 
     public:
-        //! default destructor
+        /// default destructor
         ~ProfilerBlock() {}
 
-        //! Call before using any performance counters
-        /*! Returns true if Performance Counter is supported on the current h/w, false otherwise
+        /// Call before using any performance counters
+        /** Returns true if Performance Counter is supported on the current h/w, false otherwise
         */
         static bool QueryCapability();
 
@@ -79,7 +79,7 @@ namespace Foundation
             }
         }
 
-        //! Returns elapsed time between start and stop in seconds
+        /// Returns elapsed time between start and stop in seconds
         double ElapsedTimeSeconds()
         {
             if (supported_) {
@@ -101,7 +101,7 @@ namespace Foundation
             }
         }
 
-        //! Returns elapsed time in microseconds
+        /// Returns elapsed time in microseconds
         boost::int64_t ElapsedTimeMicroSeconds()
         {
             if (supported_) {
@@ -115,10 +115,10 @@ namespace Foundation
         }
 
     private:
-        //! is high frequency perf counter supported in this platform
+        /// is high frequency perf counter supported in this platform
         static bool supported_;
 
-        //! performance counter frequency
+        /// performance counter frequency
         static boost::int64_t frequency_;
         static boost::int64_t api_overhead_;
 
@@ -130,7 +130,7 @@ namespace Foundation
 
     class Profiler;
 
-    //! N-ary tree structure for profiling nodes
+    /// N-ary tree structure for profiling nodes
     class ProfilerNodeTree
     {
         friend class Profiler;
@@ -139,10 +139,10 @@ namespace Foundation
     public:
         typedef std::list<boost::shared_ptr<ProfilerNodeTree> > NodeList;
 
-        //! constructor that takes a name for the node
+        /// constructor that takes a name for the node
         explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0), owner_(0) {}
 
-        //! destructor
+        /// destructor
         virtual ~ProfilerNodeTree()
         {
             if (owner_)
@@ -151,21 +151,21 @@ namespace Foundation
         
         void RemoveThreadRootBlock();
 
-        //! Resets this node and all child nodes
+        /// Resets this node and all child nodes
         virtual void ResetValues()
         {
-            for (NodeList::iterator it = children_.begin() ; it != children_.end() ; ++it)
+            for(NodeList::iterator it = children_.begin() ; it != children_.end() ; ++it)
                 (*it)->ResetValues();
         }
 
-        //! Add a child for this node
+        /// Add a child for this node
         void AddChild(boost::shared_ptr<ProfilerNodeTree> node)
         {
             children_.push_back(node);
             node->parent_ = this;
         }
 
-        //! Removes the child node.
+        /// Removes the child node.
         void RemoveChild(ProfilerNodeTree *node)
         {
             if (node)
@@ -177,53 +177,53 @@ namespace Foundation
                     }
         }
 
-        //! Returns a child node
-        /*!
+        /// Returns a child node
+        /**
           \param name Name of the child node
           \return Child node or 0 if the node was not child
         */
         ProfilerNodeTree* GetChild(const std::string &name)
         {
             assert (name != name_);
-            for (NodeList::iterator it = children_.begin() ; it != children_.end() ; ++it)
+            for(NodeList::iterator it = children_.begin() ; it != children_.end() ; ++it)
                 if ((*it)->name_ == name)
                     return (*it).get();
             return 0;
         }
-        //! Returns the name of this node
+        /// Returns the name of this node
         const std::string &Name() const { return name_; }
 
-        //! Returns the parent of this node
+        /// Returns the parent of this node
         ProfilerNodeTree *Parent() { return parent_; }
 
-        //! Returns list of children for introspection
+        /// Returns list of children for introspection
         const NodeList &GetChildren() const { return children_; }
 
         void MarkAsRootBlock(Profiler *owner) { owner_ = owner; }
 
     private:
-        //! list of all children for this node
+        /// list of all children for this node
         NodeList children_;
-        //! cached parent node for easy access
+        /// cached parent node for easy access
         ProfilerNodeTree *parent_;
-        //! If non-null, this node is a root block owned by the given profiler.
+        /// If non-null, this node is a root block owned by the given profiler.
         Profiler *owner_;
-        //! Name of this node
+        /// Name of this node
         const std::string name_;
 
-        //! helper counter for recursion
+        /// helper counter for recursion
         int recursion_;
     };
     typedef boost::shared_ptr<ProfilerNodeTree> ProfilerNodeTreePtr;
 
-    //! Data container for profiling data for a profiling block
+    /// Data container for profiling data for a profiling block
     class ProfilerNode : public ProfilerNodeTree
     {
         friend class Profiler;
         ProfilerNode(); // N/I
         ProfilerNode(const ProfilerNode &rhs); // N/I
     public:
-        //! constructor that takes a name for the node
+        /// constructor that takes a name for the node
         explicit ProfilerNode(const std::string &name) : 
         ProfilerNodeTree(name),
             num_called_total_(0),
@@ -264,22 +264,22 @@ namespace Foundation
             ProfilerNodeTree::ResetValues();
         }
 
-        //! Number of times this profile has been called during the execution of the program
+        /// Number of times this profile has been called during the execution of the program
         unsigned long num_called_total_;
 
-        //! Number of times this profile was called during last frame
+        /// Number of times this profile was called during last frame
         unsigned long num_called_;
 
-        //! Total time spend in this profile during the execution of the program
+        /// Total time spend in this profile during the execution of the program
         double total_;
 
-        //! Time spend in this profiling block during last frame.
+        /// Time spend in this profiling block during last frame.
         double elapsed_;
 
-        //! Minimum time spend in this profile during last frame
+        /// Minimum time spend in this profile during last frame
         double elapsed_min_;
 
-        //! Maximum time spend in this profile during last frame
+        /// Maximum time spend in this profile during last frame
         double elapsed_max_;
 
         // Profiling data is also accumulated here, and can be reset on a custom interval.
@@ -301,7 +301,7 @@ namespace Foundation
 
     namespace
     {
-        //! For boost::thread_specific_ptr, we don't want it doing automatic deletion
+        /// For boost::thread_specific_ptr, we don't want it doing automatic deletion
         void EmptyDeletor(ProfilerNodeTree *node) { }
 /*        void TSPNodeDeletor(ProfilerNodeTree *node)
           { 
@@ -309,8 +309,8 @@ namespace Foundation
           }*/
     }
 
-    //! Profiler can be used to measure execution time of a block of code.
-    /*!
+    /// Profiler can be used to measure execution time of a block of code.
+    /**
       Do not use this class directly for profiling, use instead PROFILE
       and ELIFORP macros.
 
@@ -343,8 +343,8 @@ namespace Foundation
     public:
         ~Profiler();
 
-        //! Start a profiling block.
-        /*!
+        /// Start a profiling block.
+        /**
           Normally you don't use this directly, instead you use the macro PROFILE.
           However if you want profiling that lasts out of scope, you can use this directly,
           you also need to call matching Profiler::EndBlock()
@@ -356,14 +356,14 @@ namespace Foundation
         */
         void StartBlock(const std::string &name);
 
-        //! End the profiling block
-        /*! Each StartBlock() should have a matching EndBlock(). Recursion is supported.
+        /// End the profiling block
+        /** Each StartBlock() should have a matching EndBlock(). Recursion is supported.
             
           Re-entrant.
         */
         void EndBlock(const std::string &name);
 
-        //! Reset profiling data for the current thread. Don't call directly, use RESETPROFILER macro instead.
+        /// Reset profiling data for the current thread. Don't call directly, use RESETPROFILER macro instead.
         void ThreadedReset();
 
         ProfilerNodeTree *CreateThreadRootBlock();
@@ -373,10 +373,10 @@ namespace Foundation
 
         std::string GetThisThreadRootBlockName();
 
-        //! Returns root profiling node for the current thread only, re-entrant
+        /// Returns root profiling node for the current thread only, re-entrant
         ProfilerNodeTree *GetOrCreateThreadRootBlock();
 
-        //! Returns root profiling node for all threads.
+        /// Returns root profiling node for all threads.
         ProfilerNodeTree *Lock()
         {
             mutex_.lock();
@@ -391,25 +391,25 @@ namespace Foundation
         ProfilerNodeTree *GetRoot() { return &root_; }
 
     private:
-        //! The single global root node object. This is a dummy root node that doesn't track any
-        //! timing statistics, but just contains all the root blocks of each thread as its children.
-        //! This root_ node doesn't own any of the memory of any of its children, those are owned 
-        //! and freed by each thread separately Namely, freeing all instances inside the 
-        //! thread_specific_root_ will cause all blocks to be freed.
+        /// The single global root node object. This is a dummy root node that doesn't track any
+        /// timing statistics, but just contains all the root blocks of each thread as its children.
+        /// This root_ node doesn't own any of the memory of any of its children, those are owned 
+        /// and freed by each thread separately Namely, freeing all instances inside the 
+        /// thread_specific_root_ will cause all blocks to be freed.
         ProfilerNodeTree root_;
 
-        //! Contains the root profile block for each thread.
+        /// Contains the root profile block for each thread.
         boost::thread_specific_ptr<ProfilerNodeTree> thread_specific_root_;
-        //! Points to the current topmost profile block in the stack for each thread.
+        /// Points to the current topmost profile block in the stack for each thread.
         boost::thread_specific_ptr<ProfilerNodeTree> current_node_;
 
-        //! container for all the root profile nodes for each thread.
+        /// container for all the root profile nodes for each thread.
         std::list<ProfilerNodeTree*> thread_root_nodes_;
 
         boost::mutex mutex_;
     };
 
-    //! Used by PROFILE - macro to automatically stop profiling clock when going out of scope
+    /// Used by PROFILE - macro to automatically stop profiling clock when going out of scope
     class ProfilerSection
     {
         friend class Framework;
@@ -430,7 +430,7 @@ namespace Foundation
             }
         }
 
-        //! Explicitly destroy this section before it runs out of scope
+        /// Explicitly destroy this section before it runs out of scope
         __inline void Destruct()
         {
             assert (profiler_ && "Trying to profile before profiler initialized.");
@@ -439,17 +439,17 @@ namespace Foundation
             destroyed_ = true;
         }
         static Profiler *GetProfiler() { return profiler_; }
-        //! This should only be called once per translation unit. it contains some side-effects too
+        /// This should only be called once per translation unit. it contains some side-effects too
         static void SetProfiler(Profiler *profiler) { profiler_ = profiler; }
 
     private:
-        //! Parent profiler used by this section
+        /// Parent profiler used by this section
         static Profiler *profiler_;
 
-        //! Name of this profiling section
+        /// Name of this profiling section
         const std::string name_;
 
-        //! True if this section has explicitly been destroyed before it run out of scope
+        /// True if this section has explicitly been destroyed before it run out of scope
         bool destroyed_;
     };
 }

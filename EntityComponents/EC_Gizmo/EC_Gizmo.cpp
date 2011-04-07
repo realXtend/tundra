@@ -22,7 +22,7 @@
 #endif
 #include <Ogre.h>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Gizmo")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Gizmo")
 
 #include "MemoryLeakCheck.h"
 

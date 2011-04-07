@@ -11,7 +11,7 @@
 #include <Ogre.h>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_AnimationController")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_AnimationController")
 
 #include "MemoryLeakCheck.h"
 
@@ -46,7 +46,7 @@ QStringList EC_AnimationController::GetAvailableAnimations()
     if (!anims) 
         return availableList;
     Ogre::AnimationStateIterator i = anims->getAnimationStateIterator();
-    while (i.hasMoreElements()) 
+    while(i.hasMoreElements()) 
     {
         Ogre::AnimationState *animstate = i.getNext();
         availableList << QString(animstate->getAnimationName().c_str());
@@ -57,7 +57,7 @@ QStringList EC_AnimationController::GetAvailableAnimations()
 QStringList EC_AnimationController::GetActiveAnimations() const
 {
     QStringList activeList;
-    for (AnimationMap::const_iterator i = animations_.begin(); i != animations_.end(); ++i)
+    for(AnimationMap::const_iterator i = animations_.begin(); i != animations_.end(); ++i)
     {
         if (i->second.phase_ != PHASE_STOP)
             activeList << i->first;
@@ -75,7 +75,7 @@ void EC_AnimationController::Update(f64 frametime)
     std::vector<QString> erase_list;
     
     // Loop through all animations & update them as necessary
-    for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
+    for(AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
     {
         Ogre::AnimationState* animstate = GetAnimationState(entity, i->first);
         if (!animstate)
@@ -204,7 +204,7 @@ void EC_AnimationController::Update(f64 frametime)
         }
     }
     
-    for (uint i = 0; i < erase_list.size(); ++i)
+    for(uint i = 0; i < erase_list.size(); ++i)
     {
         animations_.erase(erase_list[i]);
     }
@@ -221,14 +221,14 @@ void EC_AnimationController::Update(f64 frametime)
         if (lowpriority_mask_.size() != skel->getNumBones())
             lowpriority_mask_.resize(skel->getNumBones());
 
-        for (uint i = 0; i < skel->getNumBones(); ++i)
+        for(uint i = 0; i < skel->getNumBones(); ++i)
         {
             highpriority_mask_[i] = 1.0;
             lowpriority_mask_[i] = 1.0;
         }
 
         // Loop through all high priority animations & update the lowpriority-blendmask based on their active tracks
-        for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
+        for(AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
         {
             Ogre::AnimationState* animstate = GetAnimationState(entity, i->first);
             if (!animstate)
@@ -247,7 +247,7 @@ void EC_AnimationController::Update(f64 frametime)
                 Ogre::Animation* anim = skel->getAnimation(animstate->getAnimationName());
                 
                 Ogre::Animation::NodeTrackIterator it = anim->getNodeTrackIterator();
-                while (it.hasMoreElements())
+                while(it.hasMoreElements())
                 {
                     Ogre::NodeAnimationTrack* track = it.getNext();
                     unsigned id = track->getHandle();
@@ -263,7 +263,7 @@ void EC_AnimationController::Update(f64 frametime)
         }
 
         // Now set the calculated blendmask on low-priority animations
-        for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
+        for(AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
         {
             Ogre::AnimationState* animstate = GetAnimationState(entity, i->first);
             if (!animstate)
@@ -330,7 +330,7 @@ bool EC_AnimationController::EnableExclusiveAnimation(const QString& name, bool 
 {
     // Disable all other active animations
     AnimationMap::iterator i = animations_.begin();
-    while (i != animations_.end())
+    while(i != animations_.end())
     {
         const QString& other_name = i->first;
         if (!(QString::compare(other_name, name, Qt::CaseInsensitive) == 0))
@@ -466,7 +466,7 @@ bool EC_AnimationController::DisableAnimation(const QString& name, float fadeout
 void EC_AnimationController::DisableAllAnimations(float fadeout)
 {
     AnimationMap::iterator i = animations_.begin();
-    while (i != animations_.end())
+    while(i != animations_.end())
     {
         i->second.phase_ = PHASE_FADEOUT;
         i->second.fade_period_ = fadeout;

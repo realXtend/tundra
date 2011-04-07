@@ -44,7 +44,7 @@ public:
     void Update(f64 frametime);
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-    MODULE_LOGGING_FUNCTIONS
+    //MODULE_LOGGING_FUNCTIONS
 
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return type_name_static_; }
@@ -116,12 +116,12 @@ private:
     /// KristalliProtocolModule pointer
     boost::shared_ptr<KristalliProtocol::KristalliProtocolModule> kristalliModule_;
     
-    //! Type name of the module.
+    /// Type name of the module.
     static std::string type_name_static_;
     
-    //! Whether to autostart the server
+    /// Whether to autostart the server
     bool autostartserver_;
-    //! Autostart server port
+    /// Autostart server port
     short autostartserver_port_;
 };
 

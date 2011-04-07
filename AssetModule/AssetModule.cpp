@@ -130,15 +130,15 @@ namespace Asset
     }
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace Asset;
-
+/*
 POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(AssetModule)
 POCO_END_MANIFEST
-
+*/

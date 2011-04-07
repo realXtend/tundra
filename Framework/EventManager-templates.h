@@ -36,16 +36,16 @@ bool EventManager::RegisterEventSubscriber(T* subscriber, int priority)
 {
     if (!subscriber)
     {
-        RootLogError("Tried to register null as event subscriber");
+        LogError("Tried to register null as event subscriber");
         return false;
     }
 
     IModule* module = dynamic_cast<IModule* >(subscriber);
-    if ( module != 0)
+    if (module != 0)
         return AddSubscriber(module, module_subscribers_, priority);
 
     IComponent* component = dynamic_cast<IComponent* >(subscriber);
-    if ( component != 0 )
+    if (component != 0 )
         return AddSubscriber(component, component_subscribers_, priority);
 
     return false;
@@ -54,7 +54,7 @@ bool EventManager::RegisterEventSubscriber(T* subscriber, int priority)
 template <typename T, typename U>
 bool EventManager::RemoveSubscriber(T* subscriber, QList<U>& subscribers )
 {
-    for (int i = 0; i < subscribers.size(); ++i)
+    for(int i = 0; i < subscribers.size(); ++i)
         if (subscribers[i].subscriber_ == subscriber)
         {
             subscribers.erase(subscribers.begin() + i);
@@ -69,29 +69,29 @@ bool EventManager::UnregisterEventSubscriber(T* subscriber)
 {
     if (!subscriber)
     {
-        RootLogError("Tried to remove null as event subscriber");
+        LogError("Tried to remove null as event subscriber");
         return false;
     }
 
     IModule* module = dynamic_cast<IModule* >(subscriber);
-    if ( module != 0)
+    if (module != 0)
         return RemoveSubscriber(module, module_subscribers_);
 
     IComponent* component = dynamic_cast<IComponent* >(subscriber);
 
-    if ( component != 0 )
+    if (component != 0 )
     {
         bool ret = RemoveSubscriber(component, component_subscribers_);
         bool ret2 = false;
 
         QMap<QPair<event_category_id_t, event_id_t>, QList<IComponent* > >::iterator iter;
-        for (iter = specialEvents_.begin(); iter != specialEvents_.end();)
+        for(iter = specialEvents_.begin(); iter != specialEvents_.end();)
         {
             QList<IComponent* >& lst = specialEvents_[iter.key()];
 
             for(int i = lst.size() - 1; i >= 0; --i)
             {
-                if ( lst[i] == component )
+                if (lst[i] == component )
                 {
                     lst.removeAt(i);
                     ret2 = true;
@@ -113,7 +113,7 @@ bool EventManager::UnregisterEventSubscriber(T* subscriber)
 template <typename T, typename U>
 bool EventManager::EventSubscriberExist(T* subscriber, QList<U>& subscribers)
 {
-    for (unsigned i = 0; i < subscribers.size(); ++i)
+    for(unsigned i = 0; i < subscribers.size(); ++i)
         if (subscribers[i].subscriber_ == subscriber)
             return true;
 
@@ -125,16 +125,16 @@ bool EventManager::HasEventSubscriber(T* subscriber)
 {
     if (!subscriber)
     {
-        RootLogError("Tried to check null event subscriber");
+        LogError("Tried to check null event subscriber");
         return false;
     }
 
     IModule* module = dynamic_cast<IModule* >(subscriber);
-    if ( module != 0)
+    if (module != 0)
         return EventSubscriberExist(module, module_subscribers_);
 
     IComponent* component = dynamic_cast<IComponent* >(subscriber);
-    if ( component != 0 )
+    if (component != 0 )
         return EventSubscriberExist(component, component_subscribers_);
 
     return false;
@@ -153,13 +153,13 @@ bool EventManager::SendEvent(const EventSubscriber<T>& subs, event_category_id_t
         catch(const std::exception &/*e*/)
         {
             //std::cout << "HandleEvent caught an exception inside module " << module->Name() << ": " << (e.what() ? e.what() : "(null)") << std::endl;
-            //RootLogCritical(std::string("HandleEvent caught an exception inside module " + module->Name() + ": " + (e.what() ? e.what() : "(null)")));
+            //LogCritical(std::string("HandleEvent caught an exception inside module " + module->Name() + ": " + (e.what() ? e.what() : "(null)")));
             throw;
         }
         catch(...)
         {
             //std::cout << "HandleEvent caught an unknown exception inside module " << module->Name() << std::endl;
-            //RootLogCritical(std::string("HandleEvent caught an unknown exception inside module " + module->Name()));
+            //LogCritical(std::string("HandleEvent caught an unknown exception inside module " + module->Name()));
             throw;
         }
     }

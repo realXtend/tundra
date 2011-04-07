@@ -65,7 +65,7 @@ public:
     */
     virtual const QString &TypeName() const = 0;
 
-    //! Returns type name hash of the component
+    /// Returns type name hash of the component
     uint TypeNameHash() const;
 
     /// Returns the name of this component.
@@ -122,14 +122,14 @@ public:
     */
     virtual void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
 
-    //! Serialize attributes to binary
-    /*! Note: does not include syncmode, typename or name. These are left for higher-level logic, and
+    /// Serialize attributes to binary
+    /** Note: does not include syncmode, typename or name. These are left for higher-level logic, and
         it depends on the situation if they are needed or not
      */
     virtual void SerializeToBinary(kNet::DataSerializer& dest) const;
 
-    //! Deserialize attributes from binary
-    /*! Note: does not include syncmode, typename or name. These are left for higher-level logic, and
+    /// Deserialize attributes from binary
+    /** Note: does not include syncmode, typename or name. These are left for higher-level logic, and
         it depends on the situation if they are needed or not
      */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
@@ -225,16 +225,16 @@ public slots:
     /// May return null if component is not in an entity or entity is not in a scene
     Scene::SceneManager* GetParentScene() const;
 
-    //! Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
+    /// Sets whether component is temporary. Temporary components won't be saved when the scene is saved.
     void SetTemporary(bool enable);
 
-    //! Returns whether component is temporary. Temporary components won't be saved when the scene is saved.
-    /*! Note: if parent entity is temporary, this returns always true regardless of the component's temporary flag
+    /// Returns whether component is temporary. Temporary components won't be saved when the scene is saved.
+    /** Note: if parent entity is temporary, this returns always true regardless of the component's temporary flag
      */
     bool IsTemporary() const;
 
-    //! Returns whether the component is in a view-enabled scene, or not.
-    /*! If the information is not available (component is not yet in a scene, will guess "true
+    /// Returns whether the component is in a view-enabled scene, or not.
+    /** If the information is not available (component is not yet in a scene, will guess "true
      */
     bool ViewEnabled() const;
 

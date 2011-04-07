@@ -37,131 +37,131 @@ public:
     PhysicsModule();
     virtual ~PhysicsModule();
 
-    MODULE_LOGGING_FUNCTIONS
+    //MODULE_LOGGING_FUNCTIONS
 
-    //! IModule override.
+    /// IModule override.
     void Load();
     
-    //! IModule override.
+    /// IModule override.
     void Initialize();
     
-    //! IModule override.
+    /// IModule override.
     void PostInitialize();
 
-    //! IModule override.
+    /// IModule override.
     void Update(f64 frametime);
 
-    //! IModule override.
+    /// IModule override.
     void Uninitialize();
 
-    //! Returns name of this module. Needed for logging.
+    /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return moduleName; }
 
-    //! Name of this module.
+    /// Name of this module.
     static const std::string moduleName;
     
-    //! Toggles physics debug geometry
+    /// Toggles physics debug geometry
     Console::CommandResult ConsoleToggleDebugGeometry(const StringVector& params);
 
-    //! Stops physics
+    /// Stops physics
     Console::CommandResult ConsoleStopPhysics(const StringVector& params);
     
-    //! Starts physics
+    /// Starts physics
     Console::CommandResult ConsoleStartPhysics(const StringVector& params);
     
-    //! Autoassigns static rigid bodies with collision meshes to visible meshes
+    /// Autoassigns static rigid bodies with collision meshes to visible meshes
     Console::CommandResult ConsoleAutoCollisionMesh(const StringVector& params);
     
-    //! IDebugDraw override
+    /// IDebugDraw override
     virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
     
-    //! IDebugDraw override
+    /// IDebugDraw override
     virtual void reportErrorWarning(const char* warningString);
     
-    //! IDebugDraw override
+    /// IDebugDraw override
     virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color) {}
     
-    //! IDebugDraw override
+    /// IDebugDraw override
     virtual void draw3dText(const btVector3& location,const char* textString) {}
     
-    //! IDebugDraw override
+    /// IDebugDraw override
     virtual void setDebugMode(int debugMode) { debugDrawMode_ = debugMode; }
     
-    //! IDebugDraw override
+    /// IDebugDraw override
     virtual int getDebugMode() const { return debugDrawMode_; }
     
-    //! Get a Bullet triangle mesh corresponding to an Ogre mesh.
-    /*! If already has been generated, returns the previously created one
+    /// Get a Bullet triangle mesh corresponding to an Ogre mesh.
+    /** If already has been generated, returns the previously created one
      */
     boost::shared_ptr<btTriangleMesh> GetTriangleMeshFromOgreMesh(Ogre::Mesh* mesh);
 
-    //! Get a Bullet convex hull set (using minimum recursion, not very accurate but fast) corresponding to an Ogre mesh.
-    /*! If already has been generated, returns the previously created one
+    /// Get a Bullet convex hull set (using minimum recursion, not very accurate but fast) corresponding to an Ogre mesh.
+    /** If already has been generated, returns the previously created one
      */
     boost::shared_ptr<ConvexHullSet> GetConvexHullSetFromOgreMesh(Ogre::Mesh* mesh);
     
-    //! Create a physics world for a scene
-    /*! \param scene Scene into which to create
+    /// Create a physics world for a scene
+    /** \param scene Scene into which to create
         \param isClient If true, physics will be only simulated for local entities
      */
     Physics::PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene, bool isClient);
     
-    //! Return the physics world for a scene if it exists
+    /// Return the physics world for a scene if it exists
     Physics::PhysicsWorld* GetPhysicsWorldForScene(Scene::ScenePtr scene);
     
-    //! Return the physics world for a scene if it exists
+    /// Return the physics world for a scene if it exists
     Physics::PhysicsWorld* GetPhysicsWorldForScene(Scene::SceneManager* sceneraw);
     
 public slots:
-    //! Get a physics world for a scene. This version meant for scripts
-    /*! Note: the parameter is a QObject*, because typically the scriptengine's dynamic property scene is used to query for physicsobject.
+    /// Get a physics world for a scene. This version meant for scripts
+    /** Note: the parameter is a QObject*, because typically the scriptengine's dynamic property scene is used to query for physicsobject.
         But it seems to lose its knowledge of actually being a Scene::SceneManager*, and returns null. This version will dynamic cast
         to Scene::SceneManager*
      */ 
     Physics::PhysicsWorld* GetPhysicsWorld(QObject* scene);
     
-    //! Enable/disable physics simulation
+    /// Enable/disable physics simulation
     void SetRunPhysics(bool enable);
     
-    //! Enable/disable debug geometry
+    /// Enable/disable debug geometry
     void SetDrawDebugGeometry(bool enable);
     
-    //! Get debug geometry enabled status
+    /// Get debug geometry enabled status
     bool GetDrawDebugGeometry() const { return drawDebugGeometry_; }
     
-    //! Initialize physics datatypes for a script engine
+    /// Initialize physics datatypes for a script engine
     void OnScriptEngineCreated(QScriptEngine* engine);
     
 private slots:
-    //! Scene has been removed, so delete also the physics world (if exists)
+    /// Scene has been removed, so delete also the physics world (if exists)
     void OnSceneRemoved(Scene::SceneManager* scene);
     
 private:
-    //! Update debug geometry manual object, if physics debug drawing is on
+    /// Update debug geometry manual object, if physics debug drawing is on
     void UpdateDebugGeometry();
     
     typedef std::map<Scene::SceneManager*, boost::shared_ptr<Physics::PhysicsWorld> > PhysicsWorldMap;
-    //! Map of physics worlds assigned to scenes
+    /// Map of physics worlds assigned to scenes
     PhysicsWorldMap physicsWorlds_;
     
     typedef std::map<std::string, boost::shared_ptr<btTriangleMesh> > TriangleMeshMap;
-    //! Bullet triangle meshes generated from Ogre meshes
+    /// Bullet triangle meshes generated from Ogre meshes
     TriangleMeshMap triangleMeshes_;
 
     typedef std::map<std::string, boost::shared_ptr<ConvexHullSet> > ConvexHullSetMap;
-    //! Bullet convex hull sets generated from Ogre meshes
+    /// Bullet convex hull sets generated from Ogre meshes
     ConvexHullSetMap convexHullSets_;
     
-    //! Debug geometry enabled flag
+    /// Debug geometry enabled flag
     bool drawDebugGeometry_;
     
-    //! Lines object for the debug geometry
+    /// Lines object for the debug geometry
     DebugLines* debugGeometryObject_;
     
-    //! Whether should run physics. Default true
+    /// Whether should run physics. Default true
     bool runPhysics_;
     
-    //! Bullet debug draw / debug behaviour flags
+    /// Bullet debug draw / debug behaviour flags
     int debugDrawMode_;
 };
 

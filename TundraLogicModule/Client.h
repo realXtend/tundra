@@ -47,13 +47,13 @@ class TUNDRALOGIC_MODULE_API Client : public QObject
     };
     
 public:
-    //! Constructor
+    /// Constructor
     Client(TundraLogicModule* owner, Foundation::Framework* fw);
     
-    //! Destructor
+    /// Destructor
     ~Client();
     
-    //! Perform any per-frame processing
+    /// Perform any per-frame processing
     void Update(f64 frametime);
     
     /// Get connection/login state
@@ -63,7 +63,7 @@ public:
     /// This function may return null in the case the connection is not active.
     kNet::MessageConnection* GetConnection();
     
-    //! Handle Kristalli event
+    /// Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
     
 signals:
@@ -103,7 +103,7 @@ public slots:
     /// Get client connection ID (from loginreply message). Is zero if not connected
     int GetConnectionID() const { return client_id_; }
     
-    //! See if connected & authenticated
+    /// See if connected & authenticated
     bool IsConnected() const;
     
     /// Sets the given login property with the given value. Call this function prior connecting to a scene to specify
@@ -155,9 +155,9 @@ private:
     /// Tundra event category
     event_category_id_t tundraEventCategory_;
     
-    //! Owning module
+    /// Owning module
     TundraLogicModule* owner_;
-    //! Framework pointer
+    /// Framework pointer
     Foundation::Framework* framework_;
 };
 

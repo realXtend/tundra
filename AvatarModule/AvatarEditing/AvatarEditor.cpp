@@ -114,7 +114,7 @@ namespace Avatar
         if (!materials_layout)
             return;
 
-        for (uint y = 0; y < materials.size(); ++y)
+        for(uint y = 0; y < materials.size(); ++y)
         {
             // New horizontal layout
             v_box = new QHBoxLayout();
@@ -153,7 +153,7 @@ namespace Avatar
         if (!attachments_layout)
             return;
 
-        for (uint y = 0; y < attachments.size(); ++y)
+        for(uint y = 0; y < attachments.size(); ++y)
         {
             // New horizontal layout
             v_box = new QHBoxLayout();
@@ -186,7 +186,7 @@ namespace Avatar
         scroll_attachments->setFixedHeight(total_height);
 
         // Clear out all tabs
-        for (;;)
+        for(;;)
         {
             QWidget* tab = tab_appearance->widget(0);
             if (!tab)
@@ -219,7 +219,7 @@ namespace Avatar
             const BoneModifierSetVector& bone_modifiers = appearance->GetBoneModifiers();
             const MorphModifierVector& morph_modifiers = appearance->GetMorphModifiers();  
 
-            for (uint i = 0; i < bone_modifiers.size(); ++i)
+            for(uint i = 0; i < bone_modifiers.size(); ++i)
             {
                 // New horizontal layout
                 v_box = new QHBoxLayout();
@@ -250,7 +250,7 @@ namespace Avatar
                     max_items = bone_layout->count();
             }
 
-            for (uint i = 0; i < morph_modifiers.size(); ++i)
+            for(uint i = 0; i < morph_modifiers.size(); ++i)
             {
                 // New horizontal layout
                 v_box = new QHBoxLayout();
@@ -291,7 +291,7 @@ namespace Avatar
         else
         {
             std::map<std::string, uint> item_count;
-            for (uint i = 0; i < master_modifiers.size(); ++i)
+            for(uint i = 0; i < master_modifiers.size(); ++i)
             {
                 std::string category_name = master_modifiers[i].category_;
                 if (item_count.find(category_name) == item_count.end())
@@ -376,12 +376,12 @@ namespace Avatar
     void AvatarEditor::ClearPanel(QWidget* panel)
     {
         QLayoutItem *child, *subchild;
-        while ((child = panel->layout()->takeAt(0)) != 0)
+        while((child = panel->layout()->takeAt(0)) != 0)
         {
             QLayout *child_layout = child->layout();
             if (child_layout)
             {
-                while ((subchild = child_layout->takeAt(0)) != 0)
+                while((subchild = child_layout->takeAt(0)) != 0)
                 {
                     QWidget *widget = subchild->widget();
                     delete subchild;
@@ -563,7 +563,7 @@ namespace Avatar
         // Fix small clipping issue for first tab, just put space on front
         QString name_with_space = " ";
         name_with_space.append(name.c_str());
-        for (uint i = 0; i < tabs->count(); ++i)
+        for(uint i = 0; i < tabs->count(); ++i)
         {
             if (tabs->tabText(i) == name_with_space)
             {

@@ -10,8 +10,8 @@
 
 namespace Foundation
 {
-    //! Low-level platform specific functionality
-    /*!
+    /// Low-level platform specific functionality
+    /**
         See slso PlatformWin or PlatformNix.
 
         \ingroup Foundation_group
@@ -24,7 +24,7 @@ namespace Foundation
 #endif
     {
     public:
-        //! default constructor
+        /// default constructor
         Platform(Framework *framework) :
 #if defined(_WINDOWS)
         PlatformWin(framework)
@@ -33,10 +33,10 @@ namespace Foundation
 #endif
         {}
 
-        //! destructor
+        /// destructor
         virtual ~Platform() {}
 
-        //! Creates application data directory, if one doesn't already exist. Should be called before any data is handled.
+        /// Creates application data directory, if one doesn't already exist. Should be called before any data is handled.
         void PrepareApplicationDataDirectory()
         {
             // exceptions are not handled, since if this fails the application is more or less SOL.

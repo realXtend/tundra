@@ -53,8 +53,8 @@ namespace OgreRenderer
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
     typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 
-    //! Ogre renderer
-    /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
+    /// Ogre renderer
+    /** Created by OgreRenderingModule. Implements the RenderServiceInterface.
         \ingroup OgreRenderingModuleClient
     */
     class OGRE_MODULE_API Renderer : public QObject, public Foundation::RenderServiceInterface
@@ -64,20 +64,20 @@ namespace OgreRenderer
         Q_OBJECT
 
     public slots:
-        //! Renders the screen. 
+        /// Renders the screen. 
         //as a slot for webserver plugin to render when needed
         virtual void Render();
 
-        //! Returns true if the given entity id is in the list of visible entities for this frame.
-        /*! We could also expose the whole set of visible ents, and it may be useful later, 
+        /// Returns true if the given entity id is in the list of visible entities for this frame.
+        /** We could also expose the whole set of visible ents, and it may be useful later, 
             but this is for fastest possible visibility check of a single entity (for RTT display control use) */
         bool IsEntityVisible(uint ent_id);
 
-        //! Do a frustum query to the world from viewport coordinates.
+        /// Do a frustum query to the world from viewport coordinates.
         virtual QList<Scene::Entity*> FrustumQuery(QRect &viewrect);
 
-        //! Do raycast into the world from viewport coordinates.
-        /*! The coordinates are a position in the render window, not scaled to [0,1].
+        /// Do raycast into the world from viewport coordinates.
+        /** The coordinates are a position in the render window, not scaled to [0,1].
             \todo Returns raw pointer to entity. Returning smart pointer may take some thinking/design. Maybe just return entity id?
 
             \param x Horizontal position for the origin of the ray
@@ -86,44 +86,44 @@ namespace OgreRenderer
         */
         virtual RaycastResult* Raycast(int x, int y);
 
-        //! Returns window width, or 0 if no render window
+        /// Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
 
-        //! Returns window height, or 0 if no render window
+        /// Returns window height, or 0 if no render window
         virtual int GetWindowHeight() const;
 
-        //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
-        /*! \param directory Directory path to add
+        /// Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
+        /** \param directory Directory path to add
          */
         //for local dotscene loading to be able to load from the dir where the export is
         void AddResourceDirectory(const QString &directory);
 
         //--- GUI support slots ---
 
-        //! Toggles fullscreen
+        /// Toggles fullscreen
         void SetFullScreen(bool value);
 
-        //! Render current main window content to texture
+        /// Render current main window content to texture
         virtual QPixmap RenderImage(bool use_main_camera = true);
 
-        //! Render current main window with focus on the avatar
-        //! @todo make this focus non hard coded but as param
+        /// Render current main window with focus on the avatar
+        /// @todo make this focus non hard coded but as param
         virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation);
 
-        //! Prepapres the texture and entities used in texture rendering
+        /// Prepapres the texture and entities used in texture rendering
         void PrepareImageRendering(int width, int height);
 
-        //! Reset the texture
+        /// Reset the texture
         void ResetImageRendering();
 
         QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
 
-        //! Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
+        /// Performs a full UI repaint with Qt and re-fills the GPU surface accordingly.
         void DoFullUIRedraw();
         
     public:
-        //! Constructor
-        /*! \param framework Framework pointer.
+        /// Constructor
+        /** \param framework Framework pointer.
             \param config Config filename.
             \param plugins Plugins filename.
             \param window_title Renderer window title.
@@ -134,101 +134,101 @@ namespace OgreRenderer
             const std::string& plugins,
             const std::string& window_title);
 
-        //! Destructor
+        /// Destructor
         virtual ~Renderer();
         
-        //! Subscribe a listener to renderer log. Can be used before renderer is initialized.
+        /// Subscribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
 
-        //! Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
+        /// Unsubsribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
 
-        //! set maximum view distance
+        /// set maximum view distance
         virtual void SetViewDistance(float distance) { view_distance_ = distance; }
 
-        //! get maximum view distance
+        /// get maximum view distance
         virtual float GetViewDistance()const { return view_distance_; }
 
-        //! force UI repaint
+        /// force UI repaint
         virtual void RepaintUi();
 
-        //!Is window fullscreen?
+        ///Is window fullscreen?
         bool IsFullScreen() const;
 
-        //! get visible entities last frame
+        /// get visible entities last frame
         virtual const std::set<entity_id_t>& GetVisibleEntities() { return visible_entities_; }
 
-        //! Takes a screenshot and saves it to a file.
-        //! \param filePath File path.
-        //! \param fileName File name.
+        /// Takes a screenshot and saves it to a file.
+        /// \param filePath File path.
+        /// \param fileName File name.
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
 
-        //! Returns framework
+        /// Returns framework
         Foundation::Framework* GetFramework() const { return framework_; }
 
-        //! Returns initialized state
+        /// Returns initialized state
         bool IsInitialized() const { return initialized_; }
 
-        //! Returns Ogre root
+        /// Returns Ogre root
         OgreRootPtr GetRoot() const { return root_; }
 
-        //! Returns Ogre scenemanager
+        /// Returns Ogre scenemanager
         Ogre::SceneManager* GetSceneManager() const { return scenemanager_; }
 
-        //! Returns Ogre viewport
+        /// Returns Ogre viewport
         Ogre::Viewport* GetViewport() const { return viewport_; }
 
-        //! Returns active camera
-        /*! Note: use with care. Never set the position of the camera, but query rather the camera entity from scene,
+        /// Returns active camera
+        /** Note: use with care. Never set the position of the camera, but query rather the camera entity from scene,
             and use the EC_OgreCamera entity component + its placeable
          */
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
-        //! Returns current render window
+        /// Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const;
 
-        //! Returns an unique name to create Ogre objects that require a mandatory name
+        /// Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.
         /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
         std::string GetUniqueObjectName(const std::string &prefix);
 
-        //! Removes log listener
+        /// Removes log listener
         void RemoveLogListener();
 
-        //! Initializes renderer. Called by OgreRenderingModule
-        /*! Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
+        /// Initializes renderer. Called by OgreRenderingModule
+        /** Creates render window. If render window is to be embedded, call SetExternalWindowParameter() before.
          */
         void Initialize();
 
-        //! Post-initializes renderer. Called by OgreRenderingModule
-        /*! Queries event categories it needs
+        /// Post-initializes renderer. Called by OgreRenderingModule
+        /** Queries event categories it needs
          */
         void PostInitialize();
 
-        //! Performs update. Called by OgreRenderingModule
-        /*! Pumps Ogre window events.
+        /// Performs update. Called by OgreRenderingModule
+        /** Pumps Ogre window events.
          */
         void Update(f64 frametime);
 
-        //! Sets current camera used for rendering the main viewport
-        /*! Called by EC_OgreCamera when activating. Null will default to the default camera, so that we don't crash
+        /// Sets current camera used for rendering the main viewport
+        /** Called by EC_OgreCamera when activating. Null will default to the default camera, so that we don't crash
             when rendering.
          */
         void SetCurrentCamera(Ogre::Camera* camera);
 
-        //! returns the composition handler responsible of the post-processing effects
+        /// returns the composition handler responsible of the post-processing effects
         CompositionHandler *GetCompositionHandler() const { return c_handler_; }
 
-        //! Returns shadow quality
+        /// Returns shadow quality
         ShadowQuality GetShadowQuality() const { return shadowquality_; }
 
-        //! Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
+        /// Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
         void SetShadowQuality(ShadowQuality newquality);
 
-        //! Returns texture quality
+        /// Returns texture quality
         TextureQuality GetTextureQuality() const { return texturequality_; }
 
-        //! Sets texture quality. Note: changes need viewer restart to take effect
+        /// Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
 
         NaaliRenderWindow *GetRenderWindow() const { return renderWindow; }
@@ -241,113 +241,113 @@ namespace OgreRenderer
 
     private:
         
-        //! Sleeps the main thread to throttle the main loop execution speed.
+        /// Sleeps the main thread to throttle the main loop execution speed.
         void DoFrameTimeLimiting();
 
-        //! Initialises the events related info for this module
+        /// Initialises the events related info for this module
         void InitializeEvents();
 
-        //! Loads Ogre plugins in a manner which allows individual plugin loading to fail
-        /*! \param plugin_filename path & filename of the Ogre plugins file
+        /// Loads Ogre plugins in a manner which allows individual plugin loading to fail
+        /** \param plugin_filename path & filename of the Ogre plugins file
          */
         void LoadPlugins(const std::string& plugin_filename);
 
-        //! Sets up Ogre resources based on resources.cfg
+        /// Sets up Ogre resources based on resources.cfg
         void SetupResources();
 
-        //! Creates scenemanager & camera
+        /// Creates scenemanager & camera
         void SetupScene();
 
-        //! Initializes shadows. Called by SetupScene().
+        /// Initializes shadows. Called by SetupScene().
         void InitShadows();
 
-        //! Successfully initialized flag
+        /// Successfully initialized flag
         bool initialized_;
 
-        //! Ogre root object
+        /// Ogre root object
         OgreRootPtr root_;
 
-        //! Scene manager
+        /// Scene manager
         Ogre::SceneManager* scenemanager_;
 
-        //! Default hardware buffer manager for headless mode
+        /// Default hardware buffer manager for headless mode
         Ogre::DefaultHardwareBufferManager* buffermanager_;
         
-        //! Default camera, used when no other camera exists
+        /// Default camera, used when no other camera exists
         Ogre::Camera* default_camera_;
 
-        //! Current camera
+        /// Current camera
         Ogre::Camera* camera_;
 
-        //! Maximum view distance
+        /// Maximum view distance
         float view_distance_;
 
-        //! Viewport
+        /// Viewport
         Ogre::Viewport* viewport_;
 
         NaaliRenderWindow *renderWindow;
 
-        //! Framework we belong to
+        /// Framework we belong to
         Foundation::Framework* framework_;
 
-        //! Ogre log listener
+        /// Ogre log listener
         OgreLogListenerPtr log_listener_;
 
-        //! Ogre renderable listener
+        /// Ogre renderable listener
         RenderableListenerPtr renderable_listener_;
 
-        //! Renderer event category
+        /// Renderer event category
         event_category_id_t renderercategory_id_;
 
-        //! Counter for unique name creation
+        /// Counter for unique name creation
         uint object_id_;
 
-        //! Counter for unique resource group creation
+        /// Counter for unique resource group creation
         uint group_id_;
 
-        //! filename for the Ogre3D configuration file
+        /// filename for the Ogre3D configuration file
         std::string config_filename_;
 
-        //! filename for the Ogre3D plugins file
+        /// filename for the Ogre3D plugins file
         std::string plugins_filename_;
 
-        //! ray for raycasting, reusable
+        /// ray for raycasting, reusable
         Ogre::RaySceneQuery *ray_query_;
 
-        //! window title to be used when creating renderwindow
+        /// window title to be used when creating renderwindow
         std::string window_title_;
 
-        //! added resource directories
+        /// added resource directories
         StringVector added_resource_directories_;
 
-        //! handler for post-processing effects
+        /// handler for post-processing effects
         CompositionHandler *c_handler_;
         
-        //! last width/height
+        /// last width/height
         int last_height_;
         int last_width_;
 
-        //! resized dirty count
+        /// resized dirty count
         int resized_dirty_;
 
-        //! For render function
+        /// For render function
         QImage ui_buffer_;
         QRect last_view_rect_;
         QTime ui_update_timer_;
 
-        //! Visible entities
+        /// Visible entities
         std::set<entity_id_t> visible_entities_;
 
-        //! Shadow quality
+        /// Shadow quality
         ShadowQuality shadowquality_;
 
-        //! Texture quality
+        /// Texture quality
         TextureQuality texturequality_;
 
-        //! Soft shadow gaussian listeners
+        /// Soft shadow gaussian listeners
         std::list<GaussianListener *> gaussianListeners_;
 
-        //! RenderImage() services texture
+        /// RenderImage() services texture
         std::string image_rendering_texture_name_;
 
         Scene::EntityPtr texture_rendering_cam_entity_;

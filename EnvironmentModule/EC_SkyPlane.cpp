@@ -7,7 +7,7 @@
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyPlane")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyPlane")
 
 #include <Ogre.h>
 
@@ -85,7 +85,7 @@ namespace Environment
             UNREFERENCED_PARAM(tiling);
             bool drawFirst = drawFirstAttr.Get();
             UNREFERENCED_PARAM(drawFirst);
-            if ( xSegmentsAttr.Get() == 0 || ySegmentsAttr.Get() == 0)
+            if (xSegmentsAttr.Get() == 0 || ySegmentsAttr.Get() == 0)
             {
                  LogError("Could not set SkyPlane, because x-segments or y-segments values very zero");
                  return;
@@ -96,7 +96,7 @@ namespace Environment
                                                 bowAttr.Get(), xSegmentsAttr.Get(), ySegmentsAttr.Get());
 
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
             LogError("Could not set SkyPlane: " + std::string(e.what()));
             return;
@@ -124,7 +124,7 @@ namespace Environment
     {
         std::string name = attribute->GetNameString();
         
-        if ( ( name == materialRef.GetNameString() && materialRef.Get().ref != lastMaterial_ ) 
+        if (( name == materialRef.GetNameString() && materialRef.Get().ref != lastMaterial_ ) 
              || ( name ==  tilingAttr.GetNameString() && tilingAttr.Get() != lastTiling_ )
              || ( name ==  scaleAttr.GetNameString() && scaleAttr.Get() != lastScale_ )
              || ( name ==  bowAttr.GetNameString() && bowAttr.Get() != lastBow_ )
@@ -147,7 +147,7 @@ namespace Environment
             lastDrawFirst_ = drawFirstAttr.Get();
 
         } 
-        else if ( name == textureRef.GetNameString() )
+        else if (name == textureRef.GetNameString() )
         {
             SetTexture();
         }
@@ -165,7 +165,7 @@ namespace Environment
         if (!materialPtr.isNull())
         {
 
-            if ( materialPtr->getNumTechniques() >= 1 && materialPtr->getTechnique(0)->getNumPasses() >= 1 &&  materialPtr->getTechnique(0)->getPass(0)->getNumTextureUnitStates() >= 1)
+            if (materialPtr->getNumTechniques() >= 1 && materialPtr->getTechnique(0)->getNumPasses() >= 1 &&  materialPtr->getTechnique(0)->getPass(0)->getNumTextureUnitStates() >= 1)
             {
                 materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(OgreRenderer::SanitateAssetIdForOgre(textureName.toStdString()));
                 materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);

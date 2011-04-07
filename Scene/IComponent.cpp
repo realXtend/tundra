@@ -170,7 +170,7 @@ bool IComponent::BeginDeserialization(QDomElement& comp_element)
 QString IComponent::ReadAttribute(QDomElement& comp_element, const QString &name) const
 {
     QDomElement attribute_element = comp_element.firstChildElement("attribute");
-    while (!attribute_element.isNull())
+    while(!attribute_element.isNull())
     {
         if (attribute_element.attribute("name") == name)
             return attribute_element.attribute("value");
@@ -184,7 +184,7 @@ QString IComponent::ReadAttribute(QDomElement& comp_element, const QString &name
 QString IComponent::ReadAttributeType(QDomElement& comp_element, const QString &name) const
 {
     QDomElement attribute_element = comp_element.firstChildElement("attribute");
-    while (!attribute_element.isNull())
+    while(!attribute_element.isNull())
     {
         if (attribute_element.attribute("name") == name)
             return attribute_element.attribute("type");
@@ -217,7 +217,7 @@ void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeCha
         return; // No signals
     
     // Roll through attributes and check name match
-    for (uint i = 0; i < attributes_.size(); ++i)
+    for(uint i = 0; i < attributes_.size(); ++i)
     {
         if (attributes_[i]->GetName() == attributeName)
         {
@@ -234,7 +234,7 @@ void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
 
     QDomElement comp_element = BeginSerialization(doc, base_element);
 
-    for (uint i = 0; i < attributes_.size(); ++i)
+    for(uint i = 0; i < attributes_.size(); ++i)
         WriteAttribute(doc, comp_element, attributes_[i]->GetNameString().c_str(), attributes_[i]->ToString().c_str());
 }
 
@@ -265,7 +265,7 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     // is the default value for that attribute specified in ctor. If this is an existing component, the DeserializeFrom can be 
     // thought of applying the given "delta modifications" from the XML element).
 
-    for (uint i = 0; i < attributes_.size(); ++i)
+    for(uint i = 0; i < attributes_.size(); ++i)
     {
         if (HasAttribute(element, attributes_[i]->GetNameString().c_str()))
         {
@@ -278,7 +278,7 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
 void IComponent::SerializeToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<u8>(attributes_.size());
-    for (uint i = 0; i < attributes_.size(); ++i)
+    for(uint i = 0; i < attributes_.size(); ++i)
         attributes_[i]->ToBinary(dest);
 }
 
@@ -290,7 +290,7 @@ void IComponent::DeserializeFromBinary(kNet::DataDeserializer& source, Attribute
         std::cout << "Wrong number of attributes in DeserializeFromBinary!" << std::endl;
         return;
     }
-    for (uint i = 0; i < attributes_.size(); ++i)
+    for(uint i = 0; i < attributes_.size(); ++i)
         attributes_[i]->FromBinary(source, change);
 }
 

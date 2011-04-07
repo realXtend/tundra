@@ -17,7 +17,7 @@
 
 class RaycastResult;
 
-//! Transforms generic mouse and keyboard input events to input-related entity action for scene entities and Qt signals. 
+/// Transforms generic mouse and keyboard input events to input-related entity action for scene entities and Qt signals. 
 /**
 <table class="header"><tr><td>
 <h2>SceneInteract</h2>
@@ -56,28 +56,28 @@ class SceneInteract : public QObject
     Q_OBJECT
 
 public:
-    //! Constructor. This object does not have a parent. It is stored in a QWeakPointer in SceneAPI and released in its dtor.
+    /// Constructor. This object does not have a parent. It is stored in a QWeakPointer in SceneAPI and released in its dtor.
     SceneInteract();
 
-    //! Destructor.
+    /// Destructor.
     ~SceneInteract() {}
 
-    //! Initialize this object. Must be done for this object to work. Called by SceneAPI
+    /// Initialize this object. Must be done for this object to work. Called by SceneAPI
     /// \param Foundation::Framework Framework pointer.
     void Initialize(Foundation::Framework *framework);
 
-    //! PostInitialize this object. Must be done after modules have been loaded. Called by SceneAPI.
+    /// PostInitialize this object. Must be done after modules have been loaded. Called by SceneAPI.
     void PostInitialize();
 
 signals:
-    //! Emitted when scene was clicked and raycast hit an entity.
+    /// Emitted when scene was clicked and raycast hit an entity.
     /// \param entity Hit entity.
     /// \param Qt::MouseButton Qt enum of the clicked mouse button
     /// \param RaycastResult Raycast result data object.
     void EntityClicked(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
 
 private:
-    //! Performs raycast to last known mouse cursor position.
+    /// Performs raycast to last known mouse cursor position.
     /// \return RaycastResult Result data of the raycast.
     RaycastResult* Raycast();
 
@@ -90,14 +90,14 @@ private:
     Scene::EntityWeakPtr lastHitEntity_; ///< Last entity raycast has hit.
 
 private slots:
-    //! Executes "MouseHover" action each frame is raycast has hit and entity.
+    /// Executes "MouseHover" action each frame is raycast has hit and entity.
     void Update();
 
-    //! Handles key events from input service.
+    /// Handles key events from input service.
     /// \param e Key event.
     void HandleKeyEvent(KeyEvent *e);
 
-    //! Handles mouse events from input service.
+    /// Handles mouse events from input service.
     /// \param e Mouse event.
     void HandleMouseEvent(MouseEvent *e);
 };

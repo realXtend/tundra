@@ -149,7 +149,7 @@ void AssetsWindow::AddAsset(AssetPtr asset)
     bool storageFound = false;
     AssetStoragePtr storage = asset->GetAssetStorage();
     if (storage)
-        for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+        for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         {
             QTreeWidgetItem *storageItem = treeWidget->topLevelItem(i);
             if (storageItem->text(0) == storage->ToString())
@@ -208,7 +208,7 @@ void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
 
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
-    while (*iter) 
+    while(*iter) 
     {
         QTreeWidgetItem *iterItem = (*iter);
         if (iterItem->isExpanded())

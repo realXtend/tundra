@@ -32,8 +32,8 @@ ComponentGroup::~ComponentGroup()
     SAFE_DELETE(editor_)
 }
 
-//! Checks if components type and name are same.
-//! @todo made some major changes to this mehtod ensure that everything is working right.
+/// Checks if components type and name are same.
+/// @todo made some major changes to this mehtod ensure that everything is working right.
 bool ComponentGroup::IsSameComponent(ComponentPtr component) const
 {
     assert(component);
@@ -116,7 +116,7 @@ bool ComponentGroup::RemoveComponent(ComponentPtr comp)
     return false;
 }
 
-//! Check if spesific QtProperty is owned by this component.
+/// Check if spesific QtProperty is owned by this component.
 bool ComponentGroup::HasRootProperty(QtProperty *property) const 
 { 
     return editor_->RootProperty() == property;

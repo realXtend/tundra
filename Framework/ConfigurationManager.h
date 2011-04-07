@@ -4,15 +4,15 @@
 #define incl_Foundation_ConfigurationManager_h
 
 #include "boost/filesystem.hpp" 
-#include "Poco/Util/XMLConfiguration.h"
+//#include "Poco/Util/XMLConfiguration.h"
 
 namespace Foundation
 {
     class Framework;
 }
 
-//! A configuration manager for immutable name-value pair settings.
-/*! The settings are divided into groups. Groups can be freely
+/// A configuration manager for immutable name-value pair settings.
+/** The settings are divided into groups. Groups can be freely
     defined.
 
     Usage:
@@ -27,7 +27,7 @@ namespace Foundation
 
             //Another way 
 
-            if ( framework->GetConfigManager()->HasKey(std::string("myGroup"), std::string("myKey"))
+            if (framework->GetConfigManager()->HasKey(std::string("myGroup"), std::string("myKey"))
                 myValue = framework->GetConfigManager()->GetSetting<int>(std::string("myGroup"), std::string("myKey"));
             else
                 framework->GetConfigManager()->SetSetting(std::string("myGroup"), std::string("myKey"), myValue);
@@ -162,7 +162,7 @@ public:
     /// Returns true is the specified group contains the specified key, false otherwise.
     /** @code
         // I want to assure that group and key value exist. 
-        if ( config_manager_.HasKey(std::string("myGroup"), std::string("myKey") )
+        if (config_manager_.HasKey(std::string("myGroup"), std::string("myKey") )
         {
             int value = config_manager_.GetSetting<int>(std::string("myGroup"), std::string("myKey"));
             // Do something
@@ -183,7 +183,7 @@ private:
     */
     std::list<std::string> GetFiles(const boost::filesystem::path& path) const;
 
-    void AddValues(Poco::Util::XMLConfiguration* pConfiguration, const std::string& group);
+    void AddValues(void* pConfiguration, const std::string& group);
 
     // Default configuration file path
     static const char* DEFAULT_CONFIG_PATH;

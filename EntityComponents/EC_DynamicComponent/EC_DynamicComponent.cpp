@@ -15,7 +15,7 @@
 
 #include <kNet.h>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
 
 #include <QDomDocument>
 
@@ -32,7 +32,7 @@ struct DeserializeData
     {
     }
 
-    //! Checks if any of data structure's values are null.
+    /// Checks if any of data structure's values are null.
     bool isNull() const
     {
         return name_ == "" || type_ == "" || value_ == "";
@@ -43,13 +43,13 @@ struct DeserializeData
     std::string value_;
 };
 
-//! Function that is used by std::sort algorithm to sort attributes by their name.
+/// Function that is used by std::sort algorithm to sort attributes by their name.
 bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
 {
     return a->GetNameString() < b->GetNameString();
 }
 
-//! Function that is used by std::sort algorithm to sort DeserializeData by their name.
+/// Function that is used by std::sort algorithm to sort DeserializeData by their name.
 bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
 {
     return a.name_ < b.name_;
@@ -377,7 +377,7 @@ void EC_DynamicComponent::DeserializeFromBinary(kNet::DataDeserializer& source, 
 {
     u8 num_attributes = source.Read<u8>();
     std::vector<DeserializeData> deserializedAttributes;
-    for (uint i = 0; i < num_attributes; ++i)
+    for(uint i = 0; i < num_attributes; ++i)
     {
         std::string name = source.ReadString();
         std::string type = source.ReadString();

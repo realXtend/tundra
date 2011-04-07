@@ -24,7 +24,7 @@ class EC_3DCanvas;
 class RaycastResult;
 class UserConnection;
 
-//! A web browser on who's content can be rendered into a 3D scene object.
+/// A web browser on who's content can be rendered into a 3D scene object.
 /**
 <table class="header"><tr><td>
 <h2>WebView</h2>
@@ -87,146 +87,146 @@ class EC_WebView : public IComponent
     Q_OBJECT
 
 public:
-    //! Webview URL.
+    /// Webview URL.
     Q_PROPERTY(QString webviewUrl READ getwebviewUrl WRITE setwebviewUrl);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, webviewUrl);
 
-    //! Webview widget size.
+    /// Webview widget size.
     Q_PROPERTY(QSize webviewSize READ getwebviewSize WRITE setwebviewSize);
     DEFINE_QPROPERTY_ATTRIBUTE(QSize, webviewSize);
 
-    //! Rendering target submesh index.
+    /// Rendering target submesh index.
     Q_PROPERTY(int renderSubmeshIndex READ getrenderSubmeshIndex WRITE setrenderSubmeshIndex);
     DEFINE_QPROPERTY_ATTRIBUTE(int, renderSubmeshIndex);
 
-    //! Rendering refresh rate.
+    /// Rendering refresh rate.
     Q_PROPERTY(int renderRefreshRate READ getrenderRefreshRate WRITE setrenderRefreshRate);
     DEFINE_QPROPERTY_ATTRIBUTE(int, renderRefreshRate);
 
-    //! Boolean for interactive mode, if true it will show context menus on mouse click events.
+    /// Boolean for interactive mode, if true it will show context menus on mouse click events.
     Q_PROPERTY(bool interactive READ getinteractive WRITE setinteractive);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, interactive);
 
-    //! Interaction ID for components to exchange messages.
+    /// Interaction ID for components to exchange messages.
     /// \note this attribute is hidden from the UI layer and is not meant to be modified by normal users.
     Q_PROPERTY(int controllerId READ getcontrollerId WRITE setcontrollerId);
     DEFINE_QPROPERTY_ATTRIBUTE(int, controllerId);
     
-    //! Destructor.
+    /// Destructor.
     ~EC_WebView();
 
-    //! Returns if Component is serializable, always returns true.
+    /// Returns if Component is serializable, always returns true.
     virtual bool IsSerializable() const;
 
-    //! Event filter for this QObject
+    /// Event filter for this QObject
     virtual bool eventFilter(QObject *obj, QEvent *e);
 
-    //! Server side initialize.
+    /// Server side initialize.
     void ServerInitialize(TundraLogic::Server *server);
 
 public slots:
-    //! Render our QWebViews current state with current Attributes to our EC_3DCanvas.
+    /// Render our QWebViews current state with current Attributes to our EC_3DCanvas.
     void Render();
 
-    //! If you want to show the interaction menu/actions in your own place, use this to retrieve the menu.
-    //! It is the callers responsibility to destroy the returned QMenu ptr. For example use menu->deleteLater() once you are done with it.
+    /// If you want to show the interaction menu/actions in your own place, use this to retrieve the menu.
+    /// It is the callers responsibility to destroy the returned QMenu ptr. For example use menu->deleteLater() once you are done with it.
     /// \param bool createSubmenu Defines if all the actions are in the QMenu or as subitems in it. If created the submenu will be called "Browser".
     /// \return QMenu* A menu with actions connected to the correct handlers inside this component.
     /// \note If you do custom menu handling set the 'interactive' boolean to false so we wont try to double popup QMenus.
     QMenu *GetInteractionMenu(bool createSubmenu = true);
 
 private slots:
-    //! Server side handler for user disconnects.
+    /// Server side handler for user disconnects.
     void ServerHandleDisconnect(int connectionID, UserConnection *connection);
 
-    //! Server side handler for attribute changes. Only interested in 'controllerId'.
+    /// Server side handler for attribute changes. Only interested in 'controllerId'.
     void ServerHandleAttributeChange(IAttribute *attribute, AttributeChange::Type changeType);
 
-    /*! Server side handler for checking controller id against connected clients. 
+    /** Server side handler for checking controller id against connected clients. 
         The id must never be set in any component to a connection id that is not connected.
         Fixes situations some rarer situations e.g. server is shut down when someone has control and something auto stores the conmponent data,
         leaving a connection id to the scene description. When server loads this then clients cannot take control before the controller id is assigned to new client.
     */
     void ServerCheckControllerValidity(int connectionID);
 
-    //! For internals to do delayed rendering due to e.g. widget resize or submesh index change.
+    /// For internals to do delayed rendering due to e.g. widget resize or submesh index change.
     /// \note Depending if the 'renderRefreshRate' is a valid number (0-25) we use the timer, otherwise a QTimer::singleShot().
     void RenderDelayed();
 
-    //! Free QWebView memory and reset internal pointer.
+    /// Free QWebView memory and reset internal pointer.
     void ResetWidget();
 
-    //! Prepares everything related to the parent widget and other needed components.
+    /// Prepares everything related to the parent widget and other needed components.
     void PrepareComponent();
 
-    //! Prepares the QWebView and connects its signals to our slots.
+    /// Prepares the QWebView and connects its signals to our slots.
     void PrepareWebview();
 
-    //! Handler for QWebView::linkClicked(const QUrl&)
+    /// Handler for QWebView::linkClicked(const QUrl&)
     void LoadRequested(const QUrl &url);
 
-    //! Handler for QWebView::loadStarted().
+    /// Handler for QWebView::loadStarted().
     void LoadStarted();
 
-    //! Handler for QWebView::loadFinished(bool).
+    /// Handler for QWebView::loadFinished(bool).
     void LoadFinished(bool success);
 
-    //! If user select invalid submesh, this function is invoked with a delay and the value is reseted to 0.
+    /// If user select invalid submesh, this function is invoked with a delay and the value is reseted to 0.
     void ResetSubmeshIndex();
 
-    //! Stops the current update timer
+    /// Stops the current update timer
     void RenderTimerStop();
 
-    //! Starts the update timer, or does a delayed rendering. Depending on the 'renderRefreshRate' value.
+    /// Starts the update timer, or does a delayed rendering. Depending on the 'renderRefreshRate' value.
     void RenderTimerStartOrSingleShot();
 
-    //! Handler when EC_Mesh emits that the mesh is ready.
+    /// Handler when EC_Mesh emits that the mesh is ready.
     void TargetMeshReady();
 
-    //! Monitors this entitys added components.
+    /// Monitors this entitys added components.
     void ComponentAdded(IComponent *component, AttributeChange::Type change);
 
-    //! Monitors this entitys removed components.
+    /// Monitors this entitys removed components.
     void ComponentRemoved(IComponent *component, AttributeChange::Type change);
 
-    //! Monitors this components Attribute changes.
+    /// Monitors this components Attribute changes.
     void AttributeChanged(IAttribute *attribute, AttributeChange::Type changeType);
 
-    //! Get parent entitys EC_Mesh. Return 0 if not present.
+    /// Get parent entitys EC_Mesh. Return 0 if not present.
     EC_Mesh *GetMeshComponent();
 
-    //! Get parent entitys EC_3DCanvas. Return 0 if not present.
+    /// Get parent entitys EC_3DCanvas. Return 0 if not present.
     EC_3DCanvas *GetSceneCanvasComponent();
 
-    //! Monitors entity mouse clicks.
+    /// Monitors entity mouse clicks.
     void EntityClicked(Scene::Entity *entity, Qt::MouseButton button, RaycastResult *raycastResult);
 
-    //! Handles request to show the QWebView
+    /// Handles request to show the QWebView
     void InteractShowRequest();
 
-    //! Handles requests to take control of sharing
+    /// Handles requests to take control of sharing
     void InteractControlRequest();
 
-    //! Handles requests to release control of sharing
+    /// Handles requests to release control of sharing
     void InteractControlReleaseRequest();
 
-    //! Enables/disables the QWebView scrollbars.
+    /// Enables/disables the QWebView scrollbars.
     void InteractEnableScrollbars(bool enabled);
 
-    //! Handles entity action WebViewControllerChanged
+    /// Handles entity action WebViewControllerChanged
     /// \note The action signature is (string)"WebViewControllerChanged", (int)"id", (string)"name"
     void ActionControllerChanged(QString id, QString newController);
 
-    //! Handles entity action WebViewScroll
+    /// Handles entity action WebViewScroll
     /// \note The action signature is (string)"WebViewScroll", (int)"x", (int)"y"
     void ActionScroll(QString x, QString y);
 
 private:
-    //! Constuctor.
+    /// Constuctor.
     explicit EC_WebView(IModule *module);
     
-    //! Boolean for tracking if this component has been prepared properly.
-    /*! Guarantees: 
+    /// Boolean for tracking if this component has been prepared properly.
+    /** Guarantees: 
         - EC_Mesh is present and loaded to Ogre, ready for rendering.
         - EC_3DCanvas is present.
         - Parent Entity is valid and set.
@@ -236,28 +236,28 @@ private:
     */
     bool componentPrepared_;
 
-    //! Boolean for tracking if the QWebView is currently in loading state.
+    /// Boolean for tracking if the QWebView is currently in loading state.
     bool webviewLoading_;
 
-    //! Boolean if our QWebView has loaded content for us to render.
+    /// Boolean if our QWebView has loaded content for us to render.
     bool webviewHasContent_;
 
-    //! Internal QWebView for rendering the web page.
+    /// Internal QWebView for rendering the web page.
     QPointer<QWebView> webview_;
 
-    //! Internal timer for updating inworld EC_3DCanvas.
+    /// Internal timer for updating inworld EC_3DCanvas.
     QTimer *renderTimer_;
 
-    //! Metadata for toggling UI visibility when interaction mode changes.
+    /// Metadata for toggling UI visibility when interaction mode changes.
     AttributeMetadata *interactionMetaData_;
 
-    //! Our own connection id.
+    /// Our own connection id.
     int myControllerId_;
 
-    //! Name of the client that has current control
+    /// Name of the client that has current control
     QString currentControllerName_;
 
-    //! Tracking the scroll position when we are in control.
+    /// Tracking the scroll position when we are in control.
     QPoint controlledScrollPos_;
 };
 

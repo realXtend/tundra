@@ -44,7 +44,7 @@ namespace Console
 
     void CommandManager::Update()
     {
-        while (commandlines_.empty() == false)
+        while(commandlines_.empty() == false)
         {
             std::string command_line;
             {
@@ -69,7 +69,7 @@ namespace Console
 
         if (commands_.find(command.name_) != commands_.end())
         {
-            ConsoleModule::LogError("Command " + command.name_ + " already registered.");
+            LogError("Command " + command.name_ + " already registered.");
             return;
         }
     
@@ -88,7 +88,7 @@ namespace Console
         CommandMap::iterator it = commands_.find(name_low);
         if (it == commands_.end())
         {
-            ConsoleModule::LogWarning("Trying to unregister command " + name + ", but it has not been registered.");
+            LogWarning("Trying to unregister command " + name + ", but it has not been registered.");
             return;
         }
         commands_.erase(it);
@@ -147,14 +147,14 @@ namespace Console
             escape_tokenizer param_tok(param_line);
             try
             {
-                for (escape_tokenizer::iterator it = param_tok.begin();it != param_tok.end() ; ++it)
+                for(escape_tokenizer::iterator it = param_tok.begin();it != param_tok.end() ; ++it)
                 {
                     std::string param = *it;
                     boost::trim(param);
                     params.push_back(param);
                 }
             }
-            catch (boost::escaped_list_error &/*e*/)
+            catch(boost::escaped_list_error &/*e*/)
             {
                 console_->Print("Invalid use of escaping.");
                 Console::CommandResult result = { false, "", false };
@@ -234,7 +234,7 @@ namespace Console
         {   
             RecursiveMutexLock lock(commands_mutex_);
             CommandMap::const_iterator it = commands_.begin();
-            for ( ; it != commands_.end() ; ++it)
+            for(; it != commands_.end() ; ++it)
             {
                 if (params.empty() || std::find_if(params.begin(), params.end(), boost::bind( &nocase_compare, _1, it->second.name_ )) != params.end())
                 {
@@ -270,7 +270,7 @@ namespace Console
     Console::CommandResult CommandManager::ConsoleTest(const StringVector &params)
     {
         std::string all_params;
-        for (size_t i = 0 ; i < params.size() ; ++i)
+        for(size_t i = 0 ; i < params.size() ; ++i)
         {
             all_params += params[i];
             if (i < params.size() - 1)

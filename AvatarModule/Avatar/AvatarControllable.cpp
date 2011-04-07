@@ -100,7 +100,7 @@ namespace Avatar
     {
         if (event_id == Scene::Events::EVENT_CONTROLLABLE_ENTITY)
         {
-            //! \todo this is where our user agent model design breaks. We store a single controllable entity, but we should be able to handle many. -cm
+            /// \todo this is where our user agent model design breaks. We store a single controllable entity, but we should be able to handle many. -cm
             entity_ = checked_static_cast<Scene::Events::EntityEventData*>(data)->entity;
             Scene::EntityPtr entity = entity_.lock();
 
@@ -135,7 +135,7 @@ namespace Avatar
             Scene::EntityPtr entity = entity_.lock();
             if (entity)
             {
-                //! \todo this is where our user agent model design breaks. We use single controllable entity, but we should be able to handle many. -cm
+                /// \todo this is where our user agent model design breaks. We use single controllable entity, but we should be able to handle many. -cm
                 EC_OpenSimAvatar *avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->controlflags &= ~RexTypes::AGENT_CONTROL_LEFT_POS;
                 avatar->controlflags &= ~RexTypes::AGENT_CONTROL_LEFT_NEG;
@@ -150,7 +150,7 @@ namespace Avatar
             Scene::EntityPtr entity = entity_.lock();
             if (entity)
             {
-                //! \todo this is where our user agent model design breaks. We use single controllable entity, but we should be able to handle many. -cm
+                /// \todo this is where our user agent model design breaks. We use single controllable entity, but we should be able to handle many. -cm
                 EC_OpenSimAvatar *avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 avatar->yaw = 0;
                 net_dirty_ = true;
@@ -287,8 +287,8 @@ namespace Avatar
             net_dirty_ = true;
         }
 
-        //! \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
-        //! \todo remove hack function from world logic interface, added as we moved code to AvatarModule
+        /// \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
+        /// \todo remove hack function from world logic interface, added as we moved code to AvatarModule
         float pitch = 0;
         Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
         if (worldLogic)
@@ -319,7 +319,7 @@ namespace Avatar
 
     void AvatarControllable::SendMovementToServer(uint controlflags)
     {
-        //! \todo this is more or less where our user agent model design breaks. We can have multiple controllables, but the update for them all goes through here. -cm
+        /// \todo this is more or less where our user agent model design breaks. We can have multiple controllables, but the update for them all goes through here. -cm
 
         // 0 = walk, 1 = mouselook, 2 = type
         uint8_t flags = 0;
@@ -360,7 +360,7 @@ namespace Avatar
 
     void AvatarControllable::HandleAgentMovementComplete(const Vector3df& position, const Vector3df& lookat)
     {
-        //! \todo this is more or less where our user agent model design breaks. We can have multiple controllables, but this function can handle exactly one controllable. -cm
+        /// \todo this is more or less where our user agent model design breaks. We can have multiple controllables, but this function can handle exactly one controllable. -cm
 
         Scene::EntityPtr avatarentity = entity_.lock();
         if(!avatarentity)
@@ -369,7 +369,7 @@ namespace Avatar
         // set position/rotation according to the value from server
         EC_NetworkPosition* netpos = avatarentity->GetComponent<EC_NetworkPosition>().get();
 
-        //! \todo handle lookat to set initial avatar orientation
+        /// \todo handle lookat to set initial avatar orientation
         netpos->SetPosition(position);
         netpos->Updated();    
     }    

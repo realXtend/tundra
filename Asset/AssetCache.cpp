@@ -15,7 +15,7 @@
 
 #include "MemoryLeakCheck.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("AssetCache")
+//DEFINE_POCO_LOGGING_FUNCTIONS("AssetCache")
 
 QString SanitateAssetRefForCache(QString assetRef)
 { 
@@ -84,7 +84,7 @@ void AssetCache::insert(QIODevice* device)
 {
     // We own this ptr from prepare()
     QHashIterator<QString, QFile*> it(preparedItems);
-    while (it.hasNext())
+    while(it.hasNext())
     {
         it.next();
         if (it.value() == device)
@@ -134,7 +134,7 @@ bool AssetCache::remove(const QUrl &url)
     // we need to delete the QFile* ptr also in these cases
     // note: this is not a common operation
     QHashIterator<QString, QFile*> it(preparedItems);
-    while (it.hasNext())
+    while(it.hasNext())
     {
         it.next();
         if (it.key() == url.toString())

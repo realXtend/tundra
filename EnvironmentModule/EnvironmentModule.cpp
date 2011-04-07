@@ -135,9 +135,9 @@ namespace Environment
         // because currently editor is plain QWidget we have not access to show() - slot. So we here poll widget, and when polling tells us that widget is seen, 
         // we will initialise it again. 
 
-        if ( environment_editor_ != 0 && firstTime_ == true )
+        if (environment_editor_ != 0 && firstTime_ == true )
         {
-            if ( environment_editor_->Showed())
+            if (environment_editor_->Showed())
             {
                 environment_editor_->InitializeTabs();
                 firstTime_ = false;
@@ -161,7 +161,7 @@ namespace Environment
          if (environment_.get() != 0)
          {
             EC_OgreEnvironment* ev = environment_->GetEnvironmentComponent();
-            if ( ev != 0)
+            if (ev != 0)
                 return ev->GetCaelum();
          }
 
@@ -253,7 +253,7 @@ namespace Environment
                 firstTime_ = true;
             }
         }
-        //! \todo Remove - strictly test code!!! We don't want hardcoded environment in Tundra mode, but used for now for testing
+        /// \todo Remove - strictly test code!!! We don't want hardcoded environment in Tundra mode, but used for now for testing
         else 
 #endif
             if (category_id == tundra_event_category_)
@@ -270,7 +270,7 @@ namespace Environment
                     //CreateSky();
                 }
                 // Hook to the SceneCleared event to recreate the necessary environment (Caelum) when scene is cleared
-                //! \todo Temp solution, will be removed
+                /// \todo Temp solution, will be removed
                 connect(scene.get(), SIGNAL(SceneCleared(Scene::SceneManager*)), this, SLOT(OnSceneCleared(Scene::SceneManager*)));
             }
 
@@ -435,7 +435,7 @@ namespace Environment
             else if (methodname == "RexFog")
             {
                 StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
-                if ( parameters.size() < 5)
+                if (parameters.size() < 5)
                     return false;
 
                 // may have , instead of . so replace
@@ -473,7 +473,7 @@ namespace Environment
                  **/
                 
                 StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
-                if ( parameters.size() < 3)
+                if (parameters.size() < 3)
                     return false; 
 
                 // may have , instead of . so replace
@@ -486,10 +486,10 @@ namespace Environment
                 StringVector sun_light_color = SplitString(parameters[1].c_str(), empty.toAscii());
                 StringVector ambient_light_color = SplitString(parameters[2].c_str(), empty.toAscii());
 
-                if ( environment_ != 0 )
+                if (environment_ != 0 )
                 {
                       EC_EnvironmentLight* light = environment_->GetEnvironmentLight();
-                      if ( light != 0)
+                      if (light != 0)
                       {
                           // Because of caelum defines environment light values normally we need to set it off. 
                           light->useCaelumAttr.Set(false, AttributeChange::LocalOnly);
@@ -545,7 +545,7 @@ namespace Environment
         if (entity != 0)
         {
             // Does it have component? If not create. 
-            if ( !entity->HasComponent(component_name) )
+            if (!entity->HasComponent(component_name) )
                 entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name), AttributeChange::Replicate);
         
         
@@ -558,7 +558,7 @@ namespace Environment
         if (entity != 0)
         {
              // Does it have component? If not create. 
-            if ( !entity->HasComponent(component_name) )
+            if (!entity->HasComponent(component_name) )
                 entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name), AttributeChange::LocalOnly);
 
         }
@@ -582,21 +582,21 @@ namespace Environment
         Scene::ScenePtr active_scene = GetFramework()->Scene()->GetDefaultScene();
         Scene::Entity* entity = active_scene->GetEntityByName("LocalEnvironment").get();
     
-        if ( entity == 0)
+        if (entity == 0)
             return;
         else
         {   
-            if ( entity->HasComponent(EC_WaterPlane::TypeNameStatic()) && active_scene->GetEntityByName("WaterEnvironment").get() != 0 )
+            if (entity->HasComponent(EC_WaterPlane::TypeNameStatic()) && active_scene->GetEntityByName("WaterEnvironment").get() != 0 )
                 entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));  
             if  ( entity->HasComponent(EC_Fog::TypeNameStatic()) && active_scene->GetEntityByName("FogEnvironment").get() != 0)
                  entity->RemoveComponent(entity->GetComponent(EC_Fog::TypeNameStatic()));
-            if ( entity->HasComponent(EC_SkyPlane::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
+            if (entity->HasComponent(EC_SkyPlane::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
                 entity->RemoveComponent(entity->GetComponent(EC_SkyPlane::TypeNameStatic()));
-            if ( entity->HasComponent(EC_SkyBox::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
+            if (entity->HasComponent(EC_SkyBox::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
                 entity->RemoveComponent(entity->GetComponent(EC_SkyBox::TypeNameStatic()));
-             if ( entity->HasComponent(EC_SkyDome::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
+             if (entity->HasComponent(EC_SkyDome::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
                 entity->RemoveComponent(entity->GetComponent(EC_SkyDome::TypeNameStatic()));
-            if ( entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) && active_scene->GetEntityByName("LightEnvironment").get() != 0)
+            if (entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) && active_scene->GetEntityByName("LightEnvironment").get() != 0)
                 entity->RemoveComponent(entity->GetComponent(EC_EnvironmentLight::TypeNameStatic()));
         }
 
@@ -716,7 +716,7 @@ namespace Environment
         scene->EmitEntityCreated(entity);
         terrain_->FindCurrentlyActiveTerrain();
         
-        /*if ( environment_editor_ != 0 )
+        /*if (environment_editor_ != 0 )
         {
             environment_editor_->InitTerrainTabWindow();
             environment_editor_->InitTerrainTextureTabWindow();
@@ -728,7 +728,7 @@ namespace Environment
     {
         water_ = WaterPtr(new Water(this));
         water_->CreateWaterGeometry();
-        /*if ( environment_editor_ != 0 )
+        /*if (environment_editor_ != 0 )
              environment_editor_->InitWaterTabWindow();*/
     }
 #endif
@@ -742,7 +742,7 @@ namespace Environment
     {
         sky_ = SkyPtr(new Sky(this));
 
-        /*if ( environment_editor_ != 0 )
+        /*if (environment_editor_ != 0 )
              environment_editor_->InitSkyTabWindow();
         
         if (!GetEnvironmentHandler()->IsCaelum())
@@ -790,14 +790,15 @@ namespace Environment
     }
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace Environment;
-
+/*
 POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(EnvironmentModule)
 POCO_END_MANIFEST
+*/

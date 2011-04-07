@@ -60,7 +60,7 @@
 #ifdef _MSC_VER
 #pragma warning( pop )
 #endif
-
+/*
 #include <Poco/Foundation.h>
 #include <Poco/DirectoryIterator.h>
 #include <Poco/ClassLibrary.h>
@@ -72,10 +72,10 @@
 #include <Poco/Channel.h>
 #include <Poco/Formatter.h>
 
-//! Portable Component libraries. External library.
+/// Portable Component libraries. External library.
 namespace Poco { }
-
-//! Boost libraries. External library.
+*/
+/// Boost libraries. External library.
 namespace boost { }
 
 

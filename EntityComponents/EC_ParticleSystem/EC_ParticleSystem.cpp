@@ -14,7 +14,7 @@
 #include "IAssetTransfer.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
 
 #include <Ogre.h>
 #include "MemoryLeakCheck.h"
@@ -45,7 +45,7 @@ EC_ParticleSystem::~EC_ParticleSystem()
 
 void EC_ParticleSystem::View(const QString &attributeName)
 {
-    //! @todo add implementation.
+    /// @todo add implementation.
 }
 
 void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
@@ -76,7 +76,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
             return;
         }
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
         LogError("Could not add particle system " + Name().toStdString() + ": " + std::string(e.what()));
     }
@@ -102,13 +102,13 @@ void EC_ParticleSystem::DeleteParticleSystems()
             Ogre::SceneNode *node = placeable->GetSceneNode();
             if (!node)
                 return;
-            for (unsigned i = 0; i < particleSystems_.size(); ++i)
+            for(unsigned i = 0; i < particleSystems_.size(); ++i)
                 node->detachObject(particleSystems_[i]);
         }
-        for (unsigned i = 0; i < particleSystems_.size(); ++i)
+        for(unsigned i = 0; i < particleSystems_.size(); ++i)
             scene_mgr->destroyParticleSystem(particleSystems_[i]);
     }
-    catch (Ogre::Exception& /*e*/)
+    catch(Ogre::Exception& /*e*/)
     {
         LogError("Could not delete particle systems");
     }
@@ -122,12 +122,12 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 {
     if(attribute == &castShadows)
     {
-        for (unsigned i = 0; i < particleSystems_.size(); ++i)
+        for(unsigned i = 0; i < particleSystems_.size(); ++i)
             particleSystems_[i]->setCastShadows(castShadows.Get());
     }
     else if (attribute == &renderingDistance)
     {
-        for (unsigned i = 0; i < particleSystems_.size(); ++i)
+        for(unsigned i = 0; i < particleSystems_.size(); ++i)
             particleSystems_[i]->setRenderingDistance(renderingDistance.Get());
     }
     else if (attribute == &particleRef)
@@ -137,7 +137,7 @@ void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 
         // Request the new particle system resource. Once it has loaded, ParticleSystemAssetLoaded() will be called.
         AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(particleRef.Get());
-        if ( transfer.get() != 0)
+        if (transfer.get() != 0)
         {
             connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(ParticleSystemAssetLoaded()), Qt::UniqueConnection);
         }
@@ -173,7 +173,7 @@ void EC_ParticleSystem::ParticleSystemAssetLoaded()
     if (asset->GetNumTemplates() > 0)
     {
         DeleteParticleSystems();
-        for (int i = 0 ; i< asset->GetNumTemplates(); ++i)
+        for(int i = 0 ; i< asset->GetNumTemplates(); ++i)
             CreateParticleSystem(asset->GetTemplateName(i));
     }
 }

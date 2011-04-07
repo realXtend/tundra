@@ -39,7 +39,7 @@ namespace Foundation
         // Otherwise get the module's filename, and extract path from it
         GetModuleFileNameA(0, cpath, MAX_PATH);
         int length = strlen(cpath);
-        for (int i = length - 1; i >= 0; --i)
+        for(int i = length - 1; i >= 0; --i)
         {
             if (cpath[i] == '\\')
             {
@@ -65,7 +65,7 @@ namespace Foundation
         // Otherwise get the module's filename, and extract path from it
         GetModuleFileNameW(0, cpath, MAX_PATH);
         int length = wcslen(cpath);
-        for (int i = length - 1; i >= 0; --i)
+        for(int i = length - 1; i >= 0; --i)
         {
             if (cpath[i] == L'\\')
             {

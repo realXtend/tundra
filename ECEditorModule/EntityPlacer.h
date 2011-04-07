@@ -19,8 +19,8 @@ class EntityPlacer : public QObject
     Q_OBJECT
 
 public:
-    //! If entity that we want to place in our world wont hold any mesh component. We use default mesh to
-    //! tell the user where hes placing his mesh (e.g. placing sound source on the scene).
+    /// If entity that we want to place in our world wont hold any mesh component. We use default mesh to
+    /// tell the user where hes placing his mesh (e.g. placing sound source on the scene).
     //static const std::string CustomMeshName;
 
     EntityPlacer(Foundation::Framework *framework, entity_id_t entityId = 0, QObject *parent = 0);

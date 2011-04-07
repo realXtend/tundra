@@ -17,7 +17,7 @@
 #endif
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Light")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Light")
 
 #include <Ogre.h>
 
@@ -161,7 +161,7 @@ void EC_Light::UpdateOgreLight()
         if (type.Get() == LT_Spot)
             light_->setSpotlightRange(Ogre::Degree(innerAngle.Get()), Ogre::Degree(outerAngle.Get()));
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
         LogError("Exception while setting EC_Light parameters to Ogre: " + std::string(e.what()));
     }

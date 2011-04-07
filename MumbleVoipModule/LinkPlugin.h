@@ -24,51 +24,51 @@ public:
 
 public slots:
 
-    //! Set state to on mode
+    /// Set state to on mode
     virtual void Start();
 
-    //! Set state off mode
+    /// Set state off mode
     virtual void Stop();
 
-    //! @return true if Start method is called and connection to shared memory with mumble client is  established. Otherwise return false.
+    /// @return true if Start method is called and connection to shared memory with mumble client is  established. Otherwise return false.
     virtual bool IsRunning() const;
 
-    //! @return reason for current state.
+    /// @return reason for current state.
     virtual QString GetReason() const;
 
-	//! Send data to Mumble client application
+	/// Send data to Mumble client application
 	virtual void SendData();
 
-	////! Set name for avatar
+	///// Set name for avatar
 	virtual void SetApplicationName(const QString& name);
 
-	//! Set identity for avatar
+	/// Set identity for avatar
 	virtual void SetUserIdentity(const QString& identity);
 
-    //! Set context aka 'group identifier'
+    /// Set context aka 'group identifier'
     virtual void SetContextId(const QString& id);
 
-    //! Set application description
+    /// Set application description
     virtual void SetApplicationDescription(const QString& description);
 
-	//! Set avatar position vectors
-    //!
-    //! Left handed coordinate system.
-	//!  X positive towards "left".
-	//!  Y positive towards "up".
-	//!  Z positive towards "into screen".
-	//!
-	//!  1 unit = 1 meter
+	/// Set avatar position vectors
+    ///
+    /// Left handed coordinate system.
+	///  X positive towards "left".
+	///  Y positive towards "up".
+	///  Z positive towards "into screen".
+	///
+	///  1 unit = 1 meter
 	virtual void SetAvatarPosition(Vector3df position, Vector3df front, Vector3df top);
 
-	//! Set camera position vectors
-    //!
-    //! Left handed coordinate system.
-	//!  X positive towards "left".
-	//!  Y positive towards "up".
-	//!  Z positive towards "into screen".
-	//!
-	//!  1 unit = 1 meter
+	/// Set camera position vectors
+    ///
+    /// Left handed coordinate system.
+	///  X positive towards "left".
+	///  Y positive towards "up".
+	///  Z positive towards "into screen".
+	///
+	///  1 unit = 1 meter
 	virtual void SetCameraPosition(Vector3df position, Vector3df front, Vector3df top);
 
 protected:

@@ -100,10 +100,10 @@ private slots:
     void WidgetDestroyed(QObject *obj);
     void MeshMaterialsUpdated(uint index, const QString &material_name);
 
-    //! Monitors when parent entity is set.
+    /// Monitors when parent entity is set.
     void ParentEntitySet();
 
-    //! Monitors this entitys removed components.
+    /// Monitors this entitys removed components.
     void ComponentRemoved(IComponent *component, AttributeChange::Type change);
 
 private:

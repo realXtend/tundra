@@ -10,8 +10,8 @@
 
 class IModule;
 
-//! Helper macro for creating new entity components
-/*!
+/// Helper macro for creating new entity components
+/**
     \ingroup Scene_group
 */
 #define DECLARE_EC(component)                                                           \

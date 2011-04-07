@@ -23,8 +23,8 @@
 #include "CoreThread.h"
 #include "Transform.h"
 
-//! Core contains functionality and definitions that are common to all subprojects in the viewer.
-/*! It contains common standard includes so you shouldn't need to include specific
+/// Core contains functionality and definitions that are common to all subprojects in the viewer.
+/** It contains common standard includes so you shouldn't need to include specific
     C++ standard library includes in your own code. It also contains
     includes for some of the external libraries used by the viewer, such as
     Boost or PoCo.

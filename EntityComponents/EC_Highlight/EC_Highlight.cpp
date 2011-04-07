@@ -19,7 +19,7 @@
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Highlight")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Highlight")
 
 #include "MemoryLeakCheck.h"
 
@@ -162,7 +162,7 @@ void EC_Highlight::Create()
             {
                 entityClone_->getMesh()->_notifySkeleton(entity_skel);
             }
-            catch (Ogre::Exception &e)
+            catch(Ogre::Exception &e)
             {
                 LogError("Could not set shared skeleton for attachment: " + std::string(e.what()));
             }
@@ -176,7 +176,7 @@ void EC_Highlight::Create()
         Ogre::MaterialPtr highlightMaterial = OgreRenderer::CloneMaterial("Highlight", newMatName);
         entityClone_->setMaterialName(newMatName);
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
         LogError("Could not set material \"" + newMatName + "\": " + std::string(e.what()));
         return;

@@ -65,7 +65,7 @@ namespace PythonScript
     class PythonEngine;
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
-    //! A scripting module using Python
+    /// A scripting module using Python
     class MODULE_API PythonScriptModule : public QObject, public IModule
     {
         Q_OBJECT
@@ -110,14 +110,14 @@ namespace PythonScript
         virtual void Update(f64 frametime);
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-        //! callback for console command
+        /// callback for console command
         Console::CommandResult ConsoleRunString(const StringVector &params);
         Console::CommandResult ConsoleRunFile(const StringVector &params);
         Console::CommandResult ConsoleReset(const StringVector &params);
 
-        MODULE_LOGGING_FUNCTIONS
+        //MODULE_LOGGING_FUNCTIONS
 
-        //! returns name of this module. Needed for logging.
+        /// returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
         static void Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate);
@@ -153,10 +153,10 @@ namespace PythonScript
         QList<UiProxyWidget *> proxyWidgets;
 
     private:
-        //! Type name of the module.
+        /// Type name of the module.
         static std::string type_name_static_;
 
-        //! Static instance of ourselves.
+        /// Static instance of ourselves.
         static PythonScriptModule *pythonScriptModuleInstance_;
 
         PythonEnginePtr engine_;

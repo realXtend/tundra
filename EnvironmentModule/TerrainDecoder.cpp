@@ -45,15 +45,15 @@ public:
 
     void BuildDequantizeTable16()
     {
-        for (int j = 0; j < 16; j++)
-            for (int i = 0; i < 16; i++)
+        for(int j = 0; j < 16; j++)
+            for(int i = 0; i < 16; i++)
                 dequantizeTable16[j*16 + i] = 1.0f + 2.0f * (float)(i + j);
     }
 
     void BuildQuantizeTable16()
     {
-        for (int j = 0; j < 16; j++)
-            for (int i = 0; i < 16; i++)
+        for(int j = 0; j < 16; j++)
+            for(int i = 0; i < 16; i++)
                 quantizeTable16[j*16 + i] = 1.0f / (1.0f + 2.0f * ((float)i + (float)j));
     }
 
@@ -61,8 +61,8 @@ public:
     {
         const float hposz = PI * 0.5f / 16.0f;
 
-        for (int u = 0; u < 16; u++)
-            for (int n = 0; n < 16; n++)
+        for(int u = 0; u < 16; u++)
+            for(int n = 0; n < 16; n++)
                 cosineTable16[u*16 + n] = (float)cosf((2.0f * (float)n + 1.0f) * (float)u * hposz);
     }
 
@@ -74,7 +74,7 @@ public:
         int j = 0;
         int count = 0;
 
-        while (i < 16 && j < 16)
+        while(i < 16 && j < 16)
         {
             copyMatrix16[j * 16 + i] = count++;
 
@@ -150,7 +150,7 @@ void DecodeTerrainPatch(int *patches, ProtocolUtilities::BitStream &bits, const 
         {
             std::stringstream ss;
             ss << "Out of bits when decoding terrain vertex " << i << "!";
-            EnvironmentModule::LogInfo(ss.str());
+            LogInfo(ss.str());
             for(; i < size * size; ++i)
                 patches[i] = 0;
             return;
@@ -183,11 +183,11 @@ void IDCTColumn16(const float *linein, float *lineout, int column)
     float total;
     const int cStride = 16;
 
-    for (int n = 0; n < 16; n++)
+    for(int n = 0; n < 16; n++)
     {
         total = OO_SQRT2 * linein[column];
 
-        for (int u = 1; u < 16; u++)
+        for(int u = 1; u < 16; u++)
             total += linein[u*cStride + column] * precompTables.cosineTable16[u*cStride + n];
 
         lineout[16 * n + column] = total;
@@ -202,11 +202,11 @@ void IDCTLine16(const float *linein, float *lineout, int line)
     int lineSize = line * 16;
     float total;
 
-    for (int n = 0; n < 16; n++)
+    for(int n = 0; n < 16; n++)
     {
         total = OO_SQRT2 * linein[lineSize];
 
-        for (int u = 1; u < 16; u++)
+        for(int u = 1; u < 16; u++)
         {
             total += linein[lineSize + u] * precompTables.cosineTable16[u * 16 + n];
         }
@@ -230,7 +230,7 @@ void DecompressTerrainPatch(std::vector<float> &output, int *patchData, const Te
 
     if (groupHeader.patchSize != 16)
     {
-        EnvironmentModule::LogWarning("TerrainDecoder:DecompressTerrainPatch: Unsupported patch size present!");
+        LogWarning("TerrainDecoder:DecompressTerrainPatch: Unsupported patch size present!");
         return;
     }
 
@@ -239,12 +239,12 @@ void DecompressTerrainPatch(std::vector<float> &output, int *patchData, const Te
 
     std::vector<float> ftemp(16*16);
 
-    for (int o = 0; o < 16; o++)
+    for(int o = 0; o < 16; o++)
         IDCTColumn16(&block[0], &ftemp[0], o);
-    for (int o = 0; o < 16; o++)
+    for(int o = 0; o < 16; o++)
         IDCTLine16(&ftemp[0], &block[0], o);
 
-    for (int j = 0; j < block.size(); j++)
+    for(int j = 0; j < block.size(); j++)
         output[j] = block[j] * mult + addval;
 }
 
@@ -266,7 +266,7 @@ void DecompressLand(std::vector<DecodedTerrainPatch> &patches, ProtocolUtilities
         // The MSB of header.x and header.y are unused, or used for some other purpose?
         if (patch.header.x >= cPatchesPerEdge || patch.header.y >= cPatchesPerEdge)
         {
-            EnvironmentModule::LogWarning("TerrainDecoder:DecompressLand: Invalid patch data!");
+            LogWarning("TerrainDecoder:DecompressLand: Invalid patch data!");
             return;
         }
 

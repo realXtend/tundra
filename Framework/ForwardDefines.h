@@ -56,21 +56,4 @@ class UiServiceInterface;
 typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;
 typedef boost::weak_ptr<UiServiceInterface> UiServiceWeakPtr;
 
-//! Use root logging only in foundation classes.
-void RootLogFatal(const std::string &msg);
-//! Use root logging only in foundation classes.
-void RootLogCritical(const std::string &msg);
-//! Use root logging only in foundation classes.
-void RootLogError(const std::string &msg);
-//! Use root logging only in foundation classes.
-void RootLogWarning(const std::string &msg);
-//! Use root logging only in foundation classes.
-void RootLogNotice(const std::string &msg);
-//! Use root logging only in foundation classes.
-void RootLogInfo(const std::string &msg);
-//! Use root logging only in foundation classes.
-void RootLogTrace(const std::string &msg);
-//! Use root logging only in foundation classes.
-void RootLogDebug(const std::string &msg);
-
 #endif

@@ -21,7 +21,7 @@ namespace OgreRenderer
                 manager.load(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 mesh = manager.getByName(name);
             }
-            catch (...) {}
+            catch(...) {}
         }
         
         return mesh;
@@ -39,7 +39,7 @@ namespace OgreRenderer
                 manager.load(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 skel = manager.getByName(name);
             }
-            catch (...) {}
+            catch(...) {}
         }
         
         return skel;
@@ -57,7 +57,7 @@ namespace OgreRenderer
                 manager.load(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 mat = manager.getByName(name);
             }
-            catch (...) {}
+            catch(...) {}
         }
         
         return mat;
@@ -75,7 +75,7 @@ namespace OgreRenderer
                 manager.load(name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
                 tex = manager.getByName(name);
             }
-            catch (...) {}
+            catch(...) {}
         }
         
         return tex;

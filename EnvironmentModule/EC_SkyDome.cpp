@@ -10,7 +10,7 @@
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyDome")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyDome")
 
 #include <Ogre.h>
 
@@ -87,7 +87,7 @@ namespace Environment
             renderer->GetSceneManager()->setSkyDome(true,currentMaterial.toStdString().c_str(), curvatureAttr.Get(),tilingAttr.Get(),
                 distanceAttr.Get(), drawFirstAttr.Get(), rotation, xSegmentsAttr.Get(), ySegmentsAttr.Get(), -1);
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
             LogError("Could not set SkyDome: " + std::string(e.what()));
             return;
@@ -132,7 +132,7 @@ namespace Environment
             lastySegmentsKeep_ = ySegmentsKeepAttr.Get();
 
         } 
-        else if ( name == textureRef.GetNameString() )
+        else if (name == textureRef.GetNameString() )
         {
             SetTexture();
         }
@@ -146,7 +146,7 @@ namespace Environment
         Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
         if (!materialPtr.isNull())
         {
-            if ( materialPtr->getNumTechniques() >= 1 && materialPtr->getTechnique(0)->getNumPasses() >= 1 &&  materialPtr->getTechnique(0)->getPass(0)->getNumTextureUnitStates() >= 1)
+            if (materialPtr->getNumTechniques() >= 1 && materialPtr->getTechnique(0)->getNumPasses() >= 1 &&  materialPtr->getTechnique(0)->getPass(0)->getNumTextureUnitStates() >= 1)
             {
                 materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(OgreRenderer::SanitateAssetIdForOgre(textureName.toStdString()));
                 materialPtr->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureAddressingMode(Ogre::TextureUnitState::TAM_WRAP);

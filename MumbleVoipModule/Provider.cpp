@@ -153,7 +153,7 @@ namespace MumbleVoip
     void Provider::CreateSession()
     {
         if (session_ && session_->GetState() == Session::STATE_CLOSED)
-            SAFE_DELETE(session_) //! \todo USE SHARED PTR, SOMEONE MIGHT HAVE POINTER TO SESSION OBJECT !!!!
+            SAFE_DELETE(session_) /// \todo USE SHARED PTR, SOMEONE MIGHT HAVE POINTER TO SESSION OBJECT !!!!
 
         if (!session_)
         {
@@ -340,6 +340,6 @@ namespace MumbleVoip
     {
         tundra_logic_ = framework_->GetModuleManager()->GetModule<TundraLogic::TundraLogicModule>().lock();
         if (!tundra_logic_)
-            RootLogError("MumbleVoip::Proviver: Could not get TundraLogicModule");
+            LogError("MumbleVoip::Proviver: Could not get TundraLogicModule");
     }
 } // MumbleVoip

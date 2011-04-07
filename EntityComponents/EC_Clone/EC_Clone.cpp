@@ -20,7 +20,7 @@
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Clone")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Clone")
 
 #include <Ogre.h>
 
@@ -195,7 +195,7 @@ void EC_Clone::Create()
             {
                 entityClone_->getMesh()->_notifySkeleton(entity_skel);
             }
-            catch (Ogre::Exception &e)
+            catch(Ogre::Exception &e)
             {
                 LogError("Could not set shared skeleton for attachment: " + std::string(e.what()));
             }
@@ -208,7 +208,7 @@ void EC_Clone::Create()
     {
         entityClone_->setMaterialName(material_name);
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
         LogError("Could not set material \"" + std::string(material_name) + "\": " + std::string(e.what()));
         return;

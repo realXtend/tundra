@@ -12,19 +12,19 @@ struct SceneDesc;
 
 namespace AssImp
 {
-    //! Contains mesh data information about a file that can be imported with OpenAssetImport.
-    /*! GetMeshData() uses this to fill out information which can be used to generate entities
+    /// Contains mesh data information about a file that can be imported with OpenAssetImport.
+    /** GetMeshData() uses this to fill out information which can be used to generate entities
         and components.
     */
     struct MeshData
     {
-        QString file_;          //!< file path, same for each individual mesh in the file.
-        QString name_;          //!< name of an individual mesh inside the file. May be empty if file contains only one mesh.
-        Transform transform_;   //!< transforms in global space for an individual mesh.
+        QString file_;          ///< file path, same for each individual mesh in the file.
+        QString name_;          ///< name of an individual mesh inside the file. May be empty if file contains only one mesh.
+        Transform transform_;   ///< transforms in global space for an individual mesh.
     };
 
-    //! Open Asset Import, a wrapper for Open Asset Import library that is used for loading model formats other than Ogre .mesh.
-    /*! Imports an Ogre mesh from various different model formats. The Ogre mesh is created to Ogre::MeshManager. This class
+    /// Open Asset Import, a wrapper for Open Asset Import library that is used for loading model formats other than Ogre .mesh.
+    /** Imports an Ogre mesh from various different model formats. The Ogre mesh is created to Ogre::MeshManager. This class
         doesn't create any entities or components, the caller is responsible for this.
     */
     class OpenAssetImport
@@ -33,8 +33,8 @@ namespace AssImp
         OpenAssetImport();
         ~OpenAssetImport();
 
-        //! Helper function for stripping mesh name from asset id
-        /*! If asset is contained in a file that contains other assets as well,
+        /// Helper function for stripping mesh name from asset id
+        /** If asset is contained in a file that contains other assets as well,
             this function can be used to separate the mesh name so you can
             get a file name and a mesh name
             \param id asset id
@@ -43,14 +43,14 @@ namespace AssImp
         */
         static void StripMeshnameFromAssetId(const QString& id, QString &outfile, QString &outMeshname);
         
-        //! Returns true if filename has an extension that implies supported file format
-        /*!
+        /// Returns true if filename has an extension that implies supported file format
+        /**
             \param filename full path or only filename to test
         */
         bool IsSupportedExtension(const QString& filename);
 
-        //! Imports mesh data from a file.
-        /*! Import mesh names and transformations contained in the model file. This
+        /// Imports mesh data from a file.
+        /** Import mesh names and transformations contained in the model file. This
             information can be used to create entities, components ands asset refs.
             Use Import() to create the actual Ogre mesh data.
 
@@ -62,8 +62,8 @@ namespace AssImp
         */
         void GetMeshData(const QString& file, std::vector<MeshData> &outMeshData) const;
 
-        //! Generates Ogre meshes from memory buffer.
-        /*! The meshes are generated directly to Ogre::MeshManager and names of the meshes are
+        /// Generates Ogre meshes from memory buffer.
+        /** The meshes are generated directly to Ogre::MeshManager and names of the meshes are
             returned. Use GetMeshData() to get hierarchy and transformation data from a model file.
 
             \param data memory buffer where to import meshes from
@@ -75,8 +75,8 @@ namespace AssImp
         */
         void Import(const void *data, size_t length, const QString &name, const char* hint, const QString &nodeName, std::vector<std::string> &outMeshNames);
 
-        //! Inspects file and returns a scene description structure of the contents of the file.
-        /*! \param filename File name.
+        /// Inspects file and returns a scene description structure of the contents of the file.
+        /** \param filename File name.
         */
         SceneDesc GetSceneDescription(const QString &filename) const;
 
@@ -99,8 +99,8 @@ namespace AssImp
         boost::shared_ptr<Assimp::Importer> importer_;
         AssImpLogStream *logstream_;
 
-        const unsigned int loglevels_;     //! Log levels to capture during import
-        const unsigned int default_flags_; //! Default import postprocess flags
+        const unsigned int loglevels_;     /// Log levels to capture during import
+        const unsigned int default_flags_; /// Default import postprocess flags
     };
 }
 #endif

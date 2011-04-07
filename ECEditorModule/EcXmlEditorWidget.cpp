@@ -122,7 +122,7 @@ void EcXmlEditorWidget::Refresh()
 
     // Iterate through individually selected entities.
     QListIterator<Scene::EntityWeakPtr> it(entities_);
-    while (it.hasNext())
+    while(it.hasNext())
     {
         Scene::EntityPtr entity = it.next().lock();
         if (!entity)
@@ -176,7 +176,7 @@ void EcXmlEditorWidget::Save()
     QString text = xmlEdit_->toPlainText();
     if (!text.length())
     {
-        ECEditorModule::LogWarning("Empty XML data");
+        LogWarning("Empty XML data");
         return;
     }
 
@@ -199,7 +199,7 @@ void EcXmlEditorWidget::Save()
             entity_elem = edited_doc.firstChildElement("entity");
 
         bool entity_found = false;
-        while (!entity_elem.isNull())
+        while(!entity_elem.isNull())
         {
             entity_found = true;
             entity_id_t id = (entity_id_t)boost::lexical_cast<int>(entity_elem.attribute("id").toStdString());
@@ -207,7 +207,7 @@ void EcXmlEditorWidget::Save()
             if (entity)
             {
                 QDomElement comp_elem = entity_elem.firstChildElement("component");
-                while (!comp_elem.isNull())
+                while(!comp_elem.isNull())
                 {
                     ComponentPtr comp = entity->GetComponent(comp_elem.attribute("type"),
                                                                                   comp_elem.attribute("name"));
@@ -221,7 +221,7 @@ void EcXmlEditorWidget::Save()
             }
             else
             {
-                ECEditorModule::LogWarning("Could not find entity " + ToString<int>(id) + " in scene!");
+                LogWarning("Could not find entity " + ToString<int>(id) + " in scene!");
             }
 
             entity_elem = entity_elem.nextSiblingElement("entity");
@@ -231,10 +231,10 @@ void EcXmlEditorWidget::Save()
         if (entity_found)
             Refresh();
         else
-            ECEditorModule::LogWarning("No entity elements in XML data");
+            LogWarning("No entity elements in XML data");
     }
     else
-        ECEditorModule::LogWarning("Could not parse XML data: " + errorMsg.toStdString());
+        LogWarning("Could not parse XML data: " + errorMsg.toStdString());
 }
 
 void EcXmlEditorWidget::changeEvent(QEvent *event)

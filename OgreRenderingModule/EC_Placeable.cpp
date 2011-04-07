@@ -14,7 +14,7 @@
 
 #include <Ogre.h>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Placeable")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Placeable")
 
 using namespace OgreRenderer;
 
@@ -24,7 +24,7 @@ void SetShowBoundingBoxRecursive(Ogre::SceneNode* node, bool enable)
         return;
     node->showBoundingBox(enable);
     int numChildren = node->numChildren();
-    for (int i = 0; i < numChildren; ++i)
+    for(int i = 0; i < numChildren; ++i)
     {
         Ogre::SceneNode* childNode = dynamic_cast<Ogre::SceneNode*>(node->getChild(i));
         if (childNode)
@@ -391,7 +391,7 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         if (orientation.IsFinite())
             link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
         else
-            OgreRenderingModule::LogError("EC_Placeable: transform attribute changed, but orientation not valid!");
+            ::LogError("EC_Placeable: transform attribute changed, but orientation not valid!");
 
         // Prevent Ogre exception from zero scale
         Vector3df scale(trans.scale.x, trans.scale.y, trans.scale.z);

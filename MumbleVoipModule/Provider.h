@@ -71,7 +71,7 @@ namespace MumbleVoip
 
         Foundation::Framework* framework_;
         QString description_;
-        MumbleVoip::Session* session_;  //! \todo Use shared ptr ...
+        MumbleVoip::Session* session_;  /// \todo Use shared ptr ...
         ServerInfoProvider* server_info_provider_;
         event_category_id_t networkstate_event_category_;
         event_category_id_t framework_event_category_;

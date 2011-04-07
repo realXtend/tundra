@@ -21,11 +21,11 @@ class QDomElement;
 
 namespace Scene
 {
-    //! Local entity ID flag (high bit)
+    /// Local entity ID flag (high bit)
     static const entity_id_t LocalEntity = 0x80000000;
 
-    //! Represents an entity in the world.
-    /*! An entity is just a collection of components, the components define what
+    /// Represents an entity in the world.
+    /** An entity is just a collection of components, the components define what
         the entity is and what it does.
         Entities should not be directly created, instead use SceneManager::CreateEntity().
 
@@ -56,60 +56,60 @@ namespace Scene
         friend class SceneManager;
 
     public:
-        //! Returns a component with type 'type_name' or empty pointer if component was not found
-        /*! If there are several components with the specified type, returns the first component found (arbitrary).
+        /// Returns a component with type 'type_name' or empty pointer if component was not found
+        /** If there are several components with the specified type, returns the first component found (arbitrary).
             \param type_name type of the component
         */
         ComponentPtr GetComponent(const QString &type_name) const;
 
-        //! This is an overloaded function.
-        /*! \param type_hash Type name hash of the component.
+        /// This is an overloaded function.
+        /** \param type_hash Type name hash of the component.
         */
         ComponentPtr GetComponent(uint type_hash) const;
 
-        //! This is an overloaded function.
-        /*! \param type_name type of the component
+        /// This is an overloaded function.
+        /** \param type_name type of the component
             \param name name of the component
         */
         ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
 
-        //! This is an overloaded function.
-        /*! \param type_has Type name hash of the component
+        /// This is an overloaded function.
+        /** \param type_has Type name hash of the component
             \param name name of the component
         */
         ComponentPtr GetComponent(uint type_hash, const QString &name) const;
 
-        //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
-        /*! \param type_name type of the component
+        /// Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
+        /** \param type_name type of the component
             \param change Network replication mode, in case component has to be created
             \param syncEnabled Whether new component will have network sync enabled
             \return Pointer to the component, or an empty pointer if the component could be retrieved or created.
         */
         ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
 
-        //! This is an overloaded function.
-        /*! \param type_name type of the component
+        /// This is an overloaded function.
+        /** \param type_name type of the component
             \param change Network replication mode, in case component has to be created
             \param syncEnabled Whether new component will have network sync enabled
         */
         ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default, bool syncEnabled = true);
 
-        //! This is an overloaded function.
-        /*! \param type_name type of the component
+        /// This is an overloaded function.
+        /** \param type_name type of the component
             \param change Network replication mode, in case component has to be created
             \param syncEnabled Whether new component will have network sync enabled
         */
         ComponentPtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
 
-        //! This is an overloaded function.
-        /*! \param type_name type of the component
+        /// This is an overloaded function.
+        /** \param type_name type of the component
             \param change Network replication mode, in case component has to be created
             \param syncEnabled Whether new component will have network sync enabled
         */
         ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
-        //! Creates a new component using the ComponentManager and attaches it to this entity. 
-        /*! 
+        /// Creates a new component using the ComponentManager and attaches it to this entity. 
+        /** 
             \param type_name type of the component
             \param change Network replication mode, in case component has to be created
             \param syncEnabled Whether new component will have networksync enabled
@@ -121,23 +121,23 @@ namespace Scene
         ComponentPtr CreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::Default);
         ComponentPtr CreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
-        typedef std::vector<ComponentPtr> ComponentVector; //!< Component container.
-        typedef QMap<QString, EntityAction *> ActionMap; //!< Action container
+        typedef std::vector<ComponentPtr> ComponentVector; ///< Component container.
+        typedef QMap<QString, EntityAction *> ActionMap; ///< Action container
 
-        //! destructor
+        /// destructor
         ~Entity();
 
-        //! Returns true if the two entities have the same id, false otherwise
+        /// Returns true if the two entities have the same id, false otherwise
         virtual bool operator == (const Entity &other) const { return GetId() == other.GetId(); }
 
-        //! Returns true if the two entities have different id, false otherwise
+        /// Returns true if the two entities have different id, false otherwise
         virtual bool operator != (const Entity &other) const { return !(*this == other); }
 
-        //! comparison by id
+        /// comparison by id
         virtual bool operator < (const Entity &other) const { return GetId() < other.GetId(); }
 
-        //! Attachs an existing parentless component to this entity.
-        /*! Entities can contain any number of components of any type.
+        /// Attachs an existing parentless component to this entity.
+        /** Entities can contain any number of components of any type.
             It is also possible to have several components of the same type,
             although in most cases it is probably not sensible.
 
@@ -152,8 +152,8 @@ namespace Scene
         */
         void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
 
-        //! Remove the component from this entity.
-        /*! When component is removed from the entity a Q_PROPERTY connection is destroyed from
+        /// Remove the component from this entity.
+        /** When component is removed from the entity a Q_PROPERTY connection is destroyed from
             the component. In case where there are several components with the same typename, there is 
             a name check that ensures that both components names are same before Q_PROPERTY destroyed.
             
@@ -161,19 +161,19 @@ namespace Scene
         */
         void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
 
-        //! Returns a component with type typename and name or empty pointer if component was not found
-        /*! If there are several components with the specified type, returns the first component found (arbitrary).
+        /// Returns a component with type typename and name or empty pointer if component was not found
+        /** If there are several components with the specified type, returns the first component found (arbitrary).
 
             \param component component that we want to find.
         */
         ComponentPtr GetComponent(const IComponent *component) const;
 
-        //! Returns list of components with type 'type_name' or empty list if no components were found.
-        //! \param type_name type of the component
+        /// Returns list of components with type 'type_name' or empty list if no components were found.
+        /// \param type_name type of the component
         ComponentVector GetComponents(const QString &type_name) const;
 
-        //! Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
-        /*! If there are several components with the specified type, returns the first component found (arbitrary).
+        /// Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
+        /** If there are several components with the specified type, returns the first component found (arbitrary).
         */
         template <class T>
         boost::shared_ptr<T> GetComponent() const
@@ -181,7 +181,7 @@ namespace Scene
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
         }
 
-        /*! Returns list of components with certain class type, already cast to correct type.
+        /** Returns list of components with certain class type, already cast to correct type.
             \param T Component class type.
             \return List of components with certain class type, or empty list if no components was found.
         */
@@ -198,8 +198,8 @@ namespace Scene
             return ret;
         }
 
-        //! Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
-        /*! 
+        /// Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
+        /** 
             \param name name of the component
         */
         template <class T>
@@ -208,19 +208,19 @@ namespace Scene
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
         }
 
-        //! Returns the unique id of this entity
+        /// Returns the unique id of this entity
         entity_id_t GetId() const { return id_; }
 
-        //! introspection for the entity, returns all components
+        /// introspection for the entity, returns all components
         const ComponentVector &Components() const { return components_; }
 
-        //! Returns framework
+        /// Returns framework
         Foundation::Framework *GetFramework() const { return framework_; }
 
-        //! Returns scene
+        /// Returns scene
         SceneManager* GetScene() const { return scene_; }
 
-       /*! Returns pointer to the first attribute with specific name.
+       /** Returns pointer to the first attribute with specific name.
             \param T Type name/class of the attribute.
             \param name Name of the attribute.
             \return Pointer to the attribute.
@@ -238,15 +238,15 @@ namespace Scene
             return 0;
         }
 
-        //! Returns attribute interface pointer to attribute with specific name.
-        /*! \param name Name of the attribute.
+        /// Returns attribute interface pointer to attribute with specific name.
+        /** \param name Name of the attribute.
             \return IAttribute pointer to the attribute.
             \note Always remember to check for null pointer.
         */
         IAttribute *GetAttribute(const std::string &name) const;
 
-        //! Returns list of attributes with specific name.
-        /*! \param T Type name/class of the attribute.
+        /// Returns list of attributes with specific name.
+        /** \param T Type name/class of the attribute.
             \param name Name of the attribute.
             \return List of attributes, or empty list if no attributes are found.
         */
@@ -263,8 +263,8 @@ namespace Scene
             return ret;
         }
 
-        //! Returns list of attributes with specific name.
-        /*! \param name Name of the attribute.
+        /// Returns list of attributes with specific name.
+        /** \param name Name of the attribute.
             \return List of attribute interface pointers, or empty list if no attributes are found.
         */
         AttributeVector GetAttributes(const std::string &name) const;
@@ -278,17 +278,17 @@ namespace Scene
 //        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
 
     signals:
-        //! A component has been added to the entity
-        /*! Note: when this signal is received on new entity creation, the attributes might not be filled yet!
+        /// A component has been added to the entity
+        /** Note: when this signal is received on new entity creation, the attributes might not be filled yet!
          */ 
         void ComponentAdded(IComponent* component, AttributeChange::Type change);
         
-        //! A component has been removed from the entity
-        /*! Note: when this signal is received on new entity creation, the attributes might not be filled yet!
+        /// A component has been removed from the entity
+        /** Note: when this signal is received on new entity creation, the attributes might not be filled yet!
          */ 
         void ComponentRemoved(IComponent* component, AttributeChange::Type change);
 
-        //! Signal when this entity is deleted
+        /// Signal when this entity is deleted
         void EntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
 
     public slots:
@@ -307,52 +307,52 @@ namespace Scene
         void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name), change); }
         void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::Default) { RemoveComponent(GetComponent(type_name, name), change); }
 
-        //! Returns list of components with type @c type_name or if @c type_name is empty return all components
-        //! \param type_name type of the component
+        /// Returns list of components with type @c type_name or if @c type_name is empty return all components
+        /// \param type_name type of the component
         QObjectList GetComponentsRaw(const QString &type_name) const;
 
-        //! Returns whether or not this entity has a component with certain type and name.
-        /*! \param type_name Type of the component.
+        /// Returns whether or not this entity has a component with certain type and name.
+        /** \param type_name Type of the component.
         */
         bool HasComponent(const QString &type_name) const;
 
-        //! This is an overloaded function.
-        /*! \param type_has Type name hash of the component.
+        /// This is an overloaded function.
+        /** \param type_has Type name hash of the component.
         */
         bool HasComponent(uint type_hash) const;
 
-        //! Returns whether or not this entity has a component with certain type and name.
-        /*! \param type_name type of the component
+        /// Returns whether or not this entity has a component with certain type and name.
+        /** \param type_name type of the component
             \param name name of the component
         */
         bool HasComponent(const QString &type_name, const QString &name) const;
 
-        //! This is an overloaded function.
-        /*! \param type_has Type name has of the component.
+        /// This is an overloaded function.
+        /** \param type_has Type name has of the component.
             \param name name of the component
         */
         bool HasComponent(uint type_hash, const QString &name) const;
 
-        //! Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
-        /*! @param name Name.
+        /// Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
+        /** @param name Name.
         */
         void SetName(const QString &name);
 
-        //! Returns name of this entity if EC_Name is available, empty string otherwise.
+        /// Returns name of this entity if EC_Name is available, empty string otherwise.
         QString GetName() const;
 
-        //! Sets description of the entity to EC_Name component. If the component doesn't exist, it will be created.
-        /*! @param desc Description.
+        /// Sets description of the entity to EC_Name component. If the component doesn't exist, it will be created.
+        /** @param desc Description.
         */
         void SetDescription(const QString &desc);
 
-        //! Returns description of this entity if EC_Name is available, empty string otherwise.
+        /// Returns description of this entity if EC_Name is available, empty string otherwise.
         QString GetDescription() const;
 
-        //! Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
+        /// Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
         void RemoveComponentRaw(QObject* comp);
 
-        //! Returns actions map for introspection/reflection.
+        /// Returns actions map for introspection/reflection.
         const ActionMap &Actions() const { return actions_; }
 
         /// Creates and registers new action for this entity, or returns an existing action.
@@ -400,40 +400,40 @@ namespace Scene
         */
         void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QVariantList &params);
 
-        //! Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
-        /*! By definition, all components of a temporary entity are temporary as well.
+        /// Sets whether entity is temporary. Temporary entities won't be saved when the scene is saved.
+        /** By definition, all components of a temporary entity are temporary as well.
          */
         void SetTemporary(bool enable);
 
-        //! Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
-        /*! By definition, all components of a temporary entity are temporary as well.
+        /// Returns whether entity is temporary. Temporary entities won't be saved when the scene is saved.
+        /** By definition, all components of a temporary entity are temporary as well.
          */
         bool IsTemporary() const { return temporary_; }
 
-        //! Returns if this entity is local
+        /// Returns if this entity is local
         bool IsLocal() const { return (id_ & LocalEntity) != 0; }
 
         QString ToString() const;
     private:
-        //! constructor
-        /*!
+        /// constructor
+        /**
             \param framework Framework
             \param scene Scene this entity belongs to
         */
         Entity(Foundation::Framework* framework, SceneManager* scene);
 
-        //! constructor that takes an id for the entity
-        /*!
+        /// constructor that takes an id for the entity
+        /**
             \param framework Framework
             \param id unique id for the entity.
             \param scene Scene this entity belongs to
         */
         Entity(Foundation::Framework* framework, entity_id_t id, SceneManager* scene);
 
-        //! Set new id
+        /// Set new id
         void SetNewId(entity_id_t id) { id_ = id; }
 
-        //! Set new scene
+        /// Set new scene
         void SetScene(SceneManager* scene) { scene_ = scene; }
 
         /// Validates that the action has receivers. If not, deletes the action and removes it from the registered actions.
@@ -441,25 +441,25 @@ namespace Scene
         */
         bool HasReceivers(EntityAction *action);
 
-        //! Emit a entity deletion signal. Called from SceneManager
+        /// Emit a entity deletion signal. Called from SceneManager
         void EmitEntityRemoved(AttributeChange::Type change);
 
-        //! a list of all components
+        /// a list of all components
         ComponentVector components_;
 
-        //! Unique id for this entity
+        /// Unique id for this entity
         entity_id_t id_;
 
-        //! Pointer to framework
+        /// Pointer to framework
         Foundation::Framework* framework_;
 
-        //! Pointer to scene
+        /// Pointer to scene
         SceneManager* scene_;
 
-        //! Map of registered entity actions.
+        /// Map of registered entity actions.
         ActionMap actions_;
 
-        //! Temporary-flag
+        /// Temporary-flag
         bool temporary_;
    };
 }

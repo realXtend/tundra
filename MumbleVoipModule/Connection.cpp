@@ -150,14 +150,14 @@ namespace MumbleLib
         UninitializeCELT();
 
         QMutexLocker locker2(&mutex_encode_queue_);
-        while (encode_queue_.size() > 0)
+        while(encode_queue_.size() > 0)
         {
             MumbleVoip::PCMAudioFrame* frame = encode_queue_.takeFirst();
             SAFE_DELETE(frame);
         }
 
         QMutexLocker locker3(&mutex_channels_);
-        while (channels_.size() > 0)
+        while(channels_.size() > 0)
         {
             Channel* c = channels_.takeFirst();
             SAFE_DELETE(c);
@@ -351,7 +351,7 @@ namespace MumbleLib
         static int first_index = 0; // We want to give fair selection method for all user objects 
         first_index = (first_index + 1) % user_list.size();
 
-        for (int i = 0; i < user_list.size(); ++i)
+        for(int i = 0; i < user_list.size(); ++i)
         {
             int index = (first_index + i) % user_list.size();
             User* user = user_list[index];
@@ -407,7 +407,7 @@ namespace MumbleLib
 
         QMutexLocker encoder_locker(&mutex_encoder_);
 
-        for (int i = 0; i < MumbleVoip::FRAMES_PER_PACKET; ++i)
+        for(int i = 0; i < MumbleVoip::FRAMES_PER_PACKET; ++i)
         {
             MumbleVoip::PCMAudioFrame* audio_frame = encode_queue_.takeFirst();
 
@@ -426,7 +426,7 @@ namespace MumbleLib
         MumbleClient::PacketDataStream data_stream(data + 1, PACKET_DATA_SIZE_MAX - 1);
         data_stream << frame_sequence_;
 
-        for (int i = 0; i < MumbleVoip::FRAMES_PER_PACKET; ++i)
+        for(int i = 0; i < MumbleVoip::FRAMES_PER_PACKET; ++i)
         {
 		    unsigned char head = encoded_frame_length_[i];
 		    // Add 0x80 to all but the last frame
@@ -506,7 +506,7 @@ namespace MumbleLib
     void Connection::RemoveChannel(const MumbleClient::Channel& channel)
     {
         QMutexLocker locker(&mutex_channels_);
-        for (int i = 0; i < channels_.size(); ++i)
+        for(int i = 0; i < channels_.size(); ++i)
         {
             if (channels_.at(i)->Id() == channel.id)
             {
@@ -587,7 +587,7 @@ namespace MumbleLib
             if (frame_size > 0)
 				HandleIncomingCELTFrame(session, (unsigned char*)frame_data, frame_size);
 	    }
-        while (!last_frame && data_stream.isValid());
+        while(!last_frame && data_stream.isValid());
         if (!data_stream.isValid())
         {
             MumbleVoip::MumbleVoipModule::LogWarning("Syntax error in RawUdpTunnel packet.");
@@ -637,7 +637,7 @@ namespace MumbleLib
 
         User* user = new User(mumble_user, channel);
         user->SetPlaybackBufferMaxLengthMs(playback_buffer_length_ms_);
-        user->moveToThread(this->thread()); //! @todo Do we need this?
+        user->moveToThread(this->thread()); /// @todo Do we need this?
         
         emit UserObjectCreated(user);
     }

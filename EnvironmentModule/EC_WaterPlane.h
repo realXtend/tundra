@@ -183,10 +183,10 @@ public slots:
     /// When called removes water plane from world.
     void RemoveWaterPlane();
 
-    //! Attach a new entity to scene node that world scene owns.
+    /// Attach a new entity to scene node that world scene owns.
     void AttachEntity();
 
-    //! Detach entity from the scene node.
+    /// Detach entity from the scene node.
     void DetachEntity();
 
     /// Called If some of the attributes has been changed.

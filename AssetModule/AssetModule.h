@@ -20,7 +20,7 @@ namespace Asset
         For details on how to use the public interface, see \ref AssetModule "Using the asset module".
     */
 
-    //! Asset module.
+    /// Asset module.
     class ASSET_MODULE_API AssetModule : public IModule
     {
     public:
@@ -30,20 +30,20 @@ namespace Asset
         virtual void Initialize();
         virtual void PostInitialize();
 
-        MODULE_LOGGING_FUNCTIONS
+        //MODULE_LOGGING_FUNCTIONS
 
-        //! callback for console command
+        /// callback for console command
         Console::CommandResult ConsoleRequestAsset(const StringVector &params);
 
         Console::CommandResult AddHttpStorage(const StringVector &params);
 
-        //! returns name of this module. Needed for logging.
+        /// returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
     private:
         void ProcessCommandLineOptions();
 
-        //! Type name of the module.
+        /// Type name of the module.
         static std::string type_name_static_;
     };
 }

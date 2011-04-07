@@ -62,7 +62,7 @@ namespace Environment
                 break;
             }
             else
-                EnvironmentModule::LogDebug("Casting error: tried to cast to NamedCheckBox");
+                LogDebug("Casting error: tried to cast to NamedCheckBox");
         }
     }
 

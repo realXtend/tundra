@@ -18,11 +18,11 @@ namespace Console
     class NativeInput
     {
     public:
-        //! constructor
+        /// constructor
         NativeInput() : command_service_(0) { }
-        //! destructor
+        /// destructor
         ~NativeInput() {}
-        //! (thread) entry point
+        /// (thread) entry point
         void operator()();
 
         void SetCommandManager(Console::ConsoleCommandServiceInterface *command_service) { command_service_ = command_service; assert (command_service_); }
@@ -35,22 +35,22 @@ namespace Console
         Foundation::Framework *framework_;
     };
 
-    //! Native debug input console
+    /// Native debug input console
     class Native
     {
         Native();
     public:
-        //! constructor
+        /// constructor
         Native(Console::ConsoleCommandServiceInterface *command_service, Foundation::Framework *framework);
-        //! destructor
+        /// destructor
         virtual ~Native();
 
     private:
 
-        //! input thread
+        /// input thread
         Thread thread_;
 
-        //! Handles input from native console
+        /// Handles input from native console
         NativeInput input_;
     };
 }

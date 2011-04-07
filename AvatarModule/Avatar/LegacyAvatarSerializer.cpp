@@ -69,7 +69,7 @@ namespace Avatar
         uint mat_index = 0;
         QDomElement material_elem = avatar.firstChildElement("material");
         AvatarMaterialVector materials;
-        while (!material_elem.isNull())
+        while(!material_elem.isNull())
         {
             AvatarMaterial material;
             material.asset_.name_ = material_elem.attribute("name").toStdString();
@@ -118,7 +118,7 @@ namespace Avatar
         // Get attachments
         QDomElement attachment_elem = avatar.firstChildElement("attachment");
         AvatarAttachmentVector attachments;
-        while (!attachment_elem.isNull())
+        while(!attachment_elem.isNull())
         {
             SerializeResult result = ReadAttachment(attachments, attachment_elem);
             attachment_elem = attachment_elem.nextSiblingElement("attachment");
@@ -128,14 +128,14 @@ namespace Avatar
         // Get bone modifiers
         QDomElement bonemodifier_elem = avatar.firstChildElement("dynamic_animation");
         BoneModifierSetVector bonemodifiers;
-        while (!bonemodifier_elem.isNull())
+        while(!bonemodifier_elem.isNull())
         {
             ReadBoneModifierSet(bonemodifiers, bonemodifier_elem);
             bonemodifier_elem = bonemodifier_elem.nextSiblingElement("dynamic_animation");
         }        
         // Get bone modifier parameters
         QDomElement bonemodifierparam_elem = avatar.firstChildElement("dynamic_animation_parameter");
-        while (!bonemodifierparam_elem.isNull())
+        while(!bonemodifierparam_elem.isNull())
         {
             ReadBoneModifierParameter(bonemodifiers, bonemodifierparam_elem);
             bonemodifierparam_elem = bonemodifierparam_elem.nextSiblingElement("dynamic_animation_parameter");
@@ -145,7 +145,7 @@ namespace Avatar
         // Get morph modifiers
         QDomElement morphmodifier_elem = avatar.firstChildElement("morph_modifier");
         MorphModifierVector morphmodifiers;
-        while (!morphmodifier_elem.isNull())
+        while(!morphmodifier_elem.isNull())
         {
             ReadMorphModifier(morphmodifiers, morphmodifier_elem);
             morphmodifier_elem = morphmodifier_elem.nextSiblingElement("morph_modifier");
@@ -155,7 +155,7 @@ namespace Avatar
         // Get master modifiers
         QDomElement mastermodifier_elem = avatar.firstChildElement("master_modifier");
         MasterModifierVector mastermodifiers;
-        while (!mastermodifier_elem.isNull())
+        while(!mastermodifier_elem.isNull())
         {
             ReadMasterModifier(mastermodifiers, mastermodifier_elem);
             mastermodifier_elem = mastermodifier_elem.nextSiblingElement("master_modifier");
@@ -165,7 +165,7 @@ namespace Avatar
         // Get animations
         QDomElement animation_elem = avatar.firstChildElement("animation");
         AnimationDefinitionMap animations;
-        while (!animation_elem.isNull())
+        while(!animation_elem.isNull())
         {
             ReadAnimationDefinition(animations, animation_elem);
             animation_elem = animation_elem.nextSiblingElement("animation");
@@ -174,7 +174,7 @@ namespace Avatar
         
         // Get properties
         QDomElement property_elem = avatar.firstChildElement("property");
-        while (!property_elem.isNull())
+        while(!property_elem.isNull())
         {
             std::string name = property_elem.attribute("name").toStdString();
             std::string value = property_elem.attribute("value").toStdString();
@@ -190,7 +190,7 @@ namespace Avatar
         {
             AvatarAssetMap new_map;
             QDomElement asset_elem = assetmap_elem.firstChildElement("asset");
-            while (!asset_elem.isNull())
+            while(!asset_elem.isNull())
             {
                 std::string name = asset_elem.attribute("name").toStdString();
                 std::string id = asset_elem.attribute("id").toStdString();
@@ -213,7 +213,7 @@ namespace Avatar
         if (!bones.isNull())
         {
             QDomElement bone = bones.firstChildElement("bone");
-            while (!bone.isNull())
+            while(!bone.isNull())
             {
                 BoneModifier modifier;
                 modifier.bone_name_ = bone.attribute("name").toStdString();
@@ -261,7 +261,7 @@ namespace Avatar
     {
         // Find existing modifier from the vector
         std::string name = source.attribute("name").toStdString();
-        for (unsigned i = 0; i < dest.size(); ++i)
+        for(unsigned i = 0; i < dest.size(); ++i)
         {
             if (dest[i].name_ == name)
             {
@@ -294,7 +294,7 @@ namespace Avatar
         master.value_ = ParseReal(source.attribute("position", "0").toStdString());
         
         QDomElement target = source.firstChildElement("target_modifier");
-        while (!target.isNull())
+        while(!target.isNull())
         {                
             SlaveModifier targetmodifier;
             targetmodifier.name_ = target.attribute("name").toStdString();
@@ -310,7 +310,7 @@ namespace Avatar
                 targetmodifier.type_ = AppearanceModifier::Bone;
                 
             QDomElement mapping = target.firstChildElement("position_mapping");
-            while (!mapping.isNull())
+            while(!mapping.isNull())
             {
                 SlaveModifier::ValueMapping new_mapping;
                 new_mapping.master_ = ParseReal(mapping.attribute("master").toStdString());
@@ -347,7 +347,7 @@ namespace Avatar
         }
         
         elem = elem.firstChildElement("animation");
-        while (!elem.isNull())
+        while(!elem.isNull())
         {
             ReadAnimationDefinition(dest, elem);
             elem = elem.nextSiblingElement("animation");
@@ -422,7 +422,7 @@ namespace Avatar
         
         // Awesome new feature: we may define material for attachment
         QDomElement material = elem.firstChildElement("material");
-        while (!material.isNull())
+        while(!material.isNull())
         {
             AvatarMaterial newMat;
             newMat.asset_.name_ = material.attribute("name").toStdString();
@@ -464,7 +464,7 @@ namespace Avatar
             }
             
             QDomElement polygon = avatar.firstChildElement("avatar_polygon");
-            while (!polygon.isNull())
+            while(!polygon.isNull())
             {
                 uint idx = ParseInt(polygon.attribute("idx").toStdString());
                 attachment.vertices_to_hide_.push_back(idx);
@@ -503,7 +503,7 @@ namespace Avatar
         
         bool found = false;
         QDomElement avatar_elem = attachment_elem.firstChildElement("avatar");
-        while (!avatar_elem.isNull())
+        while(!avatar_elem.isNull())
         {
             std::string name = avatar_elem.attribute("name").toStdString();
             if ((name == meshname) || (name == basemeshname))
@@ -546,7 +546,7 @@ namespace Avatar
         }
         
         QDomElement polygon = avatar_elem.firstChildElement("avatar_polygon");
-        while (!polygon.isNull())
+        while(!polygon.isNull())
         {
             uint idx = ParseInt(polygon.attribute("idx").toStdString());
             dest.vertices_to_hide_.push_back(idx);
@@ -593,7 +593,7 @@ namespace Avatar
         
         // Material elements
         const AvatarMaterialVector& materials = source.GetMaterials();
-        for (uint i = 0; i < materials.size(); ++i)
+        for(uint i = 0; i < materials.size(); ++i)
         {
             // Append elements in submesh order
             QDomElement material = dest.createElement("material");
@@ -643,7 +643,7 @@ namespace Avatar
         
         // Attachments
         const AvatarAttachmentVector& attachments = source.GetAttachments();
-        for (uint i = 0; i < attachments.size(); ++i)
+        for(uint i = 0; i < attachments.size(); ++i)
         {
             QDomElement attachment = WriteAttachment(dest, attachments[i], source.GetMesh());
             avatar.appendChild(attachment);
@@ -651,14 +651,14 @@ namespace Avatar
         
         // Bone modifiers
         const BoneModifierSetVector& bone_modifiers = source.GetBoneModifiers();
-        for (uint i = 0; i < bone_modifiers.size(); ++i)
+        for(uint i = 0; i < bone_modifiers.size(); ++i)
         {
             WriteBoneModifierSet(dest, avatar, bone_modifiers[i]);
         }
         
         // Morph modifiers
         const MorphModifierVector& morph_modifiers = source.GetMorphModifiers();
-        for (uint i = 0; i < morph_modifiers.size(); ++i)
+        for(uint i = 0; i < morph_modifiers.size(); ++i)
         {
             QDomElement morph = WriteMorphModifier(dest, morph_modifiers[i]);
             avatar.appendChild(morph);
@@ -666,7 +666,7 @@ namespace Avatar
         
         // Master modifiers
         const MasterModifierVector& master_modifiers = source.GetMasterModifiers();
-        for (uint i = 0; i < master_modifiers.size(); ++i)
+        for(uint i = 0; i < master_modifiers.size(); ++i)
         {
             QDomElement master = WriteMasterModifier(dest, master_modifiers[i]);
             avatar.appendChild(master);
@@ -676,7 +676,7 @@ namespace Avatar
         const AnimationDefinitionMap& animations = source.GetAnimations();
         {
             AnimationDefinitionMap::const_iterator i = animations.begin();
-            while (i != animations.end())
+            while(i != animations.end())
             {
                 QDomElement anim = WriteAnimationDefinition(dest, i->second);
                 avatar.appendChild(anim);
@@ -688,7 +688,7 @@ namespace Avatar
         const AvatarPropertyMap& properties = source.GetProperties();
         {
             AvatarPropertyMap::const_iterator i = properties.begin();
-            while (i != properties.end())
+            while(i != properties.end())
             {         
                 QDomElement prop = dest.createElement("property");
 
@@ -707,7 +707,7 @@ namespace Avatar
                 QDomElement map_elem = dest.createElement("assetmap");
                 
                 AvatarAssetMap::const_iterator i = assets.begin();
-                while (i != assets.end())
+                while(i != assets.end())
                 {         
                     QDomElement asset_elem = dest.createElement("asset");
 
@@ -755,7 +755,7 @@ namespace Avatar
         modifier.appendChild(base_animations);
         
         QDomElement bonelist = dest.createElement("bones");
-        for (uint i = 0; i < bones.modifiers_.size(); ++i)
+        for(uint i = 0; i < bones.modifiers_.size(); ++i)
         {
             QDomElement bone = WriteBone(dest, bones.modifiers_[i]);
             bonelist.appendChild(bone);
@@ -816,7 +816,7 @@ namespace Avatar
         SetAttribute(elem, "name", master.name_);
         SetAttribute(elem, "position", master.value_);
         SetAttribute(elem, "category", master.category_);
-        for (uint i = 0; i < master.modifiers_.size(); ++i)
+        for(uint i = 0; i < master.modifiers_.size(); ++i)
         {
             QDomElement target_elem = dest.createElement("target_modifier");
             SetAttribute(target_elem, "name", master.modifiers_[i].name_);
@@ -828,7 +828,7 @@ namespace Avatar
                 SetAttribute(target_elem, "mode", "cumulative");
             else
                 SetAttribute(target_elem, "mode", "average");
-            for (uint j = 0; j < master.modifiers_[i].mapping_.size(); ++j)
+            for(uint j = 0; j < master.modifiers_[i].mapping_.size(); ++j)
             {
                 QDomElement mapping_elem = dest.createElement("position_mapping");
                 SetAttribute(mapping_elem, "master", master.modifiers_[i].mapping_[j].master_);
@@ -857,7 +857,7 @@ namespace Avatar
         SetAttribute(mesh_elem, "linkskeleton", link);
         elem.appendChild(mesh_elem);
         
-        for (unsigned i = 0; i < attachment.materials_.size(); ++i)
+        for(unsigned i = 0; i < attachment.materials_.size(); ++i)
         {
             QDomElement material_elem = dest.createElement("material");
             SetAttribute(material_elem, "name", attachment.materials_[i].asset_.name_);
@@ -884,7 +884,7 @@ namespace Avatar
             
             avatar_elem.appendChild(bone_elem);
             
-            for (uint i = 0; i < attachment.vertices_to_hide_.size(); ++i)
+            for(uint i = 0; i < attachment.vertices_to_hide_.size(); ++i)
             {
                 QDomElement polygon_elem = dest.createElement("avatar_polygon");
                 SetAttribute(polygon_elem, "idx", (int)attachment.vertices_to_hide_[i]);

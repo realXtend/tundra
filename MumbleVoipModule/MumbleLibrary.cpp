@@ -55,7 +55,7 @@ namespace MumbleLib
         if (mumble_main_loop_->isRunning())
             return;
 
-        //! @todo
+        /// @todo
         //connect(lib_mumble_thread_, SIGNAL(finished()), SLOT(MumbleThreadFinished()) );
         //connect(lib_mumble_thread_, SIGNAL(terminated()), SLOT(MumbleThreadFinished()) );
                 

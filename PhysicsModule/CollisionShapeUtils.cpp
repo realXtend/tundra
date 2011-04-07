@@ -20,7 +20,7 @@ void GenerateTriangleMesh(Ogre::Mesh* mesh, btTriangleMesh* ptr, bool flipAxes)
     std::vector<Vector3df> triangles;
     GetTrianglesFromMesh(mesh, triangles, flipAxes);
     
-    for (uint i = 0; i < triangles.size(); i += 3)
+    for(uint i = 0; i < triangles.size(); i += 3)
         ptr->addTriangle(ToBtVector3(triangles[i]), ToBtVector3(triangles[i+1]), ToBtVector3(triangles[i+2]));
 }
 
@@ -40,7 +40,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes)
             
             btAlignedObjectArray<btVector3> vertices;
             
-            for (uint i = 0; i < result.mHullVcount; ++i)
+            for(uint i = 0; i < result.mHullVcount; ++i)
             {
                 btVector3 vertex(result.mHullVertices[i*3],result.mHullVertices[i*3+1],result.mHullVertices[i*3+2]);
                 Vector3df vertexVec = ToVector3(vertex);
@@ -52,7 +52,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes)
             
             btVector3 positionBtVec(hull.position_.x, hull.position_.y, hull.position_.z);
             
-            for (uint i = 0; i < result.mHullVcount; ++i)
+            for(uint i = 0; i < result.mHullVcount; ++i)
                 vertices[i] -= positionBtVec;
             
             hull.hull_ = boost::shared_ptr<btConvexHullShape>(new btConvexHullShape((const btScalar*)&vertices[0], vertices.size(), sizeof(btVector3)));
@@ -69,7 +69,7 @@ void GenerateConvexHullSet(Ogre::Mesh* mesh, ConvexHullSet* ptr, bool flipAxes)
     std::vector<uint> indexData;
     
     // Add all triangles as individual vertices, make up index data as we go along
-    for (uint i = 0; i < triangles.size(); ++i)
+    for(uint i = 0; i < triangles.size(); ++i)
     {
         vertexData.push_back(triangles[i].x);
         vertexData.push_back(triangles[i].y);
@@ -126,8 +126,8 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest, bool f
                 uint i2 = pLong[k+1];
                 uint i3 = pLong[k+2];
                 
-                //! Haxor the collision mesh for the Ogre->Opensim coordinate space adjust
-                /*! \todo Hopefully the need for this is eliminated soon
+                /// Haxor the collision mesh for the Ogre->Opensim coordinate space adjust
+                /** \todo Hopefully the need for this is eliminated soon
                  */
                 posElem->baseVertexPointerToElement(vertices + i1 * vertexSize, &pReal);
                 if (flipAxes)
@@ -158,8 +158,8 @@ void GetTrianglesFromMesh(Ogre::Mesh* mesh, std::vector<Vector3df>& dest, bool f
                 uint i2 = pShort[k+1];
                 uint i3 = pShort[k+2];
                 
-                //! Haxor the collision mesh for the Ogre->Opensim coordinate space adjust
-                /*! \todo Hopefully the need for this is eliminated soon
+                /// Haxor the collision mesh for the Ogre->Opensim coordinate space adjust
+                /** \todo Hopefully the need for this is eliminated soon
                  */
                 posElem->baseVertexPointerToElement(vertices + i1 * vertexSize, &pReal);
                 if (flipAxes)

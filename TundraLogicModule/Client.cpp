@@ -111,7 +111,7 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
 {
     if (owner_->IsServer())
     {
-        TundraLogicModule::LogError("Already running a server, cannot login to a world as a client");
+        ::LogError("Already running a server, cannot login to a world as a client");
         return;
     }
     
@@ -130,7 +130,7 @@ void Client::Logout(bool fail)
         if (GetConnection())
         {
             owner_->GetKristalliModule()->Disconnect();
-            TundraLogicModule::LogInfo("Disconnected");
+            ::LogInfo("Disconnected");
         }
         
         loginstate_ = NotConnected;
@@ -238,7 +238,7 @@ void Client::HandleKristalliMessage(MessageConnection* source, message_id_t id, 
 {
     if (source != GetConnection())
     {
-        TundraLogicModule::LogWarning("Client: dropping message " + ToString(id) + " from unknown source");
+        ::LogWarning("Client: dropping message " + ToString(id) + " from unknown source");
         return;
     }
     
@@ -271,7 +271,7 @@ void Client::HandleLoginReply(MessageConnection* source, const MsgLoginReply& ms
     {
         loginstate_ = LoggedIn;
         client_id_ = msg.userID;
-        TundraLogicModule::LogInfo("Logged in successfully");
+        ::LogInfo("Logged in successfully");
         
         // Note: create scene & send info of login success only on first connection, not on reconnect
         if (!reconnect_)

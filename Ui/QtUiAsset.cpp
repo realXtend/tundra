@@ -6,7 +6,7 @@
 #include "AssetAPI.h"
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("QtUiAsset")
+//DEFINE_POCO_LOGGING_FUNCTIONS("QtUiAsset")
 
 #include <boost/regex.hpp>
 

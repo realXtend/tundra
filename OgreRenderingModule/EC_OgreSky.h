@@ -13,7 +13,7 @@
 #include "Vector3D.h"
 
 /// Sky type
-//! \ingroup EnvironmentModuleClient.
+/// \ingroup EnvironmentModuleClient.
 enum SkyType
 {
     SKYTYPE_NONE = 0,
@@ -60,8 +60,8 @@ enum SkyBoxIndex
     }
 };*/
 
-//! Sky parameters for skybox, see ogre documentation for more information.
-//! \ingroup EnvironmentModuleClient.
+/// Sky parameters for skybox, see ogre documentation for more information.
+/// \ingroup EnvironmentModuleClient.
 struct SkyBoxParameters
 {
     std::string material;
@@ -88,7 +88,7 @@ struct SkyBoxParameters
 };
 
 /// Sky parameters for skydome, see Ogre documentation for more information.
-//! \ingroup EnvironmentModuleClient.
+/// \ingroup EnvironmentModuleClient.
 struct SkyDomeParameters
 {
     std::string material;
@@ -131,7 +131,7 @@ struct SkyDomeParameters
 };
 
 /// Sky parameters for skyplane, see Ogre documentation for more infomation.
-//! \ingroup EnvironmentModuleClient.
+/// \ingroup EnvironmentModuleClient.
 struct SkyPlaneParameters
 {
     std::string material;
@@ -207,7 +207,7 @@ public:
     /// @param show Is the sky shown.
     void CreateSky(bool show = true);
 
-    //! Disables sky methods
+    /// Disables sky methods
     void DisableSky();
        
     /** Enables a skybox.

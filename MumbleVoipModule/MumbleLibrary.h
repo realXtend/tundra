@@ -10,22 +10,22 @@ namespace MumbleLib
 {
     class MumbleMainLoopThread;
 
-    //! @todo Singleton instance
+    /// @todo Singleton instance
     class MumbleLibrary : public QObject
     {
         Q_OBJECT
         MumbleLibrary();
     public:
-        //! Start Mumble library in separate thread if it isn't alraedy running
+        /// Start Mumble library in separate thread if it isn't alraedy running
         static void Start();
 
-        //! Stop Mumble library thread if it's running
+        /// Stop Mumble library thread if it's running
         static void Stop();
 
-        //! @return true if mumble library thread is running, otherwise false
+        /// @return true if mumble library thread is running, otherwise false
         static bool IsRunning();
 
-        //! Return reason for current state
+        /// Return reason for current state
         static QString Reason();
 
         static QThread* MainLoopThread();

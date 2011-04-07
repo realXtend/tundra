@@ -6,18 +6,18 @@
 #include <exception>
 #include <cstring>
 
-//! Generic exception class.
-/*! Can be used to throw generic exceptions.
+/// Generic exception class.
+/** Can be used to throw generic exceptions.
 
     \note Uses non-safe string manipulation, so do not supply exception parameters from outside source!
 */
 class Exception : public std::exception
 {
 public:
-    //! default constructor
+    /// default constructor
     Exception() : std::exception(), what_(0), do_free_(0) {}
 
-    //! constructor that takes a string
+    /// constructor that takes a string
     explicit Exception(const char * const& what) : std::exception()
     {
         do_free_ = 1;
@@ -27,7 +27,7 @@ public:
         strcpy(const_cast< char* >(what_), what);
     }
 
-    //! copy constructor
+    /// copy constructor
     Exception(const Exception &other)
     {
         do_free_ = other.do_free_;
@@ -43,7 +43,7 @@ public:
         }
     }
 
-    //! assignment operator
+    /// assignment operator
     Exception& operator =(const Exception &other)
     {
         if (this != &other)
@@ -64,7 +64,7 @@ public:
         return *this;
     }
 
-    //! destructor
+    /// destructor
     virtual ~Exception() throw ()
     {
         if (do_free_)
@@ -73,7 +73,7 @@ public:
         }
     }
 
-    //! returns the exception string
+    /// returns the exception string
     virtual const char *what () const throw ()
     {
         if (what_ != 0)

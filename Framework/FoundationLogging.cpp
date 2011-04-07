@@ -4,44 +4,45 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "ForwardDefines.h"
+/*
+//#include <Poco/Logger.h>
 
-#include <Poco/Logger.h>
-
-void RootLogFatal(const std::string &msg)
+void LogFatal(const std::string &msg)
 {
     Poco::Logger::get("Foundation").fatal("Fatal: " + msg);
 }
 
-void RootLogCritical(const std::string &msg)
+void LogCritical(const std::string &msg)
 {
     Poco::Logger::get("Foundation").critical("Critical: " + msg);
 }
 
-void RootLogError(const std::string &msg)
+void LogError(const std::string &msg)
 {
     Poco::Logger::get("Foundation").error("Error: " + msg);
 }
 
-void RootLogWarning(const std::string &msg)
+void LogWarning(const std::string &msg)
 {
     Poco::Logger::get("Foundation").warning("Warning: " + msg);
 }
 
-void RootLogNotice(const std::string &msg)
+void LogNotice(const std::string &msg)
 {
     Poco::Logger::get("Foundation").notice("Notice: " + msg);
 }
-void RootLogInfo(const std::string &msg)
+void LogInfo(const std::string &msg)
 {
     Poco::Logger::get("Foundation").information(msg);
 }
 
-void RootLogTrace(const std::string &msg)
+void LogTrace(const std::string &msg)
 {
     Poco::Logger::get("Foundation").trace("Trace: " + msg);
 }
 
-void RootLogDebug(const std::string &msg)
+void LogDebug(const std::string &msg)
 {
     Poco::Logger::get("Foundation").debug("Debug: " + msg);
 }
+*/

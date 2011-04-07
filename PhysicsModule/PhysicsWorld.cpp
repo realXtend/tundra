@@ -100,7 +100,7 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
     {
         PROFILE(PhysicsWorld_SendCollisions);
         
-        for (int i = 0; i < numManifolds; ++i)
+        for(int i = 0; i < numManifolds; ++i)
         {
             btPersistentManifold* contactManifold = collisionDispatcher_->getManifoldByIndexInternal(i);
             int numContacts = contactManifold->getNumContacts();
@@ -132,7 +132,7 @@ void PhysicsWorld::ProcessPostTick(float substeptime)
             
             bool newCollision = previousCollisions_.find(objectPair) == previousCollisions_.end();
             
-            for (int j = 0; j < numContacts; ++j)
+            for(int j = 0; j < numContacts; ++j)
             {
                 btManifoldPoint& point = contactManifold->getContactPoint(j);
                 

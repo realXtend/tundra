@@ -345,7 +345,7 @@ bool ECEditorModule::IsECEditorWindowVisible() const
     }
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);

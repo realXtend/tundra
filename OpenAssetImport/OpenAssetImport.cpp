@@ -5,7 +5,7 @@
 #include "OpenAssetImport.h"
 #include "SceneDesc.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport")
+//DEFINE_POCO_LOGGING_FUNCTIONS("OpenAssetImport")
 
 #include <assimp.hpp>      // C++ importer interface
 #include <aiScene.h>       // Output data structure
@@ -161,7 +161,7 @@ namespace AssImp
         }
 
         // import children
-        for (int i=0 ; i<node->mNumChildren ; ++i)
+        for(int i=0 ; i<node->mNumChildren ; ++i)
             GetNodeData(scene, node->mChildren[i], file, worldTransform, outMeshNames);
     }
 
@@ -190,7 +190,7 @@ namespace AssImp
                 Ogre::Vector3 vmin(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
                 Ogre::Vector3 vmax(-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max());
 
-                for (unsigned int i=0 ; i<node->mNumMeshes ; ++i)
+                for(unsigned int i=0 ; i<node->mNumMeshes ; ++i)
                 {
                     const aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
                     
@@ -211,7 +211,7 @@ namespace AssImp
                     decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_NORMAL);
 
                     offset = 0;
-                    for (int tn=0 ; tn<AI_MAX_NUMBER_OF_TEXTURECOORDS ; ++tn)
+                    for(int tn=0 ; tn<AI_MAX_NUMBER_OF_TEXTURECOORDS ; ++tn)
                     {
                         if (mesh->mTextureCoords[tn])
                         {
@@ -242,7 +242,7 @@ namespace AssImp
                     Ogre::Real *vbData = static_cast<Ogre::Real*>(vbuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
                     
                     offset = 0;
-                    for (unsigned int n=0 ; n<data->vertexCount ; ++n)
+                    for(unsigned int n=0 ; n<data->vertexCount ; ++n)
                     {
                         vbData[offset++] = mesh->mVertices[n].x;
                         vbData[offset++] = mesh->mVertices[n].y;
@@ -273,9 +273,9 @@ namespace AssImp
                     vbData = static_cast<Ogre::Real*>(vbuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
                     
                     offset = 0;
-                    for (unsigned int n=0 ; n<data->vertexCount ; ++n)
+                    for(unsigned int n=0 ; n<data->vertexCount ; ++n)
                     {
-                        for (int tn=0 ; tn<AI_MAX_NUMBER_OF_TEXTURECOORDS ; ++tn)
+                        for(int tn=0 ; tn<AI_MAX_NUMBER_OF_TEXTURECOORDS ; ++tn)
                         {
                             if (mesh->mTextureCoords[tn])
                             {
@@ -324,7 +324,7 @@ namespace AssImp
                     {
                         u16 *idxData = static_cast<u16*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
                         offset = 0;
-                        for (int n=0 ; n<mesh->mNumFaces ; ++n)
+                        for(int n=0 ; n<mesh->mNumFaces ; ++n)
                         {
                             idxData[offset++] = mesh->mFaces[n].mIndices[0];
                             idxData[offset++] = mesh->mFaces[n].mIndices[1];
@@ -334,7 +334,7 @@ namespace AssImp
                     {
                         u32 *idxData = static_cast<u32*>(ibuf->lock(Ogre::HardwareBuffer::HBL_NORMAL));
                         offset = 0;
-                        for (int n=0 ; n<mesh->mNumFaces ; ++n)
+                        for(int n=0 ; n<mesh->mNumFaces ; ++n)
                         {
                             idxData[offset++] = mesh->mFaces[n].mIndices[0];
                             idxData[offset++] = mesh->mFaces[n].mIndices[1];
@@ -357,7 +357,7 @@ namespace AssImp
                     outMeshNames.push_back(ogreMeshName);
                 }
             }
-        } catch (Ogre::Exception &e)
+        } catch(Ogre::Exception &e)
         {
             // error
             LogError("Failed to create Ogre mesh. Reason: ");
@@ -365,7 +365,7 @@ namespace AssImp
         }
 
         // import children
-        for (int i=0 ; i<node->mNumChildren ; ++i)
+        for(int i=0 ; i<node->mNumChildren ; ++i)
             ImportNode(scene, node->mChildren[i], file, nodeName, outMeshNames);
     }
     

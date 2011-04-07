@@ -18,7 +18,7 @@
 #include "LoggingFunctions.h"
 #include "SceneManager.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_HoveringText");
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_HoveringText");
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -359,7 +359,7 @@ void EC_HoveringText::Redraw()
             texPtr->getBuffer()->blitFromMemory(pixel_box);
         }
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
         LogError("Failed to create texture " + textureName_  + ": " + std::string(e.what()));
         return;

@@ -89,7 +89,7 @@ int main (int argc, char **argv)
     return return_value;
 }
 
-//! post init setup for framework
+/// post init setup for framework
 void setup (Foundation::Framework &fw)
 {
 }
@@ -115,7 +115,7 @@ int run (int argc, char **argv)
         }
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)
-    catch (std::exception& e)
+    catch(std::exception& e)
     {
         Foundation::Platform::Message("An exception has occurred!", e.what());
 #if defined(_DEBUG)
@@ -144,7 +144,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     arguments.push_back("viewer");
     
-    for (i = 0; i < cmdLine.length(); ++i)
+    for(i = 0; i < cmdLine.length(); ++i)
     {
         if (cmdLine[i] == '\"')
             quote = !quote;
@@ -170,7 +170,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         arguments.push_back(cmdLine.substr(cmdStart, i-cmdStart));
     
     std::vector<const char*> argv;
-    for (int i = 0; i < arguments.size(); ++i)
+    for(int i = 0; i < arguments.size(); ++i)
         argv.push_back(arguments[i].c_str());
     
     if (argv.size())

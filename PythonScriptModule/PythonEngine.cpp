@@ -5,7 +5,7 @@
 #include "PythonScriptModule.h"
 #include "PythonEngine.h"
 //#include <stdlib.h> //_putenv for PYTHONHOME on windows
-#include <Poco/Environment.h>
+//#include <Poco/Environment.h>
 
 #include "MemoryLeakCheck.h"
 

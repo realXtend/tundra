@@ -38,12 +38,12 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
     if (!data_)
     {
-        OgreRenderer::OgreRenderingModule::LogError("Null source asset data pointer");     
+        ::LogError("Null source asset data pointer");     
         return false;
     }
     if (numBytes == 0)
     {
-        OgreRenderer::OgreRenderingModule::LogError("Zero sized particle system asset");     
+        ::LogError("Zero sized particle system asset");     
         return false;
     }
 
@@ -62,7 +62,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         // Parsed/modified script
         std::ostringstream output;
 
-        while (!data->eof())
+        while(!data->eof())
         {
             Ogre::String line = data->getLine();
             // Skip empty lines & comments
@@ -78,7 +78,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 		      int size = vec.size();
 		      line_vec.resize(size);
 		      
-		      for (int i = 0; i < size; ++i)
+		      for(int i = 0; i < size; ++i)
 			line_vec[i] = vec[i];
 #endif               
 
@@ -129,7 +129,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                         output << line << std::endl;
                     }
                     else
-                        OgreRenderer::OgreRenderingModule::LogDebug("Skipping risky particle effect line: " + line);
+                        ::LogDebug("Skipping risky particle effect line: " + line);
                 }
                 else
                 {
@@ -139,7 +139,7 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                         output << line << std::endl;
                     }
                     else
-                        OgreRenderer::OgreRenderingModule::LogDebug("Skipping risky particle effect line: " + line);
+                        ::LogDebug("Skipping risky particle effect line: " + line);
 
                     if (brace_level <= skip_brace_level)
                         skip_until_next = false;
@@ -153,19 +153,19 @@ bool OgreParticleAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 #include "EnableMemoryLeakCheck.h"
         Ogre::ParticleSystemManager::getSingleton().parseScript(modified_data, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
-        OgreRenderer::OgreRenderingModule::LogWarning(e.what());
-        OgreRenderer::OgreRenderingModule::LogWarning("Failed to parse Ogre particle script " + Name().toStdString() + ".");
+        ::LogWarning(e.what());
+        ::LogWarning("Failed to parse Ogre particle script " + Name().toStdString() + ".");
     }
     
     // Check which templates actually succeeded
-    for (uint i = 0; i < new_templates.size(); ++i)
+    for(uint i = 0; i < new_templates.size(); ++i)
     {
         if (Ogre::ParticleSystemManager::getSingleton().getTemplate(new_templates[i]))
         {
             templates_.push_back(new_templates[i]);
-            OgreRenderer::OgreRenderingModule::LogDebug("Ogre particle system template " + new_templates[i] + " created");
+            ::LogDebug("Ogre particle system template " + new_templates[i] + " created");
         }
     }
     
@@ -196,12 +196,12 @@ bool OgreParticleAsset::IsLoaded() const
 
 void OgreParticleAsset::RemoveTemplates()
 {
-    for (unsigned i = 0; i < templates_.size(); ++i)
+    for(unsigned i = 0; i < templates_.size(); ++i)
     {
         try
         {
             Ogre::ParticleSystemManager::getSingleton().removeTemplate(templates_[i]);
-        } catch (...) {}
+        } catch(...) {}
     }
     templates_.clear();
 }
@@ -214,7 +214,7 @@ void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_v
     if (line_vec.size() != 4)
         return;
     
-    for (uint i = 0; modify_these[i].length(); ++i)
+    for(uint i = 0; modify_these[i].length(); ++i)
     {
         if (line_vec[0] == modify_these[i])
         {   
@@ -230,7 +230,7 @@ void ModifyVectorParameter(Ogre::String& line, std::vector<Ogre::String>& line_v
                 // Write back the modified string
                 line = s.str();
             }
-            catch (...)
+            catch(...)
             {
             }
             return;

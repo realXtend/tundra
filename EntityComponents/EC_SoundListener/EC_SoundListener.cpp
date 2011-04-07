@@ -20,7 +20,7 @@
 #include "SceneAPI.h"
 #include "FrameAPI.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
 EC_SoundListener::EC_SoundListener(IModule *module):
     IComponent(module->GetFramework()),

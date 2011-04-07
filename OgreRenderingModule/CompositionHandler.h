@@ -64,45 +64,45 @@ namespace OgreRenderer
     class OGRE_MODULE_API CompositionHandler 
     {
     public:
-        //! Default constructor.
+        /// Default constructor.
         CompositionHandler();
 
-        //! Destructor.
+        /// Destructor.
         virtual ~CompositionHandler();
 
-        //! Initialize the composition handler. This has to be called before trying to enable/disable effects
+        /// Initialize the composition handler. This has to be called before trying to enable/disable effects
         bool Initialize(Foundation::Framework* framework, Ogre::Viewport *vp);
 
-        //! map number to effect name (used to interpret server request since server requests composite activation with a number)
+        /// map number to effect name (used to interpret server request since server requests composite activation with a number)
         std::string MapNumberToEffectName(const std::string &number);
 
-        //! Adds specified compositor for the viewport if it's found. Effect is appended last in the chain if position is not specified (Except HDR)
+        /// Adds specified compositor for the viewport if it's found. Effect is appended last in the chain if position is not specified (Except HDR)
         bool AddCompositorForViewport(const std::string &compositor, Ogre::Viewport *vp, int position = -1);
 
-        //! Remove specified compositor effect from viewport
+        /// Remove specified compositor effect from viewport
         void RemoveCompositorFromViewport(const std::string &compositor, Ogre::Viewport *vp);
 
-        //! translates the message (RexPostP) 
+        /// translates the message (RexPostP) 
         void ExecuteServersShaderRequest(const StringVector &parameters);
 
-        //! Returns list of available post-processing effects
+        /// Returns list of available post-processing effects
         QVector<QString>  &GetAvailableCompositors() { return postprocess_effects_; }
 
-        //! Convenience function that will add specified compositor for the default viewport given in initialization. HDR will always be first.
+        /// Convenience function that will add specified compositor for the default viewport given in initialization. HDR will always be first.
         bool AddCompositorForViewport(const std::string &compositor, int position = -1);
 
-        //! Convenience function that will add specified compositor for the default viewport given in initialization, uses priority rather than position
+        /// Convenience function that will add specified compositor for the default viewport given in initialization, uses priority rather than position
         bool AddCompositorForViewportPriority(const std::string &compositor, int priority = 0);
 
-        //! Convenience funtion to remove specified  compositor from the default viewport
+        /// Convenience funtion to remove specified  compositor from the default viewport
         void RemoveCompositorFromViewport(const std::string &compositor);
 
-        //! Apply a shader parameter to the specified compositor.
-        /*! The compositor should be enabled of course
+        /// Apply a shader parameter to the specified compositor.
+        /** The compositor should be enabled of course
         */
         void SetCompositorParameter(const std::string &compositorName, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
 
-        //! Enable or disable a compositor that has already been added to the default viewport
+        /// Enable or disable a compositor that has already been added to the default viewport
         void SetCompositorEnabled(const std::string &compositor, bool enable) const;
 
     private:
@@ -113,35 +113,35 @@ namespace OgreRenderer
             bool operator <(const Compositor &rhs) const { return position < rhs.position; }
         };
 
-        //! Adds and enables compositor on viewport
+        /// Adds and enables compositor on viewport
         bool AddCompositor(const std::string &compositor, Ogre::Viewport *vp, int position);
 
-        //! Set gpu program parameters for the specified composition target
+        /// Set gpu program parameters for the specified composition target
         void SetCompositorTargetParameters(Ogre::CompositionTargetPass *target, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
 
-        //! Set gpu program parameters for the specified material
+        /// Set gpu program parameters for the specified material
         void SetMaterialParameters(const Ogre::MaterialPtr &material, const QList< std::pair<std::string, Ogre::Vector4> > &source) const;
 
         //Used to specify postprocessing effects currently available. Number is needed to map server requests to the actual effect name.
         //std::vector<std::string> postprocess_effects_;
         QVector<QString> postprocess_effects_;
 
-        //! Compositor manager
+        /// Compositor manager
         Ogre::CompositorManager* c_manager_;
 
-        //! Ogre viewport.
+        /// Ogre viewport.
         Ogre::Viewport* viewport_;
 
-        //! Framelistener for HDR effect
+        /// Framelistener for HDR effect
         HDRListener hdr_listener_;
 
-        //! Framelistener for gaussian blur
+        /// Framelistener for gaussian blur
         GaussianListener gaussian_listener_;
 
-        //! Stores priorities for compositors. Compositor name is used for the key to make sure each compositor only has one priority.
+        /// Stores priorities for compositors. Compositor name is used for the key to make sure each compositor only has one priority.
         std::map<std::string, int> priorities_;
 
-        //! handle to framework
+        /// handle to framework
         Foundation::Framework* framework_;
     };
 }

@@ -408,7 +408,7 @@ Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector&
         if (params.size() > 0)
             port = ParseString<int>(params[0]);
     }
-    catch (...) {}
+    catch(...) {}
     
     server_->Start(port);
     
@@ -440,7 +440,7 @@ Console::CommandResult TundraLogicModule::ConsoleConnect(const StringVector& par
         if (params.size() > 3)
             password = params[3];
     }
-    catch (...) {}
+    catch(...) {}
     
     client_->Login(QString::fromStdString(params[0]), port, QString::fromStdString(username), QString::fromStdString(password));
     
@@ -609,14 +609,15 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
 
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace TundraLogic;
-
+/*
 POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(TundraLogicModule)
 POCO_END_MANIFEST
+*/

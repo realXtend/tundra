@@ -54,24 +54,24 @@ public:
     /// Queries an event name by category & event ID
     void QueryEventName(event_category_id_t category_id, event_id_t event_id) const;
 
-    //! Sends an event
-    /*! \param category_id Event category ID
+    /// Sends an event
+    /** \param category_id Event category ID
         \param event_id Event ID
         \param data Pointer to event data structure (event-specific), can be 0 if not needed
         \return true if event was handled by some event handler
      */
     bool SendEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-    //! Sends an event
-    /*! \param category Event category name. Will be auto-registered if it does not exist
+    /// Sends an event
+    /** \param category Event category name. Will be auto-registered if it does not exist
         \param event_id Event ID
         \param data Pointer to event data structure (event-specific), can be 0 if not needed
         \return true if event was handled by some event handler
      */
     bool SendEvent(const std::string& category, event_id_t event_id, IEventData* data);
 
-   //! Sends a delayed event
-    /*! Use with judgement. Note that you will not get to know whether event was handled. The event data object
+   /// Sends a delayed event
+    /** Use with judgement. Note that you will not get to know whether event was handled. The event data object
         will be retained until event sent, so it should be allocated with new and wrapped inside a shared pointer.
         Delayed events are also the only safe way to send events from threads other than main thread!
         \param category_id Event category ID
@@ -81,8 +81,8 @@ public:
      */
     void SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, EventDataPtr data, f64 delay = 0.0);
 
-    //! Template version of sending a delayed event. Will perform dynamic_pointer_cast from specified type to EventDataPtr
-    /*! \param category_id Event category ID
+    /// Template version of sending a delayed event. Will perform dynamic_pointer_cast from specified type to EventDataPtr
+    /** \param category_id Event category ID
         \param event_id Event ID
         \param data Shared pointer to event data structure (event-specific), can be 0 if not needed
         \param delay Delay in seconds until sending event, 0 to send during next framework update
@@ -90,8 +90,8 @@ public:
     template <class T>
     void SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, boost::shared_ptr<T> data, f64 delay = 0.0);
 
-    //! Registers a module or component to the event subscriber list
-    /*! Do not call while responding to an event! Note that it is ok to resubscribe your module to change priority.
+    /// Registers a module or component to the event subscriber list
+    /** Do not call while responding to an event! Note that it is ok to resubscribe your module to change priority.
         \param module Module to register
         \param priority Priority. Higher priority = gets called first
         \return true if successfully subscribed
@@ -99,8 +99,8 @@ public:
     template <typename T>
     bool RegisterEventSubscriber(T* subscriber, int priority);
 
-    //! Unregisters a module or component from the subscriber tree
-    /*! Do not call while responding to an event!
+    /// Unregisters a module or component from the subscriber tree
+    /** Do not call while responding to an event!
         @param module Module to unregister
         @return true if successfully unsubscribed
         @note if @p subscriber is a component it will also remove it from special event subscriber map!!!
@@ -108,32 +108,32 @@ public:
     template <typename T>
     bool UnregisterEventSubscriber(T* subscriber);
 
-    //! Checks if module or component is registered as an event subscriber
-    /*! \param module Module to check
+    /// Checks if module or component is registered as an event subscriber
+    /** \param module Module to check
         \return true if is registered
      */
     template <typename T>
     bool HasEventSubscriber(T* subscriber);
 
-    //! Clears all delayed events. Called by the framework.
-    /*! Called before unloading modules so that shared pointers left in the delayed event queue do not cause trouble
+    /// Clears all delayed events. Called by the framework.
+    /** Called before unloading modules so that shared pointers left in the delayed event queue do not cause trouble
         (for example Ogre textures that would otherwise freed after Ogre uninit, leading to a crash)
      */
     void ClearDelayedEvents();
 
-    //! Processes delayed events. Called by the framework.
-    /*! \param frametime Time since last frame
+    /// Processes delayed events. Called by the framework.
+    /** \param frametime Time since last frame
      */
     void ProcessDelayedEvents(f64 frametime);
 
-    //! Returns event category map
+    /// Returns event category map
     const EventCategoryMap &GetEventCategoryMap() const { return event_category_map_; }
 
-    //! Returns event map
+    /// Returns event map
     const EventMap &GetEventMap() const { return event_map_; }
 
-    //! Returns next unused non-zero request tag for asset/resource request events
-    /*! By having a global source for the tags there is no risk for collisions between
+    /// Returns next unused non-zero request tag for asset/resource request events
+    /** By having a global source for the tags there is no risk for collisions between
         different modules/subsystems.
      */
 //    request_tag_t GetNextRequestTag();
@@ -157,7 +157,7 @@ public:
     bool UnregisterEventSubscriber(IComponent* component, event_category_id_t category_id,event_id_t event_id);
 
 private:
-   //! Event subscriber. Used internally by EventManager.
+   /// Event subscriber. Used internally by EventManager.
    template <typename T>
    class EventSubscriber
    {
@@ -175,7 +175,7 @@ private:
       
    };
 
-   //! Delayed event. Used internally by EventManager.
+   /// Delayed event. Used internally by EventManager.
    struct DelayedEvent
    {
         event_category_id_t category_id_;
@@ -203,16 +203,16 @@ private:
    template <typename T, typename U>
    bool EventSubscriberExist(T* subscriber, QList<U>& subscribers);
 
-    //! Next event category ID that will be assigned
+    /// Next event category ID that will be assigned
     event_category_id_t next_category_id_;
 
-    //! Next free request tag to be used
+    /// Next free request tag to be used
 //    request_tag_t next_request_tag_;
 
-    //! Map for assigned event category id's
+    /// Map for assigned event category id's
     EventCategoryMap event_category_map_;
 
-    //! Map for registered events by category
+    /// Map for registered events by category
     EventMap event_map_;
 
     /// Module event subscribers
@@ -221,18 +221,18 @@ private:
     /// Component event subscribers
     QList<EventSubscriber<IComponent > > component_subscribers_;
 
-    //! Delayed events
+    /// Delayed events
     typedef std::vector<DelayedEvent> DelayedEventVector;
     DelayedEventVector new_delayed_events_;
     DelayedEventVector delayed_events_;
 
-    //! Mutex for new delayed events
+    /// Mutex for new delayed events
     Mutex delayed_events_mutex_;
 
-    //! Framework
+    /// Framework
     Foundation::Framework *framework_;
 
-    //! Current thread ID
+    /// Current thread ID
     Qt::HANDLE main_thread_id_;
 
     QMap<QPair<event_category_id_t, event_id_t>, QList<IComponent* > > specialEvents_;

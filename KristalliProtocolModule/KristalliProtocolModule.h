@@ -29,7 +29,7 @@ namespace KristalliProtocol
         void Uninitialize();
         void Update(f64 frametime);
 
-        MODULE_LOGGING_FUNCTIONS;
+        //MODULE_LOGGING_FUNCTIONS;
 
         Console::CommandResult OpenKNetLogWindow(const StringVector &);
 

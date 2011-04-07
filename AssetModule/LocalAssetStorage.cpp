@@ -45,7 +45,7 @@ QString LocalAssetStorage::GetFullPathForAsset(const QString &assetname, bool re
                 return iter->path().string().c_str();
         }
     }
-    catch (...)
+    catch(...)
     {
     }
 

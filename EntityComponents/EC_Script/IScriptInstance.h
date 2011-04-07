@@ -34,7 +34,7 @@ public:
     virtual QString GetLoadedScriptName() const = 0;
 
 protected:
-    //! Whether this instance executed trusted code or not. 
+    /// Whether this instance executed trusted code or not. 
     /** By default everything loaded remotely (with e.g. http) is untrusted,
         and not exposed anything with system access.
         With qt/javascript means that can not load qt dlls to get qt networking etc.,

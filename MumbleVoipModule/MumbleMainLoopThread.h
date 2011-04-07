@@ -19,7 +19,7 @@ namespace MumbleLib
     public:
         virtual void run();
 
-        //! \return information about current state
+        /// \return information about current state
         virtual QString Reason() const;
     private:
         QString reason_;

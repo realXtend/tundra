@@ -38,11 +38,11 @@ event_category_id_t EventManager::RegisterEventCategory(const std::string& name)
     {
         event_category_map_[name] = next_category_id_;
         next_category_id_++;
-        RootLogDebug("Registered event category " + name);
+        LogDebug("Registered event category " + name);
     }
     else
     {
-        RootLogWarning("Event category " + name + " is already registered");
+        LogWarning("Event category " + name + " is already registered");
     }
     
     return event_category_map_[name];
@@ -58,7 +58,7 @@ event_category_id_t EventManager::QueryEventCategory(const std::string& name, bo
     {
         event_category_map_[name] = next_category_id_;
         next_category_id_++;
-        RootLogDebug("Registered event category " + name + " by query");
+        LogDebug("Registered event category " + name + " by query");
         return event_category_map_[name];
     }
     else
@@ -70,7 +70,7 @@ const std::string& EventManager::QueryEventCategoryName(event_category_id_t cate
     EventCategoryMap::const_iterator i = event_category_map_.begin();
     static std::string empty;
     
-    while (i != event_category_map_.end())
+    while(i != event_category_map_.end())
     {
         if (i->second == category_id)
             return i->first;
@@ -85,14 +85,14 @@ void EventManager::RegisterEvent(event_category_id_t category_id, event_id_t eve
 {
     if (!QueryEventCategoryName(category_id).length())
     {
-        RootLogError("Trying to register an event for yet unregistered category");
+        LogError("Trying to register an event for yet unregistered category");
         return;
     }
     
     if (event_map_[category_id].find(event_id) != event_map_[category_id].end())
-        RootLogWarning("Overwriting already registered event with " + name);
+        LogWarning("Overwriting already registered event with " + name);
     else
-        RootLogDebug("Registering event " + name);
+        LogDebug("Registering event " + name);
 
     event_map_[category_id][event_id] = name;
 }
@@ -101,7 +101,7 @@ bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_i
 {
     if (QThread::currentThreadId() != main_thread_id_)
     {
-        RootLogError("Tried to send an immediate event (using SendEvent) from a thread "
+        LogError("Tried to send an immediate event (using SendEvent) from a thread "
             "that is not the main thread. Use SendDelayedEvent() instead.");
         throw Exception("Tried to send an immediate event (using SendEvent) from a thread"
             "that is not the main thread. Use SendDelayedEvent() instead.");
@@ -112,27 +112,27 @@ bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_i
         return false;
     if (category_id == IllegalEventCategory)
     {
-        RootLogWarning("Attempted to send event with illegal category");
+        LogWarning("Attempted to send event with illegal category");
         return false;
     }
 
     // Send event in priority order, until someone returns true
-    for (int i = 0; i < module_subscribers_.size(); ++i)
+    for(int i = 0; i < module_subscribers_.size(); ++i)
         if (SendEvent(module_subscribers_[i], category_id, event_id, data))
             return true;
 
     // After that send events to components
-    for (int i = 0; i < component_subscribers_.size(); ++i)
+    for(int i = 0; i < component_subscribers_.size(); ++i)
         if (SendEvent(component_subscribers_[i], category_id, event_id, data))
             return true;
 
     // Then go through 
     QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
    
-    if ( specialEvents_.contains(group) )
+    if (specialEvents_.contains(group) )
     {
         QList<IComponent* >& lst = specialEvents_[group];
-        for ( int i = 0; i < lst.size(); ++i)
+        for(int i = 0; i < lst.size(); ++i)
         {
             EventSubscriber<IComponent> subs;
             subs.subscriber_ = lst[i];
@@ -160,7 +160,7 @@ void EventManager::SendDelayedEvent(event_category_id_t category_id, event_id_t 
         
     if (category_id == IllegalEventCategory)
     {
-        RootLogWarning("Attempted to send delayed event with illegal category");
+        LogWarning("Attempted to send delayed event with illegal category");
         return;
     }
 
@@ -177,7 +177,7 @@ bool EventManager::RegisterEventSubscriber(IComponent* component, event_category
    
     QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
    
-    if ( specialEvents_.contains(group) )
+    if (specialEvents_.contains(group) )
     {
         QList<IComponent* >& lst = specialEvents_[group];
         lst.append(component);
@@ -195,7 +195,7 @@ bool EventManager::RegisterEventSubscriber(IComponent* component, event_category
 bool EventManager::UnregisterEventSubscriber(IComponent* component, event_category_id_t category_id,event_id_t event_id)
  {
    QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
-   if ( specialEvents_.contains(group) )
+   if (specialEvents_.contains(group) )
    {
         QList<IComponent* >& lst = specialEvents_[group];
         for(int i = lst.size() - 1; i >= 0; --i)
@@ -236,7 +236,7 @@ void EventManager::ProcessDelayedEvents(f64 frametime)
     }
 
     DelayedEventVector::iterator i = delayed_events_.begin();
-    while (i != delayed_events_.end())
+    while(i != delayed_events_.end())
         if (i->delay_ <= 0.0)
         {
             SendEvent(i->category_id_, i->event_id_, i->data_.get());

@@ -20,51 +20,51 @@ namespace Foundation
     class Framework;
 }
 
-//! Dialog for adding new component to entity.
+/// Dialog for adding new component to entity.
 class ECEDITOR_MODULE_API AddComponentDialog: public QDialog
 {
     Q_OBJECT
 
 public:
-    //! Constructs the dialog.
-    /*! \param fw Framework.
+    /// Constructs the dialog.
+    /** \param fw Framework.
         \param ids IDs of entities to which the component will be added.
         \param parent Parent widget.
         \param f Window flags.
     */
     AddComponentDialog(Foundation::Framework *fw, const QList<entity_id_t> &ids, QWidget *parent = 0, Qt::WindowFlags f = 0);
 
-    //! Destroyes the dialog.
+    /// Destroyes the dialog.
     ~AddComponentDialog();
 
-    //! Sets available component types.
+    /// Sets available component types.
     void SetComponentList(const QStringList &component_types);
 
-    //! Sets default name.
+    /// Sets default name.
     void SetComponentName(const QString &name);
 
 public slots:
-    //! Returns component typename
+    /// Returns component typename
     QString GetTypeName() const;
 
-    //! Returns component name
+    /// Returns component name
     QString GetName() const;
 
-    //! Returns if synchronization check box is checked or not.
+    /// Returns if synchronization check box is checked or not.
     bool GetSynchronization() const;
 
-    //! Returns if temporary check box is checked or not.
+    /// Returns if temporary check box is checked or not.
     bool GetTemporary() const;
 
-    //! Returns entity IDs of the entities to which the component is added to.
+    /// Returns entity IDs of the entities to which the component is added to.
     QList<entity_id_t> GetEntityIds() const;
 
 private slots:
-    //! Make sure that component name don't duplicate with existing entity's components, and if it do disable ok button.
+    /// Make sure that component name don't duplicate with existing entity's components, and if it do disable ok button.
     void CheckComponentName(const QString &name);
 
 protected:
-    //! Override event from QDialog.
+    /// Override event from QDialog.
     void hideEvent(QHideEvent *event);
 
 private:
@@ -75,7 +75,7 @@ private:
     QPushButton *ok_button_;
     QPushButton *cancel_button_;
     typedef QList<entity_id_t> EntityIdList;
-    EntityIdList entities_; //!< Entities for which the new component is planned to be added.
+    EntityIdList entities_; ///< Entities for which the new component is planned to be added.
     Foundation::Framework *framework_;
 };
 

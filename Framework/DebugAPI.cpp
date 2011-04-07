@@ -9,6 +9,7 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "DebugAPI.h"
+#include "LoggingFunctions.h"
 
 #ifdef _MSC_VER
 #include <CRTDBG.h>
@@ -16,22 +17,22 @@
 
 void DebugAPI::Log(const QString &msg)
 {
-    RootLogInfo(msg.toStdString());
+    ::LogInfo(msg.toStdString());
 }
 
 void DebugAPI::LogWarning(const QString &msg)
 {
-    RootLogWarning(msg.toStdString());
+    ::LogWarning(msg.toStdString());
 }
 
 void DebugAPI::LogError(const QString &msg)
 {
-    RootLogError(msg.toStdString());
+    ::LogError(msg.toStdString());
 }
 
 void DebugAPI::LogDebug(const QString &msg)
 {
-    RootLogDebug(msg.toStdString());
+    ::LogDebug(msg.toStdString());
 }
 
 bool DebugAPI::IsDebugBuild() const
@@ -48,7 +49,7 @@ void DebugAPI::Break()
 #ifdef _MSC_VER
     _CrtDbgBreak();
 #else
-    RootLogInfo("DebugAPI::Break() works only on Windows with Visual Studio.");
+    ::LogInfo("DebugAPI::Break() works only on Windows with Visual Studio.");
 #endif
 }
 

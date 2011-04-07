@@ -20,7 +20,7 @@ build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 add_definitions(-DASSET_API_EXPORTS)
 
 link_package(BOOST)
-link_package(POCO)
+#link_package(POCO)
 link_package(QT4)
 
 link_modules(Framework)

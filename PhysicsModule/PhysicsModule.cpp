@@ -162,7 +162,7 @@ void PhysicsModule::Update(f64 frametime)
         PROFILE(PhysicsModule_Update);
         // Loop all the physics worlds and update them.
         PhysicsWorldMap::iterator i = physicsWorlds_.begin();
-        while (i != physicsWorlds_.end())
+        while(i != physicsWorlds_.end())
         {
             i->second->Simulate(frametime);
             ++i;
@@ -348,14 +348,15 @@ boost::shared_ptr<ConvexHullSet> PhysicsModule::GetConvexHullSetFromOgreMesh(Ogr
 
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace Physics;
-
+/*
 POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(PhysicsModule)
 POCO_END_MANIFEST 
+*/

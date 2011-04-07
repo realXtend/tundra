@@ -18,7 +18,7 @@
 #include <OgreTagPoint.h>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
 #include "MemoryLeakCheck.h"
 
@@ -262,7 +262,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         entity_->setCastShadows(castShadows.Get());
         entity_->setUserAny(Ogre::Any(GetParentEntity()));
         // Set UserAny also on subentities
-        for (uint i = 0; i < entity_->getNumSubEntities(); ++i)
+        for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
             entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
                 
         if (entity_->hasSkeleton())
@@ -297,7 +297,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
         // Force a re-apply of all materials to this new mesh.
         ApplyMaterial();
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
         LogError("Could not set mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
@@ -337,7 +337,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         mesh->_notifySkeleton(skel);
 //        LogDebug("Set skeleton " + skeleton_name + " to mesh " + mesh_name);
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
         LogError("Could not set skeleton " + skeleton_name + " to mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
@@ -356,7 +356,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
         entity_->setCastShadows(castShadows.Get());
         entity_->setUserAny(Ogre::Any(GetParentEntity()));
         // Set UserAny also on subentities
-        for (uint i = 0; i < entity_->getNumSubEntities(); ++i)
+        for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
             entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
         
         if (entity_->hasSkeleton())
@@ -367,7 +367,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
                 skel->setBlendMode(Ogre::ANIMBLEND_CUMULATIVE);
         }
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
         LogError("Could not set mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
@@ -409,7 +409,7 @@ void EC_Mesh::RemoveMesh()
         {
             Ogre::MeshManager::getSingleton().remove(cloned_mesh_name_);
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
             LogWarning("Could not remove cloned mesh:" + std::string(e.what()));
         }
@@ -441,7 +441,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
     {
         attachment_entities_.resize(newsize);
         attachment_nodes_.resize(newsize);
-        for (uint i = oldsize; i < newsize; ++i)
+        for(uint i = oldsize; i < newsize; ++i)
         {
             attachment_entities_[i] = 0;
             attachment_nodes_[i] = 0;
@@ -468,7 +468,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         {
             mesh->_notifySkeleton(entity_skel);
         }
-        catch (Ogre::Exception e)
+        catch(Ogre::Exception e)
         {
             LogError("Could not set shared skeleton for attachment");
             return false;
@@ -489,7 +489,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
         attachment_entities_[index]->setCastShadows(castShadows.Get());
         attachment_entities_[index]->setUserAny(entity_->getUserAny());
         // Set UserAny also on subentities
-        for (uint i = 0; i < attachment_entities_[index]->getNumSubEntities(); ++i)
+        for(uint i = 0; i < attachment_entities_[index]->getNumSubEntities(); ++i)
             attachment_entities_[index]->getSubEntity(i)->setUserAny(entity_->getUserAny());
 
         Ogre::Bone* attach_bone = 0;
@@ -518,7 +518,7 @@ bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const 
             attachment_entities_[index]->shareSkeletonInstanceWith(entity_);
         }
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
         LogError("Could not set attachment mesh " + mesh_name + ": " + std::string(e.what()));
         return false;
@@ -571,7 +571,7 @@ void EC_Mesh::RemoveAttachmentMesh(uint index)
 
 void EC_Mesh::RemoveAllAttachments()
 {
-    for (uint i = 0; i < attachment_entities_.size(); ++i)
+    for(uint i = 0; i < attachment_entities_.size(); ++i)
         RemoveAttachmentMesh(i);
     attachment_entities_.clear();
     attachment_nodes_.clear();
@@ -598,7 +598,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
         entity_->getSubEntity(index)->setMaterialName(SanitateAssetIdForOgre(material_name));
         emit OnMaterialChanged(index, QString(material_name.c_str()));
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
         LogError("Could not set material " + material_name + ": " + std::string(e.what()));
         return false;
@@ -630,7 +630,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
     {
         attachment_entities_[index]->getSubEntity(submesh_index)->setMaterialName(SanitateAssetIdForOgre(material_name));
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
         LogError("Could not set material " + material_name + " on attachment: " + std::string(e.what()));
         return false;
@@ -832,7 +832,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
             mesh_mgr.load(mesh_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
             mesh = mesh_mgr.getByName(mesh_name);
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
             LogError("Could not load mesh " + mesh_name + ": " + std::string(e.what()));
             return 0;
@@ -854,7 +854,7 @@ Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
             mesh->setAutoBuildEdgeLists(false);
             cloned_mesh_name_ = mesh->getName();
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
             LogError("Could not clone mesh " + mesh_name + ":" + std::string(e.what()));
             return 0;
@@ -897,8 +897,8 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
         {
             if (entity_)
                 entity_->setCastShadows(castShadows.Get());
-            //! \todo might want to disable shadows for some attachments
-            for (uint i = 0; i < attachment_entities_.size(); ++i)
+            /// \todo might want to disable shadows for some attachments
+            for(uint i = 0; i < attachment_entities_.size(); ++i)
             {
                 if (attachment_entities_[i])
                     attachment_entities_[i]->setCastShadows(castShadows.Get());
@@ -1084,7 +1084,7 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
 //        LogDebug("Set skeleton " + skeleton->getName() + " to mesh " + entity_->getName());
         emit OnSkeletonChanged(QString::fromStdString(skeleton->getName()));
     }
-    catch (...)
+    catch(...)
     {
         LogError("Exception while setting skeleton to mesh" + entity_->getName());
     }

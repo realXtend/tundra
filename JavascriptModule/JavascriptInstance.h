@@ -39,19 +39,19 @@ public:
     /// Destroys script engine created for this script instance.
     virtual ~JavascriptInstance();
 
-    //! IScriptInstance override.
+    /// IScriptInstance override.
     void Load();
 
-    //! IScriptInstance override.
+    /// IScriptInstance override.
     void Unload();
 
-    //! IScriptInstance override.
+    /// IScriptInstance override.
     void Run();
     
-    //! IScriptInstance override.
+    /// IScriptInstance override.
     virtual QString GetLoadedScriptName() const { return currentScriptName; }
     
-    //! Register new service to java script engine.
+    /// Register new service to java script engine.
     void RegisterService(QObject *serviceObject, const QString &name);
 
     //void SetPrototype(QScriptable *prototype, );

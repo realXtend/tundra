@@ -37,7 +37,7 @@ public:
     /// IModule override.
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-    MODULE_LOGGING_FUNCTIONS
+    //MODULE_LOGGING_FUNCTIONS
 
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return type_name_static_; }
@@ -70,7 +70,7 @@ private slots:
      */
     void HandleKeyEvent(KeyEvent *key);
 
-    //! Handles Tundra login (send an event, which TundraLogicModule will handle)
+    /// Handles Tundra login (send an event, which TundraLogicModule will handle)
     void ProcessTundraLogin(const QMap<QString, QString> &data);
     
     /// Exits the program.

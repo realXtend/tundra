@@ -11,32 +11,32 @@
 
 namespace Console
 {
-    //! Returns a succesful CommandResult. \ingroup DebugConsole_group
+    /// Returns a succesful CommandResult. \ingroup DebugConsole_group
     __inline static CommandResult ResultSuccess(const std::string &why = std::string()) { CommandResult result = { true, why, false}; return result; }
-    //! Returns a failure CommandResult. \ingroup DebugConsole_group
+    /// Returns a failure CommandResult. \ingroup DebugConsole_group
     __inline static CommandResult ResultFailure(const std::string &why = std::string()) { CommandResult result = { false, why, false}; return result; }
-    //! Returns a failure CommandResult, with invalid parameters as the reason. \ingroup DebugConsole_group
+    /// Returns a failure CommandResult, with invalid parameters as the reason. \ingroup DebugConsole_group
     __inline static CommandResult ResultInvalidParameters() { CommandResult result = { false, "Invalid parameters.", false}; return result; }
-    //! Returns a delayed CommandResult. \ingroup DebugConsole_group
+    /// Returns a delayed CommandResult. \ingroup DebugConsole_group
     __inline static CommandResult ResultDelayed() { CommandResult result = { false, std::string(), true }; return result; }
 
-    //! typedef for static callback
+    /// typedef for static callback
     typedef CommandResult (*StaticCallback)(const StringVector&);
 
-    //! functor for console command callback, member function callback
+    /// functor for console command callback, member function callback
     template <typename T>
     class Callback : public CallbackInterface
     {
     public:
         typedef CommandResult (T::*CallbackFunction)(const StringVector&);
 
-        //! constructor taking object and member function pointer
+        /// constructor taking object and member function pointer
         Callback(T *object, CallbackFunction function) : object_(object), function_(function) { }
 
-        //! destructor
+        /// destructor
         virtual ~Callback() {}
 
-        //! copy constructor
+        /// copy constructor
         Callback(const Callback &rhs)
         {
             this->object_ = rhs.object_;
@@ -52,30 +52,30 @@ namespace Console
             return *this;
         }
 
-        //! Calls the function
+        /// Calls the function
         virtual CommandResult operator()(const StringVector &params)
         {
             return (*object_.*function_)(params);
         }       
 
     private:
-        //! pointer to the object
+        /// pointer to the object
         T *object_;
-        //! pointer to the member function
+        /// pointer to the member function
         CallbackFunction function_;
     };
 
-    //! functor for console command callback, for static function callback
+    /// functor for console command callback, for static function callback
     class StaticCallbackFunctor : public CallbackInterface
     {
     public:
-        //! constructor taking static function pointer
+        /// constructor taking static function pointer
         StaticCallbackFunctor(StaticCallback &function) : function_(function) { }
 
-        //! destructor
+        /// destructor
         virtual ~StaticCallbackFunctor() {}
 
-        //! copy constructor
+        /// copy constructor
         StaticCallbackFunctor(const StaticCallbackFunctor &rhs)
         {
             this->function_ = rhs.function_;
@@ -90,19 +90,19 @@ namespace Console
             return *this;
         }
 
-        //! Calls the function
+        /// Calls the function
         virtual CommandResult operator()(const StringVector &params)
         {
             return (*function_)(params);
         }       
 
     private:
-        //! pointer to function
+        /// pointer to function
         StaticCallback function_;
     };
 
-    //! Creates a console command with member function callback
-    /*!
+    /// Creates a console command with member function callback
+    /**
         \ingroup DebugConsole_group
 
         \param name name of the command
@@ -117,8 +117,8 @@ namespace Console
         return command;
     }
 
-    //! Creates a console command with static function callback
-    /*!
+    /// Creates a console command with static function callback
+    /**
         \ingroup DebugConsole_group
 
         \param name name of the command
@@ -133,8 +133,8 @@ namespace Console
         return command;
     }
 
-    //! Bind a member function to a command callback.
-    /*!
+    /// Bind a member function to a command callback.
+    /**
         \ingroup DebugConsole_group
     */
     template <typename T>
@@ -143,8 +143,8 @@ namespace Console
         return CallbackPtr(new Callback<T>(object, function));
     }
 
-    //! Interface for console command service.
-    /*! One can register and execute registered console commands by using this service.
+    /// Interface for console command service.
+    /** One can register and execute registered console commands by using this service.
         Commands can be parsed and executed from a commandline string, or executed directly.
 
         One can register new commands with RegisterCommand() - functions.
@@ -184,17 +184,17 @@ void MyClass::Update()
         Q_OBJECT
 
     public:
-        //! default constructor
+        /// default constructor
         ConsoleCommandServiceInterface() {}
 
-        //! destructor
+        /// destructor
         virtual ~ConsoleCommandServiceInterface() {}
 
-        //! Update the service. Should be called in main thread context. For internal use.
+        /// Update the service. Should be called in main thread context. For internal use.
         virtual void Update() {}
 
-        //! Register a command to the debug console
-        /*!
+        /// Register a command to the debug console
+        /**
             Shortcut functions are present to make registering easier, see
                 Command CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed)
                 Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed)
@@ -203,22 +203,22 @@ void MyClass::Update()
         */
         virtual void RegisterCommand(const Command &command) = 0;
 
-        //! Unregister console command
-        /*! See RegisterCommand()
+        /// Unregister console command
+        /** See RegisterCommand()
 
             \param name Name of the command to unregister
         */
         virtual void UnregisterCommand(const std::string &name) = 0;
 
-        //! Queue console command. The command will be called in the console's thread.
-        /*! Normally this is for internal use only and need not be called.
+        /// Queue console command. The command will be called in the console's thread.
+        /** Normally this is for internal use only and need not be called.
 
             \param commandline string that contains the command and any parameters
         */
         virtual void QueueCommand(const std::string &commandline) = 0;
 
-        //! Poll to see if command has been queued and executes it immediately, in the caller's thread context.
-        /*! For each possible command, this needs to be called exactly once.
+        /// Poll to see if command has been queued and executes it immediately, in the caller's thread context.
+        /** For each possible command, this needs to be called exactly once.
             The command must have been created as 'delayed'.
 
             \param command name of the command to poll for.
@@ -226,11 +226,11 @@ void MyClass::Update()
         */
         virtual boost::optional<CommandResult> Poll(const std::string &command) = 0;
 
-        //! Parse and execute command line. The command is called in the caller's thread. For internal use.
+        /// Parse and execute command line. The command is called in the caller's thread. For internal use.
         virtual CommandResult ExecuteCommand(const std::string &commandline) = 0;
 
-        //! Execute command. For internal use.
-        /*!
+        /// Execute command. For internal use.
+        /**
             \param name Name of the command to execute
             \param params Parameters to pass to the command
         */
@@ -244,9 +244,9 @@ void MyClass::Update()
         void CommandInvoked(const QString &command, const QStringList &params = QStringList());
     };
 
-    //! \ingroup DebugConsole_group
+    /// \ingroup DebugConsole_group
     typedef ConsoleCommandServiceInterface CommandService;
-    //! Shared pointer for command manager. \ingroup DebugConsole_group
+    /// Shared pointer for command manager. \ingroup DebugConsole_group
     typedef boost::shared_ptr<CommandService> CommandManagerPtr;
 }
 

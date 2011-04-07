@@ -23,7 +23,7 @@
 #include <QDir>
 #include <QFileSystemWatcher>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
+//DEFINE_POCO_LOGGING_FUNCTIONS("Asset")
 
 using namespace Foundation;
 
@@ -268,7 +268,7 @@ QString AssetAPI::RecursiveFindFile(QString basePath, QString filename)
                 return dir.absolutePath();
         }
     }
-    catch (...)
+    catch(...)
     {
     }
 

@@ -22,29 +22,29 @@
 
 #include <QMetaType>
 
-//! Quaternion class for representing rotations.
+/// Quaternion class for representing rotations.
 /** It provides cheap combinations and avoids gimbal locks.
 Also useful for interpolations. */
 class Quaternion
 {
     public:
 
-        //! Default Constructor
+        /// Default Constructor
         Quaternion() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
 
-        //! Constructor
+        /// Constructor
         Quaternion(f32 xx, f32 yy, f32 zz, f32 ww) : x(xx), y(yy), z(zz), w(ww) { }
 
-        //! Constructor which converts euler angles (radians) to a Quaternion
+        /// Constructor which converts euler angles (radians) to a Quaternion
         Quaternion(f32 x, f32 y, f32 z);
 
-        //! Constructor which converts euler angles (radians) to a Quaternion
+        /// Constructor which converts euler angles (radians) to a Quaternion
         Quaternion(const Vector3df& vec);
 
-        //! Constructor which converts a matrix to a Quaternion
+        /// Constructor which converts a matrix to a Quaternion
         Quaternion(const Matrix4& mat);
 
-        //! Constructor which creates quaternion from rotation angle and rotation axis.
+        /// Constructor which creates quaternion from rotation angle and rotation axis.
         /** Axis must be unit length.
         The Quaternion representing the rotation is
         q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k).
@@ -55,10 +55,10 @@ class Quaternion
             fromAngleAxis(angle, axis);
         }
 
-        //! Equalilty operator
+        /// Equalilty operator
         bool operator==(const Quaternion& other) const;
 
-        //! Inequality operator
+        /// Inequality operator
         bool operator!=(const Quaternion& other) const;
 
         bool equals(const Quaternion other, const f32 tolerance = ROUNDING_ERROR_32 ) const
@@ -69,61 +69,61 @@ class Quaternion
                 ::equals(w, other.w, tolerance);
         }
 
-        //! Assignment operator
+        /// Assignment operator
         inline Quaternion& operator=(const Quaternion& other);
 
-        //! Matrix assignment operator
+        /// Matrix assignment operator
         inline Quaternion& operator=(const Matrix4& other);
 
-        //! Add operator
+        /// Add operator
         Quaternion operator+(const Quaternion& other) const;
 
-        //! Multiplication operator
+        /// Multiplication operator
         Quaternion operator*(const Quaternion& other) const;
 
-        //! Multiplication operator with scalar
+        /// Multiplication operator with scalar
         Quaternion operator*(f32 s) const;
 
-        //! Multiplication operator with scalar
+        /// Multiplication operator with scalar
         Quaternion& operator*=(f32 s);
 
-        //! Multiplication operator
+        /// Multiplication operator
         Vector3df operator*(const Vector3df& v) const;
 
-        //! Multiplication operator
+        /// Multiplication operator
         Quaternion& operator*=(const Quaternion& other);
 
-        //! Calculates the dot product
+        /// Calculates the dot product
         inline f32 dotProduct(const Quaternion& other) const;
 
-        //! Sets new Quaternion
+        /// Sets new Quaternion
         inline Quaternion& set(f32 xx, f32 yy, f32 zz, f32 ww);
 
-        //! Sets new Quaternion based on euler angles (radians)
+        /// Sets new Quaternion based on euler angles (radians)
         inline Quaternion& set(f32 xx, f32 yy, f32 zz);
 
-        //! Sets new Quaternion based on euler angles (radians)
+        /// Sets new Quaternion based on euler angles (radians)
         inline Quaternion& set(const Vector3df& vec);
 
-        //! Normalizes the Quaternion
+        /// Normalizes the Quaternion
         inline Quaternion& normalize();
 
-        //! Creates a matrix from this Quaternion
+        /// Creates a matrix from this Quaternion
         Matrix4 getMatrix() const;
 
-        //! Creates a matrix from this Quaternion
+        /// Creates a matrix from this Quaternion
         void getMatrix( Matrix4 &dest ) const;
 
-        //! Creates a matrix from this Quaternion
+        /// Creates a matrix from this Quaternion
         inline void getMatrix_transposed( Matrix4 &dest ) const;
 
-        //! Inverts this Quaternion
+        /// Inverts this Quaternion
         Quaternion& makeInverse();
 
-        //! Set this Quaternion to the result of the interpolation between two quaternions
+        /// Set this Quaternion to the result of the interpolation between two quaternions
         Quaternion& slerp( Quaternion q1, Quaternion q2, f32 interpolate );
 
-        //! Create Quaternion from rotation angle and rotation axis.
+        /// Create Quaternion from rotation angle and rotation axis.
         /** Axis must be unit length.
         The Quaternion representing the rotation is
         q = cos(A/2)+sin(A/2)*(x*i+y*j+z*k).
@@ -131,16 +131,16 @@ class Quaternion
         \param axis Rotation axis. */
         Quaternion& fromAngleAxis (f32 angle, const Vector3df& axis);
 
-        //! Fills an angle (radians) around an axis (unit vector)
+        /// Fills an angle (radians) around an axis (unit vector)
         void toAngleAxis (f32 &angle, Vector3df& axis) const;
 
-        //! Output this Quaternion to an euler angle (radians)
+        /// Output this Quaternion to an euler angle (radians)
         void toEuler(Vector3df& euler) const;
 
-        //! Set Quaternion to identity
+        /// Set Quaternion to identity
         Quaternion& makeIdentity();
 
-        //! Set Quaternion to represent a rotation from one vector to another.
+        /// Set Quaternion to represent a rotation from one vector to another.
         Quaternion& rotationFromTo(const Vector3df& from, const Vector3df& to);
 
         friend std::ostream& operator << ( std::ostream& out, const Quaternion& q )
@@ -163,7 +163,7 @@ class Quaternion
         static const Quaternion ZERO;
         static const Quaternion IDENTITY;
 
-        //! Quaternion elements.
+        /// Quaternion elements.
         f32 x, y, z, w;
 };
 
@@ -231,7 +231,7 @@ inline Quaternion& Quaternion::operator=(const Matrix4& m)
     }
     else
     {
-        if ( m(0,0) > m(1,1) && m(0,0) > m(2,2))
+        if (m(0,0) > m(1,1) && m(0,0) > m(2,2))
         {
             // 1st element of diag is greatest value
             // find scale according to 1st element, and double it
@@ -243,7 +243,7 @@ inline Quaternion& Quaternion::operator=(const Matrix4& m)
             z = (m(2,0) + m(0,2)) / scale;
             w = (m(2,1) - m(1,2)) / scale;
         }
-        else if ( m(1,1) > m(2,2))
+        else if (m(1,1) > m(2,2))
         {
             // 2nd element of diag is greatest value
             // find scale according to 2nd element, and double it
@@ -489,8 +489,8 @@ inline f32 Quaternion::dotProduct(const Quaternion& q2) const
 }
 
 
-//! axis must be unit length
-//! angle in radians
+/// axis must be unit length
+/// angle in radians
 inline Quaternion& Quaternion::fromAngleAxis(f32 angle, const Vector3df& axis)
 {
     const f32 fHalfAngle = 0.5f*angle;

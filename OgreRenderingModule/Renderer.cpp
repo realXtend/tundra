@@ -59,7 +59,7 @@ using namespace Foundation;
 
 namespace OgreRenderer
 {
-    //! Ogre renderable listener to find out visible objects for each frame
+    /// Ogre renderable listener to find out visible objects for each frame
     class RenderableListener : public Ogre::RenderQueue::RenderableListener
     {
     public:
@@ -86,7 +86,7 @@ namespace OgreRenderer
                 if (entity)
                     renderer_->visible_entities_.insert(entity->GetId());
             }
-            catch (Ogre::InvalidParametersException &/*e*/)
+            catch(Ogre::InvalidParametersException &/*e*/)
             {
             }
             return true;
@@ -96,20 +96,20 @@ namespace OgreRenderer
         Renderer* renderer_;
     };
 
-    //! Ogre log listener, for passing ogre log messages
+    /// Ogre log listener, for passing ogre log messages
     class LogListener : public Ogre::LogListener
     {
     public:
         LogListener() : Ogre::LogListener() {}
         virtual ~LogListener() {}
 
-        //! Subscribe new listener for ogre log messages
+        /// Subscribe new listener for ogre log messages
         void SubscribeListener(const Foundation::LogListenerPtr &listener)
         {
             listeners_.push_back(listener);
         }
 
-        //! Unsubscribe listener for ogre log messages
+        /// Unsubscribe listener for ogre log messages
         void UnsubscribeListener(const Foundation::LogListenerPtr &listener)
         {
             listeners_.remove(listener);
@@ -117,14 +117,14 @@ namespace OgreRenderer
 
         void messageLogged(const std::string& message, Ogre::LogMessageLevel lml, bool maskDebug, const std::string &logName)
         {
-            for (ListenerList::iterator it = listeners_.begin(); it != listeners_.end(); ++it)
+            for(ListenerList::iterator it = listeners_.begin(); it != listeners_.end(); ++it)
                 (*it)->LogMessage(message);
         }
 
     private:
         typedef std::list<Foundation::LogListenerPtr> ListenerList;
 
-        //! list of subscribed listeners
+        /// list of subscribed listeners
         ListenerList listeners_;
     };
 
@@ -168,7 +168,7 @@ namespace OgreRenderer
             if (scenemanager_) {
                 scenemanager_->destroyQuery(ray_query_);
             } else {
-                OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
+                LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
             }
 
         if (framework_->Ui() && framework_->Ui()->MainWindow())
@@ -244,7 +244,7 @@ namespace OgreRenderer
         Ogre::RenderSystem *rendersystem = 0;
 
         // Some pretty printing
-        OgreRenderingModule::LogDebug("INITIALIZING OGRE");
+        LogDebug("INITIALIZING OGRE");
 
         const boost::program_options::variables_map &options = framework_->ProgramOptions();
         if (options.count("fpslimit") > 0)
@@ -360,12 +360,12 @@ namespace OgreRenderer
                 else
                     framework_->Ui()->MainWindow()->show();
             }
-            catch (Ogre::Exception &/*e*/)
+            catch(Ogre::Exception &/*e*/)
             {
-                OgreRenderingModule::LogError("Could not create ogre rendering window!");
+                LogError("Could not create ogre rendering window!");
                 throw;
             }
-            OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
+            LogDebug("Initializing resources, may take a while...");
             SetupResources();
         }
 
@@ -416,9 +416,9 @@ namespace OgreRenderer
         {
             file.load(plugin_filename);
         }
-        catch (Ogre::Exception &/*e*/)
+        catch(Ogre::Exception &/*e*/)
         {
-            OgreRenderingModule::LogError("Could not load Ogre plugins configuration file");
+            LogError("Could not load Ogre plugins configuration file");
             return;
         }
 
@@ -437,15 +437,15 @@ namespace OgreRenderer
             }
         }
         
-        for (uint i = 0; i < plugins.size(); ++i)
+        for(uint i = 0; i < plugins.size(); ++i)
         {
             try
             {
                 root_->loadPlugin(plugin_dir + plugins[i]);
             }
-            catch (Ogre::Exception &/*e*/)
+            catch(Ogre::Exception &/*e*/)
             {
-                OgreRenderingModule::LogError("Plugin " + plugins[i] + " failed to load");
+                LogError("Plugin " + plugins[i] + " failed to load");
             }
         }
     }
@@ -787,7 +787,7 @@ namespace OgreRenderer
         } catch(const std::exception &e)
         {
             std::cout << "Ogre::Root::renderOneFrame threw an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
-            RootLogCritical(std::string("Ogre::Root::renderOneFrame threw an exception: ") + (e.what() ? e.what() : "(null)"));
+            LogCritical(std::string("Ogre::Root::renderOneFrame threw an exception: ") + (e.what() ? e.what() : "(null)"));
         }
 
         view->MarkViewUndirty();
@@ -1001,13 +1001,13 @@ namespace OgreRenderer
 
         int best_priority = minimum_priority;
         // Prepass: get best available priority for breaking early
-        for (size_t i = 0; i < results.size(); ++i)
+        for(size_t i = 0; i < results.size(); ++i)
         {
             Ogre::RaySceneQueryResultEntry &entry = results[i];
             if (!entry.movable)
                 continue;
 
-            //! \todo Do we want results for invisible entities?
+            /// \todo Do we want results for invisible entities?
             if (!entry.movable->isVisible())
                 continue;
             
@@ -1020,7 +1020,7 @@ namespace OgreRenderer
             {
                 entity = Ogre::any_cast<Scene::Entity*>(any);
             }
-            catch (Ogre::InvalidParametersException &/*e*/)
+            catch(Ogre::InvalidParametersException &/*e*/)
             {
                 continue;
             }
@@ -1048,7 +1048,7 @@ namespace OgreRenderer
         indices.clear();
         submeshstartindex.clear();
 
-        for (size_t i = 0; i < results.size(); ++i)
+        for(size_t i = 0; i < results.size(); ++i)
         {
             Ogre::RaySceneQueryResultEntry &entry = results[i];
             // Stop checking if we have found a raycast hit that is closer
@@ -1059,7 +1059,7 @@ namespace OgreRenderer
             if (!entry.movable)
                 continue;
 
-            //! \todo Do we want results for invisible entities?
+            /// \todo Do we want results for invisible entities?
             if (!entry.movable->isVisible())
                 continue;
             
@@ -1072,7 +1072,7 @@ namespace OgreRenderer
             {
                 entity = Ogre::any_cast<Scene::Entity*>(any);
             }
-            catch (Ogre::InvalidParametersException &/*e*/)
+            catch(Ogre::InvalidParametersException &/*e*/)
             {
                 continue;
             }
@@ -1101,7 +1101,7 @@ namespace OgreRenderer
                     ogre_entity->getParentNode()->_getDerivedScale());
 
                 // test for hitting individual triangles on the mesh
-                for (int j = 0; j < ((int)indices.size())-2; j += 3)
+                for(int j = 0; j < ((int)indices.size())-2; j += 3)
                 {
                     // check for a hit against this triangle
                     std::pair<bool, Ogre::Real> hit = Ogre::Math::intersects(ray, vertices[indices[j]],
@@ -1185,7 +1185,7 @@ namespace OgreRenderer
             {
                 entity = Ogre::any_cast<Scene::Entity*>(m->getUserAny());
             }
-            catch (Ogre::InvalidParametersException &/*e*/)
+            catch(Ogre::InvalidParametersException &/*e*/)
             {
                 continue;
             }
@@ -1355,7 +1355,7 @@ namespace OgreRenderer
 
         QImage image = QImage(capture_screen_pixel_data_, width, height, QImage::Format_ARGB32);
         if (image.isNull())
-            OgreRenderingModule::LogError("Capturing render texture to a image failed");
+            LogError("Capturing render texture to a image failed");
         return image;
     }
 
@@ -1364,7 +1364,7 @@ namespace OgreRenderer
         std::string directory = qdirectory.toStdString();
 
         // Check to not add the same directory more than once
-        for (uint i = 0; i < added_resource_directories_.size(); ++i)
+        for(uint i = 0; i < added_resource_directories_.size(); ++i)
             if (added_resource_directories_[i] == directory)
                 return;
 
@@ -1375,7 +1375,7 @@ namespace OgreRenderer
         // Check if resource group already exists (should not).
         bool exists = false;
         Ogre::StringVector groups = resgrpmgr.getResourceGroups();
-        for (uint i = 0; i < groups.size(); ++i)
+        for(uint i = 0; i < groups.size(); ++i)
         {
             if (groups[i] == groupname)
             {
@@ -1391,7 +1391,7 @@ namespace OgreRenderer
             {
                 resgrpmgr.createResourceGroup(groupname);
             }
-            catch (...) {}
+            catch(...) {}
         }
         
         // Add directory as a resource location, then initialize group
@@ -1400,7 +1400,7 @@ namespace OgreRenderer
             resgrpmgr.addResourceLocation(directory, "FileSystem", groupname);
             resgrpmgr.initialiseResourceGroup(groupname);
         }
-        catch (...) {}
+        catch(...) {}
 
         added_resource_directories_.push_back(directory);
     }

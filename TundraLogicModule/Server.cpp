@@ -87,7 +87,7 @@ bool Server::Start(unsigned short port)
         kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
         if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
         {
-            TundraLogicModule::LogError("Failed to start server in port " + ToString<int>(port));
+            ::LogError("Failed to start server in port " + ToString<int>(port));
             return false;
         }
 
@@ -155,7 +155,7 @@ UserConnectionList Server::GetAuthenticatedUsers() const
     UserConnectionList ret;
     
     UserConnectionList& all = owner_->GetKristalliModule()->GetUserConnections();
-    for (UserConnectionList::const_iterator iter = all.begin(); iter != all.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = all.begin(); iter != all.end(); ++iter)
     {
         if ((*iter)->properties["authenticated"] == "true")
             ret.push_back(*iter);
@@ -169,7 +169,7 @@ QVariantList Server::GetConnectionIDs() const
     QVariantList ret;
     
     UserConnectionList users = GetAuthenticatedUsers();
-    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
         ret.push_back(QVariant((*iter)->userID));
     
     return ret;
@@ -178,7 +178,7 @@ QVariantList Server::GetConnectionIDs() const
 UserConnection* Server::GetUserConnection(int connectionID) const
 {
     UserConnectionList users = GetAuthenticatedUsers();
-    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {
         if ((*iter)->userID == connectionID)
             return (*iter);
@@ -237,8 +237,8 @@ void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::messa
         UserConnection* user = GetUserConnection(source);
         if ((!user) || (user->properties["authenticated"] != "true"))
         {
-            TundraLogicModule::LogWarning("Server: dropping message " + ToString(id) + " from unauthenticated user");
-            //! \todo something more severe, like disconnecting the user
+            ::LogWarning("Server: dropping message " + ToString(id) + " from unauthenticated user");
+            /// \todo something more severe, like disconnecting the user
             return;
         }
     }
@@ -260,7 +260,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     UserConnection* user = GetUserConnection(source);
     if (!user)
     {
-        TundraLogicModule::LogWarning("Login message from unknown user");
+        ::LogWarning("Login message from unknown user");
         return;
     }
     
@@ -268,15 +268,15 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     QString loginData = QString::fromStdString(BufferToString(msg.loginData));
     bool success = xml.setContent(loginData);
     if (!success)
-        TundraLogicModule::LogWarning("Received malformed xml logindata from user " + ToString<int>(user->userID));
+        ::LogWarning("Received malformed xml logindata from user " + ToString<int>(user->userID));
     
     // Fill the user's logindata, both in raw format and as keyvalue pairs
     user->loginData = loginData;
     QDomElement rootElem = xml.firstChildElement();
     QDomElement keyvalueElem = rootElem.firstChildElement();
-    while (!keyvalueElem.isNull())
+    while(!keyvalueElem.isNull())
     {
-        //TundraLogicModule::LogInfo("Logindata contains keyvalue pair " + keyvalueElem.tagName().toStdString() + " = " + keyvalueElem.attribute("value").toStdString());
+        //::LogInfo("Logindata contains keyvalue pair " + keyvalueElem.tagName().toStdString() + " = " + keyvalueElem.attribute("value").toStdString());
         user->SetProperty(keyvalueElem.tagName(), keyvalueElem.attribute("value"));
         keyvalueElem = keyvalueElem.nextSiblingElement();
     }
@@ -285,7 +285,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     emit UserAboutToConnect(user->userID, user);
     if (user->properties["authenticated"] != "true")
     {
-        TundraLogicModule::LogInfo("User with connection ID " + ToString<int>(user->userID) + " was denied access");
+        ::LogInfo("User with connection ID " + ToString<int>(user->userID) + " was denied access");
         MsgLoginReply reply;
         reply.success = 0;
         reply.userID = 0;
@@ -293,7 +293,7 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
         return;
     }
     
-    TundraLogicModule::LogInfo("User with connection ID " + ToString<int>(user->userID) + " logged in");
+    ::LogInfo("User with connection ID " + ToString<int>(user->userID) + " logged in");
     
     // Allow entityactions & EC sync from now on
     MsgLoginReply reply;
@@ -305,11 +305,11 @@ void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
     UserConnectionList users = GetAuthenticatedUsers();
     MsgClientJoined joined;
     joined.userID = user->userID;
-    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
         (*iter)->connection->Send(joined);
     
     // Advertise the users who already are in the world, to the new user
-    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {
         if ((*iter)->userID != user->userID)
         {
@@ -331,7 +331,7 @@ void Server::HandleUserDisconnected(UserConnection* user)
     MsgClientLeft left;
     left.userID = user->userID;
     UserConnectionList users = GetAuthenticatedUsers();
-    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    for(UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
     {
         if ((*iter)->userID != user->userID)
             (*iter)->connection->Send(left);

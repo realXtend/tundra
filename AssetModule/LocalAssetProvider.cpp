@@ -14,6 +14,7 @@
 #include "IAssetUploadTransfer.h"
 #include "IAssetTransfer.h"
 #include "AssetAPI.h"
+#include "LoggingFunctions.h"
 #include <QByteArray>
 #include <QFile>
 #include <QFileInfo>
@@ -116,7 +117,7 @@ void LocalAssetProvider::DeleteAssetFromStorage(QString assetRef)
     if (!assetRef.isEmpty())
         QFile::remove(assetRef); ///\todo Check here that the assetRef points to one of the accepted storage directories, and don't allow deleting anything else.
 
-    AssetModule::LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
+    LogInfo("LocalAssetProvider::DeleteAssetFromStorage: Deleted asset file \"" + assetRef.toStdString() + "\" from disk.");
 }
 
 void LocalAssetProvider::AddStorageDirectory(const std::string &directory, const std::string &storageName, bool recursive)
@@ -148,14 +149,14 @@ AssetUploadTransferPtr LocalAssetProvider::UploadAssetFromFileInMemory(const u8 
     assert(data);
     if (!data)
     {
-        AssetModule::LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Null source data pointer passed to function!");
+        LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Null source data pointer passed to function!");
         return AssetUploadTransferPtr();
     }
 
     LocalAssetStorage *storage = dynamic_cast<LocalAssetStorage*>(destination.get());
     if (!storage)
     {
-        AssetModule::LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
+        LogError("LocalAssetProvider::UploadAssetFromFileInMemory: Invalid destination asset storage type! Was not of type LocalAssetStorage!");
         return AssetUploadTransferPtr();
     }
 
@@ -235,14 +236,14 @@ void LocalAssetProvider::CompletePendingFileUploads()
         LocalAssetStoragePtr storage = boost::dynamic_pointer_cast<LocalAssetStorage>(transfer->destinationStorage.lock());
         if (!storage)
         {
-            AssetModule::LogError("Invalid IAssetStorage specified for file upload in LocalAssetProvider!");
+            LogError("Invalid IAssetStorage specified for file upload in LocalAssetProvider!");
             transfer->EmitTransferFailed();
             continue;
         }
 
         if (transfer->sourceFilename.length() == 0 && transfer->assetData.size() == 0)
         {
-            AssetModule::LogError("No source data present when trying to upload asset to LocalAssetProvider!");
+            LogError("No source data present when trying to upload asset to LocalAssetProvider!");
             continue;
         }
 
@@ -257,7 +258,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
 
         if (!success)
         {
-            AssetModule::LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
+            LogError(("Asset upload failed in LocalAssetProvider: CopyAsset from \"" + fromFile + "\" to \"" + toFile + "\" failed!").toStdString());
             transfer->EmitTransferFailed();
             /// \todo Jukka lis‰‰ failure-notifikaatio.
         }
@@ -270,7 +271,7 @@ void LocalAssetProvider::CompletePendingFileUploads()
 
 void LocalAssetProvider::FileChanged(const QString &path)
 {
-    AssetModule::LogInfo(("File " + path + " changed.").toStdString());
+    LogInfo(("File " + path + " changed.").toStdString());
 }
 
 } // ~Asset

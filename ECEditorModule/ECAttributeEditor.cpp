@@ -20,7 +20,7 @@
 #include <qteditorfactory.h>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditor")
+//DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditor")
 
 #include "MemoryLeakCheck.h"
 
@@ -1429,8 +1429,8 @@ template<> void ECAttributeEditor<QVariantList>::Update(IAttribute *attr)
         QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
         QList<QtProperty*> children = rootProperty_->subProperties();
         QVariantList value = attribute->Get();
-        //! @todo It tends to be heavy operation to reinitialize all ui elements when new parameters have been added.
-        //! replace this so that only single vector's element is added/deleted from the editor.
+        /// @todo It tends to be heavy operation to reinitialize all ui elements when new parameters have been added.
+        /// replace this so that only single vector's element is added/deleted from the editor.
         if(value.size() + 1 != children.size())
         {
             UnInitialize();
@@ -1541,8 +1541,8 @@ template<> void ECAttributeEditor<AssetReferenceList>::Update(IAttribute *attr)
         QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
         QList<QtProperty*> children = rootProperty_->subProperties();
         const AssetReferenceList &value = attribute->Get();
-        //! @todo It tends to be heavy operation to reinitialize all ui elements when new parameters have been added.
-        //! replace this so that only single vector's element is added/deleted from the editor.
+        /// @todo It tends to be heavy operation to reinitialize all ui elements when new parameters have been added.
+        /// replace this so that only single vector's element is added/deleted from the editor.
         if (value.Size() + 1 != children.size())
         {
             UnInitialize();

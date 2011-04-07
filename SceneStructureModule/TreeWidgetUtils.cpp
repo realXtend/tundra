@@ -66,7 +66,7 @@ void TreeWidgetSearch(QTreeWidget *treeWidget, int column, const QString &filter
 bool TreeWidgetExpandOrCollapseAll(QTreeWidget *treeWidget)
 {
     bool expand = true;
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
         if (item->childCount() >= 1 && item->isExpanded())

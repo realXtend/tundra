@@ -36,7 +36,7 @@ struct MaterialInfo
 
 typedef std::set<MaterialInfo> MaterialInfoList; ///< Set of MaterialInfo structs.
 
-//! Importer tool for OGRE .scene and .mesh files.
+/// Importer tool for OGRE .scene and .mesh files.
 /** You can use SceneImporter to directly create and instantiate content from OGRE .mesh and .scene files,
     or to create scene descriptions for the aforementioned file formats. The scene descriptions can be modified
     and then instantiated using SceneManager::CreateContentFromSceneDesc().
@@ -45,16 +45,16 @@ typedef std::set<MaterialInfo> MaterialInfoList; ///< Set of MaterialInfo struct
 class TUNDRALOGIC_MODULE_API SceneImporter
 {
 public:
-    //! Constructs the importer.
-    /*! \param scene Destination scene
+    /// Constructs the importer.
+    /** \param scene Destination scene
     */
     explicit SceneImporter(const Scene::ScenePtr &scene);
 
-    //! Destroys the importer.
+    /// Destroys the importer.
     ~SceneImporter();
 
-    //! Import a single mesh. Scans the mesh for needed skeleton & materials.
-    /*! \param filename Filename of mesh
+    /// Import a single mesh. Scans the mesh for needed skeleton & materials.
+    /** \param filename Filename of mesh
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param worldtransform Transform to use for the entity's placeable.
@@ -70,8 +70,8 @@ public:
         const std::string& entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect = true,
         const std::string &meshName = std::string());
 
-    //! Imports a dotscene.
-    /*! \param filename Input filename
+    /// Imports a dotscene.
+    /** \param filename Input filename
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param worldtransform Transform to use for the entity's placeable
         \param prefix 
@@ -84,8 +84,8 @@ public:
     QList<Scene::Entity *> Import(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
         const QString &prefix, AttributeChange::Type change, bool clearscene = false, bool replace = true);
 
-    //! Parse a mesh for materials & skeleton ref
-    /*! \param meshname Full path & filename of mesh
+    /// Parse a mesh for materials & skeleton ref
+    /** \param meshname Full path & filename of mesh
         \param material_names Return vector for material names
         \param skeleton_name Return value for skeleton ref
      */
@@ -108,8 +108,8 @@ public:
     */
     SceneDesc GetSceneDescForScene(const QString &filename);
 
-    //! Process a material file, searching for used materials and recording used textures
-    /*! \param matfilename Material file name, including full path
+    /// Process a material file, searching for used materials and recording used textures
+    /** \param matfilename Material file name, including full path
         \param used_materials Set of materials that are needed. Any materials in the file that are not listed will be skipped
         \return Set of used textures
      */
@@ -141,13 +141,13 @@ public:
     QStringList GetMaterialFiles(const std::string &dir) const;
 
 private:
-    //! Process the asset references of a node, and its child nodes
-    /*! \param node_elem Node element
+    /// Process the asset references of a node, and its child nodes
+    /** \param node_elem Node element
      */
     void ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir);
 
-    //! Process node and its child nodes for creation of entities & components. Done after asset pass
-    /*! \param [out] entities List of created entities
+    /// Process node and its child nodes for creation of entities & components. Done after asset pass
+    /** \param [out] entities List of created entities
         \param node_elem Node element
         \param pos Current position
         \param rot Current rotation
@@ -160,8 +160,8 @@ private:
     void ProcessNodeForCreation(QList<Scene::Entity *> &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace);
 
-    //! Process node and its child nodes for creation of scene description.
-    /*! \param desc 
+    /// Process node and its child nodes for creation of scene description.
+    /** \param desc 
         \param node_elem Node element
         \param pos Current position
         \param rot Current rotation
@@ -189,13 +189,13 @@ private:
     */
 //    void RewriteAssetRef(const QString &sceneFileName, QString &ref) const;
 
-    QMap<QString, QStringList> mesh_default_materials_; //!< Materials read from meshes, in case of no subentity elements
-    std::set<std::string> material_names_; //! Materials encountered in scene
-    std::set<std::string> node_names_; //!< Nodes already created into the scene. Used for name-based "update import" logic
-    Scene::ScenePtr scene_; //!< Destination scene.
+    QMap<QString, QStringList> mesh_default_materials_; ///< Materials read from meshes, in case of no subentity elements
+    std::set<std::string> material_names_; /// Materials encountered in scene
+    std::set<std::string> node_names_; ///< Nodes already created into the scene. Used for name-based "update import" logic
+    Scene::ScenePtr scene_; ///< Destination scene.
 
-    //! Meshes encountered in scene
-    /*! For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored.
+    /// Meshes encountered in scene
+    /** For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored.
      */
     std::map<std::string, std::string> mesh_names_;
 };

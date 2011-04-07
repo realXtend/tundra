@@ -9,7 +9,7 @@
 #include "OgreModuleFwd.h"
 #include "Declare_EC.h"
 
-//! Ogre selection box component
+/// Ogre selection box component
 /**
 <table class="header">
 <tr>
@@ -43,29 +43,29 @@ class OGRE_MODULE_API EC_SelectionBox : public IComponent
     DECLARE_EC(EC_SelectionBox);
 public:
     
-    //! Destructor.
+    /// Destructor.
     virtual ~EC_SelectionBox();
 
 public slots:
-    //! Set the selection box dimensions.
-    //! \param view screen coordinates
+    /// Set the selection box dimensions.
+    /// \param view screen coordinates
     void SetBoundingBox(QRect &view);
 
-    //! Show the selection box, clearing.
+    /// Show the selection box, clearing.
     void Show();
-    //! Hide the selection box, clearing.
+    /// Hide the selection box, clearing.
     void Hide();
 
     
 private:
-    //! constructor
-    //! \param module renderer module
+    /// constructor
+    /// \param module renderer module
     EC_SelectionBox(IModule* module);
 
-    //! The object to draw selection box with
+    /// The object to draw selection box with
     Ogre::ManualObject *selectionBox_;
     
-    //! renderer
+    /// renderer
     OgreRenderer::RendererWeakPtr renderer_;
     
 };

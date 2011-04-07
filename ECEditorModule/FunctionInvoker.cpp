@@ -14,7 +14,7 @@
 
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("FunctionInvoker");
+//DEFINE_POCO_LOGGING_FUNCTIONS("FunctionInvoker");
 
 #include "MemoryLeakCheck.h"
 

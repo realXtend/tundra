@@ -70,6 +70,7 @@
 #include "NaaliGraphicsView.h"
 #include "NaaliMainWindow.h"
 #include "DebugAPI.h"
+#include "LoggingFunctions.h"
 
 #include "Entity.h"
 
@@ -219,7 +220,7 @@ namespace PythonScript
         if (cat_iter != evmap.end())
         {
             std::map<event_id_t, std::string> evs = cat_iter->second;
-            for (std::map<event_id_t, std::string>::iterator ev_iter = evs.begin();
+            for(std::map<event_id_t, std::string>::iterator ev_iter = evs.begin();
                 ev_iter != evs.end(); ++ev_iter)
             {
                 /*std::stringstream ss;
@@ -231,7 +232,7 @@ namespace PythonScript
         else
             LogInfo("No registered events in the input category.");
 
-        /*for (EventManager::EventMap::const_iterator iter = evmap[inputeventcategoryid].begin();
+        /*for(EventManager::EventMap::const_iterator iter = evmap[inputeventcategoryid].begin();
             iter != evmap[inputeventcategoryid].end(); ++iter)
         {
             std::stringstream ss;
@@ -422,7 +423,7 @@ namespace PythonScript
                 std::string cxxmsgname = ParseGenericMessageMethod(*msg);
                 StringVector params = ParseGenericMessageParameters(*msg);
 
-                for (uint i = 0; i < params.size(); ++i)
+                for(uint i = 0; i < params.size(); ++i)
                 {
                     std::string cxxs = params[i];
                     PyObject *pys = PyString_FromStringAndSize(cxxs.c_str(), cxxs.size());
@@ -773,7 +774,7 @@ namespace PythonScript
                 {
                     MaterialMap material_map = prim->Materials;
                     MaterialMap::const_iterator i = material_map.begin();
-                    while (i != material_map.end())
+                    while(i != material_map.end())
                     {
                         // Store sumbeshes to list where we want to apply the new widget as texture
                         uint submesh_id = i->first;
@@ -788,7 +789,7 @@ namespace PythonScript
                     TextureMap texture_map = prim->PrimTextures;
                     TextureMap::const_iterator i = texture_map.begin();
 
-                    while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
+                    while(i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
                     {
                         uint submesh_id = i->first;
                         if (i->second == texture_uuid.ToString())
@@ -858,18 +859,18 @@ namespace PythonScript
     }
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace PythonScript;
-
+/*
 POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(PythonScriptModule)
 POCO_END_MANIFEST
-
+*/
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -1108,7 +1109,7 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
             {
                 MaterialMap material_map = prim.Materials;
                 MaterialMap::const_iterator i = material_map.begin();
-                while (i != material_map.end())
+                while(i != material_map.end())
                 {
                     // Store sumbeshes to list where we want to apply the new widget as texture
                     uint submesh_id = i->first;
@@ -1135,7 +1136,7 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
                 TextureMap texture_map = prim.PrimTextures;
                 TextureMap::const_iterator i = texture_map.begin();
 
-                while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
+                while(i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
                 {
                     uint submesh_id = i->first;
                     if (i->second == texture_uuid.ToString())
@@ -1191,7 +1192,7 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     PyObject* py_iter;
     PyObject* item;
     py_iter = PyObject_GetIter(py_submeshes);
-    while (item = PyIter_Next(py_iter))
+    while(item = PyIter_Next(py_iter))
     {
         PyObject* py_int;
         py_int = PyNumber_Int(item);
@@ -1305,7 +1306,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
         {
             MaterialMap material_map = prim.Materials;
             MaterialMap::const_iterator i = material_map.begin();
-            while (i != material_map.end())
+            while(i != material_map.end())
             {
                 // Store sumbeshes to list where we want to apply the new widget as texture
                 uint submesh_id = i->first;
@@ -1317,8 +1318,8 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
         // Iterate custom object texture map
         else if (custom_object_ptr)
         {
-            //! todo: fix this shit, find a smarter way than regenerating the prims multiple times without optimisation
-            //! so that we get the correct submesh indexes from it.
+            /// todo: fix this shit, find a smarter way than regenerating the prims multiple times without optimisation
+            /// so that we get the correct submesh indexes from it.
             Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
             custom_object_ptr->CommitChanges(manual);
 
@@ -1327,12 +1328,12 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
             if (i == texture_map.end())
             {
                 if (prim.getPrimDefaultTextureID() == QString(texture_uuid.ToString().c_str()))
-                    for (uint submesh = 0; submesh < 6; ++submesh)
+                    for(uint submesh = 0; submesh < 6; ++submesh)
                         submeshes_.append(submesh);
             }
             else
             {
-                while (i != texture_map.end())
+                while(i != texture_map.end())
                 {
                     uint submesh_id = i->first;
                     if (i->second.compare(texture_uuid.ToString()) == 0)
@@ -1560,7 +1561,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 //    boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
 //    boost::shared_ptr<QtUI::UICanvas> canvas_;
 //    
-//    if ( qt_module.get() == 0)
+//    if (qt_module.get() == 0)
 //        return NULL;
 //    
 //    QtUI::UICanvas::DisplayMode rMode = (QtUI::UICanvas::DisplayMode) imode;

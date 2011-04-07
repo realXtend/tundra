@@ -15,7 +15,7 @@
 namespace TundraLogic
 {
 
-//! State of component replication for a specific user
+/// State of component replication for a specific user
 struct ComponentSyncState
 {
     uint type_hash_;
@@ -25,14 +25,14 @@ struct ComponentSyncState
     std::set<QString> dirty_dynamic_attributes_;
 };
 
-//! State of entity replication for a specific user
+/// State of entity replication for a specific user
 struct EntitySyncState
 {
-    //! Components that this client is already aware of
+    /// Components that this client is already aware of
     std::vector<ComponentSyncState> components_;
-    //! Created/modified components
+    /// Created/modified components
     std::set<std::pair<uint, QString> > dirty_components_;
-    //! Pending removed components (typenamehash, name)
+    /// Pending removed components (typenamehash, name)
     std::set<std::pair<uint, QString> > removed_components_;
     
     ComponentSyncState* GetOrCreateComponent(uint type_hash, const QString& name)
@@ -51,7 +51,7 @@ struct EntitySyncState
     
     ComponentSyncState* GetComponent(uint type_hash, const QString& name)
     {
-        for (int i = 0; i < (int)components_.size(); ++i)
+        for(int i = 0; i < (int)components_.size(); ++i)
         {
             if ((components_[i].type_hash_ == type_hash) && (components_[i].name_ == name))
                 return &components_[i];
@@ -63,7 +63,7 @@ struct EntitySyncState
     {
         dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
         removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
-        for (int i = 0; i < (int)components_.size(); ++i)
+        for(int i = 0; i < (int)components_.size(); ++i)
         {
             if ((components_[i].type_hash_ == type_hash) && (components_[i].name_ == name))
                 components_.erase(components_.begin() + i);
@@ -122,14 +122,14 @@ struct EntitySyncState
     }
 };
 
-//! State of scene replication for a specific user
+/// State of scene replication for a specific user
 struct SceneSyncState : public ISyncState
 {
-    //! Entities that this client is already aware of
+    /// Entities that this client is already aware of
     std::map<entity_id_t, EntitySyncState> entities_;
-    //! Created/modified entities
+    /// Created/modified entities
     std::set<entity_id_t> dirty_entities_;
-    //! Pending removed entities
+    /// Pending removed entities
     std::set<entity_id_t> removed_entities_;
     
     EntitySyncState* GetOrCreateEntity(entity_id_t id)

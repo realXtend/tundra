@@ -16,12 +16,12 @@
 #include "Platform.h"
 #include "Profiler.h"
 
-/*! \defgroup Foundation_group Foundation Client Interface
+/** \defgroup Foundation_group Foundation Client Interface
     \copydoc Foundation
 */
 
-//! Foundation is the main helper in your quest to create new or improved functionality for the realXtend viewer.
-/*! To use all the services offered by the foundation, simply include "Foundation.h" in your own module.
+/// Foundation is the main helper in your quest to create new or improved functionality for the realXtend viewer.
+/** To use all the services offered by the foundation, simply include "Foundation.h" in your own module.
 
     - ModuleManager is there to help you create new pluggable modules for the
       viewer. It works mostly transparently so when you create a new module you

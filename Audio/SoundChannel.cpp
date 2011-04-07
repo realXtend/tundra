@@ -15,7 +15,7 @@
 #include <alc.h>
 #endif
 
-DEFINE_POCO_LOGGING_FUNCTIONS("SoundChannel")
+//DEFINE_POCO_LOGGING_FUNCTIONS("SoundChannel")
 
 static const float MINIMUM_ROLLOFF = 0.1f;
 static const float DEFAULT_ROLLOFF = 2.0f;
@@ -359,7 +359,7 @@ void SoundChannel::UnqueueBuffers()
     {
         int processed = 0;
         alGetSourcei(handle_, AL_BUFFERS_PROCESSED, &processed);
-        while (processed--)
+        while(processed--)
         {
             ALuint buffer = 0;
             alSourceUnqueueBuffers(handle_, 1, &buffer);
@@ -367,7 +367,7 @@ void SoundChannel::UnqueueBuffers()
             {
                 // See if we find matching buffer from the sounds vector.
                 // If found, erase so that the sound may be freed if not used elsewhere
-                for (uint i = 0; i < playing_sounds_.size(); ++i)
+                for(uint i = 0; i < playing_sounds_.size(); ++i)
                 {
                     if (playing_sounds_[i]->GetHandle() == buffer)
                     {

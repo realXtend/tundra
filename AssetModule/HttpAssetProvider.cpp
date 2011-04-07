@@ -16,7 +16,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("HttpAssetProvider")
+//DEFINE_POCO_LOGGING_FUNCTIONS("HttpAssetProvider")
 
 HttpAssetProvider::HttpAssetProvider(Foundation::Framework *framework_)
 :framework(framework_)
