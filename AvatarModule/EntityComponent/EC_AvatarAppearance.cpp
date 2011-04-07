@@ -49,9 +49,9 @@ void EC_AvatarAppearance::SetMasterModifiers(const MasterModifierVector& modifie
     master_modifiers_ = modifiers;
     
     // Sort the mappings to ascending master position for correct interpolation
-    for (uint i = 0; i < master_modifiers_.size(); ++i)
+    for(uint i = 0; i < master_modifiers_.size(); ++i)
     {
-        for (uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
+        for(uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
         {
             std::sort(master_modifiers_[i].modifiers_[j].mapping_.begin(), master_modifiers_[i].modifiers_[j].mapping_.end());
         }
@@ -85,12 +85,12 @@ void EC_AvatarAppearance::SetMasterModifierValue(const std::string& name, float 
     if (value < 0.0) value = 0.0;
     if (value > 1.0) value = 1.0;
     
-    for (uint i = 0; i < master_modifiers_.size(); ++i)
+    for(uint i = 0; i < master_modifiers_.size(); ++i)
     {
         if (master_modifiers_[i].name_ == name)
         {
             master_modifiers_[i].value_ = value;
-            for (uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
+            for(uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
             {
                 AppearanceModifier* mod = FindModifier(master_modifiers_[i].modifiers_[j].name_, master_modifiers_[i].modifiers_[j].type_);                
                 if (mod)
@@ -117,15 +117,15 @@ void EC_AvatarAppearance::SetModifierValue(const std::string& name, AppearanceMo
 
 void EC_AvatarAppearance::CalculateMasterModifiers()
 {
-    for (uint i = 0; i < morph_modifiers_.size(); ++i)
+    for(uint i = 0; i < morph_modifiers_.size(); ++i)
         morph_modifiers_[i].ResetAccumulation();
 
-    for (uint i = 0; i < bone_modifiers_.size(); ++i)
+    for(uint i = 0; i < bone_modifiers_.size(); ++i)
         bone_modifiers_[i].ResetAccumulation();
 
-    for (uint i = 0; i < master_modifiers_.size(); ++i)
+    for(uint i = 0; i < master_modifiers_.size(); ++i)
     {
-        for (uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
+        for(uint j = 0; j < master_modifiers_[i].modifiers_.size(); ++j)
         {
             AppearanceModifier* mod = FindModifier(master_modifiers_[i].modifiers_[j].name_, master_modifiers_[i].modifiers_[j].type_);
             if (mod)
@@ -140,12 +140,12 @@ void EC_AvatarAppearance::CalculateMasterModifiers()
 
 AppearanceModifier* EC_AvatarAppearance::FindModifier(const std::string& name, AppearanceModifier::ModifierType type)
 {
-    for (uint i = 0; i < morph_modifiers_.size(); ++i)
+    for(uint i = 0; i < morph_modifiers_.size(); ++i)
     {
         if ((morph_modifiers_[i].name_ == name) && (morph_modifiers_[i].type_ == type))
             return &morph_modifiers_[i];
     }
-    for (uint i = 0; i < bone_modifiers_.size(); ++i)
+    for(uint i = 0; i < bone_modifiers_.size(); ++i)
     {
         if ((bone_modifiers_[i].name_ == name) && (bone_modifiers_[i].type_ == type))
             return &bone_modifiers_[i];
@@ -200,7 +200,7 @@ const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& anim
     static AnimationDefinition default_def;
     
     AnimationDefinitionMap::const_iterator def = animations.begin();
-    while (def != animations.end())
+    while(def != animations.end())
     {
         if (def->second.animation_name_ == name)
             return def->second;
@@ -255,7 +255,7 @@ float SlaveModifier::GetMappedValue(float master_value)
     float max_value = 0.0f;
     uint i;
     
-    for (i = 0; i < mapping_.size(); ++i)
+    for(i = 0; i < mapping_.size(); ++i)
     {
         if (mapping_[i].master_ < min_value)
             min_value = mapping_[i].master_;
@@ -270,7 +270,7 @@ float SlaveModifier::GetMappedValue(float master_value)
         master_value = max_value;
         
     // Find beginning pos. of interpolation
-    for (i = mapping_.size()-1; i >= 0; --i)
+    for(i = mapping_.size()-1; i >= 0; --i)
     {
         if (mapping_[i].master_ <= master_value)
             break;

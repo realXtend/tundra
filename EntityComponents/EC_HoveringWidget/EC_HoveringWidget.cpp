@@ -539,7 +539,7 @@ void EC_HoveringWidget::Redraw()
         if (!texPtr2->getBuffer().isNull())
             texPtr2->getBuffer()->blitFromMemory(pixel_box2);
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
         std::cout << "Failed to create textures: " << std::string(e.what()) << std::endl;
         return;

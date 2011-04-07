@@ -63,82 +63,82 @@ class OGRE_MODULE_API EC_OgreCamera : public IComponent
 public:
     virtual ~EC_OgreCamera();
 
-    //! sets placeable component
-    /*! set a null placeable to detach the camera, otherwise will attach
+    /// sets placeable component
+    /** set a null placeable to detach the camera, otherwise will attach
         \param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
 
 public slots:
-    //! automatically find the placeable and set it
+    /// automatically find the placeable and set it
     void AutoSetPlaceable();
     
-    //! sets as active camera in the viewport
+    /// sets as active camera in the viewport
     void SetActive();
     
-    //! sets near clip distance
-    /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+    /// sets near clip distance
+    /** note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
         \param nearclip new near clip distance
      */ 
     void SetNearClip(float nearclip);
     
-    //! sets far clip distance
-    /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+    /// sets far clip distance
+    /** note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
         \param farclip new far clip distance
      */         
     void SetFarClip(float farclip);
     
-    //! sets vertical fov 
-    /*! \param fov new vertical fov in radians 
+    /// sets vertical fov 
+    /** \param fov new vertical fov in radians 
      */
     void SetVerticalFov(float fov);
     
-    //! returns near clip distance
+    /// returns near clip distance
     float GetNearClip() const;
     
-    //! returns far clip distance
+    /// returns far clip distance
     float GetFarClip() const;
     
-    //! returns vertical fov as radians
+    /// returns vertical fov as radians
     float GetVerticalFov() const;
     
-    //! returns whether camera is active in the viewport
+    /// returns whether camera is active in the viewport
     bool IsActive() const;
     
-    //! returns the actual Ogre camera.
-    /*! use with caution. never set the position of the camera directly, use the placeable component for that.
+    /// returns the actual Ogre camera.
+    /** use with caution. never set the position of the camera directly, use the placeable component for that.
      */
     Ogre::Camera* GetCamera() const { return camera_; }
 
 private slots:
-    //! Called when the parent entity has been set.
+    /// Called when the parent entity has been set.
 
     void UpdateSignals();
-    //! Called when component has been removed from the parent entity. Checks if the component removed was the mesh, and autodissociates it.
+    /// Called when component has been removed from the parent entity. Checks if the component removed was the mesh, and autodissociates it.
     void OnComponentRemoved(IComponent* component, AttributeChange::Type change);
 
 private:
-    //! constructor
-    /*! \param module renderer module
+    /// constructor
+    /** \param module renderer module
      */
     explicit EC_OgreCamera(IModule* module);
     
-    //! attaches camera to placeable
+    /// attaches camera to placeable
     void AttachCamera();
     
-    //! detaches camera from placeable
+    /// detaches camera from placeable
     void DetachCamera();
     
-    //! placeable component 
+    /// placeable component 
     ComponentPtr placeable_;
 
-    //! attached to placeable -flag
+    /// attached to placeable -flag
     bool attached_;
     
-    //! renderer ptr
+    /// renderer ptr
     OgreRenderer::RendererWeakPtr renderer_;
     
-    //! Ogre camera
+    /// Ogre camera
     Ogre::Camera* camera_;
 };
 

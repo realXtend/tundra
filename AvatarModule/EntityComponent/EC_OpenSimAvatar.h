@@ -10,8 +10,8 @@
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
 
-//! This component is present on all avatars when connected to an
-//! OpenSim world. 
+/// This component is present on all avatars when connected to an
+/// OpenSim world. 
 class AV_MODULE_API EC_OpenSimAvatar : public IComponent
 {
     Q_OBJECT
@@ -19,8 +19,8 @@ class AV_MODULE_API EC_OpenSimAvatar : public IComponent
     DECLARE_EC(EC_OpenSimAvatar);
    
 public:
-    //! Avatar states
-    //! \todo Do we need combinations of states?
+    /// Avatar states
+    /// \todo Do we need combinations of states?
     enum State
     {
         Stand,
@@ -32,32 +32,32 @@ public:
 
     virtual ~EC_OpenSimAvatar();
 
-    //! set appearance address 
+    /// set appearance address 
     void SetAppearanceAddress(const std::string &address, bool overrideappearance);
     // get appearance address that is used, return override if that is defined, otherwise the default address
     const std::string& GetAppearanceAddress() const;
 
-    //! current control flags for the avatar. If you modify this variable, you are responsible for sending update to server.
+    /// current control flags for the avatar. If you modify this variable, you are responsible for sending update to server.
     uint32_t controlflags;
 
-    //! cached control flags for the avatar, from previous update.
+    /// cached control flags for the avatar, from previous update.
     uint32_t cached_controlflags;
 
-    //! yaw the avatar (-1 for left, 1 for right)
+    /// yaw the avatar (-1 for left, 1 for right)
 	//NOTE: changed experimentally to float to support 'analog' rotating, via e.g. joystick?
 	float yaw;
 
-    //! set state
+    /// set state
     void SetState(State state);
-    //! get state
+    /// get state
     State GetState() const;
 
 private:
-    //! appearance address
+    /// appearance address
     std::string avatar_address_;
-    //! appearance override address
+    /// appearance override address
     std::string avatar_override_address_;
-    //! state
+    /// state
     State state_;
 
     EC_OpenSimAvatar(IModule* module);

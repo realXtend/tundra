@@ -44,94 +44,94 @@ class SyncManager : public QObject
     Q_OBJECT
     
 public:
-    //! Constructor
+    /// Constructor
     SyncManager(TundraLogicModule* owner, Foundation::Framework* fw);
     
-    //! Destructor
+    /// Destructor
     ~SyncManager();
     
-    //! Register to entity/component change signals from a specific scene and start syncing them
+    /// Register to entity/component change signals from a specific scene and start syncing them
     void RegisterToScene(Scene::ScenePtr scene);
     
-    //! Accumulate time & send pending sync messages if enough time passed from last update
+    /// Accumulate time & send pending sync messages if enough time passed from last update
     void Update(f64 frametime);
     
-    //! Create new replication state for user and dirty it (server operation only)
+    /// Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(UserConnection* user);
     
-    //! Handle Kristalli event
+    /// Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
     
 public slots:
-    //! Set update period (seconds)
+    /// Set update period (seconds)
     void SetUpdatePeriod(float period);
     
-    //! Get update period
+    /// Get update period
     float GetUpdatePeriod() { return update_period_; }
     
 private slots:
-    //! Trigger EC sync because of component attributes changing
+    /// Trigger EC sync because of component attributes changing
     void OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change);
     
-    //! Trigger EC sync because of component added to entity
+    /// Trigger EC sync because of component added to entity
     void OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
     
-    //! Trigger EC sync because of component removed from entity
+    /// Trigger EC sync because of component removed from entity
     void OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
     
-    //! Trigger sync of entity creation
+    /// Trigger sync of entity creation
     void OnEntityCreated(Scene::Entity* entity, AttributeChange::Type change);
     
-    //! Trigger sync of entity removal
+    /// Trigger sync of entity removal
     void OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
 
-    //! Trigger sync of entity action.
+    /// Trigger sync of entity action.
     void OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
 
-    //! Trigger sync of entity action to specific user
+    /// Trigger sync of entity action to specific user
     void OnUserActionTriggered(UserConnection* user, Scene::Entity *entity, const QString &action, const QStringList &params);
 
 private:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
-    //! Handle create entity message
+    /// Handle create entity message
     void HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg);
     
-    //! Handle remove entity message
+    /// Handle remove entity message
     void HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg);
     
-    //! Handle create components message
+    /// Handle create components message
     void HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg);
     
-    //! Handle update components message
+    /// Handle update components message
     void HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg);
     
-    //! Handle remove components message
+    /// Handle remove components message
     void HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg);
     
-    //! Handle entityID collision message
+    /// Handle entityID collision message
     void HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg);
 
-    //! Handle entity action message.
+    /// Handle entity action message.
     void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
 
-    //! Process one sync state for changes in the scene
-    /*! \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management
+    /// Process one sync state for changes in the scene
+    /** \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management
         \param destination MessageConnection where to send the messages
         \param state Syncstate to process
      */
     void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state);
     
-    //! Validate the scene manipulation action. If returns false, it is ignored
-    /*! \param source Where the action came from
+    /// Validate the scene manipulation action. If returns false, it is ignored
+    /** \param source Where the action came from
         \param messageID Network message id
         \param entityID What entity it affects
      */
     bool ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID);
     
-    //! Send serializable components of an entity to a connection, using either a CreateEntity or UpdateComponents packet
-    /*! \param connections MessageConnection(s) to use
+    /// Send serializable components of an entity to a connection, using either a CreateEntity or UpdateComponents packet
+    /** \param connections MessageConnection(s) to use
         \param entity Entity
         \param createEntity Whether to use a CreateEntity packet. If false, use a UpdateComponents packet instead
         \param allComponents Whether to send all components, or only those that are dirty
@@ -139,8 +139,8 @@ private:
      */
     void SerializeAndSendComponents(const std::vector<kNet::MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity = false, bool allComponents = false);
     
-    //! Get a syncstate that matches the messageconnection, for reflecting arrived changes back
-    /*! For client, this will always be server_syncstate_.
+    /// Get a syncstate that matches the messageconnection, for reflecting arrived changes back
+    /** For client, this will always be server_syncstate_.
      */
     SceneSyncState* GetSceneSyncState(kNet::MessageConnection* connection);
 
@@ -150,21 +150,21 @@ private:
     }
 
     
-    //! Owning module
+    /// Owning module
     TundraLogicModule* owner_;
     
-    //! Framework pointer
+    /// Framework pointer
     Foundation::Framework* framework_;
     
-    //! Scene pointer
+    /// Scene pointer
     Scene::SceneWeakPtr scene_;
     
-    //! Time period for update, default 1/30th of a second
+    /// Time period for update, default 1/30th of a second
     float update_period_;
-    //! Time accumulator for update
+    /// Time accumulator for update
     float update_acc_;
     
-    //! Server sync state (client operation only)
+    /// Server sync state (client operation only)
     SceneSyncState server_syncstate_;
 };
 

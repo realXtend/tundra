@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
  
-DEFINE_POCO_LOGGING_FUNCTIONS("WavLoader")
+//DEFINE_POCO_LOGGING_FUNCTIONS("WavLoader")
 
 using namespace std;
 
@@ -133,7 +133,7 @@ bool LoadWavFromFileInMemory(const u8 *fileData, size_t numBytes, std::vector<u8
                             
     // Search for the data chunk
     unsigned int data_length = 0;
-    for (;;)
+    for(;;)
     {
         if (index >= numBytes)
         {

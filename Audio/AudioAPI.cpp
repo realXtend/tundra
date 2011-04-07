@@ -19,7 +19,7 @@
 #include <alc.h>
 #endif
 
-DEFINE_POCO_LOGGING_FUNCTIONS("Audio")
+//DEFINE_POCO_LOGGING_FUNCTIONS("Audio")
 
 //#include <boost/thread/mutex.hpp>
 
@@ -133,7 +133,7 @@ QStringList AudioAPI::GetPlaybackDevices()
     const char *deviceNames = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
     if (deviceNames)
     {
-        while (*deviceNames)
+        while(*deviceNames)
         {
             names.push_back(QString(deviceNames));
             deviceNames += strlen(deviceNames) + 1;
@@ -185,7 +185,7 @@ std::vector<SoundChannelPtr> AudioAPI::GetActiveSounds() const
     std::vector<SoundChannelPtr> ret;
     
     SoundChannelMap::const_iterator i = impl->channels.begin();
-    while (i != impl->channels.end())
+    while(i != impl->channels.end())
     {
         if (i->second->GetState() != SoundChannel::Stopped)
             ret.push_back(i->second);
@@ -213,7 +213,7 @@ void AudioAPI::Update(f64 frametime)
     
     // Update channel attenuations, check which have stopped
     SoundChannelMap::iterator i = impl->channels.begin();
-    while (i != impl->channels.end())
+    while(i != impl->channels.end())
     {
         i->second->Update(impl->listenerPosition);
         if (i->second->GetState() == SoundChannel::Stopped)
@@ -224,7 +224,7 @@ void AudioAPI::Update(f64 frametime)
     }
     
     // Remove stopped channels
-    for (uint j = 0; j < channelsToDelete.size(); ++j)
+    for(uint j = 0; j < channelsToDelete.size(); ++j)
         impl->channels.erase(channelsToDelete[j]);   
     
  //   mutex.unlock();
@@ -376,7 +376,7 @@ float AudioAPI::GetSoundMasterGain(SoundChannel::SoundType type)
 void AudioAPI::ApplyMasterGain()
 {
     SoundChannelMap::iterator i = impl->channels.begin();
-    while (i != impl->channels.end())
+    while(i != impl->channels.end())
     {
         i->second->SetMasterGain(impl->masterGain * impl->soundMasterGain[i->second->GetSoundType()]);
         ++i;
@@ -390,7 +390,7 @@ QStringList AudioAPI::GetRecordingDevices()
     const char *capture_device_names = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
     if (capture_device_names)
     {
-        while (*capture_device_names)
+        while(*capture_device_names)
         {
             names.push_back(QString(capture_device_names));
             capture_device_names += strlen(capture_device_names) + 1;

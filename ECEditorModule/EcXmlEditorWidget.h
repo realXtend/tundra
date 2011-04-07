@@ -15,8 +15,8 @@
 
 class QTextEdit;
 
-//! Entity-component XML editor widget used for editing EC attributes in XML format.
-//! \ingroup ECEditorModuleClient.
+/// Entity-component XML editor widget used for editing EC attributes in XML format.
+/// \ingroup ECEditorModuleClient.
 class EcXmlEditorWidget : public QWidget
 {
     Q_OBJECT

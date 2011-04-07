@@ -49,15 +49,15 @@ namespace Avatar
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-        MODULE_LOGGING_FUNCTIONS
+        //MODULE_LOGGING_FUNCTIONS
     
     private slots:
 #ifdef ENABLE_TAIGA_SUPPORT
-        //! Populate service_category_identifiers_
+        /// Populate service_category_identifiers_
         void SubscribeToEventCategories();
 #endif
 
-        //! Handle our key context input
+        /// Handle our key context input
         void KeyPressed(KeyEvent *key);
         void KeyReleased(KeyEvent *key);
 
@@ -78,13 +78,13 @@ namespace Avatar
 #endif
     private:
 #ifdef ENABLE_TAIGA_SUPPORT
-        //! Current query categories
+        /// Current query categories
         QStringList event_query_categories_;
 
-        //! Current subscribed category events
+        /// Current subscribed category events
         QMap<QString, event_category_id_t> service_category_identifiers_;
 #endif
-        //! AvatarModules input context
+        /// AvatarModules input context
         InputContextPtr avatar_context_;
 
         AvatarHandlerPtr avatar_handler_;

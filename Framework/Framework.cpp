@@ -33,14 +33,14 @@
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
-
+/*
 #include <Poco/Logger.h>
 #include <Poco/LoggingFactory.h>
 #include <Poco/FormattingChannel.h>
 #include <Poco/SplitterChannel.h>
 #include <Poco/Path.h>
 #include <Poco/UnicodeConverter.h>
-
+*/
 #include <QApplication>
 #include <QGraphicsView>
 #include <QIcon>
@@ -68,8 +68,8 @@ namespace Foundation
         argv_(argv),
         initialized_(false),
         headless_(false),
-        log_formatter_(0),
-        splitterchannel(0),
+//        log_formatter_(0),
+//        splitterchannel(0),
         naaliApplication(0),
         frame(new FrameAPI(this)),
         console(new ConsoleAPI(this)),
@@ -175,7 +175,7 @@ namespace Foundation
             RegisterDynamicObject("debug", debug);
             RegisterDynamicObject("application", naaliApplication);
 
-            /*! \todo JS now registers 'scene' manually to the default scene. Add this maybe later
+            /** \todo JS now registers 'scene' manually to the default scene. Add this maybe later
                 or register additiona 'sceneapi' */
             //RegisterDynamicObject("sceneapi", scene);
         }
@@ -191,16 +191,16 @@ namespace Foundation
         config_manager_.reset();
         platform_.reset();
         application_.reset();
-
+/*
         Poco::Logger::shutdown();
 
-        for (size_t i=0 ; i<log_channels_.size() ; ++i)
+        for(size_t i=0 ; i<log_channels_.size() ; ++i)
             log_channels_[i]->release();
 
         log_channels_.clear();
         if (log_formatter_)
             log_formatter_->release();
-
+*/
         delete frame;
         delete console;
         delete input;
@@ -216,6 +216,7 @@ namespace Foundation
 
     void Framework::CreateLoggingSystem()
     {
+        /*
         PROFILE(FW_CreateLoggingSystem);
         Poco::LoggingFactory *loggingfactory = new Poco::LoggingFactory();
 
@@ -254,20 +255,20 @@ namespace Foundation
             Poco::Logger::create("",formatchannel,loggingLevel);
             Poco::Logger::create("Foundation",Poco::Logger::root().getChannel(), loggingLevel);
         }
-        catch (Poco::ExistsException &/*e*/)
+        catch(Poco::ExistsException &)
         {
             assert (false && "Somewhere, a message is pushed to log before the logger is initialized.");
         }
 
         try
         {
-            RootLogInfo("Log file opened on " + GetLocalDateTimeString());
+            LogInfo("Log file opened on " + GetLocalDateTimeString());
         }
-        catch(Poco::OpenFileException &/*e*/)
+        catch(Poco::OpenFileException &)
         {
             // Do not create the log file.
             splitterchannel->removeChannel(filechannel);
-            RootLogInfo("Poco::OpenFileException. Log file not created.");
+            LogInfo("Poco::OpenFileException. Log file not created.");
         }
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
@@ -281,18 +282,19 @@ namespace Foundation
         log_channels_.push_back(formatchannel);
 
         SAFE_DELETE(loggingfactory);
+        */
     }
 
     void Framework::AddLogChannel(Poco::Channel *channel)
     {
-        assert (channel);
-        splitterchannel->addChannel(channel);
+//        assert (channel);
+ //       splitterchannel->addChannel(channel);
     }
 
     void Framework::RemoveLogChannel(Poco::Channel *channel)
     {
-        assert (channel);
-        splitterchannel->removeChannel(channel);
+ //       assert (channel);
+ //       splitterchannel->removeChannel(channel);
     }
 
     void Framework::ParseProgramOptions()
@@ -321,9 +323,9 @@ namespace Foundation
         {
             po::store(po::command_line_parser(argc_, argv_).options(commandLineDescriptions).allow_unregistered().run(), commandLineVariables);
         }
-        catch (std::exception &e)
+        catch(std::exception &e)
         {
-            RootLogWarning(e.what());
+            LogWarning(e.what());
         }
         po::notify(commandLineVariables);
     }
@@ -462,12 +464,12 @@ namespace Foundation
     {
         {
             PROFILE(FW_LoadModules);
-            RootLogDebug("\n\nLOADING MODULES\n================================================================\n");
+            LogDebug("\n\nLOADING MODULES\n================================================================\n");
             module_manager_->LoadAvailableModules();
         }
         {
             PROFILE(FW_InitializeModules);
-            RootLogDebug("\n\nINITIALIZING MODULES\n================================================================\n");
+            LogDebug("\n\nINITIALIZING MODULES\n================================================================\n");
             module_manager_->InitializeModules();
         }
     }
@@ -604,7 +606,7 @@ namespace Foundation
     */
 
                 std::string timings;
-                for (int i = 0; i < level; ++i)
+                for(int i = 0; i < level; ++i)
                     timings.append("&nbsp;");
                 timings += str;
 

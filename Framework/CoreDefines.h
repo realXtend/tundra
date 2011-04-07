@@ -22,7 +22,7 @@ inline Dst checked_static_cast(Src src)
     return static_cast<Dst>(src);
 }
 
-//! use to suppress warning C4101 (unreferenced local variable)
+/// use to suppress warning C4101 (unreferenced local variable)
 #define UNREFERENCED_PARAM(P) (P)
 
 /// Use for QObjects

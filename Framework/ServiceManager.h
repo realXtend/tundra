@@ -10,22 +10,22 @@
 #include <map>
 #include <boost/weak_ptr.hpp>
 
-//! Provides access to services provided by modules.
-/*! See \ref ModuleServices "Module services" -page for details.
+/// Provides access to services provided by modules.
+/** See \ref ModuleServices "Module services" -page for details.
 
    \ingroup Foundation_group
 */
 class ServiceManager
 {
 public:
-    //! Default constuctor.
+    /// Default constuctor.
     ServiceManager() {}
 
-    //! Destructor.
+    /// Destructor.
     ~ServiceManager() {}
 
-    //! register specified service
-    /*!
+    /// register specified service
+    /**
         \note if service of type type is already registered, results are undefined.
 
         \param type type of the service
@@ -33,10 +33,10 @@ public:
     */
     void RegisterService(service_type_t type, const ServiceWeakPtr &service);
 
-    //! Unregister the specified service. The service should be registered before unregistering.
+    /// Unregister the specified service. The service should be registered before unregistering.
     void UnregisterService(const ServiceWeakPtr &service);
 
-    //! Returns un-casted service from service type
+    /// Returns un-casted service from service type
     ServiceWeakPtr GetService(service_type_t type);
 
     /** Returns service by class T.
@@ -56,8 +56,8 @@ public:
         return boost::weak_ptr<T>();
     }
 
-    //! Returns service from service type.
-    /*! Returns empty weak pointer if the service is not registered
+    /// Returns service from service type.
+    /** Returns empty weak pointer if the service is not registered
 
         \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
         \param type type of the service to return
@@ -71,7 +71,7 @@ public:
         {
             //std::string what("Service type ");
             //what += boost::lexical_cast<std::string>(type) + " not registered!";
-            //Foundation::RootLogDebug(what);
+            //Foundation::LogDebug(what);
 
             return boost::weak_ptr<T>();
         }
@@ -79,8 +79,8 @@ public:
         return boost::dynamic_pointer_cast<T>(it->second.lock());
     }
 
-    //! Returns service from service type.
-    /*! 
+    /// Returns service from service type.
+    /** 
         \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
         \param type type of the service to return
         \return the service, or empty weak pointer if the template parameters doesn't match the service or if the service was not registered
@@ -93,7 +93,7 @@ public:
         {
             //std::string what("Service type " + 
             //    boost::lexical_cast<std::string>(type) + " not registered!");
-            //Foundation::RootLogDebug(what);
+            //Foundation::LogDebug(what);
 
             return boost::weak_ptr<T>();
         }
@@ -117,17 +117,17 @@ public:
         return boost::weak_ptr<T>();
     }
 
-    //! Returns true if service type is already registered, false otherwise
+    /// Returns true if service type is already registered, false otherwise
     bool IsRegistered(service_type_t type) const { return (services_.find(type) != services_.end()); }
 
 private:
     typedef std::map<service_type_t, ServiceWeakPtr> ServicesMap;
     typedef std::map<service_type_t, int> ServicesUsageMap;
 
-    //! Contains all registered services
+    /// Contains all registered services
     ServicesMap services_;
 
-    //! Number of shared ptr uses when registering a service, for debug purposes only!
+    /// Number of shared ptr uses when registering a service, for debug purposes only!
     ServicesUsageMap services_usage_;
 };
 

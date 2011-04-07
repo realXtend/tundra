@@ -13,33 +13,33 @@
 
 namespace Communications
 {
-    //! Naali Communications Framework 
-    //! ==============================
-    //!
-    //! - Communications module implements CommunicationsService interface.
-    //! - Modules can implement and registe their communication providers to CommunicationsService
-    //! - Modules can request communications features from CommunicationsService
-    //!
-    //! Communication types
-    //! - Private chat ..... Text message based communication between 2..N people
-    //! - Public chat ...... Text message based communication on public channel
-    //! - Voice call ....... Voice call between 2..N people
-    //! - Video call ....... Video and audio call between 2..N people
-    //! - In-world voice ... Spatial Voice communication in virtual reality 
-    //! - In-world chat .... Spatial text message based communication
-    //!  
-    //! IM Services
-    //! Connections to IM services can be opened and closed with credentials. Open connections
-    //! can offer contact list with presence support. User can open only one connection per
-    //! IM type such as irc and jabber.
-    //! 
-    //! - Contact list ..... List of contacts from certain IM service. 
-    //!                      Support presence features (contact presences and self presence)
-    //! - Contact .......... IM contact
-    //! - Credendials ...... Used for login to IM services
-    //!
-    //!
-    //!
+    /// Naali Communications Framework 
+    /// ==============================
+    ///
+    /// - Communications module implements CommunicationsService interface.
+    /// - Modules can implement and registe their communication providers to CommunicationsService
+    /// - Modules can request communications features from CommunicationsService
+    ///
+    /// Communication types
+    /// - Private chat ..... Text message based communication between 2..N people
+    /// - Public chat ...... Text message based communication on public channel
+    /// - Voice call ....... Voice call between 2..N people
+    /// - Video call ....... Video and audio call between 2..N people
+    /// - In-world voice ... Spatial Voice communication in virtual reality 
+    /// - In-world chat .... Spatial text message based communication
+    ///  
+    /// IM Services
+    /// Connections to IM services can be opened and closed with credentials. Open connections
+    /// can offer contact list with presence support. User can open only one connection per
+    /// IM type such as irc and jabber.
+    /// 
+    /// - Contact list ..... List of contacts from certain IM service. 
+    ///                      Support presence features (contact presences and self presence)
+    /// - Contact .......... IM contact
+    /// - Credendials ...... Used for login to IM services
+    ///
+    ///
+    ///
 
     class TextMessageInterface;
     // namespace: IM
@@ -54,7 +54,7 @@ namespace Communications
     // namespace: InWorldChat
 //    class InWorldTextChat;              //                     opensim
 
-    //!
+    ///
     class TextMessageInterface
     {
     public:
@@ -109,8 +109,8 @@ namespace Communications
     //        void FriendRequest(FriendRequestInterface& request);
     //    };
 
-        //! (TEST IDEA...)
-        //! 'Connection'
+        /// (TEST IDEA...)
+        /// 'Connection'
         //class ServiceInterface : public QObject
         //{
         //    Q_OBJECT
@@ -125,19 +125,19 @@ namespace Communications
 
     } // IM
 
-    //! In-world chat in virtual reality systems
-    //!
-    //! There can be up to one in-world chat session intance per virtual world session.
-    //! This chat session can be obtained by calling InWorldChatSession method from 
-    //! CommunicationsService interface.
-    //!
-    //! \todo Define way to inform about session becames inavailable
-    //!
+    /// In-world chat in virtual reality systems
+    ///
+    /// There can be up to one in-world chat session intance per virtual world session.
+    /// This chat session can be obtained by calling InWorldChatSession method from 
+    /// CommunicationsService interface.
+    ///
+    /// \todo Define way to inform about session becames inavailable
+    ///
     namespace InWorldChat
     {
-        //! Participant of in-world chat session. Participant list must be request from
-        //! session object 
-        //!
+        /// Participant of in-world chat session. Participant list must be request from
+        /// session object 
+        ///
         class ParticipantInterface
         {
         public:
@@ -223,12 +223,12 @@ namespace Communications
             virtual double VoiceActivity() const = 0;
 //            virtual bool IsLeft() const = 0;
 
-            //! \return true if participant has left 
+            /// \return true if participant has left 
 //            virtual bool IsLeft() const = 0; // \todo better name for method
         signals:
             void StartSpeaking(); 
             void StopSpeaking();
-            void Left(); //! @todo remove
+            void Left(); /// @todo remove
             void StateChanged();
             void VoiceActivityChanged();
 //            void PositionUpdated();
@@ -236,10 +236,10 @@ namespace Communications
         typedef QList<ParticipantInterface*> ParticipantList;
 //        typedef shared_ptr<ParticipantInterface> ParticipantPtr;
 
-        //! In-world voice session for virtual reality environments
-        //!
-        //! \todo Design channel system ???
-        //!       - List channels (names, positional audio, listen/speak)
+        /// In-world voice session for virtual reality environments
+        ///
+        /// \todo Design channel system ???
+        ///       - List channels (names, positional audio, listen/speak)
         class SessionInterface : public QObject
         {
             Q_OBJECT
@@ -271,7 +271,7 @@ namespace Communications
 
             //virtual void SetSelfPosition(const vector3df& pos) = 0;
 
-            //! \todo: Give weak_ptr instead
+            /// \todo: Give weak_ptr instead
             virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const = 0;
             virtual QStringList GetParticipantsNames() const = 0;
             virtual void MuteParticipantByName(QString, bool) const = 0;
@@ -290,8 +290,8 @@ namespace Communications
 //            void ReceivedVoiceActivity(double volume);
         };
 
-        //! Provider in-world voice sessions
-        //!
+        /// Provider in-world voice sessions
+        ///
         class ProviderInterface : public QObject
         {
             Q_OBJECT
@@ -306,14 +306,14 @@ namespace Communications
 
     } // InWorldVoice
 
-    //! Provides all communication methods to rest of the viewer. 
-    //!
-    //! Communication feature implementations must register/unregister the functionality they provide.
-    //! 
-    //! Consumers should connect to *Available signals and then request services when they came available.
-    //! The services are considired to be available until viewer shutdown. (???)
-    //!
-    //! \todo Define how to signal about service becomes unavailable.
+    /// Provides all communication methods to rest of the viewer. 
+    ///
+    /// Communication feature implementations must register/unregister the functionality they provide.
+    /// 
+    /// Consumers should connect to *Available signals and then request services when they came available.
+    /// The services are considired to be available until viewer shutdown. (???)
+    ///
+    /// \todo Define how to signal about service becomes unavailable.
     class ServiceInterface : public QObject, public IService 
     {
         Q_OBJECT
@@ -324,14 +324,14 @@ namespace Communications
     public slots:
 //        static ServiceInterface* Instance();
 
-        ///! \todo use WeakPtr instead ?
+        //// \todo use WeakPtr instead ?
         virtual InWorldVoice::SessionInterface* InWorldVoiceSession() const = 0;
 
-        ///! \todo use WeakPtr instead ?
+        //// \todo use WeakPtr instead ?
         virtual InWorldChat::SessionInterface* InWorldChatSession() const = 0;
 //        virtual IM::ContactList* ContactList(QString type) const = 0;
 
-        //! Registrationd methods for communication providers
+        /// Registrationd methods for communication providers
         virtual void Register(InWorldVoice::ProviderInterface& provider) = 0;
         //virtual void Unregister(InWorldVoice::ProviderInterface& provider) = 0;
         virtual void Register(InWorldChat::ProviderInterface& provider) = 0;

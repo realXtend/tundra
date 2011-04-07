@@ -11,7 +11,7 @@
 
 using namespace OgreRenderer;
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Selected")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Selected")
 
 #include "MemoryLeakCheck.h"
 

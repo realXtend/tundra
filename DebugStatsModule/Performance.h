@@ -164,7 +164,7 @@ public:
         if ((pdhStatus=PdhMakeCounterPath(&pdhCpe,szAvailBytes,&dwBufferSize, 0)) == ERROR_SUCCESS) 
         {
             pdhStatus = PdhAddCounter (h,szAvailBytes, 0, pCounterHandle);
-            if ( pdhStatus != ERROR_SUCCESS )
+            if (pdhStatus != ERROR_SUCCESS )
                 std::cout<<" DebugStats::Perfomance.h : Error counter were not added"<<std::endl;
         }
 #endif

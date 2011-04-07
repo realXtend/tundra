@@ -16,7 +16,7 @@
 #include "CoreTypes.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
+//DEFINE_POCO_LOGGING_FUNCTIONS("ECBrowser")
 #include <QtBrowserItem>
 #include <QLayout>
 #include <QShortcut>
@@ -131,7 +131,7 @@ QObjectList ECBrowser::GetSelectedComponents() const
         if (iter != itemToComponentGroups_.end())
         {
             QObjectList components;
-            for (uint i = 0; i < (*iter)->components_.size(); ++i)
+            for(uint i = 0; i < (*iter)->components_.size(); ++i)
             {
                 IComponent *comp = (*iter)->components_[i].lock().get();
                 if (comp)
@@ -362,9 +362,9 @@ bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *
 
 void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
 {
-    //! @todo Click position should be converted to treeWidget's space, so that editor will select the right
-    //! QTreeWidget item, when user right clicks on the browser. right now position is bit off and wrong item 
-    //! may get selected.
+    /// @todo Click position should be converted to treeWidget's space, so that editor will select the right
+    /// QTreeWidget item, when user right clicks on the browser. right now position is bit off and wrong item 
+    /// may get selected.
     if(!treeWidget_)
         return;
 
@@ -578,7 +578,7 @@ void ECBrowser::PasteComponent()
     if (temp_doc.setContent(clipboard->text()))
     {
         // Only single component can be pasted.
-        //! @todo add suport to multi component copy/paste feature.
+        /// @todo add suport to multi component copy/paste feature.
         QDomElement comp_elem = temp_doc.firstChildElement("component");
         if (comp_elem.isNull())
             return;
@@ -671,7 +671,7 @@ void ECBrowser::CreateAttribute()
     if (!(*iter)->IsDynamic())
         return;
 
-    //! @todo Should this dialog be converted to modless?
+    /// @todo Should this dialog be converted to modless?
     bool ok = false;
     QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"),
         framework_->GetComponentManager()->GetAttributeTypes(), 0, false, &ok);

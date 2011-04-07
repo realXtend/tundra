@@ -48,13 +48,13 @@ namespace
         {
             std::stringstream ss;
             ss << "Ogre Texture " << texName << " not found!";
-            Environment::EnvironmentModule::LogWarning(ss.str());
+            LogWarning(ss.str());
             return;
         }
 
         std::stringstream ss;
         ss << "Texture " << texName << " - " << tex->getWidth() << " x " << tex->getHeight() << ", mips: " << tex->getNumMipmaps();
-        Environment::EnvironmentModule::LogDebug(ss.str());
+        LogDebug(ss.str());
     }
 
     //const char terrainMaterialName[] = "TerrainMaterial";
@@ -93,7 +93,7 @@ namespace Environment
             emit TerrainTextureChanged();
         }
         else
-            EnvironmentModule::LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
+            LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
     }
 */
 #ifdef ENABLE_TAIGA_SUPPORT
@@ -262,7 +262,7 @@ namespace Environment
             {
                 Ogre::MeshManager::getSingleton().remove(patch.meshGeometryName);
             }
-            catch (...) {}
+            catch(...) {}
         }
 
         patch.meshGeometryName = renderer->GetUniqueObjectName();
@@ -276,7 +276,7 @@ namespace Environment
         ogre_entity->setUserAny(Ogre::Any(&entity));
         ogre_entity->setCastShadows(false);
         // Set UserAny also on subentities
-        for (uint i = 0; i < ogre_entity->getNumSubEntities(); ++i)
+        for(uint i = 0; i < ogre_entity->getNumSubEntities(); ++i)
             ogre_entity->getSubEntity(i)->setUserAny(ogre_entity->getUserAny());
 
         // Explicitly destroy all attached MovableObjects previously bound to this terrain node.
@@ -319,7 +319,7 @@ namespace Environment
     {
         if (patch.heightData.size() < patchSize * patchSize)
         {
-            EnvironmentModule::LogWarning("Not enough height map data to fill patch points!");
+            LogWarning("Not enough height map data to fill patch points!");
             return;
         }
 
@@ -439,7 +439,7 @@ namespace Environment
                 EC_Terrain *terrainComponent = GetTerrainComponent();
                 if (!terrainComponent)
                 {
-                    EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
+                    LogWarning("EC_Terrain entity component is missing.");
                     return;
                 }
                 switch(i)
@@ -471,7 +471,7 @@ namespace Environment
         EC_Terrain *terrainComponent = GetTerrainComponent();
         if (!terrainComponent)
         {
-            EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
+            LogWarning("EC_Terrain entity component is missing.");
             return;
         }
 
@@ -493,7 +493,7 @@ namespace Environment
         EC_Terrain *terrainComponent = GetTerrainComponent();
         if (!terrainComponent)
         {
-            EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
+            LogWarning("EC_Terrain entity component is missing.");
             return false;
         }
 
@@ -533,16 +533,16 @@ namespace Environment
         }
         case TPLayerWater:
             ///\todo Enable Unhandled LayerData prints when we have network logging channel
-            //EnvironmentModule::LogDebug("Unhandled LayerData: Water");
+            //LogDebug("Unhandled LayerData: Water");
             break;
         case TPLayerWind:
-            //EnvironmentModule::LogDebug("Unhandled LayerData: Wind");
+            //LogDebug("Unhandled LayerData: Wind");
             break;
         case TPLayerCloud:
-            //EnvironmentModule::LogDebug("Unhandled LayerData: Cloud");
+            //LogDebug("Unhandled LayerData: Cloud");
             break;
         default:
-            EnvironmentModule::LogDebug("Uknown LayerData: " + ToString(header.layerType));
+            LogDebug("Uknown LayerData: " + ToString(header.layerType));
             break;
         }
         return false;
@@ -573,7 +573,7 @@ namespace Environment
         Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
         if(!terrainMaterial.get())
         {
-            EnvironmentModule::LogWarning("Cannot find " + std::string(terrainMaterialName) + "material.");
+            LogWarning("Cannot find " + std::string(terrainMaterialName) + "material.");
             return;
         }
         Ogre::Material::TechniqueIterator iter = terrainMaterial->getTechniqueIterator();

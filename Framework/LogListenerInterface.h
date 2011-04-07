@@ -5,18 +5,18 @@
 
 namespace Foundation
 {    
-    //! abstract interface for log listener
+    /// abstract interface for log listener
     class LogListenerInterface
     {
     public:
-        //! default constructor
+        /// default constructor
         LogListenerInterface() {}
 
-        //! destructor
+        /// destructor
         virtual ~LogListenerInterface() {}
 
-        //! A very generic log message passing, only the message itself.
-        //! Does not handle log levels or anything extra.
+        /// A very generic log message passing, only the message itself.
+        /// Does not handle log levels or anything extra.
         virtual void LogMessage(const std::string &message) = 0;
     };
 

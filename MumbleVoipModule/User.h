@@ -25,72 +25,72 @@ namespace MumbleLib
 {
     class Channel;
 
-    //! Wrapper over libmumbleclient library's User class
-    //! Present mumble client intance on MurMur server
+    /// Wrapper over libmumbleclient library's User class
+    /// Present mumble client intance on MurMur server
     class User : public QObject, public QMutex
     {
         Q_OBJECT
     public:
-        //! Default constructor
-        //! @param user
-        //! @param channel The channel where the user are located
+        /// Default constructor
+        /// @param user
+        /// @param channel The channel where the user are located
         User(const MumbleClient::User& user, Channel* channel);
 
-        //! Destructor
+        /// Destructor
         virtual ~User();
 
-        //! @return name of the user
+        /// @return name of the user
         virtual QString Name() const;
 
-        //!@return textual comment about user
+        ///@return textual comment about user
         virtual QString Comment() const;
 
-        //! @return session id of the user
+        /// @return session id of the user
         virtual int Session() const;
 
-        //! @return Mumble specific id of the user
+        /// @return Mumble specific id of the user
         virtual int Id() const;
 
-        //! @return channel of where user is
+        /// @return channel of where user is
         virtual Channel* GetChannel() const;
 
-        //! @return true is user is speaking
+        /// @return true is user is speaking
         virtual bool IsSpeaking() const;
 
-        //! @return true if the position of the user is known return false if not
+        /// @return true if the position of the user is known return false if not
         virtual bool PositionKnown() const {return position_known_;}
 
-        //! @return position od the user
+        /// @return position od the user
         virtual Vector3df Position() const;
 
-        //! @return length of playback buffer is ms for this user 
+        /// @return length of playback buffer is ms for this user 
         virtual int PlaybackBufferLengthMs() const ;
 
-        //! @return oldest audio frame available for playback 
-        //! @note caller must delete audio frame object after usage
+        /// @return oldest audio frame available for playback 
+        /// @note caller must delete audio frame object after usage
         virtual MumbleVoip::PCMAudioFrame* GetAudioFrame();
 
-        //! Set user status to be left
+        /// Set user status to be left
         virtual void SetLeft() { left_ = true; emit Left(); }
 
-        //! @return true if the user has left the channel
+        /// @return true if the user has left the channel
         virtual bool IsLeft() const { return left_; }
 
         virtual double VoicePacketDropRatio() const;
 
-        //! @return actual channel id of this user. This can be different than channel id
-        //!         of channel object returned by Channel() method call.
+        /// @return actual channel id of this user. This can be different than channel id
+        ///         of channel object returned by Channel() method call.
         virtual int CurrentChannelID() const; 
 
     public slots:
-        //! Put audio frame to end of playback buffer 
-        //! If playback buffer is full it is cleared first.
-        //! @param farme Audio data frame received from network and ment to be for playback locally
+        /// Put audio frame to end of playback buffer 
+        /// If playback buffer is full it is cleared first.
+        /// @param farme Audio data frame received from network and ment to be for playback locally
         void AddToPlaybackBuffer(MumbleVoip::PCMAudioFrame* frame);
 
-        //! Updatedes user last known position
-        //! Also set position_known_ flag up
-        //! @param pos the curren position of this user
+        /// Updatedes user last known position
+        /// Also set position_known_ flag up
+        /// @param pos the curren position of this user
         void UpdatePosition(Vector3df pos);
 
         void CheckSpeakingState();
@@ -116,7 +116,7 @@ namespace MumbleLib
         QTime last_audio_frame_time_;
         int playback_buffer_max_length_ms;
     signals:
-        //! Emited when user has left from server
+        /// Emited when user has left from server
         void Left();
 
         void StartReceivingAudio();

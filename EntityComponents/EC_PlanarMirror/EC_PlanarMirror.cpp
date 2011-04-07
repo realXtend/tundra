@@ -19,7 +19,7 @@
 #include "UiAPI.h"
 #include "NaaliMainWindow.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_PlanarMirror")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_PlanarMirror")
 
 int EC_PlanarMirror::mirror_cam_num_ = 0;
 

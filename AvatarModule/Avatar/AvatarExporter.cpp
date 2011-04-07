@@ -94,9 +94,9 @@ namespace Avatar
             call.AddMember("generic xml", request->avatar_xml_);
             
             ExportAssetMap::const_iterator i = request->assets_.begin();
-            while (i != request->assets_.end())
+            while(i != request->assets_.end())
             {
-                //! Here, the hash is the key and asset name is the value
+                /// Here, the hash is the key and asset name is the value
                 call.AddMember(i->second.hash_.c_str(), i->first);
                 ++i;
             }
@@ -110,7 +110,7 @@ namespace Avatar
                 reexport = true;
                 AvatarModule::LogInfo("Exporting assets");
                 std::vector<std::string> items = call.GetVectorReply<std::string>("MissingItems");
-                for (uint i = 0; i < items.size(); ++i)
+                for(uint i = 0; i < items.size(); ++i)
                 {
                     std::string name = items[i];
                     ExportAssetMap::const_iterator asset = request->assets_.find(name);
@@ -204,7 +204,7 @@ namespace Avatar
                 call.AddMember("generic xml", request->avatar_xml_);
                 
                 ExportAssetMap::const_iterator i = request->assets_.begin();
-                while (i != request->assets_.end())
+                while(i != request->assets_.end())
                 {
                     call.AddMember(i->second.hash_.c_str(), i->first);
                     ++i;

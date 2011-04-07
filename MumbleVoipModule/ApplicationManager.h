@@ -5,19 +5,19 @@
 
 namespace MumbleVoip
 {
-    //! Mumble client application startup
-    //!
+    /// Mumble client application startup
+    ///
     class ApplicationManager
     {
-        //! Default constructor
+        /// Default constructor
         ApplicationManager();
     public:
 
-        //! Start mumble client application with given server url
-        //! format: mumble://<user>:<password>@<server>/<channel>/<subchannel>?version=<version>
+        /// Start mumble client application with given server url
+        /// format: mumble://<user>:<password>@<server>/<channel>/<subchannel>?version=<version>
         static void StartMumbleClient(const QString& server_url);
 
-        //! @return number of StartMumbleClient calls made
+        /// @return number of StartMumbleClient calls made
         static int StartCount();
     private:
         static int start_count_;

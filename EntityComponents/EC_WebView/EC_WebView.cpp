@@ -36,7 +36,7 @@
 #include <QApplication>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_WebView")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_WebView")
 
 #include "MemoryLeakCheck.h"
 
@@ -446,7 +446,7 @@ void EC_WebView::PrepareComponent()
     QUrl url = QUrl::fromUserInput(urlString);
     if (url.isValid())
     {
-        //! \note loading the url will invoke Render() once QWebView signals the page has been loaded.
+        /// \note loading the url will invoke Render() once QWebView signals the page has been loaded.
         webview_->load(url);
     }
     else
@@ -575,7 +575,7 @@ void EC_WebView::ComponentAdded(IComponent *component, AttributeChange::Type cha
 
 void EC_WebView::ComponentRemoved(IComponent *component, AttributeChange::Type change)
 {
-    /*! If this component is being removed we need to reset to the target meshes original materials.
+    /** If this component is being removed we need to reset to the target meshes original materials.
         EC_3DCanvas is too stupid to do this (should be improved!) At this stage our parent
         entity is still valid. This will cease to exist if this behavior is changed in SceneManager and/or
         Entity classes. Parent entity is not valid in the dtor so this has to be done here.
@@ -706,7 +706,7 @@ void EC_WebView::AttributeChanged(IAttribute *attribute, AttributeChange::Type c
         interactionMetaData_->designable = currentControllerId == NoneControlID ? true : false;
         AttributeVector::iterator iter = attributes_.begin();
         AttributeVector::iterator end = attributes_.end();
-        while (iter != end)
+        while(iter != end)
         {
             IAttribute *attr = (*iter);
             // Always keep 'controlId' hidden from users.

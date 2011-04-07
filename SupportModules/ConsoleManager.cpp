@@ -11,6 +11,7 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "RenderServiceInterface.h"
+#include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -23,14 +24,14 @@ namespace Console
         log_listener_(new LogListener(this))
     {
         command_manager_ = CommandManagerPtr(new CommandManager(parent_, this));
-        parent_->GetFramework()->AddLogChannel(console_channel_.get());
+//        parent_->GetFramework()->AddLogChannel(console_channel_.get());
         console_category_id_ = parent_->GetFramework()->GetEventManager()->RegisterEventCategory("Console");
 
         Foundation::RenderServiceInterface *renderer = parent_->GetFramework()->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
             renderer->SubscribeLogListener(log_listener_);
         else
-            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't subscribe to renderer log listener.");
+            LogWarning("ConsoleManager couldn't acquire renderer service: can't subscribe to renderer log listener.");
     }
 
     ConsoleManager::~ConsoleManager()
@@ -47,9 +48,9 @@ namespace Console
         if (renderer)
             renderer->UnsubscribeLogListener(log_listener_);
         else
-            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't unsubscribe renderer log listener.");
+            LogWarning("ConsoleManager couldn't acquire renderer service: can't unsubscribe renderer log listener.");
 
-        parent_->GetFramework()->RemoveLogChannel(console_channel_.get());
+//        parent_->GetFramework()->RemoveLogChannel(console_channel_.get());
     }
 
     __inline void ConsoleManager::Update(f64 frametime)

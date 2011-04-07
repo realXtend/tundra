@@ -1,11 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-
+/*
 #ifndef incl_Interfaces_ModuleLoggingFunctions_h
 #define incl_Interfaces_ModuleLoggingFunctions_h
 
 #include <Poco/Logger.h>
 
-#define MODULE_LOGGING_FUNCTIONS                                                                                            \
+#define //MODULE_LOGGING_FUNCTIONS                                                                                            \
     static void LogFatal(const std::string &msg)    { Poco::Logger::get(NameStatic()).fatal("Fatal: " + msg);         }     \
     static void LogCritical(const std::string &msg) { Poco::Logger::get(NameStatic()).critical("Critical: " + msg);   }     \
     static void LogError(const std::string &msg)    { Poco::Logger::get(NameStatic()).error("Error: " + msg);         }     \
@@ -17,3 +17,4 @@
 
 #endif
 
+*/

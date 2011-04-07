@@ -6,8 +6,8 @@
 #include "IAsset.h"
 #include "OgreModuleApi.h"
 
-//! An Ogre-specific particle system template resource. One resource may contain multiple templates.
-/*! \ingroup OgreRenderingModuleClient */
+/// An Ogre-specific particle system template resource. One resource may contain multiple templates.
+/** \ingroup OgreRenderingModuleClient */
 class OGRE_MODULE_API OgreParticleAsset : public IAsset
 {
     Q_OBJECT;
@@ -42,7 +42,7 @@ private:
 
     std::string internal_name_;
 
-    //! references to other resources this resource depends on
+    /// references to other resources this resource depends on
     std::vector<AssetReference> references_;
 
 };

@@ -20,7 +20,7 @@
 #include "MemoryLeakCheck.h"
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("ConsoleAPI")
+//DEFINE_POCO_LOGGING_FUNCTIONS("ConsoleAPI")
 
 void Command::Invoke(const QStringList &params)
 {

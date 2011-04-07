@@ -19,8 +19,8 @@ typedef boost::shared_ptr<TreeWidgetItemExpandMemory> ExpandMemoryPtr;
 class ECEditorWindow;
 class EcXmlEditorWidget;
 
-//! EC Editor module
-/*! \defgroup ECEditorModuleClient ECEditorModule Client interface.
+/// EC Editor module
+/** \defgroup ECEditorModuleClient ECEditorModule Client interface.
  *  EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
  */
 class ECEDITOR_MODULE_API ECEditorModule : public QObject, public IModule
@@ -28,13 +28,13 @@ class ECEDITOR_MODULE_API ECEditorModule : public QObject, public IModule
     Q_OBJECT
 
 public:
-    //! Constructor.
+    /// Constructor.
     ECEditorModule();
 
-    //! Destructor 
+    /// Destructor 
     virtual ~ECEditorModule();
 
-    //! IModuleImpl overrides.
+    /// IModuleImpl overrides.
     void Load();
     void Initialize();
     void PostInitialize();
@@ -42,13 +42,13 @@ public:
     void Update(f64 frametime);
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-    //! Show EC editor window.
+    /// Show EC editor window.
     //Console::CommandResult ShowWindow(const StringVector &params);
 
     Console::CommandResult ShowDocumentation(const StringVector &params);
 
-    //! Added for testing EC_DynamicComponent.
-    /*! @param params Params should be following:
+    /// Added for testing EC_DynamicComponent.
+    /** @param params Params should be following:
      *  0 = entity id.
      *  1 = operation (add or rem)
      *  2 = component type.(ec. EC_DynamicComponent)
@@ -60,11 +60,11 @@ public:
 
     ECEditorWindow *GetActiveECEditor() const;
 
-    //! returns name of this module. Needed for logging.
+    /// returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return name_static_; }
 
-    //! Logging functions.
-    MODULE_LOGGING_FUNCTIONS
+    /// Logging functions.
+    //MODULE_LOGGING_FUNCTIONS
 
     /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
     /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
@@ -73,40 +73,40 @@ public:
     ExpandMemoryPtr ExpandMemory() const { return expandMemory; }
 
 public slots:
-    //! ECEditor has gained a focus event and need to set as active editor.
-    //! @param editor editor that has focus.
+    /// ECEditor has gained a focus event and need to set as active editor.
+    /// @param editor editor that has focus.
     void ECEditorFocusChanged(ECEditorWindow *editor);
 
     void AddEditorWindowToUI();
 
-    //! Creates EC attribute XML editor widget for entity.
-    //! \param entity Entity pointer.
+    /// Creates EC attribute XML editor widget for entity.
+    /// \param entity Entity pointer.
     void CreateXmlEditor(Scene::EntityPtr entity);
 
-    //! Creates EC attribute XML editor widget for entity.
-    //! \param entities List of entity pointers.
+    /// Creates EC attribute XML editor widget for entity.
+    /// \param entities List of entity pointers.
     void CreateXmlEditor(const QList<Scene::EntityPtr> &entities);
 
-    //! Creates EC attribute XML editor widget for component.
-    //! \param component Component pointer.
+    /// Creates EC attribute XML editor widget for component.
+    /// \param component Component pointer.
     void CreateXmlEditor(ComponentPtr component);
 
-    //! Creates EC attribute XML editor widget for component.
-    //! \param components List of component pointers.
+    /// Creates EC attribute XML editor widget for component.
+    /// \param components List of component pointers.
     void CreateXmlEditor(const QList<ComponentPtr> &components);
 
-    //! Return selected components from the active ECEditorWindow.
-    //! If edtior isn't initialized or any components aren't selected from the editor, method will return emtpy list.
+    /// Return selected components from the active ECEditorWindow.
+    /// If edtior isn't initialized or any components aren't selected from the editor, method will return emtpy list.
     QObjectList GetSelectedComponents() const;
 
-    //! Return selected entity ids as QVariantList from the active ECEditorWindow.
+    /// Return selected entity ids as QVariantList from the active ECEditorWindow.
     QVariantList GetSelectedEntities() const;
 
     bool IsECEditorWindowVisible() const;
 
 signals:
-    //! Signal is emitted when active ECEditorWindow's selection has changed.
-    /*! @param compType selected item's component type name.
+    /// Signal is emitted when active ECEditorWindow's selection has changed.
+    /** @param compType selected item's component type name.
      *  @param compName selected item's component name.
      *  @param attrType selected item's attribute type name (Empty if attribute isn't selected).
      *  @param attrName selected item's attribute name (Empty if attribute isn't selected).
@@ -114,10 +114,10 @@ signals:
     void SelectionChanged(const QString &compType, const QString &compName, const QString &attrType, const QString &attrName);
 
 private:
-    //! Static name of the module
+    /// Static name of the module
     static std::string name_static_;
 
-    //! EC XML editor window
+    /// EC XML editor window
     QPointer<EcXmlEditorWidget> xmlEditor_;
 
     /// Input context.

@@ -211,7 +211,7 @@ private slots:
     void Redraw();
     void UpdateSignals();
 
-    //! Emitted when some of the attributes has been changed.
+    /// Emitted when some of the attributes has been changed.
     void AttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:

@@ -71,60 +71,60 @@ class EC_3DCanvasSource : public IComponent
     Q_OBJECT
 
 public:
-    //! Destructor.
+    /// Destructor.
     ~EC_3DCanvasSource();
 
     virtual bool IsSerializable() const { return true; }
 
-    //! Source
+    /// Source
     Q_PROPERTY(QString source READ getsource WRITE setsource);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, source);
 
-    //! Submesh number into which to apply the 3DCanvas
+    /// Submesh number into which to apply the 3DCanvas
     Q_PROPERTY(int submesh READ getsubmesh WRITE setsubmesh);
     DEFINE_QPROPERTY_ATTRIBUTE(int, submesh);
 
-    //! Show as 2D when clicked
+    /// Show as 2D when clicked
     Q_PROPERTY(bool show2d READ getshow2d WRITE setshow2d);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, show2d);
 
-    //! Sync url changes from the ui
+    /// Sync url changes from the ui
     Q_PROPERTY(bool sync2dbrowsing READ getsync2dbrowsing WRITE setsync2dbrowsing);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, sync2dbrowsing);
 
-    //! Refresh rate
+    /// Refresh rate
     Q_PROPERTY(int refreshRate READ getrefreshRate WRITE setrefreshRate);
     DEFINE_QPROPERTY_ATTRIBUTE(int, refreshRate);
 
-    //! Width of the rendered widget
+    /// Width of the rendered widget
     Q_PROPERTY(int pageWidth READ getpageWidth WRITE setpageWidth);
     DEFINE_QPROPERTY_ATTRIBUTE(int, pageWidth);
 
-    //! Height of the rendered widget
+    /// Height of the rendered widget
     Q_PROPERTY(int pageHeight READ getpageHeight WRITE setpageHeight);
     DEFINE_QPROPERTY_ATTRIBUTE(int, pageHeight);
 
 public slots:
     void OnClick();
-    //! Source text editor modified
+    /// Source text editor modified
     void SourceEdited();
 
-    //! Link clicked in the 2D web view UI
+    /// Link clicked in the 2D web view UI
     void WebViewLinkClicked(const QUrl& url);
-    //! Loading starts, show progress bar and update ui
+    /// Loading starts, show progress bar and update ui
     void WebViewLoadStarted();
-    //! Loading progress, update progress bar
+    /// Loading progress, update progress bar
     void WebViewLoadProgress(int progress);
-    //! Loading completed, hide progress bad and update ui + repaint canvas
+    /// Loading completed, hide progress bad and update ui + repaint canvas
     void WebViewLoadCompleted();
 
-    //! Buttons handler for stop/refresh
+    /// Buttons handler for stop/refresh
     void RefreshStopPressed();
-    //! Buttons handler for back
+    /// Buttons handler for back
     void BackPressed();
-    //! Buttons handler for forward
+    /// Buttons handler for forward
     void ForwardPressed();
-    //! Buttons handler for home (initial component url)
+    /// Buttons handler for home (initial component url)
     void HomePressed();
     
 private slots:
@@ -142,39 +142,39 @@ private slots:
     QWebView *GetWebView();
 
 private:
-    //! Constructor.
-    /*! \param module Module.
+    /// Constructor.
+    /** \param module Module.
      */
     explicit EC_3DCanvasSource(IModule *module);
 
-    //! Create the 2D UI widget, but do not show it yet
+    /// Create the 2D UI widget, but do not show it yet
     void CreateWidget();
 
-    //! 2D UI widget
+    /// 2D UI widget
     QWidget* widget_;
     
-    //! Content widget that is set to the 3DCanvas
+    /// Content widget that is set to the 3DCanvas
     QWidget* content_widget_;
     
-    //! Content placeholder widget
+    /// Content placeholder widget
     QWidget* placeholder_widget_;
 
-    //! Content proxy for ui scene
+    /// Content proxy for ui scene
     UiProxyWidget *proxy_;
 
-    //! Source line editor
+    /// Source line editor
     QLineEdit* source_edit_;
 
-    //! Progress bar ptr picked from the ui file
+    /// Progress bar ptr picked from the ui file
     QProgressBar *progress_bar_;
 
-    //! refresh/stop button ptr picked from the ui file
+    /// refresh/stop button ptr picked from the ui file
     QPushButton *button_refreshstop_;
     
-    //! Initial component url is marked as the home page
+    /// Initial component url is marked as the home page
     QString home_url_;
     
-    //! Last set source
+    /// Last set source
     QString last_source_;
 
     bool canvas_started_;

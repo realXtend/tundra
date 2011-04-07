@@ -20,7 +20,7 @@ add_definitions (-DUI_API_EXPORTS)
 # add_definitions (-DUI_API_DLL)
 
 link_package (BOOST)
-link_package (POCO)
+#link_package (POCO)
 link_package (QT4)
 link_modules (Framework Asset)
 

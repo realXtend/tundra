@@ -35,7 +35,7 @@ void EC_OgreCustomObject::SetPlaceable(ComponentPtr placeable)
 {
     if (!dynamic_cast<EC_Placeable*>(placeable.get()))
     {
-        OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
+        ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
         return;
     }
     
@@ -86,18 +86,18 @@ bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
             entity_->setCastShadows(cast_shadows_);
             entity_->setUserAny(Ogre::Any(GetParentEntity()));
             // Set UserAny also on subentities
-            for (uint i = 0; i < entity_->getNumSubEntities(); ++i)
+            for(uint i = 0; i < entity_->getNumSubEntities(); ++i)
                 entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
         }
         else
         {
-            OgreRenderingModule::LogError("Could not create entity from manualobject mesh");
+            ::LogError("Could not create entity from manualobject mesh");
             return false;
         }
     }   
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not convert manualobject to mesh: " + std::string(e.what()));
+        ::LogError("Could not convert manualobject to mesh: " + std::string(e.what()));
         return false;
     }
     
@@ -125,7 +125,7 @@ bool EC_OgreCustomObject::SetMaterial(uint index, const std::string& material_na
     
     if (index >= entity_->getNumSubEntities())
     {
-        OgreRenderingModule::LogError("Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
+        ::LogError("Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
         return false;
     }
     
@@ -133,9 +133,9 @@ bool EC_OgreCustomObject::SetMaterial(uint index, const std::string& material_na
     {
         entity_->getSubEntity(index)->setMaterialName(material_name);
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set material " + material_name + ": " + std::string(e.what()));
+        ::LogError("Could not set material " + material_name + ": " + std::string(e.what()));
         return false;
     }
     
@@ -203,7 +203,7 @@ void EC_OgreCustomObject::DestroyEntity()
         {
             Ogre::MeshManager::getSingleton().remove(mesh_name);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 

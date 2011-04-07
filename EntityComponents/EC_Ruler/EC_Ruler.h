@@ -105,16 +105,16 @@ public:
         Z
     };
     
-    //! Ruler type
+    /// Ruler type
     Attribute<int> typeAttr_;
     
-    //! Visibility
+    /// Visibility
     Attribute<bool> visibleAttr_;
     
-    //! Axis
+    /// Axis
     Attribute<int> axisAttr_;
     
-    //! Local or global space
+    /// Local or global space
     Attribute<bool> localAttr_;
     
     Attribute<float> radiusAttr_;
@@ -131,21 +131,21 @@ public slots:
     
     void SetRadius(float radius) { radiusAttr_.Set(radius, AttributeChange::Default); }
     
-    //! set the ruler type to show: 0 = translate, 1 = rotate, 2 = scale
+    /// set the ruler type to show: 0 = translate, 1 = rotate, 2 = scale
     void SetType(EC_Ruler::Type type) { typeAttr_.Set(type, AttributeChange::Default); }
     
     void SetAxis(int axis) { axisAttr_.Set(axis, AttributeChange::Default); }
     
-    //! Call StartDrag to initialise some values used to update the selected ruler
+    /// Call StartDrag to initialise some values used to update the selected ruler
     void StartDrag(QVector3D pos, QQuaternion rot, QVector3D scale);
     
-    //! Handle drag event
+    /// Handle drag event
     void DoDrag(QVector3D pos, QQuaternion rot, QVector3D scale);
     
-    //! Call EndDrag to tell the code we're done for now
+    /// Call EndDrag to tell the code we're done for now
     void EndDrag();
     
-    //! Callback for OnChanged from ECEditor
+    /// Callback for OnChanged from ECEditor
     void UpdateRuler();
 
 private:

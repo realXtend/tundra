@@ -67,14 +67,14 @@ Environment::Environment(EnvironmentModule *owner) :
 
 Environment::~Environment()
 {
-    if ( activeEnvEntity_.lock().get() != 0)
+    if (activeEnvEntity_.lock().get() != 0)
     {
         Scene::EntityPtr entity = activeEnvEntity_.lock();
-        if ( entity != 0)
+        if (entity != 0)
         {
             // Remove entity from scene.
             Scene::SceneManager* manager = entity->GetScene();
-            if ( manager != 0)
+            if (manager != 0)
                 manager->RemoveEntity(entity->GetId());
         }
 
@@ -118,13 +118,13 @@ void Environment::CreateEnvironment()
         owner_->RemoveLocalEnvironment();
         
         // Has it allready EC_Fog ?
-        if ( !enviroment->HasComponent(EC_Fog::TypeNameStatic()))
+        if (!enviroment->HasComponent(EC_Fog::TypeNameStatic()))
             enviroment->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic())); 
     }
     else
     {
         enviroment =  active_scene->GetEntityByName("LocalEnvironment").get();
-        if ( enviroment != 0 && !enviroment->HasComponent(EC_Fog::TypeNameStatic()))
+        if (enviroment != 0 && !enviroment->HasComponent(EC_Fog::TypeNameStatic()))
             enviroment->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic())); 
     }
 }
@@ -147,7 +147,7 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     }
     catch(NetMessageException &)
     {
-        //! todo crashes with 0.4 server add error message.
+        /// todo crashes with 0.4 server add error message.
     }
     
     // Calculate time of day from sun phase, which seems the most reliable way to do it
@@ -172,18 +172,18 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     if (!time_override_)
     {
         EC_EnvironmentLight* light = GetEnvironmentLight();
-        if ( light != 0 )
+        if (light != 0 )
         {
-            if ( light->fixedTimeAttr.Get() == false)
+            if (light->fixedTimeAttr.Get() == false)
                 light->currentTimeAttr.Set(dayphase, AttributeChange::LocalOnly);
         }
-        else if ( light == 0)
+        else if (light == 0)
         {
             // Create EC_EnvironmentLight 
             QString name = "LightEnvironment";
             owner_->CreateEnvironmentEntity(name, EC_EnvironmentLight::TypeNameStatic()); 
             light = GetEnvironmentLight();
-            if ( light->fixedTimeAttr.Get() == false)
+            if (light->fixedTimeAttr.Get() == false)
                 light->currentTimeAttr.Set(dayphase, AttributeChange::LocalOnly);
         }
         //else
@@ -200,18 +200,18 @@ EC_EnvironmentLight* Environment::GetEnvironmentLight()
     if (entity != 0 )
     {
         owner_->RemoveLocalEnvironment();
-        if ( !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) )
+        if (!entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) )
             entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_EnvironmentLight::TypeNameStatic()));
     }
     else
     {
         entity =  active_scene->GetEntityByName("LocalEnvironment").get();
         
-        if ( entity == 0 || !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()))
+        if (entity == 0 || !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()))
         {
             ///todo Search first entity which has light environment component! this might be slow, work around somehow?
             Scene::EntityList lst = active_scene->GetEntitiesWithComponent(EC_EnvironmentLight::TypeNameStatic());
-            if ( lst.size() == 0 )
+            if (lst.size() == 0 )
                 return 0;
             
             entity = lst.front().get();
@@ -227,7 +227,7 @@ EC_EnvironmentLight* Environment::GetEnvironmentLight()
 void Environment::SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
     EC_Fog *fog = GetEnvironmentFog();
-    if ( fog == 0)
+    if (fog == 0)
        return;
 
     fog->startDistance.Set(fogStart,AttributeChange::Default);
@@ -254,7 +254,7 @@ bool Environment::GetFogColorOverride()
 QVector<float> Environment::GetFogGroundColor()
 {
    EC_Fog *fog = GetEnvironmentFog();
-   if ( fog == 0)
+   if (fog == 0)
     return QVector<float>();
 
     Ogre::ColourValue color = fog->GetColorAsOgreValue();
@@ -271,7 +271,7 @@ void Environment::Update(f64 frametime)
     EC_OgreEnvironment* env = GetEnvironmentComponent();
 
     EC_EnvironmentLight* light = GetEnvironmentLight();
-    if ( light != 0)
+    if (light != 0)
     {
         light->Update(frametime);
     }
@@ -312,12 +312,12 @@ void Environment::Update(f64 frametime)
 
     bool underWater = false;
     EC_WaterPlane* plane = 0;
-    for (; iter != lst.end(); ++iter)
+    for(; iter != lst.end(); ++iter)
     {
         Scene::EntityPtr ent = *iter;
         Scene::Entity* e = ent.get();
         plane = e->GetComponent<EC_WaterPlane >().get();
-        if ( plane != 0 && plane->IsCameraInsideWaterCube() )
+        if (plane != 0 && plane->IsCameraInsideWaterCube() )
         {
             underWater = true;
             break;
@@ -331,14 +331,14 @@ void Environment::Update(f64 frametime)
 
 #ifdef CAELUM
        fogColor = caelumSystem->getGroundFog()->getColour();
-       if ( fog != 0 && fog->use.Get() )
+       if (fog != 0 && fog->use.Get() )
            fogColor = fog->GetColorAsOgreValue();
 #else
-    if ( fog != 0)
+    if (fog != 0)
         fogColor = fog->GetColorAsOgreValue();
 #endif 
 
-    if ( underWater )
+    if (underWater )
     {
        // We're below the water.
        
@@ -368,7 +368,7 @@ void Environment::Update(f64 frametime)
             float fogStart = 100.f;
             float fogEnd = 2000.f;
             Ogre::FogMode mode = Ogre::FOG_LINEAR;
-            if ( fog != 0 )
+            if (fog != 0 )
             {
                 fogStart = fog->startDistance.Get();
                 fogEnd = fog->endDistance.Get();
@@ -395,18 +395,18 @@ EC_Fog* Environment::GetEnvironmentFog()
     if (entity != 0 )
     {
         owner_->RemoveLocalEnvironment();
-        if ( !entity->HasComponent(EC_Fog::TypeNameStatic()) )
+        if (!entity->HasComponent(EC_Fog::TypeNameStatic()) )
             entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic()));
     }
     else
     {
         entity =  active_scene->GetEntityByName("LocalEnvironment").get();
         
-        if ( entity == 0 || !entity->HasComponent(EC_Fog::TypeNameStatic()))
+        if (entity == 0 || !entity->HasComponent(EC_Fog::TypeNameStatic()))
         {
             ///todo Search first entity which has light environment component! this might be slow, work around somehow?
             Scene::EntityList lst = active_scene->GetEntitiesWithComponent(EC_Fog::TypeNameStatic());
-            if ( lst.size() == 0 )
+            if (lst.size() == 0 )
                 return 0;
             
             entity = lst.front().get();
@@ -431,7 +431,7 @@ void Environment::SetGroundFogColor(const QVector<float>& color)
 {
    EC_Fog *fog = GetEnvironmentFog();
 
-   if ( fog == 0)
+   if (fog == 0)
     return;
 
    fog->color.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
@@ -442,7 +442,7 @@ void Environment::SetGroundFogDistance(float fogStart, float fogEnd)
 {
    EC_Fog *fog = GetEnvironmentFog();
 
-   if ( fog == 0)
+   if (fog == 0)
     return;
 
     fog->startDistance.Set(fogStart, AttributeChange::Default);
@@ -454,7 +454,7 @@ float Environment::GetGroundFogStartDistance()
 {
    EC_Fog *fog = GetEnvironmentFog();
 
-   if ( fog == 0)
+   if (fog == 0)
     return 0.f;
     
     return fog->startDistance.Get();
@@ -464,7 +464,7 @@ float Environment::GetGroundFogEndDistance()
 {
    EC_Fog *fog = GetEnvironmentFog();
 
-   if ( fog == 0)
+   if (fog == 0)
     return 0.f;
  
     return fog->endDistance.Get();
@@ -477,11 +477,11 @@ void Environment::SetSunDirection(const QVector<float>& vector)
     // Length must be diffrent then zero, so we say that value must be higher then our tolerance. 
     float tolerance = 0.001f;
    
-    if ( squaredLength < tolerance) 
+    if (squaredLength < tolerance) 
         return;
 
     EC_EnvironmentLight* light = GetEnvironmentLight();
-    if ( light != 0)
+    if (light != 0)
     {
         light->sunDirectionAttr.Set(Vector3df(vector[0], vector[1], vector[2]), AttributeChange::Default);
         return;
@@ -497,7 +497,7 @@ void Environment::SetSunDirection(const QVector<float>& vector)
 QVector<float> Environment::GetSunDirection() 
 {
     EC_EnvironmentLight* light = GetEnvironmentLight();
-    if ( light != 0)
+    if (light != 0)
     {
         Vector3df vec = light->sunDirectionAttr.Get();
         QVector<float> vector;
@@ -520,18 +520,18 @@ QVector<float> Environment::GetSunDirection()
 void Environment::SetSunColor(const QVector<float>& vector)
 {
     Color color;
-    if ( vector.size() == 4)
+    if (vector.size() == 4)
     {
        color = Color(vector[0], vector[1], vector[2], vector[3]);    
     }
-    else if ( vector.size() == 3 )
+    else if (vector.size() == 3 )
     {
             
       color = Color(vector[0], vector[1], vector[2], 1.0);   
     }
 
     EC_EnvironmentLight* light = GetEnvironmentLight();
-    if ( light != 0)
+    if (light != 0)
     {   
         light->sunColorAttr.Set(color, AttributeChange::Default);
         return;
@@ -548,7 +548,7 @@ QVector<float> Environment::GetSunColor()
 {
     EC_EnvironmentLight* light = GetEnvironmentLight();
     
-    if ( light != 0)
+    if (light != 0)
     {
        Color color =  light->sunColorAttr.Get();
        
@@ -570,7 +570,7 @@ QVector<float> Environment::GetSunColor()
 QVector<float> Environment::GetAmbientLight()
 {
     EC_EnvironmentLight* light = GetEnvironmentLight();
-    if ( light != 0)
+    if (light != 0)
     {
         Color color = light->ambientColorAttr.Get();
         QVector<float> vec(3);
@@ -591,7 +591,7 @@ QVector<float> Environment::GetAmbientLight()
 void Environment::SetAmbientLight(const QVector<float>& vector)
 {
     EC_EnvironmentLight* light = GetEnvironmentLight();
-    if ( light != 0)
+    if (light != 0)
     {
         light->ambientColorAttr.Set(Color(vector[0], vector[1], vector[2]), AttributeChange::Default);
         return;

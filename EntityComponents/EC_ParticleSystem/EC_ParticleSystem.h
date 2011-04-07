@@ -56,26 +56,26 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
-    //! Particle asset reference
+    /// Particle asset reference
     Q_PROPERTY(AssetReference particleRef READ getparticleRef WRITE setparticleRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, particleRef);
 
-    //! Does particles cast shadows (mostly useless).
+    /// Does particles cast shadows (mostly useless).
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
-    //! Particles rendering distance.
+    /// Particles rendering distance.
     Q_PROPERTY(float renderingDistance READ getrenderingDistance WRITE setrenderingDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, renderingDistance);
 
 public slots:
-    //! Open the particle asset in asset viewer.
+    /// Open the particle asset in asset viewer.
     void View(const QString &attributeName);
 
-    //! Create a new particle system. Does not delete the old
+    /// Create a new particle system. Does not delete the old
     void CreateParticleSystem(const QString &systemName);
 
-    //! Delete all current particle systems.
+    /// Delete all current particle systems.
     void DeleteParticleSystems();
 
 private slots:

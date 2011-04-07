@@ -19,13 +19,13 @@ namespace Scene
 class Entity;
 }
 
-//! Interface class for user's currently replicated scene state
+/// Interface class for user's currently replicated scene state
 struct ISyncState
 {
     virtual ~ISyncState() {}
 };
 
-//! Connection on the Kristalli server
+/// Connection on the Kristalli server
 class KRISTALLIPROTOCOL_MODULE_API UserConnection : public QObject
 {
     Q_OBJECT

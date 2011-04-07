@@ -123,7 +123,7 @@ public slots:
     bool IsVisible() const;
 
 signals:
-    //! Signal when mouse hovers over the entity with this touchable component
+    /// Signal when mouse hovers over the entity with this touchable component
     void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
     void MouseHoverIn();
     void MouseHoverOut();

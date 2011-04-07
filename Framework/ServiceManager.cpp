@@ -14,7 +14,7 @@ ServiceWeakPtr ServiceManager::GetService(service_type_t type)
     {
         //std::string what("Service type ");
         //what += boost::lexical_cast<std::string>(type) + " not registered!";
-        //Foundation::RootLogDebug(what);
+        //Foundation::LogDebug(what);
 
         return ServiceWeakPtr();
     }
@@ -26,18 +26,18 @@ void ServiceManager::RegisterService(service_type_t type, const ServiceWeakPtr &
 {
     assert(service.expired() == false);
 
-    RootLogDebug("Registering service type " + boost::lexical_cast<std::string>(type));
+    LogDebug("Registering service type " + boost::lexical_cast<std::string>(type));
 
     if (services_.find(type) != services_.end())
     {
-        RootLogWarning("Service provider already registered!");
+        LogWarning("Service provider already registered!");
         return;
     }
     services_[type] = service;
 
 #ifdef _DEBUG
     ServicePtr upped_service = service.lock();
-    RootLogDebug("Registering service type " + ToString(type) + " with usage count " + ToString(upped_service.use_count()));
+    LogDebug("Registering service type " + ToString(type) + " with usage count " + ToString(upped_service.use_count()));
     services_usage_[type] = upped_service.use_count();
 #endif
 }
@@ -50,12 +50,12 @@ void ServiceManager::RegisterService(service_type_t type, const ServiceWeakPtr &
     ServicePtr upped_service = service.lock();
 
     ServicesMap::iterator iter = services_.begin();
-    for ( ; iter != services_.end() ; ++iter)
+    for(; iter != services_.end() ; ++iter)
     {
         assert (iter->second.expired() == false);
         if (iter->second.lock().get() == upped_service.get())
         {
-            RootLogDebug("Unregistering service type " + ToString(iter->first));
+            LogDebug("Unregistering service type " + ToString(iter->first));
 
 #ifdef _DEBUG
         if (upped_service.use_count() > services_usage_[iter->first]) // not efficient according to boost doc, so use only in debug
@@ -64,11 +64,11 @@ void ServiceManager::RegisterService(service_type_t type, const ServiceWeakPtr &
             // is maintained. This is an error because usually services rely on their parent modules, and
             // services usually get unregistered when module gets unloaded, thus leaving a service hanging
             // without it's parent module. Crash is a likely result.
-            //! \todo It might be worth considering, if services should hold a shared pointer to their parent
-            //!       modules. In that way when module gets unloaded, if one of it's services is still in use
-            //!       it could keep the module alive. This would take some refactoring of the module system
-            //!       thought. -cm
-            RootLogError("Unregistering a service type " + ToString(iter->first) + " that is probably still in use!");
+            /// \todo It might be worth considering, if services should hold a shared pointer to their parent
+            ///       modules. In that way when module gets unloaded, if one of it's services is still in use
+            ///       it could keep the module alive. This would take some refactoring of the module system
+            ///       thought. -cm
+            LogError("Unregistering a service type " + ToString(iter->first) + " that is probably still in use!");
         }
 #endif
 
@@ -76,7 +76,7 @@ void ServiceManager::RegisterService(service_type_t type, const ServiceWeakPtr &
             return;
         }
     }
-    //! \todo Any possibility to have the service type here nicely, so it can be included with the log warning? -cm
-    RootLogWarning("Unregistering service provider type that was not registered!");
+    /// \todo Any possibility to have the service type here nicely, so it can be included with the log warning? -cm
+    LogWarning("Unregistering service provider type that was not registered!");
 }
 

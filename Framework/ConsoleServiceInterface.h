@@ -8,8 +8,8 @@
 
 namespace Console
 {
-    //! Interface for debug console service
-    /*! Usually it is not necessary to use this service,
+    /// Interface for debug console service
+    /** Usually it is not necessary to use this service,
         the only really useful function is Print(), but the
         preferred way to output text to the console is via the log.
 
@@ -21,34 +21,34 @@ namespace Console
     class ConsoleServiceInterface : public IService
     {
     public:
-        //! default constructor
+        /// default constructor
         ConsoleServiceInterface() {}
 
-        //! destructor
+        /// destructor
         virtual ~ConsoleServiceInterface() {}
 
-        //! add time
+        /// add time
         virtual void Update(f64 frametime) {}
 
-        //! Prints text to the console.
-        /*! The text will be split to multiple lines to fit. '\n' should be used for line breaks.
+        /// Prints text to the console.
+        /** The text will be split to multiple lines to fit. '\n' should be used for line breaks.
         */
         virtual void Print(const std::string &text) = 0;
 
-        //!Execute the specified command
+        ///Execute the specified command
         virtual void ExecuteCommand(const std::string &command) = 0;
 
-        //! Hide / show console
+        /// Hide / show console
         virtual void ToggleConsole() = 0;
 
-        //! Sets Ui initialized/uninitialized
+        /// Sets Ui initialized/uninitialized
         virtual void SetUiInitialized(bool initialized)=0;
 
-        //! Returns false if UI is not initialized, true otherwise
+        /// Returns false if UI is not initialized, true otherwise
         virtual bool IsUiInitialized() const = 0;
     };
 
-    //! smart pointer for console services. \ingroup DebugConsole_group
+    /// smart pointer for console services. \ingroup DebugConsole_group
     typedef boost::shared_ptr<ConsoleServiceInterface> ConsolePtr;
 }
 

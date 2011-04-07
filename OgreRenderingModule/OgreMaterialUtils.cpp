@@ -56,7 +56,7 @@ namespace OgreRenderer
 
     bool IsMaterialSuffixValid(const std::string& suffix)
     {
-        for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
+        for(uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
         {
             if (suffix == MaterialSuffix[i])
                 return true;
@@ -69,7 +69,7 @@ namespace OgreRenderer
     {
         if (variation >= MAX_MATERIAL_VARIATIONS)
         {
-            OgreRenderingModule::LogWarning("Requested suffix for non-existing material variation " + ToString<uint>(variation));
+            ::LogWarning("Requested suffix for non-existing material variation " + ToString<uint>(variation));
             variation = 0;
         }
         
@@ -78,7 +78,7 @@ namespace OgreRenderer
     
     uint GetMaterialVariation(const std::string& suffix)
     {
-        for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
+        for(uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
             if (suffix == MaterialSuffix[i])
                 return i;
         return 0;
@@ -91,13 +91,13 @@ namespace OgreRenderer
 
         if (!material.get())
         {
-             OgreRenderingModule::LogWarning("Failed to clone material \"" + sourceMaterialName + "\". It was not found.");
+             ::LogWarning("Failed to clone material \"" + sourceMaterialName + "\". It was not found.");
              return Ogre::MaterialPtr();
         }
         material = material->clone(SanitateAssetIdForOgre(newName));
         if (!material.get())
         {
-             OgreRenderingModule::LogWarning("Failed to clone material \"" + sourceMaterialName + "\" to name \"" + SanitateAssetIdForOgre(newName) + "\"");
+             ::LogWarning("Failed to clone material \"" + sourceMaterialName + "\" to name \"" + SanitateAssetIdForOgre(newName) + "\"");
              return Ogre::MaterialPtr();
         }
         return material;
@@ -152,7 +152,7 @@ namespace OgreRenderer
     {
         if (variation >= MAX_MATERIAL_VARIATIONS)
         {
-            OgreRenderingModule::LogWarning("Requested suffix for non-existing material variation " + ToString<uint>(variation));
+            ::LogWarning("Requested suffix for non-existing material variation " + ToString<uint>(variation));
             variation = 0;
         }
         const std::string& suffix = MaterialSuffix[variation];
@@ -191,7 +191,7 @@ namespace OgreRenderer
             base_material = mm.getByName(AlphaBaseMaterials[variation]);
         if (!base_material.get())
         {
-            OgreRenderingModule::LogError("Could not find " + MaterialSuffix[variation] + " base material for " + texture_name);
+            ::LogError("Could not find " + MaterialSuffix[variation] + " base material for " + texture_name);
             return Ogre::MaterialPtr();
         }
         
@@ -214,7 +214,7 @@ namespace OgreRenderer
             if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
                 has_alpha = true;
 
-        for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
+        for(uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
         {
             std::string material_name = sanitatedtexname + MaterialSuffix[i];
             Ogre::MaterialPtr material = mm.getByName(material_name);
@@ -229,7 +229,7 @@ namespace OgreRenderer
                 base_material = mm.getByName(AlphaBaseMaterials[i]);
             if (!base_material.get())
             {
-                OgreRenderingModule::LogError("Could not find " + MaterialSuffix[i] + " base material for " + texture_name);
+                ::LogError("Could not find " + MaterialSuffix[i] + " base material for " + texture_name);
                 continue;
             }
             
@@ -351,7 +351,7 @@ namespace OgreRenderer
         
         std::set<std::string>::iterator i = textures_set.begin();
         
-        while (i != textures_set.end())
+        while(i != textures_set.end())
         {
             textures.push_back(*i);
             ++i;
@@ -369,9 +369,9 @@ namespace OgreRenderer
             {
                 Ogre::MaterialManager::getSingleton().remove(material_name);
             }
-            catch (Ogre::Exception& e)
+            catch(Ogre::Exception& e)
             {
-                OgreRenderingModule::LogDebug("Failed to remove Ogre material:" + std::string(e.what()));
+                ::LogDebug("Failed to remove Ogre material:" + std::string(e.what()));
             }
         }
     }

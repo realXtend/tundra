@@ -61,7 +61,7 @@ public:
 
     virtual ~EC_RttTarget();
 
-    //! Set component as serializable.
+    /// Set component as serializable.
     virtual bool IsSerializable() const { return true; }
 
 public slots:
@@ -73,12 +73,12 @@ private slots:
     //void UpdateRtt();
 
 private:
-    //! constructor
-    /*! \param module Ogre module
+    /// constructor
+    /** \param module Ogre module
      */
     EC_RttTarget(IModule* module);
 
-    //! Owner module of this component
+    /// Owner module of this component
     //OgreRenderer::OgreRenderingModule *owner_;
 
     Ogre::TexturePtr tex_;

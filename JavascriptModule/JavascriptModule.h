@@ -48,7 +48,7 @@ public:
     /// IModule override.
     void Update(f64 frametime);
 
-    MODULE_LOGGING_FUNCTIONS
+    //MODULE_LOGGING_FUNCTIONS
 
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return type_name_static_; }
@@ -71,32 +71,32 @@ public:
     void PrepareScriptInstance(JavascriptInstance* instance, EC_Script *comp = 0);
 
 public slots:
-    //! New scene has been added to foundation.
+    /// New scene has been added to foundation.
     void SceneAdded(const QString &name);
 
     void ScriptAssetChanged(ScriptAssetPtr newScript);
 
-    //! New component has been added to scene.
+    /// New component has been added to scene.
     void ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
-    //! Component has been removed from scene.
+    /// Component has been removed from scene.
     void ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
 signals:
-    //! A script engine has been created
-    /*! The purpose of this is to allow dynamic service objects (registered with FrameWork->RegisterDynamicObject())
+    /// A script engine has been created
+    /** The purpose of this is to allow dynamic service objects (registered with FrameWork->RegisterDynamicObject())
         to perform further scriptengine initialization, such as registration of new datatypes. The slot
         OnScriptEngineCreated() will be invoked on the dynamic service object, if it exists.
      */
     void ScriptEngineCreated(QScriptEngine* engine);
 
 private:
-    //! Load & execute startup scripts
-    /*! Destroys old scripts if they exist
+    /// Load & execute startup scripts
+    /** Destroys old scripts if they exist
      */
     void LoadStartupScripts();
 
-    //! Stop & delete startup scripts
+    /// Stop & delete startup scripts
     void UnloadStartupScripts();
 
     /// Type name of the module.

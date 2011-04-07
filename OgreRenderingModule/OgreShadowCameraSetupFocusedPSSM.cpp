@@ -25,7 +25,7 @@ void OgreShadowCameraSetupFocusedPSSM::calculateSplitPoints(size_t splitCount, f
     mSplitCount = splitCount;
 
     mSplitPoints[0] = nearDist;
-    for (size_t i = 1; i < mSplitCount; i++)
+    for(size_t i = 1; i < mSplitCount; i++)
     {
         float fraction = (float)i / (float)mSplitCount;
         float splitPoint = lambda * nearDist * Ogre::Math::Pow(farDist / nearDist, fraction) +

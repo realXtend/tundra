@@ -34,7 +34,7 @@
  */
 
 //----------------------------------------------------------------------------------
-/*!
+/**
 // \file    PythonQtScriptingConsole.h
 // \author  Florian Link
 // \author  Last changed by $Author: florian $
@@ -49,7 +49,7 @@
 class QCompleter;
 
 //-------------------------------------------------------------------------------
-//! A simple console for python scripting
+/// A simple console for python scripting
 class PythonQtScriptingConsole : public QTextEdit
 {
   Q_OBJECT
@@ -60,64 +60,64 @@ public:
   ~PythonQtScriptingConsole();
 
 public slots:
-  //! execute current line
+  /// execute current line
   void executeLine(bool storeOnly);
 
-  //! derived key press event
+  /// derived key press event
   void keyPressEvent (QKeyEvent * e);
 
-  //! output from console
+  /// output from console
   void consoleMessage(const QString & message);
 
-  //! get history
+  /// get history
   QStringList history() { return _history; }
 
-  //! set history
+  /// set history
   void setHistory(const QStringList& h) { _history = h; _historyPosition = 0; }
 
-  //! clear the console
+  /// clear the console
   void clear();
 
-  //! overridden to control which characters a user may delete
+  /// overridden to control which characters a user may delete
   virtual void cut();
 
-  //! output redirection
+  /// output redirection
   void stdOut(const QString& s);
-  //! output redirection
+  /// output redirection
   void stdErr(const QString& s);
 
   void insertCompletion(const QString&);
 
-  //! Appends a newline and command prompt at the end of the document.
+  /// Appends a newline and command prompt at the end of the document.
   void appendCommandPrompt(bool storeOnly = false);
 
 public:
-  //! returns true if python cerr had an error
+  /// returns true if python cerr had an error
   bool hadError() { return _hadError; }
 
-  //! returns true if python cerr had an error
+  /// returns true if python cerr had an error
   void clearError() {
     _hadError = false;
   }
 
 protected:
-  //! handle the pressing of tab
+  /// handle the pressing of tab
   void handleTabCompletion();
 
-  //! Returns the position of the command prompt
+  /// Returns the position of the command prompt
   int commandPromptPosition();
 
-  //! Returns if deletion is allowed at the current cursor
-  //! (with and without selected text)
+  /// Returns if deletion is allowed at the current cursor
+  /// (with and without selected text)
   bool verifySelectionBeforeDeletion();
 
-  //! Sets the current font
+  /// Sets the current font
   void setCurrentFont(const QColor& color = QColor(0,0,0), bool bold = false);
 
-  //! change the history according to _historyPos
+  /// change the history according to _historyPos
   void changeHistory();
 
-  //! flush output that was not yet printed
+  /// flush output that was not yet printed
   void flushStdOut();
 
 

@@ -40,7 +40,7 @@
 #include <OgreEntity.h>
 #include <OgreMesh.h>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
+//DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
 #ifdef ASSIMP_ENABLED
 #include <OpenAssetImport.h>
@@ -187,7 +187,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
                 assimporter.GetMeshData(filename, meshNames);
 
                 TundraLogic::SceneImporter sceneimporter(scene);
-                for (size_t i=0 ; i<meshNames.size() ; ++i)
+                for(size_t i=0 ; i<meshNames.size() ; ++i)
                 {
                     Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
                         std::string(), "local://", AttributeChange::Default, false, meshNames[i].name_.toStdString());
@@ -815,7 +815,7 @@ void SceneStructureModule::HandleSceneDescFailed(IAssetTransfer *transfer, QStri
         urlToDropPos.remove(transfer->GetSourceUrl());
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);

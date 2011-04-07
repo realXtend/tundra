@@ -60,7 +60,7 @@ namespace PythonScript
         boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
         boost::shared_ptr<QtUI::UICanvas> canvas_;
         
-        if ( qt_module.get() == 0)
+        if (qt_module.get() == 0)
             return NULL;
 
         canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();
@@ -92,7 +92,7 @@ namespace PythonScript
         boost::shared_ptr<QtUI::QtModule> qt_module = PythonScript::staticframework->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
         boost::shared_ptr<QtUI::UICanvas> canvas_;
         
-        //if ( qt_module.get() == 0)
+        //if (qt_module.get() == 0)
         //    return NULL;
 
         canvas_ = qt_module->CreateCanvas(QtUI::UICanvas::External).lock();

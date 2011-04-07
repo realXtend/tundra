@@ -35,7 +35,7 @@ namespace Foundation
     class NaaliApplication;
 
     /// Contains entry point for the framework.
-    /*! Allows access to the core API objects, various managers and services. The standard way of using
+    /** Allows access to the core API objects, various managers and services. The standard way of using
         the framework is by first creating the framework and then calling Framework::Go()
         which will then load / initialize all modules and enters the main loop which
         automatically updates all loaded modules.
@@ -63,7 +63,7 @@ namespace Foundation
         ~Framework();
 
         /// Parse program options from command line arguments
-        /*! For internal use. Should be called immediately after creating the framework,
+        /** For internal use. Should be called immediately after creating the framework,
             so all options will be taken in effect properly.
         */
         void ParseProgramOptions();
@@ -72,7 +72,7 @@ namespace Foundation
         boost::program_options::variables_map &ProgramOptions() { return commandLineVariables; }
 
         /// Do post-initialization steps. No need to call if using Framework::Go().
-        /*! This function can be used if you wish to use the framework without main loop.
+        /** This function can be used if you wish to use the framework without main loop.
             It does
             In that case the correct order is:
                 Foundation::Framework fw;                  // create the framework
@@ -165,7 +165,7 @@ namespace Foundation
         Console::CommandResult ConsoleLimitFrames(const StringVector &params);
 
         /// Returns name of the configuration group used by the framework
-        /*! The group name is used with ConfigurationManager, for framework specific
+        /** The group name is used with ConfigurationManager, for framework specific
             settings. Alternatively a class may use it's own name as the name of the
             configuration group, if it so chooses.
 
@@ -273,8 +273,8 @@ namespace Foundation
         ConfigurationManagerPtr config_manager_; ///< Default configuration
         ApplicationPtr application_; ///< Application data.
         bool exit_signal_; ///< If true, exit application.
-        std::vector<Poco::Channel*> log_channels_; ///< Logger channels
-        Poco::Formatter *log_formatter_; ///< Logger default formatter
+//        std::vector<Poco::Channel*> log_channels_; ///< Logger channels
+//        Poco::Formatter *log_formatter_; ///< Logger default formatter
 #ifdef PROFILING
         Profiler profiler_; ///< Profiler.
 #endif

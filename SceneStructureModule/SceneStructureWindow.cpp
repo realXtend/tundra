@@ -29,7 +29,7 @@
 
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructureWindow")
+//DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructureWindow")
 
 #include "MemoryLeakCheck.h"
 
@@ -136,7 +136,7 @@ void SceneStructureWindow::ShowComponents(bool show)
 
     treeWidget->setSortingEnabled(false);
 
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
         for(int j = 0; j < item->childCount(); ++j)
@@ -219,7 +219,7 @@ void SceneStructureWindow::Clear()
 
 void SceneStructureWindow::CreateAssetReferences()
 {
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (!eItem)
@@ -295,7 +295,7 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 
 void SceneStructureWindow::RemoveEntity(Scene::Entity* entity)
 {
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (item && (item->Id() == entity->GetId()))
@@ -308,7 +308,7 @@ void SceneStructureWindow::RemoveEntity(Scene::Entity* entity)
 
 void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
 {
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->Id() == entity->GetId()))
@@ -353,7 +353,7 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
 
 void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* comp)
 {
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->Id() == entity->GetId()))
@@ -492,11 +492,11 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
     if (showComponents)
     {
         // Find parent component item
-        for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+        for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         {
             EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
             if (eItem)
-                for (int j = 0; j < eItem->childCount(); ++j)
+                for(int j = 0; j < eItem->childCount(); ++j)
                 {
                     ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
                     if (cItem && (cItem->typeName == dc->TypeName()) && (cItem->name == dc->Name()))
@@ -515,7 +515,7 @@ void SceneStructureWindow::AddAssetReference(IAttribute *attr)
         if (!entity)
             return;
 
-        for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+        for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         {
             EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
             if (eItem && (eItem->Id() == entity->GetId()))
@@ -657,10 +657,10 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
     if (!comp)
         return;
 
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *eItem = treeWidget->topLevelItem(i);
-        for (int j = 0; j < eItem->childCount(); ++j)
+        for(int j = 0; j < eItem->childCount(); ++j)
         {
             ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
             if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
@@ -747,7 +747,7 @@ void SceneStructureWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
 
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
-    while (*iter) 
+    while(*iter) 
     {
         QTreeWidgetItem *iterItem = (*iter);
         if (iterItem->isExpanded())

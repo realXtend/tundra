@@ -12,8 +12,8 @@
 #include "Declare_EC.h"
 #include "IModule.h"
 
-//! Controllable entity component.
-/*! Any entity with this component may be controlled by the user.
+/// Controllable entity component.
+/** Any entity with this component may be controlled by the user.
     The entity can be controlled via 'actions'. Each different type
     of controllable has their own list of actions, so they work in a
     generic fashion. 
@@ -38,7 +38,7 @@ class AV_MODULE_API EC_Controllable : public IComponent
 public:
     virtual ~EC_Controllable() {}
 
-    //! Add a new action for this controllable
+    /// Add a new action for this controllable
     void AddAction(int action)
     {
         assert(actions_.find(action) == actions_.end() && "Action already added to this controller.");
@@ -51,7 +51,7 @@ public:
         actions_.erase(action);
     }
 
-    ////! Sets current action for this controllable. Event for the action is send in a delayed fashion.
+    ///// Sets current action for this controllable. Event for the action is send in a delayed fashion.
     //void SetCurrentAction(int action)
     //{ 
     //    assert (action != 0 && "Action ID 0 reserved for internal use.");
@@ -62,25 +62,25 @@ public:
     //    dirty_ = true;
     //}
 
-    //! Set unique name for this controllable
+    /// Set unique name for this controllable
     void SetType(RexTypes::ControllableType type) { type_ = type; }
 
-    //! Returns the type of this controllable
+    /// Returns the type of this controllable
     RexTypes::ControllableType GetType() const { return type_; }
 
 private:
     typedef std::set<int> ActionSet;
 
-    //! list of actions supported by this controller
+    /// list of actions supported by this controller
     ActionSet actions_;
 
-    //! Currently active action for this controllable
+    /// Currently active action for this controllable
     int current_action_;
 
-    //! If true, an action is pending and needs to be sent
+    /// If true, an action is pending and needs to be sent
     bool dirty_;
 
-    //! Type of this controllable
+    /// Type of this controllable
     RexTypes::ControllableType type_;
 
     EC_Controllable(IModule* module) : IComponent(module->GetFramework()), current_action_(0), dirty_(false) {}
@@ -90,8 +90,8 @@ namespace ControllableActions
 {
     namespace
     {
-        //! A helper function for assigning common actions to a controllable. For an example of how to use, see AvatarControllable.
-        /*! Returns default mappings from input events to actions which can be used for convinience by controllables.
+        /// A helper function for assigning common actions to a controllable. For an example of how to use, see AvatarControllable.
+        /** Returns default mappings from input events to actions which can be used for convinience by controllables.
 
             This function is re-entrant but not threadsafe
 

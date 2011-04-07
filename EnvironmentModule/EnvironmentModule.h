@@ -37,8 +37,8 @@ namespace Environment
     typedef boost::shared_ptr<Sky> SkyPtr;
     typedef boost::shared_ptr<Environment> EnvironmentPtr;
 
-    //! Environment Module.
-    /*! \defgroup EnvironmentModuleClient EnvironmentModule Client interface.
+    /// Environment Module.
+    /** \defgroup EnvironmentModuleClient EnvironmentModule Client interface.
 
         Interface for environment module. Environment module implements terrain, sky and water generation.
         Also module will handle all environment editing via EnvironmentEditor. Module receives network
@@ -76,14 +76,14 @@ namespace Environment
         */
         bool HandleFrameworkEvent(event_id_t event_id, IEventData* data);
 
-        //! Handles resource event category.
+        /// Handles resource event category.
         /** @param event_id event id
             @param data event data pointer
             @return Should return true if the event was handled and is not to be propagated further
         */
         bool HandleNetworkEvent(event_id_t event_id, IEventData* data);
 
-        //! Handles input event category.
+        /// Handles input event category.
         /** @param event_id event id
             @param data event data pointer
             @return Should return true if the event was handled and is not to be propagated further
@@ -91,22 +91,22 @@ namespace Environment
         bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
 #ifdef ENABLE_TAIGA_SUPPORT
-        //! Get terrain texture ids, terrain height and water height values.
+        /// Get terrain texture ids, terrain height and water height values.
         /** @param network data pointer.
             @return Should return true if the event was handled and is not to be propagated further
         */
         bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data);
 
-        //! @return The terrain handler object that manages reX terrain logic.
+        /// @return The terrain handler object that manages reX terrain logic.
         TerrainPtr GetTerrainHandler() const;
 
-        //! @return The environment handler.
+        /// @return The environment handler.
         EnvironmentPtr GetEnvironmentHandler() const;
 
-        //! @return The sky handler.
+        /// @return The sky handler.
         SkyPtr GetSkyHandler() const;
 
-        //! @return The water handler.
+        /// @return The water handler.
         WaterPtr GetWaterHandler() const;
 
         /// Sends new terrain texture into the server.
@@ -115,7 +115,7 @@ namespace Environment
         */
         void SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, uint texture_index);
 
-        //! Change new terrain height value,
+        /// Change new terrain height value,
         /** @Param start_height what height texture starts at (meters).
             @Param height_range how many meters texture will go up from the texture_start_height 
             @Param corner what texture height we want to change.
@@ -125,7 +125,7 @@ namespace Environment
         */
         void SendTextureHeightMessage(float start_height, float height_range, uint corner);
 
-        /*! Sends modify land message into the server.
+        /** Sends modify land message into the server.
             @param x coordinate of terrain texture.
             @param y coordinate of terrain texture.
             @param brush brush size OpenSim supports following brush sizes (small = 0, medium = 1 and large = 2)
@@ -148,9 +148,9 @@ namespace Environment
         /// Removes local dump environment entity. 
         void RemoveLocalEnvironment();
 
-        MODULE_LOGGING_FUNCTIONS
+        //MODULE_LOGGING_FUNCTIONS
 
-        //! @return Returns name of this module. Needed for logging.
+        /// @return Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
 #ifdef CAELUM
@@ -165,26 +165,26 @@ namespace Environment
         void ShowPostProcessWindow();
 
     private slots:
-        //! Handles the recreation of environment (relevant to Tundra only) when scene is cleared.
+        /// Handles the recreation of environment (relevant to Tundra only) when scene is cleared.
         /// @todo Hopefully this will only be a temporary solution.
         void OnSceneCleared(Scene::SceneManager* scene);
 
     private:
         Q_DISABLE_COPY(EnvironmentModule);
 
-        //! @return Returns type of this module. Needed for logging.
+        /// @return Returns type of this module. Needed for logging.
         static std::string type_name_static_;
 
-        //! Create the terrain.
+        /// Create the terrain.
         void CreateTerrain();
 
-        //! Create the water.
+        /// Create the water.
         void CreateWater();
 
-        //! Create the environment.
+        /// Create the environment.
         void CreateEnvironment();
 
-        //! Create the sky
+        /// Create the sky
         void CreateSky();
 
         void ReleaseTerrain();
@@ -192,50 +192,50 @@ namespace Environment
         void ReleaseEnvironment();
         void ReleaseSky();
 
-        //! Editor for terrain texture weights
+        /// Editor for terrain texture weights
         TerrainWeightEditor* terrainWeightEditor_;
 
-        //! Event manager pointer.
+        /// Event manager pointer.
         EventManagerPtr event_manager_;
 
-        //! Id for Framework event category
+        /// Id for Framework event category
         event_category_id_t framework_event_category_;
 
-        //! Id for Resource event category
+        /// Id for Resource event category
         event_category_id_t resource_event_category_;
 
-        //! Id for NetworkIn event category
+        /// Id for NetworkIn event category
         event_category_id_t network_in_event_category_;
 
-        //! Id for NetworkState event category
+        /// Id for NetworkState event category
         event_category_id_t network_state_event_category_;
 
-        //! Id for Tundra event category
+        /// Id for Tundra event category
         event_category_id_t tundra_event_category_;
 
-        //! Terrain geometry ptr.
+        /// Terrain geometry ptr.
         TerrainPtr terrain_;
 
-        //! Water ptr.
+        /// Water ptr.
         WaterPtr water_;
 
-        //! Environment ptr.
+        /// Environment ptr.
         EnvironmentPtr environment_;
 
-        //! Sky ptr.
+        /// Sky ptr.
         SkyPtr sky_;
 
-        //! Terrain editor pointer.
+        /// Terrain editor pointer.
         EnvironmentEditor *environment_editor_;
 
-        //! PostProcess dialog pointer
+        /// PostProcess dialog pointer
         PostProcessWidget *postprocess_dialog_;
 
 #ifdef ENABLE_TAIGA_SUPPORT
-        //! WorldStream will handle those network messages that we are wishing to send.
+        /// WorldStream will handle those network messages that we are wishing to send.
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
 
-        //! Wait for new terrain heightmap information.
+        /// Wait for new terrain heightmap information.
         bool waiting_for_regioninfomessage_;
 #endif
         ///\todo DELETE this kind of logic and replace with a proper fix. -jj.

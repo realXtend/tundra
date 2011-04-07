@@ -17,7 +17,7 @@
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_ChatBubble");
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_ChatBubble");
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -167,7 +167,7 @@ void EC_ChatBubble::ShowNextMessage()
         pop_timer_->start(count_popped * 4000);
 
         // Remove popped ones from queue
-        for (int index=0; index<count_popped; index++)
+        for(int index=0; index<count_popped; index++)
             messages_.pop_front();
     }
     else

@@ -41,9 +41,9 @@ EC_OgreSky::~EC_OgreSky()
         scene_mgr->setSkyBox(true, genericSkyParameters.material, genericSkyParameters.distance);
         skyEnabled_ = true;
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set skybox: " + std::string(e.what()));
+        ::LogError("Could not set skybox: " + std::string(e.what()));
     }
 }*/
 
@@ -73,9 +73,9 @@ void EC_OgreSky::CreateSky(bool show)
 
             scene_mgr->setSkyBox(show, skyBoxParameters.material, skyBoxParameters.distance, skyBoxParameters.drawFirst, orientation);
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
-            OgreRenderingModule::LogError("Could not set SkyBox: " + std::string(e.what()));
+            ::LogError("Could not set SkyBox: " + std::string(e.what()));
             return;
         }
         
@@ -92,9 +92,9 @@ void EC_OgreSky::CreateSky(bool show)
                 skyDomeParameters.distance, skyDomeParameters.drawFirst, orientation, skyDomeParameters.xSegments,
                 skyDomeParameters.ySegments, skyDomeParameters.ySegmentsKeep);
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
-            OgreRenderingModule::LogError("Could not set SkyDome: " + std::string(e.what()));
+            ::LogError("Could not set SkyDome: " + std::string(e.what()));
             return;
         }
 
@@ -110,9 +110,9 @@ void EC_OgreSky::CreateSky(bool show)
             scene_mgr->setSkyPlane(true, plane, skyPlaneParameters.material, skyPlaneParameters.scale, skyPlaneParameters.tiling, true, 
                                     skyPlaneParameters.bow, skyPlaneParameters.xSegments, skyPlaneParameters.ySegments);
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
-            OgreRenderingModule::LogError("Could not set SkyPlane: " + std::string(e.what()));
+            ::LogError("Could not set SkyPlane: " + std::string(e.what()));
             return;
         }
         
@@ -138,9 +138,9 @@ void EC_OgreSky::CreateSky(bool show)
     {
         scene_mgr->setSkyBox(true, material_name, distance);
     }
-    catch (Ogre::Exception& e)
+    catch(Ogre::Exception& e)
     {
-        OgreRenderingModule::LogError("Could not set SkyBox: " + std::string(e.what()));
+        ::LogError("Could not set SkyBox: " + std::string(e.what()));
         return false;
     }
     
@@ -235,7 +235,7 @@ void EC_OgreSky::SetSkyBoxMaterialTexture(int index, const char *texture_name, s
         // cubemap faces and afterwards remove the new scaled down textures.
         std::vector<Ogre::TexturePtr> scaledTextures;
         scaledTextures.reserve(skyBoxImageCount_);
-        for (size_t n = 0; n < skyBoxImages_.size(); ++n)
+        for(size_t n = 0; n < skyBoxImages_.size(); ++n)
         {
             Ogre::String defaultTextureName = skyBoxImages_[n];
             if (!defaultTextureName.empty())
@@ -264,7 +264,7 @@ void EC_OgreSky::SetSkyBoxMaterialTexture(int index, const char *texture_name, s
         }
 
         const int side[] = {3, 2, 4, 5, 0, 1};
-        for (int i = 0; i < skyBoxImageCount_; ++i)
+        for(int i = 0; i < skyBoxImageCount_; ++i)
         {
             size_t index = side[i];
             if (index < scaledTextures.size())

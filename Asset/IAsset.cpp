@@ -7,7 +7,7 @@
 #include <set>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("IAsset")
+//DEFINE_POCO_LOGGING_FUNCTIONS("IAsset")
 
 #include "IAsset.h"
 #include "IAssetTransfer.h"

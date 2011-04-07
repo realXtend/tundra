@@ -128,16 +128,16 @@ private:
     QList<InvokeItem> invokeHistory; ///< Keeps track of recently invoked entity actions and functions.
     QPointer<Menu> contextMenu; ///< Context menu.
 
-    //! Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
+    /// Used when saving multiple assets, can be used to retrieve a matching filename where to save asset data from asset transfer.
     QMap<QString, QString> filesaves_;
 
-    //! Used by 'Export all', a list of assets that have already been saved, so assets are not saved multiple times.
-    /*! Multiple assets can reference reference another asset, so each asset must be saved only once.
+    /// Used by 'Export all', a list of assets that have already been saved, so assets are not saved multiple times.
+    /** Multiple assets can reference reference another asset, so each asset must be saved only once.
         This must be cleared before starting any assets saving operations.
     */
     QSet<QString> saved_assets_;
 
-    bool fetch_references_; //!< if true, when saving assets, also saves references
+    bool fetch_references_; ///< if true, when saving assets, also saves references
 
 private slots:
     /// Opens selected entities in EC editor window. An existing editor window is used if possible.
@@ -217,7 +217,7 @@ private slots:
     */
     void SaveSceneDialogClosed(int result);
 
-    //! Called by "Export all" file dialog when it's closed
+    /// Called by "Export all" file dialog when it's closed
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */
     void ExportAllDialogClosed(int result);
@@ -230,7 +230,7 @@ private slots:
     /// Executes invoke item or opens it for editing.
     void InvokeActionTriggered();
 
-    //! Save selected asset as
+    /// Save selected asset as
     void SaveAssetAs();
 
     /// Called by SaveAssetAs save file dialog when it's closed.

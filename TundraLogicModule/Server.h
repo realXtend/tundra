@@ -37,112 +37,112 @@ class TUNDRALOGIC_MODULE_API Server : public QObject
     Q_OBJECT
     
 public:
-    //! Constructor
+    /// Constructor
     Server(TundraLogicModule* owner, Foundation::Framework* fw);
     
-    //! Destructor
+    /// Destructor
     ~Server();
     
-    //! Perform any per-frame processing
+    /// Perform any per-frame processing
     void Update(f64 frametime);
     
-    //! Create server scene & start server
-    /*! \return True if successful, false otherwise. No scene will be created if starting the server fails.
+    /// Create server scene & start server
+    /** \return True if successful, false otherwise. No scene will be created if starting the server fails.
      */
     bool Start(unsigned short port);
     
-    //! Stop server & delete server scene
+    /// Stop server & delete server scene
     void Stop();
     
-    //! Get matching userconnection from a messageconnection, or null if unknown
+    /// Get matching userconnection from a messageconnection, or null if unknown
     UserConnection* GetUserConnection(kNet::MessageConnection* source) const;
     
-    //! Get all connected users
+    /// Get all connected users
     UserConnectionList& GetUserConnections() const;
     
-    //! Get all authenticated users
+    /// Get all authenticated users
     UserConnectionList GetAuthenticatedUsers() const;
     
-    //! Handle Kristalli event
+    /// Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
     
-    //! Set current action sender. Called by SyncManager
+    /// Set current action sender. Called by SyncManager
     void SetActionSender(UserConnection* user);
     
 signals:
-    //! A user is connecting. This is your chance to deny access.
-    /*! Call user->Disconnect() to deny access and kick the user out
+    /// A user is connecting. This is your chance to deny access.
+    /** Call user->Disconnect() to deny access and kick the user out
      */ 
     void UserAboutToConnect(int connectionID, UserConnection* connection);
      
-    //! A user has connected (and authenticated)
+    /// A user has connected (and authenticated)
     void UserConnected(int connectionID, UserConnection* connection);
     
-    //! A user has disconnected
+    /// A user has disconnected
     void UserDisconnected(int connectionID, UserConnection* connection);
     
-    //! The server has been started
+    /// The server has been started
     void ServerStarted();
     
-    //! The server has been stopped
+    /// The server has been stopped
     void ServerStopped();
     
 public slots:
-    //! Get whether server is running
+    /// Get whether server is running
     bool IsRunning() const;
 
-    //! Get whether server is about to start.
+    /// Get whether server is about to start.
     bool IsAboutToStart() const;
 
-    //! Get the running servers port.
+    /// Get the running servers port.
     /// \return int Valid port if server is running. -1 if server is not running.
     int GetPort() const;
 
-    //! Get the running servers protocol.
+    /// Get the running servers protocol.
     /// \note This function returns QString due we dont want kNet::TransportLayer enum here. If the module creators feels its ok then change this.
     /// \return QString Will return 'udp' or 'tcp' if server is running. Otherwise an empty string.
     QString GetProtocol() const;
     
-    //! Get connected users' connection ID's
+    /// Get connected users' connection ID's
     QVariantList GetConnectionIDs() const;
     
-    //! Get userconnection structure corresponding to connection ID
+    /// Get userconnection structure corresponding to connection ID
     UserConnection* GetUserConnection(int connectionID) const;
     
-    //! Get current sender of an action. Valid (non-null) only while an action packet is being handled. Null if it was invoked by server
+    /// Get current sender of an action. Valid (non-null) only while an action packet is being handled. Null if it was invoked by server
     UserConnection* GetActionSender() const;
     
-    //! Initialize server datatypes for a script engine
+    /// Initialize server datatypes for a script engine
     void OnScriptEngineCreated(QScriptEngine* engine);
     
 private:
-    //! Handle a Kristalli protocol message
+    /// Handle a Kristalli protocol message
     void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
-    //! Handle a user disconnecting
+    /// Handle a user disconnecting
     void HandleUserDisconnected(UserConnection* user);
     
-    //! Handle a login message
+    /// Handle a login message
     void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
     
-    //! Kristalli event category
+    /// Kristalli event category
     event_category_id_t kristalliEventCategory_;
-    //! Tundra event category
+    /// Tundra event category
     event_category_id_t tundraEventCategory_;
     
-    //! Current action sender
+    /// Current action sender
     UserConnection* actionsender_;
     
-    //! Owning module
+    /// Owning module
     TundraLogicModule* owner_;
     
-    //! Framework pointer
+    /// Framework pointer
     Foundation::Framework* framework_;
 
-    //! Current running servers port.
+    /// Current running servers port.
     int current_port_;
 
-    //! Current running servers protocol.
+    /// Current running servers protocol.
     QString current_protocol_;
 };
 

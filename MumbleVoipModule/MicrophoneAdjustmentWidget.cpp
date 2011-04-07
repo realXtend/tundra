@@ -74,7 +74,7 @@ namespace MumbleVoip
 
         int bytes_per_frame = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
         PCMAudioFrame frame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_per_frame );
-        while (sound_service->GetRecordedSoundSize() > bytes_per_frame)
+        while(sound_service->GetRecordedSoundSize() > bytes_per_frame)
         {
             int bytes = sound_service->GetRecordedSoundData(frame.DataPtr(), bytes_per_frame);
             if (bytes != bytes_per_frame)

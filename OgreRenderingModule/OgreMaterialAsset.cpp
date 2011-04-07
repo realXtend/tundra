@@ -9,7 +9,7 @@
 #include "AssetAPI.h"
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("OgreMaterialAsset")
+//DEFINE_POCO_LOGGING_FUNCTIONS("OgreMaterialAsset")
 
 using namespace OgreRenderer;
 
@@ -33,7 +33,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
     const std::string assetName = this->Name().toStdString();
     Ogre::MaterialManager& matmgr = Ogre::MaterialManager::getSingleton(); 
-    OgreRenderingModule::LogDebug("Parsing material " + assetName);
+    ::LogDebug("Parsing material " + assetName);
     
     if (!data_)
     {
@@ -62,7 +62,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         // Parsed/modified material script
         std::ostringstream output;
         
-        while (!data->eof())
+        while(!data->eof())
         {
             Ogre::String line = data->getLine();
             
@@ -170,7 +170,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
         }
 
-    } catch (Ogre::Exception &e)
+    } catch(Ogre::Exception &e)
     {
         LogWarning("DeserializeFromData: Failed to parse Ogre material " + assetName + ", reason: " + std::string(e.what()));
         try
@@ -178,7 +178,7 @@ bool OgreMaterialAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
             if (!matmgr.getByName(sanitatedname).isNull())
                 Ogre::MaterialManager::getSingleton().remove(sanitatedname);
         }
-        catch (...) {}
+        catch(...) {}
         
         return false;
     }
@@ -207,11 +207,11 @@ bool OgreMaterialAsset::SerializeTo(std::vector<u8> &data, const QString &serial
         data.insert(data.end(), &materialData[0], &materialData[0] + materialData.length());
         //serializer.exportQueued(filename);
     } 
-    catch (std::exception &e)
+    catch(std::exception &e)
     {
-        OgreRenderingModule::LogError("SerializeTo: Failed to export Ogre material " + Name().toStdString() + ":");
+        ::LogError("SerializeTo: Failed to export Ogre material " + Name().toStdString() + ":");
         if (e.what())
-            OgreRenderingModule::LogError(e.what());
+            ::LogError(e.what());
         return false;
     }
     return true;
@@ -247,5 +247,5 @@ void OgreMaterialAsset::DoUnload()
     {
         Ogre::MaterialManager::getSingleton().remove(materialName);
     }
-    catch (...) {}
+    catch(...) {}
 }

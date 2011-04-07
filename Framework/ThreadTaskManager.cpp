@@ -19,7 +19,7 @@ namespace Foundation
     ThreadTaskManager::~ThreadTaskManager()
     {
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-        while (i != tasks_.end())
+        while(i != tasks_.end())
         {
             (*i)->Stop();
             (*i)->SetThreadTaskManager(0);
@@ -30,11 +30,11 @@ namespace Foundation
     void ThreadTaskManager::AddThreadTask(ThreadTaskPtr task)
     {
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-        while (i != tasks_.end())
+        while(i != tasks_.end())
         {
             if ((*i) == task)
             {
-                RootLogWarning("Thread task " + task->GetTaskDescription() + " already added");
+                LogWarning("Thread task " + task->GetTaskDescription() + " already added");
                 return; // Already added
             }
             ++i;
@@ -47,7 +47,7 @@ namespace Foundation
     void ThreadTaskManager::RemoveThreadTask(ThreadTaskPtr task)
     {
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-        while (i != tasks_.end())
+        while(i != tasks_.end())
         {
             if ((*i) == task)
             {
@@ -59,13 +59,13 @@ namespace Foundation
             ++i;
         }
         
-        RootLogWarning("Can not remove thread task " + task->GetTaskDescription() + ", not found");
+        LogWarning("Can not remove thread task " + task->GetTaskDescription() + ", not found");
     }
 
     void ThreadTaskManager::RemoveThreadTask(const std::string& task_description)
     {
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-        while (i != tasks_.end())
+        while(i != tasks_.end())
         {
             if ((*i)->GetTaskDescription() == task_description)
             {
@@ -77,13 +77,13 @@ namespace Foundation
             ++i;
         }
         
-        RootLogWarning("Can not remove thread task " + task_description + ", not found");
+        LogWarning("Can not remove thread task " + task_description + ", not found");
     }
     
     void ThreadTaskManager::RemoveThreadTasks()
     {
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-        while (i != tasks_.end())
+        while(i != tasks_.end())
         {
             (*i)->Stop();
             (*i)->SetThreadTaskManager(0);
@@ -96,7 +96,7 @@ namespace Foundation
     ThreadTaskPtr ThreadTaskManager::GetThreadTask(const std::string& task_description)
     {
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-        while (i != tasks_.end())
+        while(i != tasks_.end())
         {
             if ((*i)->GetTaskDescription() == task_description)
                 return (*i);
@@ -111,7 +111,7 @@ namespace Foundation
         if (request)
         {
             std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-            while (i != tasks_.end())
+            while(i != tasks_.end())
             {
                 if ((*i)->GetTaskDescription() == task_description)
                 {
@@ -123,11 +123,11 @@ namespace Foundation
                 ++i;
             }
             
-            RootLogError("No thread task matching task description " + task_description + ", could not queue request");
+            LogError("No thread task matching task description " + task_description + ", could not queue request");
         }
         else
         {
-            RootLogError("Null request passed to AddRequest");
+            LogError("Null request passed to AddRequest");
         }
         
         return 0;
@@ -146,7 +146,7 @@ namespace Foundation
         event_category_id_t threadtask_category = event_manager->QueryEventCategory("Task");
         
         std::vector<ThreadTaskResultPtr>::iterator i = results.begin();
-        while (i != results.end())
+        while(i != results.end())
         {
             event_manager->SendEvent(threadtask_category, Task::Events::REQUEST_COMPLETED, (*i).get());
             ++i;
@@ -159,7 +159,7 @@ namespace Foundation
         
         // Get non-queued results from tasks, delete finished tasks
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-        while (i != tasks_.end())
+        while(i != tasks_.end())
         {
             if ((*i)->HasFinished())
             {
@@ -176,7 +176,7 @@ namespace Foundation
             MutexLock lock(result_mutex_);
 
             std::list<ThreadTaskResultPtr>::iterator i = results_.begin();
-            while (i != results_.end())
+            while(i != results_.end())
             {
                 results.push_back(*i);
                 ++i;
@@ -194,7 +194,7 @@ namespace Foundation
         
         // Get non-queued results from tasks, delete finished tasks
         std::vector<ThreadTaskPtr>::iterator i = tasks_.begin();
-        while (i != tasks_.end())
+        while(i != tasks_.end())
         {
             if (((*i)->GetTaskDescription() == task_description) && ((*i)->HasFinished()))
             {
@@ -211,7 +211,7 @@ namespace Foundation
             MutexLock lock(result_mutex_);
 
             std::list<ThreadTaskResultPtr>::iterator i = results_.begin();
-            while (i != results_.end())
+            while(i != results_.end())
             {
                 if ((*i)->task_description_ == task_description)
                 {
@@ -238,7 +238,7 @@ namespace Foundation
         {
             MutexLock lock(result_mutex_);
             std::list<ThreadTaskResultPtr>::iterator i = results_.begin();
-            while (i != results_.end())
+            while(i != results_.end())
             {
                 if ((*i)->task_description_ == task_description)
                     ++num;

@@ -26,11 +26,11 @@ namespace MumbleVoip
         void StopSpeaking();
     };
 
-    //! A very simple voice indicator 
-    //! 
-    //! Analyzes every audio packet for average absolute sample value.
-    //! Positive audio packet sets speaking on for a certain time and if
-    //! no voice is detect during that time then speaking is set to false.
+    /// A very simple voice indicator 
+    /// 
+    /// Analyzes every audio packet for average absolute sample value.
+    /// Positive audio packet sets speaking on for a certain time and if
+    /// no voice is detect during that time then speaking is set to false.
     class SimpleVoiceIndicator : public VoiceIndicatorInterface
     {
         Q_OBJECT

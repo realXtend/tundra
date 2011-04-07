@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "CoreStringUtils.h"
 
-#include <Poco/LocalDateTime.h>
+//#include <Poco/LocalDateTime.h>
 
 std::wstring ToWString(const std::string &str)
 {
@@ -29,9 +29,11 @@ std::vector<s8> StringToBuffer(const std::string& str)
     return ret;
 }
 
-//! Get the current time as a string.
+/// Get the current time as a string.
 std::string GetLocalTimeString()
 {
+    return "";
+/*
     Poco::LocalDateTime *time = new Poco::LocalDateTime();
     std::stringstream ss;
     
@@ -42,11 +44,14 @@ std::string GetLocalTimeString()
     SAFE_DELETE(time);
     
     return ss.str();
+    */
 }
 
-//! Get the current date and time as a string.
+/// Get the current date and time as a string.
 std::string GetLocalDateTimeString()
 {
+    return "";
+/*
     Poco::LocalDateTime *time = new Poco::LocalDateTime();
     std::stringstream ss;
     
@@ -59,7 +64,7 @@ std::string GetLocalDateTimeString()
     
     SAFE_DELETE(time);
     
-    return ss.str();
+    return ss.str();*/
 }
 
 StringVector SplitString(const std::string& str, char separator)
@@ -67,11 +72,11 @@ StringVector SplitString(const std::string& str, char separator)
     std::vector<std::string> vec;
     unsigned pos = 0;
 
-    while (pos < str.length())
+    while(pos < str.length())
     {
         unsigned start = pos;
         
-        while (start < str.length())
+        while(start < str.length())
         {
             if (str[start] == separator)
                 break;
@@ -87,7 +92,7 @@ StringVector SplitString(const std::string& str, char separator)
         
         unsigned end = start;
 
-        while (end < str.length())
+        while(end < str.length())
         {
             if (str[end] != separator)
                 break;
@@ -119,7 +124,7 @@ std::string ReplaceChar(const std::string& str, char replace_this, char replace_
 void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, const std::string &replace_with)
 {
     std::size_t index = str.find(replace_this, 0);
-    while (index != std::string::npos)
+    while(index != std::string::npos)
     {
         str.replace(index, replace_this.length(), replace_with);
         index = str.find(replace_this, 0);
@@ -129,7 +134,7 @@ void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, 
 
 void ReplaceCharInplace(std::string& str, char replace_this, char replace_with)
 {
-    for (uint i = 0; i < str.length(); ++i)
+    for(uint i = 0; i < str.length(); ++i)
         if (str[i] == replace_this) str[i] = replace_with;
 }
 
@@ -142,7 +147,7 @@ uint GetHash(const std::string& str)
     
     const char* cstr = str.c_str();
     
-    while (*cstr)
+    while(*cstr)
     {
         // Note: calculate case-insensitive hash
         char c = *cstr;

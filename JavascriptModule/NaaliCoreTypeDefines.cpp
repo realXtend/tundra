@@ -19,7 +19,7 @@
 #include <QScriptValueIterator>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
+//DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
 
 Q_DECLARE_METATYPE(IAttribute*);
 Q_DECLARE_METATYPE(Scene::EntityPtr);
@@ -177,7 +177,7 @@ void fromScriptValueAssetReferenceList(const QScriptValue &obj, AssetReferenceLi
     s.refs.clear();
 
     QScriptValueIterator it(obj);
-    while (it.hasNext()) 
+    while(it.hasNext()) 
     {
         it.next();
         AssetReference reference(it.value().toString());
@@ -197,7 +197,7 @@ void fromScriptValueEntityList(const QScriptValue &obj, QList<Scene::Entity*> &e
 {
     ents.clear();
     QScriptValueIterator it(obj);
-    while (it.hasNext())
+    while(it.hasNext())
     {
         it.next();
         QObject *qent = it.value().toQObject();

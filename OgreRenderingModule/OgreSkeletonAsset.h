@@ -7,8 +7,8 @@
 #include "OgreModuleApi.h"
 #include <OgreSkeleton.h>
 
-//! An Ogre-specific skeleton resource, contains bone structure and skeletal animations
-/*! \ingroup OgreRenderingModuleClient */
+/// An Ogre-specific skeleton resource, contains bone structure and skeletal animations
+/** \ingroup OgreRenderingModuleClient */
 class OGRE_MODULE_API OgreSkeletonAsset : public IAsset
 {
     Q_OBJECT;

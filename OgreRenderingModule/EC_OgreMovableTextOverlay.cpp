@@ -158,14 +158,14 @@ void EC_OgreMovableTextOverlay::SetPlaceable(ComponentPtr placeable)
 
     if (!placeable)
     {
-        OgreRenderingModule::LogError("Null placeable for overlay");
+        ::LogError("Null placeable for overlay");
         return;
     }
 
     EC_Placeable* placeableptr = dynamic_cast<EC_Placeable*>(placeable.get());
     if (!placeableptr)
     {
-        OgreRenderingModule::LogError("Placeable is not" + EC_Placeable::TypeNameStatic().toStdString());
+        ::LogError("Placeable is not" + EC_Placeable::TypeNameStatic().toStdString());
         return;
     }
 
@@ -250,7 +250,7 @@ void EC_OgreMovableTextOverlay::SetMaterial(const std::string& new_base_material
         container_->setMaterialName(materialName_);
     }
     else
-        OgreRenderingModule::LogError("Invalid material name!");
+        ::LogError("Invalid material name!");
 }
 
 void EC_OgreMovableTextOverlay::SetOffset(const Vector3df& offset)

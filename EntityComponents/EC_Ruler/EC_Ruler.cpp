@@ -24,7 +24,7 @@
 #include "CoreMath.h"
 #include <Ogre.h>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Ruler")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Ruler")
 
 #include "MemoryLeakCheck.h"
 
@@ -91,7 +91,7 @@ void  EC_Ruler::Show()
     
     rulerObject->setVisible(true);
     
-    if ( gridObject )
+    if (gridObject )
         gridObject->setVisible(true);
     
 }
@@ -109,7 +109,7 @@ void  EC_Ruler::Hide()
     
     rulerObject->setVisible(false);
     
-    if ( gridObject )
+    if (gridObject )
         gridObject->setVisible(false);
 }
 

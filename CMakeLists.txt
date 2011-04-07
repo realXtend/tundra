@@ -170,7 +170,7 @@ file(TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 
 # Find needed external libraries, abort on error
 configure_boost()
-configure_poco()
+#configure_poco()
 configure_qt4()
 configure_python()
 configure_python_qt()
@@ -185,7 +185,7 @@ configure_vorbis ()
 #configure_openjpeg()
 
 use_package(BOOST)
-use_package(POCO)
+#use_package(POCO)
 use_package(OGRE)
 use_package(QT4)
 use_package(OPENAL)

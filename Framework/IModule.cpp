@@ -14,9 +14,10 @@
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
+#include "LoggingFunctions.h"
 #include "ConsoleCommandServiceInterface.h"
 
-#include <Poco/Logger.h>
+//#include <Poco/Logger.h>
 
 static const int DEFAULT_EVENT_PRIORITY = 100;
 
@@ -25,6 +26,7 @@ using namespace Foundation;
 IModule::IModule(const std::string &name) :
     name_(name), state_(MS_Unloaded), framework_(0)
 {
+/*
     try
     {
 #ifdef _DEBUG
@@ -34,15 +36,16 @@ IModule::IModule(const std::string &name) :
 #endif            
         Poco::Logger::create(Name(),Poco::Logger::root().getChannel(), loggingLevel);
     }
-    catch (const std::exception &e)
+    catch(const std::exception &e)
     {
-        RootLogError("Failed to create logger " + Name() + ":" + std::string(e.what()));
+        LogError("Failed to create logger " + Name() + ":" + std::string(e.what()));
     }
+*/
 }
 
 IModule::~IModule()
 {
-    Poco::Logger::destroy(Name());
+ //   Poco::Logger::destroy(Name());
 }
 
 Framework *IModule::GetFramework() const
@@ -56,7 +59,7 @@ void IModule::RegisterConsoleCommand(const Console::Command &command)
     //assert(console);
     if (!console)
     {
-        Poco::Logger::get(Name()).error(std::string("Error: Unable to register console command ") + command.name_ + std::string(". Console service not loaded!"));
+        LogError(std::string("Unable to register console command ") + command.name_ + std::string(". Console service not loaded!"));
         return;
     }
 
@@ -68,21 +71,21 @@ void IModule::InitializeInternal()
     assert(framework_ != 0);
     assert(state_ == MS_Loaded);
 
-    //! Register components
+    /// Register components
     for(size_t n = 0; n < component_registrars_.size(); ++n)
         component_registrars_[n]->Register(framework_, this);
 
-    //! Register commands
+    /// Register commands
     if (console_commands_.size() > 0)
     {
-        Poco::Logger::get(Name()).warning("Warning: Use of AutoRegisterConsoleCommand is deprecated. Use RegisterConsoleCommand instead.");
-        Poco::Logger::get(Name()).warning("Warning: console_commands_ is deprecated and will be phased out soon.");
+        LogWarning("Use of AutoRegisterConsoleCommand is deprecated. Use RegisterConsoleCommand instead.");
+        LogWarning("console_commands_ is deprecated and will be phased out soon.");
         boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
         // If you hit this assert, you're trying to register console commands before the console service even exists.
         // Workarounds: 1) Add a dependency to ConsoleModule into your module XML file (not preferred)
         //              2) Use RegisterConsoleCommand instead of AutoRegisterConsoleCommand to register the console command.
         if (!console)
-            Poco::Logger::get(Name()).error("Critical: Console service not loaded yet! Console command registration failed!");
+            LogError("Critical: Console service not loaded yet! Console command registration failed!");
 //        assert(console); 
         if (GetFramework()->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand) && console.get())
             for(CommandVector::iterator it = console_commands_.begin(); it != console_commands_.end(); ++it)
@@ -100,7 +103,7 @@ void IModule::UninitializeInternal()
     assert(framework_ != 0);
     if (state_ != MS_Initialized)
     {
-        Poco::Logger::get(Name()).error("Uninitialize called on non-initialized module");
+        LogError("Uninitialize called on non-initialized module");
         // Initialization failed somehow, can't do proper uninit
         return;
     }
@@ -109,7 +112,7 @@ void IModule::UninitializeInternal()
         component_registrars_[n]->Unregister(framework_);
 
     // Unregister commands
-    for (CommandVector::iterator it = console_commands_.begin(); it != console_commands_.end(); ++it)
+    for(CommandVector::iterator it = console_commands_.begin(); it != console_commands_.end(); ++it)
         if (framework_->GetServiceManager()->IsRegistered(Service::ST_ConsoleCommand))
         {
             boost::weak_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand);

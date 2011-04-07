@@ -9,7 +9,7 @@
 #include <Ogre.h>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("OgreTextureAsset")
+//DEFINE_POCO_LOGGING_FUNCTIONS("OgreTextureAsset")
 
 TextureAsset::~TextureAsset()
 {
@@ -70,7 +70,7 @@ bool TextureAsset::DeserializeFromData(const u8 *data, size_t numBytes)
 
         return true;
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
         LogError("DeserializeFromData: Failed to create texture " + this->Name().toStdString() + ": " + std::string(e.what()));
         return false;
@@ -115,9 +115,9 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
         // if there are multiple faces and mipmaps we must pack them into the data
         // faces, then mips
         void* currentPixData = pixData;
-        for (size_t face = 0; face < ogreTexture->getNumFaces(); ++face)
+        for(size_t face = 0; face < ogreTexture->getNumFaces(); ++face)
         {
-            for (size_t mip = 0; mip < numMips; ++mip)
+            for(size_t mip = 0; mip < numMips; ++mip)
             {
                 size_t mipDataSize = Ogre::PixelUtil::getMemorySize(ogreTexture->getWidth(), ogreTexture->getHeight(), ogreTexture->getDepth(), ogreTexture->getFormat());
                 Ogre::PixelBox pixBox(ogreTexture->getWidth(), ogreTexture->getHeight(), ogreTexture->getDepth(), ogreTexture->getFormat(), currentPixData);
@@ -135,11 +135,11 @@ bool TextureAsset::SerializeTo(std::vector<u8> &data, const QString &serializati
             data.resize(imageStream->size());
             imageStream->read(&data[0], data.size());
         }
-    } catch (std::exception &e)
+    } catch(std::exception &e)
     {
         LogError("SerializeTo: Failed to export Ogre texture " + Name().toStdString() + ":");
         if (e.what())
-            OgreRenderer::OgreRenderingModule::LogError(e.what());
+            LogError(e.what());
         return false;
     }
     return true;
@@ -163,7 +163,7 @@ void TextureAsset::DoUnload()
     {
         Ogre::TextureManager::getSingleton().remove(ogreAssetName.toStdString());
     }
-    catch (...) {}
+    catch(...) {}
 }
 
 bool TextureAsset::IsLoaded() const

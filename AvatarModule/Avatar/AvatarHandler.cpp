@@ -292,7 +292,7 @@ namespace Avatar
         // ofs 16 - velocity xyz - packed to 6 bytes
         // ofs 22 - rotation - packed to 8 bytes
         
-        //! \todo handle endians
+        /// \todo handle endians
         int i = 0;
         uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);
         i += 4;
@@ -319,7 +319,7 @@ namespace Avatar
             netpos->orientation_ = rotation;
         }
 
-        //! \todo what to do with acceleration & rotation velocity? zero them currently
+        /// \todo what to do with acceleration & rotation velocity? zero them currently
         netpos->accel_ = Vector3df::ZERO;
         netpos->rotvel_ = Vector3df::ZERO;
         netpos->Updated();
@@ -342,7 +342,7 @@ namespace Avatar
         // ofs 46 - rotation - packed to 8 bytes 
         // ofs 54 - rotational vel - packed to 6 bytes
         
-        //! \todo handle endians
+        /// \todo handle endians
         int i = 0;
         uint32_t localid = *reinterpret_cast<uint32_t*>((uint32_t*)&bytes[i]);
         i += 22;
@@ -420,7 +420,7 @@ namespace Avatar
             return false;
 
         // Convert any ',' to '.'
-        for (uint i = 0; i < params.size(); ++i)
+        for(uint i = 0; i < params.size(); ++i)
             ReplaceCharInplace(params[i], ',', '.');
 
         RexUUID avatarid(params[0]);
@@ -667,7 +667,7 @@ namespace Avatar
         
         // Convert uuid's to actual animation names
         std::vector<QString> anims_to_start;
-        for (unsigned i = 0; i < anim_ids.size(); ++i)
+        for(unsigned i = 0; i < anim_ids.size(); ++i)
         {
             AnimationDefinitionMap::const_iterator def = anim_defs.find(anim_ids[i]);
             if (def != anim_defs.end())
@@ -678,14 +678,14 @@ namespace Avatar
         std::vector<QString> anims_to_stop;
         const EC_AnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
         EC_AnimationController::AnimationMap::const_iterator anim = running_anims.begin();
-        while (anim != running_anims.end())
+        while(anim != running_anims.end())
         {
             if (std::find(anims_to_start.begin(), anims_to_start.end(), anim->first) == anims_to_start.end())
                 anims_to_stop.push_back(anim->first);
             ++anim;
         }
         
-        for (unsigned i = 0; i < anims_to_start.size(); ++i)
+        for(unsigned i = 0; i < anims_to_start.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_start[i]);
             QString animname = QString::fromStdString(def.animation_name_);
@@ -698,7 +698,7 @@ namespace Avatar
                 animctrl->SetAnimationTimePosition(animname, 0.0);
         }
 
-        for (unsigned i = 0; i < anims_to_stop.size(); ++i)
+        for(unsigned i = 0; i < anims_to_stop.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_stop[i]);
             QString animname = QString::fromStdString(def.animation_name_);
@@ -724,7 +724,7 @@ namespace Avatar
         
         const EC_AnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
         EC_AnimationController::AnimationMap::const_iterator anim = running_anims.begin();
-        while (anim != running_anims.end())
+        while(anim != running_anims.end())
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anim->first);
             // If animation is velocity-adjusted, adjust animation speed by network position speed (horizontal plane movement only)

@@ -27,15 +27,15 @@ namespace PythonScript
 
     class PythonScriptModule;
     
-    //! Python code runner
-    //! created by PythonScriptModule.
+    /// Python code runner
+    /// created by PythonScriptModule.
     class PythonEngine// : public Foundation::ScriptServiceInterface
     {
     public:
         PythonEngine(Foundation::Framework* framework);
         virtual ~PythonEngine();
 
-        //! initializes the interpreter / engine
+        /// initializes the interpreter / engine
         void Initialize();
         void Uninitialize();
 
@@ -60,10 +60,10 @@ namespace PythonScript
 
 
     private:
-        //! scripting module we belong to - needed for logging?
+        /// scripting module we belong to - needed for logging?
         //PythonScriptModule* module_;
         
-        //! framework we belong to
+        /// framework we belong to
         Foundation::Framework* framework_;        
     };
 

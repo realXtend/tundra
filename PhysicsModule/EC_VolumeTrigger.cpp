@@ -15,7 +15,7 @@
 #include <OgreAxisAlignedBox.h>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_VolumeTrigger");
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_VolumeTrigger");
 
 
 EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
@@ -156,7 +156,7 @@ bool EC_VolumeTrigger::IsInsideVolume(const Vector3df& point) const
 
 void EC_VolumeTrigger::AttributeUpdated(IAttribute* attribute)
 {
-    //! \todo Attribute updates not handled yet, there are a bit too many problems of what signals to send after the update -cm
+    /// \todo Attribute updates not handled yet, there are a bit too many problems of what signals to send after the update -cm
 
     //if (attribute == &mass)
     //    ReadBody();
@@ -197,7 +197,7 @@ void EC_VolumeTrigger::CheckForRigidBody()
 void EC_VolumeTrigger::OnPhysicsUpdate()
 {
     QMap<Scene::EntityWeakPtr, bool>::iterator i = entities_.begin();
-    while (i != entities_.end())
+    while(i != entities_.end())
     {
         if (!i.value())
         {

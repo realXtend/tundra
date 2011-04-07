@@ -7,8 +7,8 @@
 
 class IComponent;
 
-//! A class implements this interface to provide factory functionality for generating one type of entity-components.
-/*! Each EC has its own factory for creating the component.
+/// A class implements this interface to provide factory functionality for generating one type of entity-components.
+/** Each EC has its own factory for creating the component.
 
     \note When creating new entity components, it is not necessary to use this class if DECLARE_EC -macro is used.
 */

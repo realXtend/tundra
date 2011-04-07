@@ -6,8 +6,8 @@
 #include "CoreModuleApi.h"
 #include "boost/shared_ptr.hpp"
 
-//! Common interface for all services
-/*!
+/// Common interface for all services
+/**
     \ingroup Foundation_group
     \ingroup Services_group
 */
@@ -23,8 +23,8 @@ typedef boost::weak_ptr<IService> ServiceWeakPtr;
 
 namespace Service
 {
-    //! Service types. When creating a new core service, add it here.
-    /*! If you can't or don't want to alter the framework, an arbitrary
+    /// Service types. When creating a new core service, add it here.
+    /** If you can't or don't want to alter the framework, an arbitrary
         int can be used as service type. For details, see \ref creating_services.
         \ingroup Services_group
         \todo Get rid of this as we did with module enumeration!

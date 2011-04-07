@@ -79,7 +79,7 @@ namespace MumbleVoip
 
     void Participant::OnPositionUpdated()
     {
-        //! @todo ENSURE THAT user_ OBJECT IS NOT DELETED
+        /// @todo ENSURE THAT user_ OBJECT IS NOT DELETED
         if (!user_)
             return;
         

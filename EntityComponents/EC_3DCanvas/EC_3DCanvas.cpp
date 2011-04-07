@@ -69,7 +69,7 @@ EC_3DCanvas::~EC_3DCanvas()
         {
             Ogre::MaterialManager::getSingleton().remove(material_name_);
         }
-        catch (...) {}
+        catch(...) {}
     }
 
     if (!texture_name_.empty())
@@ -78,7 +78,7 @@ EC_3DCanvas::~EC_3DCanvas()
         {
             Ogre::TextureManager::getSingleton().remove(texture_name_);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -113,7 +113,7 @@ void EC_3DCanvas::MeshMaterialsUpdated(uint index, const QString &material_name)
     if(material_name.compare(QString(material_name_.c_str())) != 0 )
     {
         bool has_index = false;
-        for (int i=0; i<submeshes_.length(); i++)
+        for(int i=0; i<submeshes_.length(); i++)
         {
             if (index == submeshes_[i])
                 has_index = true;
@@ -254,7 +254,7 @@ void EC_3DCanvas::UpdateSubmeshes()
     }
 
     // Iterate trough sub meshes
-    for (uint index = 0; index < submesh_count; ++index)
+    for(uint index = 0; index < submesh_count; ++index)
     {
         // Store original materials
         std::string submesh_material_name;
@@ -320,7 +320,7 @@ void EC_3DCanvas::RestoreOriginalMeshMaterials()
     }
 
     // Iterate trough sub meshes
-    for (uint index = 0; index < submesh_count; ++index)
+    for(uint index = 0; index < submesh_count; ++index)
     {
         // If submesh not contained, restore the original material
         if (ec_mesh)

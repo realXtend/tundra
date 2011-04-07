@@ -13,8 +13,8 @@ namespace Foundation
     class Framework;
 }
 
-//! Base class for all objects that register their entity-component factory services to the framework.
-/*!
+/// Base class for all objects that register their entity-component factory services to the framework.
+/**
     \note It is not necessary to use this class if DECLARE_EC -macro is used.
 */
 class IComponentRegistrar
@@ -23,10 +23,10 @@ public:
     IComponentRegistrar()  {}
     virtual ~IComponentRegistrar() {}
 
-    //! registers component to the framework
+    /// registers component to the framework
     virtual void Register(Foundation::Framework *framework, IModule* module) = 0;
 
-    //! unregisters component to framework
+    /// unregisters component to framework
     virtual void Unregister(Foundation::Framework *framework) = 0;
 };
 

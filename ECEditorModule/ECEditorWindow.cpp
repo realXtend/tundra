@@ -30,7 +30,7 @@
 #include "InputAPI.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("ECEditorWindow");
+//DEFINE_POCO_LOGGING_FUNCTIONS("ECEditorWindow");
 
 #include <QUiLoader>
 #include <QDomDocument>
@@ -39,7 +39,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("ECEditorWindow");
 
 uint AddUniqueListItem(Scene::Entity *entity, QListWidget* list, const QString& name)
 {
-    for (int i = 0; i < list->count(); ++i)
+    for(int i = 0; i < list->count(); ++i)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(list->item(i));
         if (item && !item->GetEntity().isNull() && item->GetEntity().data() == entity)
@@ -50,7 +50,7 @@ uint AddUniqueListItem(Scene::Entity *entity, QListWidget* list, const QString& 
     return list->count() - 1;
 }
 
-//! Function that is used by std::sort algorithm to sort entities by their ids.
+/// Function that is used by std::sort algorithm to sort entities by their ids.
 bool CmpEntityById(Scene::EntityPtr a, Scene::EntityPtr b)
 {
     return a->GetId() < b->GetId();
@@ -83,7 +83,7 @@ void ECEditorWindow::AddEntity(entity_id_t entity_id, bool udpate_ui)
         if(entity && entity->HasComponent("EC_Name"))
             entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
 
-        //! @todo This will now work if we loose windows focus and previos key state stays, replace this with InputContext.
+        /// @todo This will now work if we loose windows focus and previos key state stays, replace this with InputContext.
         if(!framework_->Input()->IsKeyDown(Qt::Key_Control))
             entity_list_->clearSelection();
 
@@ -154,7 +154,7 @@ void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
 
     entity_list_->blockSignals(true);
     foreach(entity_id_t id, ids)
-        for (uint i = 0; i < entity_list_->count(); ++i)
+        for(uint i = 0; i < entity_list_->count(); ++i)
         {
             QListWidgetItem *item = entity_list_->item(i);
             if (id == (entity_id_t)item->text().toInt())
@@ -245,8 +245,8 @@ void ECEditorWindow::DeleteEntity()
 
 void ECEditorWindow::CopyEntity()
 {
-    //! @todo will only take a copy of first entity of the selection. 
-    //! should we support multi entity copy and paste functionality.
+    /// @todo will only take a copy of first entity of the selection. 
+    /// should we support multi entity copy and paste functionality.
     QDomDocument temp_doc;
 
     foreach(Scene::EntityPtr entity, GetSelectedEntities())
@@ -274,7 +274,7 @@ void ECEditorWindow::PasteEntity()
     if(findChild<QObject*>("EntityPlacer"))
         return;
     // First we need to check if component is holding EC_OgrePlacable component to tell where entity should be located at.
-    //! \todo local only server wont save those objects.
+    /// \todo local only server wont save those objects.
     Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     assert(scene);
     if(!scene)
@@ -775,7 +775,7 @@ void ECEditorWindow::Initialize()
 void ECEditorWindow::DefaultSceneChanged(Scene::SceneManager *scene)
 {
     assert(scene);
-    //! todo disconnect previous scene connection.
+    /// todo disconnect previous scene connection.
     connect(scene, SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
             SLOT(EntityRemoved(Scene::Entity*)), Qt::UniqueConnection);
     connect(scene, SIGNAL(ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)),
@@ -837,7 +837,7 @@ QList<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities() const
     if (!scene)
         return ret;
 
-    for (uint i = 0; i < entity_list_->count(); ++i)
+    for(uint i = 0; i < entity_list_->count(); ++i)
     {
         EntityListWidgetItem *item = dynamic_cast<EntityListWidgetItem*>(entity_list_->item(i));
         if (item && item->GetEntity() && item->isSelected())

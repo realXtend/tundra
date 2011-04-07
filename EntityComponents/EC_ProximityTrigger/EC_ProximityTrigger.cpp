@@ -14,7 +14,7 @@
 #include "LoggingFunctions.h"
 #include "FrameAPI.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_ProximityTrigger")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_ProximityTrigger")
 
 EC_ProximityTrigger::EC_ProximityTrigger(IModule *module)
     :IComponent(module->GetFramework()),
@@ -54,7 +54,7 @@ void EC_ProximityTrigger::Update(float timeStep)
         return;
     
     Scene::EntityList otherTriggers = mgr->GetEntitiesWithComponent(EC_ProximityTrigger::TypeNameStatic());
-    for (Scene::EntityList::iterator i = otherTriggers.begin(); i != otherTriggers.end(); ++i)
+    for(Scene::EntityList::iterator i = otherTriggers.begin(); i != otherTriggers.end(); ++i)
     {
         Scene::Entity* otherEntity = (*i).get();
         if (otherEntity != entity)

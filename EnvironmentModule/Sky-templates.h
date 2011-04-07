@@ -19,7 +19,7 @@ namespace Environment
             else
             {
                 entity =  active_scene->GetEntityByName("LocalEnvironment").get();
-                if ( entity == 0)
+                if (entity == 0)
                     return 0;
         
             }
@@ -32,7 +32,7 @@ namespace Environment
 
         template <typename T> bool Sky::ExistSky() 
         {
-            if ( GetEnviromentSky<T >() != 0 )
+            if (GetEnviromentSky<T >() != 0 )
                 return true;
 
             return false;
@@ -46,14 +46,14 @@ namespace Environment
            Scene::Entity* entity = active_scene->GetEntityByName("SkyEnvironment").get();
            
            // First check that does there exist diffrent skies allready?
-           if ( entity != 0  )
+           if (entity != 0  )
            {
                // Remove all other skies!
-               if ( entity->HasComponent(EC_SkyPlane::TypeNameStatic()))
+               if (entity->HasComponent(EC_SkyPlane::TypeNameStatic()))
                    entity->RemoveComponent(entity->GetComponent(EC_SkyPlane::TypeNameStatic()), AttributeChange::Replicate);
-               if ( entity->HasComponent(EC_SkyBox::TypeNameStatic()))
+               if (entity->HasComponent(EC_SkyBox::TypeNameStatic()))
                    entity->RemoveComponent(entity->GetComponent(EC_SkyBox::TypeNameStatic()), AttributeChange::Replicate);
-               if ( entity->HasComponent(EC_SkyDome::TypeNameStatic()))
+               if (entity->HasComponent(EC_SkyDome::TypeNameStatic()))
                    entity->RemoveComponent(entity->GetComponent(EC_SkyDome::TypeNameStatic()), AttributeChange::Replicate);
                
 
@@ -69,7 +69,7 @@ namespace Environment
         {
             T* sky = GetEnviromentSky<T>();
             
-            if ( sky != 0)
+            if (sky != 0)
             {
                 sky->DisableSky();
             }
@@ -81,18 +81,18 @@ namespace Environment
            if (entity == 0)
            {
                entity = active_scene->GetEntityByName("LocalEnvironment").get();
-               if ( entity == 0)
+               if (entity == 0)
                    return;
 
                // Local environent! !
-               if ( entity->HasComponent(T::TypeNameStatic()) )
+               if (entity->HasComponent(T::TypeNameStatic()) )
                {
                     entity->RemoveComponent(entity->GetComponent(T::TypeNameStatic()));
                }
                return;
            }
          
-           if ( entity->HasComponent(T::TypeNameStatic()) )
+           if (entity->HasComponent(T::TypeNameStatic()) )
            {
                 entity->RemoveComponent(entity->GetComponent(T::TypeNameStatic()), AttributeChange::Replicate);
            }

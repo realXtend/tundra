@@ -18,7 +18,7 @@
 #include <alc.h>
 #endif
 
-DEFINE_POCO_LOGGING_FUNCTIONS("AudioAsset")
+//DEFINE_POCO_LOGGING_FUNCTIONS("AudioAsset")
 
 AudioAsset::AudioAsset(AssetAPI *owner, const QString &type_, const QString &name_)
 :IAsset(owner, type_, name_), handle(0)

@@ -37,21 +37,21 @@
 #include <QUiLoader>
 #include <QFile>
 
-DEFINE_POCO_LOGGING_FUNCTIONS("Script")
+//DEFINE_POCO_LOGGING_FUNCTIONS("Script")
 
-//! Qt defines
+/// Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QTimer, QObject*);
 
 ///\todo Remove these two and move to Input API once NaaliCore is merged.
-//! Naali input defines
+/// Naali input defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
 Q_DECLARE_METATYPE(GestureEvent*)
 Q_DECLARE_METATYPE(InputContext*)
 
-//! Asset API defines
+/// Asset API defines
 Q_DECLARE_METATYPE(AssetPtr);
 Q_DECLARE_METATYPE(AssetTransferPtr);
 Q_DECLARE_METATYPE(IAssetTransfer*);
@@ -61,13 +61,13 @@ Q_DECLARE_METATYPE(AssetStoragePtr);
 Q_DECLARE_METATYPE(IAssetStorage*);
 Q_DECLARE_METATYPE(AssetCache*);
 
-//! Naali Ui defines
+/// Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_DECLARE_METATYPE(NaaliMainWindow*);
 Q_DECLARE_METATYPE(NaaliGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
-//! Naali Scene defines.
+/// Naali Scene defines.
 Q_DECLARE_METATYPE(SceneAPI*);
 Q_DECLARE_METATYPE(Scene::SceneManager*);
 Q_DECLARE_METATYPE(Scene::Entity*);
@@ -77,7 +77,7 @@ Q_DECLARE_METATYPE(AttributeChange*);
 Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(AttributeChange::Type);
 
-//! Naali core API object defines.
+/// Naali core API object defines.
 Q_DECLARE_METATYPE(Foundation::Framework*);
 Q_DECLARE_METATYPE(FrameAPI*);
 Q_DECLARE_METATYPE(ConsoleAPI*);
@@ -85,17 +85,17 @@ Q_DECLARE_METATYPE(Command*);
 Q_DECLARE_METATYPE(DelayedSignal*);
 Q_DECLARE_METATYPE(DebugAPI*);
 
-//! Naali Audio API object.
+/// Naali Audio API object.
 Q_DECLARE_METATYPE(AudioAPI*);
 Q_DECLARE_METATYPE(SoundChannel*);
 
-//! Naali Config API object.
+/// Naali Config API object.
 Q_DECLARE_METATYPE(ConfigAPI*);
 
-//! Naali renderer defines
+/// Naali renderer defines
 Q_DECLARE_METATYPE(RaycastResult*);
 
-//! Communications metatype
+/// Communications metatype
 //Q_DECLARE_METATYPE(Communications::InWorldVoice::SessionInterface*);
 //Q_DECLARE_METATYPE(Communications::InWorldVoice::ParticipantInterface*);
 

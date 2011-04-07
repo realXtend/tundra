@@ -34,7 +34,7 @@ Owned by Foundation::Framework.
 </td></tr></table>
 */
 
-/*! 
+/** 
     \todo Change typedef Scene::ScenePtr from boost::shared_ptr<Scene::SceneManager> to 
     QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> to get rid of *Raw() functions for scripts.
 */
@@ -50,11 +50,11 @@ public:
     ~SceneAPI();
 
 signals:
-    //! Emitted after new scene has been added to framework.
+    /// Emitted after new scene has been added to framework.
     /// \param name new scene name.
     void SceneAdded(const QString &name);
 
-    //! Emitted after scene has been removed from the framework.
+    /// Emitted after scene has been removed from the framework.
     /// \param name removed scene name.
     void SceneRemoved(const QString &name);
 
@@ -63,27 +63,27 @@ signals:
     void DefaultWorldSceneChanged(Scene::SceneManager *scene);
 
 public slots:
-    //! Get Scene Interact weak pointer.
+    /// Get Scene Interact weak pointer.
     SceneInteractWeakPtr GetSceneIteract() const;
 
-    //! Returns true if specified scene exists, false otherwise
+    /// Returns true if specified scene exists, false otherwise
     bool HasScene(const QString &name) const;
 
-    //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+    /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
     void SetDefaultScene(const QString &name);
 
-    //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+    /// Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
     void SetDefaultScene(const Scene::ScenePtr &scene);
     
-    //! Returns the default scene shared ptr.
+    /// Returns the default scene shared ptr.
     /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> rename GetDefaultSceneRaw() to GetDefaultScene().
     const Scene::ScenePtr &GetDefaultScene() const;
 
-    //! Returns the default scene ptr.
+    /// Returns the default scene ptr.
     Scene::SceneManager* GetDefaultSceneRaw() const;
 
-    //! Returns a pointer to a scene
-    /*! Manage the pointer carefully, as scenes may not get deleted properly if
+    /// Returns a pointer to a scene
+    /** Manage the pointer carefully, as scenes may not get deleted properly if
         references to the pointer are left alive.
 
         \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::SceneWeakPtr,
@@ -95,18 +95,18 @@ public slots:
     /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> rename GetSceneRaw() to GetScene().
     Scene::ScenePtr GetScene(const QString &name) const;
 
-    //! Returns a scene by name
+    /// Returns a scene by name
     Scene::SceneManager* GetSceneRaw(const QString& name) const;
 
-    //! Creates new empty scene.
-    /*! \param name name of the new scene
+    /// Creates new empty scene.
+    /** \param name name of the new scene
         \param viewenabled Whether the scene is view enabled
         \return The new scene, or empty pointer if scene with the specified name already exists.
     */
     Scene::ScenePtr CreateScene(const QString &name, bool viewenabled);
 
-    //! Removes a scene with the specified name.
-    /*! The scene may not get deleted since there may be dangling references to it.
+    /// Removes a scene with the specified name.
+    /** The scene may not get deleted since there may be dangling references to it.
         If the scene does get deleted, removes all entities which are not shared with
         another existing scene.
 
@@ -116,43 +116,43 @@ public slots:
     */
     void RemoveScene(const QString &name);
 
-    //! Returns the scene map for self reflection / introspection.
+    /// Returns the scene map for self reflection / introspection.
     const SceneMap &GetSceneMap() const;
 
 private:
-    //! Constructor. Framework takes ownership of this object.
+    /// Constructor. Framework takes ownership of this object.
     /// \param framework Foundation::Framework ptr.
     explicit SceneAPI(Foundation::Framework *framework);
 
-    //! Frees all known scene and the scene interact object.
+    /// Frees all known scene and the scene interact object.
     /// \note This function is called by our fried class Foundation::Framework in its UnloadModules() function.
     void Reset();
 
-    //! Registers the scene relaetd events to event manager.
+    /// Registers the scene relaetd events to event manager.
     /// \note This function is called by our fried class Foundation::Framework when EvenManager is ready.
     void RegisterSceneEvents() const;
     
-    //! Initialize the scene interact object. Needs framework->Input() to be valid.
+    /// Initialize the scene interact object. Needs framework->Input() to be valid.
     /// \note This function is called by our fried class Foundation::Framework when InputAPI is ready.
     void Initialise();
 
-    //! PostInitialize the scene interact object as RenderServiceInterface is now available.
+    /// PostInitialize the scene interact object as RenderServiceInterface is now available.
     /// \note This function is called by our fried class Foundation::Framework when modules have loaded and RenderServiceInterface is ready.
     void PostInitialize();
 
-    //! Framework ptr.
+    /// Framework ptr.
     Foundation::Framework *framework_;
 
-    //! Map of scenes.
+    /// Map of scenes.
     SceneMap scenes_;
 
-    //! Current 'default' scene.
+    /// Current 'default' scene.
     Scene::ScenePtr defaultScene_;
 
-    //! Scene interact shared ptr.
+    /// Scene interact shared ptr.
     QSharedPointer<SceneInteract> sceneInteract_;
 
-    //! Scene events category name.
+    /// Scene events category name.
     std::string sceneCatergoryName_;
 
 };

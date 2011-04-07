@@ -11,6 +11,7 @@
 //#include "LoginServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
+#include "LoggingFunctions.h"
 
 #ifdef ENABLE_TAIGA_LOGIN
 #include "../ProtocolUtilities/NetworkEvents.h"
@@ -197,7 +198,7 @@ void LoginScreenModule::ProcessTundraLogin(const QMap<QString, QString> &data)
             {
                 port = ParseString<int>(worldAddress.substr(pos + 1));
             }
-            catch (...) {}
+            catch(...) {}
             worldAddress = worldAddress.substr(0, pos);
         }
         
@@ -217,12 +218,13 @@ void LoginScreenModule::Exit()
     framework_->Exit();
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
-
+/*
 POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(LoginScreenModule)
 POCO_END_MANIFEST
+*/

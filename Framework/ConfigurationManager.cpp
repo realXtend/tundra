@@ -43,7 +43,7 @@ void ConfigurationManager::Load(const std::string& path)
     {
         // Search all xml files from path. 
         std::list<std::string> files = GetFiles(filePath);
-        for (std::list<std::string>::iterator iter = files.begin(); iter != files.end(); ++iter)
+        for(std::list<std::string>::iterator iter = files.begin(); iter != files.end(); ++iter)
         {
             std::string group = "";
             // Get group name (it is encoded to filename)
@@ -64,17 +64,17 @@ void ConfigurationManager::Load(const std::string& path)
                 continue;
             }
 
-	    if (!QString::fromStdString(fileName).endsWith(".xml"))
-		continue;
-
-           //! Poco xml configuration reader
+            if (!QString::fromStdString(fileName).endsWith(".xml"))
+            continue;
+/*
+           /// Poco xml configuration reader
            Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
            try
             {
                pConfiguration = new Poco::Util::XMLConfiguration();
                std::fstream stream(iter->c_str(), std::ios::in);
                pConfiguration->load(stream);
-            } catch ( std::exception& /*ex*/)
+            } catch(std::exception&)
             {
                 // XML file was not valid (not so beatiful way to check validity)
                 continue;
@@ -85,6 +85,7 @@ void ConfigurationManager::Load(const std::string& path)
                 // Read values from xml file and set them into memory.
                 AddValues(pConfiguration, group);
             }
+*/
         }
     }
     else
@@ -106,14 +107,14 @@ void ConfigurationManager::Load(const std::string& path)
             // File was invalid. 
             return;
         }
-
+/*
         Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
         try
         {
                pConfiguration = new Poco::Util::XMLConfiguration();
                std::fstream stream(filePath.file_string().c_str(), std::ios::in);
                pConfiguration->load(stream);
-        } catch ( std::exception& /*ex*/)
+        } catch(std::exception&)
         {
             // XML file was not valid (not so beatiful way to check it validity)
             // Create exception.
@@ -121,8 +122,9 @@ void ConfigurationManager::Load(const std::string& path)
             throw Exception(what.c_str());
         }
 
-        if ( pConfiguration.get() != 0 )
+        if (pConfiguration.get() != 0 )
             AddValues(pConfiguration,group);
+*/
     }
 }
 
@@ -132,19 +134,19 @@ std::list<std::string> ConfigurationManager::GetFiles(const boost::filesystem::p
 
     std::list<std::string> files;
     fs::directory_iterator iterEnd;
-    for ( fs::directory_iterator iter(path); iter != iterEnd; ++iter )
+    for(fs::directory_iterator iter(path); iter != iterEnd; ++iter )
     {
         try
         {
-            if ( fs::is_regular_file(iter->status()))
+            if (fs::is_regular_file(iter->status()))
             {
                 // Check that filename contains .xml 
                 std::string file = iter->path().filename();
-                if ( file.find(".xml") != std::string::npos)
+                if (file.find(".xml") != std::string::npos)
                     files.push_back(iter->path().file_string());
             }
         }
-        catch (std::exception& /*ex*/)
+        catch(std::exception& /*ex*/)
         {
             // If exception is thrown, return fast. 
             return files;
@@ -153,8 +155,8 @@ std::list<std::string> ConfigurationManager::GetFiles(const boost::filesystem::p
     return files;
 }
 
-void ConfigurationManager::AddValues(Poco::Util::XMLConfiguration* pConfiguration, const std::string& group)
-{
+void ConfigurationManager::AddValues(void* pConfiguration, const std::string& group)
+{/*
     // Collect all key-value pairs from configuration and save them into data map.
     if (pConfiguration != 0)
     {
@@ -164,7 +166,7 @@ void ConfigurationManager::AddValues(Poco::Util::XMLConfiguration* pConfiguratio
         pConfiguration->keys(group, keys);
 
         // Note we don't support multi level keys.  
-        for ( std::vector<std::string>::iterator iter = keys.begin(); iter != keys.end(); ++iter)
+        for(std::vector<std::string>::iterator iter = keys.begin(); iter != keys.end(); ++iter)
         {
             // Add keys into map.
             try
@@ -172,17 +174,19 @@ void ConfigurationManager::AddValues(Poco::Util::XMLConfiguration* pConfiguratio
                 std::string key = group + "." + *iter;
                 std::string value = pConfiguration->getString(key);
                 SetSetting(group, *iter, value);
-            } catch (std::exception& /*ex*/)
+            } catch(std::exception&)
             {
                 ///todo How to handle errors, at the moment just continue.
                 continue;
             }
         }
     }
+*/
 }
 
 void ConfigurationManager::Export(const std::string& path, const std::string& group)
 {
+#if 0
     namespace fs = boost::filesystem; 
     fs::path filePath;
     if (path.empty())
@@ -205,7 +209,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
 
         // Get all xml files which are located in given path (does there exist earlier configurations)
         std::list<std::string> files = GetFiles(filePath);
-        for ( std::list<std::string>::iterator file_iter = files.begin(); file_iter != files.end(); ++file_iter)
+        for(std::list<std::string>::iterator file_iter = files.begin(); file_iter != files.end(); ++file_iter)
         {
             // Check that xml file match our encoding. 
             fs::path file(*file_iter);
@@ -222,7 +226,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
             }
             else
                 continue;
-
+/*
             Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
 
             try
@@ -230,7 +234,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                pConfiguration = new Poco::Util::XMLConfiguration();
                std::fstream stream(file.file_string().c_str(), std::ios::in);
                pConfiguration->load(stream);
-            } catch ( std::exception& /*ex*/)
+            } catch(std::exception&)
             {
                 // XML file was not valid (not so beatiful way to check it validity)
                 ///todo What to do if loading failed.
@@ -244,7 +248,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                 std::map<string_pair_t, std::string>::iterator next = val_iter;
                 ++next;
 
-                if ( val_iter->first.first == search_group)
+                if (val_iter->first.first == search_group)
                 {
                     // Save key. 
                     std::string key = search_group + "." + val_iter->first.second;
@@ -267,10 +271,10 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
         Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
 
          // Write values which were not saved earlier.
-        if ( values_.size() != 0)
+        if (values_.size() != 0)
         {
             std::map<string_pair_t, std::string>::iterator val_iter = values_.begin();
-            while (val_iter != values_.end() )
+            while(val_iter != values_.end() )
             {
                 //std::map<string_pair_t, std::string>::iterator next_upper = val_iter;
                 std::string search_group = val_iter->first.first;
@@ -281,7 +285,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
 /*
                 /// \todo HACK assure that path end has separator.
                 std::string c = filePath.string().substr(filePath.string().size()-1);
-                if ( c != std::string("/") && c != std::string("\\"))
+                if (c != std::string("/") && c != std::string("\\"))
                 {
 #ifdef _UNIX
                     filePath = fs::path(filePath.directory_string() + "\\");
@@ -294,11 +298,13 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                 
                 fs::path new_configuration_file = filePath.directory_string() + file_name_encoding_ + search_group + ".xml";
 */
+
+/*
                 try
                 {
                     pConfiguration = new Poco::Util::XMLConfiguration;
                     pConfiguration->loadEmpty(std::string("config"));
-                } catch ( std::exception& /*ex*/)
+                } catch(std::exception&)
                 {
                     ///todo What to do if loading failed. 
                     continue;
@@ -311,7 +317,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                     std::map<string_pair_t, std::string>::iterator next = val_key;
                     ++next;
 
-                    if ( val_key->first.first == search_group)
+                    if (val_key->first.first == search_group)
                     {
                         // Save key
                         std::string key = search_group + "." + val_key->first.second;
@@ -355,7 +361,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
 
         bool found_file = false;
 
-        for ( std::list<std::string>::iterator file_iter = files.begin(); file_iter != files.end(); ++file_iter)
+        for(std::list<std::string>::iterator file_iter = files.begin(); file_iter != files.end(); ++file_iter)
         {
             // Check that xml file match our encoding. 
             fs::path file(*file_iter);
@@ -374,9 +380,9 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
             else
                 continue;
 
-            if ( search_group != group )
+            if (search_group != group )
                 continue;
-
+/*
             Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
             found_file = true;
 
@@ -385,7 +391,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                pConfiguration = new Poco::Util::XMLConfiguration();
                std::fstream stream(file.file_string().c_str(), std::ios::in);
                pConfiguration->load(stream);
-            } catch ( std::exception& /*ex*/)
+            } catch(std::exception&)
             {
                 // XML file was not valid (not so beatiful way to check it validity)
                 
@@ -400,7 +406,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                 std::map<string_pair_t, std::string>::iterator next = val_iter;
                 ++next;
                 
-                if ( val_iter->first.first == search_group)
+                if (val_iter->first.first == search_group)
                 {
                     // Save key.
                     std::string key = search_group + "." + val_iter->first.second;
@@ -421,6 +427,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
             
             // Break because we found a file.
             break;
+*/
         }
 
         if (!found_file)
@@ -432,7 +439,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                 std::string search_group = group;
                 // HACK assure that path end has separator.
                 std::string c = path.substr(path.size()-1);
-                if ( c != std::string("/") && c != std::string("\\"))
+                if (c != std::string("/") && c != std::string("\\"))
                 {
 #ifdef _UNIX
                     filePath = fs::path(filePath.directory_string() + "\\");
@@ -443,14 +450,14 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                 // END HACK
 
                 fs::path new_configuration_file = filePath.directory_string() + file_name_encoding_ + search_group + ".xml";
-
+/*
                 Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
 
                 try
                 {
                     pConfiguration = new Poco::Util::XMLConfiguration;
                     pConfiguration->loadEmpty(std::string("config"));
-                } catch ( std::exception& /*ex*/)
+                } catch(std::exception&)
                 {
                     ///todo What to do if loading failed. 
                     values_ = tmp_values;
@@ -464,7 +471,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                     std::map<string_pair_t, std::string>::iterator next = val_key;
                     ++next;
 
-                    if ( val_key->first.first == search_group)
+                    if (val_key->first.first == search_group)
                     {
                         // Save key
                         std::string key = search_group + "." + val_key->first.second;
@@ -480,6 +487,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                     std::fstream stream(new_configuration_file.file_string().c_str(), std::ios::out);
                     pConfiguration->save(stream);
                 }
+*/
             }
         }
 
@@ -497,13 +505,13 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
             std::string search_group = group;
 
             fs::path new_configuration_file = filePath.directory_string() + file_name_encoding_ + search_group + ".xml";
-
+/*
             Poco::AutoPtr<Poco::Util::XMLConfiguration> pConfiguration;
             try
             {
                 pConfiguration = new Poco::Util::XMLConfiguration;
                 pConfiguration->loadEmpty(std::string("config"));
-            } catch ( std::exception& /*ex*/)
+            } catch(std::exception&)
             {
                 ///todo What to do if loading failed. 
                 values_ = tmp_values;
@@ -517,7 +525,7 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                 std::map<string_pair_t, std::string>::iterator next = val_key;
                 ++next;
 
-                if ( val_key->first.first == search_group)
+                if (val_key->first.first == search_group)
                 {
                     // Save key
                     std::string key = search_group + "." + val_key->first.second;
@@ -534,16 +542,18 @@ void ConfigurationManager::Export(const std::string& path, const std::string& gr
                 std::fstream stream(new_configuration_file.file_string().c_str(), std::ios::out);
                 pConfiguration->save(stream);
             }
+            */
         }
 
         values_ = tmp_values;
      }
+#endif
 }
 
 bool ConfigurationManager::HasKey(const std::string& group, const std::string& key) const
 {
     std::map<string_pair_t, std::string>::iterator iter = values_.find(std::make_pair(group, key));
-    if ( iter != values_.end() )
+    if (iter != values_.end() )
         return true;
     else
         return false;
@@ -552,7 +562,7 @@ bool ConfigurationManager::HasKey(const std::string& group, const std::string& k
 void ConfigurationManager::Remove(const std::string& group, const std::string key)
 {
     std::map<string_pair_t, std::string>::iterator iter = values_.find(std::make_pair(group, key));
-    if ( iter != values_.end() )    
+    if (iter != values_.end() )    
         values_.erase(iter);
 }
 

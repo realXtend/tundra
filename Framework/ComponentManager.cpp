@@ -40,7 +40,7 @@ void ComponentManager::RegisterFactory(const QString &component, const Component
         
         // Check for hash collision
         ComponentFactoryMap::const_iterator i = factories_.begin();
-        while (i != factories_.end())
+        while(i != factories_.end())
         {
             if ((GetHash(i->first) == hash) && (i->first != component))
             {

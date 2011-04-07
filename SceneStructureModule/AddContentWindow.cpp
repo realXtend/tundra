@@ -24,7 +24,7 @@
 #include "Transform.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
+//DEFINE_POCO_LOGGING_FUNCTIONS("AddContentWindow")
 
 #include "MemoryLeakCheck.h"
 
@@ -487,7 +487,7 @@ void AddContentWindow::AddAssets(const SceneDesc::AssetMap &assetDescs)
 
     // Set the windows minumum width from assets tree view
     int minWidth = 10;
-    for (int i=0; i<assetTreeWidget->columnCount(); i++)
+    for(int i=0; i<assetTreeWidget->columnCount(); i++)
         minWidth += assetTreeWidget->columnWidth(i);
     setMinimumWidth(minWidth);
 

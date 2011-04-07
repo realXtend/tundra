@@ -19,7 +19,7 @@ namespace OgreRenderer
     class RendererSettings;
     typedef boost::shared_ptr<RendererSettings> RendererSettingsPtr;
 
-    //! \bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton.
+    /// \bug Ogre assert fail when viewing a mesh that contains a reference to non-existing skeleton.
     
     /** \defgroup OgreRenderingModuleClient OgreRenderingModule Client Interface
         This page lists the public interface of the OgreRenderingModule.
@@ -27,7 +27,7 @@ namespace OgreRenderer
         For details on how to use the public interface, see \ref OgreRenderingModule "Using the Ogre renderer module"
     */
 
-    //! A renderer module using Ogre
+    /// A renderer module using Ogre
     class OGRE_MODULE_API OgreRenderingModule : public IModule
     {
     public:
@@ -42,34 +42,34 @@ namespace OgreRenderer
         virtual void Update(f64 frametime);
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-        //! returns renderer
+        /// returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
 
-        MODULE_LOGGING_FUNCTIONS;
+        //MODULE_LOGGING_FUNCTIONS;
 
-        //! returns name of this module. Needed for logging.
+        /// returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
-        //! callback for console command
+        /// callback for console command
         Console::CommandResult ConsoleStats(const StringVector &params);
 
     private:
-        //! Type name of the module.
+        /// Type name of the module.
         static std::string type_name_static_;
 
-        //! renderer
+        /// renderer
         RendererPtr renderer_;
 
-        //! renderer settings
+        /// renderer settings
         RendererSettingsPtr renderer_settings_;
 
-        //! input event category
+        /// input event category
         event_category_id_t input_event_category_;
 
-        //! scene event category
+        /// scene event category
         event_category_id_t scene_event_category_;
 
-        //! network state category
+        /// network state category
         event_category_id_t network_state_event_category_;
     };
 }

@@ -31,7 +31,7 @@ namespace OgreRenderer
     Ogre::Quaternion OGRE_MODULE_API ToOgreQuaternion(const Quaternion &quat);
     
     /// Sanitates an asset url/id for use with Ogre's parsers
-    /*! Call this when you access an Ogre resource directly from Ogre, by querying for asset id.
+    /** Call this when you access an Ogre resource directly from Ogre, by querying for asset id.
         Note: this process is one-way only. If an asset depends on assets, the original asset id's, not sanitated ones,
         should be recorded and used to request other the depended upon assets
      */

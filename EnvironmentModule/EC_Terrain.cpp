@@ -20,7 +20,7 @@
 #include "OgreConversionUtils.h"
 #include "LoggingFunctions.h"
 #include "TextureAsset.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Terrain")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_Terrain")
 
 #include <Ogre.h>
 #include <utility>
@@ -234,7 +234,7 @@ void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
         }
 }
 
-//! Emitted when some of the attributes has been changed.
+/// Emitted when some of the attributes has been changed.
 void EC_Terrain::AttributeUpdated(IAttribute *attribute)
 {
     std::string changedAttribute = attribute->GetNameString();
@@ -398,7 +398,7 @@ void EC_Terrain::DestroyPatch(int x, int y)
         {
             Ogre::MeshManager::getSingleton().remove(patch.meshGeometryName);
         }
-        catch (...) {}
+        catch(...) {}
         patch.meshGeometryName = "";
     }
 }
@@ -1272,7 +1272,7 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
     Ogre::MaterialPtr terrainMaterial = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
     if (!terrainMaterial.get())
     {
-//        EnvironmentModule::LogWarning("Ogre material " + material.Get().toStdString() + " not found!");
+//        LogWarning("Ogre material " + material.Get().toStdString() + " not found!");
         return;
     }
 //    Ogre::MaterialPtr terrainMaterial = OgreRenderer::GetOrCreateLitTexturedMaterial(terrainMaterialName);
@@ -1283,7 +1283,7 @@ void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
 //        emit TerrainTextureChanged(); ///\todo Regression here. Re-enable this so that the EnvironmentEditor texture viewer can see the textures?
 //    }
 //    else
-//        EnvironmentModule::LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
+//        LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
 }
 
 void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
@@ -1481,7 +1481,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
         {
             Ogre::MeshManager::getSingleton().remove(patch.meshGeometryName);
         }
-        catch (...) {}
+        catch(...) {}
     }
 
     patch.meshGeometryName = renderer->GetUniqueObjectName("EC_Terrain_patchmesh");
@@ -1495,7 +1495,7 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     patch.entity->setUserAny(Ogre::Any(parent_entity_));
     patch.entity->setCastShadows(false);
     // Set UserAny also on subentities
-    for (uint i = 0; i < patch.entity->getNumSubEntities(); ++i)
+    for(uint i = 0; i < patch.entity->getNumSubEntities(); ++i)
         patch.entity->getSubEntity(i)->setUserAny(patch.entity->getUserAny());
 
     // Explicitly destroy all attached MovableObjects previously bound to this terrain node.

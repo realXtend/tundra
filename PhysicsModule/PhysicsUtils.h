@@ -29,8 +29,8 @@ inline Quaternion ToQuaternion(const btQuaternion& btQuat)
     return Quaternion(btQuat.x(), btQuat.y(), btQuat.z(), btQuat.w());
 }
 
-//! Simple raycast against single rigid body
-/*! 
+/// Simple raycast against single rigid body
+/** 
     \param rayFrom origin or ray
     \param rayTo ray destination
     \param body rigid body to test against

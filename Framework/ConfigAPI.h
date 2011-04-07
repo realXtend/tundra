@@ -9,7 +9,7 @@
 
 namespace Foundation { class Framework; }
 
-/*! \brief Configuration API for getting and setting config values.
+/** \brief Configuration API for getting and setting config values.
     \details Configuration API for getting and setting config values. Utilizing the ini file format and QSettings class.
     The API will return QVariant values and the user will have to know what type the value is and use the extensive QVariants::to*() functions
     to get the correct type. The Config API supports ini sections but you may also write to the root of the ini document without a section.
@@ -40,53 +40,53 @@ class ConfigAPI : public QObject
 Q_OBJECT
 
 public slots:
-    //! Gets a value of key from a config file
+    /// Gets a value of key from a config file
     /// \param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
     /// \param key QString. Key that value gets returned. For example: "username".
     /// \return QVariant The value of key in file.
     QVariant Get(const QString &file, const QString &key);
 
-    //! Gets a value of key from a config file
+    /// Gets a value of key from a config file
     /// \param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
     /// \param section QString. The section in the config where key is. For example: "login".
     /// \param key QString. Key that value gets returned. For example: "username".
     /// \return QVariant The value of key in file.
     QVariant Get(const QString &file, const QString &section, const QString &key);
 
-    //! Sets the value of key in a config file.
+    /// Sets the value of key in a config file.
     /// \param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
     /// \param key QString. Key that value gets returned. For example: "username".
     /// \param value QVariant. New Value of key in file.
     void Set(const QString &file, const QString &key, const QVariant &value);
 
-    //! Sets the value of key in a config file.
+    /// Sets the value of key in a config file.
     /// \param file QString. Name of the file. For example: "foundation" or "foundation.ini" you can omit the .ini extension.
     /// \param section QString. The section in the config where key is. For example: "login".
     /// \param key QString. Key that value gets returned. For example: "username".
     /// \param value QVariant. New Value of key in file.
     void Set(const QString &file, const QString &section, const QString &key, const QVariant &value);
 
-    //! Gets the absolute path to the config folder where configs are stored. Guaranteed to have a trailing forward slash '/'.
+    /// Gets the absolute path to the config folder where configs are stored. Guaranteed to have a trailing forward slash '/'.
     /// \return QString. Absolute path to config storage folder.
     QString GetConfigFolder() const { return configFolder_; }
 
 private slots:
-    //! Get absolute file path for file. Guarantees that it ends with .ini.
+    /// Get absolute file path for file. Guarantees that it ends with .ini.
     QString GetFilePath(const QString &file);
 
 private:
     Q_DISABLE_COPY(ConfigAPI)
     friend class Foundation::Framework;
 
-    //! Constructs the Config API.
+    /// Constructs the Config API.
     /// \param framework Framework. Takes ownership of the object.
     /// \param configFolder QString. Tells the config api where to store config files.
     ConfigAPI(Foundation::Framework *framework, const QString &configFolder);
 
-    //! Framework ptr.
+    /// Framework ptr.
     Foundation::Framework *framework_;
 
-    //! Absolute path to the folder where to store the config files.
+    /// Absolute path to the folder where to store the config files.
     QString configFolder_;
 };
 

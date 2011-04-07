@@ -109,7 +109,7 @@ namespace OgreRenderer
         // Push compositors into priority ordered vector
         std::vector<Compositor> priorityOrdered;
         std::map<std::string, int>::const_iterator it = priorities_.begin();
-        for ( ; it != priorities_.end() ; ++it)
+        for(; it != priorities_.end() ; ++it)
         {
             Compositor compositor = { it->first, it->second };
             priorityOrdered.push_back( compositor );
@@ -118,7 +118,7 @@ namespace OgreRenderer
 
         // Get position for the compositor in compositor chain, based on the priority
         int position = -1;
-        for (int i=0 ; i<priorityOrdered.size() ; ++i)
+        for(int i=0 ; i<priorityOrdered.size() ; ++i)
         {
             if (compositor == priorityOrdered[i].name)
             {
@@ -166,7 +166,7 @@ namespace OgreRenderer
         }
         
         if (!succesfull)
-            OgreRenderingModule::LogWarning("Failed to enable effect: " + compositor);
+            ::LogWarning("Failed to enable effect: " + compositor);
 
         return succesfull;
     }
@@ -188,12 +188,12 @@ namespace OgreRenderer
         if (compositor.get())
         {
             compositor->load();
-            for (int t=0 ; t<compositor->getNumTechniques () ; ++t)
+            for(int t=0 ; t<compositor->getNumTechniques () ; ++t)
             {
                 Ogre::CompositionTechnique *ct = compositor->getTechnique(t);
                 if (ct)
                 {
-                    for (int tp=0 ; tp<ct->getNumTargetPasses () ; ++tp)
+                    for(int tp=0 ; tp<ct->getNumTargetPasses () ; ++tp)
                     {
                         Ogre:: CompositionTargetPass *ctp = ct->getTargetPass (tp);
                         SetCompositorTargetParameters(ctp, source);
@@ -214,7 +214,7 @@ namespace OgreRenderer
     {
         if (target)
         {
-            for (int p=0 ; p<target->getNumPasses() ; ++p)
+            for(int p=0 ; p<target->getNumPasses() ; ++p)
             {
                 Ogre::CompositionPass *pass = target->getPass(p);
                 if (pass)
@@ -229,12 +229,12 @@ namespace OgreRenderer
     {
         assert (material.get());
         material->load();
-        for (int t=0 ; t<material->getNumTechniques() ; ++t)
+        for(int t=0 ; t<material->getNumTechniques() ; ++t)
         {
             Ogre::Technique *technique = material->getTechnique(t);
             if (technique)
             {
-                for (int p=0 ; p<technique->getNumPasses() ; ++p)
+                for(int p=0 ; p<technique->getNumPasses() ; ++p)
                 {
                     Ogre::Pass *pass = technique->getPass(p);
                     if (pass)
@@ -242,7 +242,7 @@ namespace OgreRenderer
                         if (pass->hasVertexProgram())
                         {
                             Ogre::GpuProgramParametersSharedPtr destination = pass->getVertexProgramParameters();
-                            for (int i=0 ; i<source.size() ; ++i)
+                            for(int i=0 ; i<source.size() ; ++i)
                             {
                                 if (destination->_findNamedConstantDefinition(source[i].first, false))
                                     destination->setNamedConstant(source[i].first, source[i].second);
@@ -252,7 +252,7 @@ namespace OgreRenderer
                         if (pass->hasFragmentProgram())
                         {
                             Ogre::GpuProgramParametersSharedPtr destination = pass->getFragmentProgramParameters();
-                            for (int i=0 ; i<source.size() ; ++i)
+                            for(int i=0 ; i<source.size() ; ++i)
                             {
                                 if (destination->_findNamedConstantDefinition(source[i].first, false))
                                     destination->setNamedConstant(source[i].first, source[i].second);
@@ -288,7 +288,7 @@ namespace OgreRenderer
         // Get some RTT dimensions for later calculations
         Ogre::CompositionTechnique::TextureDefinitionIterator defIter =
             instance->getTechnique()->getTextureDefinitionIterator();
-        while (defIter.hasMoreElements())
+        while(defIter.hasMoreElements())
         {
             Ogre::CompositionTechnique::TextureDefinition* def =
                 defIter.getNext();

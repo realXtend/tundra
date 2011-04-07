@@ -35,8 +35,8 @@ struct EntityComponentSelection
 class ECBrowser;
 class AddComponentDialog;
 
-//! Contains entity pointer as a QPointer. This class is used to indentify a right item using an entity ID.
-//! \ingroup ECEditorModuleClient.
+/// Contains entity pointer as a QPointer. This class is used to indentify a right item using an entity ID.
+/// \ingroup ECEditorModuleClient.
 class EntityListWidgetItem: public QListWidgetItem
 {
 public:
@@ -54,8 +54,8 @@ private:
     QPointer<Scene::Entity> entity_ptr_;
 };
 
-//! Entity-component editor window.
-/*! \ingroup ECEditorModuleClient.
+/// Entity-component editor window.
+/** \ingroup ECEditorModuleClient.
 */
 class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
 {
@@ -106,7 +106,7 @@ public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).
     void DeleteEntitiesFromList();
 
-    //! Remove coponent from entity and refresh property browser.
+    /// Remove coponent from entity and refresh property browser.
     void DeleteComponent(const QString &componentType, const QString &name);
 
     /// Opens a dialog that will handle new entity creation.

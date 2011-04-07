@@ -61,7 +61,7 @@ class EC_ProximityTrigger : public IComponent
 public:
     ~EC_ProximityTrigger();
 
-    //! Set component as serializable.
+    /// Set component as serializable.
     virtual bool IsSerializable() const { return true; }
 
     /// Active flag. Trigger signals are only generated when this is true. Is true by default

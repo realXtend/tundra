@@ -16,6 +16,7 @@
 #include "NaaliMainWindow.h"
 #include "kNet.h"
 #include "kNet/qt/NetworkDialog.h"
+#include "LoggingFunctions.h"
 
 #include <algorithm>
 
@@ -183,7 +184,7 @@ void KristalliProtocolModule::Update(f64 frametime)
             }
             else
             {
-                LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
+                ::LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
                 framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
                 reconnectTimer.Stop();
                 serverIp = "";
@@ -232,7 +233,7 @@ void KristalliProtocolModule::PerformConnection()
     serverConnection = network.Connect(serverIp.c_str(), serverPort, serverTransport, this);
     if (!serverConnection)
     {
-        LogError("Unable to connect to " + serverIp + ":" + ToString(serverPort));
+        ::LogError("Unable to connect to " + serverIp + ":" + ToString(serverPort));
         return;
     }
 
@@ -266,11 +267,11 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
     server = network.StartServer(port, transport, this, allowAddressReuse);
     if (!server)
     {
-        LogError("Failed to start server on port " + ToString((int)port));
+        ::LogError("Failed to start server on port " + ToString((int)port));
         throw Exception(("Failed to start server on port " + ToString((int)port) + ". Please make sure that the port is free and not used by another application. The program will now abort.").c_str());
     }
     
-    LogInfo("Started server on port " + ToString((int)port));
+    ::LogInfo("Started server on port " + ToString((int)port));
     return true;
 }
 
@@ -280,7 +281,7 @@ void KristalliProtocolModule::StopServer()
     {
         network.StopServer();
         connections.clear();
-        LogInfo("Stopped server");
+        ::LogInfo("Stopped server");
         server = 0;
     }
 }
@@ -304,7 +305,7 @@ void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *
     if (source->GetSocket() && source->GetSocket()->TransportLayer() == kNet::SocketOverTCP)
         source->GetSocket()->SetNaglesAlgorithmEnabled(false);
 
-    LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
+    ::LogInfo("User connected from " + source->RemoteEndPoint().ToString() + ", connection ID " + ToString((int)connection->userID));
     
     Events::KristalliUserConnected msg(connection);
     framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
@@ -319,13 +320,13 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
             Events::KristalliUserDisconnected msg((*iter));
             framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
             
-            LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
+            ::LogInfo("User disconnected, connection ID " + ToString((int)(*iter)->userID));
             delete(*iter);
             connections.erase(iter);
             return;
         }
 
-    LogInfo("Unknown user disconnected");
+        ::LogInfo("Unknown user disconnected");
 }
 
 void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_id_t id, const char *data, size_t numBytes)
@@ -340,7 +341,7 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
         framework_->GetEventManager()->SendEvent(networkEventCategory, Events::NETMESSAGE_IN, &msg);
     } catch(std::exception &e)
     {
-        LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +
+        ::LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +
             ToString(id) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
     }
 }
@@ -361,7 +362,7 @@ u8 KristalliProtocolModule::AllocateNewConnectionID() const
 
 UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* source)
 {
-    for (UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->connection == source)
             return (*iter);
 
@@ -370,7 +371,7 @@ UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* so
 
 UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 {
-    for (UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
         if ((*iter)->userID == id)
             return (*iter);
 
@@ -379,14 +380,15 @@ UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 
 } // ~KristalliProtocolModule namespace
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
 using namespace KristalliProtocol;
-
+/*
 POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(KristalliProtocolModule)
 POCO_END_MANIFEST
+*/

@@ -56,7 +56,7 @@ void EC_OgreCamera::SetPlaceable(ComponentPtr placeable)
 {
     if (!dynamic_cast<EC_Placeable*>(placeable.get()))
     {
-        OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
+        ::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
         return;
     }
 

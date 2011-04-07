@@ -14,7 +14,7 @@
 
 #include "MemoryLeakCheck.h"
 
-//! QString::ToStdWString() doesn't work with Visual Studio 2008
+/// QString::ToStdWString() doesn't work with Visual Studio 2008
 std::wstring QStringToStdWString(QString &s)
 {
     std::string temp1 = s.toStdString();

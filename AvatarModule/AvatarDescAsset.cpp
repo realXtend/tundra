@@ -52,7 +52,7 @@ void AvatarDescAsset::ParseReferences()
         if (!assetmap.isNull())
         {
             QDomElement asset = assetmap.firstChildElement("asset");
-            while (!asset.isNull())
+            while(!asset.isNull())
             {
                 AssetReference newRef;
                 ///\todo The design of whether the LookupAssetRefToStorage should occur here, or internal to Asset API needs to be revisited.

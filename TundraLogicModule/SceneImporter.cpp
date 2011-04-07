@@ -21,7 +21,7 @@
 #include "AssetAPI.h"
 #include "LoggingFunctions.h"
 
-DEFINE_POCO_LOGGING_FUNCTIONS("SceneImporter")
+//DEFINE_POCO_LOGGING_FUNCTIONS("SceneImporter")
 
 #include <Ogre.h>
 
@@ -63,7 +63,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
             return Scene::EntityPtr();
 
     QSet<QString> material_names_set;
-    for (uint i = 0; i < material_names.size(); ++i)
+    for(uint i = 0; i < material_names.size(); ++i)
     {
         LogDebug("Material ref: " + material_names[i].toStdString());
         material_names_set.insert(material_names[i]);
@@ -94,9 +94,9 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     QDomElement ent_elem = prefab.firstChildElement("entity");
     if (!ent_elem.isNull())
     {
-        //! \todo this should possibly be a function in SceneManager
+        /// \todo this should possibly be a function in SceneManager
         QDomElement comp_elem = ent_elem.firstChildElement("component");
-        while (!comp_elem.isNull())
+        while(!comp_elem.isNull())
         {
             QString type_name = comp_elem.attribute("type");
             QString name = comp_elem.attribute("name");
@@ -224,7 +224,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
         if (!externals_elem.isNull())
         {
             QDomElement item_elem = externals_elem.firstChildElement("item");
-            while (!item_elem.isNull())
+            while(!item_elem.isNull())
             {
                 if (item_elem.attribute("type") == "material")
                 {
@@ -248,7 +248,7 @@ QList<Scene::Entity *> SceneImporter::Import(const std::string& filename, std::s
             DEGTORAD * worldtransform.rotation.z);
         ProcessNodeForCreation(ret, node_elem, worldtransform.position, rot, worldtransform.scale, change, prefix, flipyz, replace);
     }
-    catch (Exception& e)
+    catch(Exception& e)
     {
         LogError(std::string("Exception while scene importing: ") + e.what());
         return QList<Scene::Entity *>();
@@ -296,7 +296,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
             Ogre::MeshSerializer serializer;
             serializer.importMesh(stream, tempmesh.getPointer());
             
-            for (uint i = 0; i < tempmesh->getNumSubMeshes(); ++i)
+            for(uint i = 0; i < tempmesh->getNumSubMeshes(); ++i)
             {
                 Ogre::SubMesh* submesh = tempmesh->getSubMesh(i);
                 if (submesh)
@@ -314,7 +314,7 @@ bool SceneImporter::ParseMeshForMaterialsAndSkeleton(const QString& meshname, QS
             tempmesh.setNull();
             Ogre::MeshManager::getSingleton().remove(uniquename);
         }
-        catch (...)
+        catch(...)
         {
             LogError("Exception while inspecting mesh " + meshname.toStdString());
             return false;
@@ -555,7 +555,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
     if (!externals_elem.isNull())
     {
         QDomElement item_elem = externals_elem.firstChildElement("item");
-        while (!item_elem.isNull())
+        while(!item_elem.isNull())
         {
             if (item_elem.attribute("type") == "material")
             {
@@ -582,7 +582,7 @@ SceneDesc SceneImporter::GetSceneDescForScene(const QString &filename)
 
     QDomElement node_elem = nodes_elem.firstChildElement("node");
 //    ProcessNodeForDesc(sceneDesc, node_elem, f.position, rot, f.scale, path + "/"/*prefix*/, true/*flipyz*/);
-    while (!node_elem.isNull())
+    while(!node_elem.isNull())
     {
         // Process entity node, if any
         QDomElement entity_elem = node_elem.firstChildElement("entity");
@@ -950,7 +950,7 @@ QStringList SceneImporter::GetMaterialFiles(const std::string &dir) const
 
 void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::string& in_asset_dir)
 {
-    while (!node_elem.isNull())
+    while(!node_elem.isNull())
     {
         // Process entity node, if any
         QDomElement entity_elem = node_elem.firstChildElement("entity");
@@ -963,7 +963,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
             if (!subentities_elem.isNull())
             {
                 QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
-                while (!subentity_elem.isNull())
+                while(!subentity_elem.isNull())
                 {
                     std::string material_name = subentity_elem.attribute("materialName").toStdString();
                     material_names_.insert(material_name);
@@ -976,7 +976,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
                 QStringList material_names;
                 QString skeleton_name;
                 ParseMeshForMaterialsAndSkeleton(QString::fromStdString(in_asset_dir + "/" + mesh_name), material_names, skeleton_name);
-                for (uint i = 0; i < material_names.size(); ++i)
+                for(uint i = 0; i < material_names.size(); ++i)
                     material_names_.insert(material_names[i].toStdString());
                 mesh_default_materials_[mesh_name.c_str()] = material_names;
             }
@@ -995,7 +995,7 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
 void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
     AttributeChange::Type change, const QString &prefix, bool flipyz, bool replace)
 {
-    while (!node_elem.isNull())
+    while(!node_elem.isNull())
     {
         QDomElement pos_elem = node_elem.firstChildElement("position");
         QDomElement rot_elem = node_elem.firstChildElement("rotation");
@@ -1046,7 +1046,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                 base_node_name = "object";
             std::string node_name = base_node_name;
             int append_num = 1;
-            while (node_names_.find(node_name) != node_names_.end())
+            while(node_names_.find(node_name) != node_names_.end())
             {
                 node_name = base_node_name + "_" + ToString<int>(append_num);
                 ++append_num;
@@ -1098,7 +1098,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                     if (!subentities_elem.isNull())
                     {
                         QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
-                        while (!subentity_elem.isNull())
+                        while(!subentity_elem.isNull())
                         {
                             QString material_name = subentity_elem.attribute("materialName") + ".material";
                             material_name.replace('/', '_');
@@ -1126,7 +1126,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                     
                     if (!flipyz)
                     {
-                        //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                        /// \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
                         Vector3df rot_euler;
                         Quaternion adjustedrot = Quaternion(0, 0, PI) * newrot;
                         adjustedrot.toEuler(rot_euler);
@@ -1136,7 +1136,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
                     }
                     else
                     {
-                        //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                        /// \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
                         Vector3df rot_euler;
                         Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
                         adjustedrot.toEuler(rot_euler);
@@ -1185,7 +1185,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, V
     const QString &prefix, bool flipyz)
 {
     AttributeChange::Type change = AttributeChange::Disconnected;
-    while (!node_elem.isNull())
+    while(!node_elem.isNull())
     {
         QDomElement pos_elem = node_elem.firstChildElement("position");
         QDomElement rot_elem = node_elem.firstChildElement("rotation");
@@ -1241,7 +1241,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, V
                 base_node_name = "object";
             std::string node_name = base_node_name;
             int append_num = 1;
-            while (node_names_.find(node_name) != node_names_.end())
+            while(node_names_.find(node_name) != node_names_.end())
             {
                 node_name = base_node_name + "_" + ToString<int>(append_num);
                 ++append_num;
@@ -1290,7 +1290,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, V
                 if (!subentities_elem.isNull())
                 {
                     QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
-                    while (!subentity_elem.isNull())
+                    while(!subentity_elem.isNull())
                     {
                         QString material_name = subentity_elem.attribute("materialName") + ".material";
                         material_name.replace('/', '_');
@@ -1318,7 +1318,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, V
                 
                 if (!flipyz)
                 {
-                    //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                    /// \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
                     Vector3df rot_euler;
                     Quaternion adjustedrot = Quaternion(0, 0, PI) * newrot;
                     adjustedrot.toEuler(rot_euler);
@@ -1328,7 +1328,7 @@ void SceneImporter::ProcessNodeForDesc(SceneDesc &desc, QDomElement node_elem, V
                 }
                 else
                 {
-                    //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                    /// \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
                     Vector3df rot_euler;
                     Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
                     adjustedrot.toEuler(rot_euler);

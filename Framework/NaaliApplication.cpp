@@ -77,7 +77,7 @@ namespace Foundation
     {
          QStringList fileNames = dir.entryList(QStringList("*.qm"), QDir::Files, QDir::Name);
          QMutableStringListIterator i(fileNames);
-         while (i.hasNext())
+         while(i.hasNext())
          {
              i.next();
              i.setValue(dir.filePath(i.value()));
@@ -99,12 +99,12 @@ namespace Foundation
         }
         catch(const std::exception &e)
         {
-            RootLogCritical(std::string("NaaliApplication::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            LogCritical(std::string("NaaliApplication::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
             throw;
         }
         catch(...)
         {
-            RootLogCritical(std::string("NaaliApplication::Go caught an unknown exception!"));
+            LogCritical(std::string("NaaliApplication::Go caught an unknown exception!"));
             throw;
         }
     }
@@ -151,12 +151,12 @@ namespace Foundation
         catch(const std::exception &e)
         {
             std::cout << std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)") << std::endl;
-            RootLogCritical(std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            LogCritical(std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)"));
             throw;
         } catch(...)
         {
             std::cout << std::string("QApp::eventFilter caught an unknown exception!") << std::endl;
-            RootLogCritical(std::string("QApp::eventFilter caught an unknown exception!"));
+            LogCritical(std::string("QApp::eventFilter caught an unknown exception!"));
             throw;
         }
     }
@@ -216,12 +216,12 @@ namespace Foundation
         } catch(const std::exception &e)
         {
             std::cout << std::string("QApp::notify caught an exception: ") << (e.what() ? e.what() : "(null)") << std::endl;
-            RootLogCritical(std::string("QApp::notify caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            LogCritical(std::string("QApp::notify caught an exception: ") + (e.what() ? e.what() : "(null)"));
             throw;
         } catch(...)
         {
             std::cout << std::string("QApp::notify caught an unknown exception!") << std::endl;
-            RootLogCritical(std::string("QApp::notify caught an unknown exception!"));
+            LogCritical(std::string("QApp::notify caught an unknown exception!"));
             throw;
         }
     }
@@ -244,13 +244,13 @@ namespace Foundation
         catch(const std::exception &e)
         {
             std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
-            RootLogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            LogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
             throw;
         }
         catch(...)
         {
             std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
-            RootLogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
+            LogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
             throw;
         }
     }

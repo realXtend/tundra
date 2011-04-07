@@ -80,65 +80,65 @@ public:
     ~EC_Sound();
     virtual bool IsSerializable() const { return true; }
 
-    //! Sound asset reference.
+    /// Sound asset reference.
     Q_PROPERTY(AssetReference soundRef READ getsoundRef WRITE setsoundRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, soundRef);
 
-    //! Sound inner radius tell the distance where sound gain value is in it's maximum.
+    /// Sound inner radius tell the distance where sound gain value is in it's maximum.
     Q_PROPERTY(float soundInnerRadius READ getsoundInnerRadius WRITE setsoundInnerRadius);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundInnerRadius);
 
-    //! Sound outer radius tell the distance where sound gain value is zero.
+    /// Sound outer radius tell the distance where sound gain value is zero.
     Q_PROPERTY(float soundOuterRadius READ getsoundOuterRadius WRITE setsoundOuterRadius);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundOuterRadius);
 
-    //! Sound gain value should be between 0.0-1.0
+    /// Sound gain value should be between 0.0-1.0
     Q_PROPERTY(float soundGain READ getsoundGain WRITE setsoundGain);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundGain);
 
-    //! Do we want to play this sound when the asset is loaded.
+    /// Do we want to play this sound when the asset is loaded.
     Q_PROPERTY(bool playOnLoad READ getplayOnLoad WRITE setplayOnLoad);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, playOnLoad);
 
-    //! Do we want to loop the sound until the stop sound is called.
+    /// Do we want to loop the sound until the stop sound is called.
     Q_PROPERTY(bool loopSound READ getloopSound WRITE setloopSound);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, loopSound);
 
-    //! Is the sound type spatial or ambient
+    /// Is the sound type spatial or ambient
     Q_PROPERTY(bool spatial READ getspatial WRITE setspatial);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, spatial);
 
 public slots:
-    //! Show the asset in asset viewer window.
+    /// Show the asset in asset viewer window.
     ///\todo implement
     void View(const QString &attributeName);
 
-    //! Starts playing the sound.
+    /// Starts playing the sound.
     void PlaySound();
 
-    //! Stops playing the sound.
+    /// Stops playing the sound.
     void StopSound();
 
-    //! Get each attribute value and send them over to sound service.
+    /// Get each attribute value and send them over to sound service.
     void UpdateSoundSettings();
 
     /// Finds from the current scene the SoundListener that is currently active, or null if no SoundListener is active.
     Scene::EntityPtr GetActiveSoundListener();
 
 private slots:
-    //! Update signals to parents signals.
+    /// Update signals to parents signals.
     void UpdateSignals();
 
-    //! Monitors own attribute changes.
+    /// Monitors own attribute changes.
     void AttributeUpdated(IAttribute *attribute);
 
-    //! Handles asset loaded signal.
+    /// Handles asset loaded signal.
     void AudioAssetLoaded(AssetPtr asset);
 
-    //! Registers the action this EC provides to the parent entity, when it's set.
+    /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
 
-    //! Update the EC_Sound position to match placeable position.
+    /// Update the EC_Sound position to match placeable position.
     void PositionChange(const QVector3D &pos);
 
 private:

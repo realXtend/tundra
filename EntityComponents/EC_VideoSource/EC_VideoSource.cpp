@@ -28,7 +28,7 @@
 #endif
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_VideoSource")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_VideoSource")
 
 #include "MemoryLeakCheck.h"
 
@@ -453,7 +453,7 @@ void EC_VideoSource::UpdateSignals()
     // players ~at the same time, so here we do a random timer to instantiate the objects so the QThreads are not
     // started ~at the same time and we minimize risk or crashing. Yes i know its stupid, blame phonon!
     int rand_time = qrand();
-    while (rand_time > 3000)
+    while(rand_time > 3000)
         rand_time /= 2;
         if (rand_time < 500)
             rand_time = 500;

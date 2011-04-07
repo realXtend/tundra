@@ -14,7 +14,7 @@
 #include "UiAPI.h"
 #include "UiProxyWidget.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 #include <QWebView>
 #include <QLineEdit>
@@ -201,7 +201,7 @@ void EC_3DCanvasSource::UpdateWidgetAndCanvas(IAttribute *attribute, AttributeCh
 
 void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
 {
-    //! \todo: check here if the link is something we want to open differently (external program etc.)
+    /// \todo: check here if the link is something we want to open differently (external program etc.)
     
     // If url is different than the source, update the lineedit & browser & replicate to network
     QString url_str = url.toString();

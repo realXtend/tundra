@@ -11,15 +11,15 @@ namespace Foundation
 {
     class Framework;
 
-    //! Low-level *nix specific functionality
-    /*! \ingroup Foundation_group
+    /// Low-level *nix specific functionality
+    /** \ingroup Foundation_group
     */
     class PlatformNix
     {
     public:
-        //! default constructor
+        /// default constructor
         explicit PlatformNix(Framework *framework) : framework_(framework) {}
-        //! destructor
+        /// destructor
         virtual ~PlatformNix() {}
 
         static void Message(const std::string& title, const std::string& text)
@@ -32,26 +32,26 @@ namespace Foundation
             std::wcerr << title << " " << text;
         }
 
-        //! Returns current Naali install directory. May be different than the current working directory.
+        /// Returns current Naali install directory. May be different than the current working directory.
         std::string GetInstallDirectory();
         
-        //! Returns current Naali install directory (wide string) May be different than the current working directory.
+        /// Returns current Naali install directory (wide string) May be different than the current working directory.
         std::wstring GetInstallDirectoryW();
         
-        //! Returns user specific application data directory.
-        /*! Returns non-unicode path. May throw Expection if folder is not found.
+        /// Returns user specific application data directory.
+        /** Returns non-unicode path. May throw Expection if folder is not found.
         */
         std::string GetApplicationDataDirectory();
 
-        //! Returns user specific application data directory.
-        /*! Returns unicode path. May throw Expection if folder is not found.
+        /// Returns user specific application data directory.
+        /** Returns unicode path. May throw Expection if folder is not found.
         */
         std::wstring GetApplicationDataDirectoryW();
 
-        //! \copydoc Foundation::PlatformWin::GetUserDocumentsDirectory()
+        /// \copydoc Foundation::PlatformWin::GetUserDocumentsDirectory()
         std::string GetUserDocumentsDirectory();
 
-        //! \copydoc PlatformWin::GetUserDocumentsDirectoryW()
+        /// \copydoc PlatformWin::GetUserDocumentsDirectoryW()
         std::wstring GetUserDocumentsDirectoryW();
 
     private:

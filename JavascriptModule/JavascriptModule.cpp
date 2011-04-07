@@ -31,6 +31,7 @@
 
 #include <QtScript>
 
+#include "LoggingFunctions.h"
 #include "MemoryLeakCheck.h"
 
 std::string JavascriptModule::type_name_static_ = "Javascript";
@@ -146,7 +147,7 @@ JavascriptModule *JavascriptModule::GetInstance()
 void JavascriptModule::RunString(const QString &codestr, const QVariantMap &context)
 {
     QMapIterator<QString, QVariant> i(context);
-    while (i.hasNext())
+    while(i.hasNext())
     {
         i.next();
         engine->globalObject().setProperty(i.key(), engine->newQObject(i.value().value<QObject*>()));
@@ -239,7 +240,7 @@ void JavascriptModule::LoadStartupScripts()
     {
         boost::filesystem::directory_iterator i(path);
         boost::filesystem::directory_iterator end_iter;
-        while (i != end_iter)
+        while(i != end_iter)
         {
             if (boost::filesystem::is_regular_file(i->status()))
             {
@@ -251,12 +252,12 @@ void JavascriptModule::LoadStartupScripts()
             ++i;
         }
     }
-    catch (std::exception &/*e*/)
+    catch(std::exception &/*e*/)
     {
     }
     
     // Create a script instance for each of the files, register services for it and try to run.
-    for (uint i = 0; i < scripts.size(); ++i)
+    for(uint i = 0; i < scripts.size(); ++i)
     {
         JavascriptInstance* jsInstance = new JavascriptInstance(QString::fromStdString(scripts[i]), this);
         PrepareScriptInstance(jsInstance);
@@ -268,9 +269,9 @@ void JavascriptModule::LoadStartupScripts()
 void JavascriptModule::UnloadStartupScripts()
 {
     // Stop the startup scripts, if any running
-    for (uint i = 0; i < startupScripts_.size(); ++i)
+    for(uint i = 0; i < startupScripts_.size(); ++i)
         startupScripts_[i]->Unload();
-    for (uint i = 0; i < startupScripts_.size(); ++i)
+    for(uint i = 0; i < startupScripts_.size(); ++i)
         delete startupScripts_[i];
     startupScripts_.clear();
 }
@@ -281,7 +282,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
     
     // Register framework's dynamic properties (service objects) and the framework itself to the script engine
     QList<QByteArray> properties = framework_->dynamicPropertyNames();
-    for (QList<QByteArray>::size_type i = 0; i < properties.size(); ++i)
+    for(QList<QByteArray>::size_type i = 0; i < properties.size(); ++i)
     {
         QString name = properties[i];
         QObject* serviceobject = framework_->property(name.toStdString().c_str()).value<QObject*>();
@@ -320,12 +321,13 @@ QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
     return QScriptValue();
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
-
+/*
 POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(JavascriptModule)
 POCO_END_MANIFEST
+*/

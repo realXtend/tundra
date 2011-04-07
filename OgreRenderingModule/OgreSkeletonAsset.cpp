@@ -19,12 +19,12 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 {
     if (!data_)
     {
-        OgreRenderingModule::LogError("Null source asset data pointer");
+        LogError("Null source asset data pointer");
         return false;
     }
     if (numBytes == 0)
     {
-        OgreRenderingModule::LogError("Zero sized skeleton asset");
+        LogError("Zero sized skeleton asset");
         return false;
     }
 
@@ -37,7 +37,7 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
 
             if (ogreSkeleton.isNull())
             {
-                OgreRenderingModule::LogError("Failed to create skeleton " + this->Name().toStdString());
+                LogError("Failed to create skeleton " + this->Name().toStdString());
                 return false; 
             }
         }
@@ -49,15 +49,15 @@ bool OgreSkeletonAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         Ogre::SkeletonSerializer serializer;
         serializer.importSkeleton(stream, ogreSkeleton.getPointer());
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
-        OgreRenderingModule::LogError("Failed to create skeleton " + this->Name().toStdString() + ": " + std::string(e.what()));
+        LogError("Failed to create skeleton " + this->Name().toStdString() + ": " + std::string(e.what()));
         Unload();
         return false;
     }
 
     internal_name_ = SanitateAssetIdForOgre(this->Name().toStdString());
-    OgreRenderingModule::LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
+    LogDebug("Ogre skeleton " + this->Name().toStdString() + " created");
     return true;
 }
 
@@ -65,7 +65,7 @@ bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serial
 {
     if (ogreSkeleton.isNull())
     {
-        OgreRenderingModule::LogWarning("Tried to export non-existing Ogre skeleton " + Name().toStdString() + ".");
+        LogWarning("Tried to export non-existing Ogre skeleton " + Name().toStdString() + ".");
         return false;
     }
     try
@@ -79,11 +79,11 @@ bool OgreSkeletonAsset::SerializeTo(std::vector<u8> &data, const QString &serial
         QFile::remove(tempFilename); // Delete the temporary file we used for serialization.
         if (!success)
             return false;
-    } catch (std::exception &e)
+    } catch(std::exception &e)
     {
-        OgreRenderingModule::LogError("Failed to export Ogre skeleton " + Name().toStdString() + ":");
+        LogError("Failed to export Ogre skeleton " + Name().toStdString() + ":");
         if (e.what())
-            OgreRenderingModule::LogError(e.what());
+            LogError(e.what());
         return false;
     }
     return true;
@@ -101,7 +101,7 @@ void OgreSkeletonAsset::DoUnload()
     {
         Ogre::SkeletonManager::getSingleton().remove(skeleton_name);
     }
-    catch (...) {}
+    catch(...) {}
 }
 
 bool OgreSkeletonAsset::IsLoaded() const

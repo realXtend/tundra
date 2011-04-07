@@ -10,30 +10,30 @@ namespace Foundation
 {
     class Framework;
 
-    //! shortcuts for accessing application specific data, such as name and version. //\todo Refactor-remote this. -jj.
-    /*! \ingroup Foundation_group
+    /// shortcuts for accessing application specific data, such as name and version. //\todo Refactor-remote this. -jj.
+    /** \ingroup Foundation_group
     */   
     class Application : public boost::noncopyable
     {
         Application();
 
     public:
-        //! constructor that takes a framework
+        /// constructor that takes a framework
         explicit Application(Framework *framework);
 
-        //! destructor
+        /// destructor
         ~Application();
 
-        //! shortcut for application name
+        /// shortcut for application name
         static std::string Name();
 
-        //! shortcut for application name, returns wide string
+        /// shortcut for application name, returns wide string
         static std::wstring NameW() { return ToWString(Name()); }
 
-        //! shortcut for application version string
+        /// shortcut for application version string
         static std::string Version();
 
-        //! shortcut for application version string, returns wide string
+        /// shortcut for application version string, returns wide string
         static std::wstring VersionW() { return ToWString(Version()); }
 
     private:

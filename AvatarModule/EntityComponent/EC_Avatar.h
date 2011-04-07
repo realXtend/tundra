@@ -15,7 +15,7 @@
 class AvatarDescAsset;
 typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
-//! Avatar component.
+/// Avatar component.
 /**
 <table class="header">
 <tr>
@@ -52,32 +52,32 @@ class AV_MODULE_API EC_Avatar : public IComponent
     DECLARE_EC(EC_Avatar);
 
 public:
-    //! Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
+    /// Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
     Q_PROPERTY(QString appearanceId READ getappearanceId WRITE setappearanceId);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, appearanceId);
 
-    //! Set component as serializable.
+    /// Set component as serializable.
     virtual bool IsSerializable() const { return true; }
 
-    //! Destructor
+    /// Destructor
     virtual ~EC_Avatar();
 
 private slots:
-    //! Called when some of the attributes has been changed.
+    /// Called when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
     
     void OnAvatarAppearanceLoaded(AssetPtr asset);
 
 private:
-    //! constructor
-    /*! \param module avatar module
+    /// constructor
+    /** \param module avatar module
      */
     EC_Avatar(IModule* module);
 
-    //! Setup avatar from ready avatar description asset
+    /// Setup avatar from ready avatar description asset
     void SetupAvatar(AvatarDescAssetPtr avatarAsset);
 
-    //! Category for Asset events
+    /// Category for Asset events
     event_category_id_t asset_event_category_;
 };
 

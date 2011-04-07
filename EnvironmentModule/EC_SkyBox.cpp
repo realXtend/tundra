@@ -8,7 +8,7 @@
 #include "SceneManager.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyBox")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_SkyBox")
 
 #include <Ogre.h>
 
@@ -41,7 +41,7 @@ EC_SkyBox::EC_SkyBox(IModule *module) :
 
      StringVector names;
      Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(materialRef.Get().ref.toStdString().c_str());
-     if ( materialPtr.get() != 0)
+     if (materialPtr.get() != 0)
      {
          OgreRenderer::GetTextureNamesFromMaterial(materialPtr, names);
          AssetReferenceList lst;

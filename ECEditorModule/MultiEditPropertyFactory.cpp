@@ -78,7 +78,7 @@ void MultiEditPropertyFact::DialogValueSelected(const QString &value)
 void MultiEditPropertyFact::EditorDestroyed(QObject *object)
 {
     QMap<QDialog *, const QtProperty *>::ConstIterator iter = editorToProperty_.constBegin();
-    while (iter != editorToProperty_.constEnd()) 
+    while(iter != editorToProperty_.constEnd()) 
     {
         if (iter.key() == object)
         {

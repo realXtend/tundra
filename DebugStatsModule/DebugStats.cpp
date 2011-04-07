@@ -451,7 +451,7 @@ Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params
     
     OgreRenderer::ResourceHandlerPtr res_handler = renderer->GetResourceHandler();
     std::vector<Foundation::ResourcePtr> textures = res_handler->GetResources(OgreRenderer::OgreTextureResource::GetTypeStatic());
-    for (uint i = 0; i < textures.size(); ++i)
+    for(uint i = 0; i < textures.size(); ++i)
     {
         try
         {
@@ -471,9 +471,9 @@ Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params
                     // if there are multiple faces and mipmaps we must pack them into the data
                     // faces, then mips
                     void* currentPixData = pixData;
-                    for (size_t face = 0; face < ogre_tex->getNumFaces(); ++face)
+                    for(size_t face = 0; face < ogre_tex->getNumFaces(); ++face)
                     {
-                        for (size_t mip = 0; mip < numMips; ++mip)
+                        for(size_t mip = 0; mip < numMips; ++mip)
                         {
                             size_t mipDataSize = Ogre::PixelUtil::getMemorySize(ogre_tex->getWidth(), ogre_tex->getHeight(), ogre_tex->getDepth(), ogre_tex->getFormat());
                             Ogre::PixelBox pixBox(ogre_tex->getWidth(), ogre_tex->getHeight(), ogre_tex->getDepth(), ogre_tex->getFormat(), currentPixData);
@@ -497,7 +497,7 @@ Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params
                 }
             }
         }
-        catch (...)
+        catch(...)
         {
         }
     }
@@ -542,7 +542,7 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
 
 }
 
-extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+//extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);

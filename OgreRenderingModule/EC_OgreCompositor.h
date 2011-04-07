@@ -71,7 +71,7 @@ public:
 
     virtual ~EC_OgreCompositor();
 
-    //! Set component as serializable.
+    /// Set component as serializable.
     virtual bool IsSerializable() const { return true; }
 
 public slots:
@@ -82,22 +82,22 @@ private slots:
     void AttributeUpdated(IAttribute* attribute);
 
 private:
-    //! Enables or disables and sets the priority of the specified compositor based on the attributes
+    /// Enables or disables and sets the priority of the specified compositor based on the attributes
     void UpdateCompositor(const QString &compositor);
 
-    //! Updates compositor shader parameters
+    /// Updates compositor shader parameters
     void UpdateCompositorParams(const QString &compositor);
 
-    //! constructor
-    /*! \param module Ogre module
+    /// constructor
+    /** \param module Ogre module
      */
     EC_OgreCompositor(IModule* module);
 
-    //! Owner module of this component
+    /// Owner module of this component
     OgreRenderer::OgreRenderingModule *owner_;
-    //! Compositor handler. Used to actually add / remove post process effects.
+    /// Compositor handler. Used to actually add / remove post process effects.
     OgreRenderer::CompositionHandler *handler_;
-    //! Stored compositor ref for internal use
+    /// Stored compositor ref for internal use
     QString previous_ref_;
 };
 

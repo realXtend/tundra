@@ -78,7 +78,7 @@ class EC_Light : public IComponent
     Q_OBJECT
     
 public:
-    //! light type enumeration
+    /// light type enumeration
     enum Type
     {
         LT_Point,
@@ -86,65 +86,65 @@ public:
         LT_Directional
     };
     
-    //! Destructor.
+    /// Destructor.
     ~EC_Light();
     
     virtual bool IsSerializable() const { return true; }
 
-    //! Gets placeable component
+    /// Gets placeable component
     ComponentPtr GetPlaceable() const { return placeable_; }
     
-    //! Sets placeable component
-    /*! Set a null placeable (or do not set a placeable) to have a detached light
+    /// Sets placeable component
+    /** Set a null placeable (or do not set a placeable) to have a detached light
         \param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
     
-    //! @return Ogre light pointer
+    /// @return Ogre light pointer
     Ogre::Light* GetLight() const { return light_; }
     
-    //! Light direction
+    /// Light direction
     Q_PROPERTY(Vector3df direction READ getdirection WRITE setdirection)
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, direction);
     
-    //! Light type
+    /// Light type
     Q_PROPERTY(int type READ gettype WRITE settype)
     DEFINE_QPROPERTY_ATTRIBUTE(int, type);
     
-    //! Light diffuse color
+    /// Light diffuse color
     Q_PROPERTY(Color diffColor READ getdiffColor WRITE setdiffColor)
     DEFINE_QPROPERTY_ATTRIBUTE(Color, diffColor);
     
-    //! Light specular color
+    /// Light specular color
     Q_PROPERTY(Color specColor READ getspecColor WRITE setspecColor)
     DEFINE_QPROPERTY_ATTRIBUTE(Color, specColor);
     
-    //! Cast shadows flag
-    //! /todo check if this attribute can be removed cause atm it's not in use.
+    /// Cast shadows flag
+    /// /todo check if this attribute can be removed cause atm it's not in use.
     Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
     
-    //! Light range
+    /// Light range
     Q_PROPERTY(float range READ getrange WRITE setrange)
     DEFINE_QPROPERTY_ATTRIBUTE(float, range);
     
-    //! Light constant attenuation
+    /// Light constant attenuation
     Q_PROPERTY(float constAtten READ getconstAtten WRITE setconstAtten)
     DEFINE_QPROPERTY_ATTRIBUTE(float, constAtten);
     
-    //! Light linear attenuation
+    /// Light linear attenuation
     Q_PROPERTY(float linearAtten READ getlinearAtten WRITE setlinearAtten)
     DEFINE_QPROPERTY_ATTRIBUTE(float, linearAtten);
     
-    //! Light quadratic attenuation
+    /// Light quadratic attenuation
     Q_PROPERTY(float quadraAtten READ getquadraAtten WRITE setquadraAtten)
     DEFINE_QPROPERTY_ATTRIBUTE(float, quadraAtten);
     
-    //! Spotlight inner angle (degrees)
+    /// Spotlight inner angle (degrees)
     Q_PROPERTY(float innerAngle READ getinnerAngle WRITE setinnerAngle)
     DEFINE_QPROPERTY_ATTRIBUTE(float, innerAngle);
     
-    //! Spotlight outer angle (degrees)
+    /// Spotlight outer angle (degrees)
     Q_PROPERTY(float outerAngle READ getouterAngle WRITE setouterAngle)
     DEFINE_QPROPERTY_ATTRIBUTE(float, outerAngle);
     
@@ -153,24 +153,24 @@ private slots:
     void UpdateOgreLight();
     
 private:
-    //! Constuctor.
-    /*! \param module Module.
+    /// Constuctor.
+    /** \param module Module.
      */
     explicit EC_Light(IModule *module);
     
-    //! Attaches light to placeable
+    /// Attaches light to placeable
     void AttachLight();
     
-    //! Detaches light from placeable
+    /// Detaches light from placeable
     void DetachLight();
     
-    //! Placeable component, optional
+    /// Placeable component, optional
     ComponentPtr placeable_;
     
-    //! Ogre light
+    /// Ogre light
     Ogre::Light* light_;
     
-    //! Attached flag
+    /// Attached flag
     bool attached_;
 
 

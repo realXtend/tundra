@@ -20,20 +20,20 @@
 #endif
 
 
-//! generic mutex
+/// generic mutex
 typedef boost::mutex Mutex;
-//! recursive mutex
+/// recursive mutex
 typedef boost::recursive_mutex RecursiveMutex;
-//! Raii style mutex locking
+/// Raii style mutex locking
 typedef boost::lock_guard<Mutex> MutexLock;
-//! Raii style recursive mutex locking
+/// Raii style recursive mutex locking
 typedef boost::lock_guard<RecursiveMutex> RecursiveMutexLock;
-//! Scoped lock
+/// Scoped lock
 typedef boost::mutex::scoped_lock ScopedLock;
 
-//! Thread
+/// Thread
 typedef boost::thread Thread;
-//! Condition
+/// Condition
 typedef boost::condition Condition;
 
 #endif

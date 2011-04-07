@@ -42,7 +42,7 @@ namespace MumbleVoip
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     signals:
-        //! Emited when server info was successfully found
+        /// Emited when server info was successfully found
         void MumbleServerInfoReceived(ServerInfo info);
 
     private slots:

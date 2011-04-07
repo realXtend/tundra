@@ -144,7 +144,7 @@ void EC_OgreEnvironment::SetAmbientLightColor(const Color &color)
     sceneManager->setAmbientLight(ToOgreColor(color));
     
     // Assure that there is "not" None-flag set. 
-    if ( override_flags_.testFlag(None))
+    if (override_flags_.testFlag(None))
         override_flags_ &= ~None;
     
     override_flags_|=AmbientLight;
@@ -164,15 +164,15 @@ Color EC_OgreEnvironment::GetAmbientLightColor() const
 void EC_OgreEnvironment::SetSunColor(const Color &color)
 {
 #ifdef CAELUM 
-    if ( caelumSystem_ != 0)
+    if (caelumSystem_ != 0)
     {
         Caelum::BaseSkyLight* sun = caelumSystem_->getSun();
-        if ( sun != 0)
+        if (sun != 0)
         {          
             sun->setLightColour(ToOgreColor(color));
             
              // Assure that there is "not" None-flag set. 
-            if ( override_flags_.testFlag(None))
+            if (override_flags_.testFlag(None))
                 override_flags_ &= ~None;
 
             override_flags_|=SunColor;
@@ -188,10 +188,10 @@ void EC_OgreEnvironment::SetSunColor(const Color &color)
 Color EC_OgreEnvironment::GetSunColor() const
 {
 #ifdef CAELUM
-    if ( caelumSystem_ != 0)
+    if (caelumSystem_ != 0)
     {
         Ogre::ColourValue color;
-        if ( override_flags_.testFlag(SunColor))
+        if (override_flags_.testFlag(SunColor))
         {
             color = userSunColor_;
         }
@@ -203,7 +203,7 @@ Color EC_OgreEnvironment::GetSunColor() const
         return Color(color.r, color.g, color.b, color.a);
     }
 #else
-    if ( sunlight_ != 0)
+    if (sunlight_ != 0)
     {
         Ogre::ColourValue color = sunlight_->getDiffuseColour();
         return Color(color.r, color.g, color.b, color.a);
@@ -215,15 +215,15 @@ Color EC_OgreEnvironment::GetSunColor() const
 void EC_OgreEnvironment::SetSunDirection(const Vector3df &direction)
 {
 #ifdef CAELUM 
-    if ( caelumSystem_ != 0)
+    if (caelumSystem_ != 0)
     {
         Caelum::BaseSkyLight* sun = caelumSystem_->getSun();
-        if ( sun != 0)
+        if (sun != 0)
         {
             sun->setLightDirection(ToOgreVector3(direction));
             
             // Assure that there is "not" None-flag set. 
-            if ( override_flags_.testFlag(None))
+            if (override_flags_.testFlag(None))
                 override_flags_ &= ~None;
             
             override_flags_|=SunDirection;
@@ -239,7 +239,7 @@ void EC_OgreEnvironment::SetSunDirection(const Vector3df &direction)
 Vector3df EC_OgreEnvironment::GetSunDirection() const
 {
 #ifdef CAELUM
-    if ( caelumSystem_ != 0)
+    if (caelumSystem_ != 0)
     {
         float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
         float relDayTime = fmod(julDay, 1);
@@ -248,7 +248,7 @@ Vector3df EC_OgreEnvironment::GetSunDirection() const
         return Vector3df(sunDir.x, sunDir.y, sunDir.z);
     }
 #else
-    if ( sunlight_ != 0)
+    if (sunlight_ != 0)
     {
         Ogre::Vector3 vec = sunlight_->getDirection();
         return Vector3df(vec.x, vec.y, vec.z);
@@ -320,7 +320,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
             sunColorMultiplier_ = MAX_SUNLIGHT_MULTIPLIER;
     }
     
-    if ( !fog_color_override_)
+    if (!fog_color_override_)
         fogColor_ = caelumSystem_->getGroundFog()->getColour();
 #endif
 
@@ -350,7 +350,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     // Scene::ScenePtr scene = GetFramework()->Scene()->GetDefaultScene();
     // EntityList lst = scene->GetEntitiesWithComponent(EC_WaterPlane::TypeNameStatic());
    /*
-    if ( sceneManager->hasEntity("WaterEntity") )
+    if (sceneManager->hasEntity("WaterEntity") )
         water = sceneManager->getEntity("WaterEntity");
             
     
@@ -408,26 +408,26 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     // If sun color and direction are controlled by user then their value are needed to override here. 
     // internally caelum calculates new values for those so they are needed to set again in each update loop.
 
-    if ( override_flags_.testFlag(None) )
+    if (override_flags_.testFlag(None) )
         return;
 
-    if ( override_flags_.testFlag(AmbientLight))
+    if (override_flags_.testFlag(AmbientLight))
     {   
         // Override ambient light.
         sceneManager->setAmbientLight(userAmbientLight_);
     }
 
-    if ( override_flags_.testFlag(SunDirection) )
+    if (override_flags_.testFlag(SunDirection) )
     {
         // Override sun direction.
-        if ( sun != 0 )
+        if (sun != 0 )
             sun->setDirection(userSunDirection_);
     }
 
-    if ( override_flags_.testFlag(SunColor) )
+    if (override_flags_.testFlag(SunColor) )
     {
         // Override sun color. 
-        if ( sun != 0 )
+        if (sun != 0 )
             sun->setDiffuseColour(userSunColor_);
     }
 #endif
@@ -436,12 +436,12 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
 void EC_OgreEnvironment::SetOverride(VisualEffectOverride effect)
 {
     // Note: None override is a god-mode override, then caelum is used. 
-    if ( effect == None )
+    if (effect == None )
         override_flags_ = QFlags<VisualEffectOverride>(None);
     else
     {
         // Assure that there is "not" None-flag set. 
-        if ( override_flags_.testFlag(None))
+        if (override_flags_.testFlag(None))
             override_flags_ &= ~None;
         
         override_flags_ |= effect;   
@@ -452,7 +452,7 @@ void EC_OgreEnvironment::SetOverride(VisualEffectOverride effect)
 
 void EC_OgreEnvironment::DisableOverride(VisualEffectOverride effect)
 {
-     if ( override_flags_.testFlag(effect))
+     if (override_flags_.testFlag(effect))
         override_flags_ &= ~effect;    
 }
 

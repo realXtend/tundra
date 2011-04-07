@@ -21,6 +21,7 @@
 #include "MsgEntityIDCollision.h"
 #include "MsgEntityAction.h"
 #include "EC_DynamicComponent.h"
+#include "LoggingFunctions.h"
 
 #include "SceneAPI.h"
 
@@ -78,7 +79,7 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     
     if (!scene)
     {
-        TundraLogicModule::LogError("Null scene, cannot replicate");
+        ::LogError("Null scene, cannot replicate");
         return;
     }
     
@@ -220,7 +221,7 @@ void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, Attribu
     if (isServer)
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             #ifndef ECHO_CHANGES_TO_SENDER
             if ((*i)->connection == currentSender)
@@ -263,7 +264,7 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
@@ -289,7 +290,7 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
@@ -311,7 +312,7 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
@@ -334,7 +335,7 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
     if (owner_->IsServer())
     {
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
@@ -358,7 +359,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     bool isServer = owner_->IsServer();
     if (isServer && (type & EntityAction::Server) != 0)
     {
-        //TundraLogicModule::LogInfo("EntityAction " + action.toStdString() + " type Server on server.");
+        //LogInfo("EntityAction " + action.toStdString() + " type Server on server.");
         entity->Exec(EntityAction::Local, action, params);
     }
 
@@ -376,7 +377,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0) && owner_->GetClient()->GetConnection())
     {
         // send without Local flag
-        //TundraLogicModule::LogInfo("Tundra client sending EntityAction " + action.toStdString() + " type " + ToString(type));
+        //LogInfo("Tundra client sending EntityAction " + action.toStdString() + " type " + ToString(type));
         msg.executionType = (u8)(type & ~EntityAction::Local);
         owner_->GetClient()->GetConnection()->Send(msg);
     }
@@ -388,7 +389,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         {
             if (c->properties["authenticated"] == "true" && c->connection)
             {
-                //TundraLogicModule::LogInfo("peer " + action.toStdString());
+                //LogInfo("peer " + action.toStdString());
                 c->connection->Send(msg);
             }
         }
@@ -426,7 +427,7 @@ void SyncManager::Update(f64 frametime)
     if (update_acc_ < update_period_)
         return;
     // If multiple updates passed, update still just once
-    while (update_acc_ >= update_period_)
+    while(update_acc_ >= update_period_)
         update_acc_ -= update_period_;
     
     Scene::ScenePtr scene = scene_.lock();
@@ -437,7 +438,7 @@ void SyncManager::Update(f64 frametime)
     {
         // If we are server, process all users
         UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-        for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>((*i)->syncState.get());
             if (state)
@@ -461,11 +462,11 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     
     int num_messages_sent = 0;
     
-    //! \todo Always sends everything that is dirty/removed. No priorization or limiting of sent data size yet.
+    /// \todo Always sends everything that is dirty/removed. No priorization or limiting of sent data size yet.
     
     // Process dirty entities (added/updated/removed components)
     std::set<entity_id_t> dirty = state->dirty_entities_;
-    for (std::set<entity_id_t>::iterator i = dirty.begin(); i != dirty.end(); ++i)
+    for(std::set<entity_id_t>::iterator i = dirty.begin(); i != dirty.end(); ++i)
     {
         Scene::EntityPtr entity = scene->GetEntity(*i);
         if (!entity)
@@ -505,8 +506,8 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
         else
         {
             // Existing entitystate, check created & modified components
-            //! \todo Renaming an existing component, that already has been replicated to client, leads to duplication.
-            //! So it's not currently supported sensibly.
+            /// \todo Renaming an existing component, that already has been replicated to client, leads to duplication.
+            /// So it's not currently supported sensibly.
             {
                 std::set<std::pair<uint, QString> > dirtycomps = entitystate->dirty_components_;
                 MsgCreateComponents createMsg;
@@ -514,7 +515,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 MsgUpdateComponents updateMsg;
                 updateMsg.entityID = entity->GetId();
                 
-                for (std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
+                for(std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
                 {
                     ComponentPtr component = entity->GetComponent(j->first, j->second);
                     if ((component) && (component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
@@ -549,7 +550,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                 bool has_changes = false;
                                 // Otherwise, we assume the attribute structure is static in the component, and we check which attributes are in the dirty list
                                 const AttributeVector& attributes = component->GetAttributes();
-                                for (uint k = 0; k < attributes.size(); k++)
+                                for(uint k = 0; k < attributes.size(); k++)
                                 {
                                     if (componentstate->dirty_static_attributes_.find(attributes[k]) != componentstate->dirty_static_attributes_.end())
                                     {
@@ -575,7 +576,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                 bool has_changes = false;
                                 const std::set<QString>& dirtyAttrs = componentstate->dirty_dynamic_attributes_;
                                 std::set<QString>::const_iterator k = dirtyAttrs.begin();
-                                while (k != dirtyAttrs.end())
+                                while(k != dirtyAttrs.end())
                                 {
                                     has_changes = true;
                                     MsgUpdateComponents::S_dynamiccomponents::S_attributes updAttribute;
@@ -626,7 +627,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 MsgRemoveComponents removeMsg;
                 removeMsg.entityID = entity->GetId();
                 
-                for (std::set<std::pair<uint, QString> >::iterator j = removedcomps.begin(); j != removedcomps.end(); ++j)
+                for(std::set<std::pair<uint, QString> >::iterator j = removedcomps.begin(); j != removedcomps.end(); ++j)
                 {
                     MsgRemoveComponents::S_components remComponent;
                     remComponent.componentTypeHash = j->first;
@@ -651,7 +652,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
 
     // Process removed entities
     std::set<entity_id_t> removed = state->removed_entities_;
-    for (std::set<entity_id_t>::iterator i = removed.begin(); i != removed.end(); ++i)
+    for(std::set<entity_id_t>::iterator i = removed.begin(); i != removed.end(); ++i)
     {
         MsgRemoveEntity msg;
         msg.entityID = *i;
@@ -663,14 +664,14 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     }
     
     //if (num_messages_sent)
-    //    TundraLogicModule::LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
+    //    LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
 {
     if (entityID & Scene::LocalEntity)
     {
-        TundraLogicModule::LogWarning("Received an entity sync message for a local entity. Disregarding.");
+        LogWarning("Received an entity sync message for a local entity. Disregarding.");
         return false;
     }
     
@@ -700,7 +701,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     SceneSyncState* state = GetSceneSyncState(source);
     if (!state)
     {
-        TundraLogicModule::LogWarning("Null syncstate for connection! Disregarding CreateEntity message");
+        LogWarning("Null syncstate for connection! Disregarding CreateEntity message");
         return;
     }
     
@@ -728,7 +729,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
         // If a client gets a entity that already exists, destroy it forcibly
         if (scene->GetEntity(entityID))
         {
-            TundraLogicModule::LogWarning("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
+            LogWarning("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
             scene->RemoveEntity(entityID, change);
         }
     }
@@ -736,7 +737,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     Scene::EntityPtr entity = scene->CreateEntity(entityID);
     if (!entity)
     {
-        TundraLogicModule::LogWarning("Scene refused to create entity " + ToString<int>(entityID));
+        LogWarning("Scene refused to create entity " + ToString<int>(entityID));
         return;
     }
     
@@ -744,7 +745,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     state->GetOrCreateEntity(entityID);
     
     // Read the components
-    for (uint i = 0; i < msg.components.size(); ++i)
+    for(uint i = 0; i < msg.components.size(); ++i)
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
@@ -759,9 +760,9 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
                     // Deserialize in disconnected mode, then send the notifications later
                     component->DeserializeFromBinary(source, AttributeChange::Disconnected);
                 }
-                catch (...)
+                catch(...)
                 {
-                    TundraLogicModule::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    ::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                 }
                 
                 // Reflect changes back to syncstate
@@ -771,7 +772,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
             }
         }
         else
-            TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+            LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
     // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
@@ -795,7 +796,7 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
     SceneSyncState* state = GetSceneSyncState(source);
     if (!state)
     {
-        TundraLogicModule::LogWarning("Null syncstate for connection! Disregarding RemoveEntity message");
+        LogWarning("Null syncstate for connection! Disregarding RemoveEntity message");
         return;
     }
     
@@ -825,7 +826,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     SceneSyncState* state = GetSceneSyncState(source);
     if (!state)
     {
-        TundraLogicModule::LogWarning("Null syncstate for connection! Disregarding CreateComponents message");
+        LogWarning("Null syncstate for connection! Disregarding CreateComponents message");
         return;
     }
     
@@ -838,11 +839,11 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     Scene::EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
-        TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for CreateComponents message, creating it now");
+        LogWarning("Entity " + ToString<int>(entityID) + " not found for CreateComponents message, creating it now");
         entity = scene->CreateEntity(entityID);
         if (!entity)
         {
-            TundraLogicModule::LogWarning("Scene refused to create entity " + ToString<int>(entityID));
+            LogWarning("Scene refused to create entity " + ToString<int>(entityID));
             return;
         }
         
@@ -853,7 +854,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     // Read the components. These are not deltaserialized.
     std::vector<ComponentPtr> actually_changed_components;
     
-    for (uint i = 0; i < msg.components.size(); ++i)
+    for(uint i = 0; i < msg.components.size(); ++i)
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
@@ -870,9 +871,9 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                     component->DeserializeFromBinary(source, AttributeChange::Disconnected);
                     actually_changed_components.push_back(component);
                 }
-                catch (...)
+                catch(...)
                 {
-                    TundraLogicModule::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    ::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                 }
                 
                 // Reflect changes back to syncstate
@@ -882,7 +883,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             }
         }
         else
-            TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+            LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
     // Signal the component changes last
@@ -907,7 +908,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     SceneSyncState* state = GetSceneSyncState(source);
     if (!state)
     {
-        TundraLogicModule::LogWarning("Null syncstate for connection! Disregarding UpdateComponents message");
+        LogWarning("Null syncstate for connection! Disregarding UpdateComponents message");
         return;
     }
     
@@ -920,11 +921,11 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     Scene::EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
-        TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for UpdateComponents message, creating it now");
+        LogWarning("Entity " + ToString<int>(entityID) + " not found for UpdateComponents message, creating it now");
         entity = scene->CreateEntity(entityID);
         if (!entity)
         {
-            TundraLogicModule::LogWarning("Scene refused to create entity " + ToString<int>(entityID));
+            LogWarning("Scene refused to create entity " + ToString<int>(entityID));
             return;
         }
         
@@ -936,7 +937,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     std::map<IComponent*, std::vector<QString> > partially_changed_dynamic_components;
     
     // Read the static structured components
-    for (uint i = 0; i < msg.components.size(); ++i)
+    for(uint i = 0; i < msg.components.size(); ++i)
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
@@ -948,7 +949,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
                 
                 if (component->HasDynamicStructure())
-                    TundraLogicModule::LogWarning("Received static structure update for a dynamic structured component");
+                    LogWarning("Received static structure update for a dynamic structured component");
                 else
                 {
                     std::vector<bool> actually_changed_attributes;
@@ -956,7 +957,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                     try
                     {
                         // Deserialize changed attributes (1 bit) with no signals first
-                        for (uint i = 0; i < attributes.size(); ++i)
+                        for(uint i = 0; i < attributes.size(); ++i)
                         {
                             if (source.Read<bit>())
                             {
@@ -974,7 +975,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                                 {
                                     IAttribute* endValue = attributes[i]->Clone();
                                     endValue->FromBinary(source, AttributeChange::Disconnected);
-                                    //! \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
+                                    /// \todo server's tickrate might not be same as ours. Should perhaps sync it upon join
                                     // Allow a slightly longer interval than the actual tickrate, for possible packet jitter
                                     scene->StartAttributeInterpolation(attributes[i], endValue, update_period_ * 1.35f);
                                     // Do not signal attribute change at this point at all
@@ -986,19 +987,19 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                         }
                         partially_changed_static_components[component.get()] = actually_changed_attributes;
                     }
-                    catch (...)
+                    catch(...)
                     {
-                        TundraLogicModule::LogError("Error while delta-deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                        ::LogError("Error while delta-deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                     }
                 }
             }
         }
         else
-            TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+            LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
     // Read the dynamic structured components. For now, they have to be DynamicComponents.
-    for (uint i = 0; i < msg.dynamiccomponents.size(); ++i)
+    for(uint i = 0; i < msg.dynamiccomponents.size(); ++i)
     {
         uint type_hash = msg.dynamiccomponents[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].componentName));
@@ -1007,10 +1008,10 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
         {
             EC_DynamicComponent* dynComp = dynamic_cast<EC_DynamicComponent*>(component.get());
             if (!dynComp)
-                TundraLogicModule::LogWarning("Received dynamic attribute update for a component that is not EC_DynamicComponent");
+                LogWarning("Received dynamic attribute update for a component that is not EC_DynamicComponent");
             else
             {
-                for (uint j = 0; j < msg.dynamiccomponents[i].attributes.size(); ++j)
+                for(uint j = 0; j < msg.dynamiccomponents[i].attributes.size(); ++j)
                 {
                     QString attrName = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].attributes[j].attributeName));
                     QString attrTypeName = QString::fromStdString(BufferToString(msg.dynamiccomponents[i].attributes[j].attributeType));
@@ -1047,25 +1048,25 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                             partially_changed_dynamic_components[dynComp].push_back(attrName);
                         }
                         else
-                            TundraLogicModule::LogWarning("Could not create attribute type " + attrTypeName.toStdString() + " to dynamic component");
+                            LogWarning("Could not create attribute type " + attrTypeName.toStdString() + " to dynamic component");
                     }
                 }
             }
         }
         else
-            TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+            LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
     // Signal static components
     std::map<IComponent*, std::vector<bool> >::iterator i = partially_changed_static_components.begin();
-    while (i != partially_changed_static_components.end())
+    while(i != partially_changed_static_components.end())
     {
         // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be sure
         ComponentPtr compShared = entity->GetComponent(i->first);
         if (compShared)
         {
             const AttributeVector& attributes = compShared->GetAttributes();
-            for (uint j = 0; (j < attributes.size()) && (j < i->second.size()); ++j)
+            for(uint j = 0; (j < attributes.size()) && (j < i->second.size()); ++j)
                 if (i->second[j])
                 {
                     currentSender = source;
@@ -1077,13 +1078,13 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     
     // Signal dynamic components
     std::map<IComponent*, std::vector<QString> >::iterator j = partially_changed_dynamic_components.begin();
-    while (j != partially_changed_dynamic_components.end())
+    while(j != partially_changed_dynamic_components.end())
     {
         // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be sure
         ComponentPtr compShared = entity->GetComponent(j->first);
         if (compShared)
         {
-            for (uint k = 0; k < j->second.size(); ++k)
+            for(uint k = 0; k < j->second.size(); ++k)
             {
                 IAttribute* attr = compShared->GetAttribute(j->second[k]);
                 if (attr)
@@ -1111,7 +1112,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     SceneSyncState* state = GetSceneSyncState(source);
     if (!state)
     {
-        TundraLogicModule::LogWarning("Null syncstate for connection! Disregarding RemoveComponents message");
+        LogWarning("Null syncstate for connection! Disregarding RemoveComponents message");
         return;
     }
     
@@ -1124,7 +1125,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     if (!entity)
         return;
     
-    for (unsigned i = 0; i < msg.components.size(); ++i)
+    for(unsigned i = 0; i < msg.components.size(); ++i)
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
@@ -1151,11 +1152,11 @@ void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const
     
     if (owner_->IsServer())
     {
-        TundraLogicModule::LogWarning("Received EntityIDCollision from a client, disregarding.");
+        LogWarning("Received EntityIDCollision from a client, disregarding.");
         return;
     }
     
-    TundraLogicModule::LogDebug("An entity ID collision occurred. Entity " + ToString<int>(msg.oldEntityID) + " became " + ToString<int>(msg.newEntityID));
+    LogDebug("An entity ID collision occurred. Entity " + ToString<int>(msg.oldEntityID) + " became " + ToString<int>(msg.newEntityID));
     scene->ChangeEntityId(msg.oldEntityID, msg.newEntityID);
     
     // Do the change also in server scene replication state
@@ -1179,7 +1180,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     Scene::EntityPtr entity = scene->GetEntity(entityId);
     if (!entity)
     {
-        TundraLogicModule::LogWarning("Entity " + ToString<int>(entityId) + " not found for EntityAction message.");
+        LogWarning("Entity " + ToString<int>(entityId) + " not found for EntityAction message.");
         return;
     }
 
@@ -1196,7 +1197,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
     
     QString action = BufferToString(msg.name).c_str();
     QStringList params;
-    for (uint i = 0; i < msg.parameters.size(); ++i)
+    for(uint i = 0; i < msg.parameters.size(); ++i)
         params << BufferToString(msg.parameters[i].parameter).c_str();
 
     EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
@@ -1228,7 +1229,7 @@ SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connecti
         return &server_syncstate_;
     
     UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
-    for (UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+    for(UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
     {
         if ((*i)->connection == connection)
             return checked_static_cast<SceneSyncState*>((*i)->syncState.get());

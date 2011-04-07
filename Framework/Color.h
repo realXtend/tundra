@@ -6,7 +6,7 @@
 #include "CoreTypes.h"
 
 #include <QMetaType>
-//! A 4-component color value.
+/// A 4-component color value.
 class Color
 {
 public:

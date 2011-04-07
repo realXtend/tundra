@@ -44,7 +44,7 @@ namespace Physics
 
 class PhysicsModule;
 
-//! A physics world that encapsulates a Bullet physics world
+/// A physics world that encapsulates a Bullet physics world
 class PHYSICS_MODULE_API PhysicsWorld : public QObject
 {
     Q_OBJECT
@@ -53,28 +53,28 @@ public:
     PhysicsWorld(PhysicsModule* owner, bool isClient);
     virtual ~PhysicsWorld();
     
-    //! Step the physics world. May trigger several internal simulation substeps, according to the deltatime given.
+    /// Step the physics world. May trigger several internal simulation substeps, according to the deltatime given.
     void Simulate(f64 frametime);
     
-    //! Process collision from an internal sub-step (Bullet post-tick callback)
+    /// Process collision from an internal sub-step (Bullet post-tick callback)
     void ProcessPostTick(float substeptime);
     
 public slots:
-    //! Set physics update period (= length of each simulation step.) By default 1/60th of a second.
-    /*! \param updatePeriod Update period
+    /// Set physics update period (= length of each simulation step.) By default 1/60th of a second.
+    /** \param updatePeriod Update period
      */
     void SetPhysicsUpdatePeriod(float updatePeriod);
     
-    //! Return internal physics timestep
+    /// Return internal physics timestep
     float GetPhysicsUpdatePeriod() const { return physicsUpdatePeriod_; }
     
-    //! Set gravity that affects all moving objects of the physics world
-    /*! \param gravity Gravity vector
+    /// Set gravity that affects all moving objects of the physics world
+    /** \param gravity Gravity vector
      */
     void SetGravity(const Vector3df& gravity);
     
-    //! Raycast to the world. Returns only a single (the closest) result.
-    /*! \param origin World origin position
+    /// Raycast to the world. Returns only a single (the closest) result.
+    /** \param origin World origin position
         \param direction Direction to raycast to. Will be normalized automatically
         \param maxdistance Length of ray
         \param collisiongroup Collision filter group (0 = use default)
@@ -83,18 +83,18 @@ public slots:
      */
     PhysicsRaycastResult* Raycast(const Vector3df& origin, const Vector3df& direction, float maxdistance, int collisiongroup = 0, int collisionmask = 0);
     
-    //! Return gravity
+    /// Return gravity
     Vector3df GetGravity() const;
     
-    //! Return the Bullet world object
+    /// Return the Bullet world object
     btDynamicsWorld* GetWorld() const;
     
-    //! Return whether the physics world is for a client scene. Client scenes only simulate local entities' motion on their own.
+    /// Return whether the physics world is for a client scene. Client scenes only simulate local entities' motion on their own.
     bool IsClient() const { return isClient_; }
     
 signals:
-    //! A physics collision has happened between two entities. 
-    /*! Note: both rigidbodies participating in the collision will also emit a signal separately. 
+    /// A physics collision has happened between two entities. 
+    /** Note: both rigidbodies participating in the collision will also emit a signal separately. 
         Also, if there are several contact points, the signal will be sent multiple times for each contact.
         \param entityA The first entity
         \param entityB The second entity
@@ -106,30 +106,30 @@ signals:
      */
     void PhysicsCollision(Scene::Entity* entityA, Scene::Entity* entityB, const Vector3df& position, const Vector3df& normal, float distance, float impulse, bool newCollision);
      
-     //! Emitted after each simulation step
-     /*! \param frametime Length of simulation step
+     /// Emitted after each simulation step
+     /** \param frametime Length of simulation step
       */
      void Updated(float frametime);
      
 private:
-    //! Bullet collision config
+    /// Bullet collision config
     btCollisionConfiguration* collisionConfiguration_;
-    //! Bullet collision dispatcher
+    /// Bullet collision dispatcher
     btDispatcher* collisionDispatcher_;
-    //! Bullet collision broadphase
+    /// Bullet collision broadphase
     btBroadphaseInterface* broadphase_;
-    //! Bullet constraint equation solver
+    /// Bullet constraint equation solver
     btConstraintSolver* solver_;
-    //! Bullet physics world
+    /// Bullet physics world
     btDiscreteDynamicsWorld* world_;
     
-    //! Length of internal physics timestep
+    /// Length of internal physics timestep
     float physicsUpdatePeriod_;
     
-    //! Client scene flag
+    /// Client scene flag
     bool isClient_;
     
-    //! Previous frame's collisions. We store these to know whether the collision was new or "ongoing"
+    /// Previous frame's collisions. We store these to know whether the collision was new or "ongoing"
     std::set<std::pair<btCollisionObject*, btCollisionObject*> > previousCollisions_;
 };
 

@@ -178,8 +178,8 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_font_assets_ = findChild<QTreeWidget*>("fontDataTree");
 
     QList<QPushButton* > buttons = findChildren<QPushButton* >();
-    for (int i = 0; i < buttons.size(); ++i )
-        if ( buttons[i]->objectName().contains("arrange") )
+    for(int i = 0; i < buttons.size(); ++i )
+        if (buttons[i]->objectName().contains("arrange") )
             connect(buttons[i], SIGNAL(clicked()), this, SLOT(Arrange()));
 
     connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
@@ -194,14 +194,14 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     logThreshold_ = 100.0;
 
     QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
-    if ( box != 0)
+    if (box != 0)
     {
         box->setRange(0.0, 1000.0);
         box->setValue(logThreshold_);
     }
     
     QPushButton* apply = findChild<QPushButton*>("loggerApply");
-    if ( apply != 0)
+    if (apply != 0)
     {
         apply->setCheckable(true);
         connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
@@ -222,7 +222,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     QObject::connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
 
     boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
-    if ( event_manager_ != 0)
+    if (event_manager_ != 0)
         asset_event_category_ = event_manager_->QueryEventCategory("Asset");
 
     // Add a context menu to Textures, Meshes and Materials widgets.
@@ -316,7 +316,7 @@ void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
     /* /// \todo Regression. Reimplement using the Asset API. -jj.
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Mesh));
     boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
-    if ( event_manager_ != 0 )
+    if (event_manager_ != 0 )
     {
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
     }
@@ -326,7 +326,7 @@ void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 {
 #ifdef OGREASSETEDITOR_ENABLED
-    if ( tex_preview_ == 0)
+    if (tex_preview_ == 0)
     {
         tex_preview_ = new TexturePreviewEditor(framework_,this);
     }
@@ -337,7 +337,7 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
     /*
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Texture));
     boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
-    if ( event_manager_ != 0 )
+    if (event_manager_ != 0 )
     {
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
     }
@@ -349,7 +349,7 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 void TimeProfilerWindow::ChangeLoggerThreshold()
 {
      QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
-     if ( box != 0)
+     if (box != 0)
         logThreshold_ = box->value();
 }
 
@@ -372,7 +372,7 @@ void TimeProfilerWindow::SetNetworkLogging(int value)
 
 void TimeProfilerWindow::DumpNetworkSummary(QTextStream* log)
 {
-    if ( log == 0)
+    if (log == 0)
     {
         QFile file(logDirectory_.path() + "/networking.txt");
         if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
@@ -387,7 +387,7 @@ void TimeProfilerWindow::DumpNetworkSummary(QTextStream* log)
         (*log)<<endl;
         (*log)<<" Summary of network IN packages (name, bytes, count) "<<endl;
         
-        for ( QMap<QString, NetworkLogData >::iterator iter = mapNetInData_.begin(); iter != mapNetInData_.end(); ++iter)
+        for(QMap<QString, NetworkLogData >::iterator iter = mapNetInData_.begin(); iter != mapNetInData_.end(); ++iter)
         {
             (*log)<<" "<<iter.key()<<" "<<QString::number(iter.value().bytes)<<" "<<QString::number(iter.value().packages)<<endl;
         }
@@ -395,7 +395,7 @@ void TimeProfilerWindow::DumpNetworkSummary(QTextStream* log)
         (*log)<<endl;
         (*log)<<" Summary of network OUT packages (name, bytes, count) "<<endl;
         
-        for ( QMap<QString, NetworkLogData >::iterator iter = mapNetOutData_.begin(); iter != mapNetOutData_.end(); ++iter)
+        for(QMap<QString, NetworkLogData >::iterator iter = mapNetOutData_.begin(); iter != mapNetOutData_.end(); ++iter)
         {
             (*log)<<" "<<iter.key()<<" "<<QString::number(iter.value().bytes)<<" "<<QString::number(iter.value().packages)<<endl;
         }
@@ -456,29 +456,29 @@ void TimeProfilerWindow::Arrange()
             break;
     }
 
-    if ( widget == 0)
+    if (widget == 0)
         return;
 
-    if ( name.contains("name") )
+    if (name.contains("name") )
     {
         // By name
         widget->sortItems(0, Qt::AscendingOrder);
     }
-    else if ( name.contains("size") )
+    else if (name.contains("size") )
     {
         // By size
         int va = widget->topLevelItemCount();
         QList<QTreeWidgetItem* > items;
-        for ( int i = va; i--;)
+        for(int i = va; i--;)
         {
            QTreeWidgetItem* item =  widget->takeTopLevelItem(i);
-           if ( item != 0)
+           if (item != 0)
                items.append(item);
            else
                break;
         }
 
-        if ( items.size () != 0)
+        if (items.size () != 0)
         {
             qStableSort(items.begin(), items.end(), LessThen);
             widget->addTopLevelItems(items);
@@ -767,7 +767,7 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     sprintf(str, "%.2f msecs/frame.", timePerFrame);
     label_time_per_frame_->setText(str);
 
-    //if ( timePerFrame >= logThreshold_ )
+    //if (timePerFrame >= logThreshold_ )
     //     DumpNodeData();
 }
 
@@ -779,7 +779,7 @@ void TimeProfilerWindow::DumpNodeData()
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
          return;
 
-    if ( tree_profiling_data_ == 0)
+    if (tree_profiling_data_ == 0)
         return;
 
     QTextStream out(&file);
@@ -796,13 +796,13 @@ void TimeProfilerWindow::DumpNodeData()
     out<<endl;
     out<<endl;
 
-    while (*it) 
+    while(*it) 
      {
          QString name = (*it)->text(0);
-         if ( name.contains("thread", Qt::CaseInsensitive) && !name.contains("ThreadTask") )
+         if (name.contains("thread", Qt::CaseInsensitive) && !name.contains("ThreadTask") )
              out<<endl;
 
-         for ( int i = 0; i < cols; ++i)
+         for(int i = 0; i < cols; ++i)
             out<<(*it)->text(i)<<" ";
          
          out<<endl;
@@ -876,8 +876,8 @@ void TimeProfilerWindow::DoThresholdLogging()
             if (timings_node->num_called_custom_ > 0)
             {
                 sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
-                //if ( ((timings_node->total_custom_*1000.f/ timings_node->num_called_custom_) * timings_node->num_called_) > logThreshold_)
-                if ( timings_node->total_custom_*1000.f >= logThreshold_)
+                //if (((timings_node->total_custom_*1000.f/ timings_node->num_called_custom_) * timings_node->num_called_) > logThreshold_)
+                if (timings_node->total_custom_*1000.f >= logThreshold_)
                     saveData = true;
             }    
             line = line + QString(" ") + QString(str);
@@ -892,7 +892,7 @@ void TimeProfilerWindow::DoThresholdLogging()
             //item->setText(4, str);
             sprintf(str, "%d", (int)timings_node->num_called_custom_);
             line = line + QString(" ") + QString(str);
-            if ( saveData)
+            if (saveData)
                out<<line<<endl;
             //count
             //item->setText(1, str);
@@ -933,7 +933,7 @@ void TimeProfilerWindow::LogNetInMessage(const ProtocolUtilities::NetInMessage *
         QString name(msg->GetMessageInfo()->name.c_str());
         log << '\t' << name;
 
-        if ( mapNetInData_.contains(name) )
+        if (mapNetInData_.contains(name) )
         {
             NetworkLogData& ob = mapNetInData_[name];
             ob.bytes += msg->GetDataSize();
@@ -978,7 +978,7 @@ void TimeProfilerWindow::LogNetOutMessage(const ProtocolUtilities::NetOutMessage
         QString name(msg->GetMessageInfo()->name.c_str());
         log << '\t' << name;
         
-         if ( mapNetOutData_.contains(name) )
+         if (mapNetOutData_.contains(name) )
          {
             NetworkLogData& ob = mapNetOutData_[name];
             ob.bytes += msg->BytesFilled();
@@ -1037,8 +1037,8 @@ void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation:
             if (timings_node->num_called_custom_ > 0)
             {
                 sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
-                 //if ( ((timings_node->total_custom_*1000.f/ timings_node->num_called_custom_) * timings_node->num_called_) > logThreshold_)
-                if ( timings_node->total_custom_*1000.f >= logThreshold_ )     
+                 //if (((timings_node->total_custom_*1000.f/ timings_node->num_called_custom_) * timings_node->num_called_) > logThreshold_)
+                if (timings_node->total_custom_*1000.f >= logThreshold_ )     
                     saveData = true;
                
             }    
@@ -1054,7 +1054,7 @@ void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation:
             //item->setText(4, str);
             sprintf(str, "%d", (int)timings_node->num_called_custom_);
             line = line + QString(" ") + QString(str);
-            if ( saveData)
+            if (saveData)
                out<<line<<endl;
             //count
             //item->setText(1, str);
@@ -1704,7 +1704,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
         
     Foundation::AssetCacheInfoMap cache_map = asset_service->GetAssetCacheInfo();
     Foundation::AssetCacheInfoMap::const_iterator i = cache_map.begin();
-    while (i != cache_map.end())
+    while(i != cache_map.end())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
         tree_asset_cache_->addTopLevelItem(item);
@@ -1718,7 +1718,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
 
     Foundation::AssetTransferInfoVector transfer_vector = asset_service->GetAssetTransferInfo();
     Foundation::AssetTransferInfoVector::const_iterator j = transfer_vector.begin();
-    while (j != transfer_vector.end())
+    while(j != transfer_vector.end())
     {
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
         tree_asset_transfers_->addTopLevelItem(item);
@@ -1769,7 +1769,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
 
     // Get overall batchcount/trianglecount/fps data
     Ogre::RenderSystem::RenderTargetIterator rtiter = rendersys->getRenderTargetIterator();
-    while (rtiter.hasMoreElements())
+    while(rtiter.hasMoreElements())
     {
         Ogre::RenderTarget* target = rtiter.getNext();
         // Sum batches & triangles from all rendertargets updated last frame
@@ -1809,7 +1809,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     uint mesh_instances = 0;
     
     // Loop through entities to see mesh usage
-    for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = *iter->second;
         entities++;
@@ -1854,7 +1854,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         // Get Ogre meshes from terrain EC
         else if (terrain)
         {
-            for (int y = 0; y < terrain->PatchHeight(); ++y)
+            for(int y = 0; y < terrain->PatchHeight(); ++y)
                 for(int x = 0; x < terrain->PatchWidth(); ++x)
                 {
                     Ogre::SceneNode *node = terrain->GetPatch(x, y).node;
@@ -1903,7 +1903,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     
     // Go through all meshes and see which of them are in the scene
     Ogre::ResourceManager::ResourceMapIterator iter = Ogre::MeshManager::getSingleton().getResourceIterator();
-    while (iter.hasMoreElements())
+    while(iter.hasMoreElements())
     {
         Ogre::ResourcePtr resource = iter.getNext();
         if (!resource->isLoaded())
@@ -1925,7 +1925,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     
     // Count total vertices/triangles per mesh
     std::set<Ogre::Mesh*>::iterator mi = all_meshes.begin();
-    while (mi != all_meshes.end())
+    while(mi != all_meshes.end())
     {
         Ogre::Mesh* mesh = *mi;
         GetVerticesAndTrianglesFromMesh(mesh, mesh_vertices, mesh_triangles);
@@ -1933,13 +1933,13 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     }
     // Count scene/other mesh byte sizes
     mi = scene_meshes.begin();
-    while (mi != scene_meshes.end())
+    while(mi != scene_meshes.end())
     {
         scene_meshes_size += (*mi)->getSize();
         ++mi;
     }
     mi = other_meshes.begin();
-    while (mi != other_meshes.end())
+    while(mi != other_meshes.end())
     {
         other_meshes_size += (*mi)->getSize();
         ++mi;
@@ -1959,7 +1959,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     
     // Go through all textures and see which of them are in the scene
     Ogre::ResourceManager::ResourceMapIterator tex_iter = ((Ogre::ResourceManager*)Ogre::TextureManager::getSingletonPtr())->getResourceIterator();
-    while (tex_iter.hasMoreElements())
+    while(tex_iter.hasMoreElements())
     {
         Ogre::ResourcePtr resource = tex_iter.getNext();
         if (!resource->isLoaded())
@@ -1981,21 +1981,21 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     uint total_tex_pixels = 0;
     uint other_tex_pixels = 0;
     std::set<Ogre::Texture*>::iterator ti = scene_textures.begin();
-    while (ti != scene_textures.end())
+    while(ti != scene_textures.end())
     {
         scene_tex_size += (*ti)->getSize();
         scene_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
         ++ti;
     }
     ti = all_textures.begin();
-    while (ti != all_textures.end())
+    while(ti != all_textures.end())
     {
         total_tex_size += (*ti)->getSize();
         total_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
         ++ti;
     }
     ti = other_textures.begin();
-    while (ti != other_textures.end())
+    while(ti != other_textures.end())
     {
         other_tex_size += (*ti)->getSize();
         other_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
@@ -2005,14 +2005,14 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     // Sort textures into categories
     uint scene_tex_categories[5];
     uint other_tex_categories[5];
-    for (uint i = 0; i < 5; ++i)
+    for(uint i = 0; i < 5; ++i)
     {
         scene_tex_categories[i] = 0;
         other_tex_categories[i] = 0;
     }
     
     ti = scene_textures.begin();
-    while (ti != scene_textures.end())
+    while(ti != scene_textures.end())
     {
         uint dimension = max((*ti)->getWidth(), (*ti)->getHeight());
         if (dimension > 2048)
@@ -2029,7 +2029,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     }
     
     ti = other_textures.begin();
-    while (ti != other_textures.end())
+    while(ti != other_textures.end())
     {
         uint dimension = max((*ti)->getWidth(), (*ti)->getHeight());
         if (dimension > 2048)
@@ -2123,7 +2123,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
 void TimeProfilerWindow::GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles)
 {
     // Count total vertices/triangles for each mesh instance
-    for (uint i = 0; i < mesh->getNumSubMeshes(); ++i)
+    for(uint i = 0; i < mesh->getNumSubMeshes(); ++i)
     {
         Ogre::SubMesh* submesh = mesh->getSubMesh(i);
         if (submesh)
@@ -2140,7 +2140,7 @@ void TimeProfilerWindow::GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint&
 
 void TimeProfilerWindow::GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest)
 {
-    for (uint i = 0; i < entity->getNumSubEntities(); ++i)
+    for(uint i = 0; i < entity->getNumSubEntities(); ++i)
     {
         Ogre::SubEntity* subentity = entity->getSubEntity(i);
         if (subentity)
@@ -2157,7 +2157,7 @@ void TimeProfilerWindow::GetTexturesFromMaterials(const std::set<Ogre::Material*
     Ogre::TextureManager& texMgr = Ogre::TextureManager::getSingleton();
     
     std::set<Ogre::Material*>::const_iterator i = materials.begin();
-    while (i != materials.end())
+    while(i != materials.end())
     {
         Ogre::Material::TechniqueIterator iter = (*i)->getTechniqueIterator();
         while(iter.hasMoreElements())
@@ -2406,7 +2406,7 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
     if (!rendersys)
         return;
     Ogre::RenderSystem::RenderTargetIterator iter = rendersys->getRenderTargetIterator();
-    while (iter.hasMoreElements())
+    while(iter.hasMoreElements())
     {
         Ogre::RenderTarget* target = iter.getNext();
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());

@@ -12,7 +12,7 @@ namespace MumbleLib
 
 namespace MumbleVoip
 {
-    //! ParticipantInterface implementation using mumble User object
+    /// ParticipantInterface implementation using mumble User object
     class Participant : public Communications::InWorldVoice::ParticipantInterface
     {
         Q_OBJECT

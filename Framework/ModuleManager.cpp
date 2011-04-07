@@ -6,17 +6,17 @@
 #include "ModuleManager.h"
 #include "Framework.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("ModuleManager")
+//DEFINE_POCO_LOGGING_FUNCTIONS("ModuleManager")
 
 #include "ConfigurationManager.h"
 #include "CoreException.h"
 
 #include <algorithm>
 #include <sstream>
-
+/*
 #include <Poco/Environment.h>
 #include <Poco/UnicodeConverter.h>
-
+*/
 #include <QDir>
 
 #include "MemoryLeakCheck.h"
@@ -29,13 +29,13 @@ namespace Module
 {
     SharedLibrary::SharedLibrary(const std::string &path) : path_(path)
     {
-        sl_.load(path);
-        cl_.loadLibrary(path_);
+//        sl_.load(path);
+//        cl_.loadLibrary(path_);
     }
 
     SharedLibrary::~SharedLibrary()
     {
-        cl_.unloadLibrary(path_);
+//        cl_.unloadLibrary(path_);
     }
 
     ModuleDeletor::ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library) :
@@ -45,10 +45,12 @@ namespace Module
 
     void ModuleDeletor::operator()(IModule *module)
     {
+/*
         if (shared_library_)
             shared_library_->cl_.destroy(entry_, module);
 
         delete module; // needed for modules not loaded through poco's SharedLibrary (static libs).
+*/
     }
 }
 
@@ -60,7 +62,7 @@ ModuleManager::ModuleManager(Foundation::Framework *framework) :
 
 ModuleManager::~ModuleManager()
 {
-    //! \todo This might cause problems, investigate.
+    /// \todo This might cause problems, investigate.
     //Unload all loaded modules if object is truely destroyed. 
     UninitializeModules();
     UnloadModules();
@@ -89,7 +91,7 @@ void ModuleManager::DeclareStaticModule(IModule *module)
     }
     else
     {
-        RootLogInfo("Module: " + module->Name() + " is excluded and not loaded.");
+        LogInfo("Module: " + module->Name() + " is excluded and not loaded.");
     }
 }
 
@@ -116,9 +118,9 @@ void ModuleManager::SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modu
         }
         if (j >= modules.size())
         {
-            RootLogCritical(std::string("Could not find a module to load next! Candidates: "));
+            LogCritical(std::string("Could not find a module to load next! Candidates: "));
             for(size_t k = i; k < modules.size(); ++k)
-                RootLogCritical(modules[i].moduleNames.front());
+                LogCritical(modules[i].moduleNames.front());
 
             j = i; // Load an arbitrary module next.
         }
@@ -134,7 +136,7 @@ void ModuleManager::SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modu
     for(size_t i = 0; i < modules.size(); ++i)
         for(size_t j = i+1; j < modules.size(); ++j)
             if (modules[j].Precedes(modules[i]))
-                RootLogCritical(std::string("A cyclic dependency found in module dependencies! Could not satisfy dependency ") + 
+                LogCritical(std::string("A cyclic dependency found in module dependencies! Could not satisfy dependency ") + 
                     modules[j].ToString() + " < " + modules[i].ToString() + ". Continuing nevertheless.");
 }
 
@@ -155,7 +157,7 @@ void ModuleManager::CheckDependencies(const std::vector<ModuleLoadDescription> &
         {
             const ModuleLoadDescription *dependee = FindModuleLoadDescriptionWithEntry(modules, modules[i].dependencies[j]);
             if (!dependee)
-                RootLogCritical(std::string("Could not satisfy dependency ") + 
+                LogCritical(std::string("Could not satisfy dependency ") + 
                     modules[i].ToString() + " -> " + modules[i].dependencies[j] + ". Trying to load without.");
         }
 }
@@ -168,10 +170,10 @@ void ModuleManager::LoadAvailableModules()
     {
         files = GetXmlFiles(DEFAULT_MODULES_PATH);
     }
-    catch (Exception)
+    catch(Exception)
     {
         std::string error = "Failed to load modules, modules directory not found. Current working directory: " + QDir::currentPath().toStdString();
-        RootLogError(error);
+        LogError(error);
         throw Exception(error.c_str()); // can be considered fatal
     }
 
@@ -200,9 +202,9 @@ void ModuleManager::LoadAvailableModules()
         {
             LoadModule(iter->moduleDescFilename.native_directory_string(), iter->moduleNames);
         }
-        catch (std::exception &e) // may not be fatal, depending on which module failed
+        catch(std::exception &e) // may not be fatal, depending on which module failed
         {
-            RootLogError(std::string("Trying to load module ") + iter->ToString() + " threw an exception: " + e.what());
+            LogError(std::string("Trying to load module ") + iter->ToString() + " threw an exception: " + e.what());
         }
 }
 
@@ -240,17 +242,17 @@ void ModuleManager::ParseModuleXMLFile(const fs::path &path, std::vector<ModuleL
     boost::algorithm::to_lower(ext);
     if (ext != ".xml")
     {
-        RootLogWarning("Tried to parse a module XML file with path " + path.string() + ". Extension " + ext + " is not allowed. Should have .xml!");
+        LogWarning("Tried to parse a module XML file with path " + path.string() + ". Extension " + ext + " is not allowed. Should have .xml!");
         return;
     }
 
-    RootLogDebug("Parsing module file " + path.file_string());
+    LogDebug("Parsing module file " + path.file_string());
     fs::path modulePath(path);
     modulePath.replace_extension("");
 
     StringVector entries;
     StringVector dependencies;
-
+/*
     try
     {
         // Open the xml file and read all data inside.
@@ -268,10 +270,10 @@ void ModuleManager::ParseModuleXMLFile(const fs::path &path, std::vector<ModuleL
     }
     catch(const std::exception &e)
     {
-        RootLogWarning(std::string("Exception thrown when parsing a module XML file: ") + e.what());
+        LogWarning(std::string("Exception thrown when parsing a module XML file: ") + e.what());
         return;
     }
-
+*/
     // Some modules have a dependency XML in the following form:
     // <config>
     // <dependency>ModuleX</dependency>
@@ -285,7 +287,7 @@ void ModuleManager::ParseModuleXMLFile(const fs::path &path, std::vector<ModuleL
     // In this case, try to guess the module name from the name of the XML file.
     if (entries.empty())
     {
-        RootLogWarning(std::string("Shared library XML file ") + path.string() + " did not contain any module entries!"
+        LogWarning(std::string("Shared library XML file ") + path.string() + " did not contain any module entries!"
             "Guessing the shared library contains a module with the same name as the module filename.");
         entries.push_back(modulePath.filename());
     }
@@ -383,7 +385,7 @@ bool ModuleManager::HasModule(const std::string &name) const
 
 bool ModuleManager::HasModuleEntry(const std::string &entry) const
 {
-    for (size_t i = 0 ; i < modules_.size() ; ++i)
+    for(size_t i = 0 ; i < modules_.size() ; ++i)
         if (modules_[i].entry_ == entry)
             return true;
     return false;
@@ -426,9 +428,9 @@ bool ModuleManager::LoadModuleByName(const std::string &lib, const std::string &
         }
     }
 
-    //! \todo Dependencies are not handled properly still, modules need to be initialized in dependency order here.
-    //!       ModuleA <- ModuleB (A <- B == B depends on A) works, but
-    //!       ModuleA <- ModuleB <- ModuleC may not work, ModuleB may get initialized before ModuleA which is error.
+    /// \todo Dependencies are not handled properly still, modules need to be initialized in dependency order here.
+    ///       ModuleA <- ModuleB (A <- B == B depends on A) works, but
+    ///       ModuleA <- ModuleB <- ModuleC may not work, ModuleB may get initialized before ModuleA which is error.
     // first initialize dependencies
     for(size_t i = 0 ; i < modules_.size() ; ++i)
         if (modules_[i].module_->State() == MS_Loaded && std::find(
@@ -488,6 +490,7 @@ bool ModuleManager::UnloadModuleByName(const std::string &module)
 
 void ModuleManager::LoadModule(const std::string &name, const StringVector &entries)
 {
+/*
     assert(name.empty() == false);
 
     std::string path(name);
@@ -518,10 +521,10 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
             setProfiler(&framework_->GetProfiler());
 #endif
         }
-        catch (Poco::Exception &e)
+        catch(Poco::Exception &e)
         {
-            RootLogError(e.displayText());
-            RootLogError("Failed to load dynamic library: " + path);
+            LogError(e.displayText());
+            LogError("Failed to load dynamic library: " + path);
             return;
         }
 
@@ -530,17 +533,17 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
     {
         if (HasModuleEntry(*it))
         {
-            RootLogDebug(">> " + *it + " already loaded.");
+            LogDebug(">> " + *it + " already loaded.");
             continue;
         }
 
         if (IsExcluded(*it))
         {
-            RootLogDebug(">> " + *it + " excluded and not loaded.");
+            LogDebug(">> " + *it + " excluded and not loaded.");
             continue;
         }
 
-        RootLogDebug(">> Loading module " + *it + ".");
+        LogDebug(">> Loading module " + *it + ".");
 
         if (library->cl_.findClass(*it) == 0)
             throw Exception("Entry class not found from module");
@@ -552,7 +555,7 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
 
         if (IsExcluded(module->Name()))
         {
-            RootLogInfo("   > Module " + module->Name() + " is excluded and not loaded.");
+            LogInfo("   > Module " + module->Name() + " is excluded and not loaded.");
             continue;
         }
 
@@ -561,7 +564,7 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
 #ifndef _DEBUG
         // Remove logging of debug messages in release mode. \todo This is not applied for modules loaded explicitly in LoadModuleByName.
         std::string log_level = "information";
-        if ( framework_->GetDefaultConfig().HasKey(Foundation::Framework::ConfigurationGroup(), "log_level") )
+        if (framework_->GetDefaultConfig().HasKey(Foundation::Framework::ConfigurationGroup(), "log_level") )
             log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "log_level");
         else
             framework_->GetConfigManager()->SetSetting(Foundation::Framework::ConfigurationGroup(), "log_level", log_level);
@@ -579,22 +582,25 @@ void ModuleManager::LoadModule(const std::string &name, const StringVector &entr
         // Send a log message in the log channel of the module we just loaded.
         Poco::Logger::get(module->Name()).information(module->Name() + " loaded.");
     }
+*/
 }
 
 void ModuleManager::UnloadModules()
 {
+    /*
     for(ModuleVector::reverse_iterator it = modules_.rbegin(); it != modules_.rend(); ++it)
         UnloadModule(*it);
 
     modules_.clear();
     assert (modules_.empty());
+    */
 }
 
 void ModuleManager::PreInitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
-    RootLogDebug("Preinitializing module " + module->Name());
+    LogDebug("Preinitializing module " + module->Name());
     module->PreInitializeInternal();
 
     // Do not log preinit success here to avoid extraneous logging.
@@ -604,18 +610,18 @@ void ModuleManager::InitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
-    RootLogDebug("Initializing module " + module->Name());
+    LogDebug("Initializing module " + module->Name());
     module->InitializeInternal();
 
     // Send a log message in the log channel of the module we just initialized.
-    Poco::Logger::get(module->Name()).information(module->Name() + " initialized.");
+//    Poco::Logger::get(module->Name()).information(module->Name() + " initialized.");
 }
 
 void ModuleManager::PostInitializeModule(IModule *module)
 {
     assert(module);
     assert(module->State() == MS_Loaded);
-    RootLogDebug("Postinitializing module " + module->Name());
+    LogDebug("Postinitializing module " + module->Name());
     module->PostInitializeInternal();
 
     // Do not log postinit success here to avoid extraneous logging.
@@ -624,11 +630,11 @@ void ModuleManager::PostInitializeModule(IModule *module)
 void ModuleManager::UninitializeModule(IModule *module)
 {
     assert(module);
-    RootLogDebug("Uninitializing module " + module->Name() + ".");
+    LogDebug("Uninitializing module " + module->Name() + ".");
     module->UninitializeInternal();
 
     // Send a log message in the log channel of the module we just uninitialized.
-    Poco::Logger::get(module->Name()).information(module->Name() + " uninitialized.");
+//    Poco::Logger::get(module->Name()).information(module->Name() + " uninitialized.");
 }
 
 void ModuleManager::UnloadModule(Module::Entry &entry)
@@ -638,13 +644,13 @@ void ModuleManager::UnloadModule(Module::Entry &entry)
     std::string moduleName = entry.module_->Name();
     std::string moduleNameStatic = entry.module_->Name();
 
-    RootLogDebug("Unloading module " + moduleName + ".");
+    LogDebug("Unloading module " + moduleName + ".");
 
     entry.module_->UnloadInternal();
     entry.module_.reset(); // Triggers the deletion of the IModule object. (either causes operator delete or Poco's module free to be called)
 
     // Send a log message in the log channel of the module we just unloaded. (the channel is in Poco and not in the module, so this is ok)
-    Poco::Logger::get(moduleNameStatic).information(moduleName + " unloaded.");
+//    Poco::Logger::get(moduleNameStatic).information(moduleName + " unloaded.");
 }
 
 bool ModuleManager::HasModule(IModule *module) const
@@ -662,7 +668,7 @@ StringVectorPtr ModuleManager::GetXmlFiles(const std::string &path)
 
     // Find all xml files recursively
     //fs::path full_path = fs::system_complete(fs::path(DEFAULT_MODULES_PATH));
-    //if ( !fs::exists( full_path ) || !fs::is_directory( full_path ))
+    //if (!fs::exists( full_path ) || !fs::is_directory( full_path ))
     //    throw Exception("Path not found!"); // can be considered fatal
     fs::path rel_path(path);
     if (!fs::exists(rel_path) || !fs::is_directory(rel_path))
@@ -684,6 +690,7 @@ StringVectorPtr ModuleManager::GetXmlFiles(const std::string &path)
 
 void ModuleManager::AddDependenciesToPath(const StringVector &all_additions)
 {
+/*
     if (all_additions.size() == 0)
         return;
 
@@ -705,4 +712,5 @@ void ModuleManager::AddDependenciesToPath(const StringVector &all_additions)
     // Set additions to process path
     Poco::Environment::set("path", path);
 #endif
+*/
 }

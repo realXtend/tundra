@@ -42,7 +42,7 @@ public:
         rotation.z = z;
     }
 
-    //! Set scale. Note! scale cannot contain zero value.
+    /// Set scale. Note! scale cannot contain zero value.
     void SetScale(float x, float y, float z)
     {
         scale.x = x;

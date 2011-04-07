@@ -31,7 +31,7 @@
 */
 
 //----------------------------------------------------------------------------------
-/*!
+/**
 // \file    PythonQtScriptingConsole.cpp
 // \author  Florian Link
 // \author  Last changed by $Author: florian $
@@ -85,7 +85,7 @@ void PythonQtScriptingConsole::stdOut(const QString& s)
 {
   _stdOut += s;
   int idx;
-  while ((idx = _stdOut.indexOf('\n'))!=-1) {
+  while((idx = _stdOut.indexOf('\n'))!=-1) {
     consoleMessage(_stdOut.left(idx));
     std::cout << _stdOut.left(idx).toLatin1().data() << std::endl;
     _stdOut = _stdOut.mid(idx+1);
@@ -97,7 +97,7 @@ void PythonQtScriptingConsole::stdErr(const QString& s)
   _hadError = true;
   _stdErr += s;
   int idx;
-  while ((idx = _stdErr.indexOf('\n'))!=-1) {
+  while((idx = _stdErr.indexOf('\n'))!=-1) {
     consoleMessage(_stdErr.left(idx));
     std::cerr << _stdErr.left(idx).toLatin1().data() << std::endl;
     _stdErr = _stdErr.mid(idx+1);
@@ -281,7 +281,7 @@ void PythonQtScriptingConsole::handleTabCompletion()
 
   QString textToComplete;
   int cur = offset;
-  while (cur--) {
+  while(cur--) {
     QChar c = text.at(cur);
     if (c.isLetterOrNumber() || c == '.' || c == '_') {
       textToComplete.prepend(c);

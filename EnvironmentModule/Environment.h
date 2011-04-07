@@ -28,8 +28,8 @@ namespace Environment
     class EC_EnvironmentLight;
     class EC_Fog;
 
-    //! Environment contain information about water, fog and lighting. Also Caelum implementation code is included in this class.
-    //! \ingroup EnvironmentModuleClient.
+    /// Environment contain information about water, fog and lighting. Also Caelum implementation code is included in this class.
+    /// \ingroup EnvironmentModuleClient.
     class ENVIRONMENT_MODULE_API Environment : public QObject
     {
         Q_OBJECT
@@ -109,28 +109,28 @@ namespace Environment
         bool IsCaelum();
 
 #ifdef ENABLE_TAIGA_SUPPORT
-        //! Set new sunlight direction
-        //! @param vector new sun light direction.
+        /// Set new sunlight direction
+        /// @param vector new sun light direction.
         void SetSunDirection(const QVector<float>& vector);
 
-        //! Get sunlight direction
-        //! @return sun light direction.
+        /// Get sunlight direction
+        /// @return sun light direction.
         QVector<float> GetSunDirection();
 
-        //! Set new sunlight color.
-        //! @param vector new sunlight color.
+        /// Set new sunlight color.
+        /// @param vector new sunlight color.
         void SetSunColor(const QVector<float>& vector);
 
-        //! Get sunlight color
-        //! @return sun light color.
+        /// Get sunlight color
+        /// @return sun light color.
         QVector<float> GetSunColor();
 
-        //! Get ambient light color
-        //! @return ambient light color.
+        /// Get ambient light color
+        /// @return ambient light color.
         QVector<float> GetAmbientLight();
 
-        //! Set new ambient light color.
-        //! @param vector new ambient light color value.
+        /// Set new ambient light color.
+        /// @param vector new ambient light color value.
         void SetAmbientLight(const QVector<float>& vector);
 #endif
         /// Converts string vector to QVector.
@@ -140,13 +140,13 @@ namespace Environment
             QVector<T> vec(elements);
             try
             {
-                for ( int i = 0; i < elements; ++i)
+                for(int i = 0; i < elements; ++i)
                 {
                     std::istringstream stream(vector[i]);
                     stream >> vec[i];
                 }
             }
-            catch (...)
+            catch(...)
             {
                 return QVector<T>(0);
             }
@@ -157,7 +157,7 @@ namespace Environment
     public slots:
 
 #ifdef ENABLE_TAIGA_SUPPORT
-        //! Setter/getter for bool local override of server time
+        /// Setter/getter for bool local override of server time
         void SetTimeOverride(bool enabled) { time_override_ = enabled; }
         bool GetTimeOverride() { return time_override_; }
 #endif
@@ -165,7 +165,7 @@ namespace Environment
 
 #ifdef ENABLE_TAIGA_SUPPORT
 
-        //! Emitted when ground fog is adjusted.
+        /// Emitted when ground fog is adjusted.
         void GroundFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
 
 #endif

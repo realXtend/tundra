@@ -58,35 +58,35 @@ public:
     /// Destructor.
     ~EC_HoveringWidget();
 
-    //! @return billboard that shows buttons
+    /// @return billboard that shows buttons
     Ogre::Billboard* const GetButtonsBillboard() const { return buttonsbillboard_; }
 
-    //! @return billboardset that owns the buttons billboard
+    /// @return billboardset that owns the buttons billboard
     Ogre::BillboardSet* const GetButtonsBillboardSet()const { return buttonsbillboardSet_; }
 
-    //! @return get size of the button billboard in screenspace
+    /// @return get size of the button billboard in screenspace
     QSizeF GetButtonsBillboardScreenSpaceSize() const { return bb_buttons_size_view; }
 
 public slots:
-    //!called when widget is hovered
+    ///called when widget is hovered
     void HoveredOver();
 
-    //!Initializes billboards, must be called before use
+    ///Initializes billboards, must be called before use
     void InitializeBillboards();
 
     //Disables/enables widget
     void SetDisabled(bool val);
 
-    //! @ return true if widget is disabled
+    /// @ return true if widget is disabled
     bool IsDisabled() const { return disabled_;}
 
-    //! set buttons disabled, will still show the text
+    /// set buttons disabled, will still show the text
     void SetButtonsDisabled(bool val);
 
-    //! @return true if buttons ase disabled
+    /// @return true if buttons ase disabled
     bool IsButtonsDisabled(){return buttons_disabled_;}
 
-    //! show/hide buttons
+    /// show/hide buttons
     void ShowButtons(bool val);
 
     /// Shows the widget
@@ -95,15 +95,15 @@ public slots:
     /// Shows the widget with animation (not currently working properly)
     void AnimatedShow();
 
-    //! notifies that entity was clicked
+    /// notifies that entity was clicked
     void EntityClicked(int msec_to_show = 5000);
 
     void Detach();
     void Attach();
 
-    //! called when the widget is clicked in 3D scene
-    //! @param x coordinate (clamped in 0-1) 
-    //! @param y coordinate (clamped in 0-1)
+    /// called when the widget is clicked in 3D scene
+    /// @param x coordinate (clamped in 0-1) 
+    /// @param y coordinate (clamped in 0-1)
     void WidgetClicked(float x, float y);
 
     /// Hides the hovering text
@@ -132,19 +132,19 @@ public slots:
     QPixmap* GetIcon();
 
     // Add button to the widget
-    //! @button button to add
+    /// @button button to add
     void AddButton(QPushButton &button);
 
-    //! set widgets distance from the camera
+    /// set widgets distance from the camera
     void SetCameraDistance(float dist);
 
-    //! get widgets distance from the camera
+    /// get widgets distance from the camera
     float GetCameraDistance() const {return cam_distance_;}
 
-    //! Adjust what to show, might disable button or set the widget invisible.
+    /// Adjust what to show, might disable button or set the widget invisible.
     void AdjustWidgetinfo();
 
-    //! scale widget to have static screenspace size
+    /// scale widget to have static screenspace size
     //@param bset billboardset, used to get worldtransforms
     //@param b billboard that we scale
     //@param size size in screenspace

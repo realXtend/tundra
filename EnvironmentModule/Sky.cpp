@@ -39,7 +39,7 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
     if (instance_count < 4)
     {
-        EnvironmentModule::LogWarning("Generic message \"RexSky\" did not contain all the necessary data.");
+        LogWarning("Generic message \"RexSky\" did not contain all the necessary data.");
         return false;
     }
 
@@ -100,36 +100,36 @@ void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
         case SKYTYPE_BOX:
         {
             // Assure that there exist skybox
-            if ( !ExistSky<EC_SkyBox>() )
+            if (!ExistSky<EC_SkyBox>() )
                 CreateSky<EC_SkyBox>();
             
             // Request textures. 
-            for ( int i = 0;  i < images.size() && i <= 6; ++i)
+            for(int i = 0;  i < images.size() && i <= 6; ++i)
             {
                 int tag = renderer->RequestResource(images[i], OgreRenderer::OgreTextureResource::GetTypeStatic());     
                 QString str(images[i].c_str());
                 
-                if ( str.contains("_fr") )
+                if (str.contains("_fr") )
                 {
                     requestMap_[tag] = 0;
                 }
-                else if ( str.contains("_bk") )
+                else if (str.contains("_bk") )
                 {
                     requestMap_[tag] = 1;   
                 }
-                else if ( str.contains("_lf") )
+                else if (str.contains("_lf") )
                 {
                     requestMap_[tag] = 2;   
                 }
-                else if ( str.contains("_rt") )
+                else if (str.contains("_rt") )
                 {
                     requestMap_[tag] = 3;   
                 }
-                else if ( str.contains("_up") )
+                else if (str.contains("_up") )
                 {
                     requestMap_[tag] = 4;   
                 }
-                else if ( str.contains("_dn") )
+                else if (str.contains("_dn") )
                 {
                     requestMap_[tag] = 5;   
                 }
@@ -142,7 +142,7 @@ void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
         case SKYTYPE_DOME:
         {
             //Assure that there exist skydome
-            if ( !ExistSky<EC_SkyDome>())
+            if (!ExistSky<EC_SkyDome>())
                 CreateSky<EC_SkyDome>();
             
             // Request textures
@@ -153,7 +153,7 @@ void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
         {
             //Assure that there exist skyplane
 
-            if ( !ExistSky<EC_SkyPlane>())
+            if (!ExistSky<EC_SkyPlane>())
                 CreateSky<EC_SkyPlane>();
 
             EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
@@ -250,29 +250,29 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     assert(tex);
     int tags = lstRequestTags_.size();
 
-    for (int i = 0; i < tags; ++i)
+    for(int i = 0; i < tags; ++i)
     {
-        if ( lstRequestTags_[i] == tex->tag_ )
+        if (lstRequestTags_[i] == tex->tag_ )
         {
             switch ( type_ )
             {
              case SKYTYPE_BOX:
              {
                  EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
-                 if ( sky != 0)
+                 if (sky != 0)
                  {
                      QVariantList lstTextures = sky->textureAttr.Get();
-                     if ( requestMap_.contains(tex->tag_) )
+                     if (requestMap_.contains(tex->tag_) )
                      {
                          int index = requestMap_[tex->tag_];
-                         if ( index >= 0 && index <= 6)
+                         if (index >= 0 && index <= 6)
                          {
                             lstTextures[requestMap_[tex->tag_]] = QString(tex->id_.c_str());
                             sky->textureAttr.Set(lstTextures, AttributeChange::Default);
                          
                          }
                          else
-                            EnvironmentModule::LogWarning("Tried to change texture which index was higher then 6 or less then 0");
+                            LogWarning("Tried to change texture which index was higher then 6 or less then 0");
 
                      }
                         
@@ -282,7 +282,7 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
              case SKYTYPE_PLANE:
              {
                  EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
-                 if ( sky != 0)
+                 if (sky != 0)
                  {
                      QString texture = sky->textureRef.Get().ref;
                      QString strDownloaded(tex->id_.c_str());
@@ -294,7 +294,7 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
              case SKYTYPE_DOME:
              {
                  EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
-                 if ( sky != 0)
+                 if (sky != 0)
                  {
                      QString texture = sky->textureRef.Get().ref;
                      QString strDownloaded(tex->id_.c_str());

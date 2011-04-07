@@ -285,12 +285,12 @@ public slots:
     /// Loads the terrain from the given image file. Adjusts the xPatches and yPatches properties to that of the image file, 
     /// and clears the heightMap source attribute. This function is intended to be used as a processing tool. Calling this  
     /// function will get the terrain contents desynchronized between the local system and network. The file is loaded using Ogre, so
-    /// this supports all the file formats Ogre has codecs loaded for (you can see a list of those in the console at startup).
+    /// this supports all the file formats Ogre has codecs loaded for(you can see a list of those in the console at startup).
     /// Calling this function will regenerate all terrain patches on the GPU.
     bool LoadFromImageFile(QString filename, float offset, float scale);
 
     /// Saves the terrain to an image file. The file format is determined from the suffix. The file is saved using Ogre, so
-    /// this supports all the file formats Ogre has codecs loaded for (you can see a list of those in the console at startup).
+    /// this supports all the file formats Ogre has codecs loaded for(you can see a list of those in the console at startup).
     /// By default, the height range of the terrain is fitted into the [0.0, 1.0] range, i.e. the smallest position of the terrain
     /// gets the 0.0 grayscale pixel value in the image, and the largest position gets the 1.0 value.
     /// The file that is saved will be a three-channel color image, but will only contain grayscale values.
@@ -361,13 +361,13 @@ signals:
     void TerrainRegenerated();
     
 private slots:
-    //! Open asset editor for given asset attribute.
+    /// Open asset editor for given asset attribute.
     void View(const QString &attributeName);
 
-    //! Emitted when the parrent entity has been set.
+    /// Emitted when the parrent entity has been set.
     void UpdateSignals();
 
-    //! Emitted when some of the attributes has been changed.
+    /// Emitted when some of the attributes has been changed.
     void AttributeUpdated(IAttribute *attribute);
 
     void MaterialAssetLoaded(AssetPtr asset);

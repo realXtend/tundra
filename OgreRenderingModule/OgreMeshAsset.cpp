@@ -10,7 +10,7 @@
 #include <Ogre.h>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("OgreMeshAsset")
+//DEFINE_POCO_LOGGING_FUNCTIONS("OgreMeshAsset")
 
 OgreMeshAsset::~OgreMeshAsset()
 {
@@ -54,7 +54,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         if (!ogreMesh->suggestTangentVectorBuildParams(Ogre::VES_TANGENT, src, dest))
             ogreMesh->buildTangentVectors(Ogre::VES_TANGENT, src, dest);
     }
-    catch (...) {}
+    catch(...) {}
     
     // Generate extremity points to submeshes, 1 should be enough
     try
@@ -66,7 +66,7 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
                 smesh->generateExtremes(1);
         }
     }
-    catch (...) {}
+    catch(...) {}
         
     try
     {
@@ -75,9 +75,9 @@ bool OgreMeshAsset::DeserializeFromData(const u8 *data_, size_t numBytes)
         // Set asset references the mesh has
         //ResetReferences();
     }
-    catch (Ogre::Exception &e)
+    catch(Ogre::Exception &e)
     {
-        OgreRenderer::OgreRenderingModule::LogError("Failed to create mesh " + this->Name().toStdString() + ": " + std::string(e.what()));
+        ::LogError("Failed to create mesh " + this->Name().toStdString() + ": " + std::string(e.what()));
         Unload();
         return false;
     }
@@ -104,7 +104,7 @@ void OgreMeshAsset::DoUnload()
     {
         Ogre::MeshManager::getSingleton().remove(meshName);
     }
-    catch (...) {}
+    catch(...) {}
 }
 
 void OgreMeshAsset::SetDefaultMaterial()
@@ -113,7 +113,7 @@ void OgreMeshAsset::SetDefaultMaterial()
         return;
 
 //    originalMaterials.clear();
-    for (uint i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
+    for(uint i = 0; i < ogreMesh->getNumSubMeshes(); ++i)
     {
         Ogre::SubMesh *submesh = ogreMesh->getSubMesh(i);
         if (submesh)
@@ -133,7 +133,7 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
 {
     if (ogreMesh.isNull())
     {
-        OgreRenderer::OgreRenderingModule::LogWarning("Tried to export non-existing Ogre mesh " + Name().toStdString() + ".");
+        ::LogWarning("Tried to export non-existing Ogre mesh " + Name().toStdString() + ".");
         return false;
     }
     try
@@ -147,11 +147,11 @@ bool OgreMeshAsset::SerializeTo(std::vector<u8> &data, const QString &serializat
         QFile::remove(tempFilename); // Delete the temporary file we used for serialization.
         if (!success)
             return false;
-    } catch (std::exception &e)
+    } catch(std::exception &e)
     {
-        OgreRenderer::OgreRenderingModule::LogError("Failed to export Ogre mesh " + Name().toStdString() + ":");
+        ::LogError("Failed to export Ogre mesh " + Name().toStdString() + ":");
         if (e.what())
-            OgreRenderer::OgreRenderingModule::LogError(e.what());
+            ::LogError(e.what());
         return false;
     }
     return true;

@@ -12,14 +12,14 @@
 
 #include <QObject>
 
-//! Dummy class containing enumeration of attribute/component change types for replication.
+/// Dummy class containing enumeration of attribute/component change types for replication.
 class AttributeChange : public QObject
 {
     Q_OBJECT
     Q_ENUMS(Type)
 
 public:
-    //! Enumeration of attribute/component change types for replication
+    /// Enumeration of attribute/component change types for replication
     enum Type
     {
         /// Use the current sync method specified in the IComponent this attribute is part of

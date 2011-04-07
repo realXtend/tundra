@@ -394,7 +394,7 @@ namespace MumbleVoip
             return;
 
         short top = 0;
-        const short max = 100; //! \todo Use more proper treshold value
+        const short max = 100; /// \todo Use more proper treshold value
         for(int i = 0; i < frame->SampleCount(); ++i)
         {
             int sample = abs(frame->SampleAt(i));
@@ -495,7 +495,7 @@ namespace MumbleVoip
         avatar_direction = Vector3df(1,0,0);
 #endif
 
-        while (framework_->Audio()->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
+        while(framework_->Audio()->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
         {
             int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
             PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
@@ -683,7 +683,7 @@ namespace MumbleVoip
         if (!channels_.contains(channel_name))
         {
             active_channel_ = "";
-            MumbleVoipModule::LogInfo(QString("Active voice channel changed to: %1").arg(active_channel_).toStdString());
+            LogInfo(QString("Active voice channel changed to: %1").arg(active_channel_).toStdString());
             emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged(active_channel_);
             Close();
             return;
@@ -695,7 +695,7 @@ namespace MumbleVoip
         ServerInfo server_info = channels_[channel_name];
         OpenConnection(server_info);
         active_channel_ = channel_name;
-        MumbleVoipModule::LogInfo(QString("Active voice channel changed to: %1").arg(active_channel_).toStdString());
+        LogInfo(QString("Active voice channel changed to: %1").arg(active_channel_).toStdString());
         emit Communications::InWorldVoice::SessionInterface::ActiceChannelChanged(channel_name);
     }
 

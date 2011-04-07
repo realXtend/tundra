@@ -323,7 +323,7 @@ template<> void Attribute<int>::FromString(const std::string& str, AttributeChan
         int value = ParseString<int>(str);
         Set(value, change);
     }
-    catch (...) {}
+    catch(...) {}
 }
 
 template<> void Attribute<uint>::FromString(const std::string& str, AttributeChange::Type change)
@@ -333,7 +333,7 @@ template<> void Attribute<uint>::FromString(const std::string& str, AttributeCha
         uint value = ParseString<uint>(str);
         Set(value, change);
     }
-    catch (...) {}
+    catch(...) {}
 }
 
 template<> void Attribute<float>::FromString(const std::string& str, AttributeChange::Type change)
@@ -343,7 +343,7 @@ template<> void Attribute<float>::FromString(const std::string& str, AttributeCh
         float value = ParseString<float>(str);
         Set(value, change);
     }
-    catch (...) {}
+    catch(...) {}
 }
 
 template<> void Attribute<Vector3df>::FromString(const std::string& str, AttributeChange::Type change)
@@ -359,7 +359,7 @@ template<> void Attribute<Vector3df>::FromString(const std::string& str, Attribu
             value.z = ParseString<float>(components[2]);
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -376,7 +376,7 @@ template<> void Attribute<Color>::FromString(const std::string& str, AttributeCh
             value.b = ParseString<float>(components[2]);
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
     if (components.size() == 4)
     {
@@ -388,7 +388,7 @@ template<> void Attribute<Color>::FromString(const std::string& str, AttributeCh
             value.a = ParseString<float>(components[3]);
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -406,7 +406,7 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Attrib
             value.z = ParseString<float>(components[3]);
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -483,7 +483,7 @@ template<> void Attribute<QVector3D>::FromString(const std::string& str, Attribu
             value.setZ(ParseString<float>(components[2]));
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -499,7 +499,7 @@ template<> void Attribute<QSize>::FromString(const std::string& str, AttributeCh
             value.setHeight(ParseString<int>(components[1]));
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -515,7 +515,7 @@ template<> void Attribute<QSizeF>::FromString(const std::string& str, AttributeC
             value.setHeight(ParseString<float>(components[1]));
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -531,7 +531,7 @@ template<> void Attribute<QPoint>::FromString(const std::string& str, AttributeC
             value.setY(ParseString<int>(components[1]));
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -547,7 +547,7 @@ template<> void Attribute<QPointF>::FromString(const std::string& str, Attribute
             value.setY(ParseString<float>(components[1]));
             Set(value, change);
         }
-        catch (...) {}
+        catch(...) {}
     }
 }
 
@@ -911,7 +911,7 @@ template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
 template<> void Attribute<QVariantList>::ToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<u8>(value_.size());
-    for (uint i = 0; i < value_.size(); ++i)
+    for(uint i = 0; i < value_.size(); ++i)
         dest.AddString(value_[i].toString().toStdString());
 }
 
@@ -1050,7 +1050,7 @@ template<> void Attribute<QVariantList>::FromBinary(kNet::DataDeserializer& sour
     QVariantList value;
     
     u8 numValues = source.Read<u8>();
-    for (u32 i = 0; i < numValues; ++i)
+    for(u32 i = 0; i < numValues; ++i)
     {
         std::string str = source.ReadString();
         value.append(QVariant(QString(str.c_str())));

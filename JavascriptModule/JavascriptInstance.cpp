@@ -19,7 +19,7 @@
 #include "IAssetProvider.h" //to check if the code was loaded from a local or remote storage
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
+//DEFINE_POCO_LOGGING_FUNCTIONS("JavascriptInstance")
 
 #include <QFile>
 #include <sstream>
@@ -184,7 +184,7 @@ void JavascriptInstance::Run()
         LogError("In run/evaluate: " + result.toString().toStdString());
         QStringList trace = engine_->uncaughtExceptionBacktrace();
         QStringList::const_iterator it;
-        for (it = trace.constBegin(); it != trace.constEnd(); ++it)
+        for(it = trace.constBegin(); it != trace.constEnd(); ++it)
             LogError((*it).toLocal8Bit().constData());
 
         std::stringstream ss;
@@ -215,7 +215,7 @@ void JavascriptInstance::RegisterService(QObject *serviceObject, const QString &
 
 void JavascriptInstance::IncludeFile(const QString &path)
 {
-    for (uint i = 0; i < included_files_.size(); ++i)
+    for(uint i = 0; i < included_files_.size(); ++i)
     {
         if (included_files_[i].toLower() == path.toLower())
         {
@@ -358,7 +358,7 @@ void JavascriptInstance::OnSignalHandlerException(const QScriptValue& exception)
 
     QStringList trace = engine_->uncaughtExceptionBacktrace();
     QStringList::const_iterator it;
-    for (it = trace.constBegin(); it != trace.constEnd(); ++it)
+    for(it = trace.constBegin(); it != trace.constEnd(); ++it)
         LogError((*it).toStdString());
 
     std::stringstream ss;

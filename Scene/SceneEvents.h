@@ -24,8 +24,8 @@ namespace Scene
 
     class Entity;
     
-    //! Events related to scene
-    /*!
+    /// Events related to scene
+    /**
         \ingroup Scene_group
     */
     namespace Events
@@ -132,10 +132,10 @@ namespace Scene
             SceneEventData(const std::string &scene_name) : sceneName(scene_name) {}
             virtual ~SceneEventData() {}
             
-            //! Name of the scene.
+            /// Name of the scene.
             std::string sceneName;
             
-            //! List of scene pointers.
+            /// List of scene pointers.
             std::vector<Scene::ScenePtr> scene_ptr_list;
         };
         
@@ -208,13 +208,13 @@ namespace Scene
             explicit RaycastEventData(entity_id_t id);
             virtual ~RaycastEventData();
             
-             //! World coordinates of hit position
+             /// World coordinates of hit position
             Vector3df pos;
-            //! Submesh index in entity, starting from 0
+            /// Submesh index in entity, starting from 0
             uint submesh;
-            //! U coord in entity. 0 if no texture mapping
+            /// U coord in entity. 0 if no texture mapping
             float u;
-            //! V coord in entity. 0 if no texture mapping
+            /// V coord in entity. 0 if no texture mapping
             float v;
         };
 

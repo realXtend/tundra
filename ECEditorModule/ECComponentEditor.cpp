@@ -12,7 +12,7 @@
 #include "Transform.h"
 #include "AssetReference.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditorBase")
+//DEFINE_POCO_LOGGING_FUNCTIONS("ECAttributeEditorBase")
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>
@@ -156,12 +156,12 @@ bool ECComponentEditor::ContainProperty(QtProperty *property) const
 void ECComponentEditor::AddNewComponent(ComponentPtr component)
 {
     PROFILE(ECComponentEditor_AddNewComponent);
-    //! Check that component type is same as editor's typename (We only want to add same type of components to editor).
+    /// Check that component type is same as editor's typename (We only want to add same type of components to editor).
     if(component->TypeName() != typeName_)
         return;
 
     components_.push_back(ComponentWeakPtr(component));
-    //! insert new component to each attribute editor.
+    /// insert new component to each attribute editor.
     AttributeEditorMap::iterator iter = attributeEditors_.begin();
     while(iter != attributeEditors_.end())
     {

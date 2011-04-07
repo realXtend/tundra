@@ -14,7 +14,7 @@
 #include "EventManager.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_EnvironmentLight")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EC_EnvironmentLight")
 
 #include <Ogre.h>
 #include <OgreQuaternion.h>
@@ -81,10 +81,10 @@ namespace Environment
             assert(sceneMgr);
             UNREFERENCED_PARAM(sceneMgr);
 #ifdef CAELUM 
-            if ( caelumSystem_ != 0)
+            if (caelumSystem_ != 0)
             {
                 Caelum::BaseSkyLight* sun = caelumSystem_->getSun();
-                if ( sun != 0)
+                if (sun != 0)
                     sun->setLightColour(OgreRenderer::ToOgreColor(sunColorAttr.Get()));
             }
 #else
@@ -174,7 +174,7 @@ namespace Environment
         if (renderer_.expired())
             return;
 
-        if ( caelumSystem_ == 0)
+        if (caelumSystem_ == 0)
             return;
 
         OgreRenderer::RendererPtr renderer = renderer_.lock();
@@ -238,17 +238,17 @@ namespace Environment
 
     void EC_EnvironmentLight::ChangeEnvironmentLight(IAttribute* attribute)
     {
-        if (  attribute == &sunColorAttr ||  
+        if ( attribute == &sunColorAttr ||  
               attribute == &sunDirectionAttr ||
               attribute == &sunCastShadowsAttr )
         {
             UpdateSun();
         }
-        else if ( attribute == &ambientColorAttr )
+        else if (attribute == &ambientColorAttr )
         {
             UpdateAmbientLight();
         }
-        else if ( attribute == &currentTimeAttr )
+        else if (attribute == &currentTimeAttr )
         {
             UpdateTime();
         }
@@ -257,7 +257,7 @@ namespace Environment
     void EC_EnvironmentLight::UpdateTime()
     {
 #ifdef CAELUM
-        if ( caelumSystem_ == 0)
+        if (caelumSystem_ == 0)
             return;
 
         float time = currentTimeAttr.Get();

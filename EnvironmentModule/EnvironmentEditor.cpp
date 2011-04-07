@@ -53,7 +53,7 @@
 #include <QScrollArea>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EnvironmentEditor")
+//DEFINE_POCO_LOGGING_FUNCTIONS("EnvironmentEditor")
 
 #include "MemoryLeakCheck.h"
 
@@ -145,7 +145,7 @@ namespace Environment
                     label->setPixmap(QPixmap::fromImage(image));
                 }
                 else
-                    EnvironmentModule::LogError("Cannot find map_label inside the environment editor window.");
+                    LogError("Cannot find map_label inside the environment editor window.");
             }
         }
     }
@@ -239,7 +239,7 @@ namespace Environment
         QFile file("./data/ui/environment_editor.ui");
         if(!file.exists())
         {
-            EnvironmentModule::LogError("Cannot find terrain editor ui file");
+            LogError("Cannot find terrain editor ui file");
             return;
         }
 
@@ -331,7 +331,7 @@ namespace Environment
             if(rad_button)
                 QObject::connect(rad_button, SIGNAL(clicked()), this, SLOT(PaintActionChanged()));
             else
-                EnvironmentModule::LogError("Cannot find " + radio_buttons[i].toStdString() + " radio button.");
+                LogError("Cannot find " + radio_buttons[i].toStdString() + " radio button.");
         }
         radio_buttons.clear();
 
@@ -344,7 +344,7 @@ namespace Environment
             if(rad_button)
                 QObject::connect(rad_button, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
             else
-                EnvironmentModule::LogError("Cannot find " + radio_buttons[i].toStdString() + " radio button.");
+                LogError("Cannot find " + radio_buttons[i].toStdString() + " radio button.");
         }
     }
 
@@ -360,7 +360,7 @@ namespace Environment
             if(apply_button)
                 QObject::connect(apply_button, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
             else
-                EnvironmentModule::LogError("Fail to find apply_texture_button_" + QString::number(i + 1).toStdString() + " widget.");
+                LogError("Fail to find apply_texture_button_" + QString::number(i + 1).toStdString() + " widget.");
         }
 
         // Line Edit signals
@@ -370,7 +370,7 @@ namespace Environment
             if(line_edit)
                 QObject::connect(line_edit, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
             else
-                EnvironmentModule::LogError("Fail to find texture_line_edit_" + QString::number(i + 1).toStdString() + " widget.");
+                LogError("Fail to find texture_line_edit_" + QString::number(i + 1).toStdString() + " widget.");
         }
 
         // Making sure that when terrain textures are changed we load new terrain textures to editor window aswell.
@@ -378,7 +378,7 @@ namespace Environment
         if(terrain)
             QObject::connect(terrain.get(), SIGNAL(TerrainTextureChanged()), this, SLOT(UpdateTerrainTextures()));
         else
-            EnvironmentModule::LogError("Fail to connect TerrainTextureChanged signal cause terrain pointer was null.");
+            LogError("Fail to connect TerrainTextureChanged signal cause terrain pointer was null.");
     }
 
     void EnvironmentEditor::InitWaterTabWindow()
@@ -391,7 +391,7 @@ namespace Environment
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
         QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
 
-        if ( water_apply_button != 0 && water_height_box != 0 && water_toggle_box != 0 )
+        if (water_apply_button != 0 && water_height_box != 0 && water_toggle_box != 0 )
         {
             water_height_box->setMinimum(0.0);
             QObject::connect(water_apply_button, SIGNAL(clicked()), this, SLOT(UpdateWaterHeight()));
@@ -523,9 +523,9 @@ namespace Environment
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
         if (environment != 0)
         {
-            if ( fog_override_box != 0 )
+            if (fog_override_box != 0 )
             {
-                if ( environment->GetFogColorOverride() )
+                if (environment->GetFogColorOverride() )
                     fog_override_box->setChecked(true);
                 else
                     fog_override_box->setChecked(false);
@@ -533,7 +533,7 @@ namespace Environment
                 QObject::connect(fog_override_box, SIGNAL(clicked()), this, SLOT(ToggleFogOverride()));
             }
 
-            if ( fog_ground_red != 0 
+            if (fog_ground_red != 0 
                 && fog_ground_blue != 0
                 && fog_ground_green != 0
                 && fog_ground_color_button != 0
@@ -554,7 +554,7 @@ namespace Environment
                     fog_ground_start_distance->setMaximum(1000.0);
                     fog_ground_end_distance->setMaximum(1000.0);
 
-                    if ( color.size() != 0 )
+                    if (color.size() != 0 )
                     {
                         fog_ground_red->setValue(color[0]);   
                         fog_ground_blue->setValue(color[1]);
@@ -569,7 +569,7 @@ namespace Environment
 
             }
 
-            if ( fog_water_red != 0 
+            if (fog_water_red != 0 
                 && fog_water_blue != 0
                 && fog_water_green != 0
                 && fog_water_color_button != 0
@@ -580,7 +580,7 @@ namespace Environment
                 // Fog water color. 
 
                 WaterPtr water = environment_module_->GetWaterHandler();
-                if ( water == 0)
+                if (water == 0)
                     return;
 
                 QVector<float> color = water->GetFogWaterColor();
@@ -593,7 +593,7 @@ namespace Environment
                 fog_water_start_distance->setMinimum(0.0);
                 fog_water_end_distance->setMinimum(0.0);
 
-                if ( color.size() != 0)
+                if (color.size() != 0)
                 {
                 
                     fog_water_red->setValue(color[0]);   
@@ -635,18 +635,18 @@ namespace Environment
             sun_direction_z->setMinimum(-100.0);
             
           
-            if ( sun_color_picker_ == 0)
+            if (sun_color_picker_ == 0)
             {
                 sun_color_picker_ = new QColorDialog;
                 sun_color_picker_->setObjectName("SunColorPickerDialog");
             }
-            if ( ambient_color_picker_ == 0)
+            if (ambient_color_picker_ == 0)
             {
                 ambient_color_picker_ = new QColorDialog;
                 ambient_color_picker_->setObjectName("AmbientColorPickerDialog");
             }
 
-            if ( sun_direction_x != 0
+            if (sun_direction_x != 0
                  && sun_direction_y != 0
                  && sun_direction_z != 0 )
             {
@@ -663,7 +663,7 @@ namespace Environment
                 QVector<float> sun_color = environment->GetSunColor();
              
                 QLabel* label = editor_widget_->findChild<QLabel* >("sun_color_img");
-                if ( label != 0)
+                if (label != 0)
                 {
                    
                     QPixmap img(label->width(), 23);
@@ -680,12 +680,12 @@ namespace Environment
              
               
                 QPushButton* sun_color_change = editor_widget_->findChild<QPushButton* >("sun_color_change_button");
-                if ( sun_color_change != 0)
+                if (sun_color_change != 0)
                     QObject::connect(sun_color_change, SIGNAL(clicked()), this, SLOT(ShowColorPicker()));
 
                 QPushButton* ambient_color_change = editor_widget_->findChild<QPushButton* >("ambient_color_change_button");
                 
-                if ( ambient_color_change != 0)
+                if (ambient_color_change != 0)
                     QObject::connect(ambient_color_change, SIGNAL(clicked()), this, SLOT(ShowColorPicker()));
 
                 if(sun_color_picker_ != 0)
@@ -694,7 +694,7 @@ namespace Environment
                     QObject::connect(sun_color_picker_, SIGNAL(rejected()), this, SLOT(ColorPickerRejected()));
                 }
                 
-                if ( ambient_color_picker_ != 0)
+                if (ambient_color_picker_ != 0)
                 {
                     QObject::connect(ambient_color_picker_, SIGNAL(currentColorChanged(const QColor& )), this, SLOT(UpdateAmbientLightColor(const QColor&)));
                     QObject::connect(ambient_color_picker_, SIGNAL(rejected()), this, SLOT(ColorPickerRejected()));
@@ -704,7 +704,7 @@ namespace Environment
              
                 label = editor_widget_->findChild<QLabel* >("ambient_color_img");
                 
-                if ( label != 0)
+                if (label != 0)
                 {
                    
                     QPixmap img(label->width(), 23);
@@ -794,7 +794,7 @@ namespace Environment
                 d_spin_box->setRange(0, 9999);
                 d_spin_box->show();
                 //d_spin_box->setValue(param.distance);
-                if ( skyBox != 0)
+                if (skyBox != 0)
                     d_spin_box->setValue(skyBox->distance.Get());
 
                 apply_button = new QPushButton(properties_frame);
@@ -864,7 +864,7 @@ namespace Environment
                     spin_box->move(10, 25);
                     spin_box->setRange(0, 999);
                     spin_box->show();
-                    if ( skyPlane != 0 )
+                    if (skyPlane != 0 )
                         spin_box->setValue(skyPlane->xSegmentsAttr.Get());
                 }
 
@@ -883,7 +883,7 @@ namespace Environment
                     spin_box->move(50, 25);
                     spin_box->setRange(0, 999);
                     spin_box->show();
-                    if ( skyPlane != 0 )
+                    if (skyPlane != 0 )
                         spin_box->setValue(skyPlane->ySegmentsAttr.Get());
                 }
 
@@ -902,7 +902,7 @@ namespace Environment
                     d_spin_box->move(90, 25);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    if ( skyPlane != 0 )
+                    if (skyPlane != 0 )
                         d_spin_box->setValue(skyPlane->scaleAttr.Get());
                 }
 
@@ -921,7 +921,7 @@ namespace Environment
                     d_spin_box->move(150, 25);
                     d_spin_box->setRange(0, 9999);
                     d_spin_box->show();
-                    if ( skyPlane != 0 )
+                    if (skyPlane != 0 )
                         d_spin_box->setValue(skyPlane->distanceAttr.Get());
                 }
 
@@ -940,7 +940,7 @@ namespace Environment
                     d_spin_box->move(10, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    if ( skyPlane != 0 )
+                    if (skyPlane != 0 )
                         d_spin_box->setValue(skyPlane->tilingAttr.Get());
                 }
 
@@ -959,7 +959,7 @@ namespace Environment
                     d_spin_box->move(70, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    if ( skyPlane != 0 )
+                    if (skyPlane != 0 )
                         d_spin_box->setValue(skyPlane->bowAttr.Get());
                 }
 
@@ -1181,20 +1181,20 @@ namespace Environment
             return;
 
         QWidget* widget = GetCurrentPage();
-        if ( widget != 0 
+        if (widget != 0 
              && widget->objectName() == "ambient_light")
         {
             QVector<float> current_sun_color = environment->GetSunColor();
             QVector<float> new_sun_color(4);
             new_sun_color[0] = color.redF(), new_sun_color[1] = color.greenF(), new_sun_color[2] = color.blueF(), new_sun_color[3] = 1;
-            if ( new_sun_color[0] != current_sun_color[0] 
+            if (new_sun_color[0] != current_sun_color[0] 
                  && new_sun_color[1] != current_sun_color[1] 
                  && new_sun_color[2] != current_sun_color[2])
             {
                 // Change to new color.
                 environment->SetSunColor(new_sun_color);
                 QLabel* label = editor_widget_->findChild<QLabel* >("sun_color_img");
-                if ( label != 0)
+                if (label != 0)
                 {
                     QPixmap img(label->width(), 23);
                     QColor color;
@@ -1217,21 +1217,21 @@ namespace Environment
             return;
 
         QWidget* widget = GetCurrentPage();
-        if ( widget != 0 
+        if (widget != 0 
              && widget->objectName() == "ambient_light")
         {
             // ambient light.
             QVector<float> current_ambient_color = environment->GetAmbientLight();
             QVector<float> new_ambient_color(4);
             new_ambient_color[0] = color.redF(), new_ambient_color[1] = color.greenF(), new_ambient_color[2] = color.blueF(), new_ambient_color[3] = 1;
-            if ( new_ambient_color[0] != current_ambient_color[0] 
+            if (new_ambient_color[0] != current_ambient_color[0] 
                  && new_ambient_color[1] != current_ambient_color[1] 
                  && new_ambient_color[2] != current_ambient_color[2])
             {
                 // Change to new color.
                 environment->SetAmbientLight(new_ambient_color);
                 QLabel* label = editor_widget_->findChild<QLabel* >("ambient_color_img");
-                if ( label != 0)
+                if (label != 0)
                 {
                     QPixmap img(label->width(), 23);
                     QColor color;
@@ -1257,7 +1257,7 @@ namespace Environment
             return;
 
         QWidget* widget = GetCurrentPage();
-        if ( widget != 0 && widget->objectName() == "ambient_light")
+        if (widget != 0 && widget->objectName() == "ambient_light")
         {
             if (sender()->objectName() == "sun_color_change_button")
             {
@@ -1283,7 +1283,7 @@ namespace Environment
             }
          }
             
-        if ( dialog != 0)
+        if (dialog != 0)
             dialog->show();
     }
 
@@ -1333,12 +1333,12 @@ namespace Environment
     {
          
         QTabWidget* tab_widget = editor_widget_->findChild<QTabWidget* >("tabWidget");
-        if ( tab_widget != 0 )
+        if (tab_widget != 0 )
         {
-            for ( int i = 0; i < tab_widget->count(); ++i)
+            for(int i = 0; i < tab_widget->count(); ++i)
             {
                 QWidget* page = tab_widget->widget(i);
-                if ( page != 0 && page->objectName() == name)
+                if (page != 0 && page->objectName() == name)
                     return page;
                 
             }
@@ -1351,7 +1351,7 @@ namespace Environment
     {
         QWidget* page = 0;
         QTabWidget* tab_widget = editor_widget_->findChild<QTabWidget* >("tabWidget");
-        if ( tab_widget != 0 )
+        if (tab_widget != 0 )
             page = tab_widget->currentWidget();
             
         return page;
@@ -1369,7 +1369,7 @@ namespace Environment
         QDoubleSpinBox* sun_direction_y  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_y");
         QDoubleSpinBox* sun_direction_z  = editor_widget_->findChild<QDoubleSpinBox* >("sun_direction_z");
        
-        if ( sun_direction_x != 0 &&
+        if (sun_direction_x != 0 &&
              sun_direction_y != 0 &&
              sun_direction_z != 0 &&
              environment.get() != 0)
@@ -1406,20 +1406,20 @@ namespace Environment
         {
         case Qt::Checked:
             {
-                if ( water_height_box != 0 && water.get() != 0 )
+                if (water_height_box != 0 && water.get() != 0 )
                 {
                     water->CreateWaterGeometry(static_cast<float>(water_height_box->value()), AttributeChange::Default);
                     // If water is re-created it will be always created to fixed height.
                     water->SetWaterHeight(20.0, AttributeChange::Default);
                 }
-                else if ( water.get() != 0)
+                else if (water.get() != 0)
                     water->CreateWaterGeometry();
                 
                 break;
             }
         case Qt::Unchecked:
             {
-                if ( water.get() != 0)
+                if (water.get() != 0)
                     water->RemoveWaterGeometry();
                  break;
             }
@@ -1449,7 +1449,7 @@ namespace Environment
                 QString text = sky_type_combo->currentText();
                 if(text == "Sky box")
                 {
-                    if ( showSky )
+                    if (showSky )
                         sky->ChangeSkyType(SKYTYPE_BOX, sky->IsSkyEnabled());
                     
                     CreateSkyProperties(SKYTYPE_BOX);
@@ -1457,7 +1457,7 @@ namespace Environment
                 }
                 else if(text == "Sky dome")
                 {
-                    if ( showSky )
+                    if (showSky )
                         sky->ChangeSkyType(SKYTYPE_DOME, sky->IsSkyEnabled());
                     
                     CreateSkyProperties(SKYTYPE_DOME);
@@ -1465,7 +1465,7 @@ namespace Environment
                 }
                 else if(text == "Sky plane")
                 {
-                    if ( showSky )
+                    if (showSky )
                         sky->ChangeSkyType(SKYTYPE_PLANE, sky->IsSkyEnabled());
                     
                 
@@ -1568,7 +1568,7 @@ namespace Environment
         if(sky_type_ == SKYTYPE_BOX)
         {
             EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
-            if ( skyBox != 0)
+            if (skyBox != 0)
             {
                 AssetReferenceList lst = skyBox->textureRefs.Get();
                 for(int i =0; i < lst.Size() && i < 6; ++i)
@@ -1630,7 +1630,7 @@ namespace Environment
                     {
                         //SkyDomeParameters sky_param;
                         EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome>();
-                        if ( skyDome == 0)
+                        if (skyDome == 0)
                             return;
 
                         QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
@@ -1670,7 +1670,7 @@ namespace Environment
                     {
                         //OgreRenderer::SkyPlaneParameters sky_param;
                         EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
-                        if ( skyPlane == 0 )
+                        if (skyPlane == 0 )
                             break;
 
                         QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
@@ -1907,7 +1907,7 @@ namespace Environment
         assert(environment_module_);
         if(!environment_module_)
         {
-            EnvironmentModule::LogError("Can't update terrain because environment module is not intialized.");
+            LogError("Can't update terrain because environment module is not intialized.");
             return;
         }
 
@@ -2140,7 +2140,7 @@ namespace Environment
           
                 //QImage img(tex->GetData(), tex->GetWidth(), tex->GetHeight(), QImage::Format_RGB888);
 
-                //if ( img.isNull() )
+                //if (img.isNull() )
                 QImage img = ConvertToQImage(*tex);
                     
                 QLabel *texture_label = editor_widget_->findChild<QLabel *>("terrain_texture_label_" + QString("%1").arg(index + 1));
@@ -2396,7 +2396,7 @@ namespace Environment
         QDoubleSpinBox* fog_ground_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_start_distance_dSpinbox");
         QDoubleSpinBox* fog_ground_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_end_distance_dSpinbox");
 
-        if ( fog_ground_red != 0 
+        if (fog_ground_red != 0 
             && fog_ground_blue != 0
             && fog_ground_green != 0
             && fog_ground_start_distance != 0
@@ -2423,7 +2423,7 @@ namespace Environment
         QDoubleSpinBox* fog_water_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_start_distance_dSpinBox");
         QDoubleSpinBox* fog_water_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_end_distance_dSpinBox");
 
-        if ( fog_water_red != 0 
+        if (fog_water_red != 0 
             && fog_water_blue != 0
             && fog_water_green != 0
             && fog_water_start_distance != 0
@@ -2449,7 +2449,7 @@ namespace Environment
         QDoubleSpinBox* fog_ground_blue = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_blue_dSpinBox");
         QDoubleSpinBox* fog_ground_green = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_green_dSpinBox");
 
-        if ( fog_ground_red != 0
+        if (fog_ground_red != 0
              && fog_ground_blue != 0
              && fog_ground_green != 0)
         {
@@ -2472,7 +2472,7 @@ namespace Environment
         QDoubleSpinBox* fog_water_blue = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_blue_dSpinBox");
         QDoubleSpinBox* fog_water_green = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_green_dSpinBox");
 
-        if ( fog_water_red != 0
+        if (fog_water_red != 0
              && fog_water_blue != 0
              && fog_water_green != 0)
         {
@@ -2493,7 +2493,7 @@ namespace Environment
         QDoubleSpinBox* fog_ground_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_start_distance_dSpinBox");
         QDoubleSpinBox* fog_ground_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_ground_end_distance_dSpinBox");   
 
-        if ( fog_ground_start_distance != 0 && fog_ground_end_distance != 0)
+        if (fog_ground_start_distance != 0 && fog_ground_end_distance != 0)
             environment->SetGroundFogDistance(fog_ground_start_distance->value(), fog_ground_end_distance->value());
 
     }
@@ -2507,7 +2507,7 @@ namespace Environment
         QDoubleSpinBox* fog_water_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_start_distance_dSpinBox");
         QDoubleSpinBox* fog_water_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_end_distance_dSpinBox");   
 
-        if ( fog_water_start_distance != 0 && fog_water_end_distance != 0)
+        if (fog_water_start_distance != 0 && fog_water_end_distance != 0)
            water->SetWaterFogDistance(fog_water_start_distance->value(), fog_water_end_distance->value());
     }
 
@@ -2517,7 +2517,7 @@ namespace Environment
         if(!environment)
             return;
 
-        if ( environment->GetFogColorOverride() )
+        if (environment->GetFogColorOverride() )
             environment->SetFogColorOverride(false);
         else 
             environment->SetFogColorOverride(true);
@@ -2534,7 +2534,7 @@ namespace Environment
         
 
         bool showSky = false;
-        if ( enable_sky_checkbox != 0)
+        if (enable_sky_checkbox != 0)
             showSky = enable_sky_checkbox->isChecked();
         
         const QComboBox *sender = qobject_cast<QComboBox *>(QObject::sender());
@@ -2543,7 +2543,7 @@ namespace Environment
             QString text = sender->itemText(index);
             if(text == "Sky box")
             {
-                if ( showSky )
+                if (showSky )
                     sky->ChangeSkyType(SKYTYPE_BOX, sky->IsSkyEnabled());
                 
                 CreateSkyProperties(SKYTYPE_BOX);
@@ -2551,7 +2551,7 @@ namespace Environment
             }
             else if(text == "Sky dome")
             {
-                if ( showSky )
+                if (showSky )
                     sky->ChangeSkyType(SKYTYPE_DOME, sky->IsSkyEnabled());
                 
                 CreateSkyProperties(SKYTYPE_DOME);
@@ -2559,7 +2559,7 @@ namespace Environment
             }
             else if(text == "Sky plane")
             {
-                if ( showSky )
+                if (showSky )
                     sky->ChangeSkyType(SKYTYPE_PLANE, sky->IsSkyEnabled());
                 
             
@@ -2609,7 +2609,7 @@ namespace Environment
             return;
         
         EC_EnvironmentLight* light = environment->GetEnvironmentLight();
-        if ( light != 0)
+        if (light != 0)
         {
             light->fixedTimeAttr.Set(true, AttributeChange::LocalOnly);
             

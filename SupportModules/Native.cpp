@@ -16,7 +16,7 @@ namespace Console
         #ifndef WINDOWS_APP    
         assert (command_service_);
 
-        while (true)
+        while(true)
         {
             std::string command_line;
             std::getline(std::cin, command_line);

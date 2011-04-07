@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-//! @file Water.h
-//! @brief Manages Water-related environment module.
+/// @file Water.h
+/// @brief Manages Water-related environment module.
 
 #ifndef incl_Water_h
 #define incl_Water_h
@@ -30,11 +30,11 @@ namespace Environment
         Q_OBJECT 
 
         public:
-            //! Constructor.
-            //! @param owner EnvironmentModule pointer.
+            /// Constructor.
+            /// @param owner EnvironmentModule pointer.
             Water(EnvironmentModule *owner);
 
-            //! Destructor.
+            /// Destructor.
             virtual ~Water();
 
             void Update();
@@ -59,8 +59,8 @@ namespace Environment
              */
             void RemoveWaterGeometry();
 
-            //! @return The scene water height.
-            //! @note If error occuers returns 0.0
+            /// @return The scene water height.
+            /// @note If error occuers returns 0.0
             float GetWaterHeight();
         
              /** 
@@ -105,26 +105,26 @@ namespace Environment
 
         public slots:
 
-            //! Sets a new water height to scene water.
-            //! height New water height.
+            /// Sets a new water height to scene water.
+            /// height New water height.
             void SetWaterHeight(float height, AttributeChange::Type type );
 
         signals:
-            //! Emited when water height has been changed.
-            //! height New water height.
+            /// Emited when water height has been changed.
+            /// height New water height.
             void HeightChanged(double height);
 
-            //! Emitted when water fog is adjusted.
+            /// Emitted when water fog is adjusted.
             void WaterFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
 
-            //! Emitted in each update loop.
+            /// Emitted in each update loop.
             void ExistWater(bool on);
           
 
         private:
 
             
-            //! EnvironmentModule pointer.
+            /// EnvironmentModule pointer.
             EnvironmentModule *owner_;
 
             EC_WaterPlane* GetEnvironmentWaterComponent();

@@ -49,11 +49,11 @@ template<typename T> void fromScriptValueEnum(const QScriptValue &obj, T &s)
     s = static_cast<T>(obj.property("value").toInt32());
 }
 
-//! Register Qt related stuff to QScriptEngine.
-//! @todo repalce this with qscriptgenerator.
+/// Register Qt related stuff to QScriptEngine.
+/// @todo repalce this with qscriptgenerator.
 void ExposeQtMetaTypes(QScriptEngine *engine);
 
-//! Will register all meta data types that are needed to use Naali Core API objects.
+/// Will register all meta data types that are needed to use Naali Core API objects.
 void ExposeCoreApiMetaTypes(QScriptEngine *engine);
 
 #endif

@@ -13,7 +13,7 @@
 #include "UiAPI.h"
 #include "NaaliGraphicsView.h"
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("Input")
+//DEFINE_POCO_LOGGING_FUNCTIONS("Input")
 
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
@@ -689,7 +689,7 @@ bool InputAPI::eventFilter(QObject *obj, QEvent *event)
         MouseEvent mouseEvent;
         mouseEvent.itemUnderMouse = framework->Ui()->GraphicsView()->GetVisibleItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
-        if ( !doubleClickDetected)
+        if (!doubleClickDetected)
         {
             mouseEvent.eventType = (event->type() == QEvent::MouseButtonPress) ? MouseEvent::MousePressed : MouseEvent::MouseReleased;
         } else 

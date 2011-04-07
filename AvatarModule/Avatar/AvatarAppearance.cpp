@@ -229,13 +229,13 @@ namespace Avatar
                 // Add all pose animations
                 Ogre::MeshPtr ogre_mesh = ogre_entity->getMesh();
                 size_t numanims = ogre_mesh->getNumAnimations();
-                for (uint i = 0; i < numanims; ++i)
+                for(uint i = 0; i < numanims; ++i)
                 {
                     Ogre::Animation* anim = ogre_mesh->getAnimation(i);
                     Ogre::Animation::VertexTrackIterator it = anim->getVertexTrackIterator();
                     bool is_pose = false;
             
-                    while (it.hasMoreElements())
+                    while(it.hasMoreElements())
                     {
                         Ogre::VertexAnimationTrack* vat = it.getNext();
                         if (vat->getAnimationType() == Ogre::VAT_POSE) is_pose = true;
@@ -363,12 +363,12 @@ namespace Avatar
         
         const AvatarAttachmentVector& attachments = appearance->GetAttachments();
         std::set<uint> vertices_to_hide;
-        for (uint i = 0; i < attachments.size(); ++i)
+        for(uint i = 0; i < attachments.size(); ++i)
         {
             if (attachments[i].vertices_to_hide_.size())
             {
                 need_mesh_clone = true;
-                for (uint j = 0; j < attachments[i].vertices_to_hide_.size(); ++j)
+                for(uint j = 0; j < attachments[i].vertices_to_hide_.size(); ++j)
                     vertices_to_hide.insert(attachments[i].vertices_to_hide_[j]);
             }
         }
@@ -382,7 +382,7 @@ namespace Avatar
             HideVertices(mesh->GetEntity(), vertices_to_hide);
         
         AvatarMaterialVector materials = appearance->GetMaterials();
-        for (uint i = 0; i < materials.size(); ++i)
+        for(uint i = 0; i < materials.size(); ++i)
         {
             mesh->SetMaterial(i, materials[i].asset_.GetLocalOrResourceName());
         }
@@ -415,12 +415,12 @@ namespace Avatar
         
         const AvatarAttachmentVector& attachments = appearance->GetAttachments();
         
-        for (uint i = 0; i < attachments.size(); ++i)
+        for(uint i = 0; i < attachments.size(); ++i)
         {
             // Setup attachment meshes
             mesh->SetAttachmentMesh(i, attachments[i].mesh_.GetLocalOrResourceName(), attachments[i].bone_name_, attachments[i].link_skeleton_);
             // Setup attachment mesh materials
-            for (uint j = 0; j < attachments[i].materials_.size(); ++j)
+            for(uint j = 0; j < attachments[i].materials_.size(); ++j)
             {
                 mesh->SetAttachmentMaterial(i, j, attachments[i].materials_[j].asset_.GetLocalOrResourceName());
             }
@@ -445,7 +445,7 @@ namespace Avatar
             return;
             
         const MorphModifierVector& morphs = appearance->GetMorphModifiers();
-        for (uint i = 0; i < morphs.size(); ++i)
+        for(uint i = 0; i < morphs.size(); ++i)
         {
             if (anims->hasAnimationState(morphs[i].morph_name_))
             {
@@ -461,7 +461,7 @@ namespace Avatar
                 anim->setEnabled(timePos > 0.0f);
                 
                 // Also set position in attachment entities, if have the same morph
-                for (uint j = 0; j < mesh->GetNumAttachments(); ++j)
+                for(uint j = 0; j < mesh->GetNumAttachments(); ++j)
                 {
                     Ogre::Entity* attachment = mesh->GetAttachmentEntity(j);
                     if (!attachment)
@@ -488,9 +488,9 @@ namespace Avatar
         ResetBones(entity);
         
         const BoneModifierSetVector& bone_modifiers = appearance->GetBoneModifiers();
-        for (uint i = 0; i < bone_modifiers.size(); ++i)
+        for(uint i = 0; i < bone_modifiers.size(); ++i)
         {
-            for (uint j = 0; j < bone_modifiers[i].modifiers_.size(); ++j)
+            for(uint j = 0; j < bone_modifiers[i].modifiers_.size(); ++j)
             {
                 ApplyBoneModifier(entity, bone_modifiers[i].modifiers_[j], bone_modifiers[i].value_);
             }
@@ -517,7 +517,7 @@ namespace Avatar
         if (skeleton->getNumBones() != orig_skeleton->getNumBones())
             return;
         
-        for (uint i = 0; i < orig_skeleton->getNumBones(); ++i)
+        for(uint i = 0; i < orig_skeleton->getNumBones(); ++i)
         {
             Ogre::Bone* bone = skeleton->getBone(i);
             Ogre::Bone* orig_bone = orig_skeleton->getBone(i);
@@ -665,7 +665,7 @@ namespace Avatar
         Ogre::Vector3 scale = bone->getInitialScale();
         Ogre::Quaternion orient = bone->getInitialOrientation();
 
-        while (bone->getParent())
+        while(bone->getParent())
         {
            Ogre::Node* parent = bone->getParent();
 
@@ -718,7 +718,7 @@ namespace Avatar
             return;
         if (!mesh->getNumSubMeshes())
             return;
-        for (uint m = 0; m < 1; ++m)
+        for(uint m = 0; m < 1; ++m)
         {
             // Under current system, it seems vertices should only be hidden from first submesh
             Ogre::SubMesh *submesh = mesh->getSubMesh(m);
@@ -735,7 +735,7 @@ namespace Avatar
             unsigned short* pIdx = reinterpret_cast<unsigned short*>(lIdx);
             bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
 
-            for (uint n = 0; n < data->indexCount; n += 3)
+            for(uint n = 0; n < data->indexCount; n += 3)
             {
                 if (!use32bitindexes)
                 {
@@ -745,7 +745,7 @@ namespace Avatar
                     {
                         if (n + 3 < data->indexCount)
                         {
-                            for (size_t i = n ; i<data->indexCount-3 ; ++i)
+                            for(size_t i = n ; i<data->indexCount-3 ; ++i)
                             {
                                 pIdx[i] = pIdx[i+3];
                             }
@@ -762,7 +762,7 @@ namespace Avatar
                     {
                         if (n + 3 < data->indexCount)
                         {
-                            for (size_t i = n ; i<data->indexCount-3 ; ++i)
+                            for(size_t i = n ; i<data->indexCount-3 ; ++i)
                             {
                                 lIdx[i] = lIdx[i+3];
                             }
@@ -783,7 +783,7 @@ namespace Avatar
 
         // Check download results
         std::map<entity_id_t, HttpUtilities::HttpTaskPtr>::iterator i = appearance_downloaders_.begin();
-        while (i != appearance_downloaders_.end())
+        while(i != appearance_downloaders_.end())
         {
             bool done = false;
             
@@ -852,7 +852,7 @@ namespace Avatar
             {
                 AvatarAssetMap::const_iterator iter = assets.begin();
                 AvatarAssetMap::const_iterator end = assets.end();
-                while (iter != end)
+                while(iter != end)
                 {
                     std::string asset_id = iter->second;
                     asset_service->RemoveAssetFromCache(asset_id);
@@ -875,13 +875,13 @@ namespace Avatar
         // Erase any old pending requests for this avatar, they are no longer interesting
         std::vector<std::map<request_tag_t, entity_id_t>::iterator> tags_to_remove;
         std::map<request_tag_t, entity_id_t>::iterator i = avatar_resource_tags_.begin();
-        while (i != avatar_resource_tags_.end())
+        while(i != avatar_resource_tags_.end())
         {
             if (i->second == entity->GetId())
                 tags_to_remove.push_back(i);
             ++i;
         }
-        for (uint j = 0; j < tags_to_remove.size(); ++j)
+        for(uint j = 0; j < tags_to_remove.size(); ++j)
         {
             avatar_resource_tags_.erase(tags_to_remove[j]);
         } 
@@ -898,7 +898,7 @@ namespace Avatar
         RequestTagVector tags;
         AvatarAssetMap::const_iterator k = assets.begin();
         uint pending_requests = 0;        
-        while (k != assets.end())
+        while(k != assets.end())
         {
             std::string resource_id = k->second;
             request_tag_t tag = renderer->RequestResource(resource_id, GetResourceTypeFromName(k->first, inventorymode));
@@ -956,7 +956,7 @@ namespace Avatar
         // Build mapping of human-readable asset names to id's
         std::string host = HttpUtilities::GetHostFromUrl(avatar->GetAppearanceAddress());
         AvatarAssetMap assets;
-        while (j != contents.end())
+        while(j != contents.end())
         {
             // Don't add the name field or the avatar description
             if ((j->first != "generic xml") && (j->first != "name"))
@@ -1100,7 +1100,7 @@ namespace Avatar
                 {
                     // Check if asset is one from our upload request
                     ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
-                    while (i != inv_export_request_->assets_.end())
+                    while(i != inv_export_request_->assets_.end())
                     {
                         if (i->first == event_data->fileName)
                         {
@@ -1187,7 +1187,7 @@ namespace Avatar
                 // Interrogate materials only if not known yet
                 if (!materials.size())
                 {
-                    for (uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
+                    for(uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
                     {
                         Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
                         AvatarMaterial attach_newmat;
@@ -1201,10 +1201,10 @@ namespace Avatar
         FixupResource(skeleton, asset_map, OgreRenderer::OgreSkeletonResource::GetTypeStatic());
         
         // Fix avatar mesh materials
-        for (uint i = 0; i < materials.size(); ++i)
+        for(uint i = 0; i < materials.size(); ++i)
             FixupMaterial(materials[i], asset_map);
         // Fix attachment meshes & their materials
-        for (uint i = 0; i < attachments.size(); ++i)
+        for(uint i = 0; i < attachments.size(); ++i)
         {
             FixupResource(attachments[i].mesh_, asset_map, OgreRenderer::OgreMeshResource::GetTypeStatic());
             
@@ -1216,7 +1216,7 @@ namespace Avatar
                     const StringVector& attach_matnames = mesh_res->GetOriginalMaterialNames();
                     attachments[i].materials_.clear();
 
-                    for (uint j = 0; j < attach_matnames.size(); ++j)
+                    for(uint j = 0; j < attach_matnames.size(); ++j)
                     {
                         AvatarMaterial attach_newmat;
                         attach_newmat.asset_.name_ = attach_matnames[j];
@@ -1232,7 +1232,7 @@ namespace Avatar
                 if (!ogremesh.isNull())
                 {
                     attachments[i].materials_.clear();
-                    for (uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
+                    for(uint j = 0; j < ogremesh->getNumSubMeshes(); ++j)
                     {
                         Ogre::SubMesh* submesh = ogremesh->getSubMesh(j);
                         AvatarMaterial attach_newmat;
@@ -1336,7 +1336,7 @@ namespace Avatar
                 
                 std::set<std::string>::iterator i = textures_set.begin();
                 
-                while (i != textures_set.end())
+                while(i != textures_set.end())
                 {
                     AvatarAsset new_tex;
                     new_tex.name_ = *i;
@@ -1353,7 +1353,7 @@ namespace Avatar
         const StringVector& orig_textures = mat_res->GetOriginalTextureNames();
         if (mat.textures_.size() < orig_textures.size())
             mat.textures_.resize(orig_textures.size());
-        for (uint i = 0; i < mat.textures_.size(); ++i)
+        for(uint i = 0; i < mat.textures_.size(); ++i)
         {
             if (!mat.textures_[i].resource_.lock())
             {
@@ -1415,7 +1415,7 @@ namespace Avatar
         Inventory::InventoryUploadBufferEventData event_data;
         
         ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
-        while (i != inv_export_request_->assets_.end())
+        while(i != inv_export_request_->assets_.end())
         {
             QVector<u8> data_buffer;
             data_buffer.resize(i->second.data_.size());
@@ -1521,7 +1521,7 @@ namespace Avatar
         Inventory::InventoryUploadBufferEventData event_data;
         
         ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
-        while (i != inv_export_request_->assets_.end())
+        while(i != inv_export_request_->assets_.end())
         {
             QVector<u8> data_buffer;
             data_buffer.resize(i->second.data_.size());
@@ -1659,7 +1659,7 @@ namespace Avatar
         AvatarExporterRequestPtr request(new AvatarExporterRequest());
         GetAvatarAssetsForExport(request, *appearance, false);
         ExportAssetMap::const_iterator i = request->assets_.begin();
-        while (i != request->assets_.end())
+        while(i != request->assets_.end())
         {
             // Replace problematic chars in asset names
             std::string filename = i->first;
@@ -1692,17 +1692,17 @@ namespace Avatar
 
         AvatarModule::LogDebug("Getting materials for export");
         AvatarMaterialVector materials = appearance.GetMaterials();
-        for (uint i = 0; i < materials.size(); ++i)
+        for(uint i = 0; i < materials.size(); ++i)
         {
             GetAvatarMaterialForExport(request, materials[i], inventorymode);
         }
         
         AvatarModule::LogDebug("Getting attachments for export");
         AvatarAttachmentVector attachments = appearance.GetAttachments();
-        for (uint i = 0; i < attachments.size(); ++i)
+        for(uint i = 0; i < attachments.size(); ++i)
         {
             GetAvatarAssetForExport(request, attachments[i].mesh_);
-            for (uint j = 0; j < attachments[i].materials_.size(); ++j)
+            for(uint j = 0; j < attachments[i].materials_.size(); ++j)
             {
                 GetAvatarMaterialForExport(request, attachments[i].materials_[j]);
             }
@@ -1769,7 +1769,7 @@ namespace Avatar
         // Now remove unsupported techniques before exporting, or we will crash inside OGRE
         // This has, however, the side-effect that after exporting, the technique will not show for anyone!
         // (ie. for even those with better hardware)
-        for (unsigned i = 0; i < clone->getNumTechniques(); ++i)
+        for(unsigned i = 0; i < clone->getNumTechniques(); ++i)
         {
             Ogre::Technique* tech = clone->getTechnique(i);
             if (tech)
@@ -1836,7 +1836,7 @@ namespace Avatar
             if (!inventorymode)
             {
                 ExportAssetMap::const_iterator i = request->assets_.begin();
-                while (i != request->assets_.end())
+                while(i != request->assets_.end())
                 {
                     if (new_export_asset.hash_ == i->second.hash_)
                     {
@@ -1862,10 +1862,10 @@ namespace Avatar
         {
             mat_mgr.remove(clonename);
         }
-        catch (...) {}
+        catch(...) {}
         
         // Export textures used by material
-        for (uint i = 0; i < material.textures_.size(); ++i)
+        for(uint i = 0; i < material.textures_.size(); ++i)
             GetAvatarAssetForExport(request, material.textures_[i], true);
             
         return true;*/
@@ -1945,7 +1945,7 @@ namespace Avatar
                     return false;
                 }
             }
-            catch (Ogre::Exception e)
+            catch(Ogre::Exception e)
             {
                 AvatarModule::LogError("Could not get local avatar asset " + asset.name_ + " for export");
                 return false;
@@ -1958,7 +1958,7 @@ namespace Avatar
         if (!inventorymode)
         {
             ExportAssetMap::const_iterator i = request->assets_.begin();
-            while (i != request->assets_.end())
+            while(i != request->assets_.end())
             {
                 if (new_export_asset.hash_ == i->second.hash_)
                 {
@@ -2037,7 +2037,7 @@ namespace Avatar
             AddTempResourceDirectory(dirname);
             SetupAppearance(entity);
         }
-        catch (Ogre::Exception& e)
+        catch(Ogre::Exception& e)
         {
             AvatarModule::LogError("Error while loading avatar " + filename + ": " + e.what());
             emit AppearanceError("Error while loading appearance from avatar file");
@@ -2183,7 +2183,7 @@ namespace Avatar
             try
             {
                 Ogre::DataStreamPtr data = Ogre::ResourceGroupManager::getSingleton().openResource(leafname);    
-                while (!data->eof())
+                while(!data->eof())
                 {
                     Ogre::String line = data->getLine();
                     
@@ -2200,7 +2200,7 @@ namespace Avatar
                     break;
                 }
             }
-            catch (...) {}
+            catch(...) {}
 
             if (matname.empty())
                 return false;
@@ -2218,7 +2218,7 @@ namespace Avatar
             
             matname = renderer->GetUniqueObjectName("AvatarAppearance_material");
             
-            //! \todo this temp material will not be deleted ever. Should delete it
+            /// \todo this temp material will not be deleted ever. Should delete it
             Ogre::MaterialPtr ogremat = OgreRenderer::GetOrCreateLitTexturedMaterial(matname);
             OgreRenderer::GetLocalTexture(leafname);
             OgreRenderer::SetTextureUnitOnMaterial(ogremat, leafname);

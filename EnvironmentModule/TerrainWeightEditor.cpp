@@ -54,7 +54,7 @@ namespace Environment
         QFile file(str);
         if(!file.exists())
         {
-            EnvironmentModule::LogError("Cannot find " +str.toStdString()+ " file");
+            LogError("Cannot find " +str.toStdString()+ " file");
             return;
         }
 

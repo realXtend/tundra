@@ -16,7 +16,7 @@ class QTabWidget;
 
 namespace Avatar
 {
-    //! Avatar editing window. Owned by RexLogicModule.
+    /// Avatar editing window. Owned by RexLogicModule.
     class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
     {
         Q_OBJECT
@@ -26,37 +26,37 @@ namespace Avatar
         ~AvatarEditor();
 
     public slots:
-        //! Rebuild edit view
+        /// Rebuild edit view
         void RebuildEditView();
         
-        //! Export click handler
+        /// Export click handler
         void ExportAvatar();
 
-        //! Local export click handler
+        /// Local export click handler
         void ExportAvatarLocal();
 
-        //! New avatar click handler
+        /// New avatar click handler
         void LoadAvatar();
 
-        //! Revert click handler
+        /// Revert click handler
         void RevertAvatar();
 
-        //! Change texture click handler
+        /// Change texture click handler
         void ChangeTexture();
 
-        //! New attachment click handler
+        /// New attachment click handler
         void AddAttachment();
 
-        //! Remove attachment click handler
+        /// Remove attachment click handler
         void RemoveAttachment();
 
-        //! Bone modifier scrollbar value handler
+        /// Bone modifier scrollbar value handler
         void BoneModifierValueChanged(int value);
 
-        //! Morph modifier scrollbar value handler
+        /// Morph modifier scrollbar value handler
         void MorphModifierValueChanged(int value);
 
-        //! Master appearance modifier scrollbar value handler
+        /// Master appearance modifier scrollbar value handler
         void MasterModifierValueChanged(int value);
 
     protected:
@@ -69,25 +69,25 @@ signals:
         void EditorHideMessages();
 
     private:
-        //! Owner module.
+        /// Owner module.
         AvatarModule *avatar_module_;
 
-        //! Create editor window
+        /// Create editor window
         void InitEditorWindow();
 
-        //! Clear a panel
+        /// Clear a panel
         void ClearPanel(QWidget* panel);
 
-        //! Create or get a tabbed scrollarea panel
+        /// Create or get a tabbed scrollarea panel
         QWidget* GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name);
 
-        //! Ask a filename from the user. Store the directory used.
+        /// Ask a filename from the user. Store the directory used.
         std::string GetOpenFileName(const std::string& filter, const std::string& prompt);
 
-        //! Ask a filename from the user for saving. Store the directory used.
+        /// Ask a filename from the user for saving. Store the directory used.
         std::string GetSaveFileName(const std::string& filter, const std::string& prompt);
 
-        //! Last used directory for selecting avatars, attachments, textures
+        /// Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
 
         bool reverting_;
