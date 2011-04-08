@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=org.freedesktop.Telepathy.ConnectionManager.gabble
-Exec=gabble/gabble.exe
