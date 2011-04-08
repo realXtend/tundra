@@ -76,10 +76,10 @@ macro (configure_qt4)
             ${QT_QTNETWORK_INCLUDE_DIR}
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
-            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
-            ${QT_QTWEBKIT_INCLUDE_DIR}
-            ${QT_PHONON_INCLUDE_DIR}
-            ${QT_QTDBUS_INCLUDE_DIR})
+            ${QT_QTWEBKIT_INCLUDE_DIR})
+            
+#            ${QT_QTSCRIPTTOOLS_INCLUDE_DIR}
+#            ${QT_PHONON_INCLUDE_DIR}
 
 		
         set (QT4_LIBRARY_DIR  
@@ -93,10 +93,10 @@ macro (configure_qt4)
             ${QT_QTNETWORK_LIBRARY}
             ${QT_QTXML_LIBRARY}
             ${QT_QTSCRIPT_LIBRARY}
-            ${QT_QTSCRIPTTOOLS_LIBRARY}
-            ${QT_QTWEBKIT_LIBRARY}
-            ${QT_PHONON_LIBRARY}
-            ${QT_QTDBUS_LIBRARY})
+            ${QT_QTWEBKIT_LIBRARY})
+            
+#            ${QT_QTSCRIPTTOOLS_LIBRARY}
+#            ${QT_PHONON_LIBRARY}
 		
     endif ()
     

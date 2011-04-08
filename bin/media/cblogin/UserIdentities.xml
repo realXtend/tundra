@@ -1,5 +1,0 @@
-
-<identities>
-    <world>http://example-taiga-worldserver.com:8002/login</world>
-    <openid>http://example-taiga-openidserver.com:8004/testuser</openid>
-</identities>
