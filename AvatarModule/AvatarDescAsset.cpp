@@ -50,6 +50,7 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     avatarDoc.setContent(avatarAppearanceXML_);
     ReadAvatarAppearance(avatarDoc);
     
+    emit AppearanceChanged();
     return true;
 }
 
