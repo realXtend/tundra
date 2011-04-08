@@ -13,6 +13,7 @@
 class QTabWidget;
 class EC_Avatar;
 class AvatarDescAsset;
+typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 namespace Avatar
 {
@@ -59,8 +60,8 @@ namespace Avatar
         //! Master appearance modifier scrollbar value handler
         void MasterModifierValueChanged(int value);
 
-        //! Set avatar entity by name to edit
-        void SetAvatarEntityName(QString name);
+        //! Set avatar entity and asset to edit
+        void SetEntityToEdit(Scene::EntityPtr entity);
         
     protected:
         /// QWidget override.
@@ -78,10 +79,8 @@ signals:
         //! Create editor window
         void InitEditorWindow();
         
-        //! Get the avatar entity to edit. If avatar_entity_name_ is empty, try to get the user's avatar from AvatarHandler.
-        Scene::EntityPtr GetAvatarEntity();
         //! Get the avatar entity, avatar component, and avatar description. If all are non-null, return true
-        bool GetAvatarDesc(Scene::EntityPtr& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
+        bool GetAvatarDesc(Scene::Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
 
         //! Clear a panel
         void ClearPanel(QWidget* panel);
@@ -98,8 +97,10 @@ signals:
         //! Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
 
-        //! Avatar entity to edit. If empty, try to get the user's avatar from AvatarHandler.
-        QString avatar_entity_name_;
+        //! Avatar entity to edit
+        Scene::EntityWeakPtr avatarEntity_;
+        //! Avatar asset to edit
+        boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 
         bool reverting_;
     };

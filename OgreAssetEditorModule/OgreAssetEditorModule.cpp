@@ -393,7 +393,7 @@ void OgreAssetEditorModule::UploadBuffer(Inventory::InventoryUploadBufferEventDa
 
 void OgreAssetEditorModule::OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets)
 {
-    std::cout << "joujou " << targets.size() << std::endl;
+    // std::cout << "joujou " << targets.size() << std::endl;
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
