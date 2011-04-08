@@ -59,7 +59,6 @@
 
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 #include "SceneManager.h"
-#include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 //#include "LoginServiceInterface.h"
 #include "FrameAPI.h"
 #include "SceneAPI.h"
@@ -200,8 +199,6 @@ namespace PythonScript
 
         // Input (OIS)
         inputeventcategoryid = em_->QueryEventCategory("Input");
-        // Scene (SceneManager)
-        scene_event_category_ = em_->QueryEventCategory("Scene");
         
         // Create a new input context with a default priority of 100.
         input = framework_->Input()->RegisterInputContext("PythonInput", 100);

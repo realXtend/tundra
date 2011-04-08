@@ -56,7 +56,7 @@ namespace Avatar
         AvatarControllablePtr GetAvatarControllable() { return avatar_controllable_; }
 
     private:
-        //! Console command: start editing a specific entity's avatar
+        /// Console command: start editing a specific entity's avatar
         Console::CommandResult EditAvatar(const StringVector &params);
 
         /// AvatarModules input context

@@ -244,9 +244,6 @@ namespace OgreRenderer
         /// Sleeps the main thread to throttle the main loop execution speed.
         void DoFrameTimeLimiting();
 
-        /// Initialises the events related info for this module
-        void InitializeEvents();
-
         /// Loads Ogre plugins in a manner which allows individual plugin loading to fail
         /** \param plugin_filename path & filename of the Ogre plugins file
          */

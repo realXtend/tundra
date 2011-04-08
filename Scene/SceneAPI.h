@@ -127,10 +127,6 @@ private:
     /// Frees all known scene and the scene interact object.
     /// \note This function is called by our fried class Foundation::Framework in its UnloadModules() function.
     void Reset();
-
-    /// Registers the scene relaetd events to event manager.
-    /// \note This function is called by our fried class Foundation::Framework when EvenManager is ready.
-    void RegisterSceneEvents() const;
     
     /// Initialize the scene interact object. Needs framework->Input() to be valid.
     /// \note This function is called by our fried class Foundation::Framework when InputAPI is ready.
@@ -147,14 +143,11 @@ private:
     SceneMap scenes_;
 
     /// Current 'default' scene.
+    /// \todo Delete this.
     Scene::ScenePtr defaultScene_;
 
     /// Scene interact shared ptr.
-    QSharedPointer<SceneInteract> sceneInteract_;
-
-    /// Scene events category name.
-    std::string sceneCatergoryName_;
-
+    QSharedPointer<SceneInteract> sceneInteract;
 };
 
 #endif

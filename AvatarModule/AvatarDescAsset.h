@@ -9,7 +9,7 @@
 class QDomDocument;
 class QDomElement;
 
-//! Avatar appearance description asset
+/// Avatar appearance description asset
 class AV_MODULE_API AvatarDescAsset : public IAsset
 {
     Q_OBJECT;
@@ -28,81 +28,81 @@ public:
 
     bool IsLoaded() const;
 
-    //! Stores the avatar appearance XML file as raw .xml data. Note: if parameters such as bonemodifiers change "live", this won't be updated.
+    /// Stores the avatar appearance XML file as raw .xml data. Note: if parameters such as bonemodifiers change "live", this won't be updated.
     QString avatarAppearanceXML_;
     
-    //! Avatar mesh asset reference
+    /// Avatar mesh asset reference
     QString mesh_;
-    //! Avatar skeleton asset reference
+    /// Avatar skeleton asset reference
     QString skeleton_;
-    //! Avatar material asset references
+    /// Avatar material asset references
     std::vector<QString> materials_;
     
-    //! Animation defines
+    /// Animation defines
     std::vector<AnimationDefinition> animations_;
-    //! Attachments
+    /// Attachments
     std::vector<AvatarAttachment> attachments_;
-    //! Bone modifiers
+    /// Bone modifiers
     std::vector<BoneModifierSet> boneModifiers_;
-    //! Morph modifiers
+    /// Morph modifiers
     std::vector<MorphModifier> morphModifiers_;
-    //! Master modifiers, which may drive either bones or morphs
+    /// Master modifiers, which may drive either bones or morphs
     std::vector<MasterModifier> masterModifiers_; 
-    //! Miscellaneous properties (freedata)
+    /// Miscellaneous properties (freedata)
     QMap<QString, QString> properties_;
     
 private:
-    //! Parse from XML data. Return true if successful
+    /// Parse from XML data. Return true if successful
     bool ReadAvatarAppearance(const QDomDocument& source);
-    //! Read a bone modifier
+    /// Read a bone modifier
     void ReadBoneModifierSet(const QDomElement& source);
-    //! Read the weight value (0 - 1) for an already existing bone modifier
+    /// Read the weight value (0 - 1) for an already existing bone modifier
     void ReadBoneModifierParameter(const QDomElement& source);
-    //! Read a morph modifier
+    /// Read a morph modifier
     void ReadMorphModifier(const QDomElement& source);
-    //! Read a master modifier
+    /// Read a master modifier
     void ReadMasterModifier(const QDomElement& source);
-    //! Read animations
+    /// Read animations
     void ReadAnimationDefinitions(const QDomDocument& source);
-    //! Read one animation definition
+    /// Read one animation definition
     void ReadAnimationDefinition(const QDomElement& elem);
-    //! Read attachment mesh definition
+    /// Read attachment mesh definition
     void ReadAttachment(const QDomElement& elem);
-    //! Recalculate master modifier values
+    /// Recalculate master modifier values
     void CalculateMasterModifiers();
-    //! Write to XML data
+    /// Write to XML data
     void WriteAvatarAppearance(QDomDocument& dest) const;
-    //! Write bone modifier to XML
+    /// Write bone modifier to XML
     void WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones) const;
-    //! Write bone to XML
+    /// Write bone to XML
     QDomElement WriteBone(QDomDocument& dest, const BoneModifier& bone) const;
-    //! Write morph modifier to XML
+    /// Write morph modifier to XML
     QDomElement WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph) const;
-    //! Write master modifier to XML
+    /// Write master modifier to XML
     QDomElement WriteMasterModifier(QDomDocument& dest, const MasterModifier& morph) const;
-    //! Write animation definition to XML
+    /// Write animation definition to XML
     QDomElement WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim) const;
-    //! Write attachment to XML
+    /// Write attachment to XML
     QDomElement WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const QString& mesh) const;
-    //! Find modifier by name and type
+    /// Find modifier by name and type
     AppearanceModifier* FindModifier(const std::string& name, AppearanceModifier::ModifierType type);
-    //! Add reference to a reference vector if not empty
+    /// Add reference to a reference vector if not empty
     void AddReference(std::vector<AssetReference>& refs, const QString& ref) const;
     
 public slots:
-    //! Set a master modifier value. Triggers DynamicAppearanceChanged
+    /// Set a master modifier value. Triggers DynamicAppearanceChanged
     void SetMasterModifierValue(QString name, float value);
-    //! Set a morph or bone modifier value. It will be brought under manual control, ie. master modifiers no longer have an effect. Triggers DynamicAppearanceChanged
+    /// Set a morph or bone modifier value. It will be brought under manual control, ie. master modifiers no longer have an effect. Triggers DynamicAppearanceChanged
     void SetModifierValue(QString name, float value);
-    //! Return whether a property exists
+    /// Return whether a property exists
     bool HasProperty(QString name) const;
-    //! Return property value, or empty if does not exist
+    /// Return property value, or empty if does not exist
     const QString& GetProperty(QString value);
     
 signals:
-    //! Mesh, skeleton, mesh materials or attachment meshes have changed. The entity using this avatar desc should refresh its appearance completely
+    /// Mesh, skeleton, mesh materials or attachment meshes have changed. The entity using this avatar desc should refresh its appearance completely
     void AppearanceChanged();
-    //! Dynamic properties (morphs, bone modifiers) have changed. The entity using this avatar desc should refresh those parts of the appearance
+    /// Dynamic properties (morphs, bone modifiers) have changed. The entity using this avatar desc should refresh those parts of the appearance
     void DynamicAppearanceChanged();
 };
 

@@ -6,7 +6,6 @@
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "Entity.h"
-#include "SceneEvents.h"
 #include "SceneDesc.h"
 #include "IComponent.h"
 #include "IAttribute.h"
@@ -95,11 +94,6 @@ namespace Scene
             }
         }
         entities_[entity->GetId()] = entity;
-
-        // Send event.
-        Events::SceneEventData event_data(entity->GetId());
-        event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
-        framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_ADDED, &event_data);
 
         return entity;
     }
@@ -222,12 +216,7 @@ namespace Scene
             Scene::EntityPtr del_entity = it->second;
             
             EmitEntityRemoved(del_entity.get(), change);
-            
-            // Send event.
-            Events::SceneEventData event_data(id);
-            event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
-            framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_DELETED, &event_data);
-            
+
             entities_.erase(it);
             // If entity somehow manages to live, at least it doesn't belong to the scene anymore
             del_entity->SetScene(0);
@@ -237,7 +226,8 @@ namespace Scene
 
     void SceneManager::RemoveAllEntities(bool send_events, AttributeChange::Type change)
     {
-        event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
+        ///\todo Rewrite this function to call SceneManager::RemoveEntity and not duplicate the logic here.
+
         EntityMap::iterator it = entities_.begin();
         while(it != entities_.end())
         {
@@ -245,10 +235,7 @@ namespace Scene
             if (send_events)
             {
                 EmitEntityRemoved(it->second.get(), change);
-                
-                // Send event.
-                Events::SceneEventData event_data(it->second->GetId());
-                framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_DELETED, &event_data);
+
             }
             it->second->SetScene(0);
             ++it;

@@ -6,8 +6,8 @@
  *          input-related Entity Action for scene entities.
  */
 
-#ifndef incl_Scene_SceneInteract_h
-#define incl_Scene_SceneInteract_h
+#ifndef incl_Scene_sceneInteracth
+#define incl_Scene_sceneInteracth
 
 #include "ForwardDefines.h"
 #include "SceneFwd.h"

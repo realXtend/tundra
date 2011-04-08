@@ -87,7 +87,7 @@ private slots:
     /// @param column Column of the cell.
     void PropertyChanged(int row, int column);
 
-    //! Delete this object.
+    /// Delete this object.
     void Deleted() { delete this; }
 
 private:

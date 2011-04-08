@@ -41,10 +41,10 @@ public:
     static const std::string &NameStatic() { return type_name_static_; }
 
 private:
-    //! Type name of the module.
+    /// Type name of the module.
     static std::string type_name_static_;
 
-    //! UI service.
+    /// UI service.
     boost::shared_ptr<UiService> service_;
 };
 

@@ -5,7 +5,7 @@
 
 #include "ServiceManager.h"
 #include "Framework.h"
-#include "EventManager.h"
+//#include "EventManager.h"
 #include "RenderServiceInterface.h"
 #include "UiAPI.h"
 #include "NaaliGraphicsView.h"
@@ -48,16 +48,16 @@ mainWindow(0),
 framework(framework_)
 {
     assert(framework_);
-    eventManager = framework_->GetEventManager();
-    assert(eventManager);
+//    eventManager = framework_->GetEventManager();
+//    assert(eventManager);
 
     // We still need to register this for legacy reasons, but shouldn't have to.
     // The 'Input' category should be removed and replaced with 'RexInput' or something
     // similar that is world logic -centric.
-    inputCategory = eventManager->RegisterEventCategory("Input");
+//    inputCategory = eventManager->RegisterEventCategory("Input");
 
-    inputCategory = eventManager->RegisterEventCategory("SceneInput");
-
+//    inputCategory = eventManager->RegisterEventCategory("SceneInput");
+/*
     eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyPressed, "KeyPressed");
     eventManager->RegisterEvent(inputCategory, QtInputEvents::KeyReleased, "KeyReleased");
 
@@ -71,7 +71,7 @@ framework(framework_)
     eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureUpdated, "GestureUpdated");
     eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureFinished, "GestureFinished");
     eventManager->RegisterEvent(inputCategory, QtInputEvents::GestureCanceled, "GestureCanceled");
-
+*/
     // Next, set up the global widget event filters that we will use to read our scene input from.
     // Note: Since we set up this object as an event filter to multiple widgets, we will receive
     //       the same events several times, so care has to be taken to ignore those duplicate events.
@@ -274,7 +274,7 @@ void InputAPI::SceneReleaseMouseButtons()
 
             mouseEvent.otherButtons = 0;
 
-            eventManager->SendEvent(inputCategory, QtInputEvents::MouseReleased, &mouseEvent);
+//            eventManager->SendEvent(inputCategory, QtInputEvents::MouseReleased, &mouseEvent);
         }
 }
 
@@ -328,7 +328,7 @@ void InputAPI::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt:
         keyEvent.keyCode = keyCode;
         keyEvent.eventType = KeyEvent::KeyReleased;
 
-        eventManager->SendEvent(inputCategory, QtInputEvents::KeyReleased, &keyEvent);
+//        eventManager->SendEvent(inputCategory, QtInputEvents::KeyReleased, &keyEvent);
     }
 }
 
@@ -357,7 +357,7 @@ void InputAPI::TriggerKeyEvent(KeyEvent &key)
 
     if (qtWidgetHasKeyboardFocus)
         return;
-
+/*
     // Finally, pass the key event to the system event tree.
     ///\todo Track which presses and releases have been passed to the event tree, and filter redundant releases.
     switch(key.eventType)
@@ -374,6 +374,7 @@ void InputAPI::TriggerKeyEvent(KeyEvent &key)
         assert(false);
         break;
     }
+*/
 }
 
 void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
@@ -402,7 +403,7 @@ void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
         if (context.get() && (!mouse.itemUnderMouse || context->TakesMouseEventsOverQt()))
             context->TriggerMouseEvent(mouse);
     }
-
+/*
     if (!mouse.handled)
     {
         switch(mouse.eventType)
@@ -428,6 +429,7 @@ void InputAPI::TriggerMouseEvent(MouseEvent &mouse)
             break;
         }
     }
+*/
 }
 
 void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
@@ -448,7 +450,7 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
         if (context.get())
             context->TriggerGestureEvent(gesture);
     }
-
+/*
     if (!gesture.handled)
     {
         switch(gesture.eventType)
@@ -469,6 +471,7 @@ void InputAPI::TriggerGestureEvent(GestureEvent &gesture)
             break;
         }
     }
+*/
 }
 
 /// Associates the given custom action with the given key.

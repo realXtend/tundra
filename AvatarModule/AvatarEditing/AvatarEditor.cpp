@@ -496,7 +496,7 @@ namespace Avatar
         if (!GetAvatarDesc(entity, avatar, desc))
             return;
         
-        //! \todo use upload functionality. For now just saves to disk, overwriting the original file.
+        /// \todo use upload functionality. For now just saves to disk, overwriting the original file.
         desc->SaveToFile(desc->DiskSource());
     }
 

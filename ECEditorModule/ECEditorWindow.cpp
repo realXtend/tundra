@@ -24,7 +24,6 @@
 #include "SceneManager.h"
 #include "EC_Name.h"
 #include "ComponentManager.h"
-#include "SceneEvents.h"
 #include "EventManager.h"
 #include "EC_Placeable.h"
 #include "InputAPI.h"

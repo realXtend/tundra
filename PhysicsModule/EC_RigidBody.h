@@ -202,8 +202,8 @@ public:
     virtual void setWorldTransform(const btTransform &worldTrans);
 
 signals:
-    //! A physics collision has happened between this rigid body and another entity
-    /*! If there are several contact points, the signal will be sent multiple times for each contact.
+    /// A physics collision has happened between this rigid body and another entity
+    /** If there are several contact points, the signal will be sent multiple times for each contact.
         \param otherEntity The second entity
         \param position World position of collision
         \param normal World normal of collision

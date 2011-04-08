@@ -14,7 +14,7 @@ struct BoneModifier;
 class AvatarDescAsset;
 typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
-//! Avatar component.
+/// Avatar component.
 /**
 <table class="header">
 <tr>
@@ -50,54 +50,54 @@ class AV_MODULE_API EC_Avatar : public IComponent
     DECLARE_EC(EC_Avatar);
 
 public:
-    //! Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
+    /// Asset id for the avatar appearance file that will be used to generate the visible avatar. Asset request is handled by the component.
     Q_PROPERTY(AssetReference appearanceRef READ getappearanceRef WRITE setappearanceRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, appearanceRef);
 
-    //! Set component as serializable.
+    /// Set component as serializable.
     virtual bool IsSerializable() const { return true; }
 
-    //! Destructor
+    /// Destructor
     virtual ~EC_Avatar();
 
 public slots:
-    //! Refresh appearance completely
+    /// Refresh appearance completely
     void SetupAppearance();
-    //! Refresh dynamic parts of the appearance (morphs, bone modifiers)
+    /// Refresh dynamic parts of the appearance (morphs, bone modifiers)
     void SetupDynamicAppearance();
-    //! Return the avatar description asset, if set
+    /// Return the avatar description asset, if set
     AvatarDescAssetPtr GetAvatarDesc();
-    //! Get a generic property from the avatar description, or empty string if not found
+    /// Get a generic property from the avatar description, or empty string if not found
     QString GetAvatarProperty(const QString& name);
     
 private slots:
-    //! Called when some of the attributes has been changed.
+    /// Called when some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute *attribute);
     
     void OnAvatarAppearanceLoaded(AssetPtr asset);
 
 private:
-    //! constructor
-    /*! \param module avatar module
+    /// constructor
+    /** \param module avatar module
      */
     EC_Avatar(IModule* module);
 
-    //! Adjust avatar's height offset dynamically
+    /// Adjust avatar's height offset dynamically
     void AdjustHeightOffset();
-    //! Rebuild mesh and set materials
+    /// Rebuild mesh and set materials
     void SetupMeshAndMaterials();
-    //! Set morphs to values in avatar desc asset
+    /// Set morphs to values in avatar desc asset
     void SetupMorphs();
-    //! Set bone modifiers to values in avatar desc asset
+    /// Set bone modifiers to values in avatar desc asset
     void SetupBoneModifiers();
-    //! Rebuild attachment meshes
+    /// Rebuild attachment meshes
     void SetupAttachments();
-    //! Lookup absolute asset reference
+    /// Lookup absolute asset reference
     QString LookupAsset(const QString& ref);
 
-    //! Ref listener for the avatar asset
+    /// Ref listener for the avatar asset
     AssetRefListenerPtr avatarAssetListener_;
-    //! Last set avatar asset
+    /// Last set avatar asset
     boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 };
 

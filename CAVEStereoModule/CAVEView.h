@@ -16,7 +16,7 @@ namespace CAVEStereo
 {
     class ExternalRenderWindow;
 
-    //!this class is responsible of calculating the projection matrices and manage the render window and camera of the view
+    ///this class is responsible of calculating the projection matrices and manage the render window and camera of the view
     class CAVEView: public QObject
     {
     public:
@@ -58,7 +58,7 @@ namespace CAVEStereo
         */
         void ReCalculateProjection(Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
 
-        //! Returns the window associated with this view
+        /// Returns the window associated with this view
         ExternalRenderWindow* GetExternalRenderWindow() const { return render_window_; }
 
         /// Returns the parameters used to calculate current projection matrix (provided that the projection matrix has been already calculated at least once)
