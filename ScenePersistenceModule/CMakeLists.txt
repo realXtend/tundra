@@ -17,13 +17,13 @@ QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 add_definitions(-DSCENEPERSISTENCE_MODULE_EXPORTS) 
 
-use_modules(Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities)
+use_modules(Core Foundation Interfaces SceneManager RexCommon)
 
 build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_ogre()
 
-link_modules(Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities)
+link_modules(Core Foundation Interfaces SceneManager RexCommon)
 
 SetupCompileFlags()
 

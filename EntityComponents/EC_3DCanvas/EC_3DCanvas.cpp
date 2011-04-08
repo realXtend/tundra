@@ -9,9 +9,6 @@
 #include "IModule.h"
 #include "OgreMaterialUtils.h"
 #include "Entity.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexTypes.h"
-#endif
 
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"

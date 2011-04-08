@@ -12,18 +12,12 @@
 #include "Entity.h"
 #include "OgreConversionUtils.h"
 #include "XMLUtilities.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexNetworkUtils.h"
-#endif
 #include "LoggingFunctions.h"
 
 #include <Ogre.h>
 
 #include <QDomDocument>
 
-#ifdef ENABLE_TAIGA_SUPPORT
-using namespace RexTypes;
-#endif
 using namespace OgreRenderer;
 
 EC_Light::EC_Light(IModule *module) :

@@ -2,8 +2,6 @@
 
 #include "StableHeaders.h"
 
-#ifdef ENABLE_TAIGA_SUPPORT
-
 #include "DebugOperatorNew.h"
 #include "AvatarEditing/AvatarEditor.h"
 #include "Avatar/AvatarHandler.h"
@@ -644,5 +642,3 @@ namespace Avatar
         return desc != 0;
     }
 }
-
-#endif

@@ -23,10 +23,6 @@
 #include <QCryptographicHash>
 #include <QSizePolicy>
 
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexTypes.h"
-#endif
-
 #include "LoggingFunctions.h"
 
 #include "MemoryLeakCheck.h"

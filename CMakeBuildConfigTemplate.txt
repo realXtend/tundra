@@ -48,7 +48,7 @@ if (MSVC)
     SET(OPENASSETIMPORT 1)
 endif()
 
-# Enables Ogre asset editor module. Requires ENABLE_TAIGA_SUPPORT == 1 to function.
+# Enables Ogre asset editor module.
 SET(OGREASSETEDITOR 0)
 
 use_package(OPENAL)

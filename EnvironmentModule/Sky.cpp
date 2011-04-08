@@ -9,10 +9,6 @@
 #include "OgreRenderingModule.h"
 
 #include "CoreTypes.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "NetworkEvents.h"
-#include "NetworkMessages/NetInMessage.h"
-#endif
 #include "ServiceManager.h"
 
 
@@ -26,57 +22,7 @@ Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(SK
 Sky::~Sky()
 {
 }
-#ifdef ENABLE_TAIGA_SUPPORT
-bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
-{
-    // HACK ON REX MODE, return false if you have problems
-    // return false;
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
-    msg.SkipToFirstVariableByName("Parameter");
 
-    // Variable block begins, should have currently (at least) 4 instances.
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
-    if (instance_count < 4)
-    {
-        LogWarning("Generic message \"RexSky\" did not contain all the necessary data.");
-        return false;
-    }
-
-    // 1st instance contains the sky type.
-    SkyType type = SKYTYPE_NONE;
-    type = (SkyType)boost::lexical_cast<int>(msg.ReadString());
-
-    // 2nd instance contains the texture uuid's
-    std::string image_string = msg.ReadString();
-
-    //HACK split() returns vector-struct not a direct vector after verson 6
-#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1 
-    StringVector images_type = Ogre::StringUtil::split(image_string);
-    StringVector images = images_type;
-#else
-    Ogre::vector<Ogre::String>::type images_type = Ogre::StringUtil::split(image_string);
-    StringVector images; 
-    int size = images_type.size();
-    images.resize(size);
-    for(int i = 0; i < size; ++i)
-      images[i] = images_type[i];
-#endif
-    //END HACK
-
-    //StringVector images = boost::lexical_cast<StringVector>(images_type);
-
-    // 3rd instance contains the curvature parameter.
-    float curvature = boost::lexical_cast<float>(msg.ReadString());
-
-    // 4th instance contains the tiling parameter.
-    float tiling = boost::lexical_cast<float>(msg.ReadString());
-
-    UpdateSky(type, images, curvature, tiling);
-
-    return false;
-}
-#endif
 void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
     const float &curvature, const float &tiling)
 {

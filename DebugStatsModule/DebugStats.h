@@ -13,22 +13,12 @@
 #include "IModule.h"
 #include "InputFwd.h"
 
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexTypes.h"
-#endif
-
 #include <QObject>
 #include <QPointer>
 
 #include <Windows.h>
 
 class EC_Placeable;
-
-namespace ProtocolUtilities
-{
-    class WorldStream;
-    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
-}
 
 namespace DebugStats
 {
@@ -59,11 +49,6 @@ namespace DebugStats
         /// Creates and shows the profiling window.
         Console::CommandResult ShowProfilingWindow(/*const StringVector &params*/);
 
-#ifdef ENABLE_TAIGA_SUPPORT
-        /// Creates and shows the participant window.
-        Console::CommandResult ShowParticipantWindow(const StringVector &params);
-#endif
-
     private slots:
         void AddProfilerWidgetToUi();
 
@@ -76,22 +61,6 @@ namespace DebugStats
     private:
         Q_DISABLE_COPY(DebugStatsModule);
 
-#ifdef ENABLE_TAIGA_SUPPORT
-        /// Sends random NetInMessage packet
-        Console::CommandResult SendRandomNetworkInPacket(const StringVector &params);
-
-        /// Sends random NetOutMessage packet
-        Console::CommandResult SendRandomNetworkOutPacket(const StringVector &params);
-
-        /// Sends packet requesting god powers.
-        Console::CommandResult RequestGodMode(const StringVector &params);
-
-        /// Sends packet requesting kicking user out from the server.
-        Console::CommandResult KickUser(const StringVector &params);
-
-        /// Dumps J2K decoded textures to PNG images in the viewer working directory.
-        Console::CommandResult DumpTextures(const StringVector &params);
-#endif
         /// Invokes action in entity.
         Console::CommandResult Exec(const StringVector &params);
 
@@ -103,36 +72,11 @@ namespace DebugStats
         LARGE_INTEGER lastCallTime;
 #endif
 
-#ifdef ENABLE_TAIGA_SUPPORT
-        /// Framework event category
-        event_category_id_t frameworkEventCategory_;
-
-        /// NetworkIn event category
-        event_category_id_t networkEventCategory_;
-
-        /// NetworkOut event category
-        event_category_id_t networkOutEventCategory_;
-
-        /// NetworkState event category
-        event_category_id_t networkStateEventCategory_;
-#endif
         /// Profiler window
         QPointer<TimeProfilerWindow> profilerWindow_;
 
-#ifdef ENABLE_TAIGA_SUPPORT
-
-        /// Participant window
-        QPointer<ParticipantWindow> participantWindow_;
-
-        /// World stream pointer.
-        ProtocolUtilities::WorldStreamPtr current_world_stream_;
-
-#endif
         /// DebugStatsModules registers an InputContext to be able to do a Shift-P - Profiler window shortcut.
         boost::shared_ptr<InputContext> inputContext;
-
-        /// Is god mode on.
-        bool godMode_;
     };
 }
 

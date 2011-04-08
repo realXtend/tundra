@@ -3,8 +3,6 @@
 #ifndef incl_Avatar_AvatarEditor_h
 #define incl_Avatar_AvatarEditor_h
 
-#ifdef ENABLE_TAIGA_SUPPORT
-
 #include "AvatarModule.h"
 #include "AvatarModuleApi.h"
 
@@ -106,7 +104,5 @@ signals:
         bool reverting_;
     };
 }
-
-#endif
 
 #endif

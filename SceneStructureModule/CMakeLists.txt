@@ -23,9 +23,6 @@ use_modules (Framework Ui Input Scene ECEditorModule TundraLogicModule
 
 if (OGREASSETEDITOR)
 use_modules(OgreAssetEditorModule)
-if (ENABLE_TAIGA_SUPPORT)
-use_modules(RexCommon)
-endif()
 endif()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
