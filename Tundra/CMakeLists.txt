@@ -1,5 +1,5 @@
 # Define target name and output directory
-init_target (server OUTPUT ./)
+init_target (Tundra OUTPUT ./)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -29,7 +29,7 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
-use_modules (Framework SupportModules TestModule Scene)
+use_modules (Framework SupportModules Scene)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES})
 
