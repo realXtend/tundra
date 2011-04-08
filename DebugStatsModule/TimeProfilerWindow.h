@@ -161,7 +161,6 @@ namespace DebugStats
         QTreeWidget* tree_font_assets_;
         QTextEdit* text_scenecomplexity_;
 
-        event_category_id_t asset_event_category_;
 #ifdef OGREASSETEDITOR_ENABLED
         TexturePreviewEditor* tex_preview_;
 #endif

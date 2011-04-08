@@ -28,8 +28,6 @@
 <h2>Gizmo</h2>
 Enables manipulators for values
 
-Registered by RexLogic::RexLogicModule.
-
 Doesn't have any attributes.
 
 <b>Exposes the following scriptable functions:</b>

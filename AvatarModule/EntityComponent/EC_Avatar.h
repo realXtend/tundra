@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "IAsset.h"
-#include "RexUUID.h"
 #include "AvatarModuleApi.h"
 #include "Declare_EC.h"
 #include "AssetFwd.h"
@@ -21,9 +20,8 @@ typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 <tr>
 <td>
 <h2>Avatar</h2>
-This component generates the required Mesh, Placeable, AnimationController and AvatarAppearance
-components to an entity to display an avatar. Not to be used in OpenSim worlds, where avatar generation
-is handled in a hardcoded manner instead.
+This component generates the required Mesh, Placeable and AnimationController
+components to an entity to display an avatar.
 
 Registered by Avatar::AvatarModule.
 
@@ -43,7 +41,7 @@ Registered by Avatar::AvatarModule.
 
 Does not emit any actions.
 
-<b>Depends on the components Mesh, Placeable, AnimationController and AvatarAppearance</b>.
+<b>Depends on the components Mesh, Placeable and AnimationController</b>.
 </table>
 */
 class AV_MODULE_API EC_Avatar : public IComponent

@@ -20,13 +20,6 @@
 
 #include "EntityComponent/EC_Avatar.h"
 
-
-#ifdef EC_HoveringWidget_ENABLED
-#include "EC_HoveringWidget.h"
-#endif
-
-
-
 namespace Avatar
 {
     static std::string module_name = "AvatarModule";
@@ -45,11 +38,7 @@ namespace Avatar
 
     void AvatarModule::Load()
     {
-        DECLARE_MODULE_EC(EC_AvatarAppearance);
         DECLARE_MODULE_EC(EC_Avatar);
-#ifdef EC_HoveringWidget_ENABLED
-        DECLARE_MODULE_EC(EC_HoveringWidget);
-#endif
     }
 
     void AvatarModule::Initialize()

@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   Environment.cpp
- *  @brief  Manages environment-related reX-logic, e.g. world time and lighting.
+ *  @brief  Manages environment-related logic, e.g. world time and lighting.
  */
 
 #ifndef incl_EnvironmentModule_Environment_h

@@ -30,8 +30,6 @@ namespace Ogre
 <h2>HighLight</h2>
 Enables visual highlighting effect for of scene entity.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>No Attributes.</b>
 
 <b>Exposes the following scriptable functions:</b>

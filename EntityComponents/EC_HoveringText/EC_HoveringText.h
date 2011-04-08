@@ -37,8 +37,6 @@ namespace Ogre
 <h2>HoveringText</h2>
 HoveringText shows a hovering text attached to an entity.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 
 <ul>

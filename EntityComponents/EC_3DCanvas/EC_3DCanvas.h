@@ -38,8 +38,6 @@ class QTimer;
 <h2>3DCanvas</h2>
 Makes the entity a light source.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>No Attributes</b>
 
 

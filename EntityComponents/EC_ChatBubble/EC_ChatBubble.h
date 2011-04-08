@@ -165,7 +165,7 @@ private:
     /// Pop timer
     QTimer *pop_timer_;
 
-    /// Max rext for the rendered image
+    /// Max rect for the rendered image
     QRect bubble_max_rect_;
 
     /// Currently showed message

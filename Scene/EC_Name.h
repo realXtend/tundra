@@ -19,8 +19,6 @@
 Provides network-synchronizable means of identification for entities in addition to the plain ID number.
 This EC is not present by default for entities.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 <ul>
 <li> QString: Name

@@ -148,7 +148,7 @@ public slots:
 
     /// Returns the key associated with the given action.
     /// @param actionName The custom action name to query. The convention is to use two-part names, separated with a period, i.e.
-    ///        "category.name". For example, RexLogicModule has an action "Avatar.WalkForward" to control avatar movement.
+    ///        "category.name". For example, "Avatar.WalkForward" might control avatar movement.
     /// If the action does not exist, null sequence is returned.
     QKeySequence KeyBinding(const QString &actionName) const;
 

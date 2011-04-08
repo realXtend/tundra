@@ -44,8 +44,6 @@ when it is clicked i.e. touched. The effect is not visible by default.
 You must call Show() function separately. The effect is visible only
 for certain time.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 <ul>
 <li>QString : materialName

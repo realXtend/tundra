@@ -62,15 +62,6 @@ namespace OgreRenderer
 
         /// renderer settings
         RendererSettingsPtr renderer_settings_;
-
-        /// input event category
-        event_category_id_t input_event_category_;
-
-        /// scene event category
-        event_category_id_t scene_event_category_;
-
-        /// network state category
-        event_category_id_t network_state_event_category_;
     };
 }
 

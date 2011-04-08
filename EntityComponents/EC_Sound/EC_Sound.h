@@ -31,8 +31,6 @@ the soundRef attribute does not immediately trigger sound playback. Use the "Pla
 @note If sound attributes has been changed while the audio clip is on playing state, user needs to call
 UpdateSoundSettings() to apply those changes into the Audio API.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 <ul>
 <li>AssetReference: soundRef

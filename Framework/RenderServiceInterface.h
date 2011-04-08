@@ -112,18 +112,6 @@ namespace Foundation
         /// get visible entities last frame
         virtual const std::set<entity_id_t>& GetVisibleEntities() = 0;
         
-        /// take sceenshot to a location
-        /// \param filePath File path.
-        /// \param fileName File name.
-        virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName) = 0;
-
-        /// Render current main window content to texture
-        virtual QPixmap RenderImage(bool use_main_camera = true) = 0;
-
-        /// Render current main window with focus on the avatar
-        /// @todo make this focus non hard coded but as param
-        virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation) = 0;
-
         virtual std::string GetUniqueObjectName(const std::string &prefix) = 0;
 
     };

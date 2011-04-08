@@ -177,11 +177,6 @@ public slots:
     AttributeChange::Type GetUpdateMode() const { return updatemode_; }
 
     /// Returns true is this component supports XML serialization.
-    /** \todo In the future, ALL Naali components
-        must support serialization, so this function will be removed. Initially, this boolean was created
-        to avoid all Naali components from storing themselves to RexPrimData, which couldn't be handled on
-        the network layer. To create 'local-only' components, use the above SetNetworkSyncEnabled flag instead. -jj.
-    */
     virtual bool IsSerializable() const { return false; }
 
     /// Returns true if component has dynamic attribute structure

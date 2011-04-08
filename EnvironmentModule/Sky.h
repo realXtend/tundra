@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogicModule_Sky_h
-#define incl_RexLogicModule_Sky_h
+#ifndef incl_EnvironmentModule_Sky_h
+#define incl_EnvironmentModule_Sky_h
 
 #include "EC_OgreSky.h"
 #include "EnvironmentModuleApi.h"
@@ -35,10 +35,6 @@ namespace Environment
         virtual ~Sky();
 
         void Update();
-
-        /// Handler for the "RexSky" generic message.
-        /// @param data Event data pointer.
-        bool HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data);
 
         /** 
         *  Update sky info.

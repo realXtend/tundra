@@ -23,8 +23,6 @@ namespace Ogre
 <h2>Light</h2>
 Makes the entity a light source.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 <ul>
 <li>Vector3df: direction.

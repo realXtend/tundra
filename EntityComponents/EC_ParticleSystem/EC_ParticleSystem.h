@@ -16,8 +16,6 @@
 <td>
 <h2>ParticleSystem</h2>
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 <ul>
 <li>AssetReference: particleRef

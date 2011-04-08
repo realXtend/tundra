@@ -17,7 +17,7 @@ typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 namespace Avatar
 {
-    //! Avatar editing window. Owned by RexLogicModule.
+    //! Avatar editing window.
     class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
     {
         Q_OBJECT

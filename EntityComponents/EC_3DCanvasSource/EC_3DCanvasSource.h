@@ -27,8 +27,6 @@ class EC_3DCanvas;
 A 3D canvas controller that initializes an EC_3DCanvas into the same entity, with source parameters (for example html page url)
 Also makes it possible to display the canvas contents as a 2D widget, and edit the source
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 <ul>
 

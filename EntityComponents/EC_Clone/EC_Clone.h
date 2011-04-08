@@ -39,8 +39,6 @@ namespace Ogre
 Clone creates an OGRE clone entity from the the original entity.
 This component can be used e.g. when visualizing object duplication in the world.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>No Attributes.</b>
 
 <b>Exposes the following scriptable functions:</b>
