@@ -59,8 +59,7 @@ use_package(VORBIS)
 add_subdirectory(Framework)
 add_subdirectory(Scene)
 add_subdirectory(OgreRenderingModule)
-add_subdirectory(Viewer)
-add_subdirectory(Server)
+add_subdirectory(Tundra)
 
 add_subdirectory(Input)
 add_subdirectory(Ui)
@@ -102,8 +101,6 @@ add_subdirectory(SupportModules)
 add_subdirectory(AssetModule)           # Depends on Taiga subsystem.
 add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Taiga subsystem. 
 add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
-
-add_subdirectory(LoginScreenModule)
 
 # The following are optional.
 add_subdirectory(ECEditorModule)        # Tool for editing Naali scene data. Requires EC_DynamicComponent. Depends on OgreRenderingModule.
