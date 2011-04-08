@@ -81,9 +81,6 @@ public slots:
     /// Request texture asset from texture decoder service.
     void RequestTextureAsset(const QString &asset_id);
 
-    //! handles resouce ready event and if tag fits, convert it into QImage format and set it to image label.
-//    void HandleResouceReady(Resource::Events::ResourceReady *res);
-
     //! Listenes when image label has been pressed.
     void TextureLabelClicked(QMouseEvent *ev);
 
@@ -133,7 +130,6 @@ private:
     QString inventoryId_;
     QString assetId_;
     asset_type_t assetType_;
-//    request_tag_t request_tag_;
     bool useOriginalImageSize_;
 };
 

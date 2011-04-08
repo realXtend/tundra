@@ -28,8 +28,6 @@ AudioPreviewEditor::AudioPreviewEditor(Foundation::Framework *framework,
     framework_(framework),
     assetType_(asset_type),
     inventoryId_(inventory_id),
-//    soundId_(0),
-//    request_tag_(0),
     okButton_(0),
     playButton_(0),
     playTimer_(0)

@@ -64,9 +64,6 @@ public:
 public slots:
     void Open();
 
-    /// Handles the asset data for script.
-//    void HandleAssetReady(Foundation::AssetInterfacePtr asset);
-
     /// Closes the window.
     void Close();
 
