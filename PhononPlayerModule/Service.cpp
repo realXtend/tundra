@@ -5,7 +5,7 @@
 
 #include "Service.h"
 #include <QWidget>
-#include <phonon/BackendCapabilities>
+#include <Phonon/BackendCapabilities>
 #include <QApplication>
 #include "PhononPlayerModule.h"
 #include "VideoPlayer.h"
