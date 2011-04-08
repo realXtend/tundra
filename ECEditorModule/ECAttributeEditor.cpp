@@ -108,7 +108,7 @@ void ECAttributeEditorBase::AddComponent(ComponentPtr component)
     if(!HasComponent(component) && component->GetAttribute(name_))
     {
         components_.push_back(ComponentWeakPtr(component));
-        connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), 
+        connect(component.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), 
                 this, SLOT(AttributeChanged(IAttribute*)),
                 Qt::UniqueConnection);
         emit OnComponentAdded(rootProperty_, component.get());
@@ -122,7 +122,7 @@ void ECAttributeEditorBase::RemoveComponent(ComponentPtr component)
     {
         emit OnComponentRemoved(rootProperty_, component.get());
         components_.erase(iter);
-        disconnect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), 
+        disconnect(component.get(), SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), 
                    this, SLOT(AttributeChanged(IAttribute*)));
     }
 

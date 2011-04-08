@@ -79,7 +79,7 @@ public slots:
     void DeleteParticleSystems();
 
 private slots:
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
     void ParticleSystemAssetLoaded();
     void EntitySet();
     void OnComponentRemoved(IComponent *component, AttributeChange::Type change);

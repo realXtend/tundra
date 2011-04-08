@@ -50,7 +50,7 @@ EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     pageWidth.SetMetadata(&size_metadata);
     pageHeight.SetMetadata(&size_metadata);
 
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas(IAttribute*, AttributeChange::Type)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(RegisterActions()));
     CreateWidget();
 }

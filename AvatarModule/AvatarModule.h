@@ -77,8 +77,15 @@ namespace Avatar
         void UnregisterFullId(const RexUUID &full_uuid);
 #endif
     private:
+<<<<<<< HEAD
 #ifdef ENABLE_TAIGA_SUPPORT
         /// Current query categories
+=======
+        //! Console command: start editing a specific entity's avatar
+        Console::CommandResult EditAvatar(const StringVector &params);
+
+        //! Current query categories
+>>>>>>> tundra
         QStringList event_query_categories_;
 
         /// Current subscribed category events
@@ -90,7 +97,7 @@ namespace Avatar
         AvatarHandlerPtr avatar_handler_;
         AvatarControllablePtr avatar_controllable_;
         AvatarEditorPtr avatar_editor_;
-        AvatarSceneManager *scene_manager_;
+        //AvatarSceneManager *scene_manager_;
 
 #ifdef ENABLE_TAIGA_SUPPORT
 

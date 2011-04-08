@@ -7,7 +7,7 @@
 #include "Avatar/AvatarControllable.h"
 #include "AvatarEditing/AvatarEditor.h"
 #include "AvatarEditing/AvatarSceneManager.h"
-
+#include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
 #ifdef ENABLE_TAIGA_SUPPORT
 #include "NetworkEvents.h"
@@ -43,8 +43,8 @@ namespace Avatar
 
     AvatarModule::AvatarModule() :
         QObject(),
-        IModule(module_name),
-        scene_manager_(0)
+        IModule(module_name)
+        //scene_manager_(0)
     {
 #ifdef ENABLE_TAIGA_SUPPORT
         world_stream_.reset();
@@ -58,8 +58,12 @@ namespace Avatar
 
     void AvatarModule::Load()
     {
+<<<<<<< HEAD
         DECLARE_MODULE_EC(EC_AvatarAppearance);
 #ifdef ENABLE_TAIGA_SUPPORT
+=======
+        //DECLARE_MODULE_EC(EC_AvatarAppearance);
+>>>>>>> tundra
         DECLARE_MODULE_EC(EC_OpenSimAvatar);
         DECLARE_MODULE_EC(EC_NetworkPosition);
         DECLARE_MODULE_EC(EC_Controllable);
@@ -76,17 +80,30 @@ namespace Avatar
         event_query_categories_ << "Framework" << "Scene" << "NetworkState" << "Avatar" << "Resource" << "Asset" << "Inventory" << "Input" << "Action";
         avatar_handler_ = AvatarHandlerPtr(new AvatarHandler(this));
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
+<<<<<<< HEAD
         scene_manager_ = new AvatarSceneManager(this, avatar_editor_.get());
         avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
 #endif
+=======
+        avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
+        
+        //! \todo: no UI in Tundra for the avatarscene, so leave it uncreated
+        //scene_manager_ = new AvatarSceneManager(this, avatar_editor_.get());
+>>>>>>> tundra
     }
 
     void AvatarModule::PostInitialize()
     {
 #ifdef ENABLE_TAIGA_SUPPORT
         SubscribeToEventCategories();
+<<<<<<< HEAD
         scene_manager_->InitScene();
 #endif
+=======
+        //if (scene_manager_)
+        //    scene_manager_->InitScene();
+
+>>>>>>> tundra
         avatar_context_ = GetFramework()->Input()->RegisterInputContext("Avatar", 100);
         if (avatar_context_)
         {
@@ -95,6 +112,10 @@ namespace Avatar
         }
 
         framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AvatarDescAsset>("GenericAvatarXml")));
+        
+        RegisterConsoleCommand(Console::CreateCommand("editavatar",
+            "Edits the avatar in a specific entity. Usage: editavatar(entityname)",
+            Console::Bind(this, &AvatarModule::EditAvatar)));
     }
 
     void AvatarModule::Uninitialize()
@@ -105,8 +126,13 @@ namespace Avatar
 #ifdef ENABLE_TAIGA_SUPPORT
         world_stream_.reset();
         uuid_to_local_id_.clear();
+<<<<<<< HEAD
         SAFE_DELETE(scene_manager_);
 #endif
+=======
+
+        //SAFE_DELETE(scene_manager_);
+>>>>>>> tundra
     }
 
 #ifdef ENABLE_TAIGA_SUPPORT
@@ -255,7 +281,8 @@ namespace Avatar
 
         if (key->HasCtrlModifier() && key->keyCode == Qt::Key_A)
         {
-            scene_manager_->ToggleScene();
+            //if (scene_manager_)
+            //    scene_manager_->ToggleScene();
             return;
         }
 #endif
@@ -264,6 +291,28 @@ namespace Avatar
     void AvatarModule::KeyReleased(KeyEvent *key)
     {
     
+    }
+    
+    Console::CommandResult AvatarModule::EditAvatar(const StringVector &params)
+    {
+        if (params.size() < 1)
+            return Console::ResultFailure("No entity name given");
+        
+        QString name = QString::fromStdString(params[0]);
+        Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
+        if (!scene)
+            return Console::ResultFailure("No scene");
+        Scene::EntityPtr entity = scene->GetEntityByName(name);
+        if (!entity)
+            return Console::ResultFailure("No such entity " + params[0]);
+        
+        avatar_editor_->SetAvatarEntityName(name);
+        avatar_editor_->RebuildEditView();
+        
+        if (avatar_editor_)
+            avatar_editor_->show();
+        
+        return Console::ResultSuccess();
     }
 }
 

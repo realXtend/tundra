@@ -22,7 +22,7 @@ EC_OgreCompositor::EC_OgreCompositor(IModule* module) :
     handler_(owner_->GetRenderer()->GetCompositionHandler())
 {
     assert (handler_ && "No CompositionHandler.");
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_OgreCompositor::~EC_OgreCompositor()
@@ -35,7 +35,7 @@ QStringList EC_OgreCompositor::AvailableCompositors() const
     return handler_->GetAvailableCompositors().toList();
 }
 
-void EC_OgreCompositor::AttributeUpdated(IAttribute* attribute)
+void EC_OgreCompositor::OnAttributeUpdated(IAttribute* attribute)
 {
     if (attribute == &enabled)
     {

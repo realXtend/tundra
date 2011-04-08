@@ -13,6 +13,8 @@
 #include <QWidget>
 
 class QTabWidget;
+class EC_Avatar;
+class AvatarDescAsset;
 
 namespace Avatar
 {
@@ -59,6 +61,9 @@ namespace Avatar
         /// Master appearance modifier scrollbar value handler
         void MasterModifierValueChanged(int value);
 
+        //! Set avatar entity by name to edit
+        void SetAvatarEntityName(QString name);
+        
     protected:
         /// QWidget override.
         void changeEvent(QEvent* e);
@@ -74,6 +79,11 @@ signals:
 
         /// Create editor window
         void InitEditorWindow();
+        
+        //! Get the avatar entity to edit. If avatar_entity_name_ is empty, try to get the user's avatar from AvatarHandler.
+        Scene::EntityPtr GetAvatarEntity();
+        //! Get the avatar entity, avatar component, and avatar description. If all are non-null, return true
+        bool GetAvatarDesc(Scene::EntityPtr& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
 
         /// Clear a panel
         void ClearPanel(QWidget* panel);
@@ -89,6 +99,9 @@ signals:
 
         /// Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
+
+        //! Avatar entity to edit. If empty, try to get the user's avatar from AvatarHandler.
+        QString avatar_entity_name_;
 
         bool reverting_;
     };

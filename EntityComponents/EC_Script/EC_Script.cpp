@@ -78,7 +78,7 @@ EC_Script::EC_Script(IModule *module):
     scriptRefData.buttons = scriptRefButtons;
     scriptRef.SetMetadata(&scriptRefData);
 
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 

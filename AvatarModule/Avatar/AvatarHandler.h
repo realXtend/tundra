@@ -105,8 +105,15 @@ namespace Avatar
         /// Reloads user's avatar, if in scene
         void ReloadUserAvatar();
 
+<<<<<<< HEAD
         /// Returns the avatar appearance handler
+=======
+        /// \todo Deprecated and not available in Tundra
+        //! Returns the avatar appearance handler
+        /*
+>>>>>>> tundra
         AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
+        */
         
     signals:
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
@@ -162,10 +169,20 @@ namespace Avatar
         typedef std::map<RexUUID, EC_OpenSimAvatar::State> AvatarStateMap;
         AvatarStateMap avatar_states_;
 
+<<<<<<< HEAD
         /// Avatar appearance controller
         AvatarAppearance avatar_appearance_;
 
         /// Pending avatar appearances
+=======
+        //! Avatar appearance controller
+        /// \todo Deprecated and not available in Tundra
+        /*
+        AvatarAppearance avatar_appearance_;
+        */
+        
+        //! Pending avatar appearances
+>>>>>>> tundra
         typedef std::map<RexUUID, std::string> AvatarAppearanceMap;
         AvatarAppearanceMap pending_appearances_;
     };

@@ -67,7 +67,7 @@ function ConnectSignals()
 		var position = me.placeable.transform.pos;
 		inWater = Water.waterplane.IsPointInsideWaterCube(position);
 		me.rigidbody.PhysicsCollision.connect(Collision);
-		me.placeable.OnAttributeChanged.connect(PositionChange);
+		me.placeable.AttributeChanged.connect(PositionChange);
 }
 
 function Collision (otherEntity, pos, normal, distance, impulse, newCollision)

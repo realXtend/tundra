@@ -42,7 +42,7 @@ namespace Environment
         texRefMetadata.buttons = texRefButtons;
         textureRef.SetMetadata(&texRefMetadata);
 
-        connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+        connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
         renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
@@ -104,7 +104,7 @@ namespace Environment
         }
     }
 
-    void EC_SkyDome::AttributeUpdated(IAttribute* attr)
+    void EC_SkyDome::OnAttributeUpdated(IAttribute* attr)
     {
         std::string name = attr->GetNameString();
         if ((name == materialRef.GetNameString() && materialRef.Get().ref != lastMaterial_ )||
