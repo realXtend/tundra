@@ -56,8 +56,23 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
     AvatarDescAssetPtr avatarAsset = boost::dynamic_pointer_cast<AvatarDescAsset>(asset);
     if (!avatarAsset)
         return;
+        
+    // Disconnect old change signals, connect new
+    AvatarDescAsset* oldDesc = avatarAsset_.get();
+    AvatarDescAsset* newDesc = avatarAsset.get();
+    if (oldDesc != newDesc)
+    {
+        if (oldDesc)
+        {
+            disconnect(oldDesc, SIGNAL(AppearanceChanged()), this, SLOT(SetupAppearance()));
+            disconnect(oldDesc, SIGNAL(DynamicAppearanceChanged()), this, SLOT(SetupDynamicAppearance()));
+        }
+        connect(newDesc, SIGNAL(AppearanceChanged()), this, SLOT(SetupAppearance()));
+        connect(newDesc, SIGNAL(DynamicAppearanceChanged()), this, SLOT(SetupDynamicAppearance()));
+    }
+    
     avatarAsset_ = avatarAsset;
-
+    
     // Create components the avatar needs, with network sync disabled, if they don't exist yet
     // Note: the mesh is created non-syncable on purpose, as each client's EC_Avatar should execute this code upon receiving the appearance
     ComponentPtr mesh = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), AttributeChange::LocalOnly, false);
