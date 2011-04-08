@@ -4,9 +4,9 @@
 #include "DebugOperatorNew.h"
 
 #include <QUrl>
-#include <Phonon/VideoPlayer>
-#include <Phonon/MediaObject>
-#include <Phonon/VideoWidget>
+#include <phonon/VideoPlayer>
+#include <phonon/MediaObject>
+#include <phonon/VideoWidget>
 #include "PhononPlayerModule.h"
 #include "VideoPlayer.h"
 
