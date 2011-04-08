@@ -23,7 +23,6 @@ namespace Update
 
         void Load();
         void PostInitialize();
-        MODULE_LOGGING_FUNCTIONS
 
     public slots:
         void RunUpdater(QString parameter = "/checknow");

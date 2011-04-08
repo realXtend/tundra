@@ -63,9 +63,6 @@ public:
     /// returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return name_static_; }
 
-    /// Logging functions.
-    //MODULE_LOGGING_FUNCTIONS
-
     /// Return Tree widget item expand memory pointer, which keeps track of which items in EC editor are expanded.
     /** When constructing new EC editor windows use this if you want to keep all editor windows' expanded and 
         collapsed items similar.

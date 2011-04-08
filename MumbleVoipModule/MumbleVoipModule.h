@@ -58,8 +58,6 @@ namespace MumbleVoip
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-        /// Logging
-        //MODULE_LOGGING_FUNCTIONS
         static const std::string &NameStatic() { return module_name_; } /// returns name of this module. Needed for logging.
 
     private slots:

@@ -27,28 +27,14 @@ class JavascriptModule : public QObject, public IModule//, public Foundation::Sc
     Q_OBJECT
 
 public:
-    /// Default constructor.
     JavascriptModule();
-
-    /// Destructor.
     ~JavascriptModule();
 
-    /// IModule override.
     void Load();
-
-    /// IModule override.
     void Initialize();
-
-    /// IModule override.
     void PostInitialize();
-
-    /// IModule override.
     void Uninitialize();
-
-    /// IModule override.
     void Update(f64 frametime);
-
-    //MODULE_LOGGING_FUNCTIONS
 
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return type_name_static_; }

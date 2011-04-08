@@ -41,8 +41,6 @@ namespace Avatar
         void Uninitialize();
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
-
-        //MODULE_LOGGING_FUNCTIONS
     
     private slots:
         /// Handle our key context input

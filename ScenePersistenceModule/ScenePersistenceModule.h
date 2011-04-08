@@ -30,8 +30,6 @@ public:
 
     void PostInitialize();
 
-    MODULE_LOGGING_FUNCTIONS
-
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return moduleName; }
 

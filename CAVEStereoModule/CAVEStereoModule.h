@@ -29,7 +29,6 @@ namespace CAVEStereo
         Q_OBJECT
 
     public:
-        MODULE_LOGGING_FUNCTIONS;
         CAVEStereoModule();
         ~CAVEStereoModule();
         virtual void PostInitialize();

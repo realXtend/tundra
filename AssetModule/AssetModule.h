@@ -30,8 +30,6 @@ namespace Asset
         virtual void Initialize();
         virtual void PostInitialize();
 
-        //MODULE_LOGGING_FUNCTIONS
-
         /// callback for console command
         Console::CommandResult ConsoleRequestAsset(const StringVector &params);
 
