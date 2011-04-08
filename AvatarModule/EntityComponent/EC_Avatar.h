@@ -69,7 +69,9 @@ public slots:
     void SetupDynamicAppearance();
     //! Get a generic property from the avatar description, or empty string if not found
     QString GetAvatarProperty(const QString& name);
-
+    //! Return the avatar description asset
+    AvatarDescAsset* GetAvatarDesc() { return avatarAsset_.get(); }
+    
 private slots:
     //! Called when some of the attributes has been changed.
     void OnAttributeUpdated(IAttribute *attribute);
