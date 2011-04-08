@@ -18,22 +18,22 @@ AssetPtr AssetRefListener::Asset()
     return asset.lock();
 }
 
-void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef)
+void AssetRefListener::HandleAssetRefChange(IAttribute *assetRef, const QString& assetType)
 {
     Attribute<AssetReference> *attr = dynamic_cast<Attribute<AssetReference> *>(assetRef);
     if (!attr)
         return; ///\todo Log out warning.
 
-    HandleAssetRefChange(attr->GetOwner()->GetFramework()->Asset(), attr->Get().ref);
+    HandleAssetRefChange(attr->GetOwner()->GetFramework()->Asset(), attr->Get().ref, assetType);
 }
 
-void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef)
+void AssetRefListener::HandleAssetRefChange(AssetAPI *assetApi, QString assetRef, const QString& assetType)
 {
     assert(assetApi);
 
     assetRef = assetRef.trimmed();
 
-    AssetTransferPtr transfer = assetApi->RequestAsset(assetRef);
+    AssetTransferPtr transfer = assetApi->RequestAsset(assetRef, assetType);
     if (!transfer)
         return; ///\todo Log out warning.
 
