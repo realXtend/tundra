@@ -91,13 +91,15 @@ private:
     
 public slots:
     //! Set a master modifier value. Triggers DynamicAppearanceChanged
-    void SetMasterModifierValue(QString name, float value);
+    void SetMasterModifierValue(const QString& name, float value);
     //! Set a morph or bone modifier value. It will be brought under manual control, ie. master modifiers no longer have an effect. Triggers DynamicAppearanceChanged
-    void SetModifierValue(QString name, float value);
+    void SetModifierValue(const QString& name, float value);
+    //! Change a material ref
+    void SetMaterial(uint index, const QString& ref);
     //! Return whether a property exists
     bool HasProperty(QString name) const;
     //! Return property value, or empty if does not exist
-    const QString& GetProperty(QString value);
+    const QString& GetProperty(const QString& value);
     
 signals:
     //! Mesh, skeleton, mesh materials or attachment meshes have changed. The entity using this avatar desc should refresh its appearance completely

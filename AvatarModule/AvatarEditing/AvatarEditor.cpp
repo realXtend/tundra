@@ -16,6 +16,7 @@
 
 #include <QUiLoader>
 #include <QFile>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QLabel>
@@ -88,8 +89,6 @@ namespace Avatar
         const std::vector<QString>& materials = desc->materials_;
 
         QVBoxLayout *materials_layout = dynamic_cast<QVBoxLayout*>(panel_materials->layout());
-        if (!materials_layout)
-            return;
 
         for (uint y = 0; y < materials.size(); ++y)
         {
@@ -98,20 +97,13 @@ namespace Avatar
             v_box->setContentsMargins(6,3,6,3);
             v_box->setSpacing(6);
 
-            std::string texname = materials[y].toStdString();
-
-            // Create elements
-            label = new QLabel(QString::fromStdString(texname));
-            label->setFixedWidth(200);
-
-            button = new QPushButton("Change");
-            button->setObjectName(QString::fromStdString(ToString<int>(y))); // Material index
-            button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-            connect(button, SIGNAL(clicked()), SLOT(ChangeTexture()));
-
-            // Add to layouts
-            v_box->addWidget(label);
-            v_box->addWidget(button);
+            // Create editor for material ref
+            QLineEdit* lineEdit = new QLineEdit();
+            lineEdit->setObjectName(QString::fromStdString(ToString<int>(y))); // Material index
+            lineEdit->setText(materials[y]);
+            connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(ChangeMaterial()));
+            
+            v_box->addWidget(lineEdit);
             materials_layout->addLayout(v_box);
         }
         total_height = (materials_layout->count()) * 35;
@@ -124,8 +116,6 @@ namespace Avatar
         const std::vector<AvatarAttachment>& attachments = desc->attachments_;
 
         QVBoxLayout *attachments_layout = dynamic_cast<QVBoxLayout*>(panel_attachments->layout());
-        if (!attachments_layout)
-            return;
 
         for (uint y = 0; y < attachments.size(); ++y)
         {
@@ -177,8 +167,6 @@ namespace Avatar
         {
             QWidget* morph_panel = GetOrCreateTabScrollArea(tab_appearance, "Morphs");
             QWidget* bone_panel = GetOrCreateTabScrollArea(tab_appearance, "Bones");
-            if (!morph_panel || !bone_panel)
-                return;
 
             QVBoxLayout *morph_layout = new QVBoxLayout();
             morph_layout->setContentsMargins(0,0,0,0);
@@ -339,27 +327,18 @@ namespace Avatar
         else if (total_height > 250)
             total_height = 250;
         tab_appearance->setFixedHeight(total_height + 30);
-
     }
 
     void AvatarEditor::ClearPanel(QWidget* panel)
     {
-        QLayoutItem *child, *subchild;
+        QLayoutItem *child;
         while ((child = panel->layout()->takeAt(0)) != 0)
         {
-            QLayout *child_layout = child->layout();
-            if (child_layout)
+            QWidget* widget = child->widget();
+            if (widget)
             {
-                while ((subchild = child_layout->takeAt(0)) != 0)
-                {
-                    QWidget *widget = subchild->widget();
-                    delete subchild;
-                    if (widget)
-                    {
-                        widget->setParent(0);
-                        widget->deleteLater();
-                    }
-                }
+                widget->hide();
+                widget->deleteLater();
             }
             delete child;
         }
@@ -499,24 +478,21 @@ namespace Avatar
         desc->SaveToFile(desc->DiskSource());
     }
 
-    void AvatarEditor::ChangeTexture()
+    void AvatarEditor::ChangeMaterial()
     {
-        QPushButton* button = qobject_cast<QPushButton*>(sender());
-        if (!button)
+        QLineEdit* lineEdit = qobject_cast<QLineEdit*>(sender());
+        if (!lineEdit)
             return;
-
-        std::string index_str = button->objectName().toStdString();
+        
+        std::string index_str = lineEdit->objectName().toStdString();
         uint index = ParseString<uint>(index_str);
-
-        const std::string filter = "Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png);;Ogre material (*.material)";
-        std::string filename = GetOpenFileName(filter, "Choose texture or material");
-        if (!filename.empty())
-        {
-            /*
-            avatar_module_->GetAvatarHandler()->GetAppearanceHandler().ChangeAvatarMaterial(entity, index, filename);
-            QTimer::singleShot(250, this, SLOT(RebuildEditView()));
-            */
-        }
+        
+        Scene::Entity* entity;
+        EC_Avatar* avatar;
+        AvatarDescAsset* desc;
+        if (!GetAvatarDesc(entity, avatar, desc))
+            return;
+        desc->SetMaterial(index, lineEdit->text().trimmed());
     }
 
     void AvatarEditor::RemoveAttachment()
