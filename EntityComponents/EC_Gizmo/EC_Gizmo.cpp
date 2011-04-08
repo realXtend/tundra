@@ -17,9 +17,6 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexUUID.h"
-#endif
 #include <Ogre.h>
 
 #include "MemoryLeakCheck.h"

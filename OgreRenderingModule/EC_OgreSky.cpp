@@ -367,42 +367,6 @@ void EC_OgreSky::SetSkyBoxParameters(const SkyBoxParameters &params, bool update
     }
 }
 
-#ifdef ENABLE_TAIGA_SUPPORT
-RexTypes::RexAssetID EC_OgreSky::GetSkyDomeTextureID() const
-{
-    RexTypes::RexAssetID textureID = "";
-    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyDomeParameters.material);
-    if (!skyMaterial.isNull())
-    {
-         textureID = skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getFrameTextureName(0);
-    }
-    return textureID;
-}
-
-RexTypes::RexAssetID EC_OgreSky::GetSkyPlaneTextureID() const
-{
-    RexTypes::RexAssetID textureID = "";
-    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyPlaneParameters.material);
-    if (!skyMaterial.isNull())
-    {
-         textureID = skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getFrameTextureName(0);
-    }
-    return textureID;
-}
-
-RexTypes::RexAssetID EC_OgreSky::GetSkyBoxTextureID(uint texuture_index) const
-{
-    if(texuture_index >= 6) texuture_index = 5;
-    RexTypes::RexAssetID textureID = "";
-    Ogre::MaterialPtr skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyBoxParameters.material);
-    if (!skyMaterial.isNull())
-    {
-         textureID = skyMaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getFrameTextureName(texuture_index);
-    }
-    return textureID;
-}
-#endif
-
 SkyBoxParameters EC_OgreSky::GetBoxSkyParameters() const
 {
     return skyBoxParameters;

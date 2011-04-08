@@ -10,13 +10,7 @@
 #include "Framework.h"
 #include "SceneManager.h"
 #include "RenderServiceInterface.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "NetworkMessages/NetInMessage.h"
-#include "NetworkMessages/NetOutMessage.h"
-#include "NetworkMessages/NetMessageManager.h"
-#include "WorldStream.h"
-#include "EC_OpenSimPrim.h"
-#endif
+
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
@@ -25,8 +19,6 @@
 #include "NaaliMainWindow.h"
 #include "SceneAPI.h"
 #include "Entity.h"
-//#include "RealXtend/RexProtocolMsgIDs.h"
-//#include "GenericMessageUtils.h"
 
 #include <utility>
 
@@ -544,11 +536,6 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 2:
         RefreshOgreProfilingWindow();
         break;
-#ifdef ENABLE_TAIGA_SUPPORT
-    case 3:
-        RefreshNetworkProfilingData();
-        break;
-#endif
     case 5:
         RefreshAssetProfilingData();
         break;
@@ -616,13 +603,6 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
 
     return 0;
 }
-
-#ifdef ENABLE_TAIGA_SUPPORT
-void TimeProfilerWindow::SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream)
-{
-    world_stream_ = worldStream;
-}
-#endif
 
 void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode)
 {
@@ -910,96 +890,6 @@ void TimeProfilerWindow::DoThresholdLogging()
 #endif
 }
 
-#ifdef ENABLE_TAIGA_SUPPORT
-void TimeProfilerWindow::LogNetInMessage(const ProtocolUtilities::NetInMessage *msg)
-{
-    if (findChild<QCheckBox*>("checkBoxLogTraffic")->isChecked())
-    {
-        assert(logDirectory_.exists());
-        QFile file(logDirectory_.path() + "/networking.txt");
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-            return;
-
-        QTextStream log(&file);
-        log <<'[' << GetLocalTimeString().c_str() << "]\t" << "IN\t" << msg->GetMessageID() ;
-
-        size_t numWidth = QString::number(msg->GetMessageID()).length();
-        if (numWidth < 9)
-            log << '\t';
-        if (numWidth < 5)
-            log << '\t';
-
-       
-        QString name(msg->GetMessageInfo()->name.c_str());
-        log << '\t' << name;
-
-        if (mapNetInData_.contains(name) )
-        {
-            NetworkLogData& ob = mapNetInData_[name];
-            ob.bytes += msg->GetDataSize();
-            ++ob.packages;
-
-        }
-        else
-        {
-             NetworkLogData ob;
-             ob.bytes = msg->GetDataSize();
-             ob.packages = 0;
-             mapNetInData_.insert(name, ob);
-        }
-
-        ///\todo Get MethogName out from GenericMessage
-//        if (msg->GetMessageID() == RexNetMsgGenericMessage)
-//            log << ' ' << ProtocolUtilities::ParseGenericMessageMethod(*msg).c_str();
-
-        log << '\n';
-    }
-}
-
-void TimeProfilerWindow::LogNetOutMessage(const ProtocolUtilities::NetOutMessage *msg)
-{
-    if (findChild<QCheckBox*>("checkBoxLogTraffic")->isChecked())
-    {
-        assert(logDirectory_.exists());
-        QFile file(logDirectory_.path() + "/networking.txt");
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
-            return;
-
-        QTextStream log(&file);
-        log <<'[' << GetLocalTimeString().c_str() << "]\t" << "OUT\t" << msg->GetMessageID();
-
-        size_t numWidth = QString::number(msg->GetMessageID()).length();
-        if (numWidth < 9)
-            log << '\t';
-        if (numWidth < 5)
-            log << '\t';
-
-        
-        QString name(msg->GetMessageInfo()->name.c_str());
-        log << '\t' << name;
-        
-         if (mapNetOutData_.contains(name) )
-         {
-            NetworkLogData& ob = mapNetOutData_[name];
-            ob.bytes += msg->BytesFilled();
-            ++ob.packages;
-         }
-         else
-         {
-            NetworkLogData ob;
-            ob.bytes = msg->BytesFilled();
-            ob.packages = 0;
-            mapNetOutData_.insert(name, ob);
-         }
-
-        ///\todo Get MethogName out from GenericMessage
-//        if (msg->GetMessageID() == RexNetMsgGenericMessage)
-//            log << ' ' << ProtocolUtilities::ParseGenericMessageMethod(*msg).c_str();
-
-         log << '\n';
-    }
-}
-#endif
 void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode)
 {
     using namespace Foundation;
@@ -1490,204 +1380,6 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
     label->setPixmap(QPixmap::fromImage(image));
 }
 
-#ifdef ENABLE_TAIGA_SUPPORT
-
-void TimeProfilerWindow::RefreshNetworkProfilingData()
-{
-#ifdef PROFILING
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 3)
-        return;
-
-    if (world_stream_)
-    {
-        ProtocolUtilities::NetMessageManager *netMessageManager = world_stream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
-        if (!netMessageManager)
-            return;
-
-        std::vector<double> dstAccum;
-        std::vector<double> dstOccur;
-        const size_t numEntries = 256;
-        const double bucketSize = 1.0;
-        const double smoothingCoeff = 0.8;
-        std::vector<double> dataBytesIn;
-        std::vector<double> packetsIn;
-        std::vector<double> dataBytesOut;
-        std::vector<double> packetsOut;
-
-        netMessageManager->receivedDatabytes.OutputBucketedAccumulated(dataBytesIn, numEntries, bucketSize, &dstOccur);
-        char str[256];
-        double dataInPerSec = EventHistory::SmoothedAvgPerSecond(dataBytesIn, bucketSize, smoothingCoeff);
-        sprintf(str, "%s/sec", FormatBytes(dataInPerSec).c_str());
-        findChild<QLabel*>("labelDataInPerSec")->setText(str);
-
-        RedrawHistoryGraph(dataBytesIn, findChild<QLabel*>("labelDataInSecGraph"));
-
-        netMessageManager->sentDatabytes.OutputBucketedAccumulated(dataBytesOut, numEntries, bucketSize, &dstOccur);
-        double dataOutPerSec = EventHistory::SmoothedAvgPerSecond(dataBytesOut, bucketSize, smoothingCoeff);
-        sprintf(str, "%s/sec", FormatBytes(dataOutPerSec).c_str());
-        findChild<QLabel*>("labelDataOutPerSec")->setText(str);
-
-        RedrawHistoryGraph(dataBytesOut, findChild<QLabel*>("labelDataOutSecGraph"));
-
-        netMessageManager->receivedDatagrams.OutputBucketedAccumulated(packetsIn, numEntries, bucketSize, &dstOccur);
-        double packetsInPerSec = EventHistory::SmoothedAvgPerSecond(packetsIn, bucketSize, smoothingCoeff);
-        sprintf(str, "%.2f p/sec", (float)packetsInPerSec);
-        findChild<QLabel*>("labelPacketsInPerSec")->setText(str);
-
-        RedrawHistoryGraph(packetsIn, findChild<QLabel*>("labelPacketsInSecGraph"));
-
-        netMessageManager->sentDatagrams.OutputBucketedAccumulated(packetsOut, numEntries, bucketSize, &dstOccur);
-        double packetsOutPerSec = EventHistory::SmoothedAvgPerSecond(packetsOut, bucketSize, smoothingCoeff);
-        sprintf(str, "%.2f p/sec", (float)packetsOutPerSec);
-        findChild<QLabel*>("labelPacketsOutPerSec")->setText(str);
-
-        RedrawHistoryGraph(packetsOut, findChild<QLabel*>("labelPacketsOutSecGraph"));
-
-        netMessageManager->resentPackets.OutputBucketedAccumulated(dstAccum, numEntries, bucketSize, &dstOccur);
-        double resentPacketsPerSec = EventHistory::SmoothedAvgPerSecond(dstAccum, bucketSize, smoothingCoeff);
-        sprintf(str, "%.2f p/sec", (float)resentPacketsPerSec);
-        findChild<QLabel*>("labelPacketResends")->setText(str);
-
-        netMessageManager->lostPackets.OutputBucketedAccumulated(dstAccum, numEntries, bucketSize, &dstOccur);
-        double packetLossPerSec = EventHistory::SmoothedAvgPerSecond(dstAccum, bucketSize, smoothingCoeff);
-        sprintf(str, "%.2f p/sec", (float)packetLossPerSec);
-        findChild<QLabel*>("labelPacketLossIn")->setText(str);
-
-        netMessageManager->duplicatesReceived.OutputBucketedAccumulated(dstAccum, numEntries, bucketSize, &dstOccur);
-        double duplicatesRecvPerSec = EventHistory::SmoothedAvgPerSecond(dstAccum, bucketSize, smoothingCoeff);
-        sprintf(str, "%.2f p/sec", (float)duplicatesRecvPerSec);
-        findChild<QLabel*>("labelDuplicatesIn")->setText(str);
-
-        double avgPacketSizeIn = (packetsInPerSec < 1e-5) ? 0 : (dataInPerSec / packetsInPerSec);
-        findChild<QLabel*>("labelAvgPacketSizeIn")->setText(FormatBytes(avgPacketSizeIn).c_str());
-
-        double avgPacketSizeOut = (packetsOutPerSec < 1e-5) ? 0 : (dataOutPerSec / packetsOutPerSec);
-        findChild<QLabel*>("labelAvgPacketSizeOut")->setText(FormatBytes(avgPacketSizeOut).c_str());
-
-        sprintf(str, "%.2f ms", (float)netMessageManager->lastRoundTripTime);
-        findChild<QLabel*>("labelRoundTripTime")->setText(str);
-
-        sprintf(str, "%.2f ms", (float)netMessageManager->smoothenedRoundTripTime);
-        findChild<QLabel*>("labelSmoothenedRoundTripTime")->setText(str);
-
-        sprintf(str, "%.2f ms", (float)netMessageManager->lastHeardSince);
-        findChild<QLabel*>("labelLastHeardSince")->setText(str);
-
-        sprintf(str, "%i", netMessageManager->NumUnackedReliablePackets());
-        findChild<QLabel*>("labelDataInFlightPackets")->setText(str);
-
-        sprintf(str, "%i", netMessageManager->NumBytesInUnackedReliablePackets());
-        findChild<QLabel*>("labelDataInFlightBytes")->setText(str);
-
-        const int ipHeaderSize = 20;
-        const int udpHeaderSize = 8;
-        const int sludpHeaderSize = 6;
-
-        double dataIn = 0.0;
-        double goodDataIn = 0.0;
-
-        for(int i = (int)min(dataBytesIn.size(), packetsIn.size())-1, j = 0; i >= 0 && j < 10; --i, ++j)
-        {
-            dataIn += dataBytesIn[i] + packetsIn[i] * (ipHeaderSize + udpHeaderSize);
-            goodDataIn += dataBytesIn[i] - packetsIn[i] * sludpHeaderSize;
-        }
-
-        if (dataIn < 1e-5)
-            sprintf(str, "-");
-        else
-            sprintf(str, "%.1f%%", (float)(goodDataIn * 100.0 / dataIn));
-        findChild<QLabel*>("labelDataGoodputIn")->setText(str);
-
-        double dataOut = 0.0;
-        double goodDataOut = 0.0;
-
-        for(int i = (int)min(dataBytesOut.size(), packetsOut.size())-1, j = 0; i >= 0 && j < 10; --i, ++j)
-        {
-            dataOut += dataBytesOut[i] + packetsOut[i] * (ipHeaderSize + udpHeaderSize);
-            goodDataOut += dataBytesOut[i] - packetsOut[i] * (sludpHeaderSize);
-        }
-
-        if (dataOut < 1e-5)
-            sprintf(str, "-");
-        else
-            sprintf(str, "%.1f%%", (float)(goodDataOut * 100.0 / dataOut));
-        findChild<QLabel*>("labelDataGoodputOut")->setText(str);
-    }
-
-    QTimer::singleShot(500, this, SLOT(RefreshNetworkProfilingData()));
-#endif
-}
-
-const char *SimStatsStr(int statID)
-{
-    static const char *str[31] = 
-    {
-        "LL_SIM_STAT_TIME_DILATION",
-        "LL_SIM_STAT_FPS",
-        "LL_SIM_STAT_PHYSFPS",
-        "LL_SIM_STAT_AGENTUPS",
-        "LL_SIM_STAT_FRAMEMS",
-        "LL_SIM_STAT_NETMS",
-        "LL_SIM_STAT_SIMOTHERMS",
-        "LL_SIM_STAT_SIMPHYSICSMS",
-        "LL_SIM_STAT_AGENTMS",
-        "LL_SIM_STAT_IMAGESMS",
-        "LL_SIM_STAT_SCRIPTMS",
-        "LL_SIM_STAT_NUMTASKS",
-        "LL_SIM_STAT_NUMTASKSACTIVE",
-        "LL_SIM_STAT_NUMAGENTMAIN",
-        "LL_SIM_STAT_NUMAGENTCHILD",
-        "LL_SIM_STAT_NUMSCRIPTSACTIVE",
-        "LL_SIM_STAT_LSLIPS",
-        "LL_SIM_STAT_INPPS",
-        "LL_SIM_STAT_OUTPPS",
-        "LL_SIM_STAT_PENDING_DOWNLOADS",
-        "LL_SIM_STAT_PENDING_UPLOADS",
-        "LL_SIM_STAT_PENDING_LOCAL_UPLOADS",
-        "LL_SIM_STAT_TOTAL_UNACKED_BYTES",
-        "LL_SIM_STAT_PHYSICS_PINNED_TASKS",
-        "LL_SIM_STAT_PHYSICS_LOD_TASKS",
-        "LL_SIM_STAT_SIMPHYSICSSTEPMS",
-        "LL_SIM_STAT_SIMPHYSICSSHAPEMS",
-        "LL_SIM_STAT_SIMPHYSICSOTHERMS",
-        "LL_SIM_STAT_SIMPHYSICSMEMORY",
-        "UnknownID"
-    };
-    if (statID < 0 || statID > 29)
-        return str[29];
-    return str[statID];
-}
-
-void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *simStats)
-{
-    simStats->ResetReading();
-    int regionX = simStats->ReadU32();
-    int regionY = simStats->ReadU32();
-    u32 regionFlags = simStats->ReadU32();
-    UNREFERENCED_PARAM(regionFlags);
-    int objectCapacity = simStats->ReadU32();
-
-    tree_sim_stats_->clear();
-
-    label_region_map_coords_->setText(QString("(%1, %2)").arg(regionX).arg(regionY));
-    label_region_object_capacity_->setText(QString("%1").arg(objectCapacity));
-
-    size_t numStats = simStats->ReadCurrentBlockInstanceCount();
-    for(int i = 0; i < numStats; ++i)
-    {
-        u32 statID = simStats->ReadU32();
-        float statValue = simStats->ReadF32();
-
-        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(SimStatsStr(statID)));
-        item->setText(1, QString("%1").arg(statValue));
-        tree_sim_stats_->addTopLevelItem(item);
-    }
-    int pidStat = simStats->ReadS32();
-    label_pid_stat_->setText(QString("%1").arg(pidStat));
-}
-
-#endif
-
 void TimeProfilerWindow::RefreshAssetProfilingData()
 {
     if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 5)
@@ -1813,9 +1505,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     {
         Scene::Entity &entity = *iter->second;
         entities++;
-#ifdef ENABLE_TAIGA_SUPPORT
-        EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
-#endif
+
         Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
         EC_Mesh* mesh = entity.GetComponent<EC_Mesh>().get();
         EC_OgreCustomObject* custom = entity.GetComponent<EC_OgreCustomObject>().get();
@@ -1876,23 +1566,6 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                 }
         }
         
-#ifdef ENABLE_TAIGA_SUPPORT
-        // Check drawtype for prims
-        if (prim)
-        {            
-            int drawtype = prim->getDrawType();
-            if ((drawtype == RexTypes::DRAWTYPE_MESH) && (ogre_entity))
-                meshentities++;
-            if (drawtype == RexTypes::DRAWTYPE_PRIM)
-            {
-                if (ogre_entity)
-                    prims++;
-                else
-                    invisible_prims++;
-            }
-        }
-        else
-#endif
         {
             if (ogre_entity)
                 meshentities++;

@@ -18,9 +18,6 @@
 #include <OgreColourValue.h>
 #include <OgreMath.h>
 #include <OgreConversionUtils.h>
-#ifdef ENABLE_TAIGA_SUPPORT
-#include <RexNetworkUtils.h>
-#endif
 
 #include "MemoryLeakCheck.h"
 

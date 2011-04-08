@@ -20,10 +20,6 @@ add_definitions (-DDEBUGSTATS_MODULE_EXPORTS)
 use_modules (Framework Scene OgreRenderingModule EnvironmentModule
     SupportModules AssetModule Input Ui)
 
-if (ENABLE_TAIGA_SUPPORT)
-   use_modules (RexCommon ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
-endif()
-
 if (OGREASSETEDITOR)
 use_modules(OgreAssetEditorModule)
 endif()
@@ -34,10 +30,6 @@ link_ogre()
 
 link_modules (Framework Scene OgreRenderingModule EnvironmentModule
     SupportModules AssetModule Input Ui)
-
-if (ENABLE_TAIGA_SUPPORT)
-   link_modules (RexCommon ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga)
-endif()
 
 if (OGREASSETEDITOR)
 link_modules(OgreAssetEditorModule)

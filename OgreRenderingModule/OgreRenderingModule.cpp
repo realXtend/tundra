@@ -18,10 +18,6 @@
 #include "EC_BillboardWidget.h"
 #include "EC_SelectionBox.h"
 #include "SceneEvents.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "InputEvents.h"
-#include "NetworkEvents.h"
-#endif
 #include "Entity.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -133,36 +129,6 @@ namespace OgreRenderer
         if (!renderer_)
             return false;
 
-#ifdef ENABLE_TAIGA_SUPPORT
-        if (category_id == input_event_category_ && event_id == InputEvents::INWORLD_CLICK)
-        {
-            // do raycast into the world when user clicks mouse button
-            InputEvents::Movement *movement = checked_static_cast<InputEvents::Movement*>(data);
-            assert(movement);
-            RaycastResult* result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
-
-            Scene::Entity *entity = result->entity_;
-            if (entity)
-            {
-                Scene::Events::RaycastEventData event_data(entity->GetId());
-                event_data.pos = result->pos_, event_data.submesh = result->submesh_, event_data.u = result->u_, event_data.v = result->v_; 
-                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
-
-                //Semantically same as above but sends the entity pointer
-                Scene::Events::EntityClickedData clicked_event_data(entity);
-                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_CLICKED, &clicked_event_data);
-            }
-            else
-                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_NONE_CLICKED, 0);
-        }
-
-        if (network_state_event_category_)
-        {
-            if (event_id == ProtocolUtilities::Events::EVENT_USER_DISCONNECTED)
-                renderer_->ResetImageRendering();
-            return false;
-        }
-#endif
         return false;
     }
 

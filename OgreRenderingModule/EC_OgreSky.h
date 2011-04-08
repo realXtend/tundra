@@ -4,9 +4,6 @@
 #define incl_OgreRenderer_EC_OgreSky_h
 
 #include "IComponent.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexUUID.h"
-#endif
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
 #include "Declare_EC.h"
@@ -248,20 +245,6 @@ public:
     /// Set new sky generic parameters.
     void SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky = true);
 
-#ifdef ENABLE_TAIGA_SUPPORT
-    /// Get sky dome material texture name as string switch is same as assetID.
-    /// @return Texture name.
-    RexTypes::RexAssetID GetSkyDomeTextureID() const;
-
-    /// Get sky dome material texture name as string switch is same as assetID.
-    /// @return Texture name.
-    RexTypes::RexAssetID GetSkyPlaneTextureID() const;
-
-    /// Get sky dome material texture name as string switch is same as assetID.
-    /// @param sky_box texture index, where(0 = front, 1 = back, 2 = left, 3 = right, 4 = up, 5 = down).
-    /// @return Texture name.
-    RexTypes::RexAssetID GetSkyBoxTextureID(uint texuture_index) const;
-#endif
     /// Return sky generic sky parameters mostly used by sky box.
     SkyBoxParameters GetBoxSkyParameters() const;
 

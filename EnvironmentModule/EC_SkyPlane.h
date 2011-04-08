@@ -7,9 +7,6 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 #include "CoreTypes.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "RexTypes.h"
-#endif
 #include "OgreModuleFwd.h"
 #include "AssetReference.h"
 

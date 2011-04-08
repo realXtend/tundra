@@ -29,14 +29,6 @@ class QMenu;
 class QPushButton;
 class QTextStream;
 
-namespace ProtocolUtilities
-{
-    class NetInMessage;
-    class NetOutMessage;
-    class WorldStream;
-    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
-}
-
 namespace Foundation
 {
     class Framework;
@@ -58,25 +50,11 @@ namespace DebugStats
         void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
         void DoThresholdLogging();
 
-#ifdef ENABLE_TAIGA_SUPPORT
-        void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
-        void RefreshSimStatsData(ProtocolUtilities::NetInMessage *simStats);
-
-        /// Writes brief log entry about network message to log file, if logging is enabled.
-        /// @param msg Inbound SLUDP message
-        void LogNetInMessage(const ProtocolUtilities::NetInMessage *msg);
-
-        /// Writes brief log entry about network message to log file, if logging is enabled.
-        /// @param msg Outbound SLUDP message
-        void LogNetOutMessage(const ProtocolUtilities::NetOutMessage *msg);
-#endif
     public slots:
         void RefreshProfilingData();
         void OnProfilerWindowTabChanged(int newPage);
         void RefreshOgreProfilingWindow();
-#ifdef ENABLE_TAIGA_SUPPORT
-        void RefreshNetworkProfilingData();
-#endif
+
         void RefreshTextureProfilingData();
         void ToggleTreeButtonPressed();
         void CollapseAllButtonPressed();
@@ -149,7 +127,6 @@ namespace DebugStats
         bool show_unused_;
         bool visibility_;
         QTimer profiler_update_timer_;
-        ProtocolUtilities::WorldStreamPtr world_stream_;
         float logThreshold_;
         /// Directory.for log files.
         QDir logDirectory_;

@@ -13,10 +13,6 @@
 #include "EventManager.h"
 #include "LoggingFunctions.h"
 
-#ifdef ENABLE_TAIGA_LOGIN
-#include "../ProtocolUtilities/NetworkEvents.h"
-#endif
-
 #include "../TundraLogicModule/TundraEvents.h"
 
 #include "MemoryLeakCheck.h"
@@ -117,32 +113,6 @@ bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t 
     {
         network_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
     }
-#ifdef ENABLE_TAIGA_LOGIN
-    else if(category_id == network_category_)
-    {
-        using namespace ProtocolUtilities::Events;
-        switch(event_id)
-        {
-        case EVENT_SERVER_CONNECTED:
-            connected_ = true;
-            if (ui && window_)
-            {
-                window_->SetStatus("Connected");
-                ui->HideWidget(window_);
-            }
-            break;
-        case EVENT_USER_KICKED_OUT:
-        case EVENT_SERVER_DISCONNECTED:
-            connected_ = false;
-            if (ui && window_)
-                ui->ShowWidget(window_);
-            break;
-        case EVENT_CONNECTION_FAILED:
-            connected_ = false;
-            break;
-        }
-    }
-#endif
     else if (category_id == tundra_category_)
     {
         switch(event_id)

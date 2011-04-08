@@ -164,21 +164,12 @@ configure_openal ()
 configure_ogg ()
 configure_vorbis ()
 
-#configure_xmlrpc()
-#configure_curl()
-#configure_openjpeg()
-
 use_package(BOOST)
-#use_package(POCO)
 use_package(OGRE)
 use_package(QT4)
 use_package(OPENAL)
 use_package(OGG)
 use_package(VORBIS)
-
-#Enable these two if ENABLE_TAIGA_SUPPORT is defined in CMakeBuildConfig.txt.
-#use_package(CURL)
-#use_package(XMLRPC)
 
 use_package_knet()
 

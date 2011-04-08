@@ -11,9 +11,6 @@
 #include "EC_VoiceChannel.h"
 
 #include "EventManager.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "NetworkEvents.h"
-#endif
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "SceneManager.h"

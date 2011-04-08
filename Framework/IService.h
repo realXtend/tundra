@@ -32,9 +32,7 @@ namespace Service
     enum Type 
     {
         ST_Renderer,
-        ST_Physics,
         ST_Gui,
-        ST_WorldLogic,
         ST_PythonScripting,
         ST_JavascriptScripting,
         ST_Console,
@@ -42,14 +40,6 @@ namespace Service
         ST_Asset,
         ST_Texture,
         ST_Sound,
-        ST_Input,
-        ST_Communications,
-        ST_UiSettings,
-        ST_Player,
-        ST_WorldBuilding,
-        ST_Login,
-        ST_OpenSimScene,
-        ST_Unknown
     };
 }
 

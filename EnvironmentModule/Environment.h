@@ -15,11 +15,6 @@
 
 #include "EC_EnvironmentLight.h"
 
-namespace ProtocolUtilities
-{
-    class NetworkEventInboundData;
-}
-
 class EC_OgreEnvironment;
 
 namespace Environment
@@ -58,81 +53,13 @@ namespace Environment
          * Creates the environment EC to current active scene and adjust it using default parameters.
          **/
         void CreateEnvironment();
-#ifdef ENABLE_TAIGA_SUPPORT
 
-        /// Handles the "SimulatorViewerTimeMessage" packet.
-        /** @param data The network event data pointer.
-        */
-        bool HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
-
-        /// Sets a ground fog for current active environment.
-        /** @param fogStart distance in world unit at which linear fog start ot encroach. 
-            @param fogEnd distance in world units at which linear fog becomes completely opaque.
-            @param color the colour of the fog. 
-        */
-        void SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color);
-
-        /// Enables or disables fog color override. 
-        /**@param enabled boolean defines state of override.
-        */
-        void SetFogColorOverride(bool enabled);
-
-        /// Returns information is fog color controlled by user or caelum.
-        /** @return true if it is fog color is controlled by user, else false.
-        */
-        bool GetFogColorOverride();
-
-        /// Set new ground fog color.
-        /** @param new color value.
-        */
-        void SetGroundFogColor(const QVector<float>& color);
-
-        /// Set new ground fog distance.
-        /** @param fogStart start distance from the viewpoint.
-            @param fogEnd end distance from the viewpoint.
-        */
-        void SetGroundFogDistance(float fogStart, float fogEnd);
-
-        /// @return ground fog start distance.
-        float GetGroundFogStartDistance();
-
-        /// @return ground fog end distance.
-        float GetGroundFogEndDistance();
-
-        /// Returns current fog ground color. 
-        QVector<float> GetFogGroundColor();
-#endif
         /// Updates the visual effects (fog, skybox etc).
         void Update(f64 frametime);
 
         /// @return true if caelum library is used.
         bool IsCaelum();
 
-#ifdef ENABLE_TAIGA_SUPPORT
-        /// Set new sunlight direction
-        /// @param vector new sun light direction.
-        void SetSunDirection(const QVector<float>& vector);
-
-        /// Get sunlight direction
-        /// @return sun light direction.
-        QVector<float> GetSunDirection();
-
-        /// Set new sunlight color.
-        /// @param vector new sunlight color.
-        void SetSunColor(const QVector<float>& vector);
-
-        /// Get sunlight color
-        /// @return sun light color.
-        QVector<float> GetSunColor();
-
-        /// Get ambient light color
-        /// @return ambient light color.
-        QVector<float> GetAmbientLight();
-
-        /// Set new ambient light color.
-        /// @param vector new ambient light color value.
-        void SetAmbientLight(const QVector<float>& vector);
-#endif
         /// Converts string vector to QVector.
         template<typename T> QVector<T> ConvertToQVector(const StringVector& vector) 
         {
@@ -154,59 +81,14 @@ namespace Environment
             return vec;
         }
 
-    public slots:
-
-#ifdef ENABLE_TAIGA_SUPPORT
-        /// Setter/getter for bool local override of server time
-        void SetTimeOverride(bool enabled) { time_override_ = enabled; }
-        bool GetTimeOverride() { return time_override_; }
-#endif
-    signals:
-
-#ifdef ENABLE_TAIGA_SUPPORT
-
-        /// Emitted when ground fog is adjusted.
-        void GroundFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
-
-#endif
     private:
-#ifdef ENABLE_TAIGA_SUPPORT
 
-        /// Creates the global sunlight.
-        void CreateGlobalLight();
-
-        EC_Fog* GetEnvironmentFog();
-
-#endif
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
 
         /// Weak pointer to the entity which has the environment component.
         Scene::EntityWeakPtr activeEnvEntity_;
 
-#ifdef ENABLE_TAIGA_SUPPORT
-
-        /// Time override, default false
-        bool time_override_;
-
-        /// Server's perception of time (UNIX EPOCH). Not used currently.
-        time_t usecSinceStart_;
-
-        /// Unknown. Not used currently.
-        uint32_t secPerDay_;
-
-        /// Unknown. Not used currently.
-        uint32_t secPerYear_;
-
-        /// Direction of the sunlight.
-        Vector3df sunDirection_;
-
-        /// Sun phase.
-        float sunPhase_;
-
-        /// Sun's angle velocity.
-        Vector3df sunAngVelocity_;
-#endif
         /// Bit mask of Caelum components we use.
         int caelumComponents_;
     };
