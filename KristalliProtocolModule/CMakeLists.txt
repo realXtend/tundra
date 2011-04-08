@@ -23,11 +23,6 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_modules (Framework Scene)
 
-# Copy XML files from source directory to target directory
-foreach (XML_FILE ${XML_FILES})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
-endforeach (XML_FILE)
-
 # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
 if (MSVC)
     foreach(src_file ${CPP_FILES})

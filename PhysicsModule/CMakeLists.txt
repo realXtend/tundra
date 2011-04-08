@@ -26,11 +26,6 @@ link_modules (Framework Scene OgreRenderingModule EnvironmentModule Asset)
 link_ogre()
 link_package_bullet()
 
-# Copy XML files from source directory to target directory
-foreach (XML_FILE ${XML_FILES})
-    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
-endforeach (XML_FILE)
-
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)
     # Label StableHeaders.cpp to create the PCH file and mark all other .cpp files to use that PCH file.
