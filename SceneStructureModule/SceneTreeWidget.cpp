@@ -600,7 +600,7 @@ void SceneTreeWidget::Edit()
             }
             else if (type ==  "OgreTexture")
             {
-                TexturePreviewEditor::OpenPreviewEditor(QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
+                TexturePreviewEditor::OpenPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
             }
             else if (type == "OgreMaterial")
             {
