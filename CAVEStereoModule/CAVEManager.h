@@ -18,7 +18,7 @@ namespace CAVEStereo
     class CAVESettingsWidget;
     class CAVEView;
 
-    //! This class handles the CAVE view managing
+    /// This class handles the CAVE view managing
     class CAVEManager: public QObject 
     {
         Q_OBJECT
@@ -27,13 +27,13 @@ namespace CAVEStereo
         CAVEManager(const OgreRenderer::RendererPtr &renderer);
         virtual ~CAVEManager();
 
-        //!Disable cave (will also remove all views)
+        ///Disable cave (will also remove all views)
         void DisableCAVE();
 
-        //!Enable cave
+        ///Enable cave
         void EnableCAVE();
 
-        //! get windows used by cave manager. NOTE: when cave is shutdown, the manager will destroy the windows
+        /// get windows used by cave manager. NOTE: when cave is shutdown, the manager will destroy the windows
         QVector<Ogre::RenderWindow*> GetExternalWindows();
         
     public slots:
@@ -68,13 +68,13 @@ namespace CAVEStereo
         CAVEStereo::CAVESettingsWidget* GetCaveWidget() const;
 
     private:
-        //! is cave enabled
+        /// is cave enabled
         bool enabled_;
-        //! renderer pointer
+        /// renderer pointer
         OgreRenderer::RendererWeakPtr renderer_;
-        //! views
+        /// views
         QMap<QString, CAVEView*> view_map_;
-        //! settings widget
+        /// settings widget
         CAVESettingsWidget* settings_widget_;
     };
 }

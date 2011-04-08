@@ -421,7 +421,7 @@ namespace MumbleVoip
     bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
     {
         /// \note Avatar position sending is atm disabled in tundra.
-        /*! \todo Fix this for tundra. Although is there a reasonable way to do it? Maybe a script could pass the EC_Placeable*we need to follow here.
+        /** \todo Fix this for tundra. Although is there a reasonable way to do it? Maybe a script could pass the EC_Placeable*we need to follow here.
                   as it knows better what is the app spesific avatar entity. For tundra its kind of hard to determine it from here. */
 
         using namespace Foundation;

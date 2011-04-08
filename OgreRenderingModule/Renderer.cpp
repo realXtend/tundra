@@ -4,7 +4,6 @@
 #include "DebugOperatorNew.h"
 
 #include "Renderer.h"
-#include "RendererEvents.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
 #include "EC_Placeable.h"
@@ -16,7 +15,6 @@
 #include "CompositionHandler.h"
 #include "OgreDefaultHardwareBufferManager.h"
 #include "SceneManager.h"
-#include "SceneEvents.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "Platform.h"
@@ -153,7 +151,6 @@ namespace OgreRenderer
         c_handler_(new CompositionHandler),
         targetFpsLimit(60.f) // The default FPS to aim at is 60fps.
     {
-        InitializeEvents();
         timerFrequency = GetCurrentClockFreq();
     }
 
@@ -224,15 +221,6 @@ namespace OgreRenderer
         }
 //        else
 //            timeSleptLastFrame = 0.0;
-    }
-
-    void Renderer::InitializeEvents()
-    {
-        EventManagerPtr event_manager = framework_->GetEventManager();
-        renderercategory_id_ = event_manager->RegisterEventCategory("Renderer");
-        event_manager->RegisterEvent(renderercategory_id_, Events::POST_RENDER, "PostRender");
-        event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_CLOSED, "WindowClosed");
-        event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_RESIZED, "WindowResized");
     }
 
     void Renderer::Initialize()

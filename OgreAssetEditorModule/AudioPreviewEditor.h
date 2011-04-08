@@ -28,7 +28,7 @@ namespace Foundation
     class Framework;
 }
 
-//! AudioPreviewEditor is used to play different audioclips from the inventory and display a audio info diagram.
+/// AudioPreviewEditor is used to play different audioclips from the inventory and display a audio info diagram.
 class AudioPreviewEditor: public QWidget
 {
     Q_OBJECT
@@ -44,15 +44,15 @@ public slots:
     /// Close the window.
     void Closed();
 
-    //! Toggle between sound play and stop states.
+    /// Toggle between sound play and stop states.
     void PlaySound();
     void TimerTimeout();
 
 signals:
-    //! This signal is emitted when the editor is closed.
+    /// This signal is emitted when the editor is closed.
     void Closed(const QString &inventory_id, asset_type_t asset_type);
 
-    //! Signal for widget resize.
+    /// Signal for widget resize.
     void WidgetResized(QSize size);
 
 protected:

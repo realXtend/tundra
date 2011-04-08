@@ -131,7 +131,6 @@ namespace PythonScript
         event_category_id_t inputeventcategoryid;
         event_category_id_t networkstate_category_id;
         event_category_id_t framework_category_id;
-        event_category_id_t scene_event_category_ ;
 
         /// Returns the currently initialized PythonScriptModule.
         static PythonScriptModule *GetInstance();

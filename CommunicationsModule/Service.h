@@ -26,7 +26,7 @@ namespace CommunicationsService
         virtual Communications::InWorldVoice::SessionInterface* InWorldVoiceSession() const;
         virtual Communications::InWorldChat::SessionInterface* InWorldChatSession() const;
 
-        //! Registration methods for communication providers
+        /// Registration methods for communication providers
         virtual void Register(Communications::InWorldVoice::ProviderInterface& provider);
         virtual void Register(Communications::InWorldChat::ProviderInterface& provider);
 

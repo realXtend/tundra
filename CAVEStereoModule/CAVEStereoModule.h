@@ -42,11 +42,11 @@ namespace CAVEStereo
         void ShowCaveWindow();
 
     private:
-        //! Type name of the module.
+        /// Type name of the module.
         static std::string type_name_static_;
-        //! Manager for stereo
+        /// Manager for stereo
         StereoController* stereo_;
-        //! Manager for CAVE
+        /// Manager for CAVE
         CAVEManager* cave_;
     };
 }

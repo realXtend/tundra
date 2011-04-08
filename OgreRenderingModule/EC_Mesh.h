@@ -148,7 +148,7 @@ public:
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
-    //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automatically).
+    /// Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automatically).
     Q_PROPERTY(AssetReference meshRef READ getmeshRef WRITE setmeshRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, meshRef);
 
@@ -156,7 +156,7 @@ public:
     Q_PROPERTY(AssetReference skeletonRef READ getskeletonRef WRITE setskeletonRef);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReference, skeletonRef);
 
-    //! Mesh material asset reference list, material requests are handled automatically.
+    /// Mesh material asset reference list, material requests are handled automatically.
     Q_PROPERTY(AssetReferenceList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(AssetReferenceList, meshMaterial);
 
@@ -251,7 +251,7 @@ public slots:
      */
     bool SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point = std::string(), bool share_skeleton = false);
     
-    //! sets position of attachment mesh, relative to attachment point
+    /// sets position of attachment mesh, relative to attachment point
     void SetAttachmentPosition(uint index, const Vector3df& position);
     
     /// sets orientation of attachment mesh, relative to attachment point
@@ -376,7 +376,7 @@ signals:
     /// Signal is emitted when mesh has successfully loaded and applied to entity.
     void MeshChanged();
 
-    //! Signal is emitted when material has successfully applied to sub mesh.
+    /// Signal is emitted when material has successfully applied to sub mesh.
     void MaterialChanged(uint index, const QString &material_name);
 
     /// Signal is emitted when skeleton has successfully applied to entity.

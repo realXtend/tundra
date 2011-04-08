@@ -36,7 +36,7 @@ namespace OgreRenderer
     typedef boost::shared_ptr<OgreRenderer::Renderer> RendererPtr;
 }
 
-//! Label is used to display the mesh in image format.
+/// Label is used to display the mesh in image format.
 class MeshPreviewLabel: public QLabel
 {
     Q_OBJECT
@@ -54,7 +54,7 @@ protected:
 
 };
 
-//! MeshPrevieEditor is used to view meshes
+/// MeshPrevieEditor is used to view meshes
 class ASSET_EDITOR_MODULE_API MeshPreviewEditor: public QWidget
 {
     Q_OBJECT
@@ -90,7 +90,7 @@ signals:
     void Closed(const QString &inventory_id, asset_type_t asset_type);
 
 private slots:
-    //! Delete this object.
+    /// Delete this object.
     void Deleted() { delete this; }
 
 private:

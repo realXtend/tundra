@@ -209,7 +209,7 @@ private slots:
     void Redraw();
     void UpdateSignals();
 
-    //! Handles attribute updates.
+    /// Handles attribute updates.
     void OnAttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:

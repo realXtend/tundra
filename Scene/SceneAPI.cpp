@@ -4,7 +4,6 @@
 #include "DebugOperatorNew.h"
 
 #include "SceneAPI.h"
-#include "SceneEvents.h"
 #include "SceneManager.h"
 
 #include "EventManager.h"
@@ -13,11 +12,10 @@
 
 SceneAPI::SceneAPI(Foundation::Framework *framework) :
     QObject(framework),
-    framework_(framework),
-    sceneCatergoryName_("Scene")
+    framework_(framework)
 {
-    sceneInteract_ = QSharedPointer<SceneInteract>(new SceneInteract());
-    framework->RegisterDynamicObject("sceneinteract", sceneInteract_.data());
+    sceneInteract = QSharedPointer<SceneInteract>(new SceneInteract());
+    framework->RegisterDynamicObject("sceneinteract", sceneInteract.data());
 
     defaultScene_.reset();
     scenes_.clear();
@@ -29,47 +27,24 @@ SceneAPI::~SceneAPI()
 
 void SceneAPI::Reset()
 {
-    sceneInteract_.clear();
+    sceneInteract.clear();
     defaultScene_.reset();
     scenes_.clear();
 }
 
-void SceneAPI::RegisterSceneEvents() const
-{
-    ///\todo Get rid of all the legacy scene events
-    const EventManagerPtr &event_manager = framework_->GetEventManager();
-    event_category_id_t scene_event_category = event_manager->RegisterEventCategory(sceneCatergoryName_);
-
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_ADDED, "Scene Added");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_DELETED, "Scene Deleted");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_CLONED, "Scene Cloned");
-
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_ADDED, "Entity Added");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_UPDATED, "Entity Updated");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_DELETED, "Entity Deleted");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_SELECT, "Entity Select");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_SELECTED, "Entity Selected");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_DESELECT, "Entity Deselect");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_CLICKED, "Entity Clicked");
-
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_CONTROLLABLE_ENTITY, "Controllable Entity Created");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, "Entity Visual Appearance Modified");
-    event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_ENTITY_MEDIAURL_SET, "Mediaurl set");
-}
-
 void SceneAPI::Initialise()
 {
-    sceneInteract_->Initialize(framework_);
+    sceneInteract->Initialize(framework_);
 }
 
 void SceneAPI::PostInitialize()
 {
-    sceneInteract_->PostInitialize();
+    sceneInteract->PostInitialize();
 }
 
 SceneInteractWeakPtr SceneAPI::GetSceneIteract() const
 {
-    return SceneInteractWeakPtr(sceneInteract_);
+    return SceneInteractWeakPtr(sceneInteract);
 }
 
 bool SceneAPI::HasScene(const QString &name) const

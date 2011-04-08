@@ -17,7 +17,7 @@ typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
 
 namespace Avatar
 {
-    //! Avatar editing window.
+    /// Avatar editing window.
     class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
     {
         Q_OBJECT
@@ -27,37 +27,37 @@ namespace Avatar
         ~AvatarEditor();
 
     public slots:
-        //! Rebuild edit view
+        /// Rebuild edit view
         void RebuildEditView();
         
-        //! Save avatar
+        /// Save avatar
         void SaveAvatar();
         
-        //! Load new avatar asset
+        /// Load new avatar asset
         void LoadAvatar();
 
-        //! Revert avatar edits
+        /// Revert avatar edits
         void RevertAvatar();
 
-        //! Change texture
+        /// Change texture
         void ChangeTexture();
 
-        //! New attachment
+        /// New attachment
         void AddAttachment();
 
-        //! Remove attachment
+        /// Remove attachment
         void RemoveAttachment();
 
-        //! Bone modifier scrollbar value handler
+        /// Bone modifier scrollbar value handler
         void BoneModifierValueChanged(int value);
 
-        //! Morph modifier scrollbar value handler
+        /// Morph modifier scrollbar value handler
         void MorphModifierValueChanged(int value);
 
-        //! Master appearance modifier scrollbar value handler
+        /// Master appearance modifier scrollbar value handler
         void MasterModifierValueChanged(int value);
 
-        //! Set avatar entity and asset to edit
+        /// Set avatar entity and asset to edit
         void SetEntityToEdit(Scene::EntityPtr entity);
         
     protected:
@@ -70,33 +70,33 @@ signals:
         void EditorHideMessages();
 
     private:
-        //! Owner module.
+        /// Owner module.
         AvatarModule *avatar_module_;
 
-        //! Create editor window
+        /// Create editor window
         void InitEditorWindow();
         
-        //! Get the avatar entity, avatar component, and avatar description. If all are non-null, return true
+        /// Get the avatar entity, avatar component, and avatar description. If all are non-null, return true
         bool GetAvatarDesc(Scene::Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc);
 
-        //! Clear a panel
+        /// Clear a panel
         void ClearPanel(QWidget* panel);
 
-        //! Create or get a tabbed scrollarea panel
+        /// Create or get a tabbed scrollarea panel
         QWidget* GetOrCreateTabScrollArea(QTabWidget* tabs, const std::string& name);
 
-        //! Ask a filename from the user. Store the directory used.
+        /// Ask a filename from the user. Store the directory used.
         std::string GetOpenFileName(const std::string& filter, const std::string& prompt);
 
-        //! Ask a filename from the user for saving. Store the directory used.
+        /// Ask a filename from the user for saving. Store the directory used.
         std::string GetSaveFileName(const std::string& filter, const std::string& prompt);
 
-        //! Last used directory for selecting avatars, attachments, textures
+        /// Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
 
-        //! Avatar entity to edit
+        /// Avatar entity to edit
         Scene::EntityWeakPtr avatarEntity_;
-        //! Avatar asset to edit
+        /// Avatar asset to edit
         boost::weak_ptr<AvatarDescAsset> avatarAsset_;
 
         bool reverting_;

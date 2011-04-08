@@ -17,7 +17,6 @@
 #include "EC_RttTarget.h"
 #include "EC_BillboardWidget.h"
 #include "EC_SelectionBox.h"
-#include "SceneEvents.h"
 #include "Entity.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"

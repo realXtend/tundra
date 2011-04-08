@@ -303,14 +303,7 @@ void TimeProfilerWindow::CopyMaterialAssetName()
 
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {
-    /* /// \todo Regression. Reimplement using the Asset API. -jj.
-    Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Mesh));
-    boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
-    if (event_manager_ != 0 )
-    {
-        event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
-    }
-*/
+    ///\todo Reimplement.
 }
 
 void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
@@ -323,15 +316,6 @@ void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
         
     tex_preview_->OpenOgreTexture(item->text(0));
     tex_preview_->show();
-
-    /*
-    Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Texture));
-    boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
-    if (event_manager_ != 0 )
-    {
-        event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
-    }
-    */
 #endif
 }
 
