@@ -4,9 +4,9 @@
 #include "DebugOperatorNew.h"
 #include "AvatarEditing/AvatarEditor.h"
 #include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarAppearance.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
+#include "AvatarDescAsset.h"
 #include "EntityComponent/EC_Avatar.h"
+#include "AssetAPI.h"
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
@@ -32,8 +32,7 @@
 namespace Avatar
 {
     AvatarEditor::AvatarEditor(AvatarModule *avatar_module) :
-        avatar_module_(avatar_module),
-        reverting_(false)
+        avatar_module_(avatar_module)
     {
         InitEditorWindow();
 
@@ -47,26 +46,12 @@ namespace Avatar
         avatar_module_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
     }
 
-    void AvatarEditor::ExportAvatar()
-    {
-        avatar_module_->GetAvatarHandler()->ExportUserAvatar();
-    }
-
-    void AvatarEditor::ExportAvatarLocal()
-    {
-        const std::string filter = "Avatar description file (*.xml)";
-        std::string filename = GetSaveFileName(filter, "Save avatar description and all assets");
-        if (!filename.empty())
-            avatar_module_->GetAvatarHandler()->ExportUserAvatarLocal(filename);
-    }
-    
     void AvatarEditor::InitEditorWindow()
     {
         setupUi(this);
 
         // Connect signals
-        connect(but_export, SIGNAL(clicked()), SLOT(ExportAvatar()));
-        connect(but_exportlocal, SIGNAL(clicked()), SLOT(ExportAvatarLocal()));
+        connect(but_save, SIGNAL(clicked()), SLOT(SaveAvatar()));
         connect(but_load, SIGNAL(clicked()), SLOT(LoadAvatar()));
         connect(but_revert, SIGNAL(clicked()), SLOT(RevertAvatar()));
         connect(but_attachment, SIGNAL(clicked()), this, SLOT(AddAttachment()));
@@ -86,18 +71,12 @@ namespace Avatar
 
     void AvatarEditor::RebuildEditView()
     {
-        // Activate/deactivate export button based on whether export currently supported
-        but_export->setEnabled(avatar_module_->GetAvatarHandler()->AvatarExportSupported());
+        Scene::Entity* entity;
+        EC_Avatar* avatar;
+        AvatarDescAsset* desc;
+        if (!GetAvatarDesc(entity, avatar, desc))
+            return;
 
-        // Get users avatar appearance
-        Scene::EntityPtr entity = GetAvatarEntity();
-        if (!entity)
-            return;
-        /*
-        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        if (!appearance)
-            return;
-        
         QHBoxLayout *v_box = 0;
         QPushButton *button = 0;
         QLabel *label = 0;
@@ -105,8 +84,8 @@ namespace Avatar
         int total_height;
 
         // Materials
-        ClearPanel(panel_materials); 
-        const AvatarMaterialVector& materials = appearance->GetMaterials();
+        ClearPanel(panel_materials);
+        const std::vector<QString>& materials = desc->materials_;
 
         QVBoxLayout *materials_layout = dynamic_cast<QVBoxLayout*>(panel_materials->layout());
         if (!materials_layout)
@@ -119,10 +98,7 @@ namespace Avatar
             v_box->setContentsMargins(6,3,6,3);
             v_box->setSpacing(6);
 
-            // If there's a texture name, use it
-            std::string texname = materials[y].asset_.name_;
-            if (materials[y].textures_.size())
-                texname = materials[y].textures_[0].name_;
+            std::string texname = materials[y].toStdString();
 
             // Create elements
             label = new QLabel(QString::fromStdString(texname));
@@ -145,7 +121,7 @@ namespace Avatar
 
         // Attachments
         ClearPanel(panel_attachments);
-        const AvatarAttachmentVector& attachments = appearance->GetAttachments();
+        const std::vector<AvatarAttachment>& attachments = desc->attachments_;
 
         QVBoxLayout *attachments_layout = dynamic_cast<QVBoxLayout*>(panel_attachments->layout());
         if (!attachments_layout)
@@ -196,7 +172,7 @@ namespace Avatar
         // Modifiers
         // If no master modifiers, show the individual morph/bone controls
         int max_items = 0;
-        const MasterModifierVector& master_modifiers = appearance->GetMasterModifiers();
+        const std::vector<MasterModifier>& master_modifiers = desc->masterModifiers_;
         if (!master_modifiers.size())
         {
             QWidget* morph_panel = GetOrCreateTabScrollArea(tab_appearance, "Morphs");
@@ -214,8 +190,8 @@ namespace Avatar
             bone_layout->setSpacing(0);
             bone_panel->setLayout(bone_layout);
 
-            const BoneModifierSetVector& bone_modifiers = appearance->GetBoneModifiers();
-            const MorphModifierVector& morph_modifiers = appearance->GetMorphModifiers();  
+            std::vector<BoneModifierSet>& bone_modifiers = desc->boneModifiers_;
+            std::vector<MorphModifier>& morph_modifiers = desc->morphModifiers_;
 
             for (uint i = 0; i < bone_modifiers.size(); ++i)
             {
@@ -364,13 +340,6 @@ namespace Avatar
             total_height = 250;
         tab_appearance->setFixedHeight(total_height + 30);
 
-        if (reverting_)
-        {
-            reverting_ = false;
-            emit EditorHideMessages();
-        }
-        
-        */
     }
 
     void AvatarEditor::ClearPanel(QWidget* panel)
@@ -405,22 +374,17 @@ namespace Avatar
         QScrollBar* slider = qobject_cast<QScrollBar*>(sender());
         if (!slider)
             return;
-        std::string control_name = slider->objectName().toStdString();
+        QString control_name = slider->objectName();
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = GetAvatarEntity();
-        if (!entity)
+        Scene::Entity* entity;
+        EC_Avatar* avatar;
+        AvatarDescAsset* desc;
+        if (!GetAvatarDesc(entity, avatar, desc))
             return;
-        /*
-        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
-        if ((!appearance) || (!avatar))
-            return;
-
-        appearance->SetModifierValue(control_name, AppearanceModifier::Morph, value / 100.0f);
-        avatar->SetupDynamicAppearance();
-        */
+        
+        desc->SetModifierValue(control_name, value / 100.0f);
     }
 
     void AvatarEditor::BoneModifierValueChanged(int value)
@@ -428,22 +392,17 @@ namespace Avatar
         QScrollBar* slider = qobject_cast<QScrollBar*>(sender());
         if (!slider)
             return;
-        std::string control_name = slider->objectName().toStdString();
+        QString control_name = slider->objectName();
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = GetAvatarEntity();
-        if (!entity)
+        Scene::Entity* entity;
+        EC_Avatar* avatar;
+        AvatarDescAsset* desc;
+        if (!GetAvatarDesc(entity, avatar, desc))
             return;
-        /*
-        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
-        if ((!appearance) || (!avatar))
-            return;
-
-        appearance->SetModifierValue(control_name, AppearanceModifier::Bone, value / 100.0f);
-        avatar->SetupDynamicAppearance();
-        */
+        
+        desc->SetModifierValue(control_name, value / 100.0f);
     }
 
     void AvatarEditor::MasterModifierValueChanged(int value)
@@ -451,24 +410,43 @@ namespace Avatar
         QScrollBar* slider = qobject_cast<QScrollBar*>(sender());
         if (!slider)
             return;
-        std::string control_name = slider->objectName().toStdString();
+        QString control_name = slider->objectName();
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = GetAvatarEntity();
-        if (!entity)
+        Scene::Entity* entity;
+        EC_Avatar* avatar;
+        AvatarDescAsset* desc;
+        if (!GetAvatarDesc(entity, avatar, desc))
             return;
-        /*
-        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
-        if ((!appearance) || (!avatar))
-            return;
-    
-        appearance->SetMasterModifierValue(control_name, value / 100.0f);
-        avatar->SetupDynamicAppearance();
-        */
+        
+        desc->SetMasterModifierValue(control_name, value / 100.0f);
     }
 
+    void AvatarEditor::SetEntityToEdit(Scene::EntityPtr entity)
+    {
+        // Disconnect from old avatar asset change signals
+        AvatarDescAsset* oldDesc = avatarAsset_.lock().get();
+        if (oldDesc)
+            disconnect(oldDesc, SIGNAL(AppearanceChanged()), this, SLOT(RebuildEditView()));
+
+        avatarAsset_.reset();
+        avatarEntity_ = entity;
+        if (entity)
+        {
+            EC_Avatar* avatar = entity->GetComponent<EC_Avatar>().get();
+            if (avatar)
+            {
+                avatarAsset_ = avatar->GetAvatarDesc();
+                AvatarDescAsset* newDesc = avatarAsset_.lock().get();
+                if (newDesc)
+                    connect(newDesc, SIGNAL(AppearanceChanged()), this, SLOT(RebuildEditView()));
+            }
+        }
+        
+        RebuildEditView();
+    }
+    
     void AvatarEditor::changeEvent(QEvent* e)
     {
         if (e->type() == QEvent::LanguageChange)
@@ -499,12 +477,26 @@ namespace Avatar
 
     void AvatarEditor::RevertAvatar()
     {
-        reverting_ = true;
-        emit EditorStatus("Reverting all local changes to avatar...");
-        /*
-        // Reload avatar from storage, or reload default
-        avatar_module_->GetAvatarHandler()->ReloadUserAvatar();
-        */
+        // Get users avatar appearance
+        Scene::Entity* entity;
+        EC_Avatar* avatar;
+        AvatarDescAsset* desc;
+        if (!GetAvatarDesc(entity, avatar, desc))
+            return;
+
+        desc->LoadFromCache();
+    }
+
+    void AvatarEditor::SaveAvatar()
+    {
+        Scene::Entity* entity;
+        EC_Avatar* avatar;
+        AvatarDescAsset* desc;
+        if (!GetAvatarDesc(entity, avatar, desc))
+            return;
+        
+        //! \todo use upload functionality. For now just saves to disk, overwriting the original file.
+        desc->SaveToFile(desc->DiskSource());
     }
 
     void AvatarEditor::ChangeTexture()
@@ -520,9 +512,6 @@ namespace Avatar
         std::string filename = GetOpenFileName(filter, "Choose texture or material");
         if (!filename.empty())
         {
-            Scene::EntityPtr entity = GetAvatarEntity();
-            if (!entity)
-                return;
             /*
             avatar_module_->GetAvatarHandler()->GetAppearanceHandler().ChangeAvatarMaterial(entity, index, filename);
             QTimer::singleShot(250, this, SLOT(RebuildEditView()));
@@ -539,9 +528,6 @@ namespace Avatar
         std::string index_str = button->objectName().toStdString();
         uint index = ParseString<uint>(index_str);    
         
-        Scene::EntityPtr entity = GetAvatarEntity();
-        if (!entity)
-            return;
         /*
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
@@ -627,24 +613,15 @@ namespace Avatar
         return filename; 
     }
     
-    void AvatarEditor::SetAvatarEntityName(QString name)
+    bool AvatarEditor::GetAvatarDesc(Scene::Entity*& entity, EC_Avatar*& avatar, AvatarDescAsset*& desc)
     {
-        avatar_entity_name_ = name;
-    }
-    
-    Scene::EntityPtr AvatarEditor::GetAvatarEntity()
-    {
-        //! Get the avatar entity to edit
-        if (!avatar_entity_name_.length())
-        {
-            return avatar_module_->GetAvatarHandler()->GetUserAvatar();
-        }
-        else
-        {
-            Scene::ScenePtr scene = avatar_module_->GetFramework()->Scene()->GetDefaultScene();
-            if (!scene)
-                return Scene::EntityPtr();
-            return scene->GetEntityByName(avatar_entity_name_);
-        }
+        entity = avatarEntity_.lock().get();
+        if (!entity)
+            return false;
+        avatar = entity->GetComponent<EC_Avatar>().get();
+        if (!avatar)
+            return false;
+        desc = avatarAsset_.lock().get();
+        return desc != 0;
     }
 }
