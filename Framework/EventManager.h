@@ -132,12 +132,6 @@ public:
     /// Returns event map
     const EventMap &GetEventMap() const { return event_map_; }
 
-    /// Returns next unused non-zero request tag for asset/resource request events
-    /** By having a global source for the tags there is no risk for collisions between
-        different modules/subsystems.
-     */
-//    request_tag_t GetNextRequestTag();
-
     /// Registers component to listen only event which is defined by given @p category_id and @p event_id.
     /** @param component is component which will get event. 
         @param category_id is events category id. 
@@ -205,9 +199,6 @@ private:
 
     /// Next event category ID that will be assigned
     event_category_id_t next_category_id_;
-
-    /// Next free request tag to be used
-//    request_tag_t next_request_tag_;
 
     /// Map for assigned event category id's
     EventCategoryMap event_category_map_;

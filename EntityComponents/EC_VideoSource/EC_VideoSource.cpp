@@ -47,7 +47,6 @@ EC_VideoSource::EC_VideoSource(IModule *module):
     player_(0),
     video_widget_(0),
     media_object_(0),
-//    video_request_tag_(0),
     error_label_(0)
 {
     // Init metadata for attributes

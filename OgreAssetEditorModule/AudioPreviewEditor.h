@@ -40,10 +40,6 @@ public:
                        QWidget *parent = 0);
     virtual ~AudioPreviewEditor();
 
-//    void HandleAssetReady(Foundation::AssetInterfacePtr asset);
-
-//    void HandleResouceReady(Resource::Events::ResourceReady *res);
-
 public slots:
     /// Close the window.
     void Closed();
@@ -67,10 +63,8 @@ private:
 
     Foundation::Framework *framework_;
     asset_type_t assetType_;
-//    request_tag_t request_tag_;
     QString inventoryId_;
     QString assetId_;
-//    sound_id_t soundId_;
 
     QWidget     *mainWidget_;
     QPushButton *okButton_;

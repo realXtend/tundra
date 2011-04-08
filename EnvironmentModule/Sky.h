@@ -54,11 +54,6 @@ namespace Environment
         /// @param show Visibility of the sky.
         void CreateDefaultSky(const bool &show = true);
 
-     
-        /// Called whenever a texture is loaded so it can be attached to the sky.
-        /// @param Resource pointer to the texture.
-//        void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
-
         /// @return The sky type that is in use.
         SkyType GetSkyType() const;
 
@@ -105,9 +100,6 @@ namespace Environment
 
         /// Whether sky is enabled by this component.
         bool skyEnabled_;
-
-//        QList<request_tag_t > lstRequestTags_;
-        QMap<int, int >  requestMap_;
     };
 }
 
