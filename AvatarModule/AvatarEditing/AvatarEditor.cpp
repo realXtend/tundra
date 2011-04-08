@@ -4,7 +4,6 @@
 
 #include "DebugOperatorNew.h"
 #include "AvatarEditing/AvatarEditor.h"
-#include "Avatar/AvatarHandler.h"
 #include "AvatarDescAsset.h"
 #include "EntityComponent/EC_Avatar.h"
 #include "AssetAPI.h"

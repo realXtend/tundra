@@ -94,7 +94,7 @@ bool AvatarDescAsset::ReadAvatarAppearance(const QDomDocument& source)
     QDomElement avatar = source.firstChildElement("avatar");
     if (avatar.isNull())
     {
-        AvatarModule::LogError("No avatar element");
+        LogError("No avatar element");
         return false;
     }
 
@@ -335,7 +335,7 @@ void AvatarDescAsset::ReadAnimationDefinition(const QDomElement& elem)
         id = elem.attribute("uuid").toStdString(); // legacy
     if (id.empty())
     {
-        AvatarModule::LogError("Missing animation identifier");
+        LogError("Missing animation identifier");
         return;
     }
     
@@ -344,7 +344,7 @@ void AvatarDescAsset::ReadAnimationDefinition(const QDomElement& elem)
         intname = elem.attribute("ogrename").toStdString(); // legacy
     if (intname.empty())
     {
-        AvatarModule::LogError("Missing mesh animation name");
+        LogError("Missing mesh animation name");
         return;
     }
     
@@ -376,7 +376,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     }
     else
     {
-        AvatarModule::LogError("Attachment without name element");
+        LogError("Attachment without name element");
         return;
     }
     
@@ -402,7 +402,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     }
     else
     {
-        AvatarModule::LogError("Attachment without mesh element");
+        LogError("Attachment without mesh element");
         return;
     }
     
@@ -430,7 +430,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     }
     else
     {
-        AvatarModule::LogError("Attachment without avatar element");
+        LogError("Attachment without avatar element");
         return;
     }
     
