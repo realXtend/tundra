@@ -1,6 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogicModule_Sky_h
+#ifndef incl_EnvironmentModule_Sky_h
 # error "Never use <Sky-templates.h> directly; include <Sky.h> instead."
 #endif
 

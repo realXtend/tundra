@@ -38,18 +38,10 @@ EC_Ruler::EC_Ruler(IModule *module) :
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Service::ST_Renderer);
 
-#ifdef ENABLE_TAIGA_SUPPORT
-    RexUUID uuid = RexUUID::CreateRandom();
-    rulerName = uuid.ToString() + "ruler";
-    nodeName = uuid.ToString() + "node";
-    rulerMovingPartName = uuid.ToString() + "mover";
-    movingNodeName = uuid.ToString() + "movingNode";
-#else
     rulerName = "ruler";
     nodeName = "node";
     rulerMovingPartName = "mover";
     movingNodeName = "movingNode";
-#endif
     
     QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateRuler()));
 }

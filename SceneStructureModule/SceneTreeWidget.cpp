@@ -589,7 +589,6 @@ void SceneTreeWidget::Edit()
 #ifdef OGREASSETEDITOR_ENABLED
         foreach(AssetRefItem *aItem, selection.assets)
         {
-            //int itype = RexTypes::GetAssetTypeFromFilename(aItem->id.toStdString());
             QString type = GetResourceTypeFromResourceFileName(aItem->id.toLatin1());
 
             if (type == "OgreMesh")

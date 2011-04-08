@@ -214,8 +214,6 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     QObject::connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
 
     boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
-    if (event_manager_ != 0)
-        asset_event_category_ = event_manager_->QueryEventCategory("Asset");
 
     // Add a context menu to Textures, Meshes and Materials widgets.
     if (tree_texture_assets_)

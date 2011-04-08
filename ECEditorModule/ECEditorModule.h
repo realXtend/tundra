@@ -21,7 +21,7 @@ class EcXmlEditorWidget;
 
 /// EC Editor module
 /** \defgroup ECEditorModuleClient ECEditorModule Client interface.
- *  EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
+ *  EC Editor implements a way of adding arbitrary EC's to world entities.
  */
 class ECEDITOR_MODULE_API ECEditorModule : public QObject, public IModule
 {

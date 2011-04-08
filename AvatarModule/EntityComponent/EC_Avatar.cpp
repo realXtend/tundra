@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EntityComponent/EC_Avatar.h"
-#include "RexTypes.h"
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
 #include "EC_Placeable.h"
@@ -17,11 +16,8 @@
 #include <QDomDocument>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_Avatar")
 
 #include "MemoryLeakCheck.h"
-
-using namespace RexTypes;
 
 void ApplyBoneModifier(Scene::Entity* entity, const BoneModifier& modifier, float value);
 void ResetBones(Scene::Entity* entity);

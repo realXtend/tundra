@@ -298,4 +298,4 @@ void Sky::ChangeSkyType(SkyType type, bool update_sky)
     type_ = type;
 }
 
-} // namespace RexLogic
+}

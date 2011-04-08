@@ -24,8 +24,6 @@
 EntityComponent that reports distance to other entities that also have EC_ProximityTrigger component. The entities
 also need to have EC_Placeable component so that distance can be calculated.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 <ul>
 <li>bool: active

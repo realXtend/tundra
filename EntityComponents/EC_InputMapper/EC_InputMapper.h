@@ -30,8 +30,6 @@
 Registers an InputContext from the Naali Input subsystem and uses it to translate
 given set of key and mouse sequences to Entity Actions on the entity the component is part of.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>:
 <ul>
 <li>QString: contextName.

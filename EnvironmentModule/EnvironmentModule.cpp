@@ -72,7 +72,6 @@ namespace Environment
     {
         event_manager_ = framework_->GetEventManager();
         
-        // Depends on RexLogic etc. handling messages first to create the scene, so lower priority
         event_manager_->RegisterEventSubscriber(this, 99);
         tundra_event_category_ = event_manager_->QueryEventCategory("Tundra");
     }

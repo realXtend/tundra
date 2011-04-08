@@ -17,11 +17,11 @@ namespace Environment
     class EC_WaterPlane;
 
     /**
-     * Water class is used to control default water plane, this is depricated way to control environment water. 
-     * This class handles all environment editor changes, and deals RexDrawWater-message information from server. 
+     * Water class is used to control default water plane, this is deprecated way to control environment water. 
+     * This class handles all environment editor changes.
      * Note! This class uses a idea of Environment - entity. IF there exist a entity in world which has component @p EC_NAME
      * which name attribute is WaterEnvironment, then it will be used as enviroment control entity (and all syncronization of ocean etc.) is done through
-     * that entity. IF there does not exist a entity EnviromenModule will (and this class) create LocalEnviroment entity, which owns ocean etc. this will be not syncronizable.
+     * that entity. IF there does not exist a entity EnviromentModule will (and this class) create LocalEnviroment entity, which owns ocean etc. this will be not synchronizable.
      *
      */
 

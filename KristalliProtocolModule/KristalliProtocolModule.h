@@ -120,15 +120,6 @@ namespace KristalliProtocol
         
         /// Event manager.
         EventManagerPtr eventManager_ ;
-
-        /// Id for "NetworkIn" event category.
-        event_category_id_t networkInEventCategory_;
-
-        /// Id for "NetworkState" event category.
-        event_category_id_t networkStateEventCategory_;
-        
-        /// Id for "Framework" event category.
-        event_category_id_t frameworkEventCategory_;
     };
 }
 

@@ -35,9 +35,6 @@ if (OGREASSETEDITOR)
 link_modules(OgreAssetEditorModule)
 endif()
 
-LinkEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)
-LinkEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
-
 SetupCompileFlagsWithPCH()
 
 

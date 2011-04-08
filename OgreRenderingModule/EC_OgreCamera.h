@@ -110,6 +110,16 @@ public slots:
      */
     Ogre::Camera* GetCamera() const { return camera_; }
 
+/* The following functions moved here from RenderServiceInterface. Reimplement them:
+
+    /// take sceenshot to a location
+    /// \param filePath File path.
+    /// \param fileName File name.
+    virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName) = 0;
+
+    /// Render current main window content to texture
+    virtual QPixmap RenderImage(bool use_main_camera = true) = 0; */
+
 private slots:
     /// Called when the parent entity has been set.
 

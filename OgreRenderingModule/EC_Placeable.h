@@ -28,7 +28,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <b>Attributes</b>:
 <ul>
 <li>Transform: transform
-<div>Sets the position, rotation and scale of the entity. Not usable and not replicated in Opensim worlds.</div>
+<div>Sets the position, rotation and scale of the entity.</div>
 <li>bool: drawDebug
 <div>Shows the debug bounding box of geometry attached to the placeable.</div>
 </ul>
@@ -109,9 +109,6 @@ public:
     virtual ~EC_Placeable();
     
     /// Set component as serializable.
-    /** Note that despite this, in OpenSim worlds, the network sync will be disabled from the component,
-        as EC_NetworkPosition controls the actual authoritative position (including interpolation)
-     */
     virtual bool IsSerializable() const { return true; }
     
     /// sets parent placeable

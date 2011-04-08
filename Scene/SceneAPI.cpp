@@ -129,11 +129,6 @@ Scene::ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled)
     {
         scenes_[name] = newScene;
 
-        // Send internal event of creation
-        Scene::Events::SceneEventData eventData(newScene->Name().toStdString());
-        event_category_id_t categoryId = framework_->GetEventManager()->QueryEventCategory(sceneCatergoryName_);
-        framework_->GetEventManager()->SendEvent(categoryId, Scene::Events::EVENT_SCENE_ADDED, &eventData);
-
         // Emit signal of creation
         emit SceneAdded(newScene->Name());
     }
@@ -149,11 +144,6 @@ void SceneAPI::RemoveScene(const QString &name)
         if (defaultScene_ == sceneIter->second)
             defaultScene_.reset();
         scenes_.erase(sceneIter);
-
-        // Send internal event about removed scene
-        Scene::Events::SceneEventData eventData(name.toStdString());
-        event_category_id_t categoryId = framework_->GetEventManager()->QueryEventCategory(sceneCatergoryName_);
-        framework_->GetEventManager()->SendEvent(categoryId, Scene::Events::EVENT_SCENE_DELETED, &eventData);
 
         // Emit signal about removed scene
         emit SceneRemoved(name);

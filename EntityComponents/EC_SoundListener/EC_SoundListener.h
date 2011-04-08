@@ -28,8 +28,6 @@ Updates parent entity's placeable component's position to the sound service each
         should be an option to apply a sound listener component to any entity that owns a
         instance of placeable component.
 
-Registered by RexLogic::RexLogicModule.
-
 <b>Attributes</b>.
 <ul>
 <li>bool: active

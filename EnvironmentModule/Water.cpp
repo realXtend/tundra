@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 /// @file Water.cpp
-/// @brief Manages Water-related Rex logic.
+/// @brief Manages Water-related logic.
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
@@ -73,8 +73,7 @@ void Water::RemoveWaterGeometry()
 
 void Water::Update()
 {
-    // This is a hack, because of environment entity comes after then RexWater- package. We create LocalEnviroment-entity. 
-    // Now we need to update scene, if there exist a real environment entity, so that we do not get two ocean water planes. 
+    ///\todo Remove the contents of this function. -jj.
     EC_WaterPlane* plane = GetEnvironmentWaterComponent();
     UNREFERENCED_PARAM(plane);
 

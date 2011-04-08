@@ -12,7 +12,6 @@
 #include <cstring>
 
 using namespace Avatar;
-using namespace RexTypes;
 
 std::string modifierMode[] = {
     "relative",

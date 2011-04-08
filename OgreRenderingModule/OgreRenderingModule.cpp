@@ -39,9 +39,7 @@ namespace OgreRenderer
     std::string OgreRenderingModule::type_name_static_ = "OgreRendering";
 
     OgreRenderingModule::OgreRenderingModule() :
-        IModule(type_name_static_),
-        input_event_category_(0),
-        scene_event_category_(0)
+        IModule(type_name_static_)
     {
     }
 
@@ -111,9 +109,6 @@ namespace OgreRenderer
     void OgreRenderingModule::PostInitialize()
     {
         EventManagerPtr event_manager = framework_->GetEventManager();
-        input_event_category_ = event_manager->QueryEventCategory("Input");
-        scene_event_category_ = event_manager->QueryEventCategory("Scene");
-        network_state_event_category_ = event_manager->QueryEventCategory("NetworkState");
 
         renderer_->PostInitialize();
 

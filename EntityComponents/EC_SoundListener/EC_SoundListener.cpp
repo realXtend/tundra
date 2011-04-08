@@ -65,7 +65,6 @@ void EC_SoundListener::OnActiveChanged()
     if (active.Get())
     {
         // Disable all the other listeners, only one can be active at a time.
-        ///\todo Maybe not the most sophisticated way to handle this here; do this in RexLogicModule maybe.
         Scene::EntityList listeners = scene->GetEntitiesWithComponent("EC_SoundListener");
         foreach(Scene::EntityPtr listener, listeners)
         {

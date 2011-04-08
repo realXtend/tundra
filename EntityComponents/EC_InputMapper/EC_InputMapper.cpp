@@ -177,7 +177,7 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     if (!GetParentEntity())
         return;
     
-    /// \todo this hard coding of look button logic (similar to RexMovementInput) is not nice!
+    /// \todo this hard coding of look button logic is not nice!
     if ((e->IsButtonDown(MouseEvent::RightButton)) && (!GetFramework()->Input()->IsMouseCursorVisible()))
     {
         if (e->relativeX != 0)

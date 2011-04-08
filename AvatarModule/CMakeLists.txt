@@ -41,8 +41,6 @@ link_modules(Framework Scene SupportModules
     AssetModule OgreRenderingModule Input Asset)
 
 LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
-LinkEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
-LinkEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
 LinkEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
 LinkEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition)
 

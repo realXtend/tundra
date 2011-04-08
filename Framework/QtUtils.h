@@ -107,14 +107,6 @@ namespace QtUtils
         const std::string &caption,
         const std::string &dir);
 
-    /// Same as GetOpenFileNames but with hardcoded reX filters.
-    /** @return List of absolute paths to the chosen files.
-    */
-    StringList GetOpenRexFileNames(const std::string &dir);
-
-    /// Same as GetOpenFileNames but return QStringList instead of std::list<std::string>.
-    QStringList GetOpenRexFilenames(const std::string &dir);
-
     /// @return The absolute path of the application's current directory.
     std::string GetCurrentPath();
 };

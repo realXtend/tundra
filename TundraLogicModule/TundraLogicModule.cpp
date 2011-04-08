@@ -29,21 +29,6 @@
 
 #include "EC_Name.h"
 
-#ifdef EC_OpenSimAvatar_ENABLED
-#include "EntityComponent/EC_OpenSimAvatar.h"
-#endif
-#ifdef EC_Controllable_ENABLED
-#include "EntityComponent/EC_Controllable.h"
-#endif
-
-#ifdef EC_NetworkPosition_ENABLED
-#include "EC_NetworkPosition.h"
-#endif
-
-#ifdef EC_AvatarAppearance_ENABLED
-#include "EntityComponent/EC_AvatarAppearance.h"
-#endif
-
 #ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
 #endif
@@ -152,12 +137,6 @@ void TundraLogicModule::Load()
 #ifdef EC_Light_ENABLED
     DECLARE_MODULE_EC(EC_Light);
 #endif
-#ifdef EC_OpenSimPresence_ENABLED
-    DECLARE_MODULE_EC(EC_OpenSimPresence);
-#endif
-#ifdef EC_OpenSimPrim_ENABLED
-    DECLARE_MODULE_EC(EC_OpenSimPrim);
-#endif
 #ifdef EC_Touchable_ENABLED
     DECLARE_MODULE_EC(EC_Touchable);
 #endif
@@ -225,7 +204,6 @@ void TundraLogicModule::Initialize()
 void TundraLogicModule::PostInitialize()
 {
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
-    frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
     
     RegisterConsoleCommand(Console::CreateCommand("startserver", 
         "Starts a server. Usage: startserver(port)",
