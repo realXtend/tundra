@@ -1,6 +1,0 @@
-<config>
-    <entry>SceneStructureModule</entry>
-    <dependency>ECEditorModule</dependency>
-    <dependency>TundraLogicModule</dependency>
-    <dependency>OgreRenderingModule</dependency>
-</config>

@@ -1,6 +1,0 @@
-<config>
-    <entry>TundraLogicModule</entry>
-    <dependency>KristalliProtocolModule</dependency>
-    <dependency>OgreRenderingModule</dependency>
-    <dependency>PhysicsModule</dependency>
-</config>
