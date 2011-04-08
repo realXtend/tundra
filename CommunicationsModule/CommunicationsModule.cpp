@@ -33,28 +33,27 @@ namespace CommunicationsService
         communications_service_ = Service::IntancePtr();
         if (!communications_service_)
         {
-            QString message("Cannot get communications service intance.");
-            LogError(message.toStdString());
+            LogError("Cannot get communications service instance for registering the service!");
             return;
         }
 
         framework_->GetServiceManager()->RegisterService(::Service::ST_Communications, communications_service_);
-        QString message("Communications service registered.");
-        LogInfo(message.toStdString());
+        LogInfo("Communications service registered.");
         framework_->RegisterDynamicObject("communications_service", communications_service_.get());
     }
 
     void CommunicationsModule::PostInitialize()
     {
-//        CommunicationsWidget = new CommunicationsWidget();
+        /// \todo Opensim stuff, can be removed?
+        //CommunicationsWidget = new CommunicationsWidget();
         // Create Communication widgets
         //boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         //if (ui_module)
-        {
+        //{
             //im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
             //if (im_ui_proxy_widget_)
             //    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
-        }
+        //}
     }
 
     void CommunicationsModule::Uninitialize()

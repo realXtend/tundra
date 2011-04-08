@@ -38,6 +38,9 @@ EC_Avatar::EC_Avatar(IModule* module) :
 {
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
         this, SLOT(OnAttributeUpdated(IAttribute*)));
+    
+    avatarAssetListener_ = AssetRefListenerPtr(new AssetRefListener());
+    connect(avatarAssetListener_.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)), Qt::UniqueConnection);
 }
 
 EC_Avatar::~EC_Avatar()
@@ -58,7 +61,7 @@ void EC_Avatar::OnAvatarAppearanceLoaded(AssetPtr asset)
         return;
         
     // Disconnect old change signals, connect new
-    AvatarDescAsset* oldDesc = avatarAsset_.get();
+    AvatarDescAsset* oldDesc = avatarAsset_.lock().get();
     AvatarDescAsset* newDesc = avatarAsset.get();
     if (oldDesc != newDesc)
     {
@@ -91,10 +94,8 @@ void EC_Avatar::OnAttributeUpdated(IAttribute *attribute)
         QString ref = appearanceRef.Get().ref.trimmed();
         if (ref.isEmpty())
             return;
-
-        AssetTransferPtr transfer = GetFramework()->Asset()->RequestAsset(ref.toStdString().c_str(), ASSETTYPENAME_GENERIC_AVATAR_XML.c_str());
-        if (transfer)
-            connect(transfer.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnAvatarAppearanceLoaded(AssetPtr)));
+        
+        avatarAssetListener_->HandleAssetRefChange(&appearanceRef, ASSETTYPENAME_GENERIC_AVATAR_XML.c_str());
     }
 }
 
@@ -103,7 +104,8 @@ void EC_Avatar::SetupAppearance()
     PROFILE(Avatar_SetupAppearance);
     
     Scene::Entity* entity = GetParentEntity();
-    if ((!avatarAsset_) || (!entity))
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if ((!desc) || (!entity))
         return;
     
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
@@ -111,7 +113,7 @@ void EC_Avatar::SetupAppearance()
         return;
 
     // If mesh ref is empty, it would certainly be an epic fail. Do nothing.
-    if (!avatarAsset_->mesh_.length())
+    if (!desc->mesh_.length())
         return;
     
     // Setup appearance
@@ -123,7 +125,8 @@ void EC_Avatar::SetupAppearance()
 void EC_Avatar::SetupDynamicAppearance()
 {
     Scene::Entity* entity = GetParentEntity();
-    if ((!avatarAsset_) || (!entity))
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if ((!desc) || (!entity))
         return;
     
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
@@ -136,20 +139,26 @@ void EC_Avatar::SetupDynamicAppearance()
     AdjustHeightOffset();
 }
 
+AvatarDescAssetPtr EC_Avatar::GetAvatarDesc()
+{
+    return avatarAsset_.lock();
+}
+
 QString EC_Avatar::GetAvatarProperty(const QString& name)
 {
-    if (!avatarAsset_)
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if (!desc)
         return QString();
     else
-        return avatarAsset_->properties_[name];
+        return desc->properties_[name];
 }
 
 void EC_Avatar::AdjustHeightOffset()
 {
     Scene::Entity* entity = GetParentEntity();
-    if ((!avatarAsset_) || (!entity))
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if ((!desc) || (!entity))
         return;
-        
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh)
         return;
@@ -157,14 +166,14 @@ void EC_Avatar::AdjustHeightOffset()
     Ogre::Vector3 offset = Ogre::Vector3::ZERO;
     Ogre::Vector3 initial_base_pos = Ogre::Vector3::ZERO;
 
-    if (avatarAsset_->HasProperty("baseoffset"))
+    if (desc->HasProperty("baseoffset"))
     {
-        initial_base_pos = Ogre::StringConverter::parseVector3(avatarAsset_->GetProperty("baseoffset").toStdString());
+        initial_base_pos = Ogre::StringConverter::parseVector3(desc->GetProperty("baseoffset").toStdString());
     }
 
-    if (avatarAsset_->HasProperty("basebone"))
+    if (desc->HasProperty("basebone"))
     {
-        Ogre::Bone* base_bone = GetAvatarBone(entity, avatarAsset_->GetProperty("basebone").toStdString());
+        Ogre::Bone* base_bone = GetAvatarBone(entity, desc->GetProperty("basebone").toStdString());
         if (base_bone)
         {
             Ogre::Vector3 temp;
@@ -174,9 +183,9 @@ void EC_Avatar::AdjustHeightOffset()
 
             // Additionally, if has the rootbone property, can do dynamic adjustment for sitting etc.
             // and adjust the name overlay height
-            if (avatarAsset_->HasProperty("rootbone"))
+            if (desc->HasProperty("rootbone"))
             {
-                Ogre::Bone* root_bone = GetAvatarBone(entity, avatarAsset_->GetProperty("rootbone").toStdString());
+                Ogre::Bone* root_bone = GetAvatarBone(entity, desc->GetProperty("rootbone").toStdString());
                 if (root_bone)
                 {
                     Ogre::Vector3 initial_root_pos;
@@ -198,12 +207,17 @@ void EC_Avatar::AdjustHeightOffset()
 void EC_Avatar::SetupMeshAndMaterials()
 {
     Scene::Entity* entity = GetParentEntity();
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if ((!desc) || (!entity))
+        return;
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
+    if (!mesh)
+        return;
     
     // Mesh needs to be cloned if there are attachments which need to hide vertices
     bool need_mesh_clone = false;
     
-    const std::vector<AvatarAttachment>& attachments = avatarAsset_->attachments_;
+    const std::vector<AvatarAttachment>& attachments = desc->attachments_;
     std::set<uint> vertices_to_hide;
     for (uint i = 0; i < attachments.size(); ++i)
     {
@@ -215,11 +229,11 @@ void EC_Avatar::SetupMeshAndMaterials()
         }
     }
     
-    QString meshName = LookupAsset(avatarAsset_->mesh_);
+    QString meshName = LookupAsset(desc->mesh_);
     
-    if (avatarAsset_->skeleton_.length())
+    if (desc->skeleton_.length())
     {
-        QString skeletonName = LookupAsset(avatarAsset_->skeleton_);
+        QString skeletonName = LookupAsset(desc->skeleton_);
         mesh->SetMeshWithSkeleton(meshName.toStdString(), skeletonName.toStdString(), need_mesh_clone);
     }
     else
@@ -228,8 +242,8 @@ void EC_Avatar::SetupMeshAndMaterials()
     if (need_mesh_clone)
         HideVertices(mesh->GetEntity(), vertices_to_hide);
     
-    for (uint i = 0; i < avatarAsset_->materials_.size(); ++i)
-        mesh->SetMaterial(i, LookupAsset(avatarAsset_->materials_[i]));
+    for (uint i = 0; i < desc->materials_.size(); ++i)
+        mesh->SetMaterial(i, LookupAsset(desc->materials_[i]));
     
     // Set adjustment orientation for mesh (Ogre meshes usually have Y-axis as vertical)
     Quaternion adjust(PI/2, 0, -PI/2);
@@ -243,11 +257,16 @@ void EC_Avatar::SetupMeshAndMaterials()
 void EC_Avatar::SetupAttachments()
 {
     Scene::Entity* entity = GetParentEntity();
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if ((!desc) || (!entity))
+        return;
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
+    if (!mesh)
+        return;
     
     mesh->RemoveAllAttachments();
     
-    const std::vector<AvatarAttachment>& attachments = avatarAsset_->attachments_;
+    const std::vector<AvatarAttachment>& attachments = desc->attachments_;
     
     for (uint i = 0; i < attachments.size(); ++i)
     {
@@ -265,7 +284,12 @@ void EC_Avatar::SetupAttachments()
 void EC_Avatar::SetupMorphs()
 {
     Scene::Entity* entity = GetParentEntity();
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if ((!desc) || (!entity))
+        return;
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
+    if (!mesh)
+        return;
     
     Ogre::Entity* ogre_entity = mesh->GetEntity();
     if (!ogre_entity)
@@ -274,7 +298,7 @@ void EC_Avatar::SetupMorphs()
     if (!anims)
         return;
         
-    const std::vector<MorphModifier> morphs = avatarAsset_->morphModifiers_;
+    const std::vector<MorphModifier> morphs = desc->morphModifiers_;
     
     for (uint i = 0; i < morphs.size(); ++i)
     {
@@ -313,9 +337,12 @@ void EC_Avatar::SetupMorphs()
 void EC_Avatar::SetupBoneModifiers()
 {
     Scene::Entity* entity = GetParentEntity();
+    AvatarDescAssetPtr desc = GetAvatarDesc();
+    if ((!desc) || (!entity))
+        return;
     ResetBones(entity);
     
-    const std::vector<BoneModifierSet>& bone_modifiers = avatarAsset_->boneModifiers_;
+    const std::vector<BoneModifierSet>& bone_modifiers = desc->boneModifiers_;
     for (uint i = 0; i < bone_modifiers.size(); ++i)
     {
         for (uint j = 0; j < bone_modifiers[i].modifiers_.size(); ++j)
@@ -331,7 +358,9 @@ QString EC_Avatar::LookupAsset(const QString& ref)
 void ResetBones(Scene::Entity* entity)
 {
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
-
+    if (!mesh)
+        return;
+    
     Ogre::Entity* ogre_entity = mesh->GetEntity();
     if (!ogre_entity)
         return;
@@ -359,7 +388,8 @@ void ResetBones(Scene::Entity* entity)
 void ApplyBoneModifier(Scene::Entity* entity, const BoneModifier& modifier, float value)
 {
     EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
-    
+    if (!mesh)
+        return;
     Ogre::Entity* ogre_entity = mesh->GetEntity();
     if (!ogre_entity)
         return;

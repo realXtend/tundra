@@ -595,10 +595,12 @@ void SceneTreeWidget::Edit()
             if (type == "OgreMesh")
             {
                 MeshPreviewEditor::OpenMeshPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), aItem->type);
-            } else if (type ==  "OgreTexture")
+            }
+            else if (type ==  "OgreTexture")
             {
-                TexturePreviewEditor::OpenPreviewEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()));
-            } else if (type == "OgreMaterial")
+                TexturePreviewEditor::OpenPreviewEditor(QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), 0);
+            }
+            else if (type == "OgreMaterial")
             {
                 OgreScriptEditor::OpenOgreScriptEditor(framework, QString(OgreRenderer::SanitateAssetIdForOgre(aItem->id.toStdString()).c_str()), RexTypes::RexAT_MaterialScript);
             }

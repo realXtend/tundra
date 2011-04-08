@@ -311,6 +311,8 @@ void SceneStructureModule::ToggleSceneStructureWindow()
     if (sceneWindow)
     {
         sceneWindow->setVisible(!sceneWindow->isVisible());
+        if (!sceneWindow->isVisible())
+            sceneWindow->close();
         return;
     }
 
@@ -331,6 +333,8 @@ void SceneStructureModule::ToggleAssetsWindow()
     if (assetsWindow)
     {
         assetsWindow->setVisible(!assetsWindow->isVisible());
+        if (!assetsWindow->isVisible())
+            assetsWindow->close();
         return;
     }
 

@@ -111,8 +111,9 @@ namespace Avatar
         if (!entity)
             return Console::ResultFailure("No such entity " + params[0]);
         
-        avatar_editor_->SetAvatarEntityName(name);
-        avatar_editor_->RebuildEditView();
+        //! \todo Clone the avatar asset for editing
+        //! \todo Allow avatar asset editing without an avatar entity in the scene
+        avatar_editor_->SetEntityToEdit(entity);
         
         if (avatar_editor_)
             avatar_editor_->show();
