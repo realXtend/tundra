@@ -211,8 +211,8 @@ private slots:
     void Redraw();
     void UpdateSignals();
 
-    /// Emitted when some of the attributes has been changed.
-    void AttributeUpdated(IComponent *component, IAttribute *attribute);
+    //! Handles attribute updates.
+    void OnAttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:
     /// Returns pixmap with chat bubble and current messages renderer to it.

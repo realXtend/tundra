@@ -368,7 +368,7 @@ private slots:
     void UpdateSignals();
 
     /// Emitted when some of the attributes has been changed.
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
 
     void MaterialAssetLoaded(AssetPtr asset);
     void TextureAssetLoaded(AssetPtr asset);

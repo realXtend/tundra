@@ -69,7 +69,7 @@ public slots:
 private slots:
     void InitializePhonon();
     void UpdateSignals();
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
     void UpdateCanvas();

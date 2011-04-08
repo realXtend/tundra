@@ -54,7 +54,7 @@ EC_Ruler::EC_Ruler(IModule *module) :
     movingNodeName = "movingNode";
 #endif
     
-    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateRuler()));
+    QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateRuler()));
 }
 
 EC_Ruler::~EC_Ruler()

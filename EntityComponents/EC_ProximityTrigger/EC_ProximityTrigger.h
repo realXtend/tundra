@@ -83,7 +83,7 @@ signals:
 
 public slots:
     /// Attribute has been updated
-    void AttributeUpdated(IAttribute* attr);
+    void OnAttributeUpdated(IAttribute* attr);
     
 private slots:
     /// Check for other triggers and emit signals

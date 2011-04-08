@@ -208,23 +208,21 @@ void IComponent::EmitAttributeChanged(IAttribute* attribute, AttributeChange::Ty
         scene->EmitAttributeChanged(this, attribute, change);
     
     // Trigger internal signal
-    emit OnAttributeChanged(attribute, change);
+    emit AttributeChanged(attribute, change);
 }
 
 void IComponent::EmitAttributeChanged(const QString& attributeName, AttributeChange::Type change)
 {
     if (change == AttributeChange::Disconnected)
         return; // No signals
-    
+
     // Roll through attributes and check name match
     for(uint i = 0; i < attributes_.size(); ++i)
-    {
         if (attributes_[i]->GetName() == attributeName)
         {
             EmitAttributeChanged(attributes_[i], change);
             break;
         }
-    }
 }
 
 void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const

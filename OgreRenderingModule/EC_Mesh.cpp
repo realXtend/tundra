@@ -58,7 +58,7 @@ EC_Mesh::EC_Mesh(IModule* module) :
     adjustment_node_ = scene_mgr->createSceneNode(renderer->GetUniqueObjectName("EC_Mesh_adjustment_node"));
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
 
     meshAsset = AssetRefListenerPtr(new AssetRefListener());
     connect(meshAsset.get(), SIGNAL(Loaded(AssetPtr)), this, SLOT(OnMeshAssetLoaded(AssetPtr)), Qt::UniqueConnection);
@@ -303,7 +303,7 @@ bool EC_Mesh::SetMesh(QString meshResourceName, bool clone)
     }
     
     AttachEntity();
-    emit OnMeshChanged();
+    emit MeshChanged();
     
     return true;
 }
@@ -374,7 +374,7 @@ bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::strin
     
     AttachEntity();
     
-    emit OnMeshChanged();
+    emit MeshChanged();
     
     return true;
 }
@@ -595,7 +595,7 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
     try
     {
         entity_->getSubEntity(index)->setMaterialName(SanitateAssetIdForOgre(material_name));
-        emit OnMaterialChanged(index, QString(material_name.c_str()));
+        emit MaterialChanged(index, QString(material_name.c_str()));
     }
     catch(Ogre::Exception& e)
     {
@@ -883,7 +883,7 @@ void EC_Mesh::UpdateSignals()
     }
 }
 
-void EC_Mesh::AttributeUpdated(IAttribute *attribute)
+void EC_Mesh::OnAttributeUpdated(IAttribute *attribute)
 {
     if (attribute == &drawDistance)
     {
@@ -1081,7 +1081,7 @@ void EC_Mesh::OnSkeletonAssetLoaded(AssetPtr asset)
         entity_->getMesh()->_notifySkeleton(skeleton);
         
 //        LogDebug("Set skeleton " + skeleton->getName() + " to mesh " + entity_->getName());
-        emit OnSkeletonChanged(QString::fromStdString(skeleton->getName()));
+        emit SkeletonChanged(QString::fromStdString(skeleton->getName()));
     }
     catch(...)
     {
@@ -1187,7 +1187,7 @@ bool EC_Mesh::AttachMeshToBone(QObject* targetMesh, const QString& boneName)
     attached_to_bone_ = true;
     
     // Force the adjustment for the tagpoint now
-    AttributeUpdated(&nodeTransformation);
+    OnAttributeUpdated(&nodeTransformation);
     
     return true;
 }

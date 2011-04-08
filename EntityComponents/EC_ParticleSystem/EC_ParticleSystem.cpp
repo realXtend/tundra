@@ -33,7 +33,7 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
 
     renderer_ = GetFramework()->GetServiceManager()->GetService<Renderer>();
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(EntitySet()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeUpdated(IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(OnAttributeUpdated(IAttribute*)));
 }
 
 EC_ParticleSystem::~EC_ParticleSystem()
@@ -116,7 +116,7 @@ void EC_ParticleSystem::DeleteParticleSystems()
     return;
 }
 
-void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
+void EC_ParticleSystem::OnAttributeUpdated(IAttribute *attribute)
 {
     if(attribute == &castShadows)
     {

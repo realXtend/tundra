@@ -2,9 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   AssetsWindow.cpp
- *  @brief  
- *
- *          Detailed.
+ *  @brief  The main UI for managing asset storages and assets.
  */
 
 #include "StableHeaders.h"
@@ -41,8 +39,7 @@ AssetsWindow::AssetsWindow(Foundation::Framework *fw, QWidget *parent) :
     QWidget(parent),
     framework(fw),
     searchField(0),
-    expandAndCollapseButton(0),
-    expandingOrCollapsing(false)
+    expandAndCollapseButton(0)
 {
     // Init main widget
     setAttribute(Qt::WA_DeleteOnClose);
@@ -190,22 +187,12 @@ void AssetsWindow::Search(const QString &filter)
 
 void AssetsWindow::ExpandOrCollapseAll()
 {
-    expandingOrCollapsing = true;
     bool treeExpanded = TreeWidgetExpandOrCollapseAll(treeWidget);
-    if (treeExpanded && expandAndCollapseButton)
-        expandAndCollapseButton->setText(tr("Collapse All"));
-    else
-        expandAndCollapseButton->setText(tr("Expand All"));
-    expandingOrCollapsing = false;
+    expandAndCollapseButton->setText(treeExpanded ? tr("Collapse All") : tr("Expand All"));
 }
 
 void AssetsWindow::CheckTreeExpandStatus(QTreeWidgetItem *item)
 {
-    if (expandingOrCollapsing)
-        return;
-    if (!expandAndCollapseButton)
-        return;
-
     bool anyExpanded = false;
     QTreeWidgetItemIterator iter(treeWidget, QTreeWidgetItemIterator::HasChildren);
     while(*iter) 
@@ -238,30 +225,28 @@ bool AssetsWindow::eventFilter(QObject *obj, QEvent *e)
         switch (e->type())
         {
         case QEvent::FocusIn:
+        {
+            QString currentText = searchField->text();
+            if (currentText == "Search...")
             {
-                QString currentText = searchField->text();
-                if (currentText == "Search...")
-                {
-                    searchField->setText("");
-                    searchField->setStyleSheet("color:black;");
-                }
-                else if (!currentText.isEmpty())
-                {
-                    // Calling selectAll() directly here won't do anything
-                    // as the ongoing QFocusEvent will overwrite what it does.
-                    QTimer::singleShot(1, searchField, SLOT(selectAll()));
-                }
-                break;
+                searchField->setText("");
+                searchField->setStyleSheet("color:black;");
             }
+            else if (!currentText.isEmpty())
+            {
+                // Calling selectAll() directly here won't do anything
+                // as the ongoing QFocusEvent will overwrite what it does.
+                QTimer::singleShot(1, searchField, SLOT(selectAll()));
+            }
+            break;
+        }
         case QEvent::FocusOut:
+            if (searchField->text().simplified().isEmpty())
             {
-                if (searchField->text().simplified().isEmpty())
-                {
-                    searchField->setText(tr("Search..."));
-                    searchField->setStyleSheet("color:grey;");
-                }
-                break;
+                searchField->setText(tr("Search..."));
+                searchField->setStyleSheet("color:grey;");
             }
+            break;
         default:
             break;
         }

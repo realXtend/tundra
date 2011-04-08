@@ -38,7 +38,7 @@
     }
   };
   onAttributeChanged();
-  data.OnAttributeChanged.connect(onAttributeChanged);
+  data.AttributeChanged.connect(onAttributeChanged);
   frame.Updated.connect(animate);
   open = function() {
     var locked, opened;

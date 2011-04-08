@@ -202,8 +202,8 @@ public:
     virtual void setWorldTransform(const btTransform &worldTrans);
 
 signals:
-    /// A physics collision has happened between this rigidbody and another entity
-    /** If there are several contact points, the signal will be sent multiple times for each contact.
+    //! A physics collision has happened between this rigid body and another entity
+    /*! If there are several contact points, the signal will be sent multiple times for each contact.
         \param otherEntity The second entity
         \param position World position of collision
         \param normal World normal of collision
@@ -302,7 +302,7 @@ private slots:
     void UpdateSignals();
     
     /// Called when some of the attributes has been changed.
-    void AttributeUpdated(IAttribute *attribute);
+    void OnAttributeUpdated(IAttribute *attribute);
     
     /// Called when attributes of the placeable have changed
     void PlaceableUpdated(IAttribute *attribute);

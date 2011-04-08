@@ -242,7 +242,7 @@ namespace MumbleVoip
             CreateSession();
        
         connect(channel, SIGNAL(destroyed(QObject*)), this, SLOT(OnECVoiceChannelDestroyed(QObject*)),Qt::UniqueConnection);
-        connect(channel, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), signal_mapper_, SLOT(map()));
+        connect(channel, SIGNAL(AttributeChanged(IAttribute *, AttributeChange::Type)), signal_mapper_, SLOT(map()));
         signal_mapper_->setMapping(channel,QString::number(reinterpret_cast<unsigned int>(channel)));
 
         if (session_->GetChannels().contains(channel->getchannelname()))

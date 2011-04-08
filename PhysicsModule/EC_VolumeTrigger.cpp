@@ -22,15 +22,12 @@ EC_VolumeTrigger::EC_VolumeTrigger(IModule* module) :
     entities(this, "Entities"),
     owner_(checked_static_cast<Physics::PhysicsModule*>(module))
 {
-    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(IAttribute*)));
-
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnAttributeUpdated(IAttribute*)));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_VolumeTrigger::~EC_VolumeTrigger()
 {
-
 }
 
 QList<Scene::EntityWeakPtr> EC_VolumeTrigger::GetEntitiesInside() const
@@ -152,7 +149,7 @@ bool EC_VolumeTrigger::IsInsideVolume(const Vector3df& point) const
            RayTestSingle(Vector3df(point.x, point.y, point.z + 1e7), point, rigidbody->GetRigidBody());
 }
 
-void EC_VolumeTrigger::AttributeUpdated(IAttribute* attribute)
+void EC_VolumeTrigger::OnAttributeUpdated(IAttribute* attribute)
 {
     /// \todo Attribute updates not handled yet, there are a bit too many problems of what signals to send after the update -cm
 

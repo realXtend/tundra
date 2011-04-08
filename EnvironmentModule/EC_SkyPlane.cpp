@@ -27,8 +27,8 @@ namespace Environment
         ySegmentsAttr(this, "Segments in y-axis",150),
         drawFirstAttr(this, "Draw first", true)
      {
-        QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-                         SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
+        QObject::connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+                         SLOT(OnAttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         static AttributeMetadata materialRefMetadata;
         AttributeMetadata::ButtonInfoList materialRefButtons;
@@ -114,7 +114,7 @@ namespace Environment
         }
     }
 
-    void EC_SkyPlane::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
+    void EC_SkyPlane::OnAttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
     {
         ChangeSkyPlane(attribute);
     }

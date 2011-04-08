@@ -337,25 +337,23 @@ void Environment::Update(f64 frametime)
     if (fog != 0)
         fogColor = fog->GetColorAsOgreValue();
 #endif 
-
-    if (underWater )
+    if (underWater)
     {
        // We're below the water.
-       
-       float fogStart =plane->fogStartAttr.Get();
-       float fogEnd = plane->fogEndAttr.Get();
+       float fogStart = plane->fogStartDistance.Get();
+       float fogEnd = plane->fogEndDistance.Get();
        float farClip = fogEnd+10.f;
-       Ogre::FogMode mode = static_cast<Ogre::FogMode>(plane->fogModeAttr.Get());
+       Ogre::FogMode mode = static_cast<Ogre::FogMode>(plane->fogMode.Get());
        
        if (farClip > cameraFarClip)
            farClip = cameraFarClip;
-    
+
        ClampFog(fogStart, fogEnd, farClip);
 #ifdef CAELUM
             // Hide the Caelum subsystems.
             caelumSystem->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 #endif    
-            Color col = plane->fogColorAttr.Get();
+            Color col = plane->fogColor.Get();
             Ogre::ColourValue color = plane->GetFogColorAsOgreValue();
             
             //@note default values are 0.2f, 0.4f, 0.35f
@@ -365,23 +363,23 @@ void Environment::Update(f64 frametime)
     }
     else
     {
-            float fogStart = 100.f;
-            float fogEnd = 2000.f;
-            Ogre::FogMode mode = Ogre::FOG_LINEAR;
-            if (fog != 0 )
-            {
-                fogStart = fog->startDistance.Get();
-                fogEnd = fog->endDistance.Get();
-                mode = static_cast<Ogre::FogMode>(fog->mode.Get());
-            }
+        float fogStart = 100.f;
+        float fogEnd = 2000.f;
+        Ogre::FogMode mode = Ogre::FOG_LINEAR;
+        if ( fog != 0 )
+        {
+            fogStart = fog->startDistance.Get();
+            fogEnd = fog->endDistance.Get();
+            mode = static_cast<Ogre::FogMode>(fog->mode.Get());
+        }
           
-            ClampFog(fogStart, fogEnd, cameraFarClip);
+        ClampFog(fogStart, fogEnd, cameraFarClip);
 #ifdef CAELUM
-            caelumSystem->forceSubcomponentVisibilityFlags(caelumComponents_);
+        caelumSystem->forceSubcomponentVisibilityFlags(caelumComponents_);
 #endif
-            sceneManager->setFog(mode, fogColor, 0.001f, fogStart, fogEnd);
-            viewport->setBackgroundColour(fogColor);
-            camera->setFarClipDistance(cameraFarClip);
+        sceneManager->setFog(mode, fogColor, 0.001f, fogStart, fogEnd);
+        viewport->setBackgroundColour(fogColor);
+        camera->setFarClipDistance(cameraFarClip);
     }
 #endif
 }
@@ -474,7 +472,7 @@ void Environment::SetSunDirection(const QVector<float>& vector)
 {
      // Assure that we do not given too near of zero vector values, a la HACK. 
     float squaredLength = vector[0] * vector[0] + vector[1]* vector[1] + vector[2] * vector[2];
-    // Length must be diffrent then zero, so we say that value must be higher then our tolerance. 
+    // Length must be different then zero, so we say that value must be higher then our tolerance. 
     float tolerance = 0.001f;
    
     if (squaredLength < tolerance) 
@@ -521,18 +519,13 @@ void Environment::SetSunColor(const QVector<float>& vector)
 {
     Color color;
     if (vector.size() == 4)
-    {
-       color = Color(vector[0], vector[1], vector[2], vector[3]);    
-    }
+       color = Color(vector[0], vector[1], vector[2], vector[3]);
     else if (vector.size() == 3 )
-    {
-            
-      color = Color(vector[0], vector[1], vector[2], 1.0);   
-    }
+      color = Color(vector[0], vector[1], vector[2], 1.0);
 
     EC_EnvironmentLight* light = GetEnvironmentLight();
     if (light != 0)
-    {   
+    {
         light->sunColorAttr.Set(color, AttributeChange::Default);
         return;
     }

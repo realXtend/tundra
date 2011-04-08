@@ -29,10 +29,10 @@ Registered by Enviroment::EnvironmentModule.
 
 <h3> Used to synchronize sky in Taiga </h3>
 
-Currently (not in Tundra) EC_SkyDome component can be used to syncronize sky in Taiga worlds. This can be done
+Currently (not in Tundra) EC_SkyDome component can be used to synchronize sky in Taiga worlds. This can be done
 so that user creates entity and sets entity EC_Name-component. If this component name is set as "SkyEnvironment" our current implementation
-will create automagically a EC_SkyBox-component on it. This component is now usable for every users and all changes on it will be transfered 
-to all users. This syncronized sky plane component can also edit through environment editor (in world tools). Currently Caelum must be disabled 
+will create automatically a EC_SkyBox-component on it. This component is now usable for every users and all changes on it will be transfered 
+to all users. This synchronized sky plane component can also edit through environment editor (in world tools). Currently Caelum must be disabled 
 before these features can be used.
 
 <b>Attributes</b>:
@@ -114,11 +114,11 @@ lower values are less curved meaning more distortion at the horizons but a bette
     public slots:
         void View(const QString &attributeName);
          /// Called when component's attribute value has changed.
-        void AttributeUpdated(IAttribute* attribute);
+        void OnAttributeUpdated(IAttribute* attribute);
         void DisableSky();
 
     private:
-        /// Constuctor.
+        /// Constructor.
         /**@param module Module where component belongs.
         */
         explicit EC_SkyDome(IModule *module);
