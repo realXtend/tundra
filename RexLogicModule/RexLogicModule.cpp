@@ -163,6 +163,10 @@
 #include "EC_ProximityTrigger.h"
 #endif
 
+#ifdef EC_QmlApp_ENABLED
+#include "EC_QmlApp.h"
+#endif
+
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreViewport.h>
@@ -275,6 +279,9 @@ void RexLogicModule::Load()
 
 #ifdef EC_ProximityTrigger_ENABLED
     DECLARE_MODULE_EC(EC_ProximityTrigger);
+#endif
+#ifdef EC_QmlApp_ENABLED
+    DECLARE_MODULE_EC(EC_QmlApp);
 #endif
 }
 
