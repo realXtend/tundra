@@ -43,7 +43,6 @@ private slots:
 
 private:
     AssetWeakPtr asset;
-    bool loaded_;
 };
 
 #endif
