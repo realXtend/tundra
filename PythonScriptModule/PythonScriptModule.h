@@ -115,8 +115,6 @@ namespace PythonScript
         Console::CommandResult ConsoleRunFile(const StringVector &params);
         Console::CommandResult ConsoleReset(const StringVector &params);
 
-        //MODULE_LOGGING_FUNCTIONS
-
         /// returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 

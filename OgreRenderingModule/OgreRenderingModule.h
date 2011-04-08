@@ -45,8 +45,6 @@ namespace OgreRenderer
         /// returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
 
-        //MODULE_LOGGING_FUNCTIONS;
-
         /// returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 

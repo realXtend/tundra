@@ -35,8 +35,6 @@ public:
     /// IModule override.
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-    MODULE_LOGGING_FUNCTIONS
-
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return type_name_static_; }
 

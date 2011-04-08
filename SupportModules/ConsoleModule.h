@@ -44,8 +44,6 @@ namespace Console
         /// Returns default console
         ConsolePtr GetConsole() const { return manager_; }
 
-        //MODULE_LOGGING_FUNCTIONS
-
         /// returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 

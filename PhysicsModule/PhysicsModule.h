@@ -37,21 +37,10 @@ public:
     PhysicsModule();
     virtual ~PhysicsModule();
 
-    //MODULE_LOGGING_FUNCTIONS
-
-    /// IModule override.
     void Load();
-    
-    /// IModule override.
     void Initialize();
-    
-    /// IModule override.
     void PostInitialize();
-
-    /// IModule override.
     void Update(f64 frametime);
-
-    /// IModule override.
     void Uninitialize();
 
     /// Returns name of this module. Needed for logging.
