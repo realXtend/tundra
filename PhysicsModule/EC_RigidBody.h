@@ -254,6 +254,11 @@ public slots:
      */
     void ApplyTorqueImpulse(const Vector3df& torqueImpulse);
     
+	//! Set body gravity
+    /*! \param gravity Gravity
+     */
+	void ApplyGravity(const Vector3df& gravity);
+
     //! Force the body to activate (wake up)
     void Activate();
     
