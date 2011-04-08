@@ -27,7 +27,6 @@ AvatarDescAsset::~AvatarDescAsset()
 
 void AvatarDescAsset::DoUnload()
 {
-    avatarAppearanceXML_ = "";
     mesh_ = "";
     skeleton_ = "";
     materials_.clear();
@@ -54,18 +53,17 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     return true;
 }
 
-bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
 {
     QDomDocument avatarDoc("Avatar");
     WriteAvatarAppearance(avatarDoc);
-    avatarAppearanceXML_ = avatarDoc.toString();
+    QByteArray bytes = avatarDoc.toByteArray();
     
-    if (!avatarAppearanceXML_.length())
+    if (!bytes.length())
         return false;
     
-    std::string avatarDocStd = avatarAppearanceXML_.toStdString();
-    dst.resize(avatarDocStd.length());
-    memcpy(&dst[0], avatarDocStd.c_str(), avatarDocStd.length());
+    dst.resize(bytes.size());
+    memcpy(&dst[0], bytes.data(), bytes.size());
     return true;
 }
 
@@ -551,7 +549,7 @@ void AvatarDescAsset::AddReference(std::vector<AssetReference>& refs, const QStr
     }
 }
 
-void AvatarDescAsset::WriteAvatarAppearance(QDomDocument& dest)
+void AvatarDescAsset::WriteAvatarAppearance(QDomDocument& dest) const
 {
     // Avatar element
     QDomElement avatar = dest.createElement("avatar");
@@ -637,7 +635,7 @@ void AvatarDescAsset::WriteAvatarAppearance(QDomDocument& dest)
     dest.appendChild(avatar);
 }
 
-QDomElement AvatarDescAsset::WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim)
+QDomElement AvatarDescAsset::WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim) const
 {
     QDomElement elem = dest.createElement("animation");
     
@@ -655,7 +653,7 @@ QDomElement AvatarDescAsset::WriteAnimationDefinition(QDomDocument& dest, const 
     return elem;
 }
 
-void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones)
+void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones) const
 {
     QDomElement parameter = dest.createElement("dynamic_animation_parameter");
     QDomElement modifier = dest.createElement("dynamic_animation");
@@ -687,7 +685,7 @@ void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest
     }
 }
 
-QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& bone)
+QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& bone) const
 {
     QDomElement elem = dest.createElement("bone");
     SetAttribute(elem, "name", bone.bone_name_);
@@ -713,7 +711,7 @@ QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& b
     return elem;
 }
 
-QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph)
+QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph) const
 {
     QDomElement elem = dest.createElement("morph_modifier");
     SetAttribute(elem, "name", morph.name_);
@@ -723,7 +721,7 @@ QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphM
     return elem;
 }
 
-QDomElement AvatarDescAsset::WriteMasterModifier(QDomDocument& dest, const MasterModifier& master)
+QDomElement AvatarDescAsset::WriteMasterModifier(QDomDocument& dest, const MasterModifier& master) const
 {
     QDomElement elem = dest.createElement("master_modifier");
     SetAttribute(elem, "name", master.name_);
@@ -754,7 +752,7 @@ QDomElement AvatarDescAsset::WriteMasterModifier(QDomDocument& dest, const Maste
     return elem;
 }    
     
-QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const QString& mesh)
+QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const QString& mesh) const
 {
     QDomElement elem = dest.createElement("attachment");
     

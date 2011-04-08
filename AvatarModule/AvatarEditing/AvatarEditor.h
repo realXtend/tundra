@@ -30,25 +30,22 @@ namespace Avatar
         //! Rebuild edit view
         void RebuildEditView();
         
-        //! Export click handler
-        void ExportAvatar();
-
-        //! Local export click handler
-        void ExportAvatarLocal();
-
-        //! New avatar click handler
+        //! Save avatar
+        void SaveAvatar();
+        
+        //! Load new avatar asset
         void LoadAvatar();
 
-        //! Revert click handler
+        //! Revert avatar edits
         void RevertAvatar();
 
-        //! Change texture click handler
+        //! Change texture
         void ChangeTexture();
 
-        //! New attachment click handler
+        //! New attachment
         void AddAttachment();
 
-        //! Remove attachment click handler
+        //! Remove attachment
         void RemoveAttachment();
 
         //! Bone modifier scrollbar value handler

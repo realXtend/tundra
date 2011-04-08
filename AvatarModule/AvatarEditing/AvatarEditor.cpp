@@ -46,26 +46,12 @@ namespace Avatar
         avatar_module_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
     }
 
-    void AvatarEditor::ExportAvatar()
-    {
-        //avatar_module_->GetAvatarHandler()->ExportUserAvatar();
-    }
-
-    void AvatarEditor::ExportAvatarLocal()
-    {
-        //const std::string filter = "Avatar description file (*.xml)";
-        //std::string filename = GetSaveFileName(filter, "Save avatar description and all assets");
-        //if (!filename.empty())
-        //    avatar_module_->GetAvatarHandler()->ExportUserAvatarLocal(filename);
-    }
-    
     void AvatarEditor::InitEditorWindow()
     {
         setupUi(this);
 
         // Connect signals
-        connect(but_export, SIGNAL(clicked()), SLOT(ExportAvatar()));
-        connect(but_exportlocal, SIGNAL(clicked()), SLOT(ExportAvatarLocal()));
+        connect(but_save, SIGNAL(clicked()), SLOT(SaveAvatar()));
         connect(but_load, SIGNAL(clicked()), SLOT(LoadAvatar()));
         connect(but_revert, SIGNAL(clicked()), SLOT(RevertAvatar()));
         connect(but_attachment, SIGNAL(clicked()), this, SLOT(AddAttachment()));
@@ -499,6 +485,18 @@ namespace Avatar
             return;
 
         desc->LoadFromCache();
+    }
+
+    void AvatarEditor::SaveAvatar()
+    {
+        Scene::Entity* entity;
+        EC_Avatar* avatar;
+        AvatarDescAsset* desc;
+        if (!GetAvatarDesc(entity, avatar, desc))
+            return;
+        
+        //! \todo use upload functionality. For now just saves to disk, overwriting the original file.
+        desc->SaveToFile(desc->DiskSource());
     }
 
     void AvatarEditor::ChangeTexture()
