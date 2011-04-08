@@ -57,6 +57,7 @@ namespace MumbleVoip
         emit StateChanged(state_);
         /// @todo Check that closed connection can be reopened
         SAFE_DELETE(connection_);
+
         connection_ = new MumbleLib::Connection(server_info, 200);
         if (connection_->GetState() == MumbleLib::Connection::STATE_ERROR)
         {
@@ -67,19 +68,23 @@ namespace MumbleVoip
         current_mumble_channel_ = server_info.channel_id;
         server_address_ = server_info.server;
 
-        connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
-        connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
-        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()));
+        connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)), Qt::UniqueConnection);
+        connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()), Qt::UniqueConnection);
+        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()), Qt::UniqueConnection);
 
         connection_->Join(server_info.channel_id);
-        connection_->SendAudio(sending_audio_);
         connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
-        connection_->SendPosition(true); 
+        connection_->SendPosition(false); // No sensible way to get avatars position in Tundra atm, see the func for more.
         connection_->SendAudio(audio_sending_enabled_);
         connection_->ReceiveAudio(audio_receiving_enabled_);
         
-        EnableAudioReceiving();
-        if (settings_->GetDefaultVoiceMode() == Settings::ContinuousTransmission)
+        // Set the current settings as the mumble config/settings widget might not be used.
+        // Was used in OS Naali.
+        if (sending_audio_)
+            EnableAudioReceiving();
+        else
+            DisableAudioReceiving();
+        if (audio_sending_enabled_)
             EnableAudioSending();
         else
             DisableAudioSending();
@@ -404,6 +409,10 @@ namespace MumbleVoip
 
     bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
     {
+        /// \note Avatar position sending is atm disabled in tundra.
+        /*! \todo Fix this for tundra. Although is there a reasonable way to do it? Maybe a script could pass the EC_Placeable*we need to follow here.
+                  as it knows better what is the app spesific avatar entity. For tundra its kind of hard to determine it from here. */
+
         using namespace Foundation;
         boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
         if (!world_logic)
