@@ -108,7 +108,7 @@ public slots:
     void ToggleAssetsWindow();
 
 private:
-    SceneStructureWindow *sceneWindow; ///< Scene Structure window.
+    QPointer<SceneStructureWindow> sceneWindow; ///< Scene Structure window.
     QPointer<AssetsWindow> assetsWindow;///< Assets window.
     boost::shared_ptr<InputContext> inputContext; ///< Input context.
 
