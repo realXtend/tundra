@@ -3,10 +3,10 @@
 	<plugin path="SupportModules" />
 	<plugin path="AssetModule" />	
 	<plugin path="OgreRenderingModule" />	
+	<plugin path="AvatarModule" />	
 	<plugin path="EnvironmentModule" />
 	<plugin path="PhysicsModule" />
 	<plugin path="KristalliProtocolModule" />
-	<plugin path="LoginScreenModule" />
 	<plugin path="TundraLogicModule" />
 	<plugin path="ECEditorModule" />
 	<plugin path="JavascriptModule" />
