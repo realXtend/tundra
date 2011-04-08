@@ -23,12 +23,12 @@ public:
 
     virtual void DoUnload();
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
-    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters);
+    virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const;
     virtual std::vector<AssetReference> FindReferences() const;
 
     bool IsLoaded() const;
 
-    //! Stores the avatar appearance XML file as raw .xml data. Note: if parameters such as bonemodifiers change "live", this won't be updated until call to SerializeTo().
+    //! Stores the avatar appearance XML file as raw .xml data. Note: if parameters such as bonemodifiers change "live", this won't be updated.
     QString avatarAppearanceXML_;
     
     //! Avatar mesh asset reference
@@ -71,19 +71,19 @@ private:
     //! Recalculate master modifier values
     void CalculateMasterModifiers();
     //! Write to XML data
-    void WriteAvatarAppearance(QDomDocument& dest);
+    void WriteAvatarAppearance(QDomDocument& dest) const;
     //! Write bone modifier to XML
-    void WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones);
+    void WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones) const;
     //! Write bone to XML
-    QDomElement WriteBone(QDomDocument& dest, const BoneModifier& bone);
+    QDomElement WriteBone(QDomDocument& dest, const BoneModifier& bone) const;
     //! Write morph modifier to XML
-    QDomElement WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph);
+    QDomElement WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph) const;
     //! Write master modifier to XML
-    QDomElement WriteMasterModifier(QDomDocument& dest, const MasterModifier& morph);
+    QDomElement WriteMasterModifier(QDomDocument& dest, const MasterModifier& morph) const;
     //! Write animation definition to XML
-    QDomElement WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim);
+    QDomElement WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim) const;
     //! Write attachment to XML
-    QDomElement WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const QString& mesh);
+    QDomElement WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const QString& mesh) const;
     //! Find modifier by name and type
     AppearanceModifier* FindModifier(const std::string& name, AppearanceModifier::ModifierType type);
     //! Add reference to a reference vector if not empty
