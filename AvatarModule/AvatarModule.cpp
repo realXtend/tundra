@@ -2,11 +2,7 @@
 
 #include "StableHeaders.h"
 #include "AvatarModule.h"
-#include "AvatarEvents.h"
-#include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarControllable.h"
 #include "AvatarEditing/AvatarEditor.h"
-#include "AvatarEditing/AvatarSceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
 #include "InputAPI.h"
@@ -15,8 +11,6 @@
 #include "AssetAPI.h"
 #include "GenericAssetFactory.h"
 #include "AvatarDescAsset.h"
-
-#include "EntityComponent/EC_AvatarAppearance.h"
 
 #include "EntityComponent/EC_Avatar.h"
 
@@ -28,7 +22,6 @@ namespace Avatar
     AvatarModule::AvatarModule() :
         QObject(),
         IModule(module_name)
-        //scene_manager_(0)
     {
     }
 
