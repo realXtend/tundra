@@ -191,7 +191,8 @@ void TundraLogicModule::LoadStartupScene()
     // At this point, if we have a LocalAssetProvider, it has already also parsed the --file command line option
     // and added the appropriate path as a local asset storage. Here we assume that is the case, so that the
     // scene we now load will be able to refer to local:// assets in its subfolders.
-    if (AssetAPI::ParseAssetRefType(QString::fromStdString(startupScene)) != AssetAPI::AssetRefLocalPath)
+    AssetAPI::AssetRefType sceneRefType = AssetAPI::ParseAssetRefType(QString::fromStdString(startupScene));
+    if (sceneRefType != AssetAPI::AssetRefLocalPath && sceneRefType != AssetAPI::AssetRefDefaultStorage)
     {
         AssetTransferPtr sceneTransfer = framework_->Asset()->RequestAsset(startupScene);
         if (!sceneTransfer.get())
