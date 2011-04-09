@@ -289,7 +289,7 @@ namespace MumbleVoip
 
     void Provider::OnSceneAdded(const QString &name)
     {
-        Scene::SceneManager* scene = framework_->Scene()->GetSceneRaw(name);
+        Scene::SceneManager* scene = framework_->Scene()->GetScene(name).get();
         if (!scene)
             return;
 
