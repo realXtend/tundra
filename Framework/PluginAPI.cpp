@@ -86,9 +86,13 @@ void PluginAPI::LoadPluginsFromXML(const QString &pluginListFilename)
     QDomDocument doc("plugins");
     QFile file(pluginListFilename);
     if (!file.open(QIODevice::ReadOnly))
+    {
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to open file \"" + pluginListFilename + "\"!");
         return;
+    }
     if (!doc.setContent(&file))
     {
+        LogError("PluginAPI::LoadPluginsFromXML: Failed to parse XML file \"" + pluginListFilename + "\"!");
         file.close();
         return;
     }
