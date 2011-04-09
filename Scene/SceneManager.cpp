@@ -389,11 +389,11 @@ namespace Scene
         return ret;
     }
 
-    QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
+    QList<Entity *> SceneManager::LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
 
-        QFile file(filename.c_str());
+        QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
         {
             LogError("Failed to open file " + filename + " when loading scene xml.");
@@ -459,10 +459,10 @@ namespace Scene
         return scene_doc.toByteArray();
     }
 
-    bool SceneManager::SaveSceneXML(const std::string& filename)
+    bool SceneManager::SaveSceneXML(const QString& filename)
     {
         QByteArray bytes = GetSceneXML();
-        QFile scenefile(filename.c_str());
+        QFile scenefile(filename);
         if (scenefile.open(QFile::WriteOnly))
         {
             scenefile.write(bytes);
@@ -476,10 +476,10 @@ namespace Scene
         }
     }
     
-    QList<Entity *> SceneManager::LoadSceneBinary(const std::string& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
+    QList<Entity *> SceneManager::LoadSceneBinary(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change)
     {
         QList<Entity *> ret;
-        QFile file(filename.c_str());
+        QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
         {
             LogError("Failed to open file " + filename + " when loading scene binary.");
@@ -502,7 +502,7 @@ namespace Scene
         return CreateContentFromBinary(bytes.data(), bytes.size(), useEntityIDsFromFile, change);
     }
 
-    bool SceneManager::SaveSceneBinary(const std::string& filename)
+    bool SceneManager::SaveSceneBinary(const QString& filename)
     {
         QByteArray bytes;
         // Assume 4MB max for now
@@ -522,7 +522,7 @@ namespace Scene
                 iter->second->SerializeToBinary(dest);
 
         bytes.resize(dest.BytesFilled());
-        QFile scenefile(filename.c_str());
+        QFile scenefile(filename);
         if (scenefile.open(QFile::WriteOnly))
         {
             scenefile.write(bytes);
@@ -934,6 +934,7 @@ namespace Scene
         return sceneDesc;
     }
 
+    ///\todo This function is a redundant duplicate copy of void ScriptAsset::ParseReferences(). Delete this code. -jj.
     void SceneManager::SearchScriptAssetDependencies(const QString &filePath, SceneDesc &sceneDesc) const
     {
         if (!filePath.toLower().endsWith(".js"))

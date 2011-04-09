@@ -207,9 +207,9 @@ void TundraLogicModule::LoadStartupScene()
     {
         bool useBinary = startupScene.find(".tbin") != std::string::npos;
         if (!useBinary)
-            scene->LoadSceneXML(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+            scene->LoadSceneXML(startupScene.c_str(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
         else
-            scene->LoadSceneBinary(startupScene, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+            scene->LoadSceneBinary(startupScene.c_str(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
     }
 }
 
@@ -224,9 +224,9 @@ void TundraLogicModule::StartupSceneLoaded(AssetPtr asset)
     {
         bool useBinary = sceneDiskSource.endsWith(".tbin");
         if (!useBinary)
-            scene->LoadSceneXML(sceneDiskSource.toStdString(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+            scene->LoadSceneXML(sceneDiskSource, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
         else
-            scene->LoadSceneBinary(sceneDiskSource.toStdString(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
+            scene->LoadSceneBinary(sceneDiskSource, true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);
     }
     else
         LogError("Could not resolve disk source for loaded scene file " + asset->Name().toStdString());
@@ -306,9 +306,9 @@ Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &p
     
     bool success;
     if (!useBinary)
-        success = scene->SaveSceneXML(params[0]);
+        success = scene->SaveSceneXML(params[0].c_str());
     else
-        success = scene->SaveSceneBinary(params[0]);
+        success = scene->SaveSceneBinary(params[0].c_str());
     
     if (success)
         return Console::ResultSuccess();
@@ -331,9 +331,9 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
     
     QList<Scene::Entity *> entities;
     if (!useBinary)
-        entities = scene->LoadSceneXML(params[0], true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
+        entities = scene->LoadSceneXML(params[0].c_str(), true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
     else
-        entities = scene->LoadSceneBinary(params[0], true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
+        entities = scene->LoadSceneBinary(params[0].c_str(), true/*clearScene*/, false/*replaceOnConflcit*/, AttributeChange::Default);
     
     if (!entities.empty())
     {
