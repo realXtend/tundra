@@ -7,8 +7,10 @@
 #include "AttributeChangeType.h"
 #include "EntityAction.h"
 
+#include "SceneDesc.h"
 #include <QObject>
 #include <QVariant>
+#include <boost/enable_shared_from_this.hpp>
 
 namespace Foundation { class Framework; }
 
@@ -40,7 +42,7 @@ namespace Scene
 
         \ingroup Scene_group
     */
-    class SceneManager : public QObject
+    class SceneManager : public QObject, public boost::enable_shared_from_this<SceneManager>
     {
         Q_OBJECT
         Q_PROPERTY(QString Name READ Name)
@@ -77,6 +79,7 @@ namespace Scene
         /// Order by scene name
         bool operator < (const SceneManager &other) const { return Name() < other.Name(); }
 
+public slots:
         /// Creates new entity that contains the specified components
         /** Entities should never be created directly, but instead created with this function.
 
@@ -150,6 +153,7 @@ namespace Scene
         SceneDesc GetSceneDescFromBinary(QByteArray &data, SceneDesc &sceneDesc) const;
 
         /// Inspects .js file content for dependencies and adds them to sceneDesc.assets
+        ///\todo This function is a duplicate copy of void ScriptAsset::ParseReferences(). Delete this code. -jj.
         /** @param filePath. Path to the file that is opened for inspection.
             @param SceneDesc. Scene description struct ref, found asset dependencies will be added here.
             @todo Make one implementation of this to a common place that EC_Script and SceneManager can use.
@@ -160,7 +164,6 @@ namespace Scene
         /// \todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
         //  For documentation, see the plain C++ public methods above.
 
-    public slots:
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
         uint NextFreeIdLocal() { return (uint)GetNextFreeIdLocal(); }
@@ -181,7 +184,7 @@ namespace Scene
         /// Return a scene document with just the desired entity
         QByteArray GetEntityXml(Scene::Entity *entity);
 
-        void LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change) { LoadSceneXML(filename.toStdString(), clearScene, useEntityIDsFromFile, change); }
+        void LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change) { LoadSceneXML(filename, clearScene, useEntityIDsFromFile, change); }
         void EmitEntityCreated(Entity *entity, AttributeChange::Type change = AttributeChange::Default);
         void EmitEntityCreatedRaw(QObject *entity, AttributeChange::Type change = AttributeChange::Default);
 
@@ -310,7 +313,7 @@ namespace Scene
             \param change Change type that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Scene::Entity *> LoadSceneXML(const std::string& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
+        QList<Scene::Entity *> LoadSceneXML(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
         /// Returns scene content as an XML string.
         /** \param getTemporary Are temporary entities wanted to be included.
@@ -323,7 +326,7 @@ namespace Scene
         /** \param filename File name
             \return true if successful
          */
-        bool SaveSceneXML(const std::string& filename);
+        bool SaveSceneXML(const QString& filename);
 
         /// Loads the scene from a binary file.
         /** Note: will remove all existing entities
@@ -335,13 +338,13 @@ namespace Scene
             \param change Change type that will be used, when removing the old scene, and deserializing the new
             \return List of created entities.
          */
-        QList<Scene::Entity *> LoadSceneBinary(const std::string& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
+        QList<Scene::Entity *> LoadSceneBinary(const QString& filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
         /// Save the scene to binary
         /** \param filename File name
             \return true if successful
          */
-        bool SaveSceneBinary(const std::string& filename);
+        bool SaveSceneBinary(const QString& filename);
 
         /// Creates scene content from XML.
         /** \param xml XML document as string.
