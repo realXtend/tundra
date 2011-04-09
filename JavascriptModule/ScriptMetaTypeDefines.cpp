@@ -33,6 +33,7 @@
 #include "InputFwd.h"
 #include "ConfigAPI.h"
 #include "LoggingFunctions.h"
+#include "AssetAPI.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -58,6 +59,25 @@ Q_DECLARE_METATYPE(IAssetUploadTransfer*);
 Q_DECLARE_METATYPE(AssetStoragePtr);
 Q_DECLARE_METATYPE(IAssetStorage*);
 Q_DECLARE_METATYPE(AssetCache*);
+Q_DECLARE_METATYPE(AssetMap);
+
+QScriptValue qScriptValueFromAssetMap(QScriptEngine *engine, const AssetMap &assetMap)
+{
+    QScriptValue v = engine->newArray(assetMap.size());
+    int idx = 0;
+    for(AssetMap::const_iterator iter = assetMap.begin(); iter != assetMap.end(); ++iter)
+    {
+        QScriptValue elem = qScriptValueFromBoostSharedPtr(engine, iter->second);
+        v.setProperty(idx++, elem);
+    }
+
+    return v;
+}
+
+/// Deliberately a null function. Currently we don't need setting asset maps from the script side.
+void qScriptValueToAssetMap(const QScriptValue &value, AssetMap &assetMap)
+{
+}
 
 /// Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
@@ -157,27 +177,6 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
 
 }
 
-template<typename T>
-static QScriptValue DereferenceBoostSharedPtr(QScriptContext *context, QScriptEngine *engine)
-{
-    boost::shared_ptr<T> ptr = context->thisObject().toVariant().value<boost::shared_ptr<T> >();
-    return engine->newQObject(ptr.get());
-}
-
-template<typename T>
-QScriptValue qScriptValueFromBoostSharedPtr(QScriptEngine *engine, const boost::shared_ptr<T> &ptr)
-{
-    QScriptValue v = engine->newVariant(QVariant::fromValue<boost::shared_ptr<T> >(ptr));
-    v.setProperty("get", engine->newFunction(DereferenceBoostSharedPtr<T>), QScriptValue::ReadOnly | QScriptValue::Undeletable);
-    return v;
-}
-
-template<typename T>
-void qScriptValueToBoostSharedPtr(const QScriptValue &value, boost::shared_ptr<T> &ptr)
-{
-    ptr = value.toVariant().value<boost::shared_ptr<T> >();
-}
-
 Q_DECLARE_METATYPE(SoundChannelPtr);
 Q_DECLARE_METATYPE(InputContextPtr);
 
@@ -239,6 +238,10 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterMetaType(engine, qScriptValueFromBoostSharedPtr<IAssetStorage>, qScriptValueToBoostSharedPtr<IAssetStorage>);
 
     qScriptRegisterQObjectMetaType<AssetCache*>(engine);
+
+    qRegisterMetaType<AssetMap>("AssetMap");
+    qRegisterMetaType<AssetMap>("AssetMap");
+    qScriptRegisterMetaType<AssetMap>(engine, qScriptValueFromAssetMap, qScriptValueToAssetMap);
 
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<NaaliMainWindow*>(engine);
