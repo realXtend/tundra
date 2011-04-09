@@ -1255,9 +1255,9 @@ void SceneTreeWidget::SaveSceneDialogClosed(int result)
     }
 
     if (binary)
-        scene.lock()->SaveSceneBinary(files[0].toStdString());
+        scene.lock()->SaveSceneBinary(files[0]);
     else
-        scene.lock()->SaveSceneXML(files[0].toStdString());
+        scene.lock()->SaveSceneXML(files[0]);
 }
 
 void SceneTreeWidget::ExportAllDialogClosed(int result)
