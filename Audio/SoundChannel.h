@@ -10,7 +10,7 @@
 #include "AudioAsset.h"
 
 /// An OpenAL sound channel (source).
-class AUDIO_API SoundChannel : public QObject
+class AUDIO_API SoundChannel : public QObject, public boost::enable_shared_from_this<SoundChannel>
 {
     Q_OBJECT;
     Q_ENUMS(SoundState)
