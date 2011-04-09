@@ -13,6 +13,7 @@
 #include "AttributeChangeType.h"
 
 #include <map>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <QVariant>
 
@@ -139,7 +140,7 @@ private:
 /// Abstract base class for entity-component attributes.
 /** Concrete attribute classes will be subclassed out of this
  */
-class IAttribute
+class IAttribute : public boost::enable_shared_from_this<IAttribute>
 {
 public:
     /// Constructor
