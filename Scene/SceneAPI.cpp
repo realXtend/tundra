@@ -42,7 +42,7 @@ void SceneAPI::PostInitialize()
     sceneInteract->PostInitialize();
 }
 
-SceneInteractWeakPtr SceneAPI::GetSceneIteract() const
+SceneInteractWeakPtr SceneAPI::GetSceneInteract() const
 {
     return SceneInteractWeakPtr(sceneInteract);
 }
@@ -87,11 +87,6 @@ Scene::ScenePtr SceneAPI::GetScene(const QString &name) const
     if (scene != scenes_.end())
         return scene->second;
     return Scene::ScenePtr();  
-}
-
-Scene::SceneManager* SceneAPI::GetSceneRaw(const QString& name) const
-{
-    return GetScene(name).get();
 }
 
 Scene::ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled)
