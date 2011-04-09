@@ -10,6 +10,7 @@
 
 #include <map>
 #include <set>
+#include <boost/enable_shared_from_this.hpp>
 
 struct KeyPressInformation
 {
@@ -27,7 +28,7 @@ struct KeyPressInformation
 };
 typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
 
-class InputContext : public QObject
+class InputContext : public QObject, public boost::enable_shared_from_this<InputContext>
 {
     Q_OBJECT
 

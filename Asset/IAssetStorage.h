@@ -7,8 +7,9 @@
 #include <QString>
 #include <vector>
 #include "AssetFwd.h"
+#include <boost/enable_shared_from_this.hpp>
 
-class IAssetStorage : public QObject
+class IAssetStorage : public QObject, public boost::enable_shared_from_this<IAssetStorage>
 {
     Q_OBJECT
 public:

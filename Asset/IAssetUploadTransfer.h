@@ -10,8 +10,9 @@
 #include "AssetFwd.h"
 #include "IAssetStorage.h"
 #include <boost/weak_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
-class IAssetUploadTransfer : public QObject
+class IAssetUploadTransfer : public QObject, public boost::enable_shared_from_this<IAssetUploadTransfer>
 {
     Q_OBJECT
 
