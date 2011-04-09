@@ -240,7 +240,6 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<AssetCache*>(engine);
 
     qRegisterMetaType<AssetMap>("AssetMap");
-    qRegisterMetaType<AssetMap>("AssetMap");
     qScriptRegisterMetaType<AssetMap>(engine, qScriptValueFromAssetMap, qScriptValueToAssetMap);
 
     // Ui metatypes.
