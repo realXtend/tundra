@@ -31,6 +31,8 @@
 #include "EventHandlers/AvatarEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
+#include "AssetAPI.h"
+#include "GenericAssetFactory.h"
 
 //#ifdef EC_FreeData_ENABLED
 #include "EntityComponent/EC_FreeData.h"
@@ -165,6 +167,7 @@
 
 #ifdef EC_QmlApp_ENABLED
 #include "EC_QmlApp.h"
+#include "QmlAsset.h"
 #endif
 
 #include <OgreManualObject.h>
@@ -282,6 +285,7 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_QmlApp_ENABLED
     DECLARE_MODULE_EC(EC_QmlApp);
+    framework_->Asset()->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<QmlAsset>("QML")));
 #endif
 }
 
