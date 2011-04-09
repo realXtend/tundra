@@ -29,6 +29,8 @@ QString GetResourceTypeFromResourceFileName(const char *name);
 /// Adds a trailing slash to the given string representing a directory path if it doesn't have one at the end already.
 QString GuaranteeTrailingSlash(const QString &source);
 
+typedef std::map<QString, AssetPtr> AssetMap;
+
 class AssetAPI : public QObject
 {
     Q_OBJECT
@@ -44,11 +46,6 @@ public:
 
     /// Returns all registered asset type factories. You can use this list to query which asset types the system can handle.
     std::vector<AssetTypeFactoryPtr> GetAssetTypeFactories() { return assetTypeFactories; }
-
-    typedef std::map<QString, AssetPtr> AssetMap;
-
-    /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
-    AssetMap &GetAllAssets() { return assets; }
 
     /// Returns the asset provider of the given type.
     /// The registered asset providers are unique by type. You cannot register two instances of the same provider type to the system.
@@ -117,6 +114,9 @@ public:
     };
 
 public slots:
+    /// Returns all assets known to the asset system. AssetMap maps asset names to their AssetPtrs.
+    AssetMap &GetAllAssets() { return assets; }
+
     /// Opens the internal Asset API asset cache to the given directory. When the Asset API starts up, the asset cache is not created. This allows
     /// the Asset API to be operated in a mode that does not perform writes to the disk when assets are fetched. This will cause assets fetched from
     /// remote hosts to have a null disk source.
