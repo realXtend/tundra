@@ -97,7 +97,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
 
     viewportWidget = new SuppressedPaintWidget();
     graphicsView->setViewport(viewportWidget);
-    viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
+//    viewportWidget->setAttribute(Qt::WA_DontShowOnScreen, true);
     viewportWidget->setGeometry(0, 0, graphicsView->width(), graphicsView->height());
     viewportWidget->setContentsMargins(0,0,0,0);
 
