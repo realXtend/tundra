@@ -14,7 +14,7 @@
 SceneAPI::SceneAPI(Foundation::Framework *framework) :
     QObject(framework),
     framework_(framework),
-    sceneCatergoryName_("Scene")
+    sceneCategoryName_("Scene")
 {
     sceneInteract_ = QSharedPointer<SceneInteract>(new SceneInteract());
     framework->RegisterDynamicObject("sceneinteract", sceneInteract_.data());
@@ -38,7 +38,7 @@ void SceneAPI::RegisterSceneEvents() const
 {
     ///\todo Get rid of all the legacy scene events
     const EventManagerPtr &event_manager = framework_->GetEventManager();
-    event_category_id_t scene_event_category = event_manager->RegisterEventCategory(sceneCatergoryName_);
+    event_category_id_t scene_event_category = event_manager->RegisterEventCategory(sceneCategoryName_);
 
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_ADDED, "Scene Added");
     event_manager->RegisterEvent(scene_event_category, Scene::Events::EVENT_SCENE_DELETED, "Scene Deleted");
@@ -67,7 +67,7 @@ void SceneAPI::PostInitialize()
     sceneInteract_->PostInitialize();
 }
 
-SceneInteractWeakPtr SceneAPI::GetSceneIteract() const
+SceneInteractWeakPtr SceneAPI::GetSceneInteract() const
 {
     return SceneInteractWeakPtr(sceneInteract_);
 }
@@ -114,11 +114,6 @@ Scene::ScenePtr SceneAPI::GetScene(const QString &name) const
     return Scene::ScenePtr();  
 }
 
-Scene::SceneManager* SceneAPI::GetSceneRaw(const QString& name) const
-{
-    return GetScene(name).get();
-}
-
 Scene::ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled)
 {
     if (HasScene(name))
@@ -131,7 +126,7 @@ Scene::ScenePtr SceneAPI::CreateScene(const QString &name, bool viewenabled)
 
         // Send internal event of creation
         Scene::Events::SceneEventData eventData(newScene->Name().toStdString());
-        event_category_id_t categoryId = framework_->GetEventManager()->QueryEventCategory(sceneCatergoryName_);
+        event_category_id_t categoryId = framework_->GetEventManager()->QueryEventCategory(sceneCategoryName_);
         framework_->GetEventManager()->SendEvent(categoryId, Scene::Events::EVENT_SCENE_ADDED, &eventData);
 
         // Emit signal of creation
@@ -152,7 +147,7 @@ void SceneAPI::RemoveScene(const QString &name)
 
         // Send internal event about removed scene
         Scene::Events::SceneEventData eventData(name.toStdString());
-        event_category_id_t categoryId = framework_->GetEventManager()->QueryEventCategory(sceneCatergoryName_);
+        event_category_id_t categoryId = framework_->GetEventManager()->QueryEventCategory(sceneCategoryName_);
         framework_->GetEventManager()->SendEvent(categoryId, Scene::Events::EVENT_SCENE_DELETED, &eventData);
 
         // Emit signal about removed scene

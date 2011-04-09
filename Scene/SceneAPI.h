@@ -60,26 +60,32 @@ signals:
 
     /// Emitted when default world scene changes.
     /// \param scene new default world scene object.
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     void DefaultWorldSceneChanged(Scene::SceneManager *scene);
 
 public slots:
     //! Get Scene Interact weak pointer.
-    SceneInteractWeakPtr GetSceneIteract() const;
+    ///\todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
+    SceneInteractWeakPtr GetSceneInteract() const;
 
     //! Returns true if specified scene exists, false otherwise
     bool HasScene(const QString &name) const;
 
     //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     void SetDefaultScene(const QString &name);
 
     //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     void SetDefaultScene(const Scene::ScenePtr &scene);
     
     //! Returns the default scene shared ptr.
     /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> rename GetDefaultSceneRaw() to GetDefaultScene().
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     const Scene::ScenePtr &GetDefaultScene() const;
 
     //! Returns the default scene ptr.
+    ///\todo Delete this function and the concept of 'default scene' or 'current scene'. There should be neither. -jj.
     Scene::SceneManager* GetDefaultSceneRaw() const;
 
     //! Returns a pointer to a scene
@@ -94,9 +100,6 @@ public slots:
     */
     /// \todo remove this function when we move to QPointer/QSharedPointer/QWeakPointer<Scene::SceneManager> rename GetSceneRaw() to GetScene().
     Scene::ScenePtr GetScene(const QString &name) const;
-
-    //! Returns a scene by name
-    Scene::SceneManager* GetSceneRaw(const QString& name) const;
 
     //! Creates new empty scene.
     /*! \param name name of the new scene
@@ -150,10 +153,11 @@ private:
     Scene::ScenePtr defaultScene_;
 
     //! Scene interact shared ptr.
+    ///\todo Remove this - move to its own plugin - should not have hardcoded application logic running on each scene. -jj.
     QSharedPointer<SceneInteract> sceneInteract_;
 
     //! Scene events category name.
-    std::string sceneCatergoryName_;
+    std::string sceneCategoryName_;
 
 };
 
