@@ -55,24 +55,27 @@ namespace Scene
 
         friend class SceneManager;
 
-    public:
+    public slots:
         //! Returns a component with type 'type_name' or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
             \param type_name type of the component
         */
         ComponentPtr GetComponent(const QString &type_name) const;
 
+    public:
         //! This is an overloaded function.
         /*! \param type_hash Type name hash of the component.
         */
         ComponentPtr GetComponent(uint type_hash) const;
 
+    public slots:
         //! This is an overloaded function.
         /*! \param type_name type of the component
             \param name name of the component
         */
         ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
 
+    public:
         //! This is an overloaded function.
         /*! \param type_has Type name hash of the component
             \param name name of the component
@@ -160,13 +163,6 @@ namespace Scene
             \param component Pointer to the component to remove
         */
         void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::Default);
-
-        //! Returns a component with type typename and name or empty pointer if component was not found
-        /*! If there are several components with the specified type, returns the first component found (arbitrary).
-
-            \param component component that we want to find.
-        */
-        ComponentPtr GetComponent(const IComponent *component) const;
 
         //! Returns list of components with type 'type_name' or empty list if no components were found.
         //! \param type_name type of the component

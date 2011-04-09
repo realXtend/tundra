@@ -626,7 +626,6 @@ void ECBrowser::DynamicComponentChanged()
     }
 
     Scene::Entity *entity = component->GetParentEntity();
-    ComponentPtr compPtr = entity->GetComponent(component);
     RemoveComponentFromGroup(comp_ptr);
     AddNewComponentToGroup(comp_ptr);
 

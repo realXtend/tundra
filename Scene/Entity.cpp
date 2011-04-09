@@ -238,15 +238,6 @@ namespace Scene
         return ComponentPtr();
     }
 
-    ComponentPtr Entity::GetComponent(const IComponent *component) const
-    {
-        for (size_t i = 0; i < components_.size(); i++)
-            if(component->TypeName() == components_[i]->TypeName() &&
-               component->Name() == components_[i]->Name())
-               return components_[i];
-        return ComponentPtr();
-    }
-
     Entity::ComponentVector Entity::GetComponents(const QString &type_name) const
     {
         ComponentVector ret;
