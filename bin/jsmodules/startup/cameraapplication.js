@@ -9,7 +9,7 @@ function OnSceneAdded(scenename)
         return;
 
     // Get pointer to scene through framework
-    scene = framework.Scene().GetSceneRaw(scenename);
+    scene = framework.Scene().GetScene(scenename);
     scene.SceneCleared.connect(OnSceneCleared);
     CreateCamera(scene);
 }

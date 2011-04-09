@@ -102,7 +102,7 @@ EC_WebView::EC_WebView(IModule *module) :
     connect(renderTimer_, SIGNAL(timeout()), SLOT(Render()), Qt::UniqueConnection);
 
     // Prepare scene interactions
-    SceneInteractWeakPtr sceneInteract = GetFramework()->Scene()->GetSceneIteract();
+    SceneInteractWeakPtr sceneInteract = GetFramework()->Scene()->GetSceneInteract();
     if (!sceneInteract.isNull())
     {
         connect(sceneInteract.data(), SIGNAL(EntityClicked(Scene::Entity*, Qt::MouseButton, RaycastResult*)), 

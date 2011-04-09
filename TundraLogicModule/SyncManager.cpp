@@ -1061,7 +1061,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     while(i != partially_changed_static_components.end())
     {
         // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be sure
-        ComponentPtr compShared = entity->GetComponent(i->first);
+        ComponentPtr compShared = i->first->shared_from_this();
         if (compShared)
         {
             const AttributeVector& attributes = compShared->GetAttributes();
@@ -1080,7 +1080,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     while(j != partially_changed_dynamic_components.end())
     {
         // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be sure
-        ComponentPtr compShared = entity->GetComponent(j->first);
+        ComponentPtr compShared = j->first->shared_from_this();
         if (compShared)
         {
             for(uint k = 0; k < j->second.size(); ++k)
