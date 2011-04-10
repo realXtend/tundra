@@ -65,6 +65,11 @@ namespace Scene
         emit Removed(this);
     }
 
+    EntityPtr SceneManager::CreateLocalEntity(const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
+    {
+        return CreateEntity(GetNextFreeIdLocal(), components, change, defaultNetworkSync);
+    }
+
     EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
     {
         // Figure out new entity id
