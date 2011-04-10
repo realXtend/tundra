@@ -27,8 +27,8 @@
 #include "InputContext.h"
 #include "RenderServiceInterface.h"
 #include "CommunicationsService.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
 #include "EntityAction.h"
 #include "InputFwd.h"
 #include "ConfigAPI.h"
@@ -63,8 +63,8 @@ Q_DECLARE_METATYPE(AssetCache*);
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
-Q_DECLARE_METATYPE(NaaliMainWindow*);
-Q_DECLARE_METATYPE(NaaliGraphicsView*);
+Q_DECLARE_METATYPE(UiMainWindow*);
+Q_DECLARE_METATYPE(UiGraphicsView*);
 Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
@@ -243,8 +243,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<AssetCache*>(engine);
 
     // Ui metatypes.
-    qScriptRegisterQObjectMetaType<NaaliMainWindow*>(engine);
-    qScriptRegisterQObjectMetaType<NaaliGraphicsView*>(engine);
+    qScriptRegisterQObjectMetaType<UiMainWindow*>(engine);
+    qScriptRegisterQObjectMetaType<UiGraphicsView*>(engine);
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
 

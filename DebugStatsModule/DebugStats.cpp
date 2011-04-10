@@ -32,7 +32,7 @@
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include <utility>
 #include <QDebug>

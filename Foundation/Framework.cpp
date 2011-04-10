@@ -29,7 +29,7 @@
 #include "ConfigAPI.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"

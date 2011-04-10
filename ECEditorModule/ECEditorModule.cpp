@@ -17,7 +17,7 @@
 #include "EC_DynamicComponent.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "MemoryLeakCheck.h"
 
