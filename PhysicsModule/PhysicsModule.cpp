@@ -194,7 +194,7 @@ Physics::PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr
     physicsWorlds_[ptr] = new_world;
     QObject::connect(ptr, SIGNAL(Removed(Scene::SceneManager*)), this, SLOT(OnSceneRemoved(Scene::SceneManager*)));
     
-    LogInfo("Created new physics world");
+    LogDebug("Created new physics world");
     
     return new_world.get();
 }
