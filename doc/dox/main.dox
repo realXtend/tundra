@@ -215,7 +215,7 @@ Classes:
 <h3>Console</h3>
 Allows modules to register new commands that are invokeable from a command line console.
 
-More information:
+ConsoleAPI supports these also from scripting languages:
 - Registering new console commands.
 - Programmatically invoking console commands.
 
