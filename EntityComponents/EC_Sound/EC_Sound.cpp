@@ -19,8 +19,6 @@
 #include "EC_Placeable.h"
 #include "EC_SoundListener.h"
 
-
-#include <QString>
 #include <QStringList>
 
 #include "LoggingFunctions.h"
@@ -169,7 +167,7 @@ void EC_Sound::PlaySound()
     // If we are going to play back positional audio, check that there is a sound listener enabled that can listen to it.
     // Otherwise, if no SoundListener exists, play back the audio as nonpositional.
     if (placeable && spatial.Get())
-        soundListenerExists = (GetActiveSoundListener() != Scene::EntityPtr());
+        soundListenerExists = (GetActiveSoundListener() != EntityPtr());
 
     if (placeable && spatial.Get() && soundListenerExists)
     {
@@ -206,14 +204,14 @@ void EC_Sound::UpdateSoundSettings()
     }
 }
 
-Scene::EntityPtr EC_Sound::GetActiveSoundListener()
+EntityPtr EC_Sound::GetActiveSoundListener()
 {
 #ifdef _DEBUG
     int numActiveListeners = 0; // For debugging, count how many listeners are active.
 #endif
     
-    Scene::EntityList listeners = parent_entity_->GetScene()->GetEntitiesWithComponent("EC_SoundListener");
-    foreach(Scene::EntityPtr listener, listeners)
+    EntityList listeners = parent_entity_->GetScene()->GetEntitiesWithComponent("EC_SoundListener");
+    foreach(EntityPtr listener, listeners)
     {
         EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
         if (ec->active.Get())
@@ -231,14 +229,14 @@ Scene::EntityPtr EC_Sound::GetActiveSoundListener()
     if (numActiveListeners != 1)
         LogWarning("Warning: When playing back positional 3D audio, " + QString::number(numActiveListeners).toStdString() + " active sound listeners were found!");
 #endif
-    return Scene::EntityPtr();
+    return EntityPtr();
 }
 
 void EC_Sound::UpdateSignals()
 {
     if (!GetParentEntity())
     {
-        LogError("Couldn't update singals cause component dont have parent entity set.");
+        LogError("Couldn't update signals cause component dont have parent entity set.");
         return;
     }
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
