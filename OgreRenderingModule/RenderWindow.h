@@ -1,35 +1,37 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Renderer_NaaliRenderWindow_h
-#define incl_Renderer_NaaliRenderWindow_h
+#ifndef incl_Renderer_RenderWindow_h
+#define incl_Renderer_RenderWindow_h
+
+#include "OgreModuleApi.h"
 
 #include <QObject>
 #include <string>
-#include "OgreModuleApi.h"
 
 namespace Ogre
 {
-class RenderWindow;
-class Overlay;
-class OverlayElement;
+    class RenderWindow;
+    class Overlay;
+    class OverlayElement;
 }
 
 class QImage;
 
-/// NaaliRenderWindow stores the main Ogre::RenderWindow that is created by the Renderer.
-class OGRE_MODULE_API NaaliRenderWindow : public QObject
+/// Stores the main Ogre::RenderWindow that is created by the Renderer.
+class OGRE_MODULE_API RenderWindow : public QObject
 {
     Q_OBJECT;
+
 public:
-    NaaliRenderWindow();
+    RenderWindow();
 
     void CreateRenderWindow(QWidget *targetWindow, const QString &name, int width, int height, int left, int top, bool fullscreen);
 
-    /// Returns the Ogre main RenderWindow used to display the Naali 3D scene in.
-    Ogre::RenderWindow *OgreRenderWindow();
+    /// Returns the Ogre main RenderWindow used to display the 3D scene in.
+    Ogre::RenderWindow *OgreRenderWindow() const;
 
-    /// Returns the 2D Ogre overlay that contains a composition of all Naali 2D widgets.
-    Ogre::Overlay *OgreOverlay();
+    /// Returns the 2D Ogre overlay that contains a composition of all 2D widgets.
+    Ogre::Overlay *OgreOverlay() const;
 
 //    void RenderFrame();
 
