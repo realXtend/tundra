@@ -10,7 +10,7 @@
 #include "EC_Placeable.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "NaaliRenderWindow.h"
+#include "RenderWindow.h"
 #include "UiGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
@@ -346,7 +346,7 @@ namespace OgreRenderer
                 int height = framework_->Ui()->GraphicsView()->viewport()->size().height();
                 int window_left = 0;
                 int window_top = 0;
-                renderWindow = new NaaliRenderWindow();
+                renderWindow = new RenderWindow();
                 bool fullscreen = false;
 
                 renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);

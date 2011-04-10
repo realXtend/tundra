@@ -67,6 +67,7 @@
 #include "Camera/CameraControl.h"
 
 #include "SceneAPI.h"
+#include "Application.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -171,8 +172,6 @@
 #include <OgreBillboardSet.h>
 
 #include <boost/make_shared.hpp>
-
-#include "NaaliApplication.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -316,7 +315,7 @@ void RexLogicModule::Initialize()
     framework_->GetServiceManager()->RegisterService(Service::ST_Login, login_service_);
 
     // For getting ether shots upon exit, desconstuctor LogoutAndDeleteWorld() call is too late
-    connect(framework_->GetNaaliApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
+    connect(framework_->GetApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
 }
 
 // virtual

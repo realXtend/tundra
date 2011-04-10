@@ -19,7 +19,7 @@
 #include <QImage>
 #include <OgrePrerequisites.h>
 
-class NaaliRenderWindow;
+class RenderWindow;
 
 namespace OgreRenderer
 {
@@ -231,7 +231,7 @@ namespace OgreRenderer
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
 
-        NaaliRenderWindow *GetRenderWindow() const { return renderWindow; }
+        RenderWindow *GetRenderWindow() const { return renderWindow; }
 
         /// Specifies a new fps limit to use for the main loop. Pass in a value of 0 to remove fps limiting altogether.
         void SetTargetFPSLimit(float fpsLimit) { targetFpsLimit = fpsLimit; if (targetFpsLimit <= 1.f) targetFpsLimit = 0.f; }
@@ -285,7 +285,7 @@ namespace OgreRenderer
         //! Viewport
         Ogre::Viewport* viewport_;
 
-        NaaliRenderWindow *renderWindow;
+        RenderWindow *renderWindow;
 
         //! Framework we belong to
         Foundation::Framework* framework_;

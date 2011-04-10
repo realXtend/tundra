@@ -22,6 +22,7 @@ class ConsoleAPI;
 class DebugAPI;
 class SceneAPI;
 class ConfigAPI;
+class Application;
 
 namespace Poco
 {
@@ -32,8 +33,6 @@ namespace Poco
 
 namespace Foundation
 {
-    class NaaliApplication;
-
     /// Contains entry point for the framework.
     /*! Allows access to the core API objects, various managers and services. The standard way of using
         the framework is by first creating the framework and then calling Framework::Go()
@@ -184,7 +183,7 @@ namespace Foundation
         void UnloadModules();
 
         /// Get main QApplication
-        NaaliApplication *GetNaaliApplication() const;
+        Application *GetApplication() const;
 
         /// Returns module by class T.
         /** @param T class type of the module.
@@ -280,7 +279,7 @@ namespace Foundation
         bool headless_; ///< Are we running in the headless mode.
         Poco::SplitterChannel *splitterchannel; ///< Sends log prints for multiple channels.
         
-        NaaliApplication *naaliApplication; ///< Naali implementation of the main QApplication object.
+        Application *application; ///< Naali implementation of the main QApplication object.
         FrameAPI *frame; ///< The Frame API.
         ConsoleAPI *console; ///< The console API.
         UiAPI *ui; ///< The UI API.
