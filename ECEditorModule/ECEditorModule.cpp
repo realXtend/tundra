@@ -238,9 +238,9 @@ Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &
     return Console::ResultSuccess();
 }
 
-void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)
+void ECEditorModule::CreateXmlEditor(EntityPtr entity)
 {
-    QList<Scene::EntityPtr> entities;
+    QList<EntityPtr> entities;
     entities << entity;
     CreateXmlEditor(entities);
 }
@@ -256,7 +256,7 @@ QVariantList ECEditorModule::GetSelectedEntities() const
 {
     if (active_editor_)
     {
-        QList<Scene::EntityPtr> entities = active_editor_->GetSelectedEntities();
+        QList<EntityPtr> entities = active_editor_->GetSelectedEntities();
         QVariantList retEntities;
         for(uint i = 0; i < entities.size(); ++i)
             retEntities.push_back(QVariant(entities[i]->GetId()));
@@ -265,7 +265,7 @@ QVariantList ECEditorModule::GetSelectedEntities() const
     return QVariantList();
 }
 
-void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
+void ECEditorModule::CreateXmlEditor(const QList<EntityPtr> &entities)
 {
     UiAPI *ui = GetFramework()->Ui();
     if (entities.empty() || !ui)

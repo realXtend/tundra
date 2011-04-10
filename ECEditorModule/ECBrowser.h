@@ -54,15 +54,15 @@ public:
     /// Note! to get changes visible you need to call UpdateBrowser method.
     /** @param enity a new entity that we want to edit on the ECEditor.
      */
-    void AddEntity(Scene::EntityPtr entity);
+    void AddEntity(EntityPtr entity);
 
     /// Remove edited entity from the browser widget.
     /** @param entity Entity that we want to remove on the ECEditor.
      */
-    void RemoveEntity(Scene::EntityPtr entity);
+    void RemoveEntity(EntityPtr entity);
 
     /// Return list of entities that has added to browser widget. Return empty list if no entities have been added.
-    QList<Scene::EntityPtr> GetEntities() const;
+    QList<EntityPtr> GetEntities() const;
 
     /// Sets used item expand memory. Expand memory is used to load and save the expanded items in the tree widget.
     /** @param expandMem Tree widget item expand memory.
@@ -186,7 +186,7 @@ private:
     void RemoveComponentGroup(ComponentGroup *componentGroup);
 
     /// Checks if entity is already added to this editor.
-    bool HasEntity(Scene::EntityPtr entity) const;
+    bool HasEntity(EntityPtr entity) const;
 
     /// Remove selected attribute item from the dynamic component.
     /** @Note: This mehtod will only work with dynamic components.

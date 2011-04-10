@@ -388,8 +388,8 @@ namespace Environment
         }
         Ogre::Box bounds(0, 0, map.width(), map.height());
         Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)map.bits());
-        Scene::EntityList list = scene_manager_->GetEntitiesWithComponent("EC_Terrain");
-        Scene::EntityList::const_iterator it = list.begin();
+        EntityList list = scene_manager_->GetEntitiesWithComponent("EC_Terrain");
+        EntityList::const_iterator it = list.begin();
         while(it!= list.end())
         {
             boost::shared_ptr<EC_Terrain> ptr = (*it)->GetComponent<EC_Terrain>();
@@ -428,8 +428,8 @@ namespace Environment
         if(!GetSceneManager())
             return;
 
-        Scene::EntityList list = scene_manager_->GetEntitiesWithComponent("EC_Terrain");
-        Scene::EntityList::const_iterator it = list.begin();
+        EntityList list = scene_manager_->GetEntitiesWithComponent("EC_Terrain");
+        EntityList::const_iterator it = list.begin();
 
         //Quick fix, we will clone a new material copy for each terrain and assume there does not exist previous material clones
         int i = 0;

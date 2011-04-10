@@ -123,7 +123,7 @@ void AddComponentDialog::CheckComponentName(const QString &name)
     Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
     if(scene && type_combo_box_ && name_line_edit_)
     {
-        Scene::EntityPtr entity;
+        EntityPtr entity;
         for(uint i = 0; i < entities_.size(); i++)
         {
             entity = scene->GetEntity(entities_[i]);

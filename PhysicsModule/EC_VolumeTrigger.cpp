@@ -45,7 +45,7 @@ Scene::Entity* EC_VolumeTrigger::GetEntityInside(int idx) const
     QList<Scene::EntityWeakPtr> entities = entities_.keys();
     if (idx >=0 && idx < entities.size())
     {
-        Scene::EntityPtr entity = entities.at(idx).lock();
+        EntityPtr entity = entities.at(idx).lock();
         if (entity)
             return entity.get();
     }
@@ -58,7 +58,7 @@ QStringList EC_VolumeTrigger::GetEntityNamesInside() const
     QList<Scene::EntityWeakPtr> entities = entities_.keys();
     foreach (Scene::EntityWeakPtr entityw, entities)
     {
-        Scene::EntityPtr entity = entityw.lock();
+        EntityPtr entity = entityw.lock();
         if (entity)
             entitynames.append(entity->GetName());
     }
@@ -97,7 +97,7 @@ float EC_VolumeTrigger::GetEntityInsidePercentByName(const QString &name) const
     QList<Scene::EntityWeakPtr> entities = entities_.keys();
     foreach(Scene::EntityWeakPtr wentity, entities)
     {
-        Scene::EntityPtr entity = wentity.lock();
+        EntityPtr entity = wentity.lock();
         if (entity && entity->GetName().compare(name) == 0)
             return GetEntityInsidePercent(entity.get());
     }
@@ -196,7 +196,7 @@ void EC_VolumeTrigger::OnPhysicsUpdate()
     {
         if (!i.value())
         {
-            Scene::EntityPtr entity = i.key().lock();
+            EntityPtr entity = i.key().lock();
             /* disabled the check 'cause couldn't get the targets active, and the (possible) extran signaling doesn't do harm? --antont 
             bool active = true;
             // inactive rigid bodies don't generate collisions, so before emitting EntityLeave -event, make sure the body is active.
@@ -233,7 +233,7 @@ void EC_VolumeTrigger::OnPhysicsCollision(Scene::Entity* otherEntity, const Vect
     if (!entities.Get().isEmpty() && !IsInterestingEntity(otherEntity->GetName()))
         return;
 
-    Scene::EntityPtr entity = otherEntity->shared_from_this();
+    EntityPtr entity = otherEntity->shared_from_this();
 
     if (byPivot.Get())
     {

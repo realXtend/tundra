@@ -198,7 +198,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     // Scene metatypes.
     qScriptRegisterQObjectMetaType<SceneAPI*>(engine);
     qScriptRegisterQObjectMetaType<Scene::SceneManager*>(engine);
-    qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
+//    qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
     qScriptRegisterQObjectMetaType<IComponent*>(engine);

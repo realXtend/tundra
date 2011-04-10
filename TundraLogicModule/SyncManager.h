@@ -137,7 +137,7 @@ private:
         \param allComponents Whether to send all components, or only those that are dirty
         Note: This will not reset any changeflags in the components or attributes!
      */
-    void SerializeAndSendComponents(const std::vector<kNet::MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity = false, bool allComponents = false);
+    void SerializeAndSendComponents(const std::vector<kNet::MessageConnection*>& connections, EntityPtr entity, bool createEntity = false, bool allComponents = false);
     
     /// Get a syncstate that matches the messageconnection, for reflecting arrived changes back
     /** For client, this will always be server_syncstate_.

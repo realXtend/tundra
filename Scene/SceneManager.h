@@ -287,7 +287,7 @@ public slots:
         /** \param entity Entity pointer
             \param change Network replication mode
          */
-        void EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change = AttributeChange::Default);
+        void EmitEntityCreated(EntityPtr entity, AttributeChange::Type change = AttributeChange::Default);
 
         /// Emit a notification of an entity being removed. 
         /** Note: the entity pointer will be invalid shortly after!

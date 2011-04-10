@@ -817,7 +817,7 @@ void AddContentWindow::AddEntities()
             std::string dirname = path.branch_path().string();
 
             TundraLogic::SceneImporter importer(destScene);
-            Scene::EntityPtr entity = importer.ImportMesh(newDesc.filename.toStdString(), dirname,
+            EntityPtr entity = importer.ImportMesh(newDesc.filename.toStdString(), dirname,
                 Transform(),std::string(), dest->BaseURL(), AttributeChange::Default, true, std::string(), newDesc);
             if (entity)
                 entities << entity.get();

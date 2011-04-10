@@ -417,8 +417,8 @@ void EC_WebView::PrepareComponent()
     }
 
     // Get or create local EC_3DCanvas component
-    IComponent *iComponent = parent->GetOrCreateComponentRaw(EC_3DCanvas::TypeNameStatic(), AttributeChange::LocalOnly, false);
-    EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(iComponent);
+    ComponentPtr iComponent = parent->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic(), AttributeChange::LocalOnly, false);
+    EC_3DCanvas *sceneCanvas = dynamic_cast<EC_3DCanvas*>(iComponent.get());
     if (!sceneCanvas)
     {
         LogError("PrepareComponent: Could not get or create EC_3DCanvas component!");

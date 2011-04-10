@@ -179,7 +179,7 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     if (!scene)
         return Console::ResultFailure("No active scene.");
 
-    Scene::EntityPtr entity = scene->GetEntity(id);
+    EntityPtr entity = scene->GetEntity(id);
     if (!entity)
         return Console::ResultFailure("No entity found for entity ID " + params[0]);
 

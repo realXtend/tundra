@@ -183,7 +183,7 @@ void SyncManager::NewUserConnected(UserConnection* user)
     
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::EntityPtr entity = iter->second;
+        EntityPtr entity = iter->second;
         entity_id_t id = entity->GetId();
         // If we cross over to local entities (ID range 0x80000000 - 0xffffffff), break
         if (id & Scene::LocalEntity)
@@ -467,7 +467,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     std::set<entity_id_t> dirty = state->dirty_entities_;
     for(std::set<entity_id_t>::iterator i = dirty.begin(); i != dirty.end(); ++i)
     {
-        Scene::EntityPtr entity = scene->GetEntity(*i);
+        EntityPtr entity = scene->GetEntity(*i);
         if (!entity)
             continue;
         const Scene::Entity::ComponentVector &components = entity->Components();
@@ -733,7 +733,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
         }
     }
     
-    Scene::EntityPtr entity = scene->CreateEntity(entityID);
+    EntityPtr entity = scene->CreateEntity(entityID);
     if (!entity)
     {
         LogWarning("Scene refused to create entity " + ToString<int>(entityID));
@@ -835,7 +835,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
-    Scene::EntityPtr entity = scene->GetEntity(entityID);
+    EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
         LogWarning("Entity " + ToString<int>(entityID) + " not found for CreateComponents message, creating it now");
@@ -917,7 +917,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
-    Scene::EntityPtr entity = scene->GetEntity(entityID);
+    EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
         LogWarning("Entity " + ToString<int>(entityID) + " not found for UpdateComponents message, creating it now");
@@ -1120,7 +1120,7 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
-    Scene::EntityPtr entity = scene->GetEntity(msg.entityID);
+    EntityPtr entity = scene->GetEntity(msg.entityID);
     if (!entity)
         return;
     
@@ -1176,7 +1176,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
         return;
     
     entity_id_t entityId = msg.entityId;
-    Scene::EntityPtr entity = scene->GetEntity(entityId);
+    EntityPtr entity = scene->GetEntity(entityId);
     if (!entity)
     {
         LogWarning("Entity " + ToString<int>(entityId) + " not found for EntityAction message.");

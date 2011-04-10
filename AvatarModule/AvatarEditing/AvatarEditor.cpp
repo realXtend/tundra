@@ -423,7 +423,7 @@ namespace Avatar
         desc->SetMasterModifierValue(control_name, value / 100.0f);
     }
 
-    void AvatarEditor::SetEntityToEdit(Scene::EntityPtr entity)
+    void AvatarEditor::SetEntityToEdit(EntityPtr entity)
     {
         // Disconnect from old avatar asset change signals
         AvatarDescAsset* oldDesc = avatarAsset_.lock().get();
@@ -464,7 +464,7 @@ namespace Avatar
         if (!filename.empty())
         {
             AvatarHandlerPtr avatar_handler = avatar_module_->GetAvatarHandler();
-            Scene::EntityPtr entity = GetAvatarEntity();
+            EntityPtr entity = GetAvatarEntity();
             if (!entity)
             {
                 AvatarModule::LogError("User avatar not in scene, cannot load appearance");
@@ -552,7 +552,7 @@ namespace Avatar
         /*
         if (!filename.empty())
         {
-            Scene::EntityPtr entity = GetAvatarEntity();
+            EntityPtr entity = GetAvatarEntity();
             if (!entity)
                 return;
                 

@@ -224,7 +224,7 @@ void SceneStructureWindow::CreateAssetReferences()
         if (!eItem)
             continue;
 
-        Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
+        EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
         if (!entity)
             continue;
 

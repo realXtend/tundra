@@ -1118,7 +1118,7 @@ void EC_Terrain::GenerateFromSceneEntity(QString entityName)
     if (!scene)
         return;
 
-    Scene::Entity *entity = scene->GetEntityByNameRaw(entityName);
+    Scene::Entity *entity = scene->GetEntityByName(entityName).get();
     if (!entity)
         return;
 

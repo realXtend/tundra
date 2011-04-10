@@ -108,7 +108,7 @@ void EntityActionDialog::Initialize()
 
     for(int i = 0; i < entities.size(); ++i)
     {
-        Scene::EntityPtr e = entities[i].lock();
+        EntityPtr e = entities[i].lock();
         if (e)
         {
             targets.append(QString::number(e->GetId()));

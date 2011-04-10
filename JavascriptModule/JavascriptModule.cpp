@@ -299,6 +299,7 @@ void JavascriptModule::PrepareScriptInstance(JavascriptInstance* instance, EC_Sc
         }
     }
 
+    instance->RegisterService(framework_, "framework");
     instance->RegisterService(instance, "engine");
     
     for(uint i = 0; i < properties.size(); ++i)

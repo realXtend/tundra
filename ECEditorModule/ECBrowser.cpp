@@ -63,7 +63,7 @@ ECBrowser::~ECBrowser()
     clear();
 }
 
-void ECBrowser::AddEntity(Scene::EntityPtr entity)
+void ECBrowser::AddEntity(EntityPtr entity)
 {
     PROFILE(ECBrowser_AddNewEntity);
 
@@ -74,7 +74,7 @@ void ECBrowser::AddEntity(Scene::EntityPtr entity)
     //If entity is already added to browser no point to continue.
     if(HasEntity(entity))
         return;
-    entities_.push_back(Scene::EntityPtr(entity));
+    entities_.push_back(EntityPtr(entity));
 
     connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)),
         SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
@@ -82,7 +82,7 @@ void ECBrowser::AddEntity(Scene::EntityPtr entity)
         SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)), Qt::UniqueConnection);
 }
 
-void ECBrowser::RemoveEntity(Scene::EntityPtr entity)
+void ECBrowser::RemoveEntity(EntityPtr entity)
 {
     if (!entity)
         return;
@@ -90,7 +90,7 @@ void ECBrowser::RemoveEntity(Scene::EntityPtr entity)
     for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
         if (iter->lock() == entity)
         {
-            Scene::EntityPtr ent_ptr = iter->lock();
+            EntityPtr ent_ptr = iter->lock();
 
             disconnect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this,
                 SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
@@ -106,9 +106,9 @@ void ECBrowser::RemoveEntity(Scene::EntityPtr entity)
         }
 }
 
-QList<Scene::EntityPtr> ECBrowser::GetEntities() const
+QList<EntityPtr> ECBrowser::GetEntities() const
 {
-    QList<Scene::EntityPtr> ret;
+    QList<EntityPtr> ret;
     for(uint i = 0; i < entities_.size(); i++)
         if(!entities_[i].expired())
             ret.push_back(entities_[i].lock());
@@ -468,7 +468,7 @@ void ECBrowser::SelectionChanged(QTreeWidgetItem *current, QTreeWidgetItem *prev
 
 void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
 {
-    Scene::EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
+    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
     ComponentPtr comp_ptr;
@@ -497,7 +497,7 @@ void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type)
 
 void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
 {
-    Scene::EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
+    EntityPtr entity_ptr = framework_->Scene()->GetDefaultScene()->GetEntity(comp->GetParentEntity()->GetId());
     if(!HasEntity(entity_ptr))
         return;
 
@@ -588,7 +588,7 @@ void ECBrowser::PasteComponent()
         {
             if((*iter).expired())
                 continue;
-            Scene::EntityPtr entity_ptr = (*iter).lock();
+            EntityPtr entity_ptr = (*iter).lock();
 
             ComponentPtr component;
             QString type = comp_elem.attribute("type");
@@ -846,7 +846,7 @@ void ECBrowser::RemoveComponentGroup(ComponentGroup *componentGroup)
         }
 }
 
-bool ECBrowser::HasEntity(Scene::EntityPtr entity) const
+bool ECBrowser::HasEntity(EntityPtr entity) const
 {
     PROFILE(ECBrowser_HasEntity);
     for(uint i = 0; i < entities_.size(); i++)

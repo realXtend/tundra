@@ -548,7 +548,7 @@ Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(scene);
-    Scene::EntityPtr entity = importer.ImportMesh(filename, dirname, Transform(Vector3df(x,y,z),
+    EntityPtr entity = importer.ImportMesh(filename, dirname, Transform(Vector3df(x,y,z),
         Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), "local://", AttributeChange::Default, true);
     
     return Console::ResultSuccess();

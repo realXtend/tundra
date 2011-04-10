@@ -65,7 +65,7 @@ namespace Scene
         emit Removed(this);
     }
 
-    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
+    EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
     {
         // Figure out new entity id
         entity_id_t newentityid = 0;
@@ -76,13 +76,13 @@ namespace Scene
             if(entities_.find(id) != entities_.end())
             {
                 LogError("Can't create entity with given id because it's already used: " + ToString(id));
-                return Scene::EntityPtr();
+                return EntityPtr();
             }
             else
                 newentityid = id;
         }
 
-        Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(framework_, newentityid, this));
+        EntityPtr entity = EntityPtr(new Scene::Entity(framework_, newentityid, this));
         for(size_t i=0 ; i<components.size() ; ++i)
         {
             ComponentPtr newComp = framework_->GetComponentManager()->CreateComponent(components[i]);
@@ -98,16 +98,16 @@ namespace Scene
         return entity;
     }
 
-    Scene::EntityPtr SceneManager::GetEntity(entity_id_t id) const
+    EntityPtr SceneManager::GetEntity(entity_id_t id) const
     {
         EntityMap::const_iterator it = entities_.find(id);
         if (it != entities_.end())
             return it->second;
 
-        return Scene::EntityPtr();
+        return EntityPtr();
     }
     
-    Scene::EntityPtr SceneManager::GetEntity(const QString& name) const
+    EntityPtr SceneManager::GetEntity(const QString& name) const
     {
         EntityMap::const_iterator it = entities_.begin();
         while(it != entities_.end())
@@ -117,7 +117,7 @@ namespace Scene
             ++it;
         }
         
-        return Scene::EntityPtr();
+        return EntityPtr();
     }
 
     Scene::Entity *SceneManager::GetEntityByNameRaw(const QString &name) const
@@ -125,7 +125,7 @@ namespace Scene
         return GetEntityByName(name).get();
     }
 
-    Scene::EntityPtr SceneManager::GetEntityByName(const QString& name) const
+    EntityPtr SceneManager::GetEntityByName(const QString& name) const
     {
         EntityMap::const_iterator it = entities_.begin();
         while(it != entities_.end())
@@ -137,7 +137,7 @@ namespace Scene
             ++it;
         }
 
-        return Scene::EntityPtr();
+        return EntityPtr();
     }
 
     entity_id_t SceneManager::GetNextFreeId()
@@ -193,7 +193,7 @@ namespace Scene
         if (old_id == new_id)
             return;
         
-        Scene::EntityPtr old_entity = GetEntity(old_id);
+        EntityPtr old_entity = GetEntity(old_id);
         if (!old_entity)
             return;
         
@@ -213,7 +213,7 @@ namespace Scene
         EntityMap::iterator it = entities_.find(id);
         if (it != entities_.end())
         {
-            Scene::EntityPtr del_entity = it->second;
+            EntityPtr del_entity = it->second;
             
             EmitEntityRemoved(del_entity.get(), change);
 
@@ -320,7 +320,7 @@ namespace Scene
             emit EntityCreated(entity, change);
     }
 
-    void SceneManager::EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change)
+    void SceneManager::EmitEntityCreated(EntityPtr entity, AttributeChange::Type change)
     {
         if (change == AttributeChange::Disconnected)
             return;
@@ -423,7 +423,7 @@ namespace Scene
                 {
                     /* copied from GetEntityXML so that we can get local and temporary components also.
                     ugly hack! */
-                    Scene::EntityPtr entity = iter->second;
+                    EntityPtr entity = iter->second;
                     QDomElement entity_elem = scene_doc.createElement("entity");
 
                     QString id_str;

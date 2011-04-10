@@ -78,11 +78,11 @@ public slots:
 
     /// Creates EC attribute XML editor widget for entity.
     /// \param entity Entity pointer.
-    void CreateXmlEditor(Scene::EntityPtr entity);
+    void CreateXmlEditor(EntityPtr entity);
 
     /// Creates EC attribute XML editor widget for entity.
     /// \param entities List of entity pointers.
-    void CreateXmlEditor(const QList<Scene::EntityPtr> &entities);
+    void CreateXmlEditor(const QList<EntityPtr> &entities);
 
     /// Creates EC attribute XML editor widget for component.
     /// \param component Component pointer.

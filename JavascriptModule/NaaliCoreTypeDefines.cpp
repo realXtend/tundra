@@ -24,7 +24,8 @@
 
 Q_DECLARE_METATYPE(IAttribute*);
 Q_DECLARE_METATYPE(Scene::ScenePtr);
-Q_DECLARE_METATYPE(Scene::EntityPtr);
+Q_DECLARE_METATYPE(EntityPtr);
+Q_DECLARE_METATYPE(ComponentPtr);
 Q_DECLARE_METATYPE(QList<Scene::Entity*>);
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(std::string);
@@ -272,10 +273,11 @@ QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine
 
 void RegisterNaaliCoreMetaTypes()
 {
-    qRegisterMetaType<Scene::EntityPtr>("EntityPtr");
-    qRegisterMetaType<Scene::EntityPtr>("Scene::EntityPtr");
+//    qRegisterMetaType<EntityPtr>("EntityPtr");
+//    qRegisterMetaType<EntityPtr>("EntityPtr");
     qRegisterMetaType<Scene::ScenePtr>("ScenePtr");
     qRegisterMetaType<Scene::ScenePtr>("Scene::ScenePtr");
+    qRegisterMetaType<ComponentPtr>("ComponentPtr");
     qRegisterMetaType<Color>("Color");
     qRegisterMetaType<Vector3df>("Vector3df");
     qRegisterMetaType<Quaternion>("Quaternion");
@@ -298,7 +300,8 @@ void ExposeNaaliCoreTypes(QScriptEngine *engine)
     
     qScriptRegisterMetaType<IAttribute*>(engine, toScriptValueIAttribute, fromScriptValueIAttribute);
     qScriptRegisterMetaType<Scene::ScenePtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
-    qScriptRegisterMetaType<Scene::EntityPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+    qScriptRegisterMetaType<EntityPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
+    qScriptRegisterMetaType<ComponentPtr>(engine, qScriptValueFromBoostSharedPtr, qScriptValueToBoostSharedPtr);
     qScriptRegisterMetaType<QList<Scene::Entity*> >(engine, toScriptValueEntityList, fromScriptValueEntityList);
     qScriptRegisterMetaType<std::string >(engine, toScriptValueStdString, fromScriptValueStdString);
 

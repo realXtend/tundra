@@ -15,7 +15,7 @@
 
 // EntityItem
 
-EntityItem::EntityItem(const Scene::EntityPtr &entity) :
+EntityItem::EntityItem(const EntityPtr &entity) :
     ptr(entity), id(entity->GetId())
 {
     SetText(entity.get());
@@ -26,7 +26,7 @@ void EntityItem::SetText(Scene::Entity *entity)
     setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
 }
 
-Scene::EntityPtr EntityItem::Entity() const
+EntityPtr EntityItem::Entity() const
 {
     return ptr.lock();
 }

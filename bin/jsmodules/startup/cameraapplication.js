@@ -21,14 +21,14 @@ function OnSceneCleared(scene)
 
 function CreateCamera(scene)
 {
-    if (scene.GetEntityByNameRaw("FreeLookCamera") != null)
+    if (scene.GetEntityByName("FreeLookCamera") != null)
         return;
 
-    var entity = scene.CreateEntityRaw(scene.NextFreeIdLocal(), ["EC_Script"]);
+    var entity = scene.CreateEntity(scene.NextFreeIdLocal(), ["EC_Script"]);
     entity.SetName("FreeLookCamera");
     entity.SetTemporary(true);
 
-    var script = entity.GetComponentRaw("EC_Script");
+    var script = entity.GetComponent("EC_Script");
     script.type = "js";
     script.runOnLoad = true;
     var r = script.scriptRef;

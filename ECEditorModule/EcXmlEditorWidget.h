@@ -32,7 +32,7 @@ public:
 
     /// Sets the entities whose EC attributes we want to edit as XML.
     /// @param entities List of entities.
-    void SetEntity(const QList<Scene::EntityPtr> &entities);
+    void SetEntity(const QList<EntityPtr> &entities);
 
     /// Sets the components whose EC attributes we want to edit as XML.
     /// @param components List of components.

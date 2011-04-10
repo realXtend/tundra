@@ -65,8 +65,8 @@ void EC_SoundListener::OnActiveChanged()
     if (active.Get())
     {
         // Disable all the other listeners, only one can be active at a time.
-        Scene::EntityList listeners = scene->GetEntitiesWithComponent("EC_SoundListener");
-        foreach(Scene::EntityPtr listener, listeners)
+        EntityList listeners = scene->GetEntitiesWithComponent("EC_SoundListener");
+        foreach(EntityPtr listener, listeners)
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)

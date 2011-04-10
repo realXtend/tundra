@@ -22,14 +22,16 @@ namespace Scene
     class Entity;
     class SceneManager;
 
-    typedef boost::shared_ptr<Entity> EntityPtr;
     typedef boost::shared_ptr<SceneManager> ScenePtr;
 
     typedef boost::weak_ptr<Entity> EntityWeakPtr;
     typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
 
-    typedef std::list<EntityPtr> EntityList;
 }
+
+typedef boost::shared_ptr<Scene::Entity> EntityPtr;
+
+typedef std::list<EntityPtr> EntityList;
 
 struct SceneDesc;
 
