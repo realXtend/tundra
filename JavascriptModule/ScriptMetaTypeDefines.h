@@ -77,6 +77,19 @@ template<typename T> void fromScriptValueEnum(const QScriptValue &obj, T &s)
     s = static_cast<T>(obj.property("value").toInt32());
 }
 
+template<typename T>
+QScriptValue toScriptUInt(QScriptEngine *engine, const T &num)
+{
+    QScriptValue ret = engine->newVariant(num);
+    return ret;
+}
+
+template<typename T> 
+void fromScriptUInt(const QScriptValue &obj, T &s)
+{
+    s = obj.toUInt32();
+}
+
 /// Register Qt related stuff to QScriptEngine.
 /// @todo repalce this with qscriptgenerator.
 void ExposeQtMetaTypes(QScriptEngine *engine);

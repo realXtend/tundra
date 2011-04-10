@@ -24,7 +24,7 @@ function CreateCamera(scene)
     if (scene.GetEntityByName("FreeLookCamera") != null)
         return;
 
-    var entity = scene.CreateEntity(scene.NextFreeIdLocal(), ["EC_Script"]);
+    var entity = scene.CreateLocalEntity(["EC_Script"]);
     entity.SetName("FreeLookCamera");
     entity.SetTemporary(true);
 
