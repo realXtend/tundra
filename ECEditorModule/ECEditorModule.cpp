@@ -268,7 +268,7 @@ QVariantList ECEditorModule::GetSelectedEntities() const
 void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
 {
     UiAPI *ui = GetFramework()->Ui();
-    if (entities.empty() || !ui)
+    if (entities.empty())
         return;
 
     if (!xmlEditor_)
@@ -293,7 +293,7 @@ void ECEditorModule::CreateXmlEditor(ComponentPtr component)
 void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
 {
     UiAPI *ui = GetFramework()->Ui();
-    if (!components.empty() && !ui)
+    if (!components.empty())
         return;
 
     if (!xmlEditor_)
