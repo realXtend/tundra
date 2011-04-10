@@ -66,6 +66,10 @@ bin/server
 bin/server.exe
 bin/serverd
 bin/serverd.exe
+bin/Tundra
+bin/Tundra.exe
+bin/Tundrad
+bin/Tundrad.exe
 bin/dbus/
 bin/gabble/
 bin/gstreamer/
