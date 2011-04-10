@@ -57,12 +57,12 @@ EcXmlEditorWidget::~EcXmlEditorWidget()
 {
 }
 
-void EcXmlEditorWidget::SetEntity(const QList<Scene::EntityPtr> &entities)
+void EcXmlEditorWidget::SetEntity(const QList<EntityPtr> &entities)
 {
     entities_.clear();
     components_.clear();
 
-    foreach(Scene::EntityPtr ent, entities)
+    foreach(EntityPtr ent, entities)
         entities_ << ent;
 
     Refresh();
@@ -86,7 +86,7 @@ void EcXmlEditorWidget::Refresh()
     ///\todo Check for expired entities & components and drop them.
 //    if (entity_.expired())
 //        return;
-//    Scene::EntityPtr entity = entity_.lock();
+//    EntityPtr entity = entity_.lock();
 
     QDomDocument temp_doc;
 
@@ -124,7 +124,7 @@ void EcXmlEditorWidget::Refresh()
     QListIterator<Scene::EntityWeakPtr> it(entities_);
     while(it.hasNext())
     {
-        Scene::EntityPtr entity = it.next().lock();
+        EntityPtr entity = it.next().lock();
         if (!entity)
             continue;
 
@@ -203,7 +203,7 @@ void EcXmlEditorWidget::Save()
         {
             entity_found = true;
             entity_id_t id = (entity_id_t)boost::lexical_cast<int>(entity_elem.attribute("id").toStdString());
-            Scene::EntityPtr entity = scene->GetEntity(id);
+            EntityPtr entity = scene->GetEntity(id);
             if (entity)
             {
                 QDomElement comp_elem = entity_elem.firstChildElement("component");

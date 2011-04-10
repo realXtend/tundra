@@ -89,7 +89,7 @@ namespace Avatar
         Scene::ScenePtr scene = framework_->Scene()->GetDefaultScene();
         if (!scene)
             return Console::ResultFailure("No scene");
-        Scene::EntityPtr entity = scene->GetEntityByName(name);
+        EntityPtr entity = scene->GetEntityByName(name);
         if (!entity)
             return Console::ResultFailure("No such entity " + params[0]);
         

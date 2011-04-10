@@ -161,12 +161,12 @@ namespace Environment
     }
 
     ///\todo Delete this. -jj. 
-    Scene::EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& entity_name, const QString& component_name) 
+    EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& entity_name, const QString& component_name) 
     {
         
         Scene::ScenePtr active_scene = GetFramework()->Scene()->GetDefaultScene();
         // Search first that does there exist environment entity
-        Scene::EntityPtr entity = active_scene->GetEntityByName(entity_name);
+        EntityPtr entity = active_scene->GetEntityByName(entity_name);
         if (entity != 0)
         {
             // Does it have component? If not create. 

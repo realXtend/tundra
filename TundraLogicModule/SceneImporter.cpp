@@ -41,14 +41,14 @@ SceneImporter::~SceneImporter()
 {
 }
 
-Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
+EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
     const std::string& entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect,
     const std::string &meshName)
 {
     if (!scene_)
     {
         LogError("Null scene for mesh import");
-        return Scene::EntityPtr();
+        return EntityPtr();
     }
 
     boost::filesystem::path path(filename);
@@ -58,7 +58,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
     QString skeleton_name;
     if (inspect)
         if (!ParseMeshForMaterialsAndSkeleton(filename.c_str(), material_names, skeleton_name))
-            return Scene::EntityPtr();
+            return EntityPtr();
 
     QSet<QString> material_names_set;
     for(uint i = 0; i < material_names.size(); ++i)
@@ -79,7 +79,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(const std::string& filename, std::str
         meshleafname += std::string("/") + meshName;
 
     // Create a new entity in any case, with a new ID
-    Scene::EntityPtr newentity = scene_->CreateEntity(0, QStringList(), change, true);
+    EntityPtr newentity = scene_->CreateEntity(0, QStringList(), change, true);
     if (!newentity)
     {
         LogError("Could not create entity for mesh");
@@ -1059,7 +1059,7 @@ void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, QDo
 
             mesh_name = prefix + mesh_name;
 
-            Scene::EntityPtr entity;
+            EntityPtr entity;
             bool new_entity = false;
             QString node_name_qstr = QString::fromStdString(node_name);
 

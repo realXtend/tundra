@@ -66,7 +66,7 @@ public:
         \param meshName Name of mesh inside the file
         \return Entity pointer if successful, null if failed.
      */
-    Scene::EntityPtr ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
+    EntityPtr ImportMesh(const std::string& filename, std::string in_asset_dir, const Transform &worldtransform,
         const std::string& entity_prefab_xml, const QString &prefix, AttributeChange::Type change, bool inspect = true,
         const std::string &meshName = std::string());
 

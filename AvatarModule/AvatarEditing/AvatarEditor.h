@@ -58,7 +58,7 @@ namespace Avatar
         void MasterModifierValueChanged(int value);
 
         /// Set avatar entity and asset to edit
-        void SetEntityToEdit(Scene::EntityPtr entity);
+        void SetEntityToEdit(EntityPtr entity);
         
     protected:
         /// QWidget override.

@@ -187,7 +187,7 @@ QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QStringLis
                 TundraLogic::SceneImporter sceneimporter(scene);
                 for(size_t i=0 ; i<meshNames.size() ; ++i)
                 {
-                    Scene::EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
+                    EntityPtr entity = sceneimporter.ImportMesh(meshNames[i].file_.toStdString(), dirname, meshNames[i].transform_,
                         std::string(), "local://", AttributeChange::Default, false, meshNames[i].name_.toStdString());
                     if (entity)
                         ret.append(entity.get());
@@ -552,7 +552,7 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
             if (!scene)
                 return;
 
-            foreach(Scene::EntityPtr cam, scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic()))
+            foreach(EntityPtr cam, scene->GetEntitiesWithComponent(EC_OgreCamera::TypeNameStatic()))
                 if (cam->GetComponent<EC_OgreCamera>()->IsActive())
                 {
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();

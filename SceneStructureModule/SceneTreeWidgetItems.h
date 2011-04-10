@@ -17,7 +17,7 @@ public:
     /// Constructor.
     /** @param entity Entity which the item represents.
     */
-    explicit EntityItem(const Scene::EntityPtr &entity);
+    explicit EntityItem(const EntityPtr &entity);
 
     /// Sets the item text accordingly to the entity information.
     /** @param entity Entity which the item represents.
@@ -25,7 +25,7 @@ public:
     void SetText(Scene::Entity *entity);
 
     /// Returns pointer to the entity this item represents.
-    Scene::EntityPtr Entity() const;
+    EntityPtr Entity() const;
 
     /// Return Entity ID of the entity associated with this tree widget item.
     entity_id_t Id() const;

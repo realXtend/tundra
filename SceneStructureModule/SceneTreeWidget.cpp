@@ -434,7 +434,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     {
         foreach(EntityItem *eItem, selection.entities)
         {
-            Scene::EntityPtr entity = eItem->Entity();
+            EntityPtr entity = eItem->Entity();
             assert(entity);
             if (entity)
             {
@@ -652,7 +652,7 @@ void SceneTreeWidget::Rename()
     if (sel.entities.size() == 1)
     {
         EntityItem *eItem = sel.entities[0];
-        Scene::EntityPtr entity = eItem->Entity();
+        EntityPtr entity = eItem->Entity();
         if (entity)
         {
             // Remove the entity ID from the text when user is editing entity's name.
@@ -684,7 +684,7 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
     EntityItem *eItem = dynamic_cast<EntityItem *>(item);
     if (eItem)
     {
-        Scene::EntityPtr entity = eItem->Entity();
+        EntityPtr entity = eItem->Entity();
         assert(entity);
         if (entity)
         {
@@ -701,7 +701,7 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item, int column)
     EntityItem *parentItem = dynamic_cast<EntityItem *>(cItem->parent());
     if (cItem && parentItem)
     {
-        Scene::EntityPtr entity = scene->GetEntity(parentItem->id);
+        EntityPtr entity = scene->GetEntity(parentItem->id);
         QString newName = cItem->text(0);
         disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
         ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
@@ -752,7 +752,7 @@ void SceneTreeWidget::NewEntity()
     }
 
     // Create entity.
-    Scene::EntityPtr entity = scene.lock()->CreateEntity(id, QStringList(), changeType);
+    EntityPtr entity = scene.lock()->CreateEntity(id, QStringList(), changeType);
     assert(entity);
     scene.lock()->EmitEntityCreated(entity, changeType);
 }
@@ -787,7 +787,7 @@ void SceneTreeWidget::ComponentDialogFinished(int result)
     QList<entity_id_t> entities = dialog->GetEntityIds();
     for(int i = 0; i < entities.size(); i++)
     {
-        Scene::EntityPtr entity = scene.lock()->GetEntity(entities[i]);
+        EntityPtr entity = scene.lock()->GetEntity(entities[i]);
         if (!entity)
         {
             LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(entities[i]));
@@ -823,7 +823,7 @@ void SceneTreeWidget::Delete()
     if (sel.HasComponents())
         foreach(ComponentItem *cItem, sel.components)
         {
-            Scene::EntityPtr entity = cItem->Parent()->Entity();
+            EntityPtr entity = cItem->Parent()->Entity();
             ComponentPtr component = cItem->Component();
             if (entity && component)
                 entity->RemoveComponent(component, AttributeChange::Default);
@@ -874,7 +874,7 @@ void SceneTreeWidget::Paste()
         // Get currently selected entities and paste components to them.
         foreach(EntityItem *eItem, GetSelection().entities)
         {
-            Scene::EntityPtr entity = eItem->Entity();
+            EntityPtr entity = eItem->Entity();
             if (entity)
             {
                 while(!componentElem.isNull())
@@ -984,7 +984,7 @@ void SceneTreeWidget::OpenEntityActionDialog()
     QList<Scene::EntityWeakPtr> entities;
     foreach(entity_id_t id, sel.EntityIds())
     {
-        Scene::EntityPtr e = scene.lock()->GetEntity(id);
+        EntityPtr e = scene.lock()->GetEntity(id);
         if (e)
             entities.append(e);
     }
@@ -1049,7 +1049,7 @@ void SceneTreeWidget::OpenFunctionDialog()
     if (sel.HasEntities())
         foreach(EntityItem *eItem, sel.entities)
         {
-            Scene::EntityPtr e = eItem->Entity();
+            EntityPtr e = eItem->Entity();
             if (e)
                 objs.append(boost::dynamic_pointer_cast<QObject>(e));
         }
@@ -1202,7 +1202,7 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 
             foreach(EntityItem *eItem, sel.entities)
             {
-                Scene::EntityPtr entity = eItem->Entity();
+                EntityPtr entity = eItem->Entity();
                 assert(entity);
                 if (entity)
                     entity->SerializeToBinary(dest);
@@ -1329,7 +1329,7 @@ QSet<QString> SceneTreeWidget::GetAssetRefs(const EntityItem *eItem) const
     QSet<QString> assets;
 
     ///\todo use eItem->Entity()
-    Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
+    EntityPtr entity = scene.lock()->GetEntity(eItem->Id());
     if (entity)
     {
         int entityChildCount = eItem->childCount();

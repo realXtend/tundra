@@ -28,7 +28,7 @@ class QPoint;
 
 struct EntityComponentSelection
 {
-    Scene::EntityPtr entity;
+    EntityPtr entity;
     std::vector<ComponentPtr> components;
 };
 
@@ -100,7 +100,7 @@ public:
     QObjectList GetSelectedComponents() const;
 
     /// Returns list of selected entities.
-    QList<Scene::EntityPtr> GetSelectedEntities() const;
+    QList<EntityPtr> GetSelectedEntities() const;
 
 public slots:
     /// Deletes selected entity entries from the list (does not delete the entity itself).
@@ -161,14 +161,14 @@ public slots:
 
 signals:
     /// Emitted user wants to edit entity's EC attributes in XML editor.
-    void EditEntityXml(Scene::EntityPtr entity);
+    void EditEntityXml(EntityPtr entity);
 
     /// Emitted user wants to edit EC attributes in XML editor.
     void EditComponentXml(ComponentPtr component);
 
     /// Emitted user wants to edit entity's EC attributes in XML editor.
     /// @param entities list of entities
-    void EditEntityXml(const QList<Scene::EntityPtr> &entities);
+    void EditEntityXml(const QList<EntityPtr> &entities);
 
     /// Emitted user wants to edit EC attributes in XML editor.
     /// @param list of components

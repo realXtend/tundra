@@ -65,8 +65,8 @@ RaycastResult* SceneInteract::Raycast()
         return result;
     }
 
-    Scene::EntityPtr lastEntity = lastHitEntity_.lock();
-    Scene::EntityPtr entity = result->entity_->shared_from_this();
+    EntityPtr lastEntity = lastHitEntity_.lock();
+    EntityPtr entity = result->entity_->shared_from_this();
     if (entity != lastEntity)
     {
         if (lastEntity)

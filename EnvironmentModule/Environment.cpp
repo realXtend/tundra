@@ -59,7 +59,7 @@ Environment::~Environment()
 {
     if (activeEnvEntity_.lock().get() != 0)
     {
-        Scene::EntityPtr entity = activeEnvEntity_.lock();
+        EntityPtr entity = activeEnvEntity_.lock();
         if (entity != 0)
         {
             // Remove entity from scene.
@@ -86,7 +86,7 @@ EC_OgreEnvironment* Environment::GetEnvironmentComponent()
 void Environment::CreateEnvironment()
 {
     Scene::ScenePtr active_scene = owner_->GetFramework()->Scene()->GetDefaultScene();
-    Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeIdLocal());
+    EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeIdLocal());
 
     // The environment entity exists due to legacy from Taiga. It is bad design to create the entity here.
     entity->SetTemporary(true);
@@ -137,7 +137,7 @@ EC_EnvironmentLight* Environment::GetEnvironmentLight()
         if (entity == 0 || !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()))
         {
             ///todo Search first entity which has light environment component! this might be slow, work around somehow?
-            Scene::EntityList lst = active_scene->GetEntitiesWithComponent(EC_EnvironmentLight::TypeNameStatic());
+            EntityList lst = active_scene->GetEntitiesWithComponent(EC_EnvironmentLight::TypeNameStatic());
             if (lst.size() == 0 )
                 return 0;
             

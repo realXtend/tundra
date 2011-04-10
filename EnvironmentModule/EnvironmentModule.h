@@ -65,7 +65,7 @@ namespace Environment
             @param entity_name is entity which exist in world.
             @param component_name is name of component which is added into local environment entity.
         */
-        Scene::EntityPtr CreateEnvironmentEntity(const QString& entity_name, const QString& component_name);
+        EntityPtr CreateEnvironmentEntity(const QString& entity_name, const QString& component_name);
 
         /// Removes local dump environment entity. 
         void RemoveLocalEnvironment();

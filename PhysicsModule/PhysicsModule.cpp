@@ -137,7 +137,7 @@ Console::CommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVecto
     
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::EntityPtr entity = iter->second;
+        EntityPtr entity = iter->second;
         // Only assign to entities that don't have a rigidbody yet, but have a mesh and a placeable
         if ((!entity->GetComponent<EC_RigidBody>()) && (entity->GetComponent<EC_Placeable>()) && (entity->GetComponent<EC_Mesh>()))
         {
