@@ -54,7 +54,7 @@ namespace Foundation
 
     public:
         /// Constructs and initializes the framework.
-        /** @param arc Command line argument count as provided by the operating system.
+        /** @param arcc Command line argument count as provided by the operating system.
             @param arcv Command line arguments as provided by the operating system.
         */
         Framework(int argc, char** argv);
@@ -268,7 +268,6 @@ namespace Foundation
         PlatformPtr platform_; ///< Platform.
         ThreadTaskManagerPtr thread_task_manager_; ///< Thread task manager.
         ConfigurationManagerPtr config_manager_; ///< Default configuration
-        ApplicationPtr application_; ///< Application data.
         bool exit_signal_; ///< If true, exit application.
         std::vector<Poco::Channel*> log_channels_; ///< Logger channels
         Poco::Formatter *log_formatter_; ///< Logger default formatter

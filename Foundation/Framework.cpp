@@ -190,7 +190,6 @@ namespace Foundation
         module_manager_.reset();
         config_manager_.reset();
         platform_.reset();
-        application_.reset();
 
         Poco::Logger::shutdown();
 
