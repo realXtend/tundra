@@ -270,7 +270,10 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
         throw Exception(("Failed to start server on port " + ToString((int)port) + ". Please make sure that the port is free and not used by another application. The program will now abort.").c_str());
     }
     
-    ::LogInfo("Started server on port " + ToString((int)port));
+    ::LogInfo("Server started");
+    ::LogInfo(QString("* Port     : ") + QString::number(port));
+    ::LogInfo(QString("* Protocol : ") + (transport == kNet::SocketOverUDP ? "UDP" : "TCP"));
+    ::LogInfo(QString("* Headless : ") + (framework_->IsHeadless() == true ? "True" : "False"));
     return true;
 }
 
@@ -280,7 +283,7 @@ void KristalliProtocolModule::StopServer()
     {
         network.StopServer();
         connections.clear();
-        ::LogInfo("Stopped server");
+        ::LogInfo("Server stopped");
         server = 0;
     }
 }
