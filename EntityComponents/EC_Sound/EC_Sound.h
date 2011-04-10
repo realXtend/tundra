@@ -9,6 +9,7 @@
 #include "AssetReference.h"
 #include "AssetFwd.h"
 #include "AudioFwd.h"
+#include "SceneFwd.h"
 
 // Undef PlaySound from WIN32 API
 #ifdef PlaySound
@@ -121,7 +122,7 @@ public slots:
     void UpdateSoundSettings();
 
     /// Finds from the current scene the SoundListener that is currently active, or null if no SoundListener is active.
-    Scene::EntityPtr GetActiveSoundListener();
+    EntityPtr GetActiveSoundListener();
 
 private slots:
     /// Update signals to parents signals.

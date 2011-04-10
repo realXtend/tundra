@@ -1,5 +1,7 @@
 # Define target name and output directory
-init_target(Audio OUTPUT ./)
+init_target(Audio)
+# Use the output that only if we are building Audio project as a shared library.
+#init_target(Audio OUTPUT ./)
 
 # Define source files
 file(GLOB CPP_FILES *.cpp)
@@ -13,7 +15,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 use_modules(Framework Asset)
 
 add_definitions(-DAUDIO_API_EXPORTS)
-# If defined, we are building the Audio project as a DLL.
+# Define AUDIO_API_DLL if we are building the Audio project as a shared library.
 #add_definitions(-DAUDIO_API_DLL)
 
 use_package(OPENAL)
@@ -21,6 +23,7 @@ use_package(OGG)
 use_package(VORBIS)
 
 build_library(${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
+# Use the SHARED option if we are building Audio project as a shared library.
 #build_library(${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package(BOOST)
