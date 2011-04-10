@@ -10,16 +10,16 @@ var motion_x = 0;
 if (!me.HasComponent("EC_OgreCamera"))
 {
     // Create components & setup default position/lookat for the camera, mimicing RexLogicModule::CreateOpenSimViewerCamera()
-    var camera = me.GetOrCreateComponentRaw("EC_OgreCamera");
-    var inputmapper = me.GetOrCreateComponentRaw("EC_InputMapper");
-    var placeable = me.GetOrCreateComponentRaw("EC_Placeable");
-    var soundlistener = me.GetOrCreateComponentRaw("EC_SoundListener");
+    var camera = me.GetOrCreateComponent("EC_OgreCamera");
+    var inputmapper = me.GetOrCreateComponent("EC_InputMapper");
+    var placeable = me.GetOrCreateComponent("EC_Placeable");
+    var soundlistener = me.GetOrCreateComponent("EC_SoundListener");
     soundlistener.active = true;
 
     camera.AutoSetPlaceable();
 
     // Co-operate with the AvatarApplication: if AvatarCamera already exists, do not activate the freelookcamera right now
-    var avatarcameraentity = scene.GetEntityByNameRaw("AvatarCamera");
+    var avatarcameraentity = scene.GetEntityByName("AvatarCamera");
     if (!avatarcameraentity)
         camera.SetActive();
 
@@ -71,7 +71,7 @@ if (!me.HasComponent("EC_OgreCamera"))
 
 function IsCameraActive()
 {
-    var camera = me.GetComponentRaw("EC_OgreCamera");
+    var camera = me.GetComponent("EC_OgreCamera");
     return camera.IsActive();
 }
 
@@ -144,7 +144,7 @@ function HandleMouseLookX(param)
         return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
     var newtransform = placeable.transform;
     newtransform.rot.z -= rotate_sensitivity * move;
     placeable.transform = newtransform;
@@ -156,7 +156,7 @@ function HandleMouseLookY(param)
         return;
 
     var move = parseInt(param);
-    var placeable = me.GetComponentRaw("EC_Placeable");
+    var placeable = me.GetComponent("EC_Placeable");
     var newtransform = placeable.transform;
     newtransform.rot.x -= rotate_sensitivity * move;
     placeable.transform = newtransform;

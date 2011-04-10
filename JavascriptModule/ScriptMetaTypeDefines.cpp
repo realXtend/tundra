@@ -207,6 +207,9 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     //qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
     qScriptRegisterMetaType(engine, toScriptValueEnum<EntityAction::ExecutionType>, fromScriptValueEnum<EntityAction::ExecutionType>);
 
+    qRegisterMetaType<entity_id_t>("entity_id_t");
+    qScriptRegisterMetaType(engine, toScriptUInt<entity_id_t>, fromScriptUInt<entity_id_t>);    
+
     // Framework metatype
     qScriptRegisterQObjectMetaType<Foundation::Framework*>(engine);
     
