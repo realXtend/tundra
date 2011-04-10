@@ -21,7 +21,7 @@ namespace Foundation
             throw Exception("Failed to get HOME environment variable.");
 
         std::string path(ppath);
-        return path + "/." + std::string(APPLICATION_NAME);
+        return path + "/." + std::string(framework_->Config()->GetApplicationName().toStdString());
     }
 
     std::wstring PlatformNix::GetApplicationDataDirectoryW()

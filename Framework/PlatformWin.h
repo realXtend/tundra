@@ -5,7 +5,7 @@
 
 #if defined(_WINDOWS)
 
-
+#include "ConfigAPI.h"
 
 namespace Foundation
 {

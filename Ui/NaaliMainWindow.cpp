@@ -4,7 +4,7 @@
 
 #include "NaaliMainWindow.h"
 #include "Framework.h"
-#include "ConfigurationManager.h"
+#include "ConfigAPI.h"
 
 #include <QCloseEvent>
 #include <QDesktopWidget>
@@ -52,20 +52,16 @@ int NaaliMainWindow::DesktopHeight()
 
 void NaaliMainWindow::LoadWindowSettingsFromFile()
 {
-    int width = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_width", 800);
-    int height = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_height", 600);
-    int windowX = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_left", -1);
-    int windowY = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_top", -1);
-    bool maximized = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_maximized", false);
-    bool fullscreen = owner->GetDefaultConfig().DeclareSetting("MainWindow", "fullscreen", false);
-/* Don't use the version from the configuration, since the user may have several Naali versions installed simultaneously.
-    std::string title = owner->GetDefaultConfig().GetSetting<std::string>("Foundation", "window_title");
-    std::string version_major = owner->GetDefaultConfig().GetSetting<std::string>("Foundation", "version_major");
-    std::string version_minor = owner->GetDefaultConfig().GetSetting<std::string>("Foundation", "version_minor");
+    QString configFile = "tundra";
+    QString section = "main window";
+    int width = owner->Config()->Get(configFile, section, "window width", 800).toInt();
+    int height = owner->Config()->Get(configFile, section, "window height", 600).toInt();
+    int windowX = owner->Config()->Get(configFile, section, "window left", -1).toInt();
+    int windowY = owner->Config()->Get(configFile, section, "window top", -1).toInt();
+    bool maximized = owner->Config()->Get(configFile, section, "window maximized", false).toBool();
+    bool fullscreen = owner->Config()->Get(configFile, section, "fullscreen", false).toBool();
 
-    setWindowTitle(QString("%1 %2.%3").arg(title.c_str(), version_major.c_str(), version_minor.c_str()));
-*/
-    setWindowTitle("Tundra v1.0.5");
+    setWindowTitle(owner->Config()->GetApplicationIdentifier());
 
     width = max(1, min(DesktopWidth(), width));
     height = max(1, min(DesktopHeight(), height));
@@ -85,15 +81,17 @@ void NaaliMainWindow::SaveWindowSettingsToFile()
     int height = max(1, min(DesktopHeight()-windowY, size().height()));
 
     // If we are in windowed mode, store the window rectangle for next run.
+    QString configFile = "tundra";
+    QString section = "main window";
     if (!isMaximized() && !isFullScreen())
     {
-        owner->GetDefaultConfig().SetSetting("MainWindow", "window_width", width);
-        owner->GetDefaultConfig().SetSetting("MainWindow", "window_height", height);
-        owner->GetDefaultConfig().SetSetting("MainWindow", "window_left", windowX);
-        owner->GetDefaultConfig().SetSetting("MainWindow", "window_top", windowY);
+        owner->Config()->Set(configFile, section, "window width", width);
+        owner->Config()->Set(configFile, section, "window height", height);
+        owner->Config()->Set(configFile, section, "window left", windowX);
+        owner->Config()->Set(configFile, section, "window top", windowY);
     }
-    owner->GetDefaultConfig().SetSetting("MainWindow", "window_maximized", isMaximized());
-    owner->GetDefaultConfig().SetSetting("MainWindow", "fullscreen", isFullScreen());
+    owner->Config()->Set(configFile, section, "window maximized", isMaximized());
+    owner->Config()->Set(configFile, section, "fullscreen", isFullScreen());
 }
 
 void NaaliMainWindow::closeEvent(QCloseEvent *e)

@@ -31,9 +31,9 @@ namespace Foundation
         char cpath[MAX_PATH];
         GetCurrentDirectoryA(MAX_PATH, cpath);
         // When running from a debugger, the current directory may in fact be the install directory.
-        // Check for the presence of a "modules" directory (not the best way, but should do)
+        // Check for the presence of a "plugins" directory (not the best way, but should do)
         std::string path(cpath);
-        if (boost::filesystem::exists(path + "\\modules"))
+        if (boost::filesystem::exists(path + "\\plugins"))
             return path;
         
         // Otherwise get the module's filename, and extract path from it
@@ -57,9 +57,9 @@ namespace Foundation
         wchar_t cpath[MAX_PATH];
         GetCurrentDirectoryW(MAX_PATH, cpath);
         // When running from a debugger, the current directory may in fact be the install directory.
-        // Check for the presence of a "modules" directory (not the best way, but should do)
+        // Check for the presence of a "plugins" directory (not the best way, but should do)
         std::wstring path(cpath);
-        if (boost::filesystem::exists(path + L"\\modules"))
+        if (boost::filesystem::exists(path + L"\\plugins"))
             return path;
         
         // Otherwise get the module's filename, and extract path from it
@@ -88,7 +88,7 @@ namespace Foundation
             SHGetPathFromIDListA( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::string(cpath) + "\\" + std::string(APPLICATION_NAME);
+            return std::string(cpath) + "\\" + framework_->Config()->GetApplicationName().toStdString();
         }
         throw Exception("Failed to access application data directory.");
     }
@@ -103,7 +103,7 @@ namespace Foundation
             SHGetPathFromIDListW( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::wstring(cpath) + L"\\" + ToWString(std::string(APPLICATION_NAME));
+            return std::wstring(cpath) + L"\\" + ToWString(framework_->Config()->GetApplicationName().toStdString());
         }
         throw Exception("Failed to access application data directory.");
     }
@@ -118,7 +118,7 @@ namespace Foundation
             SHGetPathFromIDListA( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::string(cpath) + "\\" + std::string(APPLICATION_NAME);
+            return std::string(cpath) + "\\" + std::string(framework_->Config()->GetApplicationName().toStdString());
         }
         throw Exception("Failed to access user documents directory.");
     }
@@ -134,7 +134,7 @@ namespace Foundation
             SHGetPathFromIDListW( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::wstring(cpath) + L"\\" + ToWString(std::string(APPLICATION_NAME));
+            return std::wstring(cpath) + L"\\" + ToWString(std::string(framework_->Config()->GetApplicationName().toStdString()));
         }
         throw Exception("Failed to access user documents directory.");
     }

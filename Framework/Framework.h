@@ -3,9 +3,6 @@
 #ifndef incl_Foundation_Framework_h
 #define incl_Foundation_Framework_h
 
-// Application name is statically defined here
-#define APPLICATION_NAME "realXtend"
-
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"

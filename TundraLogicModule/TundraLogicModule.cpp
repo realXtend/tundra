@@ -15,6 +15,8 @@
 #include "IAssetTransfer.h"
 #include "IAsset.h"
 
+#include "ConfigAPI.h"
+
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "EventManager.h"
@@ -249,7 +251,15 @@ void TundraLogicModule::PostInitialize()
         autostartserver_ = true;
         autostartserver_port_ = programOptions["startserver"].as<int>();
         if (!autostartserver_port_)
-            autostartserver_port_ = cDefaultPort;
+        {
+            // Write default value to config if its not there.
+            // Read the default value from config if 'startserver' did not provide one.
+            QString configFile = "tundra";
+            QString configSection = "server";
+            if (!framework_->Config()->HasValue(configFile, configSection, "port"))
+                framework_->Config()->Set(configFile, configSection, "port", cDefaultPort);
+            autostartserver_port_ = GetFramework()->Config()->Get(configFile, configSection, "port", cDefaultPort).toInt();
+        }
     }
 }
 
@@ -270,10 +280,7 @@ void TundraLogicModule::Update(f64 frametime)
         if (check_default_server_start)
         {
             if (autostartserver_)
-            {
-                LogInfo("Started server by default");
                 server_->Start(autostartserver_port_);
-            }
 
             // Load startup scene here (if we have one)
             LoadStartupScene();
@@ -342,10 +349,11 @@ void TundraLogicModule::LoadStartupScene()
         }
         connect(sceneTransfer.get(), SIGNAL(Loaded(AssetPtr)), SLOT(StartupSceneLoaded(AssetPtr)));
         connect(sceneTransfer.get(), SIGNAL(Failed(IAssetTransfer*, QString)), SLOT(StartupSceneTransferFailed(IAssetTransfer*, QString)));
-        LogInfo("Loading startup scene from " + startupScene);
+        LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
     }
     else
     {
+        LogInfo("[TundraLogic] Loading startup scene from " + startupScene);
         bool useBinary = startupScene.find(".tbin") != std::string::npos;
         if (!useBinary)
             scene->LoadSceneXML(startupScene.c_str(), true/*clearScene*/, false/*replaceOnConflict*/, AttributeChange::Default);

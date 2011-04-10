@@ -11,6 +11,8 @@
 #include "NaaliGraphicsView.h"
 #include "LoggingFunctions.h"
 
+#include "ConfigAPI.h"
+
 #include <boost/thread.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/algorithm/string.hpp>
@@ -501,7 +503,9 @@ QKeySequence InputAPI::KeyBinding(const QString &actionName, QKeySequence defaul
 
 void InputAPI::LoadKeyBindingsFromFile()
 {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/KeyBindings");
+    /// \todo Should be removed from tundra?! Or at least make this use ConfigAPI.
+    /*
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, framework->Config()->GetApplicationName(), "configuration/KeyBindings");
 
     int size = settings.beginReadArray("numActions");
     for(int i = 0; i < size; ++i)
@@ -512,11 +516,14 @@ void InputAPI::LoadKeyBindingsFromFile()
         SetKeyBinding(actionName, keySequence);
     }
     settings.endArray();
+    */
 }
 
 void InputAPI::SaveKeyBindingsToFile()
 {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/KeyBindings");
+    /// \todo Should be removed from tundra?! Or at least make this use ConfigAPI.
+    /*
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, framework->Config()->GetApplicationName(), "configuration/KeyBindings");
 
     settings.beginWriteArray("numActions");
     int index = 0;
@@ -528,6 +535,7 @@ void InputAPI::SaveKeyBindingsToFile()
         settings.setValue("keySequence", iter->second.toString(QKeySequence::PortableText));
     }
     settings.endArray();
+    */
 }
 
 Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)

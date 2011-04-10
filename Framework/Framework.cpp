@@ -51,13 +51,19 @@ namespace Foundation
         naaliApplication(0),
         frame(new FrameAPI(this)),
         console(new ConsoleAPI(this)),
-        ui(0),
+        debug(new DebugAPI(this)),
+        scene(new SceneAPI(this)),
         input(0),
         asset(0),
         audio(0),
-        debug(new DebugAPI(this)),
-        scene(new SceneAPI(this))
+        ui(0)
     {
+        // Application name and version. Can be accessed via ConfigAPI.
+        /// \note Modify these values when you are making a custom Tundra. Also the version needs to be changed here on releases.
+        const QString applicationOrganization = "realXtend";
+        const QString applicationName = "Tundra";
+        const QString applicationVersion = "1.0.5";
+
         ParseProgramOptions();
 
         if (commandLineVariables.count("help")) 
@@ -73,15 +79,20 @@ namespace Foundation
             ProfilerSection::SetProfiler(&profiler_);
 #endif
             PROFILE(FW_Startup);
+            
+            // Create ConfigAPI and pass application data.
+            config = new ConfigAPI(this);
+            config->SetApplication(applicationOrganization, applicationName, applicationVersion);
+
+            // Create and prepare platform. Depends on application name being set to ConfigAPI.
             platform_ = PlatformPtr(new Platform(this));
+            platform_->PrepareApplicationDataDirectory();
+
+            // Prepare ConfigAPIs working directory
+            config->PrepareDataFolder("configuration");
 
             // Create config manager
-            config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
-            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
-            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
-            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
-
-            platform_->PrepareApplicationDataDirectory(); // depends on config
+            config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));          
 
             // Force install directory as the current working directory.
             /** \Todo: we may not want to do this in all cases, but there is a huge load of places
@@ -99,9 +110,6 @@ namespace Foundation
 
                 // Old XML based config manager
                 config_manager_->SetPath(config_path);
-
-                // New INI based config api using QSettings
-                config = new ConfigAPI(this, QString::fromStdString(config_path));
             }
 
             config_manager_->Load();

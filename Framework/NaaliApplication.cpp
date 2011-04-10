@@ -35,12 +35,13 @@ namespace Foundation
         nativeTranslator(new QTranslator),
         appTranslator(new QTranslator)
     {
-        QApplication::setApplicationName("realXtend-Naali");
+        QApplication::setApplicationName(framework->Config()->GetApplicationName());
+        QApplication::setApplicationVersion(framework->Config()->GetApplicationVersion());
+        QApplication::setOrganizationName(framework->Config()->GetApplicationOrganization());
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
         // If under windows, add run_dir/plugins as library path
         // unix users will get plugins from their OS Qt installation folder automatically
-
         QString runDirectory = QString::fromStdString(ReplaceChar(framework->GetPlatform()->GetInstallDirectory(), '\\', '/'));
         runDirectory += "/qtplugins";
         addLibraryPath(runDirectory);
