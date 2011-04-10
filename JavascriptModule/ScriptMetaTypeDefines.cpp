@@ -81,7 +81,7 @@ Q_DECLARE_METATYPE(AttributeChange::Type);
 Q_DECLARE_METATYPE(Foundation::Framework*);
 Q_DECLARE_METATYPE(FrameAPI*);
 Q_DECLARE_METATYPE(ConsoleAPI*);
-Q_DECLARE_METATYPE(Command*);
+Q_DECLARE_METATYPE(ConsoleCommand*);
 Q_DECLARE_METATYPE(DelayedSignal*);
 Q_DECLARE_METATYPE(DebugAPI*);
 
@@ -215,7 +215,7 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     
     // Console metatypes.
     qScriptRegisterQObjectMetaType<ConsoleAPI*>(engine);
-    qScriptRegisterQObjectMetaType<Command*>(engine);
+    qScriptRegisterQObjectMetaType<ConsoleCommand*>(engine);
 
     // Frame metatypes.
     qScriptRegisterQObjectMetaType<FrameAPI*>(engine);
