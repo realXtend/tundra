@@ -141,10 +141,6 @@ void DebugStatsModule::AddProfilerWidgetToUi()
         return;
     }
 
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
     profilerWindow_ = new TimeProfilerWindow(framework_);
     profilerWindow_->setParent(ui->MainWindow());
     profilerWindow_->setWindowFlags(Qt::Tool);

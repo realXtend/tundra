@@ -178,8 +178,6 @@ namespace MumbleVoip
     {
         if (framework_->IsHeadless())
             return;
-        if (!framework_->Ui()->MainWindow())
-            return;
 
         if (microphone_adjustment_widget_)
         {
