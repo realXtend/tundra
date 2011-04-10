@@ -93,6 +93,18 @@ public slots:
         EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(),
             AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
 
+        /// Creates new local entity that contains the specified components
+        /** Entities should never be created directly, but instead created with this function.
+
+            To create an empty entity omit components parameter.
+
+            \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+            \param change Notification/network replication mode
+            \param defaultNetworkSync Whether components will have network sync. Default true
+        */
+        EntityPtr CreateLocalEntity(const QStringList &components = QStringList(),
+            AttributeChange::Type change = AttributeChange::Default, bool defaultNetworkSync = true);
+
         /// Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
         /** Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
             and this change in itself will not be replicated
@@ -164,6 +176,7 @@ public slots:
         /// \todo Clean these overload functions created for PythonQt and QtScript compatibility as much as possible.
         //  For documentation, see the plain C++ public methods above.
 
+        /// \todo These can be removed when otherwise a good time, the entity_id_t has been exposed to js.
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
         uint NextFreeIdLocal() { return (uint)GetNextFreeIdLocal(); }
