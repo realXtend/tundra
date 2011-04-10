@@ -45,6 +45,7 @@
 #include <QCloseEvent>
 #include <QSize>
 #include <QScrollBar>
+#include <QDir>
 #include <QUuid>
 
 #ifdef PROFILING
@@ -256,8 +257,12 @@ namespace OgreRenderer
 #endif
 
         // Create Ogre root with logfile
-        logfilepath = framework_->GetPlatform()->GetUserDocumentsDirectory();
-        logfilepath += "/Ogre.log";
+        QDir logDir(framework_->GetPlatform()->GetApplicationDataDirectory().c_str());
+        if (!logDir.exists("logs"))
+            logDir.mkdir("logs");
+        logDir.cd("logs");
+
+        logfilepath = logDir.absoluteFilePath("Ogre.log").toStdString();
 #include "DisableMemoryLeakCheck.h"
         root_ = OgreRootPtr(new Ogre::Root("", config_filename_, logfilepath));
 
