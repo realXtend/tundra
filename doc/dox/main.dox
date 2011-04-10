@@ -348,6 +348,7 @@ Topics:
 <li>\ref RexLogic_Module "RexLogicModule"
 <ul><li>Exposes the components FreeData, AttachedSound, OpenSimAvatar, NetworkPosition, Controllable, AvatarAppearance, HoveringWidget, Highlight, HoveringText, Clone, Light, OpenSimPresence, OpenSimPrim, Touchable, 3DCanvas, 3DCanvasSource, Ruler, SoundRuler, Name, ParticleSystem, SoundListener, Sound, Mesh, InputMapper, Movable.</ul>
 <li>WorldMapModule
+<li>WorldBuildingModule
 </ul>
 
 </td>
@@ -395,32 +396,12 @@ Implements functionality for editing Naali scene content and Ogre asset data.
 <p>Implemented by modules
 <ul>
 <li>\ref ec_editormodule "ECEditorModule"
+<li>SceneStructureModule
 <li>OgreAssetEditorModule
-<li>WorldBuildingModule
 </ul>
  
 </td>
 </tr>
 </table>
 
-<h2>Modules</h2>
-Additionally, there exists the following modules.
-
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
-<h3>LoginScreenModule</h3>
-Implements a server login screen with a very simple end-user UI. 
- </td>
-</tr>
-</table>
-
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
-<h3>UiServiceModule</h3>
-Very simple light-weight UI module with no high-level functionality (menus etc. ) at all. Used with LoginScreenModule.
-</td>
-</tr>
-</table>
 */
