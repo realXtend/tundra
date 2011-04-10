@@ -2,6 +2,7 @@
 
 #include "Foundation.h"
 #include "ModuleManager.h"
+#include "LoggingFunctions.h"
 
 #include "DebugOperatorNew.h"
 
@@ -92,9 +93,14 @@ int run (int argc, char **argv)
 {
     int return_value = EXIT_SUCCESS;
 
-    printf("Starting up server. Current working directory: %s.\n", QDir::currentPath().toStdString().c_str());
+    // Initilizing prints
+    LogInfo("Starting up Tundra");
+    LogInfo("* Working directory: " + QDir::currentPath().toStdString());
+    LogInfo("* Command arguments:");
     for(int i = 0; i < argc; ++i)
-        printf("argv[%d]: %s\n", i, argv[i]);
+        LogInfo("  " + std::string(argv[i]));
+    LogInfo(""); // endl
+
     // Create application object
 #if !defined(_DEBUG) || !defined (_MSC_VER)
     try
@@ -192,7 +198,7 @@ int generate_dump(EXCEPTION_POINTERS* pExceptionPointers)
     // since it might have not been initialized yet, or it might have caused 
     // the exception in the first place
     WCHAR* szAppName = L"realXtend";
-    WCHAR* szVersion = L"Tundra_v1.0.5-server";
+    WCHAR* szVersion = L"Tundra_v1.0.5";
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
