@@ -15,7 +15,6 @@
 #---------------------------------------------------------------------------
 
 # This tag specifies the encoding used for all characters in the config file 
-# This tag specifies the encoding used for all characters in the config file 
 # that follow. The default is UTF-8 which is also the encoding used for all 
 # text before the first occurrence of this tag. Doxygen uses libiconv (or the 
 # iconv built into libc) for the transcoding. See 
@@ -26,13 +25,13 @@ DOXYFILE_ENCODING      = UTF-8
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = "RealXtend Viewer"
+PROJECT_NAME           = "RealXtend Tundra SDK"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = Pre-Alpha
+PROJECT_NUMBER         = "Latest Nightly"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 

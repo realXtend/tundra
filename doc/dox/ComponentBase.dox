@@ -1,9 +1,9 @@
 /*!
 
-\page component_base Naali Entity Component Reference
+\page component_base Tundra Entity Component Reference
 
-Naali provides a set of built-in entity components, which are the building blocks that make up the world. This page is the reference documentation for all these components. 
-You can define your own components in C++ by writing your own Naali module to host it. See the Module API and Scene API for more information on how to do this.
+Tundra provides a set of built-in entity components, which are the building blocks that make up the world. This page is the reference documentation for all these components. 
+You can define your own components in C++ by writing your own Tundra module to host it. See the Module API and Scene API for more information on how to do this.
 
 <b>Note:</b> Some of the components listed here are internal to the system and they have never been intended to be used directly from the EC editor.
 Basically this means any component that does not contain any attributes or publicly accessible slots or actions.
@@ -136,7 +136,7 @@ Does not emit any actions.
 
 
 <h2>Scriptable Components</h2>
-All the components in Naali are written in C++. To allow dynamic behavior for data driven ECA data and script contents, the following special components exist:
+All the components in Tundra are written in C++. To allow dynamic behavior for data driven ECA data and script contents, the following special components exist:
 
 <table style="margin: 20px;">
 <tr>
