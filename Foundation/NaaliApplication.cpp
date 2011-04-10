@@ -19,9 +19,9 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
+#include "UiGraphicsView.h"
 #endif
 
 #include "MemoryLeakCheck.h"
@@ -115,7 +115,7 @@ namespace Foundation
         QMouseEvent *mouse = dynamic_cast<QMouseEvent*>(event);
         if (mouse)
         {
-            if (dynamic_cast<NaaliMainWindow*>(obj))
+            if (dynamic_cast<UiMainWindow*>(obj))
             {
                 switch(event->type())
                 {
