@@ -6,7 +6,7 @@ import rexviewer as r #the old module is still used , while porting away from it
 import sys #for stdout redirecting
 #from _naali import *
 
-# for PythonQt.private.AttributeChange
+# for core types like PythonQt.private.AttributeChange
 import PythonQt
 
 #\todo: do we have version num info somewhere?
@@ -18,6 +18,7 @@ Core API
 frame = _naali.Frame()
 console = _naali.Console()
 input = _naali.Input()
+scene = _naali.Scene()
 audio = _naali.Audio()
 ui = _naali.Ui()
 debug = _naali.Debug()
@@ -29,6 +30,10 @@ server = _naali.server
 client = _naali.client #now for web login ui
 framework = _naali #idea was that 'framework' is not in core api, but is used anyhow? (someone added this)
 
+"""some basic types"""
+from PythonQt.private import Vector3df, Quaternion, AttributeChange, DelayedSignal, KeyEvent, Transform
+#NOTE: could say 'from PythonQt.private import *' but that would bring e.g. Core API classes, which are not singletons
+
 class Logger:
     def __init__(self):
         self.buf = ""
@@ -37,7 +42,11 @@ class Logger:
         self.buf += msg
         while '\n' in self.buf:
             line, self.buf = self.buf.split("\n", 1)
-            r.logInfo(line)
+            try:
+                r.logInfo(line)
+            except ValueError:
+                pass #somehow this isn't a string always
+                r.logInfo("logging prob from py print: is not a string? " + str(type(line)))
 
 sys.stdout = Logger()
 
@@ -58,7 +67,7 @@ def createEntity(comptypes = [], localonly = False, sync = True, temporary = Fal
     if localonly:
         ent = s.CreateEntityLocalRaw(comptypes)
     else:
-        ent = s.CreateEntityRaw(0, comptypes, PythonQt.private.AttributeChange.Replicate, sync)
+        ent = s.CreateEntityRaw(0, comptypes, AttributeChange.Replicate, sync)
     # set temporary
     if temporary:
         ent.SetTemporary(True)
