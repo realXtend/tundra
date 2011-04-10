@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 #include "Color.h"
 #include "Quaternion.h"
 #include "Transform.h"
@@ -11,6 +10,8 @@
 #include "IAttribute.h"
 #include "AssetReference.h"
 #include "Entity.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
 
 #include <QScriptEngine>
 #include <QColor>
@@ -18,8 +19,7 @@
 #include <QQuaternion>
 #include <QScriptValueIterator>
 
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("JavaScriptEngine")
+#include "MemoryLeakCheck.h"
 
 Q_DECLARE_METATYPE(IAttribute*);
 Q_DECLARE_METATYPE(Scene::EntityPtr);
@@ -275,7 +275,7 @@ QScriptValue createAssetReferenceList(QScriptContext *ctx, QScriptEngine *engine
     return engine->toScriptValue(newAssetRefList);
 }
 
-void RegisterNaaliCoreMetaTypes()
+void RegisterCoreMetaTypes()
 {
     qRegisterMetaType<Scene::EntityPtr>("EntityPtr");
     qRegisterMetaType<Color>("Color");
@@ -286,7 +286,7 @@ void RegisterNaaliCoreMetaTypes()
     qRegisterMetaType<AssetReferenceList>("AssetReferenceList");
 }
 
-void ExposeNaaliCoreTypes(QScriptEngine *engine)
+void ExposeCoreTypes(QScriptEngine *engine)
 {
     qScriptRegisterMetaType(engine, toScriptValueColor, fromScriptValueColor);
     qScriptRegisterMetaType(engine, toScriptValueVector3, fromScriptValueVector3);
