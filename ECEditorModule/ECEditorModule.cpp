@@ -42,7 +42,7 @@ void ECEditorModule::Load()
 void ECEditorModule::Initialize()
 {
     GetFramework()->RegisterDynamicObject("eceditor", this);
-    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_->GetDefaultConfig()));
+    expandMemory = ExpandMemoryPtr(new TreeWidgetItemExpandMemory(name_static_.c_str(), framework_));
 }
 
 void ECEditorModule::PostInitialize()

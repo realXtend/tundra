@@ -5,7 +5,7 @@
 
 #include "NaaliApplication.h"
 #include "Framework.h"
-#include "ConfigurationManager.h"
+#include "ConfigAPI.h"
 #include "CoreStringUtils.h"
 
 #include <QDir>
@@ -61,9 +61,11 @@ namespace Foundation
 
         this->installTranslator(nativeTranslator);
         
-        std::string default_language = framework->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(),
-            "language", std::string("data/translations/naali_en"));
-        ChangeLanguage(QString::fromStdString(default_language));
+        if (!framework_->Config()->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language"))
+            framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language", "data/translations/naali_en");
+
+        QString default_language = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "language").toString();
+        ChangeLanguage(default_language);
 
         QWebSettings::globalSettings()->setAttribute(QWebSettings::PluginsEnabled, true); //enablig flash
     }
@@ -203,7 +205,7 @@ namespace Foundation
         if (appTranslator->load(filename))
         {
             installTranslator(appTranslator);
-            framework->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "language", file.toStdString());
+            framework->Config()->Set("tundra", "framework", "language", file);
         }
         
         emit LanguageChanged();

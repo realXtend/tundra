@@ -243,23 +243,20 @@ void TundraLogicModule::PostInitialize()
     {
         throw Exception("Fatal: could not get KristalliProtocolModule");
     }
+
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SERVER, "port", cDefaultPort, cDefaultPort);
+    // Write default values to config if not present.
+    if (!framework_->Config()->HasValue(configData))
+        framework_->Config()->Set(configData);
     
-    // Check whether server should be autostarted
+    // Check whether server should be autostarted.
     const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
     if (programOptions.count("startserver"))
     {
         autostartserver_ = true;
         autostartserver_port_ = programOptions["startserver"].as<int>();
         if (!autostartserver_port_)
-        {
-            // Write default value to config if its not there.
-            // Read the default value from config if 'startserver' did not provide one.
-            QString configFile = "tundra";
-            QString configSection = "server";
-            if (!framework_->Config()->HasValue(configFile, configSection, "port"))
-                framework_->Config()->Set(configFile, configSection, "port", cDefaultPort);
-            autostartserver_port_ = GetFramework()->Config()->Get(configFile, configSection, "port", cDefaultPort).toInt();
-        }
+            autostartserver_port_ = GetFramework()->Config()->Get(configData).toInt();
     }
 }
 

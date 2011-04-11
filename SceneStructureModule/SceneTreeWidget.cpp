@@ -21,7 +21,7 @@
 #include "ModuleManager.h"
 #include "TundraEvents.h"
 #include "EventManager.h"
-#include "ConfigurationManager.h"
+#include "ConfigAPI.h"
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
 #include "EntityActionDialog.h"
@@ -471,14 +471,12 @@ void SceneTreeWidget::LoadInvokeHistory()
     invokeHistory.clear();
 
     // Load and parse invoke history from settings.
-    ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
-
     try
     {
         int idx = 0;
         forever
         {
-            std::string setting = cfgMgr.GetSetting<std::string>("InvokeHistory", "item" + ToString(idx));
+            std::string setting = framework->Config()->Get("uimemory", "invoke history", QString("item%1").arg(idx), "").toString().toStdString();
             if (setting.empty())
                 break;
             invokeHistory.push_back(InvokeItem(setting));
@@ -502,10 +500,8 @@ void SceneTreeWidget::SaveInvokeHistory()
 {
     // Sort descending by MRU order.
     qSort(invokeHistory);
-
-    ConfigurationManager &cfgMgr = framework->GetDefaultConfig();
     for(int idx = 0; idx < invokeHistory.size(); ++idx)
-        cfgMgr.SetSetting<std::string>("InvokeHistory", "item" + ToString(idx), invokeHistory[idx].ToSetting());
+        framework->Config()->Set("uimemory", "invoke history", QString("item%1").arg(idx), QString::fromStdString(invokeHistory[idx].ToSetting()));
 }
 
 InvokeItem *SceneTreeWidget::FindMruItem() const

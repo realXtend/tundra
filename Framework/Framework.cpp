@@ -90,33 +90,27 @@ namespace Foundation
 
             // Prepare ConfigAPIs working directory
             config->PrepareDataFolder("configuration");
+            
+            // Prepare values that need to be in config.
+            /// \todo remove if 'log level' is not used anywhere.
+            if (!config->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "log level"))
+                config->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "log level", "information");
+
+            /***** OLD CONFIG MANAGER START *****/
+            /// \todo Remove old config manager. Getters in fw are already commented out.
 
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));          
 
-            // Force install directory as the current working directory.
-            /** \Todo: we may not want to do this in all cases, but there is a huge load of places
-                that depend on being able to refer to the install dir with .*/
-//            boost::filesystem::current_path(platform_->GetInstallDirectory());
-            
-            // Now set proper path for config (one that also non-privileged users can write to)
-            {
-                const char *CONFIG_PATH = "/configuration";
+            // Create config directory, not needed anymore ConfigAPI does this above
+            std::string config_path = GetPlatform()->GetApplicationDataDirectory() + "/configuration";
+            if (boost::filesystem::exists(config_path) == false)
+                boost::filesystem::create_directory(config_path);
 
-                // Create config directory
-                std::string config_path = GetPlatform()->GetApplicationDataDirectory() + CONFIG_PATH;
-                if (boost::filesystem::exists(config_path) == false)
-                    boost::filesystem::create_directory(config_path);
-
-                // Old XML based config manager
-                config_manager_->SetPath(config_path);
-            }
-
+            // Old XML based config manager
+            config_manager_->SetPath(config_path);
             config_manager_->Load();
-
-            // Set config values we explicitly always want to override
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.4.1"));
+            /***** OLD CONFIG MANAGER END *****/
 
             // create managers
             module_manager_ = ModuleManagerPtr(new ModuleManager(this));
@@ -124,24 +118,24 @@ namespace Foundation
             service_manager_ = ServiceManagerPtr(new ServiceManager());
             event_manager_ = EventManagerPtr(new EventManager(this));
 
+            // Create QApplication
             naaliApplication = new NaaliApplication(this, argc_, argv_);
             initialized_ = true;
 
+            // Create AssetAPI.
             asset = new AssetAPI(headless_);
-            const char cDefaultAssetCachePath[] = "/assetcache";
-            asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + cDefaultAssetCachePath).c_str());
+            asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + "/assetcache").c_str());
 
+            // Create AssetAPI.
             ui = new UiAPI(this);
-
-            // Connect signal if main window was created. Not in headless mode.
             if (ui->MainWindow())
                 connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
-            audio = new AudioAPI(asset); // Audio API depends on the Asset API, so must be loaded after Asset API is.
-            asset->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); ///< \todo This line needs to be removed.
+            // Create AudioAPI, depends on the AssetAPI, so must be loaded after it.
+            audio = new AudioAPI(asset);
 
+            // Create Input and PluginAPI.
             input = new InputAPI(this);
-
             plugin = new PluginAPI(this);
 
             // Initialize SceneAPI.
@@ -554,6 +548,7 @@ namespace Foundation
         return platform_;
     }
 
+    /*
     ConfigurationManagerPtr Framework::GetConfigManager()
     {
         return config_manager_;
@@ -568,6 +563,7 @@ namespace Foundation
     {
         return config_manager_.get();
     }
+    */
 
     FrameAPI *Framework::Frame() const
     {

@@ -12,6 +12,13 @@
 #include <QDir>
 #include <QDebug>
 
+QString ConfigAPI::FILE_FRAMEWORK = "tundra";
+QString ConfigAPI::SECTION_FRAMEWORK = "framework";
+QString ConfigAPI::SECTION_SERVER = "server";
+QString ConfigAPI::SECTION_CLIENT = "client";
+QString ConfigAPI::SECTION_RENDERING = "rendering";
+QString ConfigAPI::SECTION_UI = "ui";
+
 ConfigAPI::ConfigAPI(Foundation::Framework *framework) :
     QObject(framework),
     framework_(framework),
@@ -81,6 +88,26 @@ void ConfigAPI::PrepareString(QString &str)
     }
 }
 
+bool ConfigAPI::HasValue(const ConfigData &data)
+{
+    if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty())
+    {
+        LogWarning("ConfigAPI::HasValue: ConfigData does not have enough information.");
+        return false;
+    }
+    return HasValue(data.file, data.section, data.key);
+}
+
+bool ConfigAPI::HasValue(const ConfigData &data, QString key)
+{
+    if (data.file.isEmpty() || data.section.isEmpty())
+    {
+        LogWarning("ConfigAPI::HasValue: ConfigData does not have enough information.");
+        return false;
+    }
+    return HasValue(data.file, data.section, key);
+}
+
 bool ConfigAPI::HasValue(QString file, QString section, QString key)
 {
     if (configFolder_.isEmpty())
@@ -97,6 +124,29 @@ bool ConfigAPI::HasValue(QString file, QString section, QString key)
     if (!section.isEmpty())
         key = section + "/" + key;
     return config.allKeys().contains(key);
+}
+
+QVariant ConfigAPI::Get(const ConfigData &data)
+{
+    if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty())
+    {
+        LogWarning("ConfigAPI::Get: ConfigData does not have enough information.");
+        return data.defaultValue;
+    }
+    return Get(data.file, data.section, data.key, data.defaultValue);
+}
+
+QVariant ConfigAPI::Get(const ConfigData &data, QString key, const QVariant &defaultValue)
+{
+    if (data.file.isEmpty() || data.section.isEmpty())
+    {
+        LogWarning("ConfigAPI::Get: ConfigData does not have enough information.");
+        return data.defaultValue;
+    }
+    if (defaultValue.isNull())
+        return Get(data.file, data.section, key, data.defaultValue);
+    else
+        return Get(data.file, data.section, key, defaultValue);
 }
 
 QVariant ConfigAPI::Get(QString file, QString section, QString key, const QVariant &defaultValue)
@@ -116,6 +166,26 @@ QVariant ConfigAPI::Get(QString file, QString section, QString key, const QVaria
         return config.value(key, defaultValue);
     else
         return config.value(section + "/" + key, defaultValue);
+}
+
+void ConfigAPI::Set(const ConfigData &data)
+{
+    if (data.file.isEmpty() || data.section.isEmpty() || data.key.isEmpty() || data.value.isNull())
+    {
+        LogWarning("ConfigAPI::Set: ConfigData does not have enough information.");
+        return;
+    }
+    return Set(data.file, data.section, data.key, data.value);
+}
+
+void ConfigAPI::Set(const ConfigData &data, QString key, const QVariant &value)
+{
+    if (data.file.isEmpty() || data.section.isEmpty())
+    {
+        LogWarning("ConfigAPI::Set: ConfigData does not have enough information.");
+        return;
+    }
+    return Set(data.file, data.section, key, value);
 }
 
 void ConfigAPI::Set(QString file, QString section, QString key, const QVariant &value)

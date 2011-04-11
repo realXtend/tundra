@@ -9,11 +9,13 @@
 #include "DebugOperatorNew.h"
 #include "MemoryLeakCheck.h"
 #include "TreeWidgetItemExpandMemory.h"
+#include "Framework.h"
+#include "ConfigAPI.h"
 
 #include <QTreeWidget>
 
-TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, const ConfigurationManager &mgr) :
-    cfgMgr(mgr),
+TreeWidgetItemExpandMemory::TreeWidgetItemExpandMemory(const char *group, Foundation::Framework *framework) :
+    framework_(framework),
     groupName(group)
 {
     Load();
@@ -59,7 +61,7 @@ QString TreeWidgetItemExpandMemory::GetIndentifierText(const QTreeWidgetItem *it
 
 void TreeWidgetItemExpandMemory::Load()
 {
-    QStringList setting = QString(cfgMgr.GetSetting<std::string>("TreeWidgetItemExpandMemory", groupName).c_str()).split("|");
+    QStringList setting = framework_->Config()->Get("uimemory", "tree state", "expanded").toString().split("|");
     foreach(QString s, setting)
         if (!s.isEmpty())
             items.insert(s);
@@ -67,7 +69,9 @@ void TreeWidgetItemExpandMemory::Load()
 
 void TreeWidgetItemExpandMemory::Save()
 {
-    cfgMgr.SetSetting<std::string>("TreeWidgetItemExpandMemory", groupName, ToString());
+    QString state = QString::fromStdString(ToString());
+    if (!state.isEmpty())
+        framework_->Config()->Set("uimemory", "tree state", "expanded", state);
 }
 
 void TreeWidgetItemExpandMemory::HandleItemExpanded(QTreeWidgetItem *item)

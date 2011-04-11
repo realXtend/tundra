@@ -8,6 +8,7 @@
 #include "CoreTypes.h"
 #include "AssetAPI.h"
 #include "AudioAsset.h"
+#include "GenericAssetFactory.h"
 #include "SoundChannel.h"
 #include "LoggingFunctions.h"
 
@@ -75,12 +76,14 @@ assetAPI(assetAPI_)
     Initialize();
         
     // Set default master gains for sound types
-/*
+    /*
     masterGain = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "masterGain", 1.0f);
     soundMasterGain[SoundChannel::Triggered] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "triggered_sound_gain", 1.0f);
     soundMasterGain[SoundChannel::Ambient] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "ambient_sound_gain", 1.0f);
     soundMasterGain[SoundChannel::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0f);
-*/
+    */
+
+    assetAPI->RegisterAssetTypeFactory(AssetTypeFactoryPtr(new GenericAssetFactory<AudioAsset>("Audio"))); 
 }
 
 AudioAPI::~AudioAPI()

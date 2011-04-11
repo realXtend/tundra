@@ -7,7 +7,7 @@
 #include "Framework.h"
 #include "LoggingFunctions.h"
 
-#include "ConfigurationManager.h"
+#include "ConfigAPI.h"
 #include "CoreException.h"
 
 #include <algorithm>
@@ -44,12 +44,14 @@ void ModuleManager::DeclareStaticModule(IModule *module)
         modules_.push_back(entry);
 #ifndef _DEBUG
         // make it so debug messages are not logged in release mode
-        std::string log_level = "information";
+        /// \todo why is this even here? does not seem to do anything?
+        QString log_level = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "log level").toString();
+        /*
         if (framework_->GetDefaultConfig().HasKey(Foundation::Framework::ConfigurationGroup(), "log_level"))
             log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "log_level");
         else
             framework_->GetConfigManager()->SetSetting(Foundation::Framework::ConfigurationGroup(), "log_level", log_level);
-
+        */
 #endif
         module->SetFramework(framework_);
         module->LoadInternal();
