@@ -40,16 +40,10 @@ namespace MumbleVoip
         connect(signal_mapper_, SIGNAL(mapped(const QString &)),this, SLOT(ECVoiceChannelChanged(const QString &)));
         connect(framework_->Scene(), SIGNAL(SceneAdded(const QString &)), this, SLOT(OnSceneAdded(const QString &)));
 
-        /*
-        if (framework_ &&  framework_->GetServiceManager())
-        {
-            boost::shared_ptr<Communications::ServiceInterface> communication_service = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Service::ST_Communications).lock();
-            if (communication_service)
-                communication_service->Register(*this);
-        }
-        */
-
-        framework_->RegisterDynamicObject("mumbleprovider", this);
+        // Register to scripts eg: 
+        // if (mumblevoip.HasSession())
+        //     mumblevoip.Session().SetActiveChannel(name);
+        framework_->RegisterDynamicObject("mumblevoip", this);
     }
 
     Provider::~Provider()
@@ -74,6 +68,15 @@ namespace MumbleVoip
         EC_VoiceChannel* channel = channel_queue_.takeFirst();
         if (channel)
             AddECVoiceChannel(channel);
+    }
+
+    bool Provider::HasSession()
+    {
+        // Session is created once the first EC_VoiceChannel is found
+        // Connection in session will be opened when SetActiveChannel is called for the first time.
+        if (session_)
+            return true;
+        return false;
     }
 
     Communications::InWorldVoice::SessionInterface* Provider::Session()
