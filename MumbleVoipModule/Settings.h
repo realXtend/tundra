@@ -7,6 +7,8 @@
 #include <QObject>
 #include <QDebug>
 
+namespace Foundation { class Framework; }
+
 namespace MumbleVoip
 {
     /// Mumble voip system settings.
@@ -23,7 +25,7 @@ namespace MumbleVoip
 
     public:
         enum VoiceMode { Mute, ContinuousTransmission, PushToTalk, ToggleMode };
-        Settings();
+        Settings(Foundation::Framework *framework);
         virtual ~Settings();
         virtual void Load();
         virtual void Save();
@@ -48,13 +50,13 @@ namespace MumbleVoip
         void PositionalAudioEnabledChanged(bool);
 
     private:
+        Foundation::Framework *framework_;
+
         double encode_quality_;
         int playback_buffer_size_ms_;
         double microphone_level_;
         VoiceMode default_voice_mode_;
         bool positional_audio_enabled_;
-
-        static const char SETTINGS_HEADER_[];
     };
 
 } // MumbleVoip

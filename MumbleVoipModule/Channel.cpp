@@ -19,7 +19,7 @@ namespace MumbleLib
     Channel::Channel(const MumbleClient::Channel* channel) : channel_(channel)
     {
         QString message = QString("Mumble channel object created for: %1").arg(channel->name.c_str());
-        MumbleVoip::MumbleVoipModule::LogDebug(message.toStdString());
+        LogDebug(message.toStdString());
         channel_name_ = channel_->name.c_str();
     }
 
@@ -28,7 +28,7 @@ namespace MumbleLib
         // @note channel_ pointer is not safe to use because it might have been uninitialized
         // by mumble client library at this point
         QString message = QString("Mumble channel object deleted for: %1").arg(channel_name_);
-        MumbleVoip::MumbleVoipModule::LogDebug(message.toStdString());
+        LogDebug(message.toStdString());
     }
 
     QString Channel::Name() const
