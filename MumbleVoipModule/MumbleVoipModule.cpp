@@ -310,7 +310,7 @@ namespace MumbleVoip
         settings_widget_ = new SettingsWidget(in_world_voice_provider_, settings_);
         settings_widget_->setParent(framework_->Ui()->MainWindow());
         settings_widget_->setWindowFlags(Qt::Tool);
-        settings_widget_->show();
+        settings_widget_->resize(1,1);
     }
 
     void MumbleVoipModule::ToggleSettingsWidget()
