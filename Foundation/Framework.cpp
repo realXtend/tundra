@@ -16,7 +16,7 @@
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "NaaliApplication.h"
+#include "Application.h"
 #include "CoreException.h"
 #include "InputAPI.h"
 #include "FrameAPI.h"
@@ -29,7 +29,7 @@
 #include "ConfigAPI.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -70,7 +70,7 @@ namespace Foundation
         headless_(false),
         log_formatter_(0),
         splitterchannel(0),
-        naaliApplication(0),
+        application(0),
         frame(new FrameAPI(this)),
         console(new ConsoleAPI(this)),
         ui(0),
@@ -145,7 +145,7 @@ namespace Foundation
             Task::Events::RegisterTaskEvents(event_manager_);
             scene->RegisterSceneEvents();
 
-            naaliApplication = new NaaliApplication(this, argc_, argv_);
+            application = new Application(this, argc_, argv_);
             initialized_ = true;
 
             asset = new AssetAPI(headless_);
@@ -173,7 +173,7 @@ namespace Foundation
             RegisterDynamicObject("asset", asset);
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
-            RegisterDynamicObject("application", naaliApplication);
+            RegisterDynamicObject("application", application);
 
             /*! \todo JS now registers 'scene' manually to the default scene. Add this maybe later
                 or register additiona 'sceneapi' */
@@ -190,7 +190,6 @@ namespace Foundation
         module_manager_.reset();
         config_manager_.reset();
         platform_.reset();
-        application_.reset();
 
         Poco::Logger::shutdown();
 
@@ -216,7 +215,7 @@ namespace Foundation
         // This delete must be the last one in Framework since naaliApplication derives QApplication.
         // When we delete QApplication, we must have ensured that all QObjects have been deleted.
         ///\bug Framework is itself a QObject and we should delete naaliApplication only after Framework has been deleted. A refactor is required.
-        delete naaliApplication;
+        delete application;
     }
 
     void Framework::CreateLoggingSystem()
@@ -432,7 +431,7 @@ namespace Foundation
         }
         
         // Run our QApplication subclass NaaliApplication.
-        naaliApplication->Go();
+        application->Go();
 
         // Qt main loop execution has ended, we are existing.
         exit_signal_ = true;
@@ -447,15 +446,15 @@ namespace Foundation
     void Framework::Exit()
     {
         exit_signal_ = true;
-        if (naaliApplication)
-            naaliApplication->AboutToExit();
+        if (application)
+            application->AboutToExit();
     }
     
     void Framework::ForceExit()
     {
         exit_signal_ = true;
-        if (naaliApplication)
-            naaliApplication->quit();
+        if (application)
+            application->quit();
     }
     
     void Framework::CancelExit()
@@ -464,8 +463,8 @@ namespace Foundation
 
         // Our main loop is stopped when we are exiting,
         // we need to start it back up again if something canceled the exit.
-        if (naaliApplication)
-            naaliApplication->UpdateFrame();
+        if (application)
+            application->UpdateFrame();
     }
 
     void Framework::LoadModules()
@@ -489,9 +488,9 @@ namespace Foundation
         module_manager_->UnloadModules();
     }
 
-    NaaliApplication *Framework::GetNaaliApplication() const
+    Application *Framework::GetApplication() const
     {
-        return naaliApplication;
+        return application;
     }
 
     Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)

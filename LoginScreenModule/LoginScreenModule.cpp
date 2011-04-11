@@ -65,14 +65,13 @@ void LoginScreenModule::PostInitialize()
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
-    UiAPI *ui = framework_->Ui();
-    if (ui)
+    if (!framework_->IsHeadless())
     {
         window_ = new LoginWidget(framework_);
         connect(window_, SIGNAL(ExitClicked()), SLOT(Exit()));
 
-        ui->AddWidgetToScene(window_, Qt::Widget);
-        ui->ShowWidget(window_);
+        framework_->Ui()->AddWidgetToScene(window_, Qt::Widget);
+        framework_->Ui()->ShowWidget(window_);
 
         Foundation::LoginServiceInterface *login = framework_->GetService<Foundation::LoginServiceInterface>();
         if (login)
@@ -175,7 +174,7 @@ void LoginScreenModule::HandleKeyEvent(KeyEvent *key)
     if (key->keyCode == toggleMenu)
     {
         UiAPI *ui = framework_->Ui();
-        if (connected_ && ui)
+        if (connected_)
             if (!window_->isVisible())
                 ui->ShowWidget(window_);
             else

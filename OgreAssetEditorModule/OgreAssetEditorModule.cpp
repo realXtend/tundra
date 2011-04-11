@@ -23,7 +23,7 @@
 #include "NetworkEvents.h"
 #include "Inventory/InventoryEvents.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "UiProxyWidget.h"
 #include "IAsset.h"
 #include "OgreConversionUtils.h"

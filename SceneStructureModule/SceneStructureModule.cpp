@@ -29,8 +29,8 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
-#include "NaaliMainWindow.h"
+#include "UiGraphicsView.h"
+#include "UiMainWindow.h"
 #include "LoggingFunctions.h"
 #include "SceneDesc.h"
 

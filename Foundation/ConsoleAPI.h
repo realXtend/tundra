@@ -2,17 +2,11 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   ConsoleAPI.h
- *  @brief  Exposes debug console functionality to scripting languages.
- *
- *          Allows printing text to console, executing console commands programmatically
- *          and registering new console commands.
- *
- *  @note   Currently just simple wrapper class but the idea is to refactor
- *          whole console system later on.
+ *  @brief  Console core API.
  */
 
-#ifndef incl_Foundation_Console
-#define incl_Foundation_Console
+#ifndef incl_Foundation_ConsoleAPI
+#define incl_Foundation_ConsoleAPI
 
 #include "CoreTypes.h"
 
@@ -24,11 +18,10 @@ namespace Foundation
     class Framework;
 }
 
-/// Convenience class so that scripting languages can connect their slots/functions
-/// easily when registering console commands.
-/** Cannot be created direcly, created by ScripConsole.
+/// Convenience class for scripting languages
+/** Cannot be created directly, created by ConsoleAPI.
 */
-class Command: public QObject
+class ConsoleCommand: public QObject
 {
     Q_OBJECT
 
@@ -45,12 +38,12 @@ signals:
     void Invoked(QStringList params);
 
 private:
-    Q_DISABLE_COPY(Command);
+    Q_DISABLE_COPY(ConsoleCommand);
 
     /// Constructs new command.
-    /** @param name Name of the command, works also as a indentifier.
+    /** @param name Name of the command, works also as an identifier.
     */
-    Command(const QString &name) : name_(name) {}
+    ConsoleCommand(const QString &name) : name_(name) {}
 
     /// Name of the command.
     QString name_;
@@ -62,12 +55,11 @@ private slots:
     void Invoke(const QStringList &params);
 };
 
-/// Exposes debug console functionality to scripting languages.
+/// Console core API.
 /** Allows printing text to console, executing console commands programmatically
     and registering new console commands. This object can be created by Framework only.
 
-    @note Currently just simple wrapper class but the idea is to refactor
-    the whole console system later on.
+    @todo Currently just simple wrapper class but the idea is to refactor the whole console system later on.
 */
 class ConsoleAPI : public QObject
 {
@@ -80,22 +72,22 @@ public:
     ~ConsoleAPI();
 
 public slots:
-    /// Use this from scripting languages.
-    /** @param name Name of the command.
-        @param desc Description of the command.
-        @return Pointer to the command. Connect the Invoked() signal to your script slot/func.
-        @note Never store the returned pointer.
-    */
-    Command *RegisterCommand(const QString &name, const QString &desc);
-
-    /// Registers new console command and connects it's execution signal to receiver object and member slot.
-    /// Use this from C++.
+    /// Registers new console command and connects its execution signal to receiver object and member slot.
     /** @param name Name of the command.
         @param desc Description of the command.
         @param receiver Receiver object.
         @param member Member slot.
     */
     void RegisterCommand(const QString &name, const QString &desc, const QObject *receiver, const char *member);
+
+    /// This is an overloaded function.
+    /** Use this from scripting languages.
+        @param name Name of the command.
+        @param desc Description of the command.
+        @return Pointer to the command. Connect the Invoked() signal to your script slot/func.
+        @note Never store the returned pointer.
+    */
+    ConsoleCommand *RegisterCommand(const QString &name, const QString &desc);
 
     /// Executes console command.
     /** @param command Console command, syntax: "command(param1, param2, param3, ...)".
@@ -110,7 +102,7 @@ public slots:
 private:
     Q_DISABLE_COPY(ConsoleAPI);
 
-    /// Constructs the console.
+    /// Constructs the console API.
     /** @param fw Framework.
     */
     explicit ConsoleAPI(Foundation::Framework *fw);
@@ -119,14 +111,14 @@ private:
     Foundation::Framework *framework_;
 
     /// List of registered console commands.
-    QMap<QString, Command *> commands_;
+    QMap<QString, ConsoleCommand *> commands_;
 
 private slots:
     /// Checks if we have executed console command object stored. If we have, we invoke it.
     /** @param name Name of the command.
         @param params List of parameters, if provided.
     */
-    void CheckForCommand(const QString &name, const QStringList &params) const;
+    void InvokeCommand(const QString &name, const QStringList &params) const;
 };
 
 #endif

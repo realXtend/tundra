@@ -16,9 +16,11 @@ function addpiece(y) {
 
     //set a mesh ref. we really need to streamline this.
     //one option is js written wrapper i guess, but perhaps some setter in same place does it too
-    var ref = roadpiece.mesh.meshRef;
-    ref.ref = "rect_plane.mesh";
-    roadpiece.mesh.meshRef = ref;
+    //UPDATE: now there is such a setter, at least tentatively:
+    //var ref = roadpiece.mesh.meshRef;
+    //ref.ref = "rect_plane.mesh";
+    //roadpiece.mesh.meshRef = ref;
+    roadpiece.mesh.SetMeshRef("rect_plane.mesh");
 
     var mat = materials[Math.floor(Math.random() * materials.length)]; //random.choice
     print(mat);
@@ -35,9 +37,7 @@ function addpiece(y) {
     //copy paste from above, didn't make addmesh() yet 'cause seemed that would need many params
     var tree = scene.CreateEntityRaw(scene.NextFreeId(),
                                      ["EC_Placeable", "EC_Mesh"]);
-    var ref = tree.mesh.meshRef;
-    ref.ref = "sassafras.mesh";
-    tree.mesh.meshRef = ref;
+    tree.mesh.SetMeshRef("sassafras.mesh");
 
     var t = tree.placeable.transform;
     t.pos.y = y + 30;

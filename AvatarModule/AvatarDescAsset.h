@@ -14,44 +14,25 @@ class AV_MODULE_API AvatarDescAsset : public IAsset
 {
     Q_OBJECT;
 public:
-    AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_)
-    :IAsset(owner, type_, name_)
-    {
-    }
+    AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_);
 
     ~AvatarDescAsset();
 
     virtual void DoUnload();
+    //! Deserialize from XML data
     virtual bool DeserializeFromData(const u8 *data, size_t numBytes);
+    //! Serialize to XML data
     virtual bool SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const;
+    //! Return depended upon asset references
     virtual std::vector<AssetReference> FindReferences() const;
-
+    //! Called whenever another asset this asset depends on is loaded.
+    virtual void DependencyLoaded(AssetPtr dependee);
+    //! Check if asset is loaded. Checks only XML data size
     bool IsLoaded() const;
 
-    //! Stores the avatar appearance XML file as raw .xml data. Note: if parameters such as bonemodifiers change "live", this won't be updated.
-    QString avatarAppearanceXML_;
-    
-    //! Avatar mesh asset reference
-    QString mesh_;
-    //! Avatar skeleton asset reference
-    QString skeleton_;
-    //! Avatar material asset references
-    std::vector<QString> materials_;
-    
-    //! Animation defines
-    std::vector<AnimationDefinition> animations_;
-    //! Attachments
-    std::vector<AvatarAttachment> attachments_;
-    //! Bone modifiers
-    std::vector<BoneModifierSet> boneModifiers_;
-    //! Morph modifiers
-    std::vector<MorphModifier> morphModifiers_;
-    //! Master modifiers, which may drive either bones or morphs
-    std::vector<MasterModifier> masterModifiers_; 
-    //! Miscellaneous properties (freedata)
-    QMap<QString, QString> properties_;
-    
 private:
+    //! Asset references have changed. (Re)request them and trigger appearance changed when all are loaded
+    void AssetReferencesChanged();
     //! Parse from XML data. Return true if successful
     bool ReadAvatarAppearance(const QDomDocument& source);
     //! Read a bone modifier
@@ -91,19 +72,49 @@ private:
     
 public slots:
     //! Set a master modifier value. Triggers DynamicAppearanceChanged
-    void SetMasterModifierValue(QString name, float value);
+    void SetMasterModifierValue(const QString& name, float value);
     //! Set a morph or bone modifier value. It will be brought under manual control, ie. master modifiers no longer have an effect. Triggers DynamicAppearanceChanged
-    void SetModifierValue(QString name, float value);
+    void SetModifierValue(const QString& name, float value);
+    //! Change a material ref
+    void SetMaterial(uint index, const QString& ref);
     //! Return whether a property exists
     bool HasProperty(QString name) const;
     //! Return property value, or empty if does not exist
-    const QString& GetProperty(QString value);
+    const QString& GetProperty(const QString& value);
     
 signals:
     //! Mesh, skeleton, mesh materials or attachment meshes have changed. The entity using this avatar desc should refresh its appearance completely
     void AppearanceChanged();
     //! Dynamic properties (morphs, bone modifiers) have changed. The entity using this avatar desc should refresh those parts of the appearance
     void DynamicAppearanceChanged();
+
+public:
+    //! Stores the avatar appearance XML file as raw .xml data. Note: if parameters such as bonemodifiers change "live", this won't be updated.
+    QString avatarAppearanceXML_;
+    
+    //! Avatar mesh asset reference
+    QString mesh_;
+    //! Avatar skeleton asset reference
+    QString skeleton_;
+    //! Avatar material asset references
+    std::vector<QString> materials_;
+    
+    //! Animation defines
+    std::vector<AnimationDefinition> animations_;
+    //! Attachments
+    std::vector<AvatarAttachment> attachments_;
+    //! Bone modifiers
+    std::vector<BoneModifierSet> boneModifiers_;
+    //! Morph modifiers
+    std::vector<MorphModifier> morphModifiers_;
+    //! Master modifiers, which may drive either bones or morphs
+    std::vector<MasterModifier> masterModifiers_; 
+    //! Miscellaneous properties (freedata)
+    QMap<QString, QString> properties_;
+    
+private:
+    //! Counter for rerequesting depended upon assets
+    int assetCounter_;
 };
 
 typedef boost::shared_ptr<AvatarDescAsset> AvatarDescAssetPtr;
