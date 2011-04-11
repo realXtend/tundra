@@ -3,8 +3,8 @@
 #include "DebugOperatorNew.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
-#include "NaaliGraphicsView.h"
+#include "UiMainWindow.h"
+#include "UiGraphicsView.h"
 #include "QtUiAsset.h"
 #include "UiProxyWidget.h"
 
@@ -72,7 +72,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     if (owner->IsHeadless())
         return;
     
-    mainWindow = new NaaliMainWindow(owner);
+    mainWindow = new UiMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
     //mainWindow->setUpdatesEnabled(false);
 
@@ -83,7 +83,7 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
     mainWindow->setWindowIcon(icon);
 
-    graphicsView = new NaaliGraphicsView(mainWindow);
+    graphicsView = new UiGraphicsView(mainWindow);
 
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
 
@@ -146,12 +146,12 @@ UiAPI::~UiAPI()
     delete viewportWidget;
 }
 
-NaaliMainWindow *UiAPI::MainWindow() const
+UiMainWindow *UiAPI::MainWindow() const
 {
     return mainWindow;
 }
 
-NaaliGraphicsView *UiAPI::GraphicsView() const
+UiGraphicsView *UiAPI::GraphicsView() const
 {
     return graphicsView;
 }

@@ -8,8 +8,8 @@ namespace Foundation
     class Framework;
 }
 
-class NaaliGraphicsView;
-class NaaliMainWindow;
+class UiGraphicsView;
+class UiMainWindow;
 class UiAPI;
 class NaaliUiImpl;
 class UiProxyWidget;

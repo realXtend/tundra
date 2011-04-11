@@ -50,7 +50,7 @@ class ServerRelay(circuits.Component):
 
     #a qt signal handler
     def onNewEntity(self, entity, changeType):
-        print entity.Name
+        #print entity.Name
         if entity.Name == "ChatApplication":
             self.chatapp = entity
             print "IRC: Found ChatApp!"

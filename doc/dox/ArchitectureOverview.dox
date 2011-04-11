@@ -1,14 +1,14 @@
 /**
 
-\page NaaliArchitectureOverview Architecture Overview
+\page TundraArchitectureOverview Naali and Tundra Architecture Overview
 
-Naali offers a diverse amount of functionality. To be able to maintain all the features, the different functionality is implemented as separate modules. Conceptually, these modules are grouped into larger subsystems based on the roles different modules have. A description of each subsystem is available on \ref NaaliSubsystems "the main page".
+Tundra offers a diverse amount of functionality. To be able to maintain all the features, the different functionality is implemented as separate modules. Conceptually, these modules are grouped into larger subsystems based on the roles different modules have. A description of each subsystem is available on \ref TundraSubsystems "the main page".
 
-The modules are implemented on top of a common \ref CoreAPIList "Core API". This API is exposed to all C++ code running on top of Naali, as well as to the supported scripting languages via the Qt meta-object system. The structuring of Naali follows a traditional "framework" approach. 
+The modules are implemented on top of a common \ref CoreAPIList "Core API". This API is exposed to all C++ code running on top of Tundra, as well as to the supported scripting languages via the Qt meta-object system. The structuring of Tundra follows a traditional "framework" approach. 
 
-Additionally, functionality is implemented as separate Entity-Component libraries. The \ref component_base "Naali Entity Component Reference" page describes in detail all the provided components.  
+Additionally, functionality is implemented as separate Entity-Component libraries. The \ref component_base "Tundra Entity Component Reference" page describes in detail all the provided components.  
 
-As time has passed, Naali has gained the ability to talk to two different server backends. The Taiga server is the older platform, and is based on the OpenSim server codebase. The newer Tundra server is implemented in terms of the Naali Core API itself, using the same mechanisms the Naali viewer is implemented with. Therefore, you can sometimes read people writing "Naali is Tundra", as it is in fact the same code running on both.
+As time has passed, Naali/Tundra has gained the ability to talk to two different server backends. The Taiga server is the older platform, and is based on the OpenSim server codebase. The newer Tundra server is implemented in terms of the Naali Core API itself, using the same mechanisms the Naali viewer is implemented with. Therefore, you can sometimes read people writing "Naali is Tundra", as it is in fact the same code running on both.
    
 Naali uses CMake as its build system. The different parts of the repository are grouped into separate projects, which each reside in their individual folders.
 

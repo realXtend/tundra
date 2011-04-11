@@ -11,7 +11,7 @@
 #include "JavascriptInstance.h"
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
-#include "NaaliCoreTypeDefines.h"
+#include "ScriptCoreTypeDefines.h"
 #include "EC_Script.h"
 #include "ScriptAsset.h"
 #include "IModule.h"
@@ -325,7 +325,7 @@ void JavascriptInstance::CreateEngine()
 //#endif
 
     ExposeQtMetaTypes(engine_);
-    ExposeNaaliCoreTypes(engine_);
+    ExposeCoreTypes(engine_);
     ExposeCoreApiMetaTypes(engine_);
 
     EC_Script *ec = dynamic_cast<EC_Script *>(owner_.lock().get());

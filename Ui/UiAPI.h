@@ -29,10 +29,10 @@ public:
 
 public slots:
     /// Returns the widget that is the main window of Naali.
-    NaaliMainWindow *MainWindow() const;
+    UiMainWindow *MainWindow() const;
 
     /// This widget shows all the user-added UI that has been added to the screen. It is contained as a child of NaaliMainWindow.
-    NaaliGraphicsView *GraphicsView() const;
+    UiGraphicsView *GraphicsView() const;
 
     /// Returns the Naali main QGraphicsScene, which hosts all the user-added widgets.
     QGraphicsScene *GraphicsScene() const;
@@ -153,8 +153,8 @@ private slots:
 
 private:
     Foundation::Framework *owner; ///< Owner framework.
-    QPointer<NaaliMainWindow> mainWindow; ///< The main window.
-    NaaliGraphicsView *graphicsView; ///< Widget which shows contents of the graphics scene.
+    QPointer<UiMainWindow> mainWindow; ///< The main window.
+    UiGraphicsView *graphicsView; ///< Widget which shows contents of the graphics scene.
     QGraphicsScene *graphicsScene; ///< The graphics scene, host all the user-added widgets.
     QPointer<QWidget> viewportWidget; ///< Viewport for the graphics scene.
     QList<QGraphicsProxyWidget *> widgets; ///< Internal list of proxy widgets in scene.
