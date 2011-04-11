@@ -20,6 +20,12 @@ std::string modifierMode[] = {
     "cumulative"
 };
 
+AvatarDescAsset::AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+    IAsset(owner, type_, name_),
+    assetCounter_(0)
+{
+}
+
 AvatarDescAsset::~AvatarDescAsset()
 {
     Unload();
@@ -493,10 +499,8 @@ void AvatarDescAsset::SetMaterial(uint index, const QString& ref)
     if (index >= materials_.size())
         return;
     materials_[index] = ref;
-    // Changing refs means we have to (possibly) request new assets
-    assetAPI->RequestAssetDependencies(this->shared_from_this());
-    //! \todo This is incorrect. The new assets should be assumed to be not loaded yet
-    emit AppearanceChanged();
+    
+    AssetReferencesChanged();
 }
 
 bool AvatarDescAsset::HasProperty(QString name) const
@@ -511,6 +515,30 @@ bool AvatarDescAsset::HasProperty(QString name) const
 const QString& AvatarDescAsset::GetProperty(const QString& name)
 {
     return properties_[name];
+}
+
+void AvatarDescAsset::AssetReferencesChanged()
+{
+    assetCounter_ = FindReferences().size();
+    // If no references (unlikely), send AppearanceChanged() immediately
+    if (!assetCounter_)
+        emit AppearanceChanged();
+    else
+    {
+        // Otherwise request the (possibly new) assets
+        assetAPI->RequestAssetDependencies(this->shared_from_this());
+    }
+}
+
+void AvatarDescAsset::DependencyLoaded(AssetPtr dependee)
+{
+    if (assetCounter_ > 0)
+    {
+        --assetCounter_;
+        // Check if all loaded
+        if (!assetCounter_)
+            emit AppearanceChanged();
+    }
 }
 
 void AvatarDescAsset::CalculateMasterModifiers()
