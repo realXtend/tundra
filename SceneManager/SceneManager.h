@@ -97,7 +97,8 @@ namespace Scene
         
         void RemoveEntityRaw(int entityid, AttributeChange::Type change = AttributeChange::Default) { RemoveEntity(entityid, change); }
 
-        void LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change) { LoadSceneXML(filename.toStdString(), clearScene, useEntityIDsFromFile, change); }
+        //! Returns IDs of loaded entities
+        QVariantList LoadSceneXMLRaw(const QString &filename, bool clearScene, bool useEntityIDsFromFile, AttributeChange::Type change);
 
         //! Is scene view enabled (ie. rendering-related components actually create stuff)
         bool ViewEnabled() const { return viewenabled_; }
