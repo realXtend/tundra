@@ -118,6 +118,7 @@ void mainPS(float4 pos    : POSITION,
 {
     //Get texture and their weights
 	float4 weights = tex2D(map0, tex1);
+	weights /= (weights.x + weights.y + weights.z + weights.w);
     float4 c1 = tex2D(map1, tex0) * weights.x;
     float4 c2 = tex2D(map2, tex0) * weights.y;
     float4 c3 = tex2D(map3, tex0) * weights.z;
