@@ -192,10 +192,11 @@ namespace Foundation
         ///\todo We cannot specify all commands here, since it is not extensible. Generate a method for modules to specify their own options (probably
         /// best is to have them parse their own options).
         commandLineDescriptions.add_options()
-            ("headless", "Run in headless mode without any windows or rendering") // Framework & OgreRenderingModule
             ("help", "Produce help message") // Framework
-            ("startserver", po::value<int>(0), "Start server automatically in specified port") // TundraLogicModule
-            ("protocol", po::value<std::string>(), "Spesifies which transport layer to use. Used when starting a server and when client connects. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
+            ("headless", "Run in headless mode without any windows or rendering") // Framework & OgreRenderingModule
+            ("server", "Start Tundra server")
+            ("port", po::value<int>(0), "Start server in the specified port") // TundraLogicModule
+            ("protocol", po::value<std::string>(), "Start server with the specified protocol. Options: '--protocol tcp' and '--protocol udp'. Defaults to tcp if no protocol is spesified.") // KristalliProtocolModule
             ("fpslimit", po::value<float>(0), "Specifies the fps cap to use in rendering. Default: 60. Pass in 0 to disable") // OgreRenderingModule
             ("run", po::value<std::string>(), "Run script on startup") // JavaScriptModule
             ("file", po::value<std::string>(), "Load scene on startup. Accepts absolute and relative paths, local:// and http:// are accepted and fetched via the AssetAPI.") // TundraLogicModule & AssetModule
