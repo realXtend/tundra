@@ -64,7 +64,7 @@ public:
         @param texture texture name to open
         @param parent parent widget
     */
-    static void OpenPreviewEditor(const QString &texture, QWidget* parent = 0);
+    static TexturePreviewEditor *OpenPreviewEditor(const QString &texture, QWidget* parent = 0);
 
 public slots:
     /// Close the window.

@@ -313,12 +313,14 @@ void TexturePreviewEditor::OpenOgreTexture(const QString& name)
     delete[] pixelData;
 }
 
-void TexturePreviewEditor::OpenPreviewEditor(const QString &texture, QWidget* parent)
+TexturePreviewEditor *TexturePreviewEditor::OpenPreviewEditor(const QString &texture, QWidget* parent)
 {
     TexturePreviewEditor *editor = new TexturePreviewEditor(parent);
-    connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
+    //connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(Deleted()), Qt::QueuedConnection);
+    connect(editor, SIGNAL(Closed(const QString &)), editor, SLOT(close()));
     editor->OpenOgreTexture(texture);
-    editor->show();
+    return editor;
+    //editor->show();
 }
 
 void TexturePreviewEditor::UseTextureOriginalSize(bool use)
