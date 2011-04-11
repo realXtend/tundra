@@ -56,9 +56,11 @@ namespace MumbleVoip
         void Uninitialize();
 
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         static const std::string &NameStatic() { return module_name_; } /// returns name of this module. Needed for logging.
+
+    public slots:
+        void ToggleSettingsWidget();
 
     private slots:
         void StartLinkPlugin();
@@ -85,11 +87,9 @@ namespace MumbleVoip
         static const int LINK_PLUGIN_UPDATE_INTERVAL_MS_ = 100;
         int time_from_last_update_ms_;
         bool use_camera_position_; 
-        bool use_native_mumble_client_;
-        event_category_id_t event_category_framework_;
         QString avatar_id_for_link_plugin_;
         QString context_id_for_link_plugin_;
-        Settings settings_;
+        Settings *settings_;
         SettingsWidget* settings_widget_;
     };
 

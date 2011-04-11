@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "LoggingFunctions.h"
 
 #include "MumbleMainLoopThread.h"
 #include "MumbleVoipModule.h"
@@ -22,7 +23,7 @@ namespace MumbleLib
         {
             return;
         }
-        MumbleVoip::MumbleVoipModule::LogDebug("Mumble library mainloop started");
+        LogDebug("Mumble library mainloop started");
         try
         {
             mumble_lib->Run();
@@ -30,15 +31,15 @@ namespace MumbleLib
         catch(std::exception &e)
         {
             QString message = QString("Mumble library mainloop stopped by exception: %1").arg(e.what());
-            MumbleVoip::MumbleVoipModule::LogError(message.toStdString());
+            LogError(message);
         }
         catch(...)
         {
             QString message = QString("Mumble library mainloop stopped by unknown exception.");
-            MumbleVoip::MumbleVoipModule::LogError(message.toStdString());
+            LogError(message);
             reason_ = message;
         }
-        MumbleVoip::MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
+        LogDebug("Mumble library mainloop stopped");
     }
 
     QString MumbleMainLoopThread::Reason() const

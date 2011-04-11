@@ -3,6 +3,9 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include "Framework.h"
+#include "ConfigAPI.h"
+
 #include "Settings.h"
 #include <QSettings>
 
@@ -10,9 +13,8 @@
 
 namespace MumbleVoip
 {
-    const char Settings::SETTINGS_HEADER_[] = "configuration/MumbleVoip";
-
-    Settings::Settings()
+    Settings::Settings(Foundation::Framework *framework) :
+        framework_(framework)
     {
         Load();
     }
@@ -24,23 +26,28 @@ namespace MumbleVoip
 
     void Settings::Load()
     {
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, SETTINGS_HEADER_);
-        encode_quality_ = settings.value("MumbleVoice/encode_quality", 0.5).toDouble();
-        microphone_level_ = settings.value("MumbleVoice/microphone_level", 0.5).toDouble();
-        playback_buffer_size_ms_ = settings.value("MumbleVoice/playback_buffer_size", 200).toInt();
-        default_voice_mode_ = VoiceMode(settings.value("MumbleVoice/default_voice_mode", Mute).toInt());
-        positional_audio_enabled_ = settings.value("MumbleVoice/positional_audio_enabled", true).toBool();
+        if (!framework_)
+            return;
+
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "voip");
+        encode_quality_ = framework_->Config()->Get(configData, "encode quality", 0.5).toDouble();
+        microphone_level_ = framework_->Config()->Get(configData, "microphone level", 0.5).toDouble();
+        playback_buffer_size_ms_ = framework_->Config()->Get(configData, "playback buffer size", 200).toInt();
+        default_voice_mode_ = (VoiceMode)framework_->Config()->Get(configData, "default voice mode", (int)Mute).toInt();
+        positional_audio_enabled_ = framework_->Config()->Get(configData, "positional audio enabled", false).toBool();
     }
 
     void Settings::Save()
     {
-        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, SETTINGS_HEADER_);
-        settings.setValue("MumbleVoice/encode_quality",encode_quality_);
-        settings.setValue("MumbleVoice/microphone_level", microphone_level_);
-        settings.setValue("MumbleVoice/playback_buffer_size", playback_buffer_size_ms_);
-        settings.setValue("MumbleVoice/default_voice_mode", static_cast<int>(default_voice_mode_));
-        settings.setValue("MumbleVoice/positional_audio_enabled", QVariant(positional_audio_enabled_));
-        settings.sync();
+        if (!framework_)
+            return;
+
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, "voip");
+        framework_->Config()->Set(configData, "encode quality", encode_quality_);
+        framework_->Config()->Set(configData, "microphone level", microphone_level_);
+        framework_->Config()->Set(configData, "playback buffer size", playback_buffer_size_ms_);
+        framework_->Config()->Set(configData, "default voice mode", (int)default_voice_mode_);
+        framework_->Config()->Set(configData, "positional audio enabled", positional_audio_enabled_);
     }
 
 } // MumbleVoip

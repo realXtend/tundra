@@ -12,4 +12,5 @@
 	<plugin path="JavascriptModule" />
 	<plugin path="SceneStructureModule" />
 	<plugin path="DebugStatsModule" />
+	<plugin path="MumbleVoipModule" />
 </Tundra>

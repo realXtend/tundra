@@ -8,9 +8,6 @@
 #include "CommunicationsService.h"
 #include "ServerInfo.h"
 #include "AttributeChangeType.h"
-#ifdef ENABLE_TAIGA_SUPPORT
-#include "WorldStream.h"
-#endif
 
 namespace TundraLogic
 {
@@ -52,7 +49,6 @@ namespace MumbleVoip
         virtual Communications::InWorldVoice::SessionInterface* Session();
         virtual QString& Description();
         virtual void Update(f64 frametime);
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
         virtual QList<QString> Statistics();
         virtual void ShowMicrophoneAdjustmentDialog();
 
@@ -72,7 +68,6 @@ namespace MumbleVoip
         Foundation::Framework* framework_;
         QString description_;
         MumbleVoip::Session* session_;  /// \todo Use shared ptr ...
-        ServerInfoProvider* server_info_provider_;
         event_category_id_t networkstate_event_category_;
         event_category_id_t framework_event_category_;
         Settings* settings_;
@@ -80,14 +75,11 @@ namespace MumbleVoip
         QList<EC_VoiceChannel*> ec_voice_channels_;
         QMap<EC_VoiceChannel*, QString> channel_names_;
         QSignalMapper* signal_mapper_;
-#ifdef ENABLE_TAIGA_SUPPORT
-        ProtocolUtilities::WorldStreamPtr world_stream_;
-#endif
+
         boost::shared_ptr<TundraLogic::TundraLogicModule> tundra_logic_;
         QList<EC_VoiceChannel*> channel_queue_;
 
     private slots:
-        void OnMumbleServerInfoReceived(ServerInfo info);
         void OnMicrophoneAdjustmentWidgetDestroyed();
         void ECVoiceChannelChanged(const QString &channelname);
     };

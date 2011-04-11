@@ -23,6 +23,8 @@
 #include <celt/celt.h>
 #include <QMetaType>
 
+#include "LoggingFunctions.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace MumbleLib
@@ -242,7 +244,7 @@ namespace MumbleLib
         if (error != 0)
         {
             QString message = QString("CELT initialization failed, error code = %1").arg(error);
-            MumbleVoip::MumbleVoipModule::LogWarning(message.toStdString());
+            LogWarning(message.toStdString());
             lock_state_.lockForWrite();
             state_ = STATE_ERROR;
             lock_state_.unlock();
@@ -255,7 +257,7 @@ namespace MumbleLib
         if (!celt_encoder_)
         {
             QString message = QString("Cannot create CELT encoder");
-            MumbleVoip::MumbleVoipModule::LogWarning(message.toStdString());
+            LogWarning(message.toStdString());
             lock_state_.lockForWrite();
             state_ = STATE_ERROR;
             lock_state_.unlock();
@@ -267,7 +269,7 @@ namespace MumbleLib
 
         celt_decoder_ = CreateCELTDecoder();
 
-        MumbleVoip::MumbleVoipModule::LogDebug("CELT initialized.");
+        LogDebug("CELT initialized.");
     }
 
     void Connection::UninitializeCELT()
@@ -279,7 +281,7 @@ namespace MumbleLib
         celt_decoder_ = 0;
         celt_mode_destroy(celt_mode_);
         celt_mode_ = 0;
-        MumbleVoip::MumbleVoipModule::LogDebug("CELT uninitialized.");
+        LogDebug("CELT uninitialized.");
     }
 
     CELTDecoder* Connection::CreateCELTDecoder()
@@ -291,22 +293,22 @@ namespace MumbleLib
         case CELT_OK:
            return decoder;
         case CELT_BAD_ARG:
-            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_BAD_ARG");
+            LogError("Cannot create CELT decoder: CELT_BAD_ARG");
             return 0;
         case CELT_INVALID_MODE:
-            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INVALID_MODE");
+            LogError("Cannot create CELT decoder: CELT_INVALID_MODE");
             return 0;
         case CELT_INTERNAL_ERROR:
-            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_INTERNAL_ERROR");
+            LogError("Cannot create CELT decoder: CELT_INTERNAL_ERROR");
             return 0;
         case CELT_UNIMPLEMENTED:
-            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_UNIMPLEMENTED");
+            LogError("Cannot create CELT decoder: CELT_UNIMPLEMENTED");
             return 0;
         case CELT_ALLOC_FAIL:
-            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: CELT_ALLOC_FAIL");
+            LogError("Cannot create CELT decoder: CELT_ALLOC_FAIL");
             return 0;
         default:
-            MumbleVoip::MumbleVoipModule::LogError("Cannot create CELT decoder: unknow reason");
+            LogError("Cannot create CELT decoder: unknow reason");
             return 0;
         }
     }
@@ -458,7 +460,7 @@ namespace MumbleLib
         {
             lock_state_.unlock();
             QString message = QString("Authentication notification received but state = %1").arg(state_);
-            MumbleVoip::MumbleVoipModule::LogWarning(message.toStdString());
+            LogWarning(message.toStdString());
             return;
         }
         lock_state_.unlock();
@@ -500,7 +502,7 @@ namespace MumbleLib
         Channel* c = new Channel(&new_channel);
         channels_.append(c);
         QString message = QString("Channel '%1' added").arg(c->Name());
-        MumbleVoip::MumbleVoipModule::LogDebug(message.toStdString());
+        LogDebug(message.toStdString());
     }
 
     void Connection::RemoveChannel(const MumbleClient::Channel& channel)
@@ -513,7 +515,7 @@ namespace MumbleLib
                 Channel* c = channels_.at(i);
                 channels_.removeAt(i);
                 QString message = QString("Channel '%1' removed").arg(c->Name());
-                MumbleVoip::MumbleVoipModule::LogDebug(message.toStdString());
+                LogDebug(message.toStdString());
                 SAFE_DELETE(c);
                 break;
             }
@@ -557,15 +559,15 @@ namespace MumbleLib
         case MumbleClient::UdpMessageType::UDPVoiceCELTAlpha:
             break;
         case MumbleClient::UdpMessageType::UDPPing:
-            MumbleVoip::MumbleVoipModule::LogDebug("Unsupported packet received: MUMBLE-UDP PING");
+            LogDebug("Unsupported packet received: MUMBLE-UDP PING");
             return;
             break;
         case MumbleClient::UdpMessageType::UDPVoiceSpeex:
-            MumbleVoip::MumbleVoipModule::LogDebug("Unsupported packet received: MUMBLE-UDP Speex audio frame");
+            LogDebug("Unsupported packet received: MUMBLE-UDP Speex audio frame");
             return;
             break;
         case MumbleClient::UdpMessageType::UDPVoiceCELTBeta:
-            MumbleVoip::MumbleVoipModule::LogDebug("Unsupported packet received: MUMBLE-UDP CELT B audio frame");
+            LogDebug("Unsupported packet received: MUMBLE-UDP CELT B audio frame");
             return;
             break;
         }
@@ -590,7 +592,7 @@ namespace MumbleLib
         while(!last_frame && data_stream.isValid());
         if (!data_stream.isValid())
         {
-            MumbleVoip::MumbleVoipModule::LogWarning("Syntax error in RawUdpTunnel packet.");
+            LogWarning("Syntax error in RawUdpTunnel packet.");
         }
 
         int bytes_left = data_stream.left();
@@ -629,7 +631,7 @@ namespace MumbleLib
         if (!channel)
         {
             QString message = QString("Cannot create user '%1': Channel doesn't exist.").arg(QString(mumble_user.name.c_str()));
-            MumbleVoip::MumbleVoipModule::LogWarning(message.toStdString());
+            LogWarning(message.toStdString());
             return;
         }
         if (QString(mumble_user.name.c_str()) == user_name_)
@@ -649,7 +651,7 @@ namespace MumbleLib
         lock_users_.unlock();
 
         QString message = QString("User '%1' joined.").arg(user->Name());
-        MumbleVoip::MumbleVoipModule::LogDebug(message.toStdString());
+        LogDebug(message.toStdString());
         emit UserJoinedToServer(user);
     }
 
@@ -660,7 +662,7 @@ namespace MumbleLib
         if (!users_.contains(mumble_user.session))
         {
             QString message = QString("Unknow user '%1' Left.").arg(QString(mumble_user.name.c_str()));
-            MumbleVoip::MumbleVoipModule::LogWarning(message.toStdString());
+            LogWarning(message.toStdString());
             lock_users_.unlock();
             return;
         }
@@ -669,7 +671,7 @@ namespace MumbleLib
         QMutexLocker user_locker(user);
 
         QString message = QString("User '%1' Left.").arg(user->Name());
-        MumbleVoip::MumbleVoipModule::LogDebug(message.toStdString());
+        LogDebug(message.toStdString());
         user->SetLeft();
         lock_users_.unlock();
         emit UserLeftFromServer(user);
@@ -720,7 +722,7 @@ namespace MumbleLib
         if (!user)
         {
             QString message = QString("Audio frame from unknown user: %1").arg(session);
-            MumbleVoip::MumbleVoipModule::LogWarning(message.toStdString());
+            LogWarning(message.toStdString());
             return;
         }
 
@@ -739,24 +741,24 @@ namespace MumbleLib
                 }
                 else
                 {
-                    MumbleVoip::MumbleVoipModule::LogWarning("Audio packet dropped: user object locked");
+                    LogWarning("Audio packet dropped: user object locked");
                 }
             }
             break;
         case CELT_BAD_ARG:
-            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_BAD_ARG");
+            LogError("CELT decoding error: CELT_BAD_ARG");
             break;
         case CELT_INVALID_MODE:
-            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_INVALID_MODE");
+            LogError("CELT decoding error: CELT_INVALID_MODE");
             break;
         case CELT_INTERNAL_ERROR:
-            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_INTERNAL_ERROR");
+            LogError("CELT decoding error: CELT_INTERNAL_ERROR");
             break;
         case CELT_CORRUPTED_DATA:
-            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_CORRUPTED_DATA");
+            LogError("CELT decoding error: CELT_CORRUPTED_DATA");
             break;
         case CELT_UNIMPLEMENTED:
-            MumbleVoip::MumbleVoipModule::LogError("CELT decoding error: CELT_UNIMPLEMENTED");
+            LogError("CELT decoding error: CELT_UNIMPLEMENTED");
             break;
         }
         delete audio_frame;
