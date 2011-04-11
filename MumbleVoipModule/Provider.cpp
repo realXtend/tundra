@@ -18,7 +18,7 @@
 #include "Client.h"
 
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include "SceneAPI.h"
 #include "Entity.h"
