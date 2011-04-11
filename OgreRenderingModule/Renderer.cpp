@@ -147,7 +147,7 @@ namespace OgreRenderer
         last_height_(0),
         capture_screen_pixel_data_(0),
         resized_dirty_(0),
-        view_distance_(500.0),
+        view_distance_(500.0f),
         shadowquality_(Shadows_High),
         texturequality_(Texture_Normal),
         c_handler_(new CompositionHandler),
@@ -174,9 +174,6 @@ namespace OgreRenderer
 
         if (framework_->Ui() && framework_->Ui()->MainWindow())
             framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();
-
-        // As string to keep human readable and configurable
-        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", QString::number(view_distance_));
 
         ///\todo Is compositorInstance->removeLister(listener) needed here?
         foreach(GaussianListener* listener, gaussianListeners_)
@@ -231,9 +228,9 @@ namespace OgreRenderer
     void Renderer::PrepareConfig()
     {
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
-        // View distance, as string to keep human readable and configurable
+        // View distance, as double to keep human readable and configurable
         if (!framework_->Config()->HasValue(configData, "view distance"))
-            framework_->Config()->Set(configData, "view distance", QString::number(view_distance_));
+            framework_->Config()->Set(configData, "view distance", (double)view_distance_);
         // Shadow quality
         if (!framework_->Config()->HasValue(configData, "shadow quality"))
             framework_->Config()->Set(configData, "shadow quality", 2);
@@ -314,7 +311,7 @@ namespace OgreRenderer
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
 
         ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
-        view_distance_ = framework_->Config()->Get(configData, "view distance", 500.0).toFloat();
+        view_distance_ = framework_->Config()->Get(configData, "view distance").toFloat();
 
         // Load plugins
         LoadPlugins(plugins_filename_);
@@ -565,6 +562,13 @@ namespace OgreRenderer
         Ogre::WindowEventUtilities::messagePump();
     }
     
+    void Renderer::SetViewDistance(float distance)
+    {
+        view_distance_ = distance;
+        // As double to keep human readable and configurable
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", (double)view_distance_);
+    }
+
     void Renderer::SetCurrentCamera(Ogre::Camera* camera)
     {
         if (!camera)
