@@ -44,6 +44,8 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw, QWidget *p
     expandAndCollapseButton(0),
     searchField(0)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
+
     // Init main widget
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(5, 5, 5, 5);

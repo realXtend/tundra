@@ -58,8 +58,8 @@
 #include "ConfigAPI.h"
 #include "AudioAPI.h"
 #include "UiAPI.h"
-#include "NaaliGraphicsView.h"
-#include "NaaliMainWindow.h"
+#include "UiGraphicsView.h"
+//#include "NaaliMainWindow.h"
 #include "DebugAPI.h"
 
 //Kristalli UserConnection
@@ -102,6 +102,7 @@
 #include "Vector3dfDecorator.h"
 #include "QuaternionDecorator.h"
 #include "TransformDecorator.h"
+#include "AssetReferenceDecorator.h"
 
 #include <QGroupBox> //just for testing addObject
 #include <QtUiTools> //for .ui loading in testing
@@ -699,7 +700,7 @@ namespace PythonScript
     }
 
     //this whole thing could be probably implemented in py now as well, but perhaps ok in c++ for speed
-  QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate)
+  /*QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate)
     {
         // Iterate the scene to find all submeshes that use this texture uuid
         QList<uint> submeshes_;
@@ -719,11 +720,6 @@ namespace PythonScript
         }
 
 //        Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
-        /* was wrong way, how did this work? if (!worldLogic)
-        {
-          //PyErr_SetString(PyExc_RuntimeError, "Could not get world logic.");
-          return;
-          }*/
 
         Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
         foreach(Scene::EntityPtr e, prims)
@@ -799,7 +795,7 @@ namespace PythonScript
         }
 
         return affected_entitys_;
-    }
+    }*/
 
     void PythonScriptModule::LoadScript(ScriptAssetPtr scriptAsset)
     {
@@ -834,8 +830,8 @@ namespace PythonScript
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-        NaaliMainWindow *mainWnd = framework_->Ui()->MainWindow();
-        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(mainWnd, PythonQt::self()->getMainModule(), Qt::Tool);
+      //NaaliMainWindow *mainWnd = framework_->Ui()->MainWindow();
+        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(0, PythonQt::self()->getMainModule(), Qt::Tool);
         return pythonqtconsole;
     }
 
@@ -1142,7 +1138,7 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
         Py_RETURN_FALSE;
 }
 
-PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
+/*PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
 {
     uint ent_id_int;
     PyObject* py_submeshes;
@@ -1195,7 +1191,7 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
 
     Py_RETURN_NONE;
-}
+    }*/
 
 //XXX \todo remove and use the generic component adding mechanism from core directly. remove (canvas &) touchable deps from py module then
 void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate)
@@ -1234,7 +1230,7 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     }
 }
 
-PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
+/*PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
     // Read params from py: entid as uint, textureuuid as string
     unsigned int ent_id_int;
@@ -1342,7 +1338,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     }
 
     Py_RETURN_NONE;
-}
+    }*/
 
 PyObject* GetApplicationDataDirectory(PyObject *self)
 {
@@ -1822,11 +1818,12 @@ static PyMethodDef EmbMethods[] = {
     {"checkSceneForTexture", (PyCFunction)CheckSceneForTexture, METH_VARARGS, 
     "Return true if texture exists in scene, otherwise false: Parameters: textureuuid"},
 
-    {"applyUICanvasToSubmeshes", (PyCFunction)ApplyUICanvasToSubmeshes, METH_VARARGS, 
-    "Applies a ui canvas to the given submeshes of the entity. Parameters: entity id, list of submeshes (material indices), uicanvas (internal mode required)"},
+    /*{"applyUICanvasToSubmeshes", (PyCFunction)ApplyUICanvasToSubmeshes, METH_VARARGS, 
+      "Applies a ui canvas to the given submeshes of the entity. Parameters: entity id, list of submeshes (material indices), uicanvas (internal mode required)"},
     
     {"getSubmeshesWithTexture", (PyCFunction)GetSubmeshesWithTexture, METH_VARARGS, 
     "Find the submeshes in this entity that use the given texture, if any. Parameters: entity id, texture uuid"},
+    */
     
     {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
     "Get application data directory."},
@@ -1874,7 +1871,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&FrameAPI::staticMetaObject);
             PythonQt::self()->registerClass(&DelayedSignal::staticMetaObject);
             PythonQt::self()->registerClass(&ConsoleAPI::staticMetaObject);
-            PythonQt::self()->registerClass(&Command::staticMetaObject);
+            PythonQt::self()->registerClass(&ConsoleCommand::staticMetaObject);
             PythonQt::self()->registerClass(&DebugAPI::staticMetaObject);
             PythonQt::self()->registerClass(&SceneAPI::staticMetaObject);
             PythonQt::self()->registerClass(&ConfigAPI::staticMetaObject);
@@ -1883,8 +1880,8 @@ namespace PythonScript
 
             // Ui() - naali.uicore
             PythonQt::self()->registerClass(&UiAPI::staticMetaObject);
-            PythonQt::self()->registerClass(&NaaliMainWindow::staticMetaObject);
-            PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);
+            /*PythonQt::self()->registerClass(&NaaliMainWindow::staticMetaObject);
+	      PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);*/
             // UiService() - naali.ui
             PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
             //PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
@@ -1911,6 +1908,8 @@ namespace PythonScript
             PythonQt::self()->registerCPPClass("Quaternion");
             PythonQt::self()->addDecorators(new TransformDecorator());
             PythonQt::self()->registerCPPClass("Transform");
+            PythonQt::self()->addDecorators(new AssetReferenceDecorator());
+            PythonQt::self()->registerCPPClass("AssetReference");
 
             // For some reason: plain registerClass doosn't work for these classes.
             // Possible reason is that they are just interfaces

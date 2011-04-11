@@ -32,7 +32,7 @@
 #include "ConsoleAPI.h"
 #include "InputAPI.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 
 #include <utility>
 #include <QDebug>
@@ -141,12 +141,8 @@ void DebugStatsModule::AddProfilerWidgetToUi()
         return;
     }
 
-    UiAPI *ui = GetFramework()->Ui();
-    if (!ui)
-        return;
-
     profilerWindow_ = new TimeProfilerWindow(framework_);
-    profilerWindow_->setParent(ui->MainWindow());
+    profilerWindow_->setParent(framework_->Ui()->MainWindow());
     profilerWindow_->setWindowFlags(Qt::Tool);
     //profilerWindow_->move(100, 100);
     profilerWindow_->resize(650, 530);

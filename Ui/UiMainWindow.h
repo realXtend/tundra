@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Core_NaaliMainWindow_h
-#define incl_Core_NaaliMainWindow_h
+#ifndef incl_Ui_UiMainWindow_h
+#define incl_Ui_UiMainWindow_h
 
 #include <QMainWindow>
 
@@ -11,7 +11,7 @@
 /// The main application window that is shown when the program starts.
 /** This window contains a fullscreen 3D-rendered scene and modules can embed their own Qt widgets in this window.
 */
-class UI_API NaaliMainWindow : public QMainWindow
+class UI_API UiMainWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -19,7 +19,7 @@ public:
     /// Constructs the main window.
     /** @param owner_ Framework/owner of the main window.
     */
-    explicit NaaliMainWindow(Foundation::Framework *owner_);
+    explicit UiMainWindow(Foundation::Framework *owner_);
 
     /// Loads and applied from Naali Config window size, isMaximized, and other settings.
     void LoadWindowSettingsFromFile();

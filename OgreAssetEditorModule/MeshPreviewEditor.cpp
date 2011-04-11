@@ -12,7 +12,7 @@
 #include "ModuleManager.h"
 #include "CoreMath.h"
 #include "OgreRenderingModule.h"
-#include "NaaliRenderWindow.h"
+#include "RenderWindow.h"
 
 #include <QUiLoader>
 #include <QFile>

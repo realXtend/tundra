@@ -2,7 +2,7 @@
 
 #include "DebugOperatorNew.h"
 
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
 
@@ -18,13 +18,13 @@
 
 using namespace std;
 
-NaaliMainWindow::NaaliMainWindow(Foundation::Framework *owner_)
+UiMainWindow::UiMainWindow(Foundation::Framework *owner_)
 :owner(owner_)
 {
     setAcceptDrops(true);
 }
 
-int NaaliMainWindow::DesktopWidth()
+int UiMainWindow::DesktopWidth()
 {
     QDesktopWidget *desktop = QApplication::desktop();
     if (!desktop)
@@ -39,7 +39,7 @@ int NaaliMainWindow::DesktopWidth()
     return width;
 }
 
-int NaaliMainWindow::DesktopHeight()
+int UiMainWindow::DesktopHeight()
 {
     QDesktopWidget *desktop = QApplication::desktop();
     if (!desktop)
@@ -50,7 +50,7 @@ int NaaliMainWindow::DesktopHeight()
     return desktop->screenGeometry().height();
 }
 
-void NaaliMainWindow::LoadWindowSettingsFromFile()
+void UiMainWindow::LoadWindowSettingsFromFile()
 {
     int width = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_width", 800);
     int height = owner->GetDefaultConfig().DeclareSetting("MainWindow", "window_height", 600);
@@ -76,7 +76,7 @@ void NaaliMainWindow::LoadWindowSettingsFromFile()
     move(windowX, windowY);
 }
 
-void NaaliMainWindow::SaveWindowSettingsToFile()
+void UiMainWindow::SaveWindowSettingsToFile()
 {
     // The values (0, 25) and (-50, -20) below serve to artificially limit the main window positioning into awkward places.
     int windowX = max(0, min(DesktopWidth()-50, pos().x()));
@@ -96,13 +96,13 @@ void NaaliMainWindow::SaveWindowSettingsToFile()
     owner->GetDefaultConfig().SetSetting("MainWindow", "fullscreen", isFullScreen());
 }
 
-void NaaliMainWindow::closeEvent(QCloseEvent *e)
+void UiMainWindow::closeEvent(QCloseEvent *e)
 {
     emit WindowCloseEvent();
     e->ignore();
 }
 
-void NaaliMainWindow::resizeEvent(QResizeEvent *e)
+void UiMainWindow::resizeEvent(QResizeEvent *e)
 {
     emit WindowResizeEvent(width(), height());
 }

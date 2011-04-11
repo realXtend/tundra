@@ -10,10 +10,12 @@
 #define incl_OgreAssetEditorModule_OgreAssetEditorModule_h
 
 #include "IModule.h"
+#include "AssetFwd.h"
 #include "ModuleLoggingFunctions.h"
 #include "OgreAssetEditorModuleApi.h"
 
 #include <QObject>
+#include <QAction>
 
 class QMenu;
 
@@ -25,6 +27,20 @@ namespace Inventory
 
 class MaterialWizard;
 class EditorManager;
+
+class EditorAction : public QAction
+{
+    Q_OBJECT
+
+public:
+    ///
+    /** @param asset
+        @param text
+        @param menu
+    */
+    EditorAction(const AssetPtr &asset, const QString &text, QMenu *menu);
+    AssetWeakPtr asset;
+};
 
 class ASSET_EDITOR_MODULE_API OgreAssetEditorModule : public QObject, public IModule
 {
@@ -55,6 +71,10 @@ public slots:
     /// @param data Inventory buffer upload event data.
     void UploadBuffer(Inventory::InventoryUploadBufferEventData *data);
 
+    bool IsSupportedAssetTypes(const QString &type) const;
+
+//    void OpenAssetInEditor(const AssetPtr &asset);
+
 private:
     Q_DISABLE_COPY(OgreAssetEditorModule);
 
@@ -67,6 +87,8 @@ private:
 
 private slots:
     void OnContextMenuAboutToOpen(QMenu *menu, QList<QObject *> targets);
+
+    void OpenAssetInEditor();
 };
 
 #endif
