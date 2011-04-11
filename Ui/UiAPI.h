@@ -31,7 +31,7 @@ public slots:
     /// Returns the widget that is the main window of Naali.
     UiMainWindow *MainWindow() const;
 
-    /// This widget shows all the user-added UI that has been added to the screen. It is contained as a child of NaaliMainWindow.
+    /// This widget shows all the user-added UI that has been added to the screen. It is contained as a child of UiMainWindow.
     UiGraphicsView *GraphicsView() const;
 
     /// Returns the Naali main QGraphicsScene, which hosts all the user-added widgets.

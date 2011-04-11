@@ -59,7 +59,7 @@
 #include "AudioAPI.h"
 #include "UiAPI.h"
 #include "UiGraphicsView.h"
-//#include "NaaliMainWindow.h"
+//#include "UiMainWindow.h"
 #include "DebugAPI.h"
 
 //Kristalli UserConnection
@@ -830,7 +830,7 @@ namespace PythonScript
 
     PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
     {
-      //NaaliMainWindow *mainWnd = framework_->Ui()->MainWindow();
+      //UiMainWindow *mainWnd = framework_->Ui()->MainWindow();
         PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(0, PythonQt::self()->getMainModule(), Qt::Tool);
         return pythonqtconsole;
     }
@@ -1880,7 +1880,7 @@ namespace PythonScript
 
             // Ui() - naali.uicore
             PythonQt::self()->registerClass(&UiAPI::staticMetaObject);
-            /*PythonQt::self()->registerClass(&NaaliMainWindow::staticMetaObject);
+            /*PythonQt::self()->registerClass(&UiMainWindow::staticMetaObject);
 	      PythonQt::self()->registerClass(&NaaliGraphicsView::staticMetaObject);*/
             // UiService() - naali.ui
             PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
