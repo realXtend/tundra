@@ -44,9 +44,9 @@ kNet::MessageConnection* currentSender = 0;
 namespace TundraLogic
 {
 
-SyncManager::SyncManager(TundraLogicModule* owner, Foundation::Framework* fw) :
+SyncManager::SyncManager(TundraLogicModule* owner) :
     owner_(owner),
-    framework_(fw),
+    framework_(owner->GetFramework()),
     update_period_(1.0f / 30.0f),
     update_acc_(0.0)
 {

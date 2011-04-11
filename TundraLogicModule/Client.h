@@ -7,7 +7,8 @@
 #include "TundraLogicModuleApi.h"
 #include "ForwardDefines.h"
 
-#include "kNet/Socket.h"
+#include <kNet/Socket.h>
+
 #include <QObject>
 
 struct MsgLogin;
@@ -38,6 +39,18 @@ class TUNDRALOGIC_MODULE_API Client : public QObject
 {
     Q_OBJECT
 
+public:
+    /// Constructor
+    /** @param owner Owner module.
+    */
+    explicit Client(TundraLogicModule *owner);
+
+    /// Destructor
+    ~Client();
+
+    /// Perform any per-frame processing
+    void Update(f64 frametime);
+
     enum ClientLoginState
     {
         NotConnected = 0,
@@ -46,18 +59,8 @@ class TUNDRALOGIC_MODULE_API Client : public QObject
         LoggedIn
     };
 
-public:
-    /// Constructor
-    Client(TundraLogicModule* owner, Foundation::Framework* fw);
-
-    /// Destructor
-    ~Client();
-
-    /// Perform any per-frame processing
-    void Update(f64 frametime);
-
     /// Get connection/login state
-    ClientLoginState GetLoginState() { return loginstate_; }
+    ClientLoginState GetLoginState() const { return loginstate_; }
 
     /// Returns the underlying kNet MessageConnection object that represents this connection.
     /// This function may return null in the case the connection is not active.
@@ -82,11 +85,11 @@ signals:
     void Disconnected();
 
 public slots:
-    /// Connects and logs in. The QUrls query parameters will be evaluated for the login data.
+    /// Connects and logs in. The QUrl's query parameters will be evaluated for the login data.
     /** Minimum information needed to try a connection in the url are host and username.
         URL syntax: {tundra|http|https}://host[:port]/?username=x[&password=y&avatarurl=z&protocol={udp|tcp}]
         URL examples: tundra://server.com/?username=John tundra://server.com:5432/?username=John&password=pWd123&protocol=udp 
-        @param loginUrl the login URL.
+        @param loginUrl The login URL.
         @note The destination port is obtained from the URL's port, not from a query parameter. If no port present, using Tundra's default port 2345.
     */
     void Login(const QUrl& loginUrl);

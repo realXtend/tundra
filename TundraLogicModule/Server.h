@@ -38,8 +38,8 @@ class TUNDRALOGIC_MODULE_API Server : public QObject
     
 public:
     //! Constructor
-    Server(TundraLogicModule* owner, Foundation::Framework* fw);
-    
+    explicit Server(TundraLogicModule* owner);
+
     //! Destructor
     ~Server();
     
