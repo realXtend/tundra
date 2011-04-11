@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QMap>
 #include <QList>
+#include <QSet>
 #include <QListIterator>
 #include <QMessageBox>
 #include <QVariantList>
@@ -100,8 +101,14 @@ namespace UiServices
 		QList<QString> widgets = uiService_->GetAllWidgetsNames();
 
 		QListIterator<QString> i(widgets);
-		while(i.hasNext())
-			uiService_->HideWidget(i.next());
+		while(i.hasNext()){
+			//uiService_->HideWidget(i.next());
+			QWidget* widget = uiService_->GetWidget(i.next());
+			if(dynamic_cast<QDockWidget*>(widget->parentWidget()) && !widget->property("dynamic").isValid())
+				widget->parentWidget()->hide();
+			else
+				widget->hide();
+		}
 	}
 
 	void ViewManager::ShowView(const QString &name)
@@ -112,11 +119,19 @@ namespace UiServices
 			settings.beginGroup(name);
 
 			QList<QString> currentWidgets = uiService_->GetAllWidgetsNames();	
-			QStringList widgets = settings.childGroups();
+			QList<QString> widgets = settings.childGroups();
 			QListIterator<QString> i(widgets);
+			QListIterator<QString> k(currentWidgets);
+			QSet<QString> qset = QSet<QString>::fromList(widgets);
 
-			HideView();
+			//Delete all dynamic widgets that aren't in view
+			while(k.hasNext()){
+				QString widgetName = k.next();
+				if(!qset.contains(widgetName) && uiService_->GetWidget(widgetName)->property("dynamic").isValid())
+					uiService_->HideWidget(widgetName);
+			}
 
+			//Create all dynamic widgets in view
 			while(i.hasNext()){
 				QString widgetName = i.next();
 				if(!currentWidgets.contains(widgetName)){
@@ -136,7 +151,7 @@ namespace UiServices
 					emit uiService_->SendToCreateDynamicWidget(widgetName,module,properties);
 				}
 			}
-			
+			//Restore the state of main window
 			qWin_->restoreState(settings.value("win_state", QByteArray()).toByteArray());		
 			settings.endGroup();
 

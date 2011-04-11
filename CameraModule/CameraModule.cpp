@@ -276,10 +276,12 @@ namespace Camera
     }
 
     void CameraModule::DeleteCameraWidget(QWidget *widget)
-    {
+    {		
         CameraWidget* camera_view = qobject_cast<CameraWidget*>(widget);
 		if (!camera_view)
             return;
+
+		camera_view->blockSignals(true);
 
         //remove widget from scene
         UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
@@ -430,7 +432,7 @@ namespace Camera
 		if(module.toStdString()==module_name_)
 		{
 			if(properties.count()==3)
-				CreateNewCamera(name,false,properties.value(0).toInt(),properties.value(1).toInt(),properties.value(2).toBool());
+				CreateNewCamera(name,true,properties.value(0).toInt(),properties.value(1).toInt(),properties.value(2).toBool());
 		}
 	}
 }

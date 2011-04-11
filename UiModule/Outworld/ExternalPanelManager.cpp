@@ -31,11 +31,13 @@ namespace UiServices
         if (!AddQDockWidget(wid))
         {
             //to keep widget, removes widget parent and dock widget 
-            widget->setParent(0);
-            wid->setWidget(0);
+            QWidget *child_widget = wid->widget();
+			wid->setWidget(0);
+			child_widget ->setParent(0);
             SAFE_DELETE(wid);
             return false;
         }        
+		connect(wid,SIGNAL(visibilityChanged(bool)),widget,SLOT(show()));
         return wid;
     }
 
@@ -77,8 +79,11 @@ namespace UiServices
             qWin_->removeDockWidget(doc_widget);
 		    all_qdockwidgets_in_window_.removeOne(doc_widget);      
             //to keep widget, removes widget parent and dock widget 
-            doc_widget->widget()->setParent(0);
-            doc_widget->setWidget(0);
+
+			QWidget *child_widget = doc_widget->widget();
+			doc_widget->setWidget(0);
+			child_widget ->setParent(0);
+
             SAFE_DELETE(doc_widget);
             return true;
         }
@@ -95,14 +100,15 @@ namespace UiServices
 			//if (aux->isHidden())
 			//	aux->show();
 			//widget->parentWidget()->show();	
+			//dynamic_cast<QDockWidget*>(widget)->widget()->show();
 			widget->show();
 		}
 	}
 
 	void ExternalPanelManager::HideWidget(QWidget *widget){
-		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))
-			widget->parentWidget()->hide();
-            //widget->hide();
+		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget()))){
+			widget->hide();
+		}
 	}
 
 	void ExternalPanelManager::EnableDockWidgets(){
