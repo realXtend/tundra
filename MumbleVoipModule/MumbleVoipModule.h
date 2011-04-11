@@ -15,7 +15,6 @@
 namespace MumbleVoip
 {
     class LinkPlugin;
-    class ServerInfoProvider;
     class Provider;
     class SettingsWidget;
 
@@ -54,40 +53,27 @@ namespace MumbleVoip
         void Initialize();
         void PostInitialize();
         void Uninitialize();
-
         void Update(f64 frametime);
 
         static const std::string &NameStatic() { return module_name_; } /// returns name of this module. Needed for logging.
 
     public slots:
         void ToggleSettingsWidget();
+        Provider* GetMumbleProviver() { return in_world_voice_provider_; }
 
     private slots:
-        void StartLinkPlugin();
-        void StartMumbleClient(ServerInfo info);
         void SetupSettingsWidget();
 
     private:
-        static std::string module_name_;
-
-        virtual void InitializeConsoleCommands();
-        virtual Console::CommandResult OnConsoleMumbleLink(const StringVector &params);
-        virtual Console::CommandResult OnConsoleMumbleUnlink(const StringVector &params);
-        virtual Console::CommandResult OnConsoleMumbleStart(const StringVector &params);
-        virtual Console::CommandResult OnConsoleMumbleStats(const StringVector &params);
-
         virtual void UpdateLinkPlugin(f64 frametime);
-        virtual bool GetAvatarPosition(Vector3df& position, Vector3df& direction);
-        virtual bool GetCameraPosition(Vector3df& position, Vector3df& direction);
-        
+
+        static std::string module_name_;     
+
         LinkPlugin* link_plugin_;
-        ServerInfoProvider* server_info_provider_;
         Provider* in_world_voice_provider_;
 
         static const int LINK_PLUGIN_UPDATE_INTERVAL_MS_ = 100;
         int time_from_last_update_ms_;
-        bool use_camera_position_; 
-        QString avatar_id_for_link_plugin_;
         QString context_id_for_link_plugin_;
         Settings *settings_;
         SettingsWidget* settings_widget_;

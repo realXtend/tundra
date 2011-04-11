@@ -19,7 +19,7 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} ${UI_FILES
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 
-use_modules (Framework Scene Input Audio)
+use_modules (Framework Scene Input Audio MumbleVoipModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 

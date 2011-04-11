@@ -32,7 +32,6 @@ namespace MumbleVoip
         link_plugin_(0),
         in_world_voice_provider_(0),
         time_from_last_update_ms_(0),
-        use_camera_position_(false),
         settings_widget_(0),
         settings_(0)
     {
@@ -66,7 +65,6 @@ namespace MumbleVoip
         in_world_voice_provider_ = new Provider(framework_, settings_);
         in_world_voice_provider_->PostInitialize();
 
-        InitializeConsoleCommands();
         SetupSettingsWidget(); 
     }
 
@@ -87,6 +85,7 @@ namespace MumbleVoip
 
     void MumbleVoipModule::UpdateLinkPlugin(f64 frametime)
     {
+        /// \todo inspect what this link plugin actually is, seems like it can be removed
         if (!link_plugin_)
             return;
 
@@ -95,6 +94,7 @@ namespace MumbleVoip
             return;
         time_from_last_update_ms_ = 0;
 
+        /*
         Vector3df top_vector = Vector3df::UNIT_Z, position, direction;
         if (GetAvatarPosition(position, direction))
             link_plugin_->SetAvatarPosition(position, direction, top_vector);
@@ -105,202 +105,8 @@ namespace MumbleVoip
         else
             if (GetAvatarPosition(position, direction))
                 link_plugin_->SetCameraPosition(position, direction, top_vector);
-
+        */
         link_plugin_->SendData();
-    }
-
-    bool MumbleVoipModule::GetAvatarPosition(Vector3df& position, Vector3df& direction)
-    {
-        return false;
-/*
-        using namespace Foundation;
-        boost::shared_ptr<WorldLogicInterface> worldLogic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
-        if (!worldLogic)
-            return false;
-
-        Scene::EntityPtr avatar = worldLogic->GetUserAvatarEntity();
-        if (!avatar)
-            return false;
-
-        boost::shared_ptr<EC_Placeable> ogre_placeable = avatar->GetComponent<EC_Placeable>();
-        if (!ogre_placeable)
-            return false;
-
-        Quaternion q = ogre_placeable->GetOrientation();
-        position = ogre_placeable->GetPosition(); 
-        direction = q*Vector3df::UNIT_X;
-        return true;
-*/
-    }
-
-    bool MumbleVoipModule::GetCameraPosition(Vector3df& position, Vector3df& direction)
-    {
-        return false;
-/*
-        using namespace Foundation;
-        boost::shared_ptr<WorldLogicInterface> worldLogic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
-        if (!worldLogic)
-            return false;
-
-        Scene::EntityPtr camera = worldLogic->GetCameraEntity();
-        if (!camera)
-            return false;
-
-        boost::shared_ptr<EC_Placeable> ogre_placeable = camera->GetComponent<EC_Placeable>();
-        if (!ogre_placeable)
-            return false;
-
-        Quaternion q = ogre_placeable->GetOrientation();
-        position = ogre_placeable->GetPosition(); 
-        direction = q*Vector3df::UNIT_X;
-        return true;
-*/
-    }
-
-    void MumbleVoipModule::InitializeConsoleCommands()
-    {
-        RegisterConsoleCommand(Console::CreateCommand("mumble link", "Start Mumble link plugin: 'mumble link(user_id, context_id)'",
-            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleLink)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble unlink", "Stop Mumble link plugin: 'mumble unlink'",
-            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleUnlink)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble start", "Start Mumble client application: 'mumble start(server_url)'",
-            Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStart)));
-        RegisterConsoleCommand(Console::CreateCommand("mumble stats", "Show mumble statistics", Console::Bind(this, &MumbleVoipModule::OnConsoleMumbleStats)));
-
-        //RegisterConsoleCommand(Console::CreateCommand("mumble enable vad", "Enable voice activity detector",
-        //    Console::Bind(this, &MumbleVoipModule::OnConsoleEnableVoiceActivityDetector)));
-        //RegisterConsoleCommand(Console::CreateCommand("mumble disable vad", "Disable voice activity detector",
-        //    Console::Bind(this, &MumbleVoipModule::OnConsoleDisableVoiceActivityDetector)));
-    }
-
-    Console::CommandResult MumbleVoipModule::OnConsoleMumbleLink(const StringVector &params)
-    {
-        if (!link_plugin_)
-            return Console::ResultFailure("Link plugin is not initialized.");
-        if (params.size() != 2)
-        {
-            return Console::ResultFailure("Wrong number of arguments: usage 'mumble link(id, context)'");
-        }
-        QString id = params[0].c_str();
-        QString context = params[1].c_str();
-        
-        link_plugin_->SetUserIdentity(id);
-        link_plugin_->SetContextId(context);
-        link_plugin_->SetApplicationName("Naali viewer");
-        link_plugin_->SetApplicationDescription("Naali viewer by realXtend project");
-        link_plugin_->Start();
-
-        if (!link_plugin_->IsRunning())
-        {
-            QString error_message = "Link plugin connection cannot be established. ";
-            error_message.append(link_plugin_->GetReason());
-            return Console::ResultFailure(error_message.toStdString());
-        }
-
-        QString message = QString("Mumbe link plugin started: id=%1 context=%2").arg(id).arg(context);
-        return Console::ResultSuccess(message.toStdString());
-    }
-
-    Console::CommandResult MumbleVoipModule::OnConsoleMumbleUnlink(const StringVector &params)
-    {
-        if (!link_plugin_)
-            return Console::ResultFailure("Link plugin is not initialized.");
-        if (params.size() != 0)
-        {
-            return Console::ResultFailure("Wrong number of arguments: usage 'mumble unlink'");
-        }
-
-        if (!link_plugin_->IsRunning())
-        {
-            return Console::ResultFailure("Mumbe link plugin was not running.");
-        }
-
-        link_plugin_->Stop();
-        return Console::ResultSuccess("Mumbe link plugin stopped.");
-    }
-
-    Console::CommandResult MumbleVoipModule::OnConsoleMumbleStart(const StringVector &params)
-    {
-        if (params.size() != 1)
-        {
-            return Console::ResultFailure("Wrong number of arguments: usage 'mumble start(server_url)'");
-        }
-        QString server_url = params[0].c_str();
-
-        try
-        {
-            ApplicationManager::StartMumbleClient(server_url);
-            return Console::ResultSuccess("Mumbe client started.");
-        }
-        catch(Exception &e)
-        {
-            QString error_message = QString("Cannot start Mumble client: %1").arg(e.what());
-            return Console::ResultFailure(error_message.toStdString());        
-        }
-    }
-
-    void MumbleVoipModule::StartMumbleClient(ServerInfo info)
-    {
-        QUrl murmur_url(QString("mumble://%1/%2").arg(info.server).arg(info.channel_id)); // setScheme method does not add '//' between scheme and host.
-        murmur_url.setUserName(info.user_name);
-        murmur_url.setPassword(info.password);
-        murmur_url.setQueryItems(QList<QPair<QString,QString> >() << QPair<QString,QString>("version", info.version));
-
-        try
-        {
-            LogInfo("Starting mumble client.");
-            ApplicationManager::StartMumbleClient(murmur_url.toString());
-
-            // it takes some time for a mumble client to setup shared memory for link plugins
-            // so we have to wait some time before we can start our link plugin.
-            avatar_id_for_link_plugin_ = info.avatar_id;
-            context_id_for_link_plugin_ = info.context_id;
-            QTimer::singleShot(2000, this, SLOT(StartLinkPlugin()));
-        }
-        catch(Exception &e)
-        {
-            QString messge = QString("Cannot start Mumble client: %1").arg(e.what());
-            LogError(messge.toStdString());
-            return;
-        }
-    }
-
-    void MumbleVoipModule::StartLinkPlugin()
-    {
-        if (!link_plugin_)
-            return;
-
-        link_plugin_->SetUserIdentity(avatar_id_for_link_plugin_);
-        link_plugin_->SetContextId(context_id_for_link_plugin_);
-        link_plugin_->SetApplicationName("Naali viewer");
-        link_plugin_->SetApplicationDescription("Naali viewer by realXtend project");
-        link_plugin_->Start();
-
-        if (link_plugin_->IsRunning())
-        {
-            QString message = QString("Mumbe link plugin started: id '%1' context '%2'").arg(avatar_id_for_link_plugin_).arg(context_id_for_link_plugin_);
-            LogInfo(message.toStdString());
-        }
-        else
-        {
-            QString error_message = QString("Link plugin connection cannot be established. %1 ").arg(link_plugin_->GetReason());
-            LogError(error_message.toStdString());
-        }
-    }
-
-    Console::CommandResult MumbleVoipModule::OnConsoleMumbleStats(const StringVector &params)
-    {
-        
-        if (in_world_voice_provider_)
-        {
-            QList<QString> stats = in_world_voice_provider_->Statistics();
-            foreach(QString line, stats)
-            {
-                LogInfo(line.toStdString());
-            }
-        }
-        QString message = QString("");
-        return Console::ResultSuccess(message.toStdString());
     }
 
     void MumbleVoipModule::SetupSettingsWidget()
@@ -318,20 +124,6 @@ namespace MumbleVoip
         if (settings_widget_)
             settings_widget_->setVisible(!settings_widget_->isVisible());
     }
-
-//    Console::CommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)
-//    {
-////        connection_manager_->EnableVAD(true);
-//        QString message = QString("Voice activity detector enabled.");
-//        return Console::ResultSuccess(message.toStdString());
-//    }
-
-  //  Console::CommandResult MumbleVoipModule::OnConsoleDisableVoiceActivityDetector(const StringVector &params)
-  //  {
-  ////      connection_manager_->EnableVAD(false);
-  //      QString message = QString("Voice activity detector disabled.");
-  //      return Console::ResultSuccess(message.toStdString());
-  //  }
 
 } // end of namespace: MumbleVoip
 

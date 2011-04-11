@@ -36,7 +36,6 @@ namespace MumbleVoip
     class Settings;
 
     /// Provides Mumble implementation of InWorldVoiceSession objects
-    ///
     class Provider : public Communications::InWorldVoice::ProviderInterface
     {
         Q_OBJECT
@@ -46,7 +45,9 @@ namespace MumbleVoip
         void PostInitialize();
 
     public slots:
+        bool HasSession();
         virtual Communications::InWorldVoice::SessionInterface* Session();
+
         virtual QString& Description();
         virtual void Update(f64 frametime);
         virtual QList<QString> Statistics();
