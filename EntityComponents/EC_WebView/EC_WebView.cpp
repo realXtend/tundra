@@ -94,6 +94,10 @@ EC_WebView::EC_WebView(IModule *module) :
     if (!ViewEnabled() || GetFramework()->IsHeadless())
         return;
 
+    // Connect window size changes to update rendering as the ogre textures go black.
+    if (GetFramework()->Ui()->MainWindow())
+        connect(GetFramework()->Ui()->MainWindow(), SIGNAL(WindowResizeEvent(int,int)), SLOT(RenderDelayed()), Qt::UniqueConnection);
+
     // Connect signals from IComponent
     connect(this, SIGNAL(ParentEntitySet()), SLOT(PrepareComponent()), Qt::UniqueConnection);
     connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)), Qt::UniqueConnection);
