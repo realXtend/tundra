@@ -4,10 +4,8 @@
 #include "DebugOperatorNew.h"
 
 #include "Framework.h"
-#include "Application.h"
 #include "Platform.h"
 #include "Foundation.h"
-#include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ComponentManager.h"
@@ -15,28 +13,20 @@
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "NaaliApplication.h"
 #include "CoreException.h"
+
+#include "NaaliApplication.h"
+
 #include "InputAPI.h"
 #include "FrameAPI.h"
 #include "AssetAPI.h"
-#include "GenericAssetFactory.h"
 #include "AudioAPI.h"
 #include "ConsoleAPI.h"
 #include "DebugAPI.h"
 #include "SceneAPI.h"
 #include "ConfigAPI.h"
 #include "PluginAPI.h"
-
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
-
-#include "SceneManager.h"
-
-#include <QApplication>
-#include <QGraphicsView>
-#include <QIcon>
-#include <QMetaMethod>
 
 #include "MemoryLeakCheck.h"
 
@@ -56,6 +46,7 @@ namespace Foundation
         input(0),
         asset(0),
         audio(0),
+        plugin(0),
         ui(0)
     {
         // Application name and version. Can be accessed via ConfigAPI.
@@ -90,29 +81,8 @@ namespace Foundation
 
             // Prepare ConfigAPIs working directory
             config->PrepareDataFolder("configuration");
-            
-            // Prepare values that need to be in config.
-            /// \todo remove if 'log level' is not used anywhere.
-            if (!config->HasValue(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "log level"))
-                config->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "log level", "information");
 
-            /***** OLD CONFIG MANAGER START *****/
-            /// \todo Remove old config manager. Getters in fw are already commented out.
-
-            // Create config manager
-            config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));          
-
-            // Create config directory, not needed anymore ConfigAPI does this above
-            std::string config_path = GetPlatform()->GetApplicationDataDirectory() + "/configuration";
-            if (boost::filesystem::exists(config_path) == false)
-                boost::filesystem::create_directory(config_path);
-
-            // Old XML based config manager
-            config_manager_->SetPath(config_path);
-            config_manager_->Load();
-            /***** OLD CONFIG MANAGER END *****/
-
-            // create managers
+            // Create managers
             module_manager_ = ModuleManagerPtr(new ModuleManager(this));
             component_manager_ = ComponentManagerPtr(new ComponentManager(this));
             service_manager_ = ServiceManagerPtr(new ServiceManager());
@@ -127,9 +97,7 @@ namespace Foundation
             asset->OpenAssetCache((GetPlatform()->GetApplicationDataDirectory() + "/assetcache").c_str());
 
             // Create AssetAPI.
-            ui = new UiAPI(this);
-            if (ui->MainWindow())
-                connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+            ui = new UiAPI(this);                
 
             // Create AudioAPI, depends on the AssetAPI, so must be loaded after it.
             audio = new AudioAPI(asset);
@@ -149,10 +117,6 @@ namespace Foundation
             RegisterDynamicObject("audio", audio);
             RegisterDynamicObject("debug", debug);
             RegisterDynamicObject("application", naaliApplication);
-
-            /** \todo JS now registers 'scene' manually to the default scene. Add this maybe later
-                or register additiona 'sceneapi' */
-            //RegisterDynamicObject("sceneapi", scene);
         }
     }
 
@@ -162,16 +126,7 @@ namespace Foundation
         service_manager_.reset();
         component_manager_.reset();
         module_manager_.reset();
-        config_manager_.reset();
         platform_.reset();
-        application_.reset();
-
-        // We don't want to delete QObjects that have framework as parent
-        // Qt will perform that child cleanup after this destructor. In certain QWidget/QObject cases
-        // if we delete them here seems to be quite crash prone, core dumps at exit in QApplication::notify.
-        //delete frame;
-        //delete console;
-        //delete ui;
 
         // Delete the QObjects that don't have a parent.
         delete input;
@@ -347,8 +302,6 @@ namespace Foundation
         {
             PROFILE(FW_LoadModules);
             LogDebug("\n\nLOADING MODULES\n================================================================\n");
-//            module_manager_->LoadAvailableModules();
-
             plugin->LoadPluginsFromXML("plugins.xml");
         }
         {
@@ -548,23 +501,6 @@ namespace Foundation
     {
         return platform_;
     }
-
-    /*
-    ConfigurationManagerPtr Framework::GetConfigManager()
-    {
-        return config_manager_;
-    }
-
-    ConfigurationManager &Framework::GetDefaultConfig()
-    {
-        return *(config_manager_.get());
-    }
-
-    ConfigurationManager *Framework::GetDefaultConfigPtr()
-    {
-        return config_manager_.get();
-    }
-    */
 
     FrameAPI *Framework::Frame() const
     {

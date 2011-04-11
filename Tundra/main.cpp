@@ -1,11 +1,8 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "Foundation.h"
-#include "ModuleManager.h"
 #include "LoggingFunctions.h"
-
 #include "DebugOperatorNew.h"
-
 #include <QDir>
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
@@ -77,16 +74,9 @@ int main (int argc, char **argv)
 
     // Note: We cannot close the file handle manually here. Have to let the OS close it
     // after it has printed out the list of leaks to the file.
-//  CloseHandle(hLogFile);
+    //CloseHandle(hLogFile);
 
     return return_value;
-}
-
-/// post init setup for framework
-void setup (Foundation::Framework &fw)
-{
-    // Exclude the login screen from loading
-    fw.GetModuleManager()->ExcludeModule("LoginScreenModule");
 }
 
 int run (int argc, char **argv)
@@ -129,8 +119,6 @@ int run (int argc, char **argv)
         Foundation::Framework fw(argc, argv);
         if (fw.Initialized())
         {
-            setup (fw);
-
             fw.Go();
         }
     }

@@ -5,17 +5,13 @@
 
 #include "MumbleVoipModule.h"
 #include "LinkPlugin.h"
-#include "ModuleManager.h"
-#include "EC_Placeable.h"
-#include "Entity.h"
-#include "ConsoleCommandServiceInterface.h"
-#include "EventManager.h"
-#include "LinkPlugin.h"
 #include "Provider.h"
-#include "ApplicationManager.h"
 #include "MumbleLibrary.h"
 #include "SettingsWidget.h"
-#include "UiServiceInterface.h"
+#include "Settings.h"
+
+#include "Entity.h"
+#include "EC_Placeable.h"
 #include "EC_VoiceChannel.h"
 
 #include "UiAPI.h"

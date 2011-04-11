@@ -42,17 +42,6 @@ void ModuleManager::DeclareStaticModule(IModule *module)
         ModuleSharedPtr modulePtr = ModuleSharedPtr(module);
         Module::Entry entry = { modulePtr, module->Name(), Module::SharedLibraryPtr() };
         modules_.push_back(entry);
-#ifndef _DEBUG
-        // make it so debug messages are not logged in release mode
-        /// \todo why is this even here? does not seem to do anything?
-        QString log_level = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_FRAMEWORK, "log level").toString();
-        /*
-        if (framework_->GetDefaultConfig().HasKey(Foundation::Framework::ConfigurationGroup(), "log_level"))
-            log_level = framework_->GetDefaultConfig().GetSetting<std::string>(Foundation::Framework::ConfigurationGroup(), "log_level");
-        else
-            framework_->GetConfigManager()->SetSetting(Foundation::Framework::ConfigurationGroup(), "log_level", log_level);
-        */
-#endif
         module->SetFramework(framework_);
         module->LoadInternal();
     }

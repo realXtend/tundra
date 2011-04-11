@@ -71,17 +71,13 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     if (owner->IsHeadless())
         return;
     
+    // Prepare main window
     mainWindow = new NaaliMainWindow(owner);
     mainWindow->setAutoFillBackground(false);
-    //mainWindow->setUpdatesEnabled(false);
+    mainWindow->setWindowIcon(QIcon("./data/ui/images/icon/naali_logo_32px_RC1.ico"));
+    connect(mainWindow, SIGNAL(WindowCloseEvent()), owner, SLOT(Exit()));
 
-    // Apply the Naali main window icon. 
-    // Note: this will only affect to a icon at main window left top corner.
-    //       The application thumbnail icon must be set by adding icon resource
-    //       to viewer project
-    QIcon icon("./data/ui/images/icon/naali_logo_32px_RC1.ico");
-    mainWindow->setWindowIcon(icon);
-
+    // Prepare graphics view and scene
     graphicsView = new NaaliGraphicsView(mainWindow);
 
     ///\todo Memory leak below, see very end of ~Renderer() for comments.
@@ -111,19 +107,13 @@ UiAPI::UiAPI(Foundation::Framework *owner_) :
     graphicsView->verticalScrollBar()->setValue(0);
     graphicsView->verticalScrollBar()->setRange(0, 0);
 
-    // Setup Qt's main window with title and geometry
-    //mainWindow->setWindowTitle(QString(window_title_.c_str()));
-    //mainWindow->setGeometry(window_left, window_top, width, height);
-    //if (maximized)
-    //    mainWindow->showMaximized();
-
     graphicsScene = new QGraphicsScene(this);
 
     graphicsView->setScene(graphicsScene);
     graphicsView->scene()->setSceneRect(graphicsView->rect());
+
     connect(graphicsScene, SIGNAL(changed(const QList<QRectF> &)), graphicsView, SLOT(HandleSceneChanged(const QList<QRectF> &))); 
     connect(graphicsScene, SIGNAL(sceneRectChanged(const QRectF &)), SLOT(OnSceneRectChanged(const QRectF &)));
-
     connect(mainWindow, SIGNAL(WindowResizeEvent(int,int)), graphicsView, SLOT(Resize(int,int))); 
 
     mainWindow->LoadWindowSettingsFromFile();
