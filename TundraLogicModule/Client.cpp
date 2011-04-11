@@ -32,9 +32,9 @@ using namespace kNet;
 namespace TundraLogic
 {
 
-Client::Client(TundraLogicModule* owner, Foundation::Framework* fw) :
+Client::Client(TundraLogicModule* owner) :
     owner_(owner),
-    framework_(fw),
+    framework_(owner->GetFramework()),
     loginstate_(NotConnected),
     reconnect_(false),
     client_id_(0)
