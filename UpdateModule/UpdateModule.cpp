@@ -3,14 +3,8 @@
 #include "StableHeaders.h"
 #include "UpdateModule.h"
 
-#include "UiAPI.h"
-#include "NaaliMainWindow.h"
-
 #include <QFile>
 #include <QProcess>
-#include <QAction>
-#include <QMenu>
-#include <QDebug>
 
 namespace Update
 {

@@ -39,8 +39,8 @@ namespace Avatar
         //! Revert avatar edits
         void RevertAvatar();
 
-        //! Change texture
-        void ChangeTexture();
+        //! Change avatar's material
+        void ChangeMaterial();
 
         //! New attachment
         void AddAttachment();

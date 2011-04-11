@@ -36,7 +36,7 @@
 #include "IAsset.h"
 #include "IAssetTransfer.h"
 #include "UiAPI.h"
-#include "NaaliMainWindow.h"
+#include "UiMainWindow.h"
 #ifdef OGREASSETEDITOR_ENABLED
 #include "MeshPreviewEditor.h"
 #include "TexturePreviewEditor.h"
