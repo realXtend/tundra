@@ -18,9 +18,6 @@
 #include "EventManager.h"
 #include "SceneManager.h"
 
-#include "UiAPI.h"
-#include "UiMainWindow.h"
-
 #include <QUrl>
 #include <QFile>
 #include <QCryptographicHash>
