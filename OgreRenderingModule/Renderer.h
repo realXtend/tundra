@@ -258,6 +258,9 @@ namespace OgreRenderer
         /// Initializes shadows. Called by SetupScene().
         void InitShadows();
 
+        /// Prepare the config with needed default values if they are not there.
+        void PrepareConfig();
+
         /// Successfully initialized flag
         bool initialized_;
 

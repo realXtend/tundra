@@ -96,7 +96,7 @@ namespace Foundation
         PlatformPtr GetPlatform() const;
 
         /// Returns config manager.
-        ConfigurationManagerPtr GetConfigManager();
+        //ConfigurationManagerPtr GetConfigManager();
 
         /// Cancel a pending exit
         void CancelExit();
@@ -111,10 +111,10 @@ namespace Foundation
         bool Initialized() const { return initialized_; }
 
         /// Returns the default configuration
-        ConfigurationManager &GetDefaultConfig();
+        //ConfigurationManager &GetDefaultConfig();
 
         /// Returns pointer to the default configuration
-        ConfigurationManager *GetDefaultConfigPtr();
+        //ConfigurationManager *GetDefaultConfigPtr();
 
         /// Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>

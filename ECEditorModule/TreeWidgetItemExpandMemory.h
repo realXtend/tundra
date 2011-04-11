@@ -8,11 +8,10 @@
 #ifndef incl_ECEditorModule_TreeWidgetItemExpandMemory_h
 #define incl_ECEditorModule_TreeWidgetItemExpandMemory_h
 
-#include "ConfigurationManager.h"
-
 #include <QObject>
 #include <QSet>
 
+namespace Foundation { class Framework; }
 class QTreeWidget;
 class QTreeWidgetItem;
 
@@ -37,7 +36,7 @@ public:
     /** @param group Group name identifier.
         @param mgr Config manager.
     */
-    TreeWidgetItemExpandMemory(const char *group, const ConfigurationManager &mgr);
+    TreeWidgetItemExpandMemory(const char *group, Foundation::Framework *framework);
 
     /// Destroyes the object and saves information about currently expanded items to config file.
     ~TreeWidgetItemExpandMemory();
@@ -79,7 +78,7 @@ private:
     std::string ToString() const;
 
     QSet<QString> items; ///< Set of item identifier texts.
-    ConfigurationManager cfgMgr; ///< Config manager.
+    Foundation::Framework *framework_; ///< Framework.
     std::string groupName; ///< Setting group name.
 };
 

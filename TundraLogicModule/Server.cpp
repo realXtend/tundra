@@ -84,19 +84,18 @@ bool Server::Start(unsigned short port)
 {
     if (!owner_->IsServer())
     {
-        QString configFile = "tundra";
-        QString configSection = "server";
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_SERVER, "protocol", "tcp");
 
         // Write values if config does not have them. First start or config was removed.
-        if (!framework_->Config()->HasValue(configFile, configSection, "protocol"))
-            framework_->Config()->Set(configFile, configSection, "protocol", "tcp");
+        if (!framework_->Config()->HasValue(configData))
+            framework_->Config()->Set(configData);
 
         // Get protocol from kristalli module. It is what --protocol defined of the default value if it was not defined.
         // If --protocol was not defined, use the config value.
         kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
         if (framework_->ProgramOptions().count("protocol") == 0)
         {       
-            QString configProtocol = framework_->Config()->Get(configFile, configSection, "protocol").toString().toLower();
+            QString configProtocol = framework_->Config()->Get(configData).toString().toLower();
             if (configProtocol != "udp" && configProtocol != "tcp")
                 ::LogWarning("Server::Start: Server config has an invalid server protocol '" + configProtocol + "'. Use tcp or udp. Resetting to default value.");
             else

@@ -15,7 +15,6 @@
 #include "CompositionHandler.h"
 #include "OgreDefaultHardwareBufferManager.h"
 #include "SceneManager.h"
-#include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "Platform.h"
 #include "CoreException.h"
@@ -25,6 +24,8 @@
 #include "UiAPI.h"
 #include "NaaliMainWindow.h"
 #include "NaaliGraphicsView.h"
+
+#include "ConfigAPI.h"
 
 #include <Ogre.h>
 
@@ -153,6 +154,8 @@ namespace OgreRenderer
         targetFpsLimit(60.f) // The default FPS to aim at is 60fps.
     {
         timerFrequency = GetCurrentClockFreq();
+
+        PrepareConfig();
     }
 
     Renderer::~Renderer()
@@ -172,7 +175,8 @@ namespace OgreRenderer
         if (framework_->Ui() && framework_->Ui()->MainWindow())
             framework_->Ui()->MainWindow()->SaveWindowSettingsToFile();
 
-        framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
+        // As string to keep human readable and configurable
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "view distance", QString::number(view_distance_));
 
         ///\todo Is compositorInstance->removeLister(listener) needed here?
         foreach(GaussianListener* listener, gaussianListeners_)
@@ -222,6 +226,31 @@ namespace OgreRenderer
         }
 //        else
 //            timeSleptLastFrame = 0.0;
+    }
+
+    void Renderer::PrepareConfig()
+    {
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
+        // View distance, as string to keep human readable and configurable
+        if (!framework_->Config()->HasValue(configData, "view distance"))
+            framework_->Config()->Set(configData, "view distance", QString::number(view_distance_));
+        // Shadow quality
+        if (!framework_->Config()->HasValue(configData, "shadow quality"))
+            framework_->Config()->Set(configData, "shadow quality", 2);
+        // Texture quality
+        if (!framework_->Config()->HasValue(configData, "texture quality"))
+            framework_->Config()->Set(configData, "texture quality", 1);
+        // Soft shadow
+        if (!framework_->Config()->HasValue(configData, "soft shadow"))
+            framework_->Config()->Set(configData, "soft shadow", false);
+        // Rendering plugin
+#ifdef _WINDOWS
+        if (!framework_->Config()->HasValue(configData, "rendering plugin"))
+            framework_->Config()->Set(configData, "rendering plugin", "Direct3D9 Rendering Subsystem");
+#else
+        if (!framework_->Config()->HasValue(configData, "rendering plugin"))
+            framework_->Config()->Set(configData, "rendering plugin", "OpenGL Rendering Subsystem");
+#endif
     }
 
     void Renderer::Initialize()
@@ -284,30 +313,28 @@ namespace OgreRenderer
         log_listener_ = OgreLogListenerPtr(new LogListener);
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
 
-        view_distance_ = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "view_distance", 500.0);
+        ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING);
+        view_distance_ = framework_->Config()->Get(configData, "view distance", 500.0).toFloat();
 
         // Load plugins
         LoadPlugins(plugins_filename_);
 
 #ifdef _WINDOWS
         // WIN default to DirectX
-        rendersystem_name = framework_->GetDefaultConfig().DeclareSetting<std::string>(
-            "OgreRenderer", "rendersystem", "Direct3D9 Rendering Subsystem");
+        rendersystem_name = framework_->Config()->Get(configData, "rendering plugin").toString().toStdString();
+        
 #else
         // X11/MAC default to OpenGL
-        rendersystem_name = "OpenGL Rendering Subsystem";
-        framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "RenderSystem", rendersystem_name);
+        rendersystem_name = framework_->Config()->Get(configData, "rendering plugin").toString().toStdString();
 #endif
 
         // Allow PSSM mode shadows only on DirectX
         // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
-        shadowquality_ = (ShadowQuality)(framework_->GetDefaultConfig().DeclareSetting<int>(
-            "OgreRenderer", "shadow_quality", 2));
+        shadowquality_ = (ShadowQuality)framework_->Config()->Get(configData, "shadow quality").toInt();
         if ((shadowquality_ == Shadows_High) && (rendersystem_name != "Direct3D9 Rendering Subsystem"))
             shadowquality_ = Shadows_Low;
 
-        texturequality_ = (TextureQuality)(framework_->GetDefaultConfig().DeclareSetting<int>(
-            "OgreRenderer","texture_quality", 1));
+        texturequality_ = (TextureQuality)framework_->Config()->Get(configData, "texture quality").toInt();
 
         // Ask Ogre if rendering system is available
         rendersystem = root_->getRenderSystemByName(rendersystem_name);
@@ -393,13 +420,13 @@ namespace OgreRenderer
     void Renderer::SetShadowQuality(ShadowQuality newquality)
     {
         // We cannot effect the new setting immediately, so save only to config
-        framework_->GetDefaultConfig().SetSetting<int>("OgreRenderer", "shadow_quality", (int)newquality);
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "shadow quality", (int)newquality);
     }
 
     void Renderer::SetTextureQuality(TextureQuality newquality)
     {
         // We cannot effect the new setting immediately, so save only to config
-        framework_->GetDefaultConfig().SetSetting<int>("OgreRenderer", "texture_quality", (int)newquality);
+        framework_->Config()->Set(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "texture quality", (int)newquality);
     }
 
     void Renderer::LoadPlugins(const std::string& plugin_filename)
@@ -1413,7 +1440,7 @@ namespace OgreRenderer
             return;
 #else
         bool using_pssm = (shadowquality_ == Shadows_High);
-        bool soft_shadow = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "soft_shadow", false);
+        bool soft_shadow = framework_->Config()->Get(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_RENDERING, "soft shadow").toBool();
         
         //unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  */
         float shadowFarDist = 50;

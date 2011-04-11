@@ -52,14 +52,13 @@ int NaaliMainWindow::DesktopHeight()
 
 void NaaliMainWindow::LoadWindowSettingsFromFile()
 {
-    QString configFile = "tundra";
-    QString section = "main window";
-    int width = owner->Config()->Get(configFile, section, "window width", 800).toInt();
-    int height = owner->Config()->Get(configFile, section, "window height", 600).toInt();
-    int windowX = owner->Config()->Get(configFile, section, "window left", -1).toInt();
-    int windowY = owner->Config()->Get(configFile, section, "window top", -1).toInt();
-    bool maximized = owner->Config()->Get(configFile, section, "window maximized", false).toBool();
-    bool fullscreen = owner->Config()->Get(configFile, section, "fullscreen", false).toBool();
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_UI);
+    int width = owner->Config()->Get(configData, "window width", 800).toInt();
+    int height = owner->Config()->Get(configData, "window height", 600).toInt();
+    int windowX = owner->Config()->Get(configData, "window left", -1).toInt();
+    int windowY = owner->Config()->Get(configData, "window top", -1).toInt();
+    bool maximized = owner->Config()->Get(configData, "window maximized", false).toBool();
+    bool fullscreen = owner->Config()->Get(configData, "fullscreen", false).toBool();
 
     setWindowTitle(owner->Config()->GetApplicationIdentifier());
 
@@ -81,17 +80,16 @@ void NaaliMainWindow::SaveWindowSettingsToFile()
     int height = max(1, min(DesktopHeight()-windowY, size().height()));
 
     // If we are in windowed mode, store the window rectangle for next run.
-    QString configFile = "tundra";
-    QString section = "main window";
+    ConfigData configData(ConfigAPI::FILE_FRAMEWORK, ConfigAPI::SECTION_UI);
     if (!isMaximized() && !isFullScreen())
     {
-        owner->Config()->Set(configFile, section, "window width", width);
-        owner->Config()->Set(configFile, section, "window height", height);
-        owner->Config()->Set(configFile, section, "window left", windowX);
-        owner->Config()->Set(configFile, section, "window top", windowY);
+        owner->Config()->Set(configData, "window width", width);
+        owner->Config()->Set(configData, "window height", height);
+        owner->Config()->Set(configData, "window left", windowX);
+        owner->Config()->Set(configData, "window top", windowY);
     }
-    owner->Config()->Set(configFile, section, "window maximized", isMaximized());
-    owner->Config()->Set(configFile, section, "fullscreen", isFullScreen());
+    owner->Config()->Set(configData, "window maximized", isMaximized());
+    owner->Config()->Set(configData, "fullscreen", isFullScreen());
 }
 
 void NaaliMainWindow::closeEvent(QCloseEvent *e)
