@@ -4,42 +4,21 @@
 #define incl_MumbleVoipModule_h
 
 #include "IModule.h"
-
 #include "MumbleVoipModuleApi.h"
 #include "CommunicationsService.h"
 #include "Core.h"
-#include <QObject>
 #include "ServerInfo.h"
-#include "Settings.h"
+
+#include <QObject>
 
 namespace MumbleVoip
 {
     class LinkPlugin;
     class Provider;
+    class Settings;
     class SettingsWidget;
 
-    /**
-     *  Mumble support for Naali viewer.
-     *
-     *  Offer console commands:
-     *    'mumble link(avatar_id, context_id)'
-     *    'mumble unlink'
-     *    'mumble start(server_url)'
-     * todo 'mumble status'
-     *  
-     *  Request mumble server information when user has logged to world and establish a connection
-     *  to mumble server.
-     *
-     *  By default the nativi mumble client is used to establish the connection.
-     *  If command line argument '--usemumblelibrary' has been given then mumbleclient library is used to 
-     *  establish a connection.
-     *
-     *  In future this module will implement InWorldVoiceProvider interface and is controlled by user interface and 
-     *  mumbleclient library is used to make connections.
-     *
-     *  command line argument '--use_native_mumble_client' disabled mumbleclient library and will use native mumble
-     *  client application with link plugin.
-     */
+    /// Mumble support for Tundra. Look more from MumbleVoip::Provider and its Session object.
     class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public IModule
     {
         Q_OBJECT

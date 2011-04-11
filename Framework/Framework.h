@@ -95,9 +95,6 @@ namespace Foundation
         /// Returns platform abstraction object.
         PlatformPtr GetPlatform() const;
 
-        /// Returns config manager.
-        //ConfigurationManagerPtr GetConfigManager();
-
         /// Cancel a pending exit
         void CancelExit();
 
@@ -109,12 +106,6 @@ namespace Foundation
 
         /// Returns true if framework is properly initialized and Go() can be called.
         bool Initialized() const { return initialized_; }
-
-        /// Returns the default configuration
-        //ConfigurationManager &GetDefaultConfig();
-
-        /// Returns pointer to the default configuration
-        //ConfigurationManager *GetDefaultConfigPtr();
 
         /// Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
@@ -241,9 +232,8 @@ namespace Foundation
         ComponentManagerPtr component_manager_; ///< Component manager.
         ServiceManagerPtr service_manager_; ///< Service manager.
         EventManagerPtr event_manager_; ///< Event manager.
+
         PlatformPtr platform_; ///< Platform.
-        ConfigurationManagerPtr config_manager_; ///< Default configuration
-        ApplicationPtr application_; ///< Application data.
         bool exit_signal_; ///< If true, exit application.
 #ifdef PROFILING
         Profiler profiler_; ///< Profiler.
@@ -268,28 +258,6 @@ namespace Foundation
         int argc_; ///< Command line argument count as supplied by the operating system.
         char **argv_; ///< Command line arguments as supplied by the operating system.
     };
-
-    ///\todo Refactor-remove these. -jj.
-    namespace
-    {
-        const event_id_t NETWORKING_REGISTERED = 2;
-        const event_id_t WORLD_STREAM_READY = 3;
-//        const event_id_t WEB_LOGIN_DATA_RECEIVED = 4;
-    }
-
-    ///\todo (Re)move, doesn't belong to framework.
-/*    class WebLoginDataEvent : public IEventData
-    {
-        WebLoginDataEvent();
-    public:
-        WebLoginDataEvent(const QString &first, const QString &last, const QString &avAddr, const QString &worldAddr) :
-            firstname_(first), lastname_(last), avatar_address_(avAddr), world_address_(worldAddr) { }
-        QString firstname_;
-        QString lastname_;
-        QString avatar_address_;
-        QString world_address_;
-    };
-*/
 }
 
 #endif
