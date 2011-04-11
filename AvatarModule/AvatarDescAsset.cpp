@@ -20,6 +20,12 @@ std::string modifierMode[] = {
     "cumulative"
 };
 
+AvatarDescAsset::AvatarDescAsset(AssetAPI *owner, const QString &type_, const QString &name_) :
+    IAsset(owner, type_, name_),
+    assetCounter_(0)
+{
+}
+
 AvatarDescAsset::~AvatarDescAsset()
 {
     Unload();
@@ -27,7 +33,6 @@ AvatarDescAsset::~AvatarDescAsset()
 
 void AvatarDescAsset::DoUnload()
 {
-    avatarAppearanceXML_ = "";
     mesh_ = "";
     skeleton_ = "";
     materials_.clear();
@@ -50,21 +55,21 @@ bool AvatarDescAsset::DeserializeFromData(const u8 *data, size_t numBytes)
     avatarDoc.setContent(avatarAppearanceXML_);
     ReadAvatarAppearance(avatarDoc);
     
+    emit AppearanceChanged();
     return true;
 }
 
-bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters)
+bool AvatarDescAsset::SerializeTo(std::vector<u8> &dst, const QString &serializationParameters) const
 {
     QDomDocument avatarDoc("Avatar");
     WriteAvatarAppearance(avatarDoc);
-    avatarAppearanceXML_ = avatarDoc.toString();
+    QByteArray bytes = avatarDoc.toByteArray();
     
-    if (!avatarAppearanceXML_.length())
+    if (!bytes.length())
         return false;
     
-    std::string avatarDocStd = avatarAppearanceXML_.toStdString();
-    dst.resize(avatarDocStd.length());
-    memcpy(&dst[0], avatarDocStd.c_str(), avatarDocStd.length());
+    dst.resize(bytes.size());
+    memcpy(&dst[0], bytes.data(), bytes.size());
     return true;
 }
 
@@ -439,7 +444,7 @@ void AvatarDescAsset::ReadAttachment(const QDomElement& elem)
     attachments_.push_back(attachment);
 }
 
-void AvatarDescAsset::SetMasterModifierValue(QString name, float value)
+void AvatarDescAsset::SetMasterModifierValue(const QString& name, float value)
 {
     std::string nameStd = name.toStdString();
     
@@ -464,7 +469,7 @@ void AvatarDescAsset::SetMasterModifierValue(QString name, float value)
     }
 }
 
-void AvatarDescAsset::SetModifierValue(QString name, float value)
+void AvatarDescAsset::SetModifierValue(const QString& name, float value)
 {
     std::string nameStd = name.toStdString();
     
@@ -489,6 +494,15 @@ void AvatarDescAsset::SetModifierValue(QString name, float value)
     }
 }
 
+void AvatarDescAsset::SetMaterial(uint index, const QString& ref)
+{
+    if (index >= materials_.size())
+        return;
+    materials_[index] = ref;
+    
+    AssetReferencesChanged();
+}
+
 bool AvatarDescAsset::HasProperty(QString name) const
 {
     QMap<QString, QString>::const_iterator i = properties_.find(name);
@@ -498,9 +512,33 @@ bool AvatarDescAsset::HasProperty(QString name) const
     return value.length() > 0;
 }
 
-const QString& AvatarDescAsset::GetProperty(QString name)
+const QString& AvatarDescAsset::GetProperty(const QString& name)
 {
     return properties_[name];
+}
+
+void AvatarDescAsset::AssetReferencesChanged()
+{
+    assetCounter_ = FindReferences().size();
+    // If no references (unlikely), send AppearanceChanged() immediately
+    if (!assetCounter_)
+        emit AppearanceChanged();
+    else
+    {
+        // Otherwise request the (possibly new) assets
+        assetAPI->RequestAssetDependencies(this->shared_from_this());
+    }
+}
+
+void AvatarDescAsset::DependencyLoaded(AssetPtr dependee)
+{
+    if (assetCounter_ > 0)
+    {
+        --assetCounter_;
+        // Check if all loaded
+        if (!assetCounter_)
+            emit AppearanceChanged();
+    }
 }
 
 void AvatarDescAsset::CalculateMasterModifiers()
@@ -550,7 +588,7 @@ void AvatarDescAsset::AddReference(std::vector<AssetReference>& refs, const QStr
     }
 }
 
-void AvatarDescAsset::WriteAvatarAppearance(QDomDocument& dest)
+void AvatarDescAsset::WriteAvatarAppearance(QDomDocument& dest) const
 {
     // Avatar element
     QDomElement avatar = dest.createElement("avatar");
@@ -636,7 +674,7 @@ void AvatarDescAsset::WriteAvatarAppearance(QDomDocument& dest)
     dest.appendChild(avatar);
 }
 
-QDomElement AvatarDescAsset::WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim)
+QDomElement AvatarDescAsset::WriteAnimationDefinition(QDomDocument& dest, const AnimationDefinition& anim) const
 {
     QDomElement elem = dest.createElement("animation");
     
@@ -654,7 +692,7 @@ QDomElement AvatarDescAsset::WriteAnimationDefinition(QDomDocument& dest, const 
     return elem;
 }
 
-void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones)
+void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones) const
 {
     QDomElement parameter = dest.createElement("dynamic_animation_parameter");
     QDomElement modifier = dest.createElement("dynamic_animation");
@@ -686,7 +724,7 @@ void AvatarDescAsset::WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest
     }
 }
 
-QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& bone)
+QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& bone) const
 {
     QDomElement elem = dest.createElement("bone");
     SetAttribute(elem, "name", bone.bone_name_);
@@ -712,7 +750,7 @@ QDomElement AvatarDescAsset::WriteBone(QDomDocument& dest, const BoneModifier& b
     return elem;
 }
 
-QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph)
+QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphModifier& morph) const
 {
     QDomElement elem = dest.createElement("morph_modifier");
     SetAttribute(elem, "name", morph.name_);
@@ -722,7 +760,7 @@ QDomElement AvatarDescAsset::WriteMorphModifier(QDomDocument& dest, const MorphM
     return elem;
 }
 
-QDomElement AvatarDescAsset::WriteMasterModifier(QDomDocument& dest, const MasterModifier& master)
+QDomElement AvatarDescAsset::WriteMasterModifier(QDomDocument& dest, const MasterModifier& master) const
 {
     QDomElement elem = dest.createElement("master_modifier");
     SetAttribute(elem, "name", master.name_);
@@ -753,7 +791,7 @@ QDomElement AvatarDescAsset::WriteMasterModifier(QDomDocument& dest, const Maste
     return elem;
 }    
     
-QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const QString& mesh)
+QDomElement AvatarDescAsset::WriteAttachment(QDomDocument& dest, const AvatarAttachment& attachment, const QString& mesh) const
 {
     QDomElement elem = dest.createElement("attachment");
     
