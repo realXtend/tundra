@@ -103,6 +103,7 @@ AddEntityComponent(EntityComponents/EC_Gizmo EC_Gizmo)
 AddEntityComponent(EntityComponents/EC_VideoSource EC_VideoSource)
 AddEntityComponent(EntityComponents/EC_Selected EC_Selected)
 AddEntityComponent(EntityComponents/EC_WebView EC_WebView)
+AddEntityComponent(EntityComponents/EC_QmlApp EC_QmlApp)
 
 # The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
