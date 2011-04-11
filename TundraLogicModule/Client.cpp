@@ -114,10 +114,14 @@ void Client::Login(const QString& address, unsigned short port, kNet::SocketTran
         TundraLogicModule::LogError("Already running a server, cannot login to a world as a client");
         return;
     }
-    
+
     reconnect_ = false;
     if (protocol == kNet::InvalidTransportLayer)
+    {
+        TundraLogicModule::LogInfo("Client::Login: No protocol specified, using the default value.");
         protocol = owner_->GetKristalliModule()->defaultTransport;
+    }
+
     owner_->GetKristalliModule()->Connect(address.toStdString().c_str(), port, protocol);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
@@ -168,14 +172,18 @@ void Client::SetLoginProperty(QString key, QString value)
 
 QString Client::GetLoginProperty(QString key)
 {
-    return properties[key.trimmed()];
+    key = key.trimmed();
+    if (properties.count(key) > 0)
+        return properties[key];
+    else
+        return "";
 }
 
-QString Client::LoginPropertiesAsXml()
+QString Client::LoginPropertiesAsXml() const
 {
     QDomDocument xml;
     QDomElement rootElem = xml.createElement("login");
-    for(std::map<QString, QString>::iterator iter = properties.begin(); iter != properties.end(); ++iter)
+    for(std::map<QString, QString>::const_iterator iter = properties.begin(); iter != properties.end(); ++iter)
     {
         QDomElement elem = xml.createElement(iter->first.toStdString().c_str());
         elem.setAttribute("value", iter->second.toStdString().c_str());
