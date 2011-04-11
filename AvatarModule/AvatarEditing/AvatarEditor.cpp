@@ -10,9 +10,11 @@
 #include "SceneAPI.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
-#include "ConfigurationManager.h"
 #include "ModuleManager.h"
 #include "Entity.h"
+
+#include "ConfigAPI.h"
+#include "Platform.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -35,15 +37,12 @@ namespace Avatar
         avatar_module_(avatar_module)
     {
         InitEditorWindow();
-
-        last_directory_ = avatar_module_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "last_avatar_editor_dir", std::string());
-        if (last_directory_.empty())
-            last_directory_ = QtUtils::GetCurrentPath();
+        last_directory_ = avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory", QString::fromStdString(QtUtils::GetCurrentPath())).toString().toStdString();
     }
 
     AvatarEditor::~AvatarEditor()
     {
-        avatar_module_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
+        avatar_module_->GetFramework()->Config()->Get("uimemory", "avatar editor", "last directory", QString::fromStdString(last_directory_));
     }
 
     void AvatarEditor::InitEditorWindow()
