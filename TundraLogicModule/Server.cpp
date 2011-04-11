@@ -90,17 +90,29 @@ bool Server::Start(unsigned short port)
         if (!framework_->Config()->HasValue(configData))
             framework_->Config()->Set(configData);
 
-        // Get protocol from kristalli module. It is what --protocol defined of the default value if it was not defined.
-        // If --protocol was not defined, use the config value.
+        // Set default protocol
         kNet::SocketTransportLayer transportLayer = owner_->GetKristalliModule()->defaultTransport;
+
+        // Read --protocol or config
+        QString userSetProtocol;
         if (framework_->ProgramOptions().count("protocol") == 0)
-        {       
-            QString configProtocol = framework_->Config()->Get(configData).toString().toLower();
-            if (configProtocol != "udp" && configProtocol != "tcp")
-                ::LogWarning("Server::Start: Server config has an invalid server protocol '" + configProtocol + "'. Use tcp or udp. Resetting to default value.");
-            else
-                transportLayer = configProtocol == "udp" ? kNet::SocketOverUDP : kNet::SocketOverTCP;
+        {
+            userSetProtocol = framework_->Config()->Get(configData).toString().toLower();
         }
+        else
+        {
+            try
+            {
+                userSetProtocol = QString::fromStdString(framework_->ProgramOptions()["protocol"].as<std::string>());
+            }
+            catch(...) {}
+        }
+
+        // Inspect protocol
+        if (userSetProtocol != "udp" && userSetProtocol != "tcp")
+            ::LogWarning("Server::Start: Server config has an invalid server protocol '" + userSetProtocol + "'. Use tcp or udp. Resetting to default protocol.");
+        else
+            transportLayer = userSetProtocol == "udp" ? kNet::SocketOverUDP : kNet::SocketOverTCP;
         
         // Start server
         if (!owner_->GetKristalliModule()->StartServer(port, transportLayer))
@@ -153,7 +165,7 @@ bool Server::IsRunning() const
 bool Server::IsAboutToStart() const
 {
     const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
-    if (programOptions.count("startserver"))
+    if (programOptions.count("server"))
         return true;
     return false;
 }

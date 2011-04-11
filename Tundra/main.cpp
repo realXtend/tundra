@@ -96,9 +96,29 @@ int run (int argc, char **argv)
     // Initilizing prints
     LogInfo("Starting up Tundra");
     LogInfo("* Working directory: " + QDir::currentPath().toStdString());
-    LogInfo("* Command arguments:");
-    for(int i = 0; i < argc; ++i)
-        LogInfo("  " + std::string(argv[i]));
+
+    // Parse and print command arguments
+    QStringList arguments;
+    for(int i = 1; i < argc; ++i)
+        arguments << argv[i];
+    QString fullArguments = arguments.join(" ");
+    if (fullArguments.contains("--"))
+    {
+        LogInfo("* Command arguments:");
+        int iStart = fullArguments.indexOf("--");
+        while (iStart != -1)
+        {       
+            int iStop = fullArguments.indexOf("--", iStart+1);
+            QString subStr = fullArguments.mid(iStart, iStop-iStart);
+            if (!subStr.isEmpty() && !subStr.isNull())
+            {
+                LogInfo("  " + subStr);
+                iStart = fullArguments.indexOf("--", iStart+1);
+            }
+            else
+                iStart = -1;
+        }
+    }   
     LogInfo(""); // endl
 
     // Create application object
@@ -107,13 +127,6 @@ int run (int argc, char **argv)
 #endif
     {
         Foundation::Framework fw(argc, argv);
-        // If there is no startserver command, start one in default port
-        if (!fw.ProgramOptions().count("startserver"))
-        {
-            boost::program_options::variables_map& variablemap = fw.ProgramOptions();
-            variablemap.insert(std::pair<std::string, boost::program_options::variable_value>("startserver", boost::program_options::variable_value(0, true)));
-        }
-        
         if (fw.Initialized())
         {
             setup (fw);

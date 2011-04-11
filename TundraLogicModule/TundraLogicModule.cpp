@@ -249,13 +249,25 @@ void TundraLogicModule::PostInitialize()
     if (!framework_->Config()->HasValue(configData))
         framework_->Config()->Set(configData);
     
-    // Check whether server should be autostarted.
+    // Check whether server should be auto started.
     const boost::program_options::variables_map &programOptions = framework_->ProgramOptions();
-    if (programOptions.count("startserver"))
+    if (programOptions.count("server"))
     {
         autostartserver_ = true;
-        autostartserver_port_ = programOptions["startserver"].as<int>();
-        if (!autostartserver_port_)
+        // Use parameter port or default to config value
+        if (programOptions.count("port"))
+        {
+            try
+            {
+                autostartserver_port_ = programOptions["port"].as<int>();
+            }
+            catch(...)
+            {
+                LogFatal("--port parameter is not a valid integer.");
+                GetFramework()->Exit();
+            }
+        }
+        else
             autostartserver_port_ = GetFramework()->Config()->Get(configData).toInt();
     }
 }
